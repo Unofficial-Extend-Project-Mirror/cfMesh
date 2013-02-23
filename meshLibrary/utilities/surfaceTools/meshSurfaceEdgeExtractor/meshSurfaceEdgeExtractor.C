@@ -1,0 +1,112 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+Description
+
+\*---------------------------------------------------------------------------*/
+
+#include "meshSurfaceEdgeExtractor.H"
+#include "demandDrivenData.H"
+
+// #define DEBUGSearch
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+// Construct from mesh, octree, regions for boundary vertices
+meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
+(
+	polyMeshGen& mesh,
+	const meshOctree& octree,
+	const labelList& pointRegion
+)
+:
+	mesh_(mesh),
+	nPoints_(mesh.points().size()),
+	boundaryCell_(mesh.cells().size(), false),
+	nFacesInCell_(mesh.cells().size(), direction(0)),
+    meshOctree_(octree),
+    pointRegions_(pointRegion.size())
+{	
+	forAll(pointRegion, pointI)
+		if( pointRegion[pointI] != -1 )
+			pointRegions_.append(pointI, pointRegion[pointI]);
+		
+	createEdgeVertices();
+		
+	removeOldBoundaryFaces();
+		
+	createBoundaryFaces();
+}
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+meshSurfaceEdgeExtractor::~meshSurfaceEdgeExtractor()
+{
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
+{
+	const labelList neighbour_ = mesh_.neighbour();
+	polyMeshGenModifier meshModifier_(mesh_);
+	cellListPMG& cells_ = meshModifier_.cellsAccess();
+	
+	forAll(cells_, cellI)
+	{
+		const cell& c = cells_[cellI];
+		
+		cell newC(c);
+		
+		forAll(c, fI)
+			if( neighbour_[c[fI]] != -1 )
+			{
+				boundaryCell_[cellI] = true;
+				newC[nFacesInCell_[cellI]++] = c[fI];
+			}
+		
+		if( nFacesInCell_[cellI] < c.size() )
+		{
+			newC.setSize(nFacesInCell_[cellI]);
+			
+			cells_[cellI] = newC;
+		};
+	}
+	
+	PtrList<writePatch>& boundaries = meshModifier_.boundariesAccess();
+	boundaries.setSize(1);
+	boundaries[0].patchSize() = 0;
+	meshModifier_.facesAccess().setSize(boundaries[0].patchStart());
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// ************************************************************************* //

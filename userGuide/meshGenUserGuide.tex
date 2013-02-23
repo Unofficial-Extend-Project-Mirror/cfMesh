@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper,dvips,oneside]{article}
+\usepackage{setspace}
+\usepackage{epsfig}
+\usepackage{framed}
+\usepackage[normalem]{ulem}
+\usepackage{color}
+\usepackage[a4paper,left=2cm,right=3cm,top=2cm,bottom=2cm]{geometry}
+%
+\renewcommand{\baselinestretch}{1.0}
+%
+\begin{document}
+\begin{center}
+{\bf MESH GENERATION USER GUIDE} \\
+\vspace{0.2in}
+\uline{{\large Author: \bf Franjo Jureti\'{c}}}
+\end{center}
+%
+\vspace{0.2in}
+%
+\begin{flushleft}
+Mesh generation is a set of tools for mesh generation which are then assembled
+into a mesh generation workflow. At the moment the only supported mesher is a
+cartesian mesher which generates the mesh from an octree templated refined to
+the user-specified tolerance.
+
+The process of mesh generation starts from a surface triangulation (usually an
+.stl file) and it is it also needed to create a meshDict file which contains
+information about required cell resolution at various parts of the
+geometry. The meshDict file is contained in the ``system'' directory of your
+working case. The entries of the meshDict file are:
+\begin{itemize}
+\item {\bf surfaceFile} is the name of the file containing surface triangulation
+  of your geometry. In order to capture corners and
+  edges of the surface it is necessary to divide the surface into different
+  partition which can be done by using surfaceFeaturesEdges. It is possible to
+  specify the angle tolerance for edge marking.
+\item {\bf maxCellSize} is the maximum cell size anywhere in the domain.
+\item {\bf boundaryCellSize} is the size which applies to all boundary cells.
+\item {\bf patchCellSize} allows the user to specify finer cell size at desired
+  patches.
+\item {\bf decomposePolyhedraIntoTetsAndPyrs} is used in case when the user do not want any arbitrary polyhedra in the mesh. With the option switched on, the arbitrary polyhedra are decomposed into tetrahedra and pyramids. 
+\item {\bf keepCellsIntersectingPatches} is intended to help in generating
+  meshes in thin regions. This option means that octree boxes intersected by the
+  given patches will also be used as mesh cells and this help the user to get a
+  singly-connected mesh in thin regions.
+\item {\bf keepCellsIntersectingBoundary} is similar to the previous option, but
+  with a difference that all boundary-intersected octree boxes are used as mesh cells.
+\item {\bf checkForGluedMesh} is an option which can remove cells which make the two disjoint domain parts connected.
+\item {\bf objectRefinements} contains the list of objects which can be used to refine some interior mesh parts. The supported objects are lines, sppheres, cones and boxes.
+\item {\bf subsetFileName} is the name of the file containing surface subsets which can then be used for localised-mesh refinement near the surface.
+\item {\bf subsetCellSize} a list which is used to set the cell size for a subset. 
+\end{itemize}
+
+\end{flushleft}
+%
+%
+\end{document}

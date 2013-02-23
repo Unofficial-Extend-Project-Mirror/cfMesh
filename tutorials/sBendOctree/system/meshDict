@@ -1,0 +1,46 @@
+// The FOAM Project // File: adaptiveProperties 
+/*
+-------------------------------------------------------------------------------
+ =========         | dictionary
+ \\      /         |
+  \\    /          | Name: adaptiveProperties 
+   \\  /           | Family: Data file
+    \\/            |
+    F ield         | FOAM version: 1.9.6
+    O peration     | Product of Nabla Ltd.
+    A and          |
+    M anipulation  | Email: Enquiries@Nabla.co.uk
+-------------------------------------------------------------------------------
+*/
+
+version  0.5;
+format   ascii;
+
+root     "/home/larson/franjo/foam/run";
+case     "thetaTest";
+instance "system";
+local    "";
+
+note     "fvSchemes for Foam";
+
+class    dictionary;
+object   adaptiveProperties;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+surfaceFile "geom.stl";
+
+maxCellSize 0.09999;
+
+boundaryCellSize 0.05;
+
+minCellSize 0.05;
+
+patchCellSize
+2
+(
+	walls   0.025
+	walls1  0.025 
+);
+ 	
+// ************************************************************************* //

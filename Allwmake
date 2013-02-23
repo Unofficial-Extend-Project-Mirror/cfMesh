@@ -1,0 +1,15 @@
+#!/bin/sh
+# Compile mesh library
+cd meshLibrary
+wmake libso
+cd ..
+
+# Compile cartesianMesh
+#cd executables/cartesianMesh
+#wmake
+#cd ../..
+
+# Compile dualMesh
+#cd executables/dualMesh
+#wmake
+#cd ../..

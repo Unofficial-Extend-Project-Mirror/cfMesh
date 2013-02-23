@@ -1,0 +1,47 @@
+<!DOCTYPE UI><UI version="3.3" stdsetdef="1">
+<class>Form1</class>
+<widget class="QWidget">
+    <property name="name">
+        <cstring>Form1</cstring>
+    </property>
+    <property name="geometry">
+        <rect>
+            <x>0</x>
+            <y>0</y>
+            <width>600</width>
+            <height>480</height>
+        </rect>
+    </property>
+    <property name="caption">
+        <string>Form1</string>
+    </property>
+    <widget class="QLineEdit">
+        <property name="name">
+            <cstring>lineEdit1</cstring>
+        </property>
+        <property name="geometry">
+            <rect>
+                <x>90</x>
+                <y>70</y>
+                <width>174</width>
+                <height>26</height>
+            </rect>
+        </property>
+    </widget>
+</widget>
+<connections>
+    <connection>
+        <sender>lineEdit1</sender>
+        <signal>textChanged(const QString&amp;)</signal>
+        <receiver>Form1</receiver>
+        <slot>lineEdit1_textChanged(const QString&amp;)</slot>
+    </connection>
+</connections>
+<includes>
+    <include location="local" impldecl="in implementation">form1.ui.h</include>
+</includes>
+<slots>
+    <slot>lineEdit1_textChanged( const QString &amp; )</slot>
+</slots>
+<layoutdefaults spacing="6" margin="11"/>
+</UI>

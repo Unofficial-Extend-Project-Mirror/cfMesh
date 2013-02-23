@@ -1,0 +1,3 @@
+#!/bin/sh
+$QTDIR/bin/moc meshGenQt.H -o meshGenQt.moc.C
+$QTDIR/bin/moc meshGenQtGeneralSettings.H -o meshGenQtGeneralSettings.moc.C

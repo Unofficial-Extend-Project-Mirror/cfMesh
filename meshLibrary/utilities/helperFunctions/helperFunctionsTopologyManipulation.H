@@ -1,0 +1,119 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+Class
+    helperFunctions
+
+Description
+    Topology modifiers and queries useful for mesh generation
+
+SourceFiles
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef helperFunctionsTopologyManipulation_H
+#define helperFunctionsTopologyManipulation_H
+
+#include "DynList.H"
+#include "face.H"
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+class boolList;
+class cellList;
+class labelHashSet;
+
+namespace Foam
+{
+
+/*---------------------------------------------------------------------------*\
+                    Namespace help functions Declaration
+\*---------------------------------------------------------------------------*/
+
+namespace help
+{
+
+    //- returns a merged face
+    inline face mergeTwoFaces(const face& f1, const face& f2);
+        
+    //- remove edges until faces share only one edge
+    inline edgeList modifyFacesToShareOneEdge(face& f1, face& f2);
+        
+    //- create a face from the removed part
+    inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut);
+        
+    //- remove edges from face
+    inline face removeEdgesFromFace
+    (
+        const face& fOrig,
+        const DynList<edge>& removeEdges
+    );
+        
+    //- find open edges for a set of faces forming a cell
+    inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges);
+    
+    //- check if two faces share an edge
+    inline bool shareAnEdge(const face& f1, const face& f2);
+    
+    //- return the edge shared by the faces
+    inline edge sharedEdge(const face& f1, const face& f2);
+        
+    //- return the position of edge in the face, -1 otherwise
+    inline label positionOfEdgeInFace(const edge& e, const face& f);
+    
+    //- check if two faces share a vertex
+    inline bool shareAVertex(const face& f1, const face& f2);
+    
+    //- shared vertex of two faces
+    inline label sharedVertex(const face& f1, const face& f2);
+    
+    //- find a vertex label common to all faces in the list
+    inline label sharedVertex(const faceList& fcs);
+    
+    //- check if selected elements are in one singly-connected chain
+    inline bool areElementsInChain(const boolList& sel);
+    
+    //- sort the edge chain such that the end of one edge is the beginning
+    //- of the next one (valid for singly-connected chains, only)
+    inline labelList sortEdgeChain(const DynList<edge>& bEdges);
+    
+    //- creates closed edge chains from the open chain
+    inline void zipOpenChain(DynList<edge>& bEdges);
+
+} // End namespace help
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "helperFunctionsTopologyManipulationI.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
+
+// ************************************************************************* //

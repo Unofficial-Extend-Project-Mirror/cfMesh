@@ -1,0 +1,89 @@
+<ui version="4.0" >
+ <class>meshGenQt</class>
+ <widget class="Q3MainWindow" name="meshGenQt" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>600</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>Form1</string>
+  </property>
+  <widget class="QWidget" name="widget" >
+   <property name="geometry" >
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>600</width>
+     <height>480</height>
+    </rect>
+   </property>
+   <widget class="QPushButton" name="saveButton" >
+    <property name="geometry" >
+     <rect>
+      <x>11</x>
+      <y>11</y>
+      <width>112</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Save meshDict</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="quitButton" >
+    <property name="geometry" >
+     <rect>
+      <x>129</x>
+      <y>11</y>
+      <width>112</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text" >
+     <string>Quit</string>
+    </property>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget" >
+    <property name="geometry" >
+     <rect>
+      <x>9</x>
+      <y>41</y>
+      <width>580</width>
+      <height>406</height>
+     </rect>
+    </property>
+    <widget class="QWidget" name="tab" >
+     <attribute name="title" >
+      <string>General settings</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab" >
+     <attribute name="title" >
+      <string>Refinement</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="TabPage" >
+     <attribute name="title" >
+      <string>Rename patches</string>
+     </attribute>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>Q3MainWindow</class>
+   <extends>QWidget</extends>
+   <header>q3mainwindow.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
