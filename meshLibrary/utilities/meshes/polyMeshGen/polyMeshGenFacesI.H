@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -32,49 +31,86 @@ Description
 
 #include "polyMeshGenFaces.H"
 
+# ifdef USE_OMP
+#include <omp.h>
+# endif
+
 namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 inline const faceListPMG& polyMeshGenFaces::faces() const
 {
-	return faces_;
+    return faces_;
 }
-		
+        
 inline label polyMeshGenFaces::nInternalFaces() const
 {
-	if( !(ownerPtr_ && neighbourPtr_) )
-		calculateOwnersAndNeighbours();
+    if( !(ownerPtr_ && neighbourPtr_) )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::nInternalFaces() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
 
-	return nIntFaces_;
+        calculateOwnersAndNeighbours();
+    }
+
+    return nIntFaces_;
 }
 
 inline const labelList& polyMeshGenFaces::owner() const
 {
-	if( !ownerPtr_ )
-		calculateOwnersAndNeighbours();
-	
-	return *ownerPtr_;
+    if( !ownerPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::owner() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
+        calculateOwnersAndNeighbours();
+    }
+    
+    return *ownerPtr_;
 }
 
 inline const labelList& polyMeshGenFaces::neighbour() const
 {
-	if( !neighbourPtr_ )
-		calculateOwnersAndNeighbours();
-	
-	return *neighbourPtr_;
+    if( !neighbourPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::neighbour() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
+        calculateOwnersAndNeighbours();
+    }
+    
+    return *neighbourPtr_;
 }
 
-inline const PtrList<writeProcessorPatch>&
+inline const PtrList<processorBoundaryPatch>&
 polyMeshGenFaces::procBoundaries() const
 {
     return procBoundaries_;
 }
 
-inline const PtrList<writePatch>& polyMeshGenFaces::boundaries() const
+inline const PtrList<boundaryPatch>& polyMeshGenFaces::boundaries() const
 {
-	return boundaries_;
+    return boundaries_;
 }
 
 inline void polyMeshGenFaces::addFaceToSubset

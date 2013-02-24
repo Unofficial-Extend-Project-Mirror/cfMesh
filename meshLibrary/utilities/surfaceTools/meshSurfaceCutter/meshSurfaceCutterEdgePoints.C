@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -47,16 +46,16 @@ void meshSurfaceCutter::findBoundaryEdgePoints
     const boolList& inwardPoint
 )
 {
-	DynList<point>& newPoints = *newPointsPtr_;
-	
-	const faceListPMG& faces = mesh_.faces();
-	const pointFieldPMG& meshPoints = mesh_.points();
-	
+    DynList<point>& newPoints = *newPointsPtr_;
+
+    const faceListPMG& faces = mesh_.faces();
+    const pointFieldPMG& meshPoints = mesh_.points();
+
     # ifdef DEBUGCutter
     Info << "Creating edge points for face " << faceI << endl;
-	Info << "Face consists of vertices " << faces[faceI] << endl;
-	const pointField fvrt = faces[faceI].points(meshPoints);
-	Info << "Vertices " << fvrt << endl;
+    Info << "Face consists of vertices " << faces[faceI] << endl;
+    const pointField fvrt = faces[faceI].points(meshPoints);
+    Info << "Vertices " << fvrt << endl;
     # endif
 
     label inward(-1);
@@ -77,15 +76,15 @@ void meshSurfaceCutter::findBoundaryEdgePoints
 
         vector normal = f.normal(meshPoints);
         normal /= mag(normal);
-		#ifdef DEBUGCutter
-		Info << "Face normal " << normal << endl;
-		# endif
-        
+        #ifdef DEBUGCutter
+        Info << "Face normal " << normal << endl;
+        # endif
+
         const pointField& points = surface_.points();
-        const List<labelledTri>& faces = surface_.localFaces();
-        const labelListList& fe = surface_.faceEdges();
-        const labelListList& ef = surface_.edgeFaces();
-        
+        const LongList<labelledTri>& faces = surface_.facets();
+        const VRWGraph& fe = surface_.facetEdges();
+        const VRWGraph& ef = surface_.edgeFacets();
+
         bool finished;
 
         short faceJ(0);
@@ -94,7 +93,7 @@ void meshSurfaceCutter::findBoundaryEdgePoints
         faceList& newFaces = facesFromFace_[faceI];
         newFaces.setSize(1);
         newFaces[0] = face(15);
-        
+
         forAll(newF, npJ)
         {
             //- look for points on the boundary edges
@@ -105,8 +104,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
 
             //- store the current vertex
             newFaces[faceJ].newElmt(facePointI++) = newF[npI];
-            
-            if( 
+
+            if(
                 outwardPoint[npI] && inwardPoint[next]
             )
             {
@@ -122,11 +121,11 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                 }
 
                 finished = false;
-                
+
                 labelList intersectedNeighbours(2);
                 pointField intersectionPoints(2);
                 List< DynList<label> > iPointPatches(2);
-                
+
                 while( !finished )
                 {
                     intersectedNeighbours = -1;
@@ -148,8 +147,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                     # ifdef DEBUGCutter
                     Info << "SEarch tri " << searchTri << "   "
                         << faces[searchTri] << endl;
-					Info << "Vertices in the triangle "
-						<< faces[searchTri].points(points) << endl;
+                    Info << "Vertices in the triangle "
+                        << faces[searchTri].points(points) << endl;
                     Info << "intersected edges " << intersectedEdges << endl;
                     Info << "Intersections " << edgePoints << endl;
                     Info << "intersected vertices "
@@ -167,12 +166,12 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                         }
                         else if( intersectedEdges[eI] )
                         {
-                            const label curEdge = fe[searchTri][eI];
-                            
-                            label neighbourTri = ef[curEdge][0];
+                            const label curEdge = fe(searchTri, eI);
+
+                            label neighbourTri = ef(curEdge, 0);
                             if( neighbourTri == searchTri )
-                                neighbourTri = ef[curEdge][1];
-                            
+                                neighbourTri = ef(curEdge, 1);
+
                             # ifdef DEBUGCutter
                             Info << "Neighbour tri " << neighbourTri << "  "
                                 << faces[neighbourTri] << endl;
@@ -236,13 +235,13 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                FatalErrorIn
                                 (
                                     "void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "findBoundaryEdgePoints()"
                                 ) << " Cannot close face " << faceI
                                     << " because your data is higly degenerate"
                                     << ". Please smooth your triangulated"
                                     << " surface and try again!"
                                     << abort(FatalError);
-							
+
                             const scalar d0 =
                                 mag
                                 (
@@ -261,12 +260,12 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                             {
                                 searchTri = intersectedNeighbours[1];
                             }
-                            else if( (d0 - d1) > SMALL ) 
+                            else if( (d0 - d1) > SMALL )
                             {
                                 searchTri = intersectedNeighbours[0];
                             }
-                                
-                                
+
+
                             if( mag(d0 - d1) < SMALL )
                             {
                                 Info << "intersectionPoints "
@@ -275,12 +274,12 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                     << newPoints[newF[npI]] << endl;
                                 FatalErrorIn
                                 (
-									"void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "void meshSurfaceCutter::"
+                                    "findBoundaryEdgePoints()"
                                 ) << "Cannot find the vertex on the edge!!"
                                     << " Cannot close face " << faceI
                                     << abort(FatalError);
-                            } 
+                            }
                         }
                         else
                         {
@@ -331,7 +330,7 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                         intersectionPoints[0] -
                                         newPoints[newF[npI]]
                                     );
-                                
+
                                 const scalar d1 =
                                     mag
                                     (
@@ -345,7 +344,7 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                         intersectionPoints[1] -
                                         intersectionPoints[0]
                                     );
-                                
+
                                 if( d0 > 0.1*el && d1 > 0.1*el )
                                 {
                                     //- intersection vertices are on the
@@ -358,13 +357,13 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                     searchTri = intersectedNeighbours[0];
                                     foundDirection = true;
                                 }
-                                else if( (d0 - d1) > SMALL ) 
+                                else if( (d0 - d1) > SMALL )
                                 {
                                     searchTri = intersectedNeighbours[1];
                                     foundDirection = true;
-                                }                                
+                                }
                             }
-                            
+
                             if( !foundDirection )
                             {
                                 Info << "Search tri " << searchTri << endl;
@@ -372,8 +371,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                     << intersectedNeighbours << endl;
                                 FatalErrorIn
                                 (
-									"void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "void meshSurfaceCutter::"
+                                    "findBoundaryEdgePoints()"
                                 ) << "Cannot find the vertex on the edge!!"
                                     << " Cannot close face " << faceI
                                     << abort(FatalError);
@@ -440,7 +439,7 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                             newPoints.append(intersectionPoints[0]);
                             pointTriIndex_[nPoints_] = iPointPatches[0];
                             nPoints_++;
-                        } 
+                        }
                     }
                     else if( searchTri == intersectedNeighbours[1] )
                     {
@@ -474,9 +473,9 @@ void meshSurfaceCutter::findBoundaryEdgePoints
 
                             pointTriIndex_[nPoints_] = iPointPatches[1];
                             nPoints_++;
-                        } 
+                        }
                     }
-                    
+
                     if( searchTri == inward )
                     {
                         //- face is closed
@@ -532,7 +531,7 @@ void meshSurfaceCutter::findBoundaryEdgePoints
         facesFromFace_[faceI][0] = newF;
     }
 }
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

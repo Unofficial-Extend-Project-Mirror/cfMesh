@@ -34,7 +34,6 @@ Description
 #include "Time.H"
 #include "triSurf.H"
 #include "triSurfaceDetectMaterials.H"
-#include "writeMeshEnsight.H"
 
 #include <sstream>
 
@@ -48,8 +47,8 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-		
-	IOdictionary meshDict
+
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -60,19 +59,19 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	fileName surfaceFile = meshDict.lookup("surfaceFile");
+
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
-		surfaceFile = ".."/surfaceFile;
+        surfaceFile = ".."/surfaceFile;
 
     triSurf surf(runTime.path()/surfaceFile);
-	
+
     triSurfaceDetectMaterials detector(surf);
     detector.detectMaterialsAndInternalWalls();
     Info << "Found " << detector.numberOfPartitions() << " partitions" << endl;
     Info << "Found " << detector.numberOfDomains() << " domains" << endl;
     detector.writeMaterials("trala.mat");
-    
+
     Info << "End\n" << endl;
     return 0;
 }

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -28,11 +27,12 @@ Description
 
 #include "meshOctree.H"
 #include "triSurf.H"
-#include "IOdictionary.H"
 #include "boundBox.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGSearch
 
@@ -43,8 +43,8 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from surface and IOdictionary
-meshOctree::meshOctree(const triSurf& ts)
+// Construct from surface
+meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
 :
     surface_(ts),
     neiProcs_(),
@@ -58,7 +58,8 @@ meshOctree::meshOctree(const triSurf& ts)
     vrtLeavesPos_(),
     regularityPositions_(),
     dataSlots_(),
-    leaves_()
+    leaves_(),
+    isQuadtree_(isQuadtree)
 {
     Info << "Constructing octree" << endl;
 
@@ -188,7 +189,7 @@ void meshOctree::setOctantVectorsAndPositions()
 void meshOctree::createInitialOctreeBox()
 {
     //- create initial octree box
-    boundBox bb(surface_.localPoints());
+    boundBox bb(surface_.points());
     const point& min_ = bb.min();
     const point& max_ = bb.max();
 
@@ -213,6 +214,7 @@ void meshOctree::createInitialOctreeBox()
     }
 
     //- allocate data slots
+    # ifdef USE_OMP
     if( omp_get_num_procs() > 0 )
     {
         dataSlots_.setSize(omp_get_num_procs());
@@ -221,18 +223,36 @@ void meshOctree::createInitialOctreeBox()
     {
         dataSlots_.setSize(1);
     }
+    # else
+    dataSlots_.setSize(1);
+    # endif
 
     meshOctreeSlot* slotPtr = &dataSlots_[0];
 
-    slotPtr->cubes_.append
-    (
-        meshOctreeCube
+    if( !isQuadtree_ )
+    {
+        slotPtr->cubes_.append
         (
-            meshOctreeCubeCoordinates(0, 0, 0, 0),
-            surface_.size(),
-            slotPtr
-        )
-    );
+            meshOctreeCube
+            (
+                meshOctreeCubeCoordinates(0, 0, 0, 0),
+                surface_.size(),
+                slotPtr
+            )
+        );
+    }
+    else
+    {
+        slotPtr->cubes_.append
+        (
+            meshOctreeCube
+            (
+                meshOctreeCubeCoordinates(0, 0, -10, 0),
+                surface_.size(),
+                slotPtr
+            )
+        );
+    }
 
     initialCubePtr_ = &slotPtr->cubes_[0];
 

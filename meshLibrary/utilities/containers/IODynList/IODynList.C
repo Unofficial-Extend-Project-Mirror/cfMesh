@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     An IODynList of a given type is a List of that type which supports automated
@@ -41,7 +40,7 @@ template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList(const IOobject& io)
 :
     regIOobject(io),
-	DynList<T, IndexType>()
+    DynList<T, IndexType>()
 {
     if
     (
@@ -58,8 +57,8 @@ IODynList<T, IndexType>::IODynList(const IOobject& io)
 template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList
 (
-	const IOobject& io,
-	const IndexType size
+    const IOobject& io,
+    const IndexType size
 )
 :
     regIOobject(io),
@@ -70,8 +69,8 @@ IODynList<T, IndexType>::IODynList
 template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList
 (
-	const IOobject& io,
-	const DynList<T, IndexType>& list
+    const IOobject& io,
+    const DynList<T, IndexType>& list
 )
 :
     regIOobject(io),
@@ -82,15 +81,15 @@ IODynList<T, IndexType>::IODynList
         readStream(typeName) >> *this;
         close();
     }
-	
-	DynList<T, IndexType>::operator=(list);
+    
+    DynList<T, IndexType>::operator=(list);
 }
 
 
 template<class T, class IndexType>
 void IODynList<T, IndexType>::operator=
 (
-	const IODynList<T, IndexType>& rhs
+    const IODynList<T, IndexType>& rhs
 )
 {
     DynList<T, IndexType>::operator=(rhs);
@@ -100,7 +99,7 @@ void IODynList<T, IndexType>::operator=
 template<class T, class IndexType>
 void IODynList<T, IndexType>::operator=
 (
-	const DynList<T, IndexType>& rhs
+    const DynList<T, IndexType>& rhs
 )
 {
     DynList<T, IndexType>::operator=(rhs);

@@ -1,33 +1,32 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     triSurfacePartitioner
 
 Description
     Provides information regarding surface partitions on the surface
-	triangulation, and connectivity between various surface partitions.
+    triangulation, and connectivity between various surface partitions.
 
 SourceFiles
     triSurfacePartitioner.C
@@ -37,7 +36,7 @@ SourceFiles
 #ifndef triSurfacePartitioner_H
 #define triSurfacePartitioner_H
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "DynList.H"
 #include "HashSet.H"
 
@@ -55,47 +54,47 @@ namespace Foam
 class triSurfacePartitioner
 {
     // Private data
-		//- reference to triSurface
-		const triSurface& surface_;
-	
-		//- corner nodes
-		labelList corners_;
-		List<DynList<label> > cornerPatches_;
-	
-		//- information which partitions share an edge with a given partition
-		List<labelHashSet> partitionPartitions_;
-    
+        //- reference to triSurf
+        const triSurf& surface_;
+
+        //- corner nodes
+        labelList corners_;
+        List<DynList<label> > cornerPatches_;
+
+        //- information which partitions share an edge with a given partition
+        List<labelHashSet> patchPatches_;
+
         //- edge partitions
-        labelList edgePartitions_;
-    
-        //- information which edge partitions share a corner
-        //- with a given partition
-        List<labelHashSet> edgePartitionEdgePartitions_;
-    
-        //- partition of the edge between the surface partitions
-        std::map<std::pair<label, label>, labelHashSet> partitionsEdgeParts_;
-    
-        //- corners shared by edge partitions
-        std::map<std::pair<label, label>, labelHashSet> edgePartitionsCorners_;
+        labelList edgeGroups_;
+
+        //- information which edge groups share a corner
+        //- with a given group
+        List<labelHashSet> edgeGroupEdgeGroups_;
+
+        //- edge groups between surface patches
+        std::map<std::pair<label, label>, labelHashSet> patchesEdgeGroups_;
+
+        //- corners shared by edge groups
+        std::map<std::pair<label, label>, labelHashSet> edgeGroupsCorners_;
 
     // Private member functions
-		//- calculate partitions
-		void calculatePartitionAddressing();
-	
-		//- find surface corners
-		void calculateCornersAndAddressing();
-	
-		//- calculate partitionPartitions_ addressing
-		void calculatePartitionPartitions();
-        
-        //- calculate edge partitions
-        void calculateEdgePartitions();
-        
-        //- calculate surface partition to edge partitions addressing
-        void calculatePartitionsToEdgePartitions();
-        
-        //- calculate edge partitions to corner addressing
-        void calculateEdgePartitionsToCorners();
+        //- calculate patch addressing
+        void calculatePatchAddressing();
+
+        //- find surface corners
+        void calculateCornersAndAddressing();
+
+        //- calculate patch-patches addressing
+        void calculatePatchPatches();
+
+        //- calculate edge groups
+        void calculateEdgeGroups();
+
+        //- calculate surface patch to edge groups addressing
+        void calculatePatchToEdgeGroups();
+
+        //- calculate edge groups to corner addressing
+        void calculateEdgeGroupsToCorners();
 
         //- Disallow default bitwise copy construct
         triSurfacePartitioner(const triSurfacePartitioner&);
@@ -107,8 +106,8 @@ public:
 
     // Constructors
 
-        //- Construct from triSurface
-        triSurfacePartitioner(const triSurface& surface);
+        //- Construct from triSurf
+        triSurfacePartitioner(const triSurf& surface);
 
     // Destructor
 
@@ -116,32 +115,32 @@ public:
 
 
     // Member Functions
-		//- return corner nodes
-		const labelList& corners() const;
-		
-		//- return corner patches
-		const List<DynList<label> >& cornerPatches() const;
-        
-		//- return partition-partitions addressing
-		const List<labelHashSet>& partitionPartitions() const;
+        //- return corner nodes
+        const labelList& corners() const;
 
-        //- return edge partitions. Partitions of edges which are not
-        //- the feature edges is set to -1
-        const labelList& edgePartitions() const;
-        
-        //- Edge partition - edge partitions addressing
-        const List<labelHashSet>& edgePartitionEdgePartitions() const;
-        
-        //- Return partitions of feature edges between the given partitions
-        void edgePartitionsBetweenPartitions
+        //- return corner patches
+        const List<DynList<label> >& cornerPatches() const;
+
+        //- return patch-patches addressing
+        const List<labelHashSet>& patchPatches() const;
+
+        //- return edge groups. Edges which are not
+        //- feature edges are set to -1
+        const labelList& edgeGroups() const;
+
+        //- Edge group - edge groups addressing
+        const List<labelHashSet>& edgeGroupEdgeGroups() const;
+
+        //- Return groups of feature edges shared by the given patches
+        void edgeGroupsSharedByPatches
         (
             const label partition1,
             const label partition2,
             DynList<label>& edgePartitions
         ) const;
-        
-        //- return corners shared between the given edge partitions
-        void cornersBetweenEdgePartitions
+
+        //- return corners shared shared by the given edge groups
+        void cornersSharedByEdgeGroups
         (
             const label edgePartition1,
             const label edgePartition2,

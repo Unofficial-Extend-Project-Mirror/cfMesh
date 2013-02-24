@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+    \\  /    A nd           | Copyright held by the original author
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -28,7 +27,9 @@ License
 #include "DynList.H"
 #include "VRWGraphSMPModifier.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,57 +53,69 @@ void polyMeshGenAddressing::calcCellEdges() const
 
         cePtr_ = new VRWGraph();
         VRWGraph& cellEdgeAddr = *cePtr_;
-        
-        labelList nEdges(cells.size());
-        
-        const label nThreads = 3 * omp_get_num_procs();
 
+        labelList nEdges(cells.size());
+
+        # ifdef USE_OMP
+        const label nThreads = 3 * omp_get_num_procs();
+        # endif
+
+        # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads) if( cells.size() > 10000 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(nEdges, i)
                 nEdges[i] = 0;
-            
+
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label, 32> cEdges;
-                
+
                 forAll(c, fI)
                 {
                     const label faceI = c[fI];
-                    
+
                     forAllRow(fe, faceI, eI)
                         cEdges.appendIfNotIn(fe(faceI, eI));
                 }
-                
+
                 nEdges[cellI] = cEdges.size();
             }
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp master
+            # endif
             VRWGraphSMPModifier(cellEdgeAddr).setSizeAndRowSize(nEdges);
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label, 32> cEdges;
-                
+
                 forAll(c, fI)
                 {
                     const label faceI = c[fI];
-                    
+
                     forAllRow(fe, faceI, eI)
                         cEdges.appendIfNotIn(fe(faceI, eI));
                 }
-                
+
                 cellEdgeAddr.setRow(cellI, cEdges);
             }
         }
@@ -114,7 +127,18 @@ void polyMeshGenAddressing::calcCellEdges() const
 const VRWGraph& polyMeshGenAddressing::cellEdges() const
 {
     if( !cePtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::cellEdges() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcCellEdges();
+    }
 
     return *cePtr_;
 }

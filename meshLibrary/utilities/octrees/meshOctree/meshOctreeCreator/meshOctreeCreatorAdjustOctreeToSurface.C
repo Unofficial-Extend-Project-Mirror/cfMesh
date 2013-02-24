@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -31,19 +30,16 @@ Description
 #include "boundBox.H"
 #include "demandDrivenData.H"
 #include "objectRefinementList.H"
-#include "IOdictionary.H"
 #include "VRWGraph.H"
 #include "meshOctreeModifier.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define OCTREETiming
 //#define DEBUGSearch
-
-# ifdef DEBUGSearch
-#include "writeOctreeEnsight.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,8 +68,10 @@ void meshOctreeCreator::refineBoundary()
         List<direction> refineCubes(leaves.size(), direction(0));
 
         //- select boxes which need to be refined
+        # ifdef USE_OMP
         # pragma omp parallel for reduction(+ : nMarked) \
         schedule(dynamic, Foam::min(20, leaves.size()/omp_get_num_threads()+1))
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];
@@ -150,38 +148,65 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     objectRefinementList refObjects;
 
     // Read polyPatchList
-    Istream& is = meshDictPtr_->lookup("objectRefinements");
-
-    PtrList<entry> objectEntries(is);
-    refObjects.setSize(objectEntries.size());
-
-    forAll(refObjects, objectI)
+    if( meshDictPtr_->isDict("objectRefinements") )
     {
-        refObjects.set
-        (
-            objectI,
-            objectRefinement::New
+        const dictionary& dict = meshDictPtr_->subDict("objectRefinements");
+        const wordList objectNames = dict.toc();
+
+        refObjects.setSize(objectNames.size());
+
+        forAll(refObjects, objectI)
+        {
+            const entry& objectEntry =
+                dict.lookupEntry(objectNames[objectI], false, false);
+
+            refObjects.set
             (
-                objectEntries[objectI].keyword(),
-                objectEntries[objectI].dict()
-            )
-        );
+                objectI,
+                objectRefinement::New
+                (
+                    objectEntry.keyword(),
+                    objectEntry.dict()
+                )
+            );
+        }
+    }
+    else
+    {
+        Istream& is = meshDictPtr_->lookup("objectRefinements");
+
+        PtrList<entry> objectEntries(is);
+        refObjects.setSize(objectEntries.size());
+
+        forAll(refObjects, objectI)
+        {
+            refObjects.set
+            (
+                objectI,
+                objectRefinement::New
+                (
+                    objectEntries[objectI].keyword(),
+                    objectEntries[objectI].dict()
+                )
+            );
+        }
+
+        objectEntries.clear();
     }
 
-    objectEntries.clear();
-
     scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
+
     List<direction> refLevels(refObjects.size(), globalRefLevel_);
     label nMarked;
     do
     {
         nMarked = 0;
         forAll(refObjects, oI)
-        if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
-        {
-            ++nMarked;
-            ++refLevels[oI];
-        }
+            if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
+            {
+                ++nMarked;
+                ++refLevels[oI];
+            }
 
         s /= 2.0;
 
@@ -215,8 +240,10 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
         List<direction> refineCubes(leaves.size(), direction(0));
 
         //- select boxes which need to be refined
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         reduction( + : nMarked) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];
@@ -298,7 +325,6 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
     # ifdef DEBUGSearch
-    writeOctreeEnsight(octree_, "BeforeMarking");
     forAll(leaves, leafI)
         Info << "Leaf " << leafI << " is " << *leaves[leafI]
             << " type " << label(leaves[leafI]->cubeType()) << endl;
@@ -309,8 +335,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
     labelHashSet transferCoordinates;
     LongList<meshOctreeCubeCoordinates> checkCoordinates;
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( leaves.size() > 1000 ) \
     schedule(dynamic, 20)
+    # endif
     forAll(leaves, leafI)
     {
         if( leaves[leafI]->hasContainedElements() )
@@ -332,7 +360,9 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                 if( neiLabel == meshOctreeCube::OTHERPROC )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     {
                         if( !transferCoordinates.found(leafI) )
                         {
@@ -343,6 +373,7 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                     continue;
                 }
+
                 if( neiLabel == -1 )
                     continue;
 
@@ -371,8 +402,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
             receivedCoordinates
         );
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedCoordinates.size() > 1000 ) \
         schedule(dynamic, 20)
+        # endif
         forAll(receivedCoordinates, ccI)
         {
             const meshOctreeCubeCoordinates& cc = receivedCoordinates[ccI];
@@ -408,8 +441,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
             transferCoordinates.clear();
         }
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             if( refineBox[leafI] == i )
@@ -431,7 +466,9 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                     if( neiLabel == meshOctreeCube::OTHERPROC )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         {
                             if( !transferCoordinates.found(leafI) )
                             {
@@ -472,8 +509,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
                 receivedCoordinates
             );
 
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoordinates.size() > 1000 ) \
             schedule(dynamic, 20)
+            # endif
             forAll(receivedCoordinates, ccI)
             {
                 const meshOctreeCubeCoordinates& cc = receivedCoordinates[ccI];
@@ -554,8 +593,10 @@ void meshOctreeCreator::refineBoxes
 
         List<direction> refineCubes(leaves.size(), direction(0));
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         reduction(+ : nRefined) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];

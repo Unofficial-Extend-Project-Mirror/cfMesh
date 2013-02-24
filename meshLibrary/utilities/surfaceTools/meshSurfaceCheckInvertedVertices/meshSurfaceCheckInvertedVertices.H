@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshSurfaceCheckInvertedVertices
@@ -47,7 +46,7 @@ namespace Foam
 {
 
 // Forward declarations
-class meshSurfaceEngine;
+class meshSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
             Class meshSurfaceCheckInvertedVertices Declaration
@@ -56,11 +55,8 @@ class meshSurfaceEngine;
 class meshSurfaceCheckInvertedVertices
 {
     // Private data
-        //- shall the mesh surface be deleted or not
-        bool deleteSurface_;
-    
-        //- mesh surface
-        const meshSurfaceEngine* surfaceEnginePtr_;
+        //- mesh surface partitioner
+        const meshSurfacePartitioner& surfacePartitioner_;
     
         //- active surface points
         const boolList* activePointsPtr_;
@@ -85,15 +81,18 @@ public:
 
     // Constructors
 
-        //- Construct from meshSurfaceEngine
+        //- Construct from meshSurfacePartitioner
         meshSurfaceCheckInvertedVertices
         (
-            const meshSurfaceEngine&,
-            const boolList* activePointsPtr = NULL
+            const meshSurfacePartitioner&
         );
 
-        //- Construct from the mesh
-        meshSurfaceCheckInvertedVertices(polyMeshGen&);
+        //- Construct from meshSurfacePartitioner and a list of active points
+        meshSurfaceCheckInvertedVertices
+        (
+            const meshSurfacePartitioner&,
+            const boolList& activePoints
+        );
 
     // Destructor
 

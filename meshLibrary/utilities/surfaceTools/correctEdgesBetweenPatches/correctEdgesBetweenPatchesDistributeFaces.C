@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -36,7 +35,10 @@ Description
 #include "helperFunctionsPar.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -46,169 +48,6 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void correctEdgesBetweenPatches::checkFacePatches()
-{
-    Info << "Checking patches" << endl;
-    const meshSurfaceEngine& mse = meshSurface();
-
-    const faceList::subList& bFaces = mse.boundaryFaces();
-    const labelList& faceOwner = mse.faceOwners();
-    const VRWGraph& faceEdges = mse.faceEdges();
-    const VRWGraph& edgeFaces = mse.edgeFaces();
-    const labelList& facePatch = mse.boundaryFacePatches();
-
-    newBoundaryFaces_.setSize(0);
-    newBoundaryOwners_.setSize(0);
-    newBoundaryPatches_.setSize(bFaces.size());
-    forAll(newBoundaryPatches_, bfI)
-        newBoundaryPatches_[bfI] = facePatch[bfI];
-
-    label nCorrected;
-    bool changed(false);
-    std::map<label, label> otherProcNewPatch;
-
-    do
-    {
-        nCorrected = 0;
-
-        if( Pstream::parRun() )
-        {
-            const Map<label>& otherProc = mse.otherEdgeFaceAtProc();
-            const Map<label>& globalToLocal =
-                mse.globalToLocalBndEdgeAddressing();
-
-            //- create communication matrix
-            std::map<label, labelListPMG> exchangeData;
-            const DynList<label>& neiProcs = mse.beNeiProcs();
-            forAll(neiProcs, procI)
-                exchangeData.insert
-                (
-                    std::make_pair(neiProcs[procI], labelListPMG())
-                );
-
-            forAllConstIter(Map<label>, globalToLocal, it)
-            {
-                const label beI = it();
-
-                if( edgeFaces.sizeOfRow(beI) == 1 )
-                {
-                    labelListPMG& dts = exchangeData[otherProc[beI]];
-                    //- send data as follows:
-                    //- 1. global edge label
-                    //- 2. patch of the attached boundary face
-                    dts.append(it.key());
-                    dts.append(newBoundaryPatches_[edgeFaces(beI, 0)]);
-                }
-            }
-
-            labelListPMG receivedData;
-            help::exchangeMap(exchangeData, receivedData);
-
-            label counter(0);
-            while( counter < receivedData.size() )
-            {
-                const label beI = globalToLocal[receivedData[counter++]];
-                const label fPatch = receivedData[counter++];
-
-                otherProcNewPatch[beI] = fPatch;
-            }
-        }
-
-        //- go through the list of faces and check if they shall remain
-        //- in the current patch
-        # pragma omp parallel for schedule(guided) reduction(+ : nCorrected)
-        forAll(faceEdges, bfI)
-        {
-            DynList<label> allNeiPatches;
-            DynList<label> neiPatches;
-            neiPatches.setSize(faceEdges.sizeOfRow(bfI));
-
-            forAllRow(faceEdges, bfI, eI)
-            {
-                const label beI = faceEdges(bfI, eI);
-
-                if( edgeFaces.sizeOfRow(beI) == 2 )
-                {
-                    label fNei = edgeFaces(beI, 0);
-                    if( fNei == bfI )
-                        fNei = edgeFaces(faceEdges(bfI, eI), 1);
-
-                    allNeiPatches.appendIfNotIn(newBoundaryPatches_[fNei]);
-                    neiPatches[eI] = newBoundaryPatches_[fNei];
-                }
-                else if( edgeFaces.sizeOfRow(beI) == 1 )
-                {
-                    allNeiPatches.appendIfNotIn(otherProcNewPatch[beI]);
-                    neiPatches[eI] = otherProcNewPatch[beI];
-                }
-            }
-
-            //- check if some faces have to be distributed to another patch
-            //- in order to reduce the number of feature edges
-            if(
-                (allNeiPatches.size() == 1) &&
-                (allNeiPatches[0] == newBoundaryPatches_[bfI])
-            )
-                continue;
-
-            Map<label> nNeiInPatch(allNeiPatches.size());
-            forAll(allNeiPatches, i)
-                nNeiInPatch.insert(allNeiPatches[i], 0);
-            forAll(neiPatches, eI)
-                ++nNeiInPatch[neiPatches[eI]];
-
-            label newPatch(-1), nNeiEdges(0);
-            forAllConstIter(Map<label>, nNeiInPatch, it)
-            {
-                if( it() > nNeiEdges )
-                {
-                    newPatch = it.key();
-                    nNeiEdges = it();
-                }
-                else if
-                (
-                    it() == nNeiEdges && it.key() == newBoundaryPatches_[bfI]
-                )
-                    newPatch = it.key();
-            }
-
-            if( (newPatch < 0) || (newPatch == newBoundaryPatches_[bfI]) )
-                continue;
-
-            boolList sharedEdge(bFaces[bfI].size(), false);
-            forAll(neiPatches, eI)
-                if( neiPatches[eI] == newPatch )
-                    sharedEdge[eI] = true;
-
-            if( help::areElementsInChain(sharedEdge) )
-            {
-                //- change the patch to the newPatch
-                ++nCorrected;
-                newBoundaryPatches_[bfI] = newPatch;
-            }
-        }
-
-        reduce(nCorrected, sumOp<label>());
-
-        if( nCorrected != 0 )
-            changed = true;
-
-    } while( nCorrected != 0 );
-
-    if( changed )
-    {
-        forAll(bFaces, bfI)
-        {
-            newBoundaryFaces_.appendList(bFaces[bfI]);
-            newBoundaryOwners_.append(faceOwner[bfI]);
-        }
-
-        replaceBoundary();
-    }
-
-    Info << "Finished checking patches" << endl;
-}
 
 void correctEdgesBetweenPatches::decomposeProblematicFaces()
 {
@@ -252,11 +91,11 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         }
 
         //- propagate information to all processors that need this information
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(mse.beNeiProcs(), i)
             exchangeData.insert
             (
-                std::make_pair(mse.beNeiProcs()[i], labelListPMG())
+                std::make_pair(mse.beNeiProcs()[i], labelLongList())
             );
 
         //- append labels of feature edges that need to be sent to other
@@ -278,7 +117,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
@@ -298,7 +137,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
     //- decompose internal faces with more than one feature edge
     const label nIntFaces = mesh.nInternalFaces();
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
+    # endif
     for(label faceI=0;faceI<nIntFaces;++faceI)
     {
         const face& f = faces[faceI];
@@ -335,7 +176,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
     //- decompose boundary faces in case the feature edges are not connected
     //- into a single open chain of edges
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
+    # endif
     forAll(faceEdges, bfI)
     {
         boolList featureEdge(faceEdges.sizeOfRow(bfI), false);
@@ -355,7 +198,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
     if( Pstream::parRun() )
     {
         //- decompose processor faces having more than one feature edge
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -363,8 +206,10 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
 
+            # ifdef USE_OMP
             # pragma omp parallel for schedule(guided) \
             reduction(+ : nDecomposedFaces)
+            # endif
             for(label faceI=start;faceI<end;++faceI)
             {
                 const face& f = faces[faceI];
@@ -442,14 +287,16 @@ void correctEdgesBetweenPatches::patchCorrection()
         nodeType[it.key()] |= 1;
 
     //- set flgs to edge vertices
-    const labelHashSet& edgeNodes = surfacePartitioner.edgeNodes();
-    forAllConstIter(labelHashSet, edgeNodes, it)
+    const labelHashSet& edgePoints = surfacePartitioner.edgePoints();
+    forAllConstIter(labelHashSet, edgePoints, it)
         nodeType[it.key()] |= 2;
 
     //- set flags for feature edges
     boolList featureEdge(edgeFaces.size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided)
+    # endif
     forAll(edgeFaces, eI)
     {
         if( edgeFaces.sizeOfRow(eI) != 2 )

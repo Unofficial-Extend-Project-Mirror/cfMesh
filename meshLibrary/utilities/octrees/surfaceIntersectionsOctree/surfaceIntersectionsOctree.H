@@ -1,32 +1,31 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     surfaceIntersectionsOctree
 
 Description
-    Helper class to search on triSurface.
+    Helper class to search on triSurf.
 
 SourceFiles
     surfaceIntersectionsOctree.C
@@ -36,7 +35,7 @@ SourceFiles
 #ifndef surfaceIntersectionsOctree_H
 #define surfaceIntersectionsOctree_H
 
-#include "SLList.H"
+#include "LongList.H"
 #include "boolList.H"
 #include "pointIndexHit.H"
 #include "surfaceIntersectionsOctreeCube.H"
@@ -47,10 +46,10 @@ namespace Foam
 {
 
 // Class forward declarations
-class triSurface;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
-                           Class surfaceIntersectionsOctree Declaration
+                Class surfaceIntersectionsOctree Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceIntersectionsOctree
@@ -58,7 +57,7 @@ class surfaceIntersectionsOctree
     // Private data
 
         //- Reference to surface to work on
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- Root cube of the octree structure
         surfaceIntersectionsOctreeCube initialCube_;
@@ -87,7 +86,11 @@ class surfaceIntersectionsOctree
         ) const;
 
         //- find leaves for cubes
-        void findLeavesForCube(surfaceIntersectionsOctreeCube*, SLList<surfaceIntersectionsOctreeCube*>&) const;
+        void findLeavesForCube
+        (
+            surfaceIntersectionsOctreeCube*,
+            LongList<surfaceIntersectionsOctreeCube*>&
+        ) const;
 
         //- Disallow default bitwise copy construct
         surfaceIntersectionsOctree(const surfaceIntersectionsOctree&);
@@ -100,7 +103,7 @@ public:
     // Constructors
 
         //- Construct from surface. Holds reference to surface!
-        surfaceIntersectionsOctree(const triSurface&, const short, const direction);
+        surfaceIntersectionsOctree(const triSurf&, const short, const direction);
 
     // Destructor
 
@@ -125,7 +128,7 @@ public:
         ) const;
 
         //- helper function which checks if all normal vectors
-        //- of the triSurface point outside
+        //- of the triSurf point outside
         bool normalOk(const label, bool&) const;
 
         //- check if the edge intersects the surface in a manner
@@ -138,7 +141,10 @@ public:
         ) const;
 
         //- find a cube containing the vertex
-        surfaceIntersectionsOctreeCube* findLeafContainingVertex(const point&) const;
+        surfaceIntersectionsOctreeCube* findLeafContainingVertex
+        (
+            const point&
+        ) const;
 };
 
 

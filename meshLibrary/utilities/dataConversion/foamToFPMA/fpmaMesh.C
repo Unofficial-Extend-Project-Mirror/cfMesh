@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -51,52 +50,52 @@ Foam::fpmaMesh::~fpmaMesh()
 
 void Foam::fpmaMesh::writePoints(Foam::OFstream& fpmaGeometryFile) const
 {
-	fpmaGeometryFile << mesh_.points().size() << nl;
-	const pointFieldPMG& points = mesh_.points();
-	forAll(points, pointI)
-	{
-		const point& p = points[pointI];
-		fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
-	
-	fpmaGeometryFile << nl;
+    fpmaGeometryFile << mesh_.points().size() << nl;
+    const pointFieldPMG& points = mesh_.points();
+    forAll(points, pointI)
+    {
+        const point& p = points[pointI];
+        fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
+    }
+    
+    fpmaGeometryFile << nl;
 }
 
 void fpmaMesh::writeCells(OFstream& fpmaGeometryFile) const
 {
-	const cellListPMG& cells = mesh_.cells();
-	
-	fpmaGeometryFile << cells.size() << nl;
-	forAll(cells, cellI)
-	{
-		const cell& c = cells[cellI];
-		
-		fpmaGeometryFile << c.size();
-		forAll(c, fI)
-			fpmaGeometryFile << ' ' << c[fI];
-		fpmaGeometryFile << nl;
-	}
+    const cellListPMG& cells = mesh_.cells();
+    
+    fpmaGeometryFile << cells.size() << nl;
+    forAll(cells, cellI)
+    {
+        const cell& c = cells[cellI];
+        
+        fpmaGeometryFile << c.size();
+        forAll(c, fI)
+            fpmaGeometryFile << ' ' << c[fI];
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
 {
-	const faceListPMG& faces = mesh_.faces();
-	fpmaGeometryFile << faces.size() << nl;
-	forAll(faces, faceI)
-	{
-		const face& f = faces[faceI];
-		
-		fpmaGeometryFile << f.size();
-		forAllReverse(f, pI)
-			fpmaGeometryFile << ' ' << f[pI];
-		fpmaGeometryFile << nl;
-	}
+    const faceListPMG& faces = mesh_.faces();
+    fpmaGeometryFile << faces.size() << nl;
+    forAll(faces, faceI)
+    {
+        const face& f = faces[faceI];
+        
+        fpmaGeometryFile << f.size();
+        forAllReverse(f, pI)
+            fpmaGeometryFile << ' ' << f[pI];
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 {
     //- write patches as face selections
-	const PtrList<writePatch>& patches = mesh_.boundaries();
+    const PtrList<boundaryPatch>& patches = mesh_.boundaries();
     
     label nSubsets(0);
     
@@ -112,7 +111,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     nSubsets += indices.size();
     Info << "Mesh has " << indices.size() << " cell subsets" << endl;
     
-	fpmaGeometryFile << nSubsets << nl;
+    fpmaGeometryFile << nSubsets << nl;
     
     //- write patches as face selections
     forAll(patches, patchI)
@@ -132,7 +131,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.pointSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG nodesInSubset;
+        labelLongList nodesInSubset;
         mesh_.pointsInSubset(indices[indexI], nodesInSubset);
         
         fpmaGeometryFile << mesh_.pointSubsetName(indices[indexI]) << nl;
@@ -147,7 +146,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.faceSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG facesInSubset;
+        labelLongList facesInSubset;
         mesh_.facesInSubset(indices[indexI], facesInSubset);
         
         fpmaGeometryFile << mesh_.faceSubsetName(indices[indexI]) << nl;
@@ -162,7 +161,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.cellSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG cellsInSubset;
+        labelLongList cellsInSubset;
         mesh_.cellsInSubset(indices[indexI], cellsInSubset);
         
         fpmaGeometryFile << mesh_.cellSubsetName(indices[indexI]) << nl;
@@ -177,13 +176,13 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 
 void fpmaMesh::write(OFstream& fpmaGeometryFile) const
 {
-	writePoints(fpmaGeometryFile);
-	
-	writeFaces(fpmaGeometryFile);
+    writePoints(fpmaGeometryFile);
+    
+    writeFaces(fpmaGeometryFile);
 
-	writeCells(fpmaGeometryFile);
+    writeCells(fpmaGeometryFile);
 
-	writeSubsets(fpmaGeometryFile);
+    writeSubsets(fpmaGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

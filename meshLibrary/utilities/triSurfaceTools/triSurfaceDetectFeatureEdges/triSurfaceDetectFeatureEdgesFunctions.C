@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -30,8 +29,11 @@ Description
 #include "helperFunctions.H"
 #include "triSurfaceDetectPlanarRegions.H"
 #include "demandDrivenData.H"
+#include "labelPair.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,24 +46,56 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 {
     const scalar tol = Foam::cos(angleTolerance_*M_PI/180.0);
 
-    const vectorField& normals = surf_.faceNormals();
+    const vectorField& normals = surf_.facetNormals();
 
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(edgeFaces, edgeI)
     {
-        const labelList& eFaces = edgeFaces[edgeI];
+        const constRow eFaces = edgeFaces[edgeI];
 
-        if( eFaces.size() != 2 )
+        if( edgeFaces.sizeOfRow(edgeI) != 2 )
         {
             featureEdges_[edgeI] |= 8;
             continue;
         }
 
-        const scalar cosAngle =
+        scalar cosAngle =
             (normals[eFaces[0]] & normals[eFaces[1]]) /
             (mag(normals[eFaces[0]]) * mag(normals[eFaces[1]]) + VSMALL);
+
+        //- check the orientation of triangles at this edge
+        //- check the sign of the angle if the orientation  is not consistent
+        const labelledTri& tri0 = surf_[edgeFaces(edgeI, 0)];
+        const labelledTri& tri1 = surf_[edgeFaces(edgeI, 1)];
+        DynList<labelPair> sharedIndices;
+        forAll(tri0, i)
+        {
+            forAll(tri1, j)
+            {
+                if( tri0[i] == tri1[j] )
+                    sharedIndices.append(labelPair(i, j));
+            }
+        }
+
+        if( sharedIndices.size() == 2 )
+        {
+            const labelPair& pair0 = sharedIndices[0];
+            const labelPair& pair1 = sharedIndices[1];
+            if( ((pair0.first() + 1) % 3) == pair1.first() )
+            {
+                if( (pair0.second() + 1) % 3 == pair1.second() )
+                    cosAngle *= -1.0;
+            }
+            else
+            {
+                if( (pair1.second() + 1) % 3 == pair0.second() )
+                    cosAngle *= -1.0;
+            }
+        }
 
         if( cosAngle < tol )
             featureEdges_[edgeI] |= 1;
@@ -80,18 +114,20 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
     VRWGraph planarRegions;
     dpr.detectedRegions(planarRegions);
 
-    labelListPMG facetInPlanarRegion(surf_.size(), -1);
+    labelLongList facetInPlanarRegion(surf_.size(), -1);
 
     forAll(planarRegions, regionI)
         forAllRow(planarRegions, regionI, rfI)
             facetInPlanarRegion[planarRegions(regionI, rfI)] = regionI;
 
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(edgeFaces, edgeI)
     {
-        const labelList& eFaces = edgeFaces[edgeI];
+        const constRow eFaces = edgeFaces[edgeI];
 
         if( eFaces.size() != 2 )
             continue;
@@ -99,65 +135,6 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
         if( facetInPlanarRegion[eFaces[0]] != facetInPlanarRegion[eFaces[1]] )
             featureEdges_[edgeI] |= 4;
     }
-}
-
-void triSurfaceDetectFeatureEdges::createPatches()
-{
-    nPatches_ = 0;
-    facetInPatch_.setSize(surf_.size());
-    facetInPatch_ = -1;
-
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
-
-    forAll(facetInPatch_, triI)
-    {
-        if( facetInPatch_[triI] != -1 )
-            continue;
-
-        labelListPMG front;
-        front.append(triI);
-        facetInPatch_[triI] = nPatches_;
-
-        while( front.size() )
-        {
-            const label fLabel = front.removeLastElement();
-
-            const labelList& fEdges = faceEdges[fLabel];
-
-            forAll(fEdges, feI)
-            {
-                const label edgeI = fEdges[feI];
-
-                //- check if th edges is marked as a feature edge
-                if( featureEdges_[edgeI] )
-                    continue;
-
-                const labelList& eFaces = edgeFaces[edgeI];
-
-                //- stop at non-manifold edges
-                if( eFaces.size() != 2 )
-                    continue;
-
-                label neiTri = eFaces[0];
-                if( neiTri == fLabel )
-                    neiTri = eFaces[1];
-
-                //- do not overwrite existing patch information
-                if( surf_[fLabel].region() != surf_[neiTri].region() )
-                    continue;
-                if( facetInPatch_[neiTri] != -1 )
-                    continue;
-
-                facetInPatch_[neiTri] = nPatches_;
-                front.append(neiTri);
-            }
-        }
-
-        ++nPatches_;
-    }
-
-    Info << "Created " << nPatches_ << " surface patches" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

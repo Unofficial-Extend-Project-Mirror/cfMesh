@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -29,6 +28,7 @@ Description
 #include "triSurfaceDetectFeatureEdges.H"
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
+#include "triSurfModifier.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -39,29 +39,23 @@ namespace Foam
 
 triSurfaceDetectFeatureEdges::triSurfaceDetectFeatureEdges
 (
-    const triSurf& surface,
+    triSurf& surface,
     const scalar angleDeviation
 )
 :
     surf_(surface),
     featureEdges_(surf_.edges().size(), direction(0)),
-    angleTolerance_(angleDeviation),
-    facetInPatch_(),
-    nPatches_(),
-    newPatchNames_(),
-    newPatchTypes_()
+    angleTolerance_(angleDeviation)
 {
     if( Pstream::parRun() )
-        FatalError << "Material detection does not run in parallel"
+        FatalError << "Feature edges detection does not run in parallel"
             << exit(FatalError);
 
     detectFeatureEdgesAngleCriterion();
 
     detectFeatureEdgesPointAngleCriterion();
 
-    detectOuterBoundariesOfPlanarRegions();
-
-    createPatches();
+    //detectOuterBoundariesOfPlanarRegions();
 }
 
 triSurfaceDetectFeatureEdges::~triSurfaceDetectFeatureEdges()
@@ -69,113 +63,18 @@ triSurfaceDetectFeatureEdges::~triSurfaceDetectFeatureEdges()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceDetectFeatureEdges::detectedSurfaceRegions
-(
-    VRWGraph& graph
-) const
+void triSurfaceDetectFeatureEdges::detectFeatureEdges()
 {
-    graph.setSize(nPatches_);
+    const edgeLongList& edges = surf_.edges();
+    triSurfModifier surfMod(surf_);
+    edgeLongList& featureEdges = surfMod.featureEdgesAccess();
+    featureEdges.clear();
 
-    labelListPMG nFacetsInPatch(nPatches_, 0);
-
-    forAll(facetInPatch_, triI)
-        ++nFacetsInPatch[facetInPatch_[triI]];
-
-    graph.setSizeAndRowSize(nFacetsInPatch);
-
-    nFacetsInPatch = 0;
-    forAll(facetInPatch_, triI)
+    forAll(featureEdges_, eI)
     {
-        const label patchI = facetInPatch_[triI];
-
-        graph(patchI, nFacetsInPatch[patchI]) = triI;
-        ++nFacetsInPatch[patchI];
+        if( featureEdges_[eI] )
+            featureEdges.append(edges[eI]);
     }
-}
-
-const triSurf* triSurfaceDetectFeatureEdges::surfaceWithPatches
-(
-    const word prefix,
-    const bool forceOverwrite
-) const
-{
-    //- collect patch information
-    VRWGraph facetsInPatch;
-    detectedSurfaceRegions(facetsInPatch);
-
-    //- create new list of boundary patches
-    List<labelledTri> newTriangles(facetInPatch_.size());
-    label counter(0);
-    geometricSurfacePatchList newPatches(nPatches_);
-
-    if( forceOverwrite )
-    {
-        forAll(newPatches, patchI)
-        {
-            newPatches[patchI].name() = prefix+help::scalarToText(patchI);
-            newPatches[patchI].geometricType() = "patch";
-            newPatches[patchI].index() = patchI;
-        }
-    }
-    else
-    {
-        forAll(facetsInPatch, patchI)
-        {
-            forAllRow(facetsInPatch, patchI, fpI)
-            {
-                const label origPatchI =
-                    surf_[facetsInPatch(patchI, fpI)].region();
-                newPatches[patchI].name() =
-                    surf_.patches()[origPatchI].name() +
-                    help::scalarToText(patchI);
-                newPatches[patchI].geometricType() =
-                    surf_.patches()[origPatchI].geometricType();
-                newPatches[patchI].index() = patchI;
-            }
-        }
-    }
-
-    //- create triangles for the new surface
-    labelListPMG newFacetLabel(newTriangles.size(), -1);
-
-    forAll(facetsInPatch, patchI)
-        forAllRow(facetsInPatch, patchI, tI)
-        {
-            newFacetLabel[facetsInPatch(patchI, tI)] = counter;
-            labelledTri tria = surf_[facetsInPatch(patchI, tI)];
-            tria.region() = patchI;
-            newTriangles[counter++] = tria;
-        }
-
-    //- update subsets
-    std::map<word, labelListPMG> newSubsets;
-
-    DynList<word> existingSubsets;
-    surf_.existingFaceSubsets(existingSubsets);
-
-    forAll(existingSubsets, subsetI)
-    {
-        const labelListPMG& subsetFacets =
-            surf_.facesInSubset(existingSubsets[subsetI]);
-
-        labelListPMG& newSubset = newSubsets[existingSubsets[subsetI]];
-        newSubset.setSize(subsetFacets.size());
-
-        forAll(subsetFacets, tI)
-            newSubset[tI] = newFacetLabel[subsetFacets[tI]];
-    }
-
-    //- create and return thr new surface mesh
-    triSurf* newSurfPtr =
-        new triSurf
-        (
-            newTriangles,
-            newPatches,
-            surf_.points(),
-            newSubsets
-        );
-
-    return newSurfPtr;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

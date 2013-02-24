@@ -1,39 +1,42 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
 \*---------------------------------------------------------------------------*/
 
 #include "meshSurfaceCheckInvertedVertices.H"
-#include "meshSurfaceEngine.H"
+#include "meshSurfacePartitioner.H"
 #include "boolList.H"
 #include "demandDrivenData.H"
+#include "refLabelledPoint.H"
 #include "helperFunctionsPar.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -41,34 +44,164 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void meshSurfaceCheckInvertedVertices::checkVertices()
 {
-    const meshSurfaceEngine& mse = *surfaceEnginePtr_;
+    const labelList& facePatch = surfacePartitioner_.boundaryFacePatches();
+    const meshSurfaceEngine& mse = surfacePartitioner_.surfaceEngine();
     const pointFieldPMG& points = mse.points();
-    const labelList& bp = mse.bp();
     const VRWGraph& pointFaces = mse.pointFaces();
     const VRWGraph& pointInFaces = mse.pointInFaces();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const vectorField& pNormals = mse.pointNormals();
     const vectorField& fCentres = mse.faceCentres();
-    
+    const vectorField& fNormals = mse.faceNormals();
+
+    const labelHashSet& corners = surfacePartitioner_.corners();
+    const labelHashSet& edgePoints = surfacePartitioner_.edgePoints();
+
+    typedef std::map<label, vector> ltvMap;
+    typedef std::map<label, ltvMap> lltvMap;
+    lltvMap pointPatchNormal;
+
+    forAllConstIter(labelHashSet, corners, it)
+    {
+        const label bpI = it.key();
+
+        if( activePointsPtr_ && !activePointsPtr_->operator[](bpI))
+            continue;
+
+        ltvMap& patchNormal = pointPatchNormal[bpI];
+
+        forAllRow(pointFaces, bpI, pfI)
+        {
+            const label bfI = pointFaces(bpI, pfI);
+            const label patchI = facePatch[bfI];
+
+            if( patchNormal.find(patchI) == patchNormal.end() )
+            {
+                patchNormal[patchI] = fNormals[bfI];
+            }
+            else
+            {
+                patchNormal[patchI] += fNormals[bfI];
+            }
+        }
+    }
+
+    forAllConstIter(labelHashSet, edgePoints, it)
+    {
+        const label bpI = it.key();
+
+        if( activePointsPtr_ && !activePointsPtr_->operator[](bpI))
+            continue;
+
+        ltvMap& patchNormal = pointPatchNormal[bpI];
+
+        forAllRow(pointFaces, bpI, pfI)
+        {
+            const label bfI = pointFaces(bpI, pfI);
+            const label patchI = facePatch[bfI];
+
+            if( patchNormal.find(patchI) == patchNormal.end() )
+            {
+                patchNormal[patchI] = fNormals[bfI];
+            }
+            else
+            {
+                patchNormal[patchI] += fNormals[bfI];
+            }
+        }
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
+        const DynList<label>& neiProcs = mse.bpNeiProcs();
+        const VRWGraph& bpAtProcs = mse.bpAtProcs();
+
+        std::map<label, LongList<refLabelledPoint> > exchangeData;
+        forAll(neiProcs, i)
+            exchangeData[neiProcs[i]].clear();
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            if( pointPatchNormal.find(bpI) != pointPatchNormal.end() )
+            {
+                const ltvMap& patchNormal = pointPatchNormal[bpI];
+
+                forAllRow(bpAtProcs, bpI, i)
+                {
+                    const label neiProc = bpAtProcs(bpI, i);
+
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    forAllConstIter(ltvMap, patchNormal, pIt)
+                        exchangeData[neiProc].append
+                        (
+                            refLabelledPoint
+                            (
+                                it.key(),
+                                labelledPoint(pIt->first, pIt->second)
+                            )
+                        );
+                }
+            }
+        }
+
+        LongList<refLabelledPoint> receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
+        {
+            const refLabelledPoint& rlp = receivedData[i];
+            const label bpI = globalToLocal[rlp.objectLabel()];
+
+            ltvMap& patchNormal = pointPatchNormal[bpI];
+
+            const labelledPoint& lp = rlp.lPoint();
+            patchNormal[lp.pointLabel()] += lp.coordinates();
+        }
+    }
+
+    forAllIter(lltvMap, pointPatchNormal, it)
+    {
+        ltvMap& patchNormal = pointPatchNormal[it->first];
+
+        forAllIter(ltvMap, patchNormal, pIt)
+        {
+            const scalar magv = mag(pIt->second) + VSMALL;
+
+            pIt->second /= magv;
+        }
+    }
+
     invertedVertices_.clear();
-    
+
+    # ifdef USE_OMP
     # pragma omp parallel for if( pointFaces.size() > 100 ) \
     schedule(dynamic, 20)
+    # endif
     forAll(pointFaces, bpI)
     {
         if( activePointsPtr_ && !activePointsPtr_->operator[](bpI) )
             continue;
-        
+
         forAllRow(pointFaces, bpI, pfI)
         {
             const label pI = pointInFaces(bpI, pfI);
             const label bfI = pointFaces(bpI, pfI);
-            
+
+            vector pNormal = pNormals[bpI];
+
+            if( pointPatchNormal.find(bpI) != pointPatchNormal.end() )
+                pNormal = pointPatchNormal[bpI][facePatch[bfI]];
+
             const face& bf = bFaces[bfI];
-            
+
             //- chech the first triangle (with the next node)
             triangle<point, point> triNext
             (
@@ -76,44 +209,56 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 points[bf.nextLabel(pI)],
                 fCentres[bfI]
             );
-            
-            vector n = triNext.normal();
-            scalar m = mag(n);
-            if( m < VSMALL )
+
+            vector nNext = triNext.normal();
+            scalar mNext = mag(nNext);
+
+            //- face has zero area
+            if( mNext < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
             else
             {
-                n /= m;
+                nNext /= mNext;
             }
-            
+
+            //- collocated points
             if( magSqr(triNext.a() - triNext.b()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
             if( magSqr(triNext.c() - triNext.a()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
-            
-            if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
+
+            //- normal vector is not visible
+            if( (nNext & pNormal) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
-            
+
             //- check the second triangle (with previous node)
             triangle<point, point> triPrev
             (
@@ -121,54 +266,70 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 fCentres[bfI],
                 points[bf.prevLabel(pI)]
             );
-            
-            n = triPrev.normal();
-            m = mag(n);
-            if( m < VSMALL )
+
+            vector nPrev = triPrev.normal();
+            scalar mPrev = mag(nPrev);
+
+            //- face has zero area
+            if( mPrev < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
             else
             {
-                n /= m;
+                nPrev /= mPrev;
             }
-            
+
+            //- collocated points
             if( magSqr(triPrev.a() - triPrev.b()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
             if( magSqr(triPrev.c() - triPrev.a()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
-            
-            if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
+
+            //- normal vector is not visible
+            if( (nPrev & pNormal) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
-                continue;
+
+                break;
             }
-            
+
             //- check whether the normals of both triangles
             //- point in the same direction
-            if( (triNext.normal() & triPrev.normal()) < 0.0 )
+            if( (nNext & nPrev) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
+
+                break;
             }
         }
     }
-    
+
     if( Pstream::parRun() )
     {
         //- exchange global labels of inverted points
@@ -177,33 +338,33 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
-        
-        std::map<label, labelListPMG> shareData;
+
+        std::map<label, labelLongList> shareData;
         forAll(neiProcs, i)
-            shareData.insert(std::make_pair(neiProcs[i], labelListPMG()));
-        
+            shareData.insert(std::make_pair(neiProcs[i], labelLongList()));
+
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
             const label bpI = iter();
-            
+
             if( !invertedVertices_.found(bPoints[bpI]) )
                 continue;
-            
+
             forAllRow(bpAtProcs, bpI, procI)
             {
                 const label neiProc = bpAtProcs(bpI, procI);
-                
+
                 if( neiProc == Pstream::myProcNo() )
                     continue;
-                
+
                 shareData[neiProc].append(globalPointLabel[bpI]);
             }
         }
-        
+
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(shareData, receivedData);
-            
+
         forAll(receivedData, i)
         {
             const label bpI = globalToLocal[receivedData[i]];
@@ -216,38 +377,33 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
 meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 (
-    const meshSurfaceEngine& mse,
-    const boolList* activePointsPtr
+    const meshSurfacePartitioner& mpart
 )
 :
-    deleteSurface_(false),
-    surfaceEnginePtr_(&mse),
-    activePointsPtr_(activePointsPtr),
+    surfacePartitioner_(mpart),
+    activePointsPtr_(NULL),
     invertedVertices_()
 {
-	checkVertices();
+    checkVertices();
 }
 
 meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 (
-    polyMeshGen& mesh
+    const meshSurfacePartitioner& mpart,
+    const boolList& activePoints
 )
 :
-    deleteSurface_(true),
-    surfaceEnginePtr_(new meshSurfaceEngine(mesh)),
-    activePointsPtr_(NULL),
+    surfacePartitioner_(mpart),
+    activePointsPtr_(&activePoints),
     invertedVertices_()
 {
-	checkVertices();
+    checkVertices();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceCheckInvertedVertices::~meshSurfaceCheckInvertedVertices()
-{
-    if( deleteSurface_ )
-        deleteDemandDrivenData(surfaceEnginePtr_);
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

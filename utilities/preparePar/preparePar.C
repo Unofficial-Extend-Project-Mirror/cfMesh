@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Prepares the case for a parallel mesh generation run
@@ -32,7 +31,6 @@ Description
 
 #include "argList.H"
 #include "Time.H"
-#include "objectRegistry.H"
 
 #include <sstream>
 
@@ -46,53 +44,54 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	objectRegistry registry(runTime);
-	
-	IOdictionary meshDict
+
+    IOdictionary meshDict
     (
         IOobject
         (
             "meshDict",
-            registry.time().system(),
-            registry,
+            runTime.system(),
+            runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     );
-	
-	IOdictionary decomposeParDict
-	(
-		IOobject
-		(
-			"decomposeParDict",
-			registry.time().system(),
-            registry,
+
+    IOdictionary decomposeParDict
+    (
+        IOobject
+        (
+            "decomposeParDict",
+            runTime.system(),
+            runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     );
-	
-	const label nProcessors
-	(
-		readLabel(decomposeParDict.lookup("numberOfSubdomains"))
-	);
-	
-	for(label procI=0;procI<nProcessors;++procI)
-	{
-		fileName file("processor");
-		std::ostringstream ss;
-		ss << procI;
-		file += ss.str();
-		Info << "Creating " << file << endl;
-		
-		//- create a directory for processor data
-		mkDir(runTime.path()/file);
-		
-		//- copy the contents of the const directory into processor*
-		cp(registry.path()/"constant", runTime.path()/file);
-	}
-	
+
+    const label nProcessors
+    (
+        readLabel(decomposeParDict.lookup("numberOfSubdomains"))
+    );
+
+    for(label procI=0;procI<nProcessors;++procI)
+    {
+        fileName file("processor");
+        std::ostringstream ss;
+        ss << procI;
+        file += ss.str();
+        Info << "Creating " << file << endl;
+
+        //- create a directory for processor data
+        mkDir(runTime.path()/file);
+
+        //- copy the contents of the const directory into processor*
+        cp(runTime.path()/"constant", runTime.path()/file);
+
+        //- generate 0 directories for
+        mkDir(runTime.path()/file/"0");
+    }
+
     Info << "End\n" << endl;
     return 0;
 }

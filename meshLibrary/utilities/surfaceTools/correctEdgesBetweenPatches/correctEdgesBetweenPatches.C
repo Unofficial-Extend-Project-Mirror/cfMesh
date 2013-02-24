@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -37,14 +36,14 @@ Description
 
 namespace Foam
 {
-	
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 const meshSurfaceEngine& correctEdgesBetweenPatches::meshSurface() const
 {
     if( !msePtr_ )
         msePtr_ = new meshSurfaceEngine(mesh_);
-    
+
     return *msePtr_;
 }
 
@@ -53,18 +52,18 @@ void correctEdgesBetweenPatches::clearMeshSurface()
 {
     deleteDemandDrivenData(msePtr_);
 }
-    
+
 void correctEdgesBetweenPatches::replaceBoundary()
 {
     clearMeshSurface();
-    
-	polyMeshGenModifier(mesh_).replaceBoundary
-	(
-		patchNames_,
-		newBoundaryFaces_,
-		newBoundaryOwners_,
-		newBoundaryPatches_
-	);
+
+    polyMeshGenModifier(mesh_).replaceBoundary
+    (
+        patchNames_,
+        newBoundaryFaces_,
+        newBoundaryOwners_,
+        newBoundaryPatches_
+    );
 }
 
 void correctEdgesBetweenPatches::decomposeCorrectedCells()
@@ -72,7 +71,7 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
     if( decompose_ )
     {
         clearMeshSurface();
- 
+
         decomposeCells dc(mesh_);
         dc.decomposeMesh(decomposeCell_);
     }
@@ -80,26 +79,21 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
-correctEdgesBetweenPatches::correctEdgesBetweenPatches
-(
-	polyMeshGen& mesh
-)
+// Construct from mesh
+correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
 :
-	mesh_(mesh),
-	msePtr_(NULL),
-	patchNames_(mesh.boundaries().size()),
-	newBoundaryFaces_(),
-	newBoundaryOwners_(),
-	newBoundaryPatches_(),
-	decomposeCell_(mesh_.cells().size(), false),
-	decompose_(false)
+    mesh_(mesh),
+    msePtr_(NULL),
+    patchNames_(mesh.boundaries().size()),
+    newBoundaryFaces_(),
+    newBoundaryOwners_(),
+    newBoundaryPatches_(),
+    decomposeCell_(mesh_.cells().size(), false),
+    decompose_(false)
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	forAll(boundaries, patchI)
-		patchNames_[patchI] = boundaries[patchI].patchName();
-    
-    checkFacePatches();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
+    forAll(boundaries, patchI)
+        patchNames_[patchI] = boundaries[patchI].patchName();
 
     decomposeProblematicFaces();
 
@@ -112,7 +106,7 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches
 
 correctEdgesBetweenPatches::~correctEdgesBetweenPatches()
 {
-	deleteDemandDrivenData(msePtr_);
+    deleteDemandDrivenData(msePtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

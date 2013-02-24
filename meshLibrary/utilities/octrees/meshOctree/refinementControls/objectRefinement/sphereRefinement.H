@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     sphereRefinement
@@ -53,12 +52,12 @@ class sphereRefinement
 :
     public objectRefinement
 {
-	// Private data
-		//- centre of the sphere
-		point centre_;
-	
-		//- radius of the sphere
-		scalar radius_;
+    // Private data
+        //- centre of the sphere
+        point centre_;
+    
+        //- radius of the sphere
+        scalar radius_;
 
 public:
 
@@ -82,31 +81,31 @@ public:
 
         //- Construct from dictionary
         sphereRefinement(const word& name, const dictionary& dict);
-		
-		//- Construct and return a clone
+        
+        //- Construct and return a clone
         virtual autoPtr<objectRefinement> clone
-		(
-			const sphereRefinement& sr
-		) const
+        (
+            const sphereRefinement& sr
+        ) const
         {
             return autoPtr<objectRefinement>
-			(
-				new sphereRefinement
-				(
-					sr.name(),
-					sr.cellSize(),
-					sr.centre_,
-					sr.radius_
-				)
-			);
+            (
+                new sphereRefinement
+                (
+                    sr.name(),
+                    sr.cellSize(),
+                    sr.centre_,
+                    sr.radius_
+                )
+            );
         }
-	
-	// Member Functions
-	
-		//- check if a boundBox intersects or is inside the object
-		bool intersectsObject(const boundBox&) const;
-		
-	//- Return as dictionary of entries
+    
+    // Member Functions
+    
+        //- check if a boundBox intersects or is inside the object
+        bool intersectsObject(const boundBox&) const;
+        
+    //- Return as dictionary of entries
         dictionary dict(bool ignoreType = false) const;
 
       // Write
@@ -116,15 +115,15 @@ public:
 
         //- Write dictionary
         void writeDict(Ostream&, bool subDict = true) const;
-		
-	// Member Operators
+        
+    // Member Operators
 
         //- assign from dictionary
         void operator=(const dictionary&);
 
     // IOstream Operators
 
-		Ostream& operator<<(Ostream&) const;
+        Ostream& operator<<(Ostream&) const;
 };
 
 

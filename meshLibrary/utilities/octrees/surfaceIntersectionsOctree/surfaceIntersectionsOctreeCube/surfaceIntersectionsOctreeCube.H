@@ -1,32 +1,31 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     surfaceIntersectionsOctreeCube
 
 Description
-    A cube for octree needed for evaluating surface intersections 
+    A cube for octree needed for evaluating surface intersections
 
 SourceFiles
 
@@ -46,10 +45,10 @@ namespace Foam
 {
 
 // Class forward declarations
-class triSurface;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
-                           Class surfaceIntersectionsOctreeCube Declaration
+                Class surfaceIntersectionsOctreeCube Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceIntersectionsOctreeCube
@@ -57,7 +56,7 @@ class surfaceIntersectionsOctreeCube
     // Private data
 
         //- Reference to surface to work on
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- cube level in the octree structure
         direction level_;
@@ -76,7 +75,7 @@ class surfaceIntersectionsOctreeCube
         //- is the cube outside, data or outside of the domain
         direction cubeType_;
 
-		//- returns cube's edges
+        //- returns cube's edges
         List< List<point> > edges() const;
 
         //- Disallow default bitwise copy construct
@@ -89,13 +88,13 @@ public:
     // Constructors
 
         //- Construct from surface. Holds reference to surface!
-        surfaceIntersectionsOctreeCube(const triSurface&, const boundBox&, const direction&);
+        surfaceIntersectionsOctreeCube(const triSurf&, const boundBox&, const direction&);
 
     // Destructor
 
         ~surfaceIntersectionsOctreeCube();
 
-	// Enumerators
+    // Enumerators
         enum cubeTypes
         {
             OUTSIDE = 0,
@@ -109,20 +108,20 @@ public:
 
         //- is cube a leaf
         inline bool isLeaf() const;
-		
-		//- return and set cube type
-		direction cubeType() const
-		{
-			return cubeType_;
-		};
-		void setCubeType(const direction t)
-		{
-			cubeType_ = t;
-		}
+
+        //- return and set cube type
+        direction cubeType() const
+        {
+            return cubeType_;
+        };
+        void setCubeType(const direction t)
+        {
+            cubeType_ = t;
+        }
 
         //- vertices
         FixedList<point, 8> vertices() const;
-    
+
         //- sub cubes
         inline FixedList<surfaceIntersectionsOctreeCube*, 8>* subCubes() const;
 

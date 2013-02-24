@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     LongList
@@ -29,8 +28,8 @@ Description
     A dynamic list is a 1-D vector of objects of type T which resizes
     itself as necessary to accept the new objects.  Internal storage
     is a 2-D graph with a fixed size of the chunks used to store the data.
-	This way the data does not get copied every time array is resized, but
-	only the pointers to the chunks of data.
+    This way the data does not get copied every time array is resized, but
+    only the pointers to the chunks of data.
 
 SourceFiles
     LongListI.H
@@ -76,41 +75,41 @@ template<class T, label Offset = 19>
 class LongList
 {
     // Private data
-		//- number of allocated elements
-		label N_;
-	
-		//- number of elements in the list
-		label nextFree_;
+        //- number of allocated elements
+        label N_;
+    
+        //- number of elements in the list
+        label nextFree_;
     
         //- number of used blocks of data
-		label numBlocks_;
+        label numBlocks_;
     
         //- maximum number of blocks that can be allocated
         //- without reallocating the list containing pointers
         //- to the chunks of data
         label numAllocatedBlocks_;
-	
-		//- size of blocks is calculated by powers of 2
-		//- and therefore the access can be done using shift and mask
-		label shift_;
-		label mask_;
+    
+        //- size of blocks is calculated by powers of 2
+        //- and therefore the access can be done using shift and mask
+        label shift_;
+        label mask_;
       
-		//- array of pointers to the blocks of data, each of the size WIDTH
-		T** dataPtr_;
+        //- array of pointers to the blocks of data, each of the size WIDTH
+        T** dataPtr_;
 
-	// Private member functions
-		//- check index
-		void checkIndex(label const i) const;
-	
-		//- initialize width and mask
-		void initializeParameters();
+    // Private member functions
+        //- check index
+        void checkIndex(label const i) const;
+    
+        //- initialize width and mask
+        void initializeParameters();
         
         //- Allocate memory for the list
         void allocateSize(const label);
-		
-		//- delete all elements
-		void clearOut();
-	
+        
+        //- delete all elements
+        void clearOut();
+    
 public:
 
     // Constructors
@@ -121,15 +120,15 @@ public:
         //- Construct given size
         explicit inline LongList(const label size);
 
-		//- Construct to given size and initialize
-		explicit inline LongList(const label size, const T& t);
+        //- Construct to given size and initialize
+        explicit inline LongList(const label size, const T& t);
 
         //- Copy contructor
-		inline LongList(const LongList<T, Offset>&);
+        inline LongList(const LongList<T, Offset>&);
 
-	// Destructor
+    // Destructor
 
-		inline ~LongList();
+        inline ~LongList();
 
     // Member Functions
 
@@ -154,52 +153,52 @@ public:
 
             //- Shrink the list to the number of elements used
             inline LongList<T, Offset>& shrink();
-			
-			//- transfer the list from another one without allocating it
-			inline void transfer(LongList<T, Offset>&);
+            
+            //- transfer the list from another one without allocating it
+            inline void transfer(LongList<T, Offset>&);
 
 
     // Member Operators
 
         //- Append an element at the end of the list
         inline void append(const T& e);
-		
-		//- Append an element at the end of the list if it is not yet
-		//- present in the list (takes linear time)
-		inline void appendIfNotIn(const T& e);
-		
-		//- check if the element is in the list (takes linear time)
-		inline bool contains(const T& e) const;
-		inline label containsAtPosition(const T& e) const;
+        
+        //- Append an element at the end of the list if it is not yet
+        //- present in the list (takes linear time)
+        inline void appendIfNotIn(const T& e);
+        
+        //- check if the element is in the list (takes linear time)
+        inline bool contains(const T& e) const;
+        inline label containsAtPosition(const T& e) const;
 
         //- Return and remove the element
         inline T remove(const label i);
         inline T removeLastElement();
-		
-		//- get and set operators
-		inline const T& operator[](const label i) const;
-		inline T& operator[](const label i);
+        
+        //- get and set operators
+        inline const T& operator[](const label i) const;
+        inline T& operator[](const label i);
 
         //- Return non-const access to an element,
         //  resizing the list if necessary
         inline T& operator()(const label);
-		
-		//- return a non-const access to an element,
-		// resize the list if necessary
-		inline T& newElmt(const label);
+        
+        //- return a non-const access to an element,
+        // resize the list if necessary
+        inline T& newElmt(const label);
 
         //- Assignment of all entries to the given value
         inline void operator=(const T&);
-		
-		//- Assignment operator
-		inline void operator=(const LongList<T, Offset>&);
+        
+        //- Assignment operator
+        inline void operator=(const LongList<T, Offset>&);
 
 
     // IOstream operators
         //- Read from stream and append to the current content
         void appendFromStream(Istream&);
     
-		//- Write as a dictionary entry.
+        //- Write as a dictionary entry.
         void writeEntry(Ostream& os) const;
 
         //- Write as a dictionary entry with keyword.

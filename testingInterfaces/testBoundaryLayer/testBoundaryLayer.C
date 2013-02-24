@@ -26,19 +26,17 @@ Application
     Test for boundary layers
 
 Description
-    - 
+    -
 
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "meshOctreeCreator.H"
 #include "Time.H"
 #include "objectRegistry.H"
-#include "polyMesh.H"
 #include "polyMeshGen.H"
 #include "boundaryLayers.H"
-#include "writeMeshEnsight.H"
-#include "meshOptimizer.H"
+#include "refineBoundaryLayers.H"
+#include "polyMeshGenChecks.H"
 
 using namespace Foam;
 
@@ -50,47 +48,50 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-#   include "createPolyMesh.H"
-	
-	objectRegistry registry(runTime);
-	
-/*	labelList patchStarts(mesh.boundaryMesh().size());
-	labelList patchSizes(mesh.boundaryMesh().size());
-	
-	forAll(mesh.boundaryMesh(), patchI)
-	{
-		patchStarts[patchI] = mesh.boundaryMesh()[patchI].start();
-		patchSizes[patchI] = mesh.boundaryMesh()[patchI].size();
-	}
-	
-	polyMeshGen pmg
-	(
-		registry,
-		mesh.points(),
-		mesh.faces(),
-		mesh.cells(),
-		mesh.boundaryMesh().names(),
-		patchStarts,
-		patchSizes
-	);
-*/
-	polyMeshGen pmg(registry);
-	pmg.read();
-	//writeMeshEnsight(pmg, "meshWithoutBndLayers");
-	
-	boundaryLayers bndLayers(pmg);
-	//bndLayers.addLayerForPatch("inlet");
-	//bndLayers.addLayerForPatch("symmetryplane");
-	//bndLayers.createOTopologyLayers();
-	bndLayers.addLayerForAllPatches();
-	
-	//pmg.write();
-	//meshOctree* octreePtr = NULL;
-	//meshOptimizer(*octreePtr, pmg).preOptimize();
-	
-	writeMeshEnsight(pmg, "meshWithBndLayers");
-	//pmg.addressingData().checkMesh(true);
-	
+
+    polyMeshGen pmg(runTime);
+    pmg.read();
+
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+
+    //boundaryLayers bndLayers(pmg);
+    //bndLayers.addLayerForPatch("inlet");
+    //bndLayers.addLayerForPatch("symmetryplane");
+    //bndLayers.createOTopologyLayers();
+    //bndLayers.addLayerForAllPatches();
+
+    Info << "Starting bnd layer refinement "
+         << runTime.elapsedClockTime() << endl;
+
+    //polyMeshGenChecks::checkMesh(pmg, true);
+
+    refineBoundaryLayers refLayers(pmg);
+
+    refineBoundaryLayers::readSettings(meshDict, refLayers);
+
+    refLayers.refineLayers();
+
+    Info << "Finished with bnd layer refinement "
+         << runTime.elapsedClockTime() << endl;
+
+    polyMeshGenChecks::checkMesh(pmg, true);
+    return 0;
+    pmg.write();
+    //meshOctree* octreePtr = NULL;
+    //meshOptimizer(*octreePtr, pmg).preOptimize();
+
+    //pmg.addressingData().checkMesh(true);
+
     Info << "End\n" << endl;
     return 0;
 }

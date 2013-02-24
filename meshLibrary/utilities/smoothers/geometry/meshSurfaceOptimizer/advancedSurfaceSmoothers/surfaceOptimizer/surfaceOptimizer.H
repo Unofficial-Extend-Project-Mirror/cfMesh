@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     surfaceOptimizer
@@ -52,11 +51,33 @@ namespace Foam
 class surfaceOptimizer
 {
     // Private data
-		//- reference to the simplex points
+        //- reference to the simplex points
         DynList<point>& pts_;
-    
+
         //- reference to the triangles forming a simplex
         const DynList<triFace>& trias_;
+
+        //- min position of the bnd box
+        point pMin_;
+
+        //- max position of the bnd box
+        point pMax_;
+
+    // Private member functions
+        //- evaluate stabilisation factor
+        scalar evaluateStabilisationFactor() const;
+
+        //- evaluate the functional
+        scalar evaluateFunc(const scalar& K) const;
+
+        //- evaluate gradients needed for optimisation
+        void evaluateGradients(const scalar&, vector&, tensor&) const;
+
+        //- optimise point position using the divide and conquer technique
+        scalar optimiseDivideAndConquer(const scalar tol);
+
+        //- optimise point position via the steepest descent method
+        scalar optimiseSteepestDescent(const scalar tol);
 
         //- Disallow default bitwise copy construct
         surfaceOptimizer(const surfaceOptimizer&);
@@ -71,7 +92,7 @@ public:
         //- Construct from transformed points and triangles forming a simplex
         surfaceOptimizer
         (
-			DynList<point>& pts,
+            DynList<point>& pts,
             const DynList<triFace>& trias
         );
 
@@ -81,9 +102,9 @@ public:
         ~surfaceOptimizer();
 
     // Member Functions
-		
-		//- optimizes position of a central point in the simplex
-		point optimizePoint(const scalar tol = 0.1);
+
+        //- optimizes position of a central point in the simplex
+        point optimizePoint(const scalar tol = 0.1);
 };
 
 

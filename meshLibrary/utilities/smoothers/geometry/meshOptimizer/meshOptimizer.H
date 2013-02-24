@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshOptimizer
@@ -63,18 +62,18 @@ class meshOptimizer
 {
     // Private data
         //- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- location of vertex (internal, boundary, edge, corner)
+        polyMeshGen& mesh_;
+    
+        //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
-	
-		//- mesh surface
-		mutable meshSurfaceEngine* msePtr_;
+    
+        //- mesh surface
+        mutable meshSurfaceEngine* msePtr_;
 
     // Private member functions
-		//- return mesh surface
-		const meshSurfaceEngine& meshSurface() const;
-		void clearSurface();
+        //- return mesh surface
+        const meshSurfaceEngine& meshSurface() const;
+        void clearSurface();
     
         //- find problematic faces
         label findBadFaces(labelHashSet&, const boolList&) const;
@@ -94,36 +93,36 @@ class meshOptimizer
             // Private member functions
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the neighbouring vertices
-                void laplacian(const labelListPMG&, const label);
-                void laplacianSurface(const labelListPMG&, const label);
+                void laplacian(const labelLongList&, const label);
+                void laplacianSurface(const labelLongList&, const label);
             
                 void laplacianParallel
                 (
-                    const labelListPMG& procPoints,
+                    const labelLongList& procPoints,
                     const bool smoothOnlySurfaceNodes = false
                 );
                 
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
-                void laplacianPC(const labelListPMG&, const label);
-                void laplacianPCParallel(const labelListPMG& procPoints);
+                void laplacianPC(const labelLongList&, const label);
+                void laplacianPCParallel(const labelLongList& procPoints);
                 
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
-                void laplacianWPC(const labelListPMG&, const label);
-                void laplacianWPCParallel(const labelListPMG& procPoints);
+                void laplacianWPC(const labelLongList&, const label);
+                void laplacianWPCParallel(const labelLongList& procPoints);
                 
                 //- update geometry after smoothing
-                void updateMeshGeometry(const labelListPMG& smoothPoints);
+                void updateMeshGeometry(const labelLongList& smoothPoints);
                 
                 //- Disallow default bitwise copy construct
                 laplaceSmoother(const laplaceSmoother&);
 
                 //- Disallow default bitwise assignment
                 void operator=(const laplaceSmoother&);
-	
+    
         public:
                 
             // Constructor
@@ -176,16 +175,16 @@ class meshOptimizer
 
         //- Disallow default bitwise assignment
         void operator=(const meshOptimizer&);
-		
-	// enumerators
-		enum vertexType_
-		{
-			INSIDE = 1,
-			BOUNDARY = 2,
-			EDGE = 4,
-			CORNER = 8,
+        
+    // enumerators
+        enum vertexType_
+        {
+            INSIDE = 1,
+            BOUNDARY = 2,
+            EDGE = 4,
+            CORNER = 8,
             PARALLELBOUNDARY = 16
-		};
+        };
 
 public:
 
@@ -203,15 +202,15 @@ public:
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);
 
-		//- performs mesh untangling based on detected negative normals
-		void untangleMeshFV();
+        //- performs mesh untangling based on detected negative normals
+        void untangleMeshFV();
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
         void optimizeLowQualityFaces();
 
-		//- final optimisation
-		void optimizeMeshFV();
+        //- final optimisation
+        void optimizeMeshFV();
 };
 
 

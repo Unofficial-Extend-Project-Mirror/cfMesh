@@ -38,8 +38,6 @@ Description
 #include "polyMeshGen.H"
 #include "cartesianMeshExtractor.H"
 #include "triSurf.H"
-#include "writeMeshEnsight.H"
-#include "writeOctreeFPMA.H"
 
 #include <sstream>
 
@@ -53,8 +51,8 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	IOdictionary meshDict
+
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -65,51 +63,61 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	fileName surfaceFile = meshDict.lookup("surfaceFile");
+
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
-		surfaceFile = ".."/surfaceFile;
+        surfaceFile = ".."/surfaceFile;
 
     triSurf surf(runTime.path()/surfaceFile);
-	
-	if( meshDict.found("subsetFileName") )
-	{
-		fileName subsetFileName = meshDict.lookup("subsetFileName");
-        if( Pstream::parRun() )
-			subsetFileName = ".."/subsetFileName;
-		surf.readFaceSubsets(runTime.path()/subsetFileName);
-	}
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeBoxes();
-    
-    meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
-    
-    writeOctreeFPMA(mo, "refOctree");
-	
-	Info<< "Execution time for octree creation = "
+    meshOctreeCreator moc(mo, meshDict);
+    moc.createOctreeBoxes();
+
+    //meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
+
+    Info<< "Execution time for octree creation = "
         << runTime.elapsedCpuTime()
         << " s\n" << endl << endl;
-	
-	polyMeshGen pmg(runTime);
-	cartesianMeshExtractor cmg(mo, meshDict, pmg);
-	
-	//cmg.decomposeSplitHexes();
-	cmg.createMesh();
-    
+
+    polyMeshGen pmg(runTime);
+    cartesianMeshExtractor cmg(mo, meshDict, pmg);
+
+    //cmg.decomposeSplitHexes();
+    cmg.createMesh();
+
+    const pointFieldPMG& points = pmg.points();
+/*    forAll(points, pointI)
+    {
+        const point p = points[pointI];
+        for(label pointJ=pointI+1;pointJ<points.size();++pointJ)
+            if( mag(p - points[pointJ]) < 1e-10 )
+                Info << "Points " << pointI << " and " << pointJ
+                     << " are duplicates " << endl;
+    }
+*/
+    boolList usedPoint(points.size());
+    const faceListPMG& faces = pmg.faces();
+    forAll(faces, faceI)
+    {
+        const face& f = faces[faceI];
+
+        forAll(f, pI)
+            usedPoint[f[pI]] = true;
+    }
+
+    forAll(usedPoint, pointI)
+        if( !usedPoint[pointI] )
+            Info << "Point " << pointI << " is not used !!" << endl;
+
     pmg.write();
-	
+
 /*    if( Pstream::parRun() )
     {
         std::ostringstream ss;
-		ss << Pstream::myProcNo();
-        writeMeshEnsight(pmg, "cartesianMesh"+ss.str());
+        ss << Pstream::myProcNo();
     }
-    else
-    {
-        writeMeshEnsight(pmg, "cartesianMesh");
-	}
 */
     Info << "End\n" << endl;
     return 0;

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -30,7 +29,10 @@ Description
 #include "triSurf.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
+
 #include <sys/stat.h>
 
 //#define OCTREETiming
@@ -62,8 +64,10 @@ void meshOctreeModifier::markAdditionalLayers
     {
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         private(neighbours) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             if( refineBox[leafI] != i )
@@ -92,7 +96,9 @@ void meshOctreeModifier::markAdditionalLayers
                 {
                     neighbours[posI] = NULL;
 
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     {
                         if( !transferCoordinates.found(leafI) )
                         {
@@ -127,8 +133,10 @@ void meshOctreeModifier::markAdditionalLayers
             );
 
             //- check consistency with received cube coordinates
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 1000 ) \
             schedule(dynamic, 20)
+            # endif
             forAll(receivedCoords, ccI)
             {
                 forAll(rp, posI)
@@ -176,26 +184,47 @@ void meshOctreeModifier::refineSelectedBoxes
     Info << "Time for ensuring regularity " << (regTime-startTime) << endl;
     # endif
 
-    const triSurface& surface = octree_.surface();
+    const triSurf& surface = octree_.surface();
     const boundBox& rootBox = octree_.rootBox();
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
     //- this is needed for thread safety
     //- such solutions make me a sad bunny :(
-    surface.faceEdges();
-    surface.edgeFaces();
+    surface.facetEdges();
+    surface.edgeFacets();
     surface.edges();
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(octree_.dataSlots_.size())
+    # endif
     {
+        # ifdef USE_OMP
         meshOctreeSlot* slotPtr = &octree_.dataSlots_[omp_get_thread_num()];
+        # else
+        meshOctreeSlot* slotPtr = &octree_.dataSlots_[0];
+        # endif
 
-        # pragma omp for \
-        schedule(dynamic, Foam::min(20, leaves.size() / omp_get_num_threads() + 1))
-        forAll(leaves, leafI)
+        if( !octree_.isQuadtree() )
         {
-            if( refineBox[leafI] )
-                leaves[leafI]->refineCube(surface, rootBox, slotPtr);
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 100)
+            # endif
+            forAll(leaves, leafI)
+            {
+                if( refineBox[leafI] )
+                    leaves[leafI]->refineCube(surface, rootBox, slotPtr);
+            }
+        }
+        else
+        {
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 100)
+            # endif
+            forAll(leaves, leafI)
+            {
+                if( refineBox[leafI] )
+                    leaves[leafI]->refineCube2D(surface, rootBox, slotPtr);
+            }
         }
     }
 

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     checkIrregularSurfaceConnections
@@ -54,7 +53,7 @@ class checkIrregularSurfaceConnections
 {
     // Private data
         //- Reference to polyMeshGen
-		polyMeshGen& mesh_;
+        polyMeshGen& mesh_;
     
         //- pointer to meshSurfaceEngine
         mutable meshSurfaceEngine* meshSurfacePtr_;
@@ -75,9 +74,9 @@ class checkIrregularSurfaceConnections
             deleteDemandDrivenData(meshSurfacePtr_);
         }
         
-		//- check if there exist vertices with more than one groups of cells
+        //- check if there exist vertices with more than one groups of cells
         //- attached to it
-		bool checkAndFixCellGroupsAtBndVertices
+        bool checkAndFixCellGroupsAtBndVertices
         (
             labelHashSet& badVertices,
             const bool removeConnections = false
@@ -122,7 +121,7 @@ public:
 
     // Member Functions
         //- find vertices where the surface is not valid
-		void checkIrregularVertices(labelHashSet& badVertices);
+        void checkIrregularVertices(labelHashSet& badVertices);
 
         //- find invalid connections and fix them on the fly
         bool checkAndFixIrregularConnections();

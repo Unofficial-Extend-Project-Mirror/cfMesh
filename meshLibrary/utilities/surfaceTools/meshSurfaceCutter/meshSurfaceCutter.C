@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -36,25 +35,25 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+
 meshSurfaceCutter::meshSurfaceCutter
 (
-	polyMeshGen& mesh,
-	const triSurface& surface
+    polyMeshGen& mesh,
+    const triSurf& surface
 )
 :
-	surface_(surface),
-	mesh_(mesh),
-	nIntFaces_(0),
-	nPoints_(mesh.points().size()),
-	nFacesInCell_(mesh.cells().size(), direction(0)),
-	problematicTopology_(mesh.cells().size(), false),
-	boundaryCell_(mesh.cells().size(), false),
-	edgePointPtr_(NULL),
-	newPointsPtr_(NULL),
-	newPointLabelPtr_(NULL),
-	facesFromFacePtr_(NULL),
-	pointTriIndex_()
+    surface_(surface),
+    mesh_(mesh),
+    nIntFaces_(0),
+    nPoints_(mesh.points().size()),
+    nFacesInCell_(mesh.cells().size(), direction(0)),
+    problematicTopology_(mesh.cells().size(), false),
+    boundaryCell_(mesh.cells().size(), false),
+    edgePointPtr_(NULL),
+    newPointsPtr_(NULL),
+    newPointLabelPtr_(NULL),
+    facesFromFacePtr_(NULL),
+    pointTriIndex_()
 
 {
     # ifdef DEBUGCutter
@@ -71,7 +70,7 @@ meshSurfaceCutter::meshSurfaceCutter
     Info << "Checking for cell consisting of two or more closed parts" << endl;
     # endif
     //checkCellTopology();
-	
+
     # ifdef DEBUGCutter
     Info << "Checking directions of face normals" << endl;
     # endif
@@ -83,7 +82,7 @@ meshSurfaceCutter::~meshSurfaceCutter()
 {
     deleteDemandDrivenData(facesFromFacePtr_);
 }
-        
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 

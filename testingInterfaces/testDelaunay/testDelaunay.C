@@ -42,28 +42,28 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	Random ranGen(label(0));
-	
-	DynListHP<point> points;
-	
-	scalar scale = 5;
+    Random ranGen(label(0));
+    
+    DynListHP<point> points;
+    
+    scalar scale = 5;
     vector refPoint(10, -20, 0);
-	for(label i=0;i<16;++i)
-		points.append(scale*(ranGen.vector01() + refPoint));
-	
-	cpuTime executionTime;
-	delaunayTessellation dt(points);
-	
-	for(label i=0;i<16;++i)
-		while( !dt.addPoint(i) )
-		{}
-	
-	Info<< "ExecutionTime = "
+    for(label i=0;i<16;++i)
+        points.append(scale*(ranGen.vector01() + refPoint));
+    
+    cpuTime executionTime;
+    delaunayTessellation dt(points);
+    
+    for(label i=0;i<16;++i)
+        while( !dt.addPoint(i) )
+        {}
+    
+    Info<< "ExecutionTime = "
         << executionTime.elapsedCpuTime()
-		<< " s\n" << endl << endl;
-	
-	dt.checkTessellation();
-	
+        << " s\n" << endl << endl;
+    
+    dt.checkTessellation();
+    
     Info << "End\n" << endl;
     return 0;
 }

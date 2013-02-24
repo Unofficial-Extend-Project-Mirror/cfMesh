@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005- Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     extrudeLayer
@@ -77,9 +76,9 @@ class extrudeLayer
         LongList<bool> pairOrientation_;
     
         //- original point label
-        labelListPMG origPointLabel_;
-	
-	// Private member functions
+        labelLongList origPointLabel_;
+    
+    // Private member functions
         //- duplicate faces which will be extruded
         void createDuplicateFrontFaces(const LongList<labelPair>&);
         
@@ -184,11 +183,11 @@ class extrudeLayer
         
         //- Disallow bitwise assignment
         void operator=(const extrudeLayer&);
-	
+    
     public:
-		
+        
         // Constructors
-	
+    
         //- Construct from mesh, extrusion faces, thickness and number of layers
         extrudeLayer
         (
@@ -196,11 +195,11 @@ class extrudeLayer
             const LongList<labelPair>& extrusionFront,
             const scalar thickness = -1.0
         );
-	
-	// Destructor
+    
+    // Destructor
         ~extrudeLayer();
-	
-	// Public member functions
+    
+    // Public member functions
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

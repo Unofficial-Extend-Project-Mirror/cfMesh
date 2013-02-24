@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     polyMeshGenAddressing
@@ -70,77 +69,77 @@ namespace Foam
 
 class polyMeshGenAddressing
 {
-	// Mesh data
+    // Mesh data
 
         //- reference to the mesh
         const polyMeshGenCells& mesh_;
 
-	// Shapes
+    // Shapes
 
-		//- Edges
-		mutable edgeList* edgesPtr_;
-
-
-	// Connectivity
-
-		//- Cell-cells
-		mutable VRWGraph* ccPtr_;
-
-		//- Edge-cells
-		mutable VRWGraph* ecPtr_;
-
-		//- Point-cells
-		mutable VRWGraph* pcPtr_;
-
-		//- Edge-faces
-		mutable VRWGraph* efPtr_;
-
-		//- Point-faces
-		mutable VRWGraph* pfPtr_;
-
-		//- Cell-edges
-		mutable VRWGraph* cePtr_;
-
-		//- Face-edges
-		mutable VRWGraph* fePtr_;
-
-		//- Point-edges
-		mutable VRWGraph* pePtr_;
-
-		//- Point-points
-		mutable VRWGraph* ppPtr_;
-
-		//- Cell-points
-		mutable VRWGraph* cpPtr_;
+        //- Edges
+        mutable edgeList* edgesPtr_;
 
 
-	// Geometric data
+    // Connectivity
 
-		//- Cell centres
-		mutable vectorField* cellCentresPtr_;
+        //- Cell-cells
+        mutable VRWGraph* ccPtr_;
 
-		//- Face centres
-		mutable vectorField* faceCentresPtr_;
+        //- Edge-cells
+        mutable VRWGraph* ecPtr_;
 
-		//- Cell volumes
-		mutable scalarField* cellVolumesPtr_;
+        //- Point-cells
+        mutable VRWGraph* pcPtr_;
 
-		//- Face areas
-		mutable vectorField* faceAreasPtr_;
+        //- Edge-faces
+        mutable VRWGraph* efPtr_;
+
+        //- Point-faces
+        mutable VRWGraph* pfPtr_;
+
+        //- Cell-edges
+        mutable VRWGraph* cePtr_;
+
+        //- Face-edges
+        mutable VRWGraph* fePtr_;
+
+        //- Point-edges
+        mutable VRWGraph* pePtr_;
+
+        //- Point-points
+        mutable VRWGraph* ppPtr_;
+
+        //- Cell-points
+        mutable VRWGraph* cpPtr_;
+
+
+    // Geometric data
+
+        //- Cell centres
+        mutable vectorField* cellCentresPtr_;
+
+        //- Face centres
+        mutable vectorField* faceCentresPtr_;
+
+        //- Cell volumes
+        mutable scalarField* cellVolumesPtr_;
+
+        //- Face areas
+        mutable vectorField* faceAreasPtr_;
         
     // Parallel demand driven data
         
         //- global point labels
-        mutable labelListPMG* globalPointLabelPtr_;
+        mutable labelLongList* globalPointLabelPtr_;
         
         //- global face labels
-        mutable labelListPMG* globalFaceLabelPtr_;
+        mutable labelLongList* globalFaceLabelPtr_;
         
         //- global cell labels
-        mutable labelListPMG* globalCellLabelPtr_;
+        mutable labelLongList* globalCellLabelPtr_;
         
         //- global edge labels
-        mutable labelListPMG* globalEdgeLabelPtr_;
+        mutable labelLongList* globalEdgeLabelPtr_;
         
     // Parallel addressing
     
@@ -249,7 +248,7 @@ class polyMeshGenAddressing
         //- Calculate edge vectors
         void calcEdgeVectors() const;
         
-	// Disallow bitwise construct
+    // Disallow bitwise construct
         //- Default constructor
         polyMeshGenAddressing();
 
@@ -327,10 +326,10 @@ public:
 
         // Parallel addressing
         
-            const labelListPMG& globalPointLabel() const;
-            const labelListPMG& globalFaceLabel() const;
-            const labelListPMG& globalCellLabel() const;
-            const labelListPMG& globalEdgeLabel() const;
+            const labelLongList& globalPointLabel() const;
+            const labelLongList& globalFaceLabel() const;
+            const labelLongList& globalCellLabel() const;
+            const labelLongList& globalEdgeLabel() const;
             
             const VRWGraph& pointAtProcs() const;
             const Map<label>& globalToLocalPointAddressing() const;

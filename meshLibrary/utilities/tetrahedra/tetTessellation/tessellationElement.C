@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -37,20 +36,20 @@ namespace Foam
 
 tessellationElement::tessellationElement()
 :
-	partTet(),
-	influence_(NONE)
+    partTet(),
+    influence_(NONE)
 {
 }
 
 tessellationElement::tessellationElement
 (
     const label a,
-	const label b,
-	const label c,
-	const label d
+    const label b,
+    const label c,
+    const label d
 )
 :
-	partTet(a, b, c, d),
+    partTet(a, b, c, d),
     influence_(NONE)
 {
     for(label dir=0;dir<4;++dir)
@@ -67,12 +66,12 @@ tessellationElement::~tessellationElement()
 
 scalar tessellationElement::influencedBy
 (
-	const LongList<point>& points,
-	const point& r
+    const LongList<point>& points,
+    const point& r
 ) const
 {
-	const point crcm = crcmCentre(points);
-	
+    const point crcm = crcmCentre(points);
+    
     const scalar d = (magSqr(crcm - points[a()]) - magSqr(crcm - r));
 
 #   ifdef DEBUGtessalation
@@ -89,16 +88,16 @@ scalar tessellationElement::influencedBy
 
 Ostream& operator<<(Ostream& os, const tessellationElement& elmt)
 {
-	partTet t(elmt);
+    partTet t(elmt);
     os << t;
 
-	os << " neighbours are ";
+    os << " neighbours are ";
     for(label ineigh=0;ineigh<4;++ineigh)
     {
         os << " " << elmt.neighbours_[ineigh];
     }
-	os << endl;
-	
+    os << endl;
+    
     return os;
 }
 

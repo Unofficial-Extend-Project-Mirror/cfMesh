@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -80,9 +79,9 @@ void knuppMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
         gradGrad += gfx * gfx;
     }
 }
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex),
@@ -93,15 +92,15 @@ knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 {
     forAll(tets_, tetI)
     {
-	const partTet& pt = tets_[tetI];
-	const triangle<point, point> tri
-	(
-	    points_[pt.a()],
-	    points_[pt.b()],
-	    points_[pt.c()]
-	);
+    const partTet& pt = tets_[tetI];
+    const triangle<point, point> tri
+    (
+        points_[pt.a()],
+        points_[pt.b()],
+        points_[pt.c()]
+    );
         
-	const vector n = tri.normal();
+    const vector n = tri.normal();
         const scalar d = mag(n);
         
         if( d > VSMALL )
@@ -113,7 +112,7 @@ knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
     
     beta_ = 0.01 * bb_.mag();
 }
-			
+            
 
 knuppMetric::~knuppMetric()
 {
@@ -190,7 +189,7 @@ void knuppMetric::optimizeNodePosition(const scalar tolObsolete)
             
                 # ifdef DEBUGSmooth
                 Info << "Second grad " << gradGradF << endl;
-		Info << "inv(gradGradF, determinant) " << inv(gradGradF, determinant) << endl;
+        Info << "inv(gradGradF, determinant) " << inv(gradGradF, determinant) << endl;
                 Info << "Gradient " << gradF << endl;
                 Info << "Determinant " << determinant << endl;
                 Info << "Displacement " << disp << endl;
@@ -198,25 +197,25 @@ void knuppMetric::optimizeNodePosition(const scalar tolObsolete)
                 # endif
                 
 
-		scalar relax(0.8);
-		label nLoops(0);
-		while( func > lastFunc )
-		{
-		    p_ = pOrig - relax * disp;
-		    relax *= 0.5;
-		    func = evaluateMetric();
-		  
-		    if( func < lastFunc )
-			continue;
-		    
-		    //- it seems that this direction is wrong
-		    if( ++nLoops == 5 )
-		    {
-			p_ = pOrig;
-			disp = vector::zero;
-			func = 0.0;
-		    }
-		}
+        scalar relax(0.8);
+        label nLoops(0);
+        while( func > lastFunc )
+        {
+            p_ = pOrig - relax * disp;
+            relax *= 0.5;
+            func = evaluateMetric();
+          
+            if( func < lastFunc )
+            continue;
+            
+            //- it seems that this direction is wrong
+            if( ++nLoops == 5 )
+            {
+            p_ = pOrig;
+            disp = vector::zero;
+            func = 0.0;
+            }
+        }
                 
                 lastFunc = func;
             }

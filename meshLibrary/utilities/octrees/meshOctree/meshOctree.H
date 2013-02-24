@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshOctree
@@ -49,7 +48,6 @@ namespace Foam
 
 // Forward declarations
 class triSurf;
-class IOdictionary;
 
 /*---------------------------------------------------------------------------*\
                            Class meshOctree Declaration
@@ -91,6 +89,9 @@ class meshOctree
         //- list of cubes which are leaves of the octree
         LongList<meshOctreeCube*> leaves_;
 
+        //- a flag whether is true if is it a quadtree
+        const bool isQuadtree_;
+
     // Private member functions
         //- set data needed for finding neighbours
         void setOctantVectorsAndPositions();
@@ -125,7 +126,7 @@ public:
     // Constructors
 
         //- Construct from surface
-        meshOctree(const triSurf&);
+        meshOctree(const triSurf&, const bool isQuadtree = false);
 
     // Destructor
 
@@ -136,6 +137,9 @@ public:
 
         //- find a cube containing the vertex
         label findLeafContainingVertex(const point&) const;
+
+        //- is octree a quadtree or an octree
+        inline bool isQuadtree() const;
 
         //- return octant vectors
         inline const FixedList<Vector<label>, 8>& octantVectors() const;
@@ -159,6 +163,7 @@ public:
         (
             point& nearest,
             scalar& distSq,
+            label& nearestTriangle,
             label& region,
             const point& p
         ) const;
@@ -168,25 +173,48 @@ public:
         (
             point& nearest,
             scalar& distSq,
+            label& nearestTriangle,
             const label region,
             const point& p
         ) const;
 
-        //- find nearest surface edges vertex to the given vertex
+        //- find nearest feature-edges vertex to a given vertex
         bool findNearestEdgePoint
         (
-            const point& p,
-            const DynList<label>& regions,
             point& edgePoint,
-            scalar& distSq
+            scalar& distSq,
+            label& nearestEdge,
+            const point& p,
+            const DynList<label>& regions
         ) const;
 
-        bool findNearestVertexToTheEdge
+        bool findNearestPointToEdge
         (
-            const FixedList<point, 2>& edgePoints,
-            const FixedList<label, 2>& edgePointRegions,
             point& nearest,
-            scalar& distSq
+            scalar& distSq,
+            label& nearestEdge,
+            const FixedList<point, 2>& edgePoints,
+            const FixedList<label, 2>& edgePointRegions
+        ) const;
+
+        //- find nearest corner point
+        bool findNearestCorner
+        (
+            point& nearest,
+            scalar& distSq,
+            label& nearestPoint,
+            const point& p,
+            const DynList<label>& patches
+        ) const;
+
+        //- find the nearest vertex to the given patches
+        bool findNearestPointToPatches
+        (
+            point& nearest,
+            scalar& distSq,
+            const point& p,
+            const DynList<label>& patches,
+            const scalar tol = 1e-4
         ) const;
 
         //- return a reference to the surface

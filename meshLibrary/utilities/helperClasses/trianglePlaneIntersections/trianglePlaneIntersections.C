@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -38,7 +37,7 @@ void trianglePlaneIntersections::calculateIntersections()
     const pointField& points = ts_.points();
 
     const labelledTri& lt = ts_[ltri_];
-    direction i(0);
+    label i(0);
     forAll(lt, pI)
     {
         vector v = points[lt[pI]] - pp_;
@@ -47,12 +46,12 @@ void trianglePlaneIntersections::calculateIntersections()
         if( mag(v & n_) < SMALL )
         {
             intersectedPoints_[pI] = true;
-            i++;
+            ++i;
         }
     }
 
     // hold the number of intersected edges
-    direction j(0);
+    label j(0);
 
     if( i == 2 )
     {
@@ -62,7 +61,7 @@ void trianglePlaneIntersections::calculateIntersections()
     {
         forAll(lt, eI)
         {
-            const direction next = (eI+1) % 3;
+            const label next = (eI+1) % 3;
 
             if( !intersectedPoints_[eI] && !intersectedPoints_[next] )
             {
@@ -76,7 +75,7 @@ void trianglePlaneIntersections::calculateIntersections()
                     {
                         edgePoints_[eI] = points[lt[eI]] + t * v;
                         intersectedEdges_[eI] = true;
-                        j++;
+                        ++j;
                     }
                 }
             }
@@ -103,7 +102,7 @@ trianglePlaneIntersections::trianglePlaneIntersections
 (
     const vector& n,
     const point& pp,
-    const triSurface& ts,
+    const triSurf& ts,
     const label lI
 )
     :
@@ -124,7 +123,7 @@ trianglePlaneIntersections::~trianglePlaneIntersections()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 // Member functions
-direction trianglePlaneIntersections::triInfluence() const
+label trianglePlaneIntersections::triInfluence() const
 {
     return influence_;
 }
@@ -152,7 +151,7 @@ label trianglePlaneIntersections::determineRotation
     const face& f,
     const pointField& polyPoints,
     const face& newF,
-    const direction npI,
+    const label npI,
     const DynList<point>& newPoints
 ) const
 {
@@ -163,7 +162,7 @@ label trianglePlaneIntersections::determineRotation
     bool in1 = help::pointInsideFace(intersectionPoints[1], f, n, polyPoints);
 
 //     Info << "in0 " << in0 << " in1 " << in1 << endl;
-    
+
     if( in0 && !in1 )
     {
         return intersectedNeighbours[0];
@@ -172,11 +171,11 @@ label trianglePlaneIntersections::determineRotation
     {
         return intersectedNeighbours[1];
     }
-    
+
     vector ev(intersectionPoints[1] - intersectionPoints[0]);
     ev /= mag(ev);
 
-    const direction prev = (npI-1) >= 0?(npI-1):(newF.size()-1);
+    const label prev = (npI-1) >= 0?(npI-1):(newF.size()-1);
     vector pv = newPoints[newF[npI]] - newPoints[newF[prev]];
     pv /= mag(pv);
 
@@ -200,18 +199,18 @@ label trianglePlaneIntersections::determineRotation
     const vector& n,
     const pointField& fp,
     const face& newF,
-    const direction npI,
+    const label npI,
     const DynList<point>& newPoints,
-    direction& pointI
+    label& pointI
 ) const
 {
-    const labelList& fe = ts_.faceEdges()[ltri_];
-    const labelListList& ef = ts_.edgeFaces();
+    const constRow fe = ts_.facetEdges()[ltri_];
+    const VRWGraph& ef = ts_.edgeFacets();
 
     labelList neis(2);
     pointField eP(2);
     labelList interPoint(2, -1);
-    direction counter(0);
+    label counter(0);
 
     const pointField& points = ts_.points();
 
@@ -223,37 +222,37 @@ label trianglePlaneIntersections::determineRotation
                 pointI = pI;
                 return -1;
             }
-            
+
             neis[counter] = -1;
             interPoint[counter] = pI;
             eP[counter++] =
                 points[ts_[ltri_][pI]];
         }
-    
+
     forAll(intersectedEdges_, eJ)
         if( intersectedEdges_[eJ] )
         {
-            label neighbour = ef[fe[eJ]][0];
+            label neighbour = ef(fe[eJ], 0);
             if( neighbour == ltri_ )
-                neighbour = ef[fe[eJ]][1];
-            
+                neighbour = ef(fe[eJ], 1);
+
             if( edgePointInsideFace(f, n, fp, eJ) )
                 return neighbour;
-            
+
             neis[counter] = neighbour;
             eP[counter++] = edgePoints_[eJ];
         }
-    
+
     //- rotation is still not determined
     if( counter == 2 )
     {
         vector v(eP[1] - eP[0]);
         v /= mag(v);
-        
-        const direction prev = ((npI-1)>=0?(npI-1):(newF.size()-1));
+
+        const label prev = ((npI-1)>=0?(npI-1):(newF.size()-1));
         vector e(newPoints[newF[npI]] - newPoints[newF[prev]]);
         e /= mag(e);
-        
+
         if( ((e ^ v) & n) >= 0.0 )
         {
             if( interPoint[1] != -1 )
@@ -276,7 +275,7 @@ bool trianglePlaneIntersections::edgePointInsideFace
     const face& f,
     const vector& n,
     const pointField& fp,
-    const direction eI
+    const label eI
 ) const
 {
     return help::pointInsideFace(edgePoints_[eI], f, n, fp);
@@ -287,7 +286,7 @@ bool trianglePlaneIntersections::pointInsideFace
     const face& f,
     const vector& n,
     const pointField& fp,
-    const direction pI
+    const label pI
 ) const
 {
     const pointField& points = ts_.points();

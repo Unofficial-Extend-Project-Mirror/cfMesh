@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+    \\  /    A nd           | Copyright held by the original author
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -29,7 +28,9 @@ License
 #include "cell.H"
 #include "Map.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -176,7 +177,7 @@ bool checkUpperTriangular
 
             forAllRow(cc, cellI, nbrI)
             {
-				const label neiI = cc(cellI, nbrI);
+                const label neiI = cc(cellI, nbrI);
                 if( (neiI > cellI) && !usedNbr[nbrI] && (neiI < minNei) )
                 {
                     nextNei = nbrI;
@@ -261,7 +262,9 @@ bool checkCellsZipUp
     const faceListPMG& faces = mesh.faces();
     const cellListPMG& cells = mesh.cells();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nOpenCells)
+    # endif
     forAll(cells, cellI)
     {
         const labelList& c = cells[cellI];
@@ -278,7 +281,7 @@ bool checkCellsZipUp
                 const edge e = f.faceEdge(eI);
 
                 const label pos = cellEdges.containsAtPosition(e);
-                
+
                 if( pos < 0 )
                 {
                     cellEdges.append(e);
@@ -291,7 +294,7 @@ bool checkCellsZipUp
             }
         }
 
-        DynList<edge> singleEdges(cellEdges.size());
+        DynList<edge> singleEdges;
 
         forAll(edgeUsage, edgeI)
         {
@@ -312,7 +315,9 @@ bool checkCellsZipUp
 
                 if( setPtr )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     setPtr->insert(cellI);
                 }
             }
@@ -330,7 +335,9 @@ bool checkCellsZipUp
 
             if( setPtr )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 setPtr->insert(cellI);
             }
 
@@ -373,7 +380,7 @@ bool checkFaceVertices
     const faceListPMG& faces = mesh.faces();
 
     label nErrorFaces = 0;
-	const label nPoints = mesh.points().size();
+    const label nPoints = mesh.points().size();
 
     forAll(faces, fI)
     {

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,24 +40,24 @@ addToRunTimeSelectionTable(objectRefinement, lineRefinement, dictionary);
 lineRefinement::lineRefinement()
 :
     objectRefinement(),
-	p0_(),
-	p1_()
+    p0_(),
+    p1_()
 {}
 
 lineRefinement::lineRefinement
 (
-	const word& name,
+    const word& name,
     const scalar cellSize,
-	const point& p0,
-	const point& p1
+    const point& p0,
+    const point& p1
 )
 :
     objectRefinement(),
-	p0_(p0),
-	p1_(p1)
+    p0_(p0),
+    p1_(p1)
 {
-	setName(name);
-	setCellSize(cellSize);
+    setName(name);
+    setCellSize(cellSize);
 }
 
 lineRefinement::lineRefinement
@@ -69,7 +68,7 @@ lineRefinement::lineRefinement
 :
     objectRefinement(name, dict)
 {
-	this->operator=(dict);
+    this->operator=(dict);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -77,8 +76,8 @@ lineRefinement::lineRefinement
 bool lineRefinement::intersectsObject(const boundBox& bb) const
 {
     //- check if the cube contains start point or end point
-	const scalar l = bb.max().x() - bb.min().x();
-	
+    const scalar l = bb.max().x() - bb.min().x();
+    
     const point min = bb.min() - l * vector(SMALL, SMALL, SMALL);
     const point max = bb.max() + l * vector(SMALL, SMALL, SMALL);
 
@@ -207,10 +206,10 @@ bool lineRefinement::intersectsObject(const boundBox& bb) const
 
 dictionary lineRefinement::dict(bool ignoreType) const
 {
-	dictionary dict;
+    dictionary dict;
 
-	dict.add("cellSize", cellSize());
-	dict.add("type", type());
+    dict.add("cellSize", cellSize());
+    dict.add("type", type());
 
     dict.add("p0", p0_);
     dict.add("p1", p1_);
@@ -220,19 +219,19 @@ dictionary lineRefinement::dict(bool ignoreType) const
 
 void lineRefinement::write(Ostream& os) const
 {
-	os  << " type:   " << type()
+    os  << " type:   " << type()
         << " p0: " << p0_
         << " p1: " << p1_;
 }
 
 void lineRefinement::writeDict(Ostream& os, bool subDict) const
 {
-	if( subDict )
+    if( subDict )
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-	
-	os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    
+    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -266,10 +265,10 @@ void lineRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void lineRefinement::operator=(const dictionary& d)"
-		) << "Entry p0 is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void lineRefinement::operator=(const dictionary& d)"
+        ) << "Entry p0 is not specified!" << exit(FatalError);
         p0_ = vector::zero;
     }
 
@@ -280,10 +279,10 @@ void lineRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void lineRefinement::operator=(const dictionary& d)"
-		) << "Entry p1 is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void lineRefinement::operator=(const dictionary& d)"
+        ) << "Entry p1 is not specified!" << exit(FatalError);
         p1_ = vector::zero;
     }
 }
@@ -292,14 +291,14 @@ void lineRefinement::operator=(const dictionary& d)
 
 Ostream& lineRefinement::operator<<(Ostream& os) const
 {
-	os << "name " << name() << nl;
-	os << "cell size " << cellSize() << nl;
-	write(os);
-	return os;
+    os << "name " << name() << nl;
+    os << "cell size " << cellSize() << nl;
+    write(os);
+    return os;
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 } // End namespace Foam
 
 // ************************************************************************* //

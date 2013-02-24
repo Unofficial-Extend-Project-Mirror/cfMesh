@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -31,13 +30,9 @@ Description
 #include "polyMeshGenAddressing.H"
 #include "meshSurfaceEngine.H"
 #include "decomposeFaces.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 //#define DEBUGDecompose
-
-# ifdef DEBUGDecompose
-#include "writeMeshEnsight.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -58,7 +53,6 @@ void decomposeCells::decomposeMesh(const boolList& decomposeCell)
 
     # ifdef DEBUGDecompose
     mesh_.addressingData().checkMesh();
-    writeMeshEnsight(mesh_, "decomposedMesh");
     # endif
 }
 
@@ -75,7 +69,6 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
             DynList<label, 32> vrt;
             DynList<edge, 64> edges;
             DynList<DynList<label, 8> > faceEdges;
-            faceEdges.setSize(cells[cellI].size());
             DynList<DynList<label, 2>, 64> edgeFaces;
 
             findAddressingForCell(cellI, vrt, edges, faceEdges, edgeFaces);
@@ -106,7 +99,7 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         //- send information to the neighbour processor
@@ -209,7 +202,7 @@ void decomposeCells::addNewCells()
     const labelList& owner = mesh_.owner();
     const VRWGraph& pointFaces = mesh_.addressingData().pointFaces();
 
-    labelListPMG newBoundaryOwners;
+    labelLongList newBoundaryOwners;
 
     forAll(newBoundaryFaces_, faceI)
     {
@@ -254,7 +247,8 @@ void decomposeCells::addNewCells()
         newBoundaryPatches_
     );
 
-	polyMeshGenModifier(mesh_).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).clearAll();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

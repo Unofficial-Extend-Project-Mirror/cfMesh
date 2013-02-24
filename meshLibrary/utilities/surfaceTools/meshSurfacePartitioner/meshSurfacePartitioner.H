@@ -1,32 +1,31 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshSurfacePartitioner
 
 Description
-    Finds corners and edge nodes at the surface of the volume mesh
+    Finds corners and edge points at the surface of the volume mesh
 
 SourceFiles
     meshSurfacePartitioner.C
@@ -37,7 +36,10 @@ SourceFiles
 #define meshSurfacePartitioner_H
 
 #include "meshSurfaceEngine.H"
+#include "VRWGraph.H"
 #include "HashSet.H"
+
+#include <map>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,22 +54,31 @@ class meshSurfacePartitioner
 {
     // Private data
         //- reference to mesh surface engine
-		const meshSurfaceEngine& meshSurface_;
-    
-        //- labels of corner nodes
+        const meshSurfaceEngine& meshSurface_;
+
+        //- pointer to face patches
+        const labelList& facePatch_;
+
+        //- patches at a surface point
+        VRWGraph pointPatches_;
+
+        //- labels of corner points
         labelHashSet corners_;
-    
-        //- labels of edge nodes
-        labelHashSet edgeNodes_;
-    
-        //- partition-partitions addressing
-        List<labelHashSet> partitionPartitions_;
-    
+
+        //- labels of edge points
+        labelHashSet edgePoints_;
+
+        //- patch-patches addressing
+        List<labelHashSet> patchPatches_;
+
         //- number of edges attached to a surface point
         labelList nEdgesAtPoint_;
 
+        //- labels of feature edges
+        labelHashSet featureEdges_;
+
     // Private member functions
-        //- find corners, edge nodes and addressing
+        //- find corners, edge points and addressing
         void calculateCornersEdgesAndAddressing();
 
         //- Disallow default bitwise copy construct
@@ -77,28 +88,73 @@ class meshSurfacePartitioner
         void operator=(const meshSurfacePartitioner&);
 
 public:
-	
+
     // Constructors
 
-        //- Construct from mesh
+        //- Construct from meshSurfaceEngine
         meshSurfacePartitioner(const meshSurfaceEngine&);
+
+        //- Construct from meshSurfaceEngine and face patches
+        meshSurfacePartitioner
+        (
+            const meshSurfaceEngine& meshSurface,
+            const labelList& facePatch
+        );
 
     // Destructor
 
         ~meshSurfacePartitioner();
 
     // Member Functions
-        //- return labels of corner nodes (from the list of boundary points)
-        const labelHashSet& corners() const;
-    
-        //- return labels of edge nodes (from the list of boundary points)
-        const labelHashSet& edgeNodes() const;
+        //- return const reference to meshSurfaceEngine
+        inline const meshSurfaceEngine& surfaceEngine() const
+        {
+            return meshSurface_;
+        }
+
+        //- return const reference to a list containing boudary patch index
+        //- for each boundary face
+        inline const labelList& boundaryFacePatches() const
+        {
+            return facePatch_;
+        }
+
+        //- return const reference to a graph of patches attached to a surface
+        //- point
+        inline const VRWGraph& pointPatches() const
+        {
+            return pointPatches_;
+        }
+
+        //- return labels of corner points (from the list of boundary points)
+        inline const labelHashSet& corners() const
+        {
+            return corners_;
+        }
+
+        //- return labels of edge points (from the list of boundary points)
+        inline const labelHashSet& edgePoints() const
+        {
+            return edgePoints_;
+        }
 
         //- return the number of feature edges attached to a boundary point
-        label numberOfFeatureEdgesAtPoint(const label bpI) const;
+        inline label numberOfFeatureEdgesAtPoint(const label bpI) const
+        {
+            return nEdgesAtPoint_[bpI];
+        }
 
-        //- return partition-partitions addressing
-        const List<labelHashSet>& partitionPartitions() const;
+        //- return patch-patches addressing
+        inline const List<labelHashSet>& patchPatches() const
+        {
+            return patchPatches_;
+        }
+
+        //- return labels of boundary edges which are feature edges
+        inline const labelHashSet& featureEdges() const
+        {
+            return featureEdges_;
+        }
 };
 
 

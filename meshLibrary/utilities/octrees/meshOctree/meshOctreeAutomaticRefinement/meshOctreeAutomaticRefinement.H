@@ -1,33 +1,32 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshOctreeAutomaticRefinement
 
 Description
     Automatic octree for mesh generation. This class checks if the current
-	octree resolution is enough to resolve all surface features
+    octree resolution is enough to resolve all surface features
 
 SourceFiles
     meshOctreeAutomaticRefinement.C
@@ -87,7 +86,7 @@ class meshOctreeAutomaticRefinement
         //- curvature estimator pointer
         mutable triSurfaceCurvatureEstimator* curvaturePtr_;
 
-       	//- calculate curvaturePtr_
+           //- calculate curvaturePtr_
         void createCurvatureEstimator() const;
         const triSurfaceCurvatureEstimator& curvature() const;
 
@@ -99,11 +98,11 @@ class meshOctreeAutomaticRefinement
         void setMaxRefLevel();
 
         //- refine selected boxes
-        void refineSelectedBoxes(List<direction>&, labelListPMG&);
+        void refineSelectedBoxes(List<direction>&, labelLongList&);
 
         //- refine DATA boxes based on curvature
         bool curvatureRefinement();
-        bool refineBasedOnCurvature(List<direction>&, const labelListPMG&);
+        bool refineBasedOnCurvature(List<direction>&, const labelLongList&);
 
         //- refine DATA boxes which contain two or more independent parts
         //- of the surface in their vicinity
@@ -111,7 +110,7 @@ class meshOctreeAutomaticRefinement
         bool refineBasedOnProximityTests
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
         //- refine DATA boxes containing 2 or more corners, 2 or more distinct
@@ -119,14 +118,14 @@ class meshOctreeAutomaticRefinement
         bool refineBasedOnContainedPartitions
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
         //- refine boxes based on the number of contained surface corners
         bool refineBasedOnContainedCorners
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
     // Private copy constructor
@@ -151,7 +150,7 @@ public:
     // Destructor
 
         ~meshOctreeAutomaticRefinement();
-		
+        
     // Member Functions
         //- activate hex refinement
         void activateHexRefinement();

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     tetPointsCreator
@@ -56,25 +55,25 @@ class tetTessellation;
 class tetPointsCreator
 {
     // Private data
-		//- reference to the Delaunay tessellation
-		tetTessellation& tessellation_;
-	
+        //- reference to the Delaunay tessellation
+        tetTessellation& tessellation_;
+    
         //- reference to the octree
         const meshOctree& octree_;
 
     // Private member functions
         //- create vertices and pointLeaves addressing
         void createPoints();
-	
-	// Helper functions
-		//- checks if the point is inside the surface
-		bool isPointInsideSurface(const point&) const;
-	
-		//- find out if this element has been changed already
-		bool isElementChanged(const label elmtI, const label nElements) const;
-	
-		//- return cell size at the given location
-		scalar cellSizeAtLocation(const point&) const;
+    
+    // Helper functions
+        //- checks if the point is inside the surface
+        bool isPointInsideSurface(const point&) const;
+    
+        //- find out if this element has been changed already
+        bool isElementChanged(const label elmtI, const label nElements) const;
+    
+        //- return cell size at the given location
+        scalar cellSizeAtLocation(const point&) const;
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -90,7 +89,7 @@ public:
         //- Construct from octree and mesh data
         tetPointsCreator
         (
-			tetTessellation& tessellation,
+            tetTessellation& tessellation,
             const meshOctree& octree
         );
 

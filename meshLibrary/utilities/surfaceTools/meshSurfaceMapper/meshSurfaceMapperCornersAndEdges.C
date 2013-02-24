@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -36,7 +35,10 @@ Description
 #include "labelledScalar.H"
 
 #include "helperFunctionsPar.H"
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -44,12 +46,12 @@ Description
 
 namespace Foam
 {
-	
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void meshSurfaceMapper::findMappingDistance
 (
-    const labelListPMG& nodesToMap,
+    const labelLongList& nodesToMap,
     std::map<label, scalar>& mappingDistance
 ) const
 {
@@ -57,27 +59,27 @@ void meshSurfaceMapper::findMappingDistance
     const VRWGraph& pFaces = surfaceEngine_.pointFaces();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
-    
+
     //- generate search distance for corner nodes
     mappingDistance.clear();
     forAll(nodesToMap, i)
     {
         const label bpI = nodesToMap[i];
-        
+
         mappingDistance.insert(std::make_pair(bpI, 0.0));
         std::map<label, scalar>::iterator mIter = mappingDistance.find(bpI);
-        
+
         const point& p = points[bPoints[bpI]];
         forAllRow(pFaces, bpI, pfI)
         {
             const scalar d = magSqr(faceCentres[pFaces(bpI, pfI)] - p);
             mIter->second = Foam::max(mIter->second, d);
         }
-        
+
         //- safety factor
         mIter->second *= 4.0;
     }
-    
+
     if( Pstream::parRun() )
     {
         //- make sure that corner nodesd at parallel boundaries
@@ -87,7 +89,7 @@ void meshSurfaceMapper::findMappingDistance
             surfaceEngine_.globalBoundaryPointLabel();
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
-        
+
         //- create the map for exchanging data
         std::map<label, DynList<labelledScalar> > exchangeData;
         const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
@@ -95,107 +97,113 @@ void meshSurfaceMapper::findMappingDistance
             exchangeData.insert
             (
                 std::make_pair(neiProcs[i], DynList<labelledScalar>()));
-        
+
         forAll(nodesToMap, nI)
         {
             const label bpI = nodesToMap[nI];
-            
+
             forAllRow(bpAtProcs, bpI, i)
             {
                 const label neiProc = bpAtProcs(bpI, i);
                 if( neiProc == Pstream::myProcNo() )
                     continue;
-                
+
                 exchangeData[neiProc].append
                 (
                     labelledScalar(globalPointLabel[bpI], mappingDistance[bpI])
                 );
             }
         }
-        
+
         //- exchange data between processors
         LongList<labelledScalar> receivedData;
         help::exchangeMap(exchangeData, receivedData);
-        
+
         //- select the maximum mapping distance for processor points
         forAll(receivedData, i)
         {
             const labelledScalar& ls = receivedData[i];
-            
+
             const label bpI = globalToLocal[ls.scalarLabel()];
-            
+
             //- choose the maximum value for the mapping distance
             std::map<label, scalar>::iterator mIter = mappingDistance.find(bpI);
             mIter->second = Foam::max(mIter->second, ls.value());
         }
     }
 }
-    
-void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
+
+void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
-    const pointField& sPoints = meshOctree_.surface().localPoints();
+    const pointField& sPoints = meshOctree_.surface().points();
     const List<DynList<label> >& cornerPatches = sPartitioner.cornerPatches();
-    
+
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& corners = mPart.corners();
-    
+    const VRWGraph& pPatches = mPart.pointPatches();
+
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const VRWGraph& pPatches = surfaceEngine_.pointPatches();
-    
+
     std::map<label, scalar> mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
-    
+
     //- for every corner in the mesh surface find the nearest corner in the
     //- triSurface
     meshSurfaceEngineModifier sMod(surfaceEngine_);
-    
-    const label size = nodesToMap.size();
-    # pragma omp parallel for if( size > 10 )
-    for(label cornerI=0;cornerI<size;++cornerI)
+
+    # ifdef USE_OMP
+    # pragma omp parallel for if( nodesToMap.size() > 10 )
+    # endif
+    forAll(nodesToMap, cornerI)
     {
         const label bpI = nodesToMap[cornerI];
         if( !corners.found(bpI) )
             FatalErrorIn
             (
-                "meshSurfaceMapper::mapCorners(const labelListPMG&)"
+                "meshSurfaceMapper::mapCorners(const labelLongList&)"
             ) << "Trying to map a point that is not a corner"
                 << abort(FatalError);
-        
+
         const point& p = points[bPoints[bpI]];
         const scalar maxDist = mappingDistance[bpI];
-        
+
         //- find the nearest position to the given point patches
+        const DynList<label> patches = pPatches[bpI];
+
         point mapPointApprox(p);
         scalar distSqApprox;
+
         label iter(0);
         while( iter++ < 20 )
         {
             point newP(vector::zero);
-            forAllRow(pPatches, bpI, patchI)
+            forAll(patches, patchI)
             {
                 point np;
+                label nt;
                 meshOctree_.findNearestSurfacePointInRegion
                 (
                     np,
                     distSqApprox,
-                    pPatches(bpI, patchI),
+                    nt,
+                    patches[patchI],
                     mapPointApprox
                 );
-                
+
                 newP += np;
             }
-            
-            newP /= pPatches.sizeOfRow(bpI);
+
+            newP /= patches.size();
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
-            
+
             mapPointApprox = newP;
         }
         distSqApprox = magSqr(mapPointApprox - p);
-        
+
         //- find the nearest triSurface corner for the given corner
         scalar distSq(mappingDistance[bpI]);
         point mapPoint(p);
@@ -203,20 +211,20 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
         {
             const label cornerID = surfCorners[scI];
             const point& sp = sPoints[cornerID];
-            
+
             if( Foam::magSqr(sp - p) < distSq )
             {
                 bool store(true);
                 const DynList<label>& cPatches = cornerPatches[scI];
-                forAllRow(pPatches, bpI, i)
+                forAll(patches, i)
                 {
-                    if( !cPatches.contains(pPatches(bpI, i)) )
+                    if( !cPatches.contains(patches[i]) )
                     {
                         store = false;
                         break;
                     }
                 }
-                
+
                 if( store )
                 {
                     mapPoint = sp;
@@ -224,52 +232,54 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
                 }
             }
         }
-        
+
         if( distSq > 1.2 * distSqApprox )
         {
             mapPoint = mapPointApprox;
         }
-        
+
         //- move the point to the nearest corner
         sMod.moveBoundaryVertexNoUpdate(bpI, mapPoint);
     }
-    
+
     sMod.updateGeometry(nodesToMap);
 }
 
-void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
+void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const VRWGraph& pPatches = surfaceEngine_.pointPatches();
-    
+
+    const meshSurfacePartitioner& mPart = meshPartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
+
     //- find mapping distance for selected vertices
     std::map<label, scalar> mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
-    
+
     const VRWGraph* bpAtProcsPtr(NULL);
     if( Pstream::parRun() )
         bpAtProcsPtr = &surfaceEngine_.bpAtProcs();
-    
+
     LongList<parMapperHelper> parallelBndNodes;
-    
+
     meshSurfaceEngineModifier sMod(surfaceEngine_);
-    
+
     //- map point to the nearest vertex on the triSurface
-    const label size = nodesToMap.size();
-    # pragma omp parallel for shared(parallelBndNodes) if( size > 100 )
-    for(label i=0;i<size;++i)
+    # ifdef USE_OMP
+    # pragma omp parallel for shared(parallelBndNodes) \
+    if( nodesToMap.size() > 100 )
+    # endif
+    forAll(nodesToMap, i)
     {
         const label bpI = nodesToMap[i];
         const point& p = points[bPoints[bpI]];
-        
-        //- find patches at this edge vertex
-        DynList<label> patches;
-        forAllRow(pPatches, bpI, j)
-            patches.append(pPatches(bpI, j));
-        
+
+        //- find patches at this edge point
+        DynList<label> patches = pPatches[bpI];
+
         const scalar maxDist = mappingDistance[bpI];
-        
+
         //- find approximate position of the vertex on the edge
         point mapPointApprox(p);
         scalar distSqApprox;
@@ -280,37 +290,40 @@ void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
             forAll(patches, patchI)
             {
                 point np;
+                label nt;
                 meshOctree_.findNearestSurfacePointInRegion
                 (
                     np,
                     distSqApprox,
+                    nt,
                     patches[patchI],
                     mapPointApprox
                 );
-                
+
                 newP += np;
             }
-            
+
             newP /= patches.size();
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
-            
+
             mapPointApprox = newP;
         }
         distSqApprox = magSqr(mapPointApprox - p);
-        
+
         //- find the nearest vertex on the triSurface feature edge
         point mapPoint;
         scalar distSq;
-        meshOctree_.findNearestEdgePoint(p, patches, mapPoint, distSq);
-        
+        label nse;
+        meshOctree_.findNearestEdgePoint(mapPoint, distSq, nse, p, patches);
+
         //- use the vertex with the smallest mapping distance
         if( distSq > 1.2 * distSqApprox )
         {
             mapPoint = mapPointApprox;
             distSq = distSqApprox;
         }
-        
+
         //- check if the mapping distance is within the given tolerances
         if( distSq > maxDist )
         {
@@ -320,13 +333,15 @@ void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
             distSq = mappingDistance[bpI];
             mapPoint = f * (mapPoint - p) + p;
         }
-        
+
         //- move the point to the nearest edge vertex
         sMod.moveBoundaryVertexNoUpdate(bpI, mapPoint);
-        
+
         if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
         {
+            # ifdef USE_OMP
             # pragma omp critical
+            # endif
             parallelBndNodes.append
             (
                 parMapperHelper
@@ -339,27 +354,27 @@ void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
             );
         }
     }
-    
+
     sMod.updateGeometry(nodesToMap);
-    
+
     mapToSmallestDistance(parallelBndNodes);
 }
-        
+
 void meshSurfaceMapper::mapCornersAndEdges()
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
-    labelListPMG selectedPoints;
+    labelLongList selectedPoints;
     forAllConstIter(labelHashSet, cornerPoints, it)
         selectedPoints.append(it.key());
-    
+
     mapCorners(selectedPoints);
-    
+
     selectedPoints.clear();
-    const labelHashSet& edgePoints = mPart.edgeNodes();
+    const labelHashSet& edgePoints = mPart.edgePoints();
     forAllConstIter(labelHashSet, edgePoints, it)
         selectedPoints.append(it.key());
-    
+
     mapEdgeNodes(selectedPoints);
 }
 

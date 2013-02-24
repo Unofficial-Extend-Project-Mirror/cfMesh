@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     DynList
@@ -87,7 +86,7 @@ class DynList
     // Private member functions
         //- allocate list size
         inline void allocateSize(const label);
-    
+
         //- check if index is inside the scope (used for debugging only)
         inline void checkIndex(const label) const;
 
@@ -101,8 +100,15 @@ public:
         //- Construct given size
         explicit inline DynList(const label);
 
+        //- Construct from given size and defualt value
+        explicit inline DynList(const label, const T&);
+
         //- Construct from UList. nextFree_ set to size().
         explicit inline DynList(const UList<T>&);
+
+        //- Construct from other ListType
+        template<class ListType>
+        inline DynList(const ListType&);
 
         //- Copy constructor
         inline DynList(const DynList<T, staticSize>&);
@@ -122,7 +128,7 @@ public:
             //- Size of the active part of the list.
             //- Direct over-ride of list size member function
             inline label size() const;
-            
+
             //- Number of bytes used by the active part of the list
             //- Direct over-ride of list byteSize member function
             inline label byteSize() const;
@@ -145,36 +151,56 @@ public:
 
         //- Append an element at the end of the list
         inline void append(const T& e);
-		
-		//- Append an element at the end of the list if it is not yet
-		//- present in the list (takes linear time)
-		inline void appendIfNotIn(const T& e);
-		
-		//- check if the element is in the list (takes linear time)
-		inline bool contains(const T& e) const;
-		inline label containsAtPosition(const T& e) const;
 
-        //- Return and remove the top element
+        //- Append an element at the end of the list if it is not yet
+        //- present in the list (takes linear time)
+        inline void appendIfNotIn(const T& e);
+
+        //- check if the element is in the list (takes linear time)
+        inline bool contains(const T& e) const;
+        inline label containsAtPosition(const T& e) const;
+
+        //- return a const reference to the last element
+        inline const T& lastElement() const;
+
+        //- Return and remove the last element
         inline T removeLastElement();
-		inline T removeElement(const label i);
-		
-		//- return a refence to the element. Resize the list if necessary
-		inline T& newElmt(const label);
+        inline T removeElement(const label i);
+
+        //- return a refence to the element. Resize the list if necessary
+        inline T& newElmt(const label);
 
         //- Return non-const access to an element,
         //-  resizing the list if necessary
         inline T& operator()(const label);
-        
+
         //- return access to an element
         inline const T& operator[](const label) const;
         inline T& operator[](const label);
 
+        //- return forward and reverse circular indices
+        inline label fcIndex(const label index, const label offset = 1) const;
+        inline label rcIndex(const label index, const label offset = 1) const;
+
+        //- return forward and reverse circular elements
+        inline const T& fcElement
+        (
+            const label index,
+            const label offset = 1
+        ) const;
+
+        inline const T& rcElement
+        (
+            const label index,
+            const label offset = 1
+        ) const;
+
         //- Assignment of all entries to the given value
         inline void operator=(const T&);
-        
+
         //- Copy of another list
         inline void operator=(const DynList<T, staticSize>&);
-        
+
         //- Copy of another list type
         template<class ListType>
         inline void operator=(const ListType&);

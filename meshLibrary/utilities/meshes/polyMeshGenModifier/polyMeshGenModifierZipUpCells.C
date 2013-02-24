@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -42,14 +41,14 @@ namespace Foam
 
 void polyMeshGenModifier::zipUpCells()
 {
-	this->clearOut();
-	
+    this->clearOut();
+    
     Info<< "Zipping up topologically open cells" << endl;
-	
-	const pointFieldPMG& points = mesh_.points();
-	const cellListPMG& cells = mesh_.cells();
-	
-	faceListPMG& faces = mesh_.faces_;
+    
+    const pointFieldPMG& points = mesh_.points();
+    const cellListPMG& cells = mesh_.cells();
+    
+    faceListPMG& faces = mesh_.faces_;
 
     // Algorithm:
     // Take the original mesh and visit all cells.  For every cell
@@ -78,34 +77,34 @@ void polyMeshGenModifier::zipUpCells()
     do
     {
         nChangedFacesInMesh = 0;
-		
+        
         //- calculate pointFaces addressing
         # ifdef DEBUG_ZIPUP
         Info << "Starting pointFaces addressing " << endl;
         # endif
 
-		List<direction> nUsage(points.size(), direction(0));
-		forAll(faces, fI)
-		{
-			const face& f = faces[fI];
-			forAll(f, pI)
-				++nUsage[f[pI]];
-		}
-		
-		VRWGraph pFaces(points.size());
-		forAll(nUsage, pI)
-			pFaces.setRowSize(pI, nUsage[pI]);
-		
-		nUsage = 0;
-		
-		forAll(faces, fI)
-		{
-			const face& f = faces[fI];
-			forAll(f, pI)
-				pFaces(f[pI], nUsage[f[pI]]++) = fI;
-		}
-		
-		nUsage.clear();
+        List<direction> nUsage(points.size(), direction(0));
+        forAll(faces, fI)
+        {
+            const face& f = faces[fI];
+            forAll(f, pI)
+                ++nUsage[f[pI]];
+        }
+        
+        VRWGraph pFaces(points.size());
+        forAll(nUsage, pI)
+            pFaces.setRowSize(pI, nUsage[pI]);
+        
+        nUsage = 0;
+        
+        forAll(faces, fI)
+        {
+            const face& f = faces[fI];
+            forAll(f, pI)
+                pFaces(f[pI], nUsage[f[pI]]++) = fI;
+        }
+        
+        nUsage.clear();
 
         # ifdef DEBUG_ZIPUP
         Info << "Starting zipping cells " << endl;
@@ -551,21 +550,21 @@ void polyMeshGenModifier::zipUpCells()
 
                 // In order to avoid edge-to-edge comparison, get faces using
                 // point-face addressing in two goes.
-				const label start = testEdge.start();
-				const label end = testEdge.end();
-				
-				labelList facesSharingEdge
-				(
-					pFaces.sizeOfRow(start) +
-					pFaces.sizeOfRow(end)
-				);
+                const label start = testEdge.start();
+                const label end = testEdge.end();
+                
+                labelList facesSharingEdge
+                (
+                    pFaces.sizeOfRow(start) +
+                    pFaces.sizeOfRow(end)
+                );
                 label nfse = 0;
-				
-				forAllRow(pFaces, start, pfI)
-					facesSharingEdge[nfse++] = pFaces(start, pfI);
-				
-				forAllRow(pFaces, end, pfI)
-					facesSharingEdge[nfse++] = pFaces(end, pfI);
+                
+                forAllRow(pFaces, start, pfI)
+                    facesSharingEdge[nfse++] = pFaces(start, pfI);
+                
+                forAllRow(pFaces, end, pfI)
+                    facesSharingEdge[nfse++] = pFaces(end, pfI);
 
                 forAll(facesSharingEdge, faceI)
                 {
@@ -709,13 +708,13 @@ void polyMeshGenModifier::zipUpCells()
                                     nNewFacePoints++;
                                 }
                             }
-							
-							forAll(newFace, pI)
-								pFaces.appendIfNotIn
-								(
-									newFace[pI],
-									currentFaceIndex
-								);
+                            
+                            forAll(newFace, pI)
+                                pFaces.appendIfNotIn
+                                (
+                                    newFace[pI],
+                                    currentFaceIndex
+                                );
 
 #                           ifdef DEBUG_ZIPUP
                             Info<< "oldFace: "

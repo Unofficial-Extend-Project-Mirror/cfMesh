@@ -1,29 +1,28 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-	Writes the mesh in fpma format readable by AVL's CfdWM
+    Writes the mesh in fpma format readable by AVL's CfdWM
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,12 +63,12 @@ int main(int argc, char *argv[])
     points.setSize(counter);
     forAll(points, pointI)
     {
-	point p;
-	file >> p.x();
-	file >> p.y();
-	file >> p.z();
-	
-	points[pointI] = p;
+    point p;
+    file >> p.x();
+    file >> p.y();
+    file >> p.z();
+    
+    points[pointI] = p;
     }
     
     //- read the number of faces
@@ -82,14 +81,14 @@ int main(int argc, char *argv[])
     forAll(faces, faceI)
     {
         file >> counter;
-	
-	face f;
-	f.setSize(counter);
-	
-	forAll(f, pI)
-	  file >> f[pI];
-	
-	faces[faceI] = f.reverseFace();
+    
+    face f;
+    f.setSize(counter);
+    
+    forAll(f, pI)
+      file >> f[pI];
+    
+    faces[faceI] = f.reverseFace();
     }
     
     //- read the number of cells
@@ -101,14 +100,14 @@ int main(int argc, char *argv[])
     
     forAll(cells, cellI)
     {
-	file >> counter;
-	
-	cell& c = cells[cellI];
-	
-	c.setSize(counter);
-	
-	forAll(c, fI)
-	    file >> c[fI];
+    file >> counter;
+    
+    cell& c = cells[cellI];
+    
+    c.setSize(counter);
+    
+    forAll(c, fI)
+        file >> c[fI];
     }
     
     //- read selections
@@ -119,66 +118,66 @@ int main(int argc, char *argv[])
     
     for(label setI=0;setI<counter;++setI)
     {
-	word sName;
-	file >> sName;
-	
-	label type;
-	file >> type;
-	
-	label nEntries;
-	file >> nEntries;
-	
-	switch( type )
-	{
-	    case 3:
-	    {
-		//- face selection
-		const label id = pmg.addFaceSubset(sName);
-		
-		patchNames.setSize(patchNames.size()+1);
-		patchNames[patchNames.size()-1] = sName;
-		subsetToPatch.insert(id, patchNames.size()-1);
-		
-		Info << "Reading face selection " << sName << endl;
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addFaceToSubset(id, entryI);
-		}
-	    } break;
-	    case 2:
-	    {
-		//- cell selection
-		const label id = pmg.addCellSubset(sName);
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addCellToSubset(id, entryI);
-		}
-	    } break;
-	    case 1:
-	    {
-		//- node selection
-		const label id = pmg.addPointSubset(sName);
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addPointToSubset(id, entryI);
-		}
-	    } break;
-	};
+    word sName;
+    file >> sName;
+    
+    label type;
+    file >> type;
+    
+    label nEntries;
+    file >> nEntries;
+    
+    switch( type )
+    {
+        case 3:
+        {
+        //- face selection
+        const label id = pmg.addFaceSubset(sName);
+        
+        patchNames.setSize(patchNames.size()+1);
+        patchNames[patchNames.size()-1] = sName;
+        subsetToPatch.insert(id, patchNames.size()-1);
+        
+        Info << "Reading face selection " << sName << endl;
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addFaceToSubset(id, entryI);
+        }
+        } break;
+        case 2:
+        {
+        //- cell selection
+        const label id = pmg.addCellSubset(sName);
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addCellToSubset(id, entryI);
+        }
+        } break;
+        case 1:
+        {
+        //- node selection
+        const label id = pmg.addPointSubset(sName);
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addPointToSubset(id, entryI);
+        }
+        } break;
+    };
     }
     
     //- create patches from face selections
     VRWGraph boundaryFaces;
-    labelListPMG boundaryOwner;
-    labelListPMG boundaryPatches;
+    labelLongList boundaryOwner;
+    labelLongList boundaryPatches;
     
     const labelList& owner = pmg.owner();
     DynList<label> faceSubsets;
@@ -186,26 +185,26 @@ int main(int argc, char *argv[])
     
     forAll(faceSubsets, setI)
     {
-	labelListPMG setFaces;
-	pmg.facesInSubset(faceSubsets[setI], setFaces);
-	
-	forAll(setFaces, i)
-	{
-	    boundaryFaces.appendList(faces[setFaces[i]]);
-	    boundaryOwner.append(owner[setFaces[i]]);
-	    boundaryPatches.append(subsetToPatch[faceSubsets[setI]]);
-	}
-	
-	pmg.removeFaceSubset(faceSubsets[setI]);
+    labelLongList setFaces;
+    pmg.facesInSubset(faceSubsets[setI], setFaces);
+    
+    forAll(setFaces, i)
+    {
+        boundaryFaces.appendList(faces[setFaces[i]]);
+        boundaryOwner.append(owner[setFaces[i]]);
+        boundaryPatches.append(subsetToPatch[faceSubsets[setI]]);
+    }
+    
+    pmg.removeFaceSubset(faceSubsets[setI]);
     }
     
     meshModifier.reorderBoundaryFaces();
     meshModifier.replaceBoundary
     (
-	patchNames,
-	boundaryFaces,
-	boundaryOwner,
-	boundaryPatches
+    patchNames,
+    boundaryFaces,
+    boundaryOwner,
+    boundaryPatches
     );
     
     pmg.write();

@@ -1,33 +1,32 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     correctEdgesBetweenPatches
 
 Description
     Changes mesh surface until every boundary face shares only one edge with
-	the faces in other boundary patch
+    the faces in other boundary patch
 
 SourceFiles
     correctEdgesBetweenPatches.C
@@ -38,7 +37,7 @@ SourceFiles
 #define correctEdgesBetweenPatches_H
 
 #include "polyMeshGenModifier.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -57,47 +56,43 @@ class meshSurfaceEngine;
 class correctEdgesBetweenPatches
 {
     // Private data
-		//- mesh
-		polyMeshGen& mesh_;
+        //- mesh
+        polyMeshGen& mesh_;
 
-		//- pointer to surface engine
-		mutable const meshSurfaceEngine* msePtr_;
-	
-		//- boundary data
-		wordList patchNames_;
-		VRWGraph newBoundaryFaces_;
-		labelListPMG newBoundaryOwners_;
-		labelListPMG newBoundaryPatches_;
-	
-		//- holds data which cells have to be decomposed
-		boolList decomposeCell_;
-		bool decompose_;
+        //- pointer to surface engine
+        mutable const meshSurfaceEngine* msePtr_;
+
+        //- boundary data
+        wordList patchNames_;
+        VRWGraph newBoundaryFaces_;
+        labelLongList newBoundaryOwners_;
+        labelLongList newBoundaryPatches_;
+
+        //- holds data which cells have to be decomposed
+        boolList decomposeCell_;
+        bool decompose_;
 
     // Private member functions
-    
+
         //- construct and return mesh surface
         const meshSurfaceEngine& meshSurface() const;
-        
+
         //- delete mesh surface
         void clearMeshSurface();
- 
-	 	//- replace boundary
-		void replaceBoundary();
-		
-		//- decompose corrected cells
-		void decomposeCorrectedCells();
-        
-        //- minimise the number of edges which should be constrained
-        //- to the feature edges
-        void checkFacePatches();
-        
+
+         //- replace boundary
+        void replaceBoundary();
+
+        //- decompose corrected cells
+        void decomposeCorrectedCells();
+
         //- decompose bnd faces for which the feature edges are not connected
         //- over vertices and internal faces which have more than one feature
         //- edge at the boundary
         void decomposeProblematicFaces();
-		
-		//- perform decompose remaining faces having more than one feature edge
-		void patchCorrection();
+
+        //- perform decompose remaining faces having more than one feature edge
+        void patchCorrection();
 
         //- Disallow default bitwise copy construct
         correctEdgesBetweenPatches(const correctEdgesBetweenPatches&);

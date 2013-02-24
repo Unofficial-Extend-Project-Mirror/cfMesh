@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -35,6 +34,13 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+inline meshSubset::meshSubset()
+:
+    name_(),
+    type_(UNKNOWN),
+    data_()
+{}
 
 inline meshSubset::meshSubset
 (
@@ -62,10 +68,28 @@ inline meshSubset::meshSubset
     forAll(elements, i)
         data_.insert(elements[i]);
 }
-    
-inline meshSubset::~meshSubset()
+
+inline meshSubset::meshSubset(const meshSubset& ms)
+:
+    name_(ms.name_),
+    type_(ms.type_),
+    data_()
 {
+    forAllConstIter(HashSet<label>, ms.data_, it)
+        data_.insert(it.key());
 }
+
+inline meshSubset::meshSubset(Istream& is)
+:
+    name_(),
+    type_(UNKNOWN),
+    data_()
+{
+    is >> *this;
+}
+
+inline meshSubset::~meshSubset()
+{}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -83,7 +107,7 @@ template<class ListType>
 inline void meshSubset::containedElements(ListType& l) const
 {
     l.setSize(data_.size());
-    
+
     label counter(0);
     forAllConstIter(HashSet<label>, data_, it)
         l[counter++] = it.key();
@@ -103,31 +127,33 @@ template<class ListType>
 inline void meshSubset::updateSubset(const ListType& newLabels)
 {
     HashSet<label> newData;
-    
+
     forAllConstIter(HashSet<label>, data_, it)
     {
         if( newLabels[it.key()] < 0 )
             continue;
-        
+
         newData.insert(newLabels[it.key()]);
     }
-    
+
     data_.clear();
-    data_ = newData;
+    forAllConstIter(HashSet<label>, newData, it)
+        data_.insert(it.key());
 }
 
 inline void meshSubset::updateSubset(const VRWGraph& newLabels)
 {
     HashSet<label> newData;
-    
+
     forAllConstIter(HashSet<label>, data_, it)
     {
         forAllRow(newLabels, it.key(), i)
             newData.insert(newLabels(it.key(), i));
     }
-    
+
     data_.clear();
-    data_ = newData;
+    forAllConstIter(HashSet<label>, newData, it)
+        data_.insert(it.key());
 }
 
 inline bool meshSubset::contains(const label elmt) const
@@ -135,13 +161,55 @@ inline bool meshSubset::contains(const label elmt) const
     return data_.found(elmt);
 }
 
+inline void meshSubset::operator=(const meshSubset& ms)
+{
+    name_ = ms.name_;
+    type_ = ms.type_;
+
+    data_.clear();
+    forAllConstIter(HashSet<label>, ms.data_, it)
+        data_.insert(it.key());
+}
+
+inline bool meshSubset::operator==(const meshSubset& ms) const
+{
+    if( ms.name_ != name_ )
+        return false;
+    if( ms.type_ != ms.type_ )
+        return false;
+
+    forAllConstIter(HashSet<label>, data_, it)
+        if( !ms.data_.found(it.key()) )
+            return false;
+
+    return true;
+}
+
+inline bool meshSubset::operator!=(const meshSubset& ms) const
+{
+    return !operator==(ms);
+}
+
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
 inline Ostream& operator<<(Ostream& os, const meshSubset& sel)
 {
+    os.check("inline Ostream& operator<<(Ostream&, const meshSubset&)");
+
     os << sel.name_ << nl << sel.type_ << nl << sel.data_;
 
     return os;
+}
+
+inline Istream& operator>>(Istream& is, meshSubset& sel)
+{
+    is.check("friend Istream& operator>>(Istream&, meshSubset&)");
+
+    is >> sel.name_ >> sel.type_ >> sel.data_;
+
+    is.check("friend Istream& operator>>(Istream&, meshSubset&)");
+
+    return is;
 }
 
 

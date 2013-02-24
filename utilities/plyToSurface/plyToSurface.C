@@ -1,29 +1,28 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-	Converts STAR CD surfaces into stl or other formats
+    Converts STAR CD surfaces into stl or other formats
 
 \*---------------------------------------------------------------------------*/
 
@@ -61,56 +60,56 @@ int main(int argc, char *argv[])
     }
 
     IFstream surfFile(inFileName);
-	
-	//- parse the number of vertices
-	token t;
-	do
-	{
-		surfFile >> t;
-	} while( !t.isLabel() );
-	pointField points(t.labelToken());
-	Info << "Surface has " << points.size() << " points" << endl;
-	
-	//- find the number of elements
-	do
-	{
-		surfFile >> t;
-	} while( !t.isLabel() );
+    
+    //- parse the number of vertices
+    token t;
+    do
+    {
+        surfFile >> t;
+    } while( !t.isLabel() );
+    pointField points(t.labelToken());
+    Info << "Surface has " << points.size() << " points" << endl;
+    
+    //- find the number of elements
+    do
+    {
+        surfFile >> t;
+    } while( !t.isLabel() );
     List<labelledTri> triFaces(t.labelToken());
-	Info << "Surface has " << triFaces.size() << " facets" << endl;
-	
-	//- read vertices
-	do
-	{
-		surfFile >> t;
-	} while( t.isWord() && (t.wordToken() != "end_header") );
-	
-	forAll(points, pointI)
-	{
-		point& p = points[pointI];
-		
-		surfFile >> p.x();
-		surfFile >> p.y();
-		surfFile >> p.z();
-	}
-	
-	//- read triangles
-	forAll(triFaces, triI)
-	{
-		label nPts;
-		surfFile >> nPts;
-		if( nPts != 3 )
-		{
-			Info << "Facet " << triI << " is not a triangle!!" << endl;
-			Warning << "Cannot convert this surface!" << endl;
-			return 0;
-		}
-		
-		for(label i=0;i<nPts;++i)
-			surfFile >> triFaces[triI][i];
-		
-		triFaces[triI].region() = 0;
-	}
+    Info << "Surface has " << triFaces.size() << " facets" << endl;
+    
+    //- read vertices
+    do
+    {
+        surfFile >> t;
+    } while( t.isWord() && (t.wordToken() != "end_header") );
+    
+    forAll(points, pointI)
+    {
+        point& p = points[pointI];
+        
+        surfFile >> p.x();
+        surfFile >> p.y();
+        surfFile >> p.z();
+    }
+    
+    //- read triangles
+    forAll(triFaces, triI)
+    {
+        label nPts;
+        surfFile >> nPts;
+        if( nPts != 3 )
+        {
+            Info << "Facet " << triI << " is not a triangle!!" << endl;
+            Warning << "Cannot convert this surface!" << endl;
+            return 0;
+        }
+        
+        for(label i=0;i<nPts;++i)
+            surfFile >> triFaces[triI][i];
+        
+        triFaces[triI].region() = 0;
+    }
 
     triSurface surf(triFaces, points);
 

@@ -46,43 +46,43 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	objectRegistry registry(runTime);
-	
-	polyMeshGen pmg(registry);
-	pmg.read();
-	
-	const labelList& owner = pmg.owner();
-	const labelList& neighbour = pmg.neighbour();
-	
-	label band(0);
-	forAll(owner, fI)
-	{
-		const label diff = neighbour[fI] - owner[fI];
-		if( diff > band )
-			band = diff;
-	}
-	
-	Info << "Band before renumbering is " << band << endl;
-	
-	polyMeshGenModifier(pmg).renumberMesh();
-	
-	const labelList& newOwner = pmg.owner();
-	const labelList& newNeighbour = pmg.neighbour();
-	band = 0;
-	forAll(newOwner, fI)
-	{
-		const label diff = newNeighbour[fI] - newOwner[fI];
-		if( diff > band )
-			band = diff;
-	}
-	
-	Info << "Band after renumbering is " << band << endl;
-	
-	pmg.addressingData().checkMesh(true);
-	
-	//pmg.write();
-	
+    
+    objectRegistry registry(runTime);
+    
+    polyMeshGen pmg(registry);
+    pmg.read();
+    
+    const labelList& owner = pmg.owner();
+    const labelList& neighbour = pmg.neighbour();
+    
+    label band(0);
+    forAll(owner, fI)
+    {
+        const label diff = neighbour[fI] - owner[fI];
+        if( diff > band )
+            band = diff;
+    }
+    
+    Info << "Band before renumbering is " << band << endl;
+    
+    polyMeshGenModifier(pmg).renumberMesh();
+    
+    const labelList& newOwner = pmg.owner();
+    const labelList& newNeighbour = pmg.neighbour();
+    band = 0;
+    forAll(newOwner, fI)
+    {
+        const label diff = newNeighbour[fI] - newOwner[fI];
+        if( diff > band )
+            band = diff;
+    }
+    
+    Info << "Band after renumbering is " << band << endl;
+    
+    pmg.addressingData().checkMesh(true);
+    
+    //pmg.write();
+    
     Info << "End\n" << endl;
     return 0;
 }

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     tetMeshGenerator
@@ -57,77 +56,77 @@ class Time;
 class tetMeshGenerator
 {
     // Private data
-    //- reference to Time
-    const Time& runTime_;
+        //- reference to Time
+        const Time& runTime_;
 
-    //- pointer to the surface
-    triSurf* surfacePtr_;
+        //- pointer to the surface
+        const triSurf* surfacePtr_;
 
-    //- IOdictionary containing information about cell sizes, etc..
-    IOdictionary meshDict_;
+        //- IOdictionary containing information about cell sizes, etc..
+        IOdictionary meshDict_;
 
-    //- pointer to the octree
-    meshOctree* octreePtr_;
+        //- pointer to the octree
+        meshOctree* octreePtr_;
 
-    //- mesh
-    polyMeshGen mesh_;
+        //- mesh
+        polyMeshGen mesh_;
 
     // Private member functions
-    //- create cartesian mesh
-    void createTetMesh();
+        //- create cartesian mesh
+        void createTetMesh();
 
-    //- prepare mesh surface
-    void surfacePreparation();
+        //- prepare mesh surface
+        void surfacePreparation();
 
-    //- map mesh to the surface and untangle surface
-    void mapMeshToSurface();
+        //- map mesh to the surface and untangle surface
+        void mapMeshToSurface();
 
-    //- capture edges and corners
-    void mapEdgesAndCorners();
+        //- capture edges and corners
+        void mapEdgesAndCorners();
 
-    //- optimise surface mesh
-    void optimiseMeshSurface();
+        //- optimise surface mesh
+        void optimiseMeshSurface();
 
-    //- add boundary layers
-    void generateBoudaryLayers();
+        //- add boundary layers
+        void generateBoudaryLayers();
 
-    //- mesh optimisation
-    void optimiseFinalMesh();
+        //- mesh optimisation
+        void optimiseFinalMesh();
 
-    //- replace boundaries
-    void replaceBoundaries();
+        //- refine boundary layers
+        void refBoundaryLayers();
 
-    //- renumber the mesh
-    void renumberMesh();
+        //- replace boundaries
+        void replaceBoundaries();
 
-    //- generate mesh
-    void generateMesh();
+        //- renumber the mesh
+        void renumberMesh();
 
-    //- Disallow default bitwise copy construct
-    tetMeshGenerator ( const tetMeshGenerator& );
+        //- generate mesh
+        void generateMesh();
 
-    //- Disallow default bitwise assignment
-    void operator= ( const tetMeshGenerator& );
+        //- Disallow default bitwise copy construct
+        tetMeshGenerator(const tetMeshGenerator&);
+
+        //- Disallow default bitwise assignment
+        void operator=(const tetMeshGenerator&);
 
 public:
 
     // Constructors
 
-    //- Construct from time
-    tetMeshGenerator ( const Time& );
-
-    //- Construct from time and desired cell size
-    //tetMeshGenerator(const Time&, const volScalarField&);
+        //- Construct from time
+        tetMeshGenerator(const Time&);
 
     // Destructor
 
-    ~tetMeshGenerator();
+        ~tetMeshGenerator();
 
 
     // Member Functions
 
-    //- write the mesh
-    void writeMesh() const;
+        //- write the mesh
+        void writeMesh() const;
 };
 
 

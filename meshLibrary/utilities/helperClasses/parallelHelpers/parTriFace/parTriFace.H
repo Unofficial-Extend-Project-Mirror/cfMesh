@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     parTriFace
@@ -49,23 +48,23 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                            Class parTriFace Declaration
 \*---------------------------------------------------------------------------*/
-        
+
 class parTriFace
 {
     // Private data
         label globalLabels_[3];
-    
+
         triangle<point, point> triPoints_;
-    
+
     public:
-        
+
     // Constructors
-    
+
         inline parTriFace()
         :
             triPoints_(vector::zero, vector::zero, vector::zero)
         {}
-        
+
         explicit inline parTriFace
         (
             const label globalLabel0,
@@ -80,36 +79,36 @@ class parTriFace
             globalLabels_[1] = globalLabel1;
             globalLabels_[2] = globalLabel2;
         }
-        
+
     // Destructor
-        
+
         ~parTriFace()
         {}
-            
+
     // Member functions
-            
+
         inline label globalLabelOfPoint(const label i) const
         {
             return globalLabels_[i];
         }
-        
+
         inline const triangle<point, point>& trianglePoints() const
         {
             return triPoints_;
         }
-        
+
     // Member operators
-        
+
         inline bool operator !=(const parTriFace& ptf) const
         {
-            Serr << "Not implemented" << endl;
+            Serr << "parTriFace::operator!= Not implemented" << endl;
             ::exit(1);
-            
+
             return true;
         }
-        
+
     // Friend operators
-        
+
         inline friend Ostream& operator<<(Ostream& os, const parTriFace& ptf)
         {
             os << token::BEGIN_LIST;
@@ -122,23 +121,23 @@ class parTriFace
             os.check("operator<<(Ostream&, const parTriFace&");
             return os;
         }
-        
+
         inline friend Istream& operator>>(Istream& is, parTriFace& ptf)
         {
             // Read beginning of parTriFace
             is.readBegin("parTriFace");
-        
+
             is >> ptf.globalLabels_[0];
             is >> ptf.globalLabels_[1];
             is >> ptf.globalLabels_[2];
             is >> ptf.triPoints_;
-            
+
             // Read end of parHelper
             is.readEnd("parTriFace");
-        
+
             // Check state of Istream
             is.check("operator>>(Istream&, parTriFace");
-            
+
             return is;
         }
 };

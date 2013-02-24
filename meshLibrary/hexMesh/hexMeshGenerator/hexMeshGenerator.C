@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -44,14 +43,10 @@ Description
 #include "boundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
+#include "triSurfacePatchManipulator.H"
+#include "refineBoundaryLayers.H"
 
 //#define DEBUG
-//#define DEBUGflma
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFLMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -64,7 +59,7 @@ void hexMeshGenerator::generateOctree()
 {
     if( !octreePtr_ )
         octreePtr_ = new meshOctree(*surfacePtr_);
-    
+
     meshOctreeCreator creator(*octreePtr_, meshDict_);
     creator.activateHexRefinement();
     creator.createOctreeBoxes();
@@ -78,11 +73,6 @@ void hexMeshGenerator::generateDualMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "hexMesh");
-    # else
-    writeMeshEnsight(mesh_, "hexMesh");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -100,25 +90,20 @@ void hexMeshGenerator::surfacePreparation()
         checkIrregularSurfaceConnections checkConnections(mesh_);
         if( checkConnections.checkAndFixIrregularConnections() )
             changed = true;
-        
+
         if( checkNonMappableCellConnections(mesh_).removeCells() )
             changed = true;
-        
+
         if( checkCellConnectionsOverFaces(mesh_).checkCellGroups() )
             changed = true;
-	} while( changed );
+    } while( changed );
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterTopoCleaning");
-    # else
-    writeMeshEnsight(mesh_, "afterTopoCleaning");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
-		
+
 void hexMeshGenerator::mapMeshToSurface()
 {
     //- calculate mesh surface
@@ -130,41 +115,25 @@ void hexMeshGenerator::mapMeshToSurface()
     mapper.mapVerticesOntoSurface();
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterMapping");
-    # else
-    writeMeshEnsight(mesh_, "afterMapping");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
 
     //- untangle surface faces
-    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
     # ifdef DEBUG
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterSurfaceSmoothing");
-    # else
-    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
-	
+
     deleteDemandDrivenData(msePtr);
 
     //- extract edges and corners
     meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_);
-	
+
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "withEdges");
-    # else
-    writeMeshEnsight(mesh_, "withEdges");
-    #endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -173,44 +142,41 @@ void hexMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-	
+
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "optSurfaceWithEdges");
-    # else
-    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-    #endif
+    //::exit(0);
     # endif
 }
-	
+
 void hexMeshGenerator::generateBoundaryLayers()
 {
     boundaryLayers bl(mesh_);
-    
-    if( meshDict_.found("boundaryLayers") )
-    {
-        wordList createLayers(meshDict_.lookup("boundaryLayers"));
-        
-        forAll(createLayers, patchI)
-            bl.addLayerForPatch(createLayers[patchI]);
-    }
-    else
-    {
-        //bl.createOTopologyLayers();
-        bl.addLayerForAllPatches();
-    }
+
+    bl.addLayerForAllPatches();
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "meshWithBndLayer");
-    # else
-    writeMeshEnsight(mesh_, "meshWithBndLayer");
-    # endif
     mesh_.write();
+    //::exit(0);
     # endif
 }
-		
+
+void hexMeshGenerator::refBoundaryLayers()
+{
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
+
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.untangleMeshFV();
+    }
+}
+
 void hexMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
@@ -221,39 +187,30 @@ void hexMeshGenerator::optimiseFinalMesh()
     deleteDemandDrivenData(octreePtr_);
 
     optimizer.optimizeMeshFV();
-	
+
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"optimisedMesh");
-    # else
-    writeMeshEnsight(mesh_, "optimisedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
 void hexMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-    
+
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"renamedPatchesMesh");
-    # else
-    writeMeshEnsight(mesh_, "renamedPatchesMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
 void hexMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-	
+
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"renumberedMesh");
-    # else
-    writeMeshEnsight(mesh_, "renumberedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -266,7 +223,7 @@ void hexMeshGenerator::generateMesh()
     mapMeshToSurface();
 
     optimiseMeshSurface();
-    
+
     generateBoundaryLayers();
 
     optimiseFinalMesh();
@@ -304,22 +261,30 @@ hexMeshGenerator::hexMeshGenerator
     {
         FatalError << "Cannot run in parallel" << exit(FatalError);
     }
-    
+
     if( true )
         checkMeshDict cmd(meshDict_);
-    
+
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
-	
-    if( meshDict_.found("subsetFileName") )
+
+    if( surfacePtr_->featureEdges().size() != 0 )
     {
-        const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-        surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
+        //- create surface patches based on the feature edges
+        //- and update the meshDict based on the given data
+        triSurfacePatchManipulator manipulator(*surfacePtr_);
+
+        const triSurf* surfaceWithPatches =
+            manipulator.surfaceWithPatches(&meshDict_);
+
+        //- delete the old surface and assign the new one
+        deleteDemandDrivenData(surfacePtr_);
+        surfacePtr_ = surfaceWithPatches;
     }
-	
+
     generateOctree();
-    
+
     generateMesh();
 }
 
@@ -344,7 +309,7 @@ hexMeshGenerator::hexMeshGenerator
         )
     ),
     octreePtr_(NULL),
-	mesh_(time)
+    mesh_(time)
 {
     fileName surfaceFile = meshDict_.lookup("surfaceFile");
 

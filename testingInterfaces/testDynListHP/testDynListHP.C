@@ -32,7 +32,7 @@ Description
 
 #include "argList.H"
 #include "Time.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "pointFieldPMG.H"
 #include "DynList.H"
 #include "FCWGraph.H"
@@ -46,11 +46,11 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	
+    
 //#   include "setRootCase.H"
 //#   include "createTime.H"
-	
-	//objectRegistry registry(runTime);
+    
+    //objectRegistry registry(runTime);
     
     for(label i=0;i<2;++i)
     {
@@ -75,29 +75,29 @@ int main(int argc, char *argv[])
     }
     
 
-	/*
-	for(label i=0;i<2;i++)
-	{
-		DynListHP<point*> l1;
+    /*
+    for(label i=0;i<2;i++)
+    {
+        DynListHP<point*> l1;
 
-		labelListPMG l2(1000000, 15);
-		
-		l2.append(13);
-		l2.append(18);
-		l2.shrink();
+        labelLongList l2(1000000, 15);
+        
+        l2.append(13);
+        l2.append(18);
+        l2.shrink();
         
         for(label i=0;i<10000000;++i)
             l2.append(i);
-		
-		//Info << "l2 " << l2 << endl;
-		
-		DynListHP<point> points(100000);
-		forAll(points, pI)
-			points[pI] = point(pI+1, pI+2, pI+3);
-		
-		points.append(point(1, 0, 0));
-		points.append(point(15, 5, 3));
-		points.append(point(2, 3, 1));
+        
+        //Info << "l2 " << l2 << endl;
+        
+        DynListHP<point> points(100000);
+        forAll(points, pI)
+            points[pI] = point(pI+1, pI+2, pI+3);
+        
+        points.append(point(1, 0, 0));
+        points.append(point(15, 5, 3));
+        points.append(point(2, 3, 1));
         
         FCWGraph<label, 8> lg(10000000);
         forAll(lg, i)
@@ -105,15 +105,15 @@ int main(int argc, char *argv[])
             FixedList<label, 8> lst(10);
             lg.setRow(i, lst);
         }
-		
-		forAll(points, pI)
-			l1.append(&points[pI]);
-	}
+        
+        forAll(points, pI)
+            l1.append(&points[pI]);
+    }
     
     if( Pstream::parRun() )
     {
         Pout << "Here" << endl;
-        labelListPMG data;
+        labelLongList data;
         if( Pstream::myProcNo() == 0 )
         {
             data.setSize(100);
@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
             Pout << "Values " << d << endl;
         }
     }
-	*/
+    */
     Info << "End\n" << endl;
     return 0;
 }

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -29,7 +28,9 @@ Description
 #include "polyMeshGenModifier.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 namespace Foam
 {
@@ -39,12 +40,12 @@ namespace Foam
 void polyMeshGenModifier::addProcessorFaces
 (
     const VRWGraph& procFaces,
-    const labelListPMG& facePatches
+    const labelLongList& facePatches
 )
 {
     Info << "Adding processor faces" << endl;
 
-    PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries_;
+    PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries_;
 
     labelList nAddedFaces(procBoundaries.size(), 0);
     forAll(facePatches, fI)
@@ -65,12 +66,12 @@ void polyMeshGenModifier::addProcessorFaces
     label endProcFaces(0);
     forAllReverse(procBoundaries, patchI)
     {
-        const writeProcessorPatch& wp = procBoundaries[patchI];
+        const processorBoundaryPatch& wp = procBoundaries[patchI];
         endProcFaces = Foam::max(endProcFaces, wp.patchStart()+wp.patchSize());
     }
 
     //- move faces to their new positions
-    labelListPMG newFaceLabel(nFaces, -1);
+    labelLongList newFaceLabel(nFaces, -1);
 
     if( endProcFaces != nFaces )
     {
@@ -116,7 +117,9 @@ void polyMeshGenModifier::addProcessorFaces
 
     //- renumber cells
     cellListPMG& cells = mesh_.cells_;
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];
@@ -137,7 +140,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
 {
     const label nProcPatches = mesh_.procBoundaries().size();
 
-    PtrList<writeProcessorPatch>& procBoundaries =
+    PtrList<processorBoundaryPatch>& procBoundaries =
         this->procBoundariesAccess();
 
     procBoundaries.setSize(nProcPatches + 1);
@@ -151,7 +154,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
     procBoundaries.set
     (
         nProcPatches,
-        new writeProcessorPatch
+        new processorBoundaryPatch
         (
             name,
             "processor",
@@ -167,7 +170,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
 
 bool polyMeshGenModifier::removeEmptyProcessorPatches()
 {
-    PtrList<writeProcessorPatch>& procBoundaries =
+    PtrList<processorBoundaryPatch>& procBoundaries =
         this->procBoundariesAccess();
 
     label nValidPatches(0);
@@ -180,7 +183,7 @@ bool polyMeshGenModifier::removeEmptyProcessorPatches()
     if( nValidPatches == procBoundaries.size() )
         return false;
 
-    PtrList<writeProcessorPatch> newProcBoundaries(nValidPatches);
+    PtrList<processorBoundaryPatch> newProcBoundaries(nValidPatches);
 
     nValidPatches = 0;
     forAll(procBoundaries, patchI)
@@ -190,7 +193,7 @@ bool polyMeshGenModifier::removeEmptyProcessorPatches()
             newProcBoundaries.set
             (
                 nValidPatches++,
-                new writeProcessorPatch(procBoundaries[patchI])
+                new processorBoundaryPatch(procBoundaries[patchI])
             );
         }
     }

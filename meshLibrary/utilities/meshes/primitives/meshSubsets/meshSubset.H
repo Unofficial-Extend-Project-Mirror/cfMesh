@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshSubset
@@ -54,28 +53,32 @@ class VRWGraph;
 
 class meshSubset
 {
-	// Private data
+    // Private data
         //- name of the given subset
         word name_;
-    
+
         //- type of subset
         label type_;
-    
+
         //- labels of elements
         HashSet<label> data_;
 
 public:
-    
+
     // Enumerators
 
         enum subsetType_
         {
+            UNKNOWN = 0,
             CELLSUBSET = 1,
             FACESUBSET = 2,
-            POINTSUBSET = 4
+            POINTSUBSET = 4,
+            FEATUREEDGESUBSET = 8
         };
 
     // Constructors
+        //- Null constructor
+        inline meshSubset();
 
         //- Construct from name. Creates an empty subset
         inline meshSubset(const word& name, const subsetType_&);
@@ -89,8 +92,14 @@ public:
             const ListType& elements
         );
 
-	// Destructor
-		~meshSubset();
+        //- Copy construct
+        inline meshSubset(const meshSubset&);
+
+        //- Construct from Istream
+        inline meshSubset(Istream&);
+
+    // Destructor
+        ~meshSubset();
 
 
     // Member Functions
@@ -99,7 +108,7 @@ public:
 
             //- Return name
             inline const word& name() const;
-        
+
             //- Type of subset
             inline label type() const;
 
@@ -108,30 +117,37 @@ public:
             inline void containedElements(ListType&) const;
 
         // Edit
-        
+
             //- add element label to subset
             inline void addElement(const label);
-            
+
             //- remove element from subset
             inline void removeElement(const label);
-            
+
             //- update subset after mesh modification
             //- the list contains new labels of mesh elements
             //- removed elements have a negative label
             template<class ListType>
             inline void updateSubset(const ListType&);
-            
+
             //- update subset after modification
             //- this modifier is used in case when elements are decomposed
             inline void updateSubset(const VRWGraph&);
-			
-		// Searches
-			//- find if the element exists in the subset
-			inline bool contains(const label) const;
+
+        // Searches
+            //- find if the element exists in the subset
+            inline bool contains(const label) const;
+
+    // operators
+
+            inline void operator=(const meshSubset&);
+            inline bool operator==(const meshSubset&) const;
+            inline bool operator!=(const meshSubset&) const;
 
     // IOstream operators
 
-			friend Ostream& operator<<(Ostream&, const meshSubset&);
+            friend inline Ostream& operator<<(Ostream&, const meshSubset&);
+            friend inline Istream& operator>>(Istream&, meshSubset&);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

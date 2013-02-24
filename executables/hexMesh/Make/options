@@ -8,4 +8,4 @@ EXE_LIBS = \
     -lmeshTools \
     -ltriSurface \
     -lfiniteVolume \
-    -lMeshLibrary
+    -lmeshLibrary

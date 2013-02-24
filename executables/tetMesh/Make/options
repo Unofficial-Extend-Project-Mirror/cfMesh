@@ -8,4 +8,5 @@ EXE_LIBS = \
     -lmeshTools \
     -ltriSurface \
     -lfiniteVolume \
-    -lMeshLibrary
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshLibrary

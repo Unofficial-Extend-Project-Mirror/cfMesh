@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -30,74 +29,132 @@ Description
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
+#include "polyMeshGenChecks.H"
 
 #include <map>
-
-// #define DEBUGSearch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-	
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void meshSurfaceOptimizer::classifySurfaceVertices()
 {
-    meshSurfacePartitioner mPart(surfaceEngine_);
-    const labelHashSet& corners = mPart.corners();
-    const labelHashSet& edgePoints = mPart.edgeNodes();
-    
+    const labelHashSet& corners = partitionerPtr_->corners();
+    const labelHashSet& edgePoints = partitionerPtr_->edgePoints();
+
     //- set all vertices to partition
     vertexType_ = PARTITION;
-	
+
     //- set corners
     forAllConstIter(labelHashSet, corners, it)
         vertexType_[it.key()] = CORNER;
-    
+
     //- set edges
     forAllConstIter(labelHashSet, edgePoints, it)
         vertexType_[it.key()] = EDGE;
-    
+
     if( Pstream::parRun() )
     {
         //- mark nodes at parallel boundaries
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
-        
+
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
             const label bpI = iter();
-            
+
             vertexType_[bpI] |= PROCBND;
         }
     }
 }
 
+label meshSurfaceOptimizer::findBadFaces
+(
+    labelHashSet& badFaces,
+    boolList& changedFace
+) const
+{
+    badFaces.clear();
+
+    const polyMeshGen& mesh = surfaceEngine_.mesh();
+
+    polyMeshGenChecks::checkFacePyramids
+    (
+        mesh,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    polyMeshGenChecks::checkCellPartTetrahedra
+    (
+        mesh,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    polyMeshGenChecks::checkFaceAreas
+    (
+        mesh,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh surface and octree
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
-	meshSurfaceEngine& surface,
+    const meshSurfaceEngine& surface,
     const meshOctree& octree
 )
 :
-	surfaceEngine_(surface),
+    surfaceEngine_(surface),
     meshOctree_(octree),
-	vertexType_(surface.boundaryPoints().size()),
-	trianglesPtr_(NULL),
-	pointTrianglesPtr_(NULL)
+    vertexType_(surface.boundaryPoints().size()),
+    partitionerPtr_(new meshSurfacePartitioner(surface)),
+    deletePartitioner_(true),
+    triMeshPtr_(NULL)
 {
-	classifySurfaceVertices();
+    classifySurfaceVertices();
+}
+
+meshSurfaceOptimizer::meshSurfaceOptimizer
+(
+    const meshSurfacePartitioner& partitioner,
+    const meshOctree& octree
+)
+:
+    surfaceEngine_(partitioner.surfaceEngine()),
+    meshOctree_(octree),
+    vertexType_(surfaceEngine_.boundaryPoints().size()),
+    partitionerPtr_(&partitioner),
+    deletePartitioner_(false),
+    triMeshPtr_(NULL)
+{
+    classifySurfaceVertices();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
-	deleteDemandDrivenData(trianglesPtr_);
-	deleteDemandDrivenData(pointTrianglesPtr_);
+    deleteDemandDrivenData(triMeshPtr_);
+
+    if( deletePartitioner_ )
+        deleteDemandDrivenData(partitionerPtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

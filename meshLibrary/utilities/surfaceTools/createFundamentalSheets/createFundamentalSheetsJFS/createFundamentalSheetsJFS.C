@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -33,7 +32,9 @@ Description
 
 #include "addToRunTimeSelectionTable.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGSearch
 
@@ -56,7 +57,7 @@ addToRunTimeSelectionTable
 
 void createFundamentalSheetsJFS::createInitialSheet()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     const label start = boundaries[0].patchStart();
     const label end
@@ -71,7 +72,9 @@ void createFundamentalSheetsJFS::createInitialSheet()
 
     LongList<labelPair> extrudeFaces(end-start);
 
+    # ifdef USE_OMP
     # pragma omp parallel for
+    # endif
     for(label faceI=start;faceI<end;++faceI)
         extrudeFaces[faceI-start] = labelPair(faceI, owner[faceI]);
 
@@ -80,7 +83,7 @@ void createFundamentalSheetsJFS::createInitialSheet()
 
 void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
@@ -98,23 +101,31 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 
     LongList<labelPair> front;
 
+    # ifdef USE_OMP
     const label nThreads = 2 * omp_get_num_procs();
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for
+        # endif
         forAll(patchCell, cellI)
             patchCell[cellI] = -1;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for
+        # endif
         for(label faceI=start;faceI<end;++faceI)
             patchCell[owner[faceI]] = mesh_.faceIsInPatch(faceI);
 
         //- create the front faces
         LongList<labelPair> localFront;
 
+        # ifdef USE_OMP
         # pragma omp for
+        # endif
         for(label faceI=start;faceI<end;++faceI)
         {
             const cell& c = cells[owner[faceI]];
@@ -135,7 +146,9 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
         }
 
         label frontStart(-1);
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             frontStart = front.size();
             front.setSize(front.size()+localFront.size());
@@ -168,8 +181,7 @@ createFundamentalSheetsJFS::createFundamentalSheetsJFS
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 createFundamentalSheetsJFS::~createFundamentalSheetsJFS()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

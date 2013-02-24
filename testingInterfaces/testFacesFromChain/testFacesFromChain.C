@@ -40,54 +40,54 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	labelList chainPoints(10);
-	forAll(chainPoints, pI)
-		chainPoints[pI] = pI;
-	
-	List<DynList<label> > pointPatches(10);
-	pointPatches[0].append(1);
-	pointPatches[0].append(2);
-	
-	pointPatches[1].append(2);
-	
-	pointPatches[2].append(2);
-	pointPatches[2].append(3);
-	
-	pointPatches[3].append(3);
-	
-	pointPatches[4].append(2);
-	pointPatches[4].append(3);
-	
-	pointPatches[5].append(2);
-	
-	pointPatches[6].append(0);
-	pointPatches[6].append(2);
-	
-	pointPatches[7].append(0);
+    labelList chainPoints(10);
+    forAll(chainPoints, pI)
+        chainPoints[pI] = pI;
+    
+    List<DynList<label> > pointPatches(10);
+    pointPatches[0].append(1);
+    pointPatches[0].append(2);
+    
+    pointPatches[1].append(2);
+    
+    pointPatches[2].append(2);
+    pointPatches[2].append(3);
+    
+    pointPatches[3].append(3);
+    
+    pointPatches[4].append(2);
+    pointPatches[4].append(3);
+    
+    pointPatches[5].append(2);
+    
+    pointPatches[6].append(0);
+    pointPatches[6].append(2);
+    
+    pointPatches[7].append(0);
 
-	pointPatches[8].append(0);
-	pointPatches[8].append(1);
-	
-	pointPatches[9].append(1);
-	
-	boundaryFacesGenerator::createFacesFromChain cffc
-	(
-		chainPoints,
-		pointPatches
-	);
-	
-	cffc.createFacesWithoutACorner();
-	
-	Info << "1. Created faces are " << cffc.createdFaces() << endl;
-	Info << "1. Face patches " << cffc.faceRegion() << endl;
-	Info << "1. Unresolved points " << cffc.unresolvedPoints() << endl;
-	
-	cffc.createFacesWithACorner(10);
-	
-	Info << "2. Created faces are " << cffc.createdFaces() << endl;
-	Info << "2. Face patches " << cffc.faceRegion() << endl;
-	Info << "2. Unresolved points " << cffc.unresolvedPoints() << endl;	
-	
+    pointPatches[8].append(0);
+    pointPatches[8].append(1);
+    
+    pointPatches[9].append(1);
+    
+    boundaryFacesGenerator::createFacesFromChain cffc
+    (
+        chainPoints,
+        pointPatches
+    );
+    
+    cffc.createFacesWithoutACorner();
+    
+    Info << "1. Created faces are " << cffc.createdFaces() << endl;
+    Info << "1. Face patches " << cffc.faceRegion() << endl;
+    Info << "1. Unresolved points " << cffc.unresolvedPoints() << endl;
+    
+    cffc.createFacesWithACorner(10);
+    
+    Info << "2. Created faces are " << cffc.createdFaces() << endl;
+    Info << "2. Face patches " << cffc.faceRegion() << endl;
+    Info << "2. Unresolved points " << cffc.unresolvedPoints() << endl;    
+    
     Info << "End\n" << endl;
     return 0;
 }

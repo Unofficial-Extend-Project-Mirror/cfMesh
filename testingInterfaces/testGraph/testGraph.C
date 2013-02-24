@@ -45,7 +45,7 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	
+    
 //#   include "setRootCase.H"
 //#   include "createTime.H"
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     
     //Info << "Orig graph " << origGraph << endl;
     //Info << "Reversed graph " << reverse << endl;
-	
+    
     Info << "End\n" << endl;
     return 0;
 }

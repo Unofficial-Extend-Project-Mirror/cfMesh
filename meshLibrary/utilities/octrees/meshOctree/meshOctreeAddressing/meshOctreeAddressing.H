@@ -1,33 +1,32 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshOctreeAddressing
 
 Description
     Automatic octree for mesh generation. This class checks if the current
-	octree resolution is enough to resolve all surface features
+    octree resolution is enough to resolve all surface features
 
 SourceFiles
     meshOctreeAddressing.C
@@ -61,38 +60,38 @@ class IOdictionary;
 class meshOctreeAddressing
 {
     // Private data
-		//- reference to the octree
-		const meshOctree& octree_;
-	
-		//- reference to the dictionary
-		const dictionary& meshDict_;
+        //- reference to the octree
+        const meshOctree& octree_;
+    
+        //- reference to the dictionary
+        const dictionary& meshDict_;
 
-		//- use DATA boxes
-		bool useDATABoxes_;
-	
-		//- number of created octree nodes
-		mutable label nNodes_;
+        //- use DATA boxes
+        bool useDATABoxes_;
+    
+        //- number of created octree nodes
+        mutable label nNodes_;
     
         //- coordinates of octree nodes
         mutable pointField* octreePointsPtr_;
-	
-		//- node labels
-		mutable VRWGraph* nodeLabelsPtr_;
+    
+        //- node labels
+        mutable VRWGraph* nodeLabelsPtr_;
     
         //- node leaves
-		mutable FRWGraph<label, 8>* nodeLeavesPtr_;
+        mutable FRWGraph<label, 8>* nodeLeavesPtr_;
     
-		//- identify which boxes should be used as mesh cells
-		mutable List<direction>* boxTypePtr_;
+        //- identify which boxes should be used as mesh cells
+        mutable List<direction>* boxTypePtr_;
         
         //- identify created nodes as OUTERNODE or INNERNODE
-		mutable List<direction>* nodeTypePtr_;
+        mutable List<direction>* nodeTypePtr_;
         
     // Additional addressing useful for some algorithms
         //- faces of the octree
         mutable VRWGraph* octreeFacesPtr_;
-        mutable labelListPMG* octreeFacesOwnersPtr_;
-        mutable labelListPMG* octreeFacesNeighboursPtr_;
+        mutable labelLongList* octreeFacesOwnersPtr_;
+        mutable labelLongList* octreeFacesNeighboursPtr_;
         
         //- octree box-faces addressing
         mutable VRWGraph* leafFacesPtr_;
@@ -122,7 +121,7 @@ class meshOctreeAddressing
         mutable VRWGraph* edgeFacesPtr_;
         
         //- global octree point label
-        mutable labelListPMG* globalPointLabelPtr_;
+        mutable labelLongList* globalPointLabelPtr_;
         
         //- global point to local label addressing
         mutable Map<label>* globalPointToLocalPtr_;
@@ -131,7 +130,7 @@ class meshOctreeAddressing
         mutable VRWGraph* pointProcsPtr_;
         
         //- global octree face label
-        mutable labelListPMG* globalFaceLabelPtr_;
+        mutable labelLongList* globalFaceLabelPtr_;
         
         //- global face label to local label addressing
         mutable Map<label>* globalFaceToLocalPtr_;
@@ -140,29 +139,29 @@ class meshOctreeAddressing
         mutable VRWGraph* faceProcsPtr_;
         
         //- global leaf label
-        mutable labelListPMG* globalLeafLabelPtr_;
+        mutable labelLongList* globalLeafLabelPtr_;
         
         //- global leaf label to local label addressing for octree leaves
         mutable Map<label>* globalLeafToLocalPtr_;
         
         //- leaf at procs
         mutable VRWGraph* leafAtProcsPtr_;
-	
-	// Private member functions
+    
+    // Private member functions
         //- calculate octreePointsPtr_
         void createOctreePoints() const;
         
-		//- calculate nodeLabelsPtr_
-		void createNodeLabels() const;
-	
-		//- calculate nodeLeavesPtr_
-		void createNodeLeaves() const;
-		
-		//- assemble boxTypePtr_ list
-		void findUsedBoxes() const;
-		
-		//- calculate nodeTypePtr_
-		void calculateNodeType() const;
+        //- calculate nodeLabelsPtr_
+        void createNodeLabels() const;
+    
+        //- calculate nodeLeavesPtr_
+        void createNodeLeaves() const;
+        
+        //- assemble boxTypePtr_ list
+        void findUsedBoxes() const;
+        
+        //- calculate nodeTypePtr_
+        void calculateNodeType() const;
         
         //- calculate faces
         void createOctreeFaces() const;
@@ -187,17 +186,17 @@ class meshOctreeAddressing
         
         //- calculate edge-faces
         void calculateEdgeFaces() const;
-	
-		//- Clear allocated data
-		void clearOut();
+    
+        //- Clear allocated data
+        void clearOut();
         void clearBoxTypes();
         void clearNodeAddressing();
         void clearOctreeFaces();
         void clearAddressing();
         void clearParallelAddressing();
-		
-		//- check if distinct parts are glued together
-		void checkGluedRegions();
+        
+        //- check if distinct parts are glued together
+        void checkGluedRegions();
     
     // Private member functions for parallel runs
     
@@ -218,29 +217,29 @@ public:
 
         //- Construct from surface and dictionary
         meshOctreeAddressing
-		(
-			const meshOctree& mo,
-			const dictionary& dict,
-			bool useDATABoxes = false
-		);
+        (
+            const meshOctree& mo,
+            const dictionary& dict,
+            bool useDATABoxes = false
+        );
 
     // Destructor
 
         ~meshOctreeAddressing();
 
-	// Enumerators
+    // Enumerators
 
-		enum octreeCubeTypes
-		{
-			NONE = 0,
-			MESHCELL = 1,
-			BOUNDARY = 2,
-			SPLITHEX = 4,
-			INNERNODE = 8,
-			OUTERNODE = 16,
-			BOUNDARYNODE = 32
-		};
-		
+        enum octreeCubeTypes
+        {
+            NONE = 0,
+            MESHCELL = 1,
+            BOUNDARY = 2,
+            SPLITHEX = 4,
+            INNERNODE = 8,
+            OUTERNODE = 16,
+            BOUNDARYNODE = 32
+        };
+        
     // Member Functions
         
         //- check if there exist any non-signly connected edges and vertices
@@ -248,35 +247,35 @@ public:
         //- for the cartesian template
         void checkAndFixIrregularConnections();
 
-		//- return number of octree nodes
-		inline label numberOfNodes() const;
+        //- return number of octree nodes
+        inline label numberOfNodes() const;
         
         //- return coordinates of octree vertices
         inline const pointField& octreePoints() const;
 
-		//- return nodeLabels
-		inline const VRWGraph& nodeLabels() const;
+        //- return nodeLabels
+        inline const VRWGraph& nodeLabels() const;
 
-		//- return nodeLeaves
-		inline const FRWGraph<label, 8>& nodeLeaves() const;
-		
-		//- return which octree boxes are used for mesh creation
-		inline const List<direction>& boxType() const;
+        //- return nodeLeaves
+        inline const FRWGraph<label, 8>& nodeLeaves() const;
+        
+        //- return which octree boxes are used for mesh creation
+        inline const List<direction>& boxType() const;
         
         //- return type of node (INNERNODE,or OUTERNODE)
         inline const List<direction>& nodeType() const;
-		
-		//- set box type
-		inline void setBoxType(const label boxI, const direction type);
+        
+        //- set box type
+        inline void setBoxType(const label boxI, const direction type);
         
         //- return octree faces, created for MESHCELL boxes
         inline const VRWGraph& octreeFaces() const;
         
         //- return owners of octree faces
-        inline const labelListPMG& octreeFaceOwner() const;
+        inline const labelLongList& octreeFaceOwner() const;
         
         //- return neighbours of octree faces
-        inline const labelListPMG& octreeFaceNeighbour() const;
+        inline const labelLongList& octreeFaceNeighbour() const;
         
         //- return octree box-faces addressing
         inline const VRWGraph& leafFaces() const;
@@ -315,25 +314,25 @@ public:
         
         //- return edge-faces addressing
         inline const VRWGraph& edgeFaces() const;
-		
-		//- return const reference to meshOctree
-		inline const meshOctree& octree() const;
-		
-		//- find cubes around an edge (cubes must be at the same level)
-		void cubesAroundEdge
-		(
-			const label leafI,
-			const direction eI,
-			FixedList<label, 4>& edgeCubes
-		) const;
-		
-		//- find edge centre if it exists
-		label findEdgeCentre(const label leafI, const direction eI) const;
+        
+        //- return const reference to meshOctree
+        inline const meshOctree& octree() const;
+        
+        //- find cubes around an edge (cubes must be at the same level)
+        void cubesAroundEdge
+        (
+            const label leafI,
+            const direction eI,
+            FixedList<label, 4>& edgeCubes
+        ) const;
+        
+        //- find edge centre if it exists
+        label findEdgeCentre(const label leafI, const direction eI) const;
     
     // Access to data needed for parallel execution
     
         //- return global point labels
-        inline const labelListPMG& globalPointLabel() const;
+        inline const labelLongList& globalPointLabel() const;
         
         //- global point label to local label. Only for processors points
         inline const Map<label>& globalToLocalPointAddressing() const;
@@ -342,7 +341,7 @@ public:
         inline const VRWGraph& pointAtProcs() const;
         
         //- return global labels of octree faces
-        inline const labelListPMG& globalFaceLabel() const;
+        inline const labelLongList& globalFaceLabel() const;
         
         //- return global face label to face label. Only for processor faces
         inline const Map<label>& globalToLocalFaceAddressing() const;
@@ -351,7 +350,7 @@ public:
         inline const VRWGraph& faceAtProcs() const;
         
         //- return global labels of octree leaves
-        inline const labelListPMG& globalLeafLabel() const;
+        inline const labelLongList& globalLeafLabel() const;
         
         //- return processors which contain each octree leaf
         inline const VRWGraph& leafAtProcs() const;

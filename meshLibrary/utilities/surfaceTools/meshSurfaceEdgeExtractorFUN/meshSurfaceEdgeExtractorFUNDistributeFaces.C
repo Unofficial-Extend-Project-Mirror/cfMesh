@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -39,7 +38,9 @@ Description
 #include "meshSurfaceCheckEdgeTypes.H"
 #include "meshSurfaceEngine.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -59,13 +60,13 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     const pointFieldPMG& points = mse.points();
 
     //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
-    const triSurface& surface = meshOctree_.surface();
+    const triSurf& surface = meshOctree_.surface();
     const label nPatches = surface.patches().size();
 
     wordList patchNames(nPatches);
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners(bFaces.size());
-    labelListPMG newBoundaryPatches(bFaces.size());
+    labelLongList newBoundaryOwners(bFaces.size());
+    labelLongList newBoundaryPatches(bFaces.size());
 
     //- set patchNames
     forAll(surface.patches(), patchI)
@@ -80,16 +81,18 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
 
     //- find the region for face by finding the patch nearest
     //- to the face centre
+    # ifdef USE_OMP
     # pragma omp parallel for if( bFaces.size() > 100 ) schedule(guided)
+    # endif
     forAll(bFaces, bfI)
     {
         const point c = bFaces[bfI].centre(points);
 
-        label facePatch;
+        label facePatch, nt;
         point p;
         scalar distSq;
 
-        meshOctree_.findNearestSurfacePoint(p, distSq, facePatch, c);
+        meshOctree_.findNearestSurfacePoint(p, distSq, nt, facePatch, c);
 
         if( (facePatch > -1) && (facePatch < nPatches) )
         {
@@ -157,7 +160,7 @@ void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
     meshSurfaceCheckEdgeTypes edgeCheck(mse);
 
     label id = mesh_.addPointSubset("convexEdges");
-    labelListPMG helper;
+    labelLongList helper;
     edgeCheck.convexEdges(helper);
     forAll(helper, i)
     {

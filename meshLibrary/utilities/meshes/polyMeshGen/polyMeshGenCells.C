@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -33,7 +32,10 @@ Description
 #include "demandDrivenData.H"
 
 #include "labelPair.H"
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 namespace Foam
 {
@@ -81,16 +83,28 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
     //- start calculating owners and neighbours
     nIntFaces_ = 0;
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
     const label chunkSize = faces_.size() / nThreads + 1;
+    # else
+    const label nThreads = 1;
+    const label chunkSize = faces_.size();
+    # endif
 
     label nInternalFaces(0);
 
     List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads) reduction(+ : nInternalFaces)
+    # endif
     {
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
+
         const label startingFace = threadI * chunkSize;
         const label endFace =
             Foam::min(startingFace + chunkSize, faces_.size());
@@ -104,7 +118,9 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
             nei[faceI] = -1;
         }
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(cells_, cellI)
         {
             const cell& c = cells_[cellI];
@@ -148,10 +164,11 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp critical
-
+        # endif
         for(label i=0;i<nThreads;++i)
         {
             const LongList<labelPair>& data =
@@ -218,7 +235,18 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
 void polyMeshGenCells::calculateAddressingData() const
 {
     if( !ownerPtr_ || !neighbourPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenCells::calculateAddressingData() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateOwnersAndNeighbours();
+    }
 
     addressingDataPtr_ = new polyMeshGenAddressing(*this);
 }
@@ -299,7 +327,18 @@ polyMeshGenCells::~polyMeshGenCells()
 const polyMeshGenAddressing& polyMeshGenCells::addressingData() const
 {
     if( !addressingDataPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenCells::addressingData() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateAddressingData();
+    }
 
     return *addressingDataPtr_;
 }
@@ -452,7 +491,7 @@ void polyMeshGenCells::write() const
             )
         );
 
-        labelListPMG containedElements;
+        labelLongList containedElements;
         setIt->second.containedElements(containedElements);
 
         forAll(containedElements, i)

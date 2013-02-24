@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -43,11 +42,11 @@ label tetTessellation::findInitialElement(const point& p)
     label el = elmts_.size() - 1;
 
     //- find an tessellationElement which is influenced by the point
-	//- this brutal force search is not to be used for big tessellations
+    //- this brutal force search is not to be used for big tessellations
     const label nEl = elmts_.size();
-	for(label tI=0;tI<nEl;++tI)
-		if( elmts_[tI].influencedBy(points_, p) > VSM )
-			return tI;
+    for(label tI=0;tI<nEl;++tI)
+        if( elmts_[tI].influencedBy(points_, p) > VSM )
+            return tI;
 
     return el;
 }
@@ -58,15 +57,15 @@ void tetTessellation::treeSearch
     const point& p
 )
 {
-	tessellationElement& elmt = elmts_[elmtI];
-	
+    tessellationElement& elmt = elmts_[elmtI];
+    
     //- stop searching if there exist an element with unknown influence
     if( !pointOk_ ) return;
 
     //- stop searching it the tessellationElement is marked already
     if( elmt.influence_ & tessellationElement::GOOD ) return;
-		
-	const scalar infl = elmt.influencedBy(points_, p);
+        
+    const scalar infl = elmt.influencedBy(points_, p);
 
     if( infl > VSM )
     {
@@ -89,8 +88,8 @@ void tetTessellation::treeSearch
     {
         point& r = const_cast<point&>(p);
         Random rnd(0);
-		
-		const point crcm = elmt.crcmCentre(points_);
+        
+        const point crcm = elmt.crcmCentre(points_);
         point add =
             p -
             1e-7 *
@@ -127,8 +126,8 @@ void tetTessellation::treeSearch
 
 void tetTessellation::resetInfluences(const label elmtI)
 {
-	tessellationElement& elmt = elmts_[elmtI];
-	
+    tessellationElement& elmt = elmts_[elmtI];
+    
     if( !elmt.influence_ ) return;
 
     elmt.influence_ = tessellationElement::NONE;

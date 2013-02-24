@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -46,9 +45,9 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
 
     const scalar cosTol = Foam::cos(tol_);
 
-    const vectorField& normals = surf_.faceNormals();
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const vectorField& normals = surf_.facetNormals();
+    const VRWGraph& faceEdges = surf_.facetEdges();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     forAll(planarRegion_, triI)
     {
@@ -60,7 +59,7 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
             n /= mag(n);
 
         planarRegion_[triI] = nRegions_;
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
         label nFacetsInRegion(1);
 
@@ -68,19 +67,16 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
         {
             const label fLabel = front.removeLastElement();
 
-            const labelList& fEdges = faceEdges[fLabel];
-            forAll(fEdges, feI)
+            forAllRow(faceEdges, fLabel, feI)
             {
-                const label edgeI = fEdges[feI];
+                const label edgeI = faceEdges(fLabel, feI);
 
-                const labelList& eFaces = edgeFaces[edgeI];
-
-                if( eFaces.size() != 2 )
+                if( edgeFaces.sizeOfRow(edgeI) != 2 )
                     continue;
 
-                forAll(eFaces, efI)
+                forAllRow(edgeFaces, edgeI, efI)
                 {
-                    const label fNei = eFaces[efI];
+                    const label fNei = edgeFaces(edgeI, efI);
 
                     if( planarRegion_[fNei] != -1 )
                         continue;
@@ -168,7 +164,7 @@ void triSurfaceDetectPlanarRegions::detectedRegions(VRWGraph& graph) const
 
 void triSurfaceDetectPlanarRegions::detectedRegions(const word prefix) const
 {
-    List<labelListPMG> facetsInRegion(nRegions_);
+    List<labelLongList> facetsInRegion(nRegions_);
     forAll(planarRegion_, triI)
     {
         if( planarRegion_[triI] == -1 )
@@ -180,11 +176,11 @@ void triSurfaceDetectPlanarRegions::detectedRegions(const word prefix) const
     for(label regionI=0;regionI<nRegions_;++regionI)
     {
         const word subsetName = prefix+help::scalarToText(regionI);
-        const_cast<triSurf&>(surf_).addFacetsToSubset
-        (
-            subsetName,
-            facetsInRegion[regionI]
-        );
+
+        triSurf& surf = const_cast<triSurf&>(surf_);
+        const label subsetID = surf.addFacetSubset(subsetName);
+        forAll(facetsInRegion[regionI], fI)
+            surf.addFacetToSubset(subsetID, facetsInRegion[regionI][fI]);
     }
 }
 

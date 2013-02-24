@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     faceDecomposition
@@ -49,18 +48,18 @@ namespace Foam
 class faceDecomposition
 {
     // private data
-		const face& f_;
-	
-		const pointField& points_;
+        const face& f_;
+    
+        const pointField& points_;
 
     // private member functions
-		//- find concave vertex and return its position
-		//- in the face
-		label concaveVertex() const;
-	
-		//- decomposes the face into triangle starting from
-		//- the given vertex
-	    faceList decomposeFaceIntoTriangles(const label cv) const;
+        //- find concave vertex and return its position
+        //- in the face
+        label concaveVertex() const;
+    
+        //- decomposes the face into triangle starting from
+        //- the given vertex
+        faceList decomposeFaceIntoTriangles(const label cv) const;
 
         //- disallows bitwise construct
         void operator=(const faceDecomposition&);
@@ -75,27 +74,27 @@ public:
         //- construct components
         faceDecomposition
         (
-			const face&,
-			const pointField&
+            const face&,
+            const pointField&
         );
 
         //- Destructor
         ~faceDecomposition();
 
     // Member functions
-		//- check if the face is convex
-		bool isFaceConvex() const;
+        //- check if the face is convex
+        bool isFaceConvex() const;
 
-		//- check if the face is planar
-		bool isFacePlanar() const;
-		bool isFacePlanar(const scalar tol) const;
+        //- check if the face is planar
+        bool isFacePlanar() const;
+        bool isFacePlanar(const scalar tol) const;
 
-		//- decompose face into triangles
-		faceList decomposeFaceIntoTriangles() const;
-		
-		//- decompose face into the minimal number
-		//- of convex faces
-		faceList decomposeFace() const;
+        //- decompose face into triangles
+        faceList decomposeFaceIntoTriangles() const;
+        
+        //- decompose face into the minimal number
+        //- of convex faces
+        faceList decomposeFace() const;
 };
 
 

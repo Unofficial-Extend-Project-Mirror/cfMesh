@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -29,7 +28,9 @@ Description
 #include "polyMeshGenModifier.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGSearch
 
@@ -56,28 +57,40 @@ void polyMeshGenModifier::reorderBoundaryFaces()
     //- count internal and boundary faces
     const label numBFaces = faces.size() - nInternalFaces;
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     //- find faces which should be repositioned
     label nReplaced(0);
     labelList internalToChange;
     labelList boundaryToChange;
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
+    # else
+    const label nThreads(1);
+    # endif
     labelList nInternalToChangeThread(nThreads);
     labelList nBoundaryToChangeThread(nThreads);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI = 0;
+        # endif
 
         label& nItc = nInternalToChangeThread[threadI];
         label& nBtc = nBoundaryToChangeThread[threadI];
 
-        labelListPMG internalToChangeLocal, boundaryToChangeLocal;
+        labelLongList internalToChangeLocal, boundaryToChangeLocal;
 
         //- find the boundary faces within the range of internal faces
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
             if( neighbour[faceI] == -1 )
@@ -87,7 +100,9 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         nItc = internalToChangeLocal.size();
 
         //- find the internal faces within the range of boundary faces
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         for(label faceI=nInternalFaces;faceI<faces.size();++faceI)
         {
             if( neighbour[faceI] != -1 )
@@ -98,18 +113,24 @@ void polyMeshGenModifier::reorderBoundaryFaces()
 
         //- perform reduction such that all threads know how many faces
         //- need to be swapped
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         nReplaced += nBtc;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         {
             internalToChange.setSize(nReplaced);
             boundaryToChange.setSize(nReplaced);
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         label localStart(0);
         for(label i=0;i<threadI;++i)
@@ -125,10 +146,12 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         forAll(boundaryToChangeLocal, i)
             boundaryToChange[localStart++] = boundaryToChangeLocal[i];
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- start moving positions of faces
         # pragma omp for schedule(static)
+        # endif
         forAll(internalToChange, fI)
         {
             //- swap with the face at the location the face should be
@@ -140,10 +163,12 @@ void polyMeshGenModifier::reorderBoundaryFaces()
             newFaceLabel[boundaryToChange[fI]] = internalToChange[fI];
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- renumber cells
         # pragma omp for schedule(dynamic, 40)
+        # endif
         forAll(cells, cellI)
         {
             cell& c = cells[cellI];
@@ -155,7 +180,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
     }
 
     //- re-create boundary data
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     if( boundaries.size() != 1 )
     {
         boundaries.clear();
@@ -163,7 +188,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         boundaries.set
         (
             0,
-            new writePatch
+            new boundaryPatch
             (
                 "defaultFaces",
                 "patch",
@@ -200,7 +225,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
 
 void polyMeshGenModifier::reorderProcBoundaryFaces()
 {
-    PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries_;
+    PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries_;
     if( procBoundaries.size() == 0 )
     {
         Warning << "Processor " << Pstream::myProcNo() << " has no "
@@ -228,7 +253,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
             "void polyMeshGenModifier::reorderProcBoundaryFaces()"
         ) << "Missing some faces!" << abort(FatalError);
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     //- faces added after processor boundaries should be moved up front
     faceList facesAtEnd(shift);
@@ -263,7 +288,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
     }
 
     //- set correct patch size
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     if( boundaries.size() == 1 )
     {
         boundaries[0].patchSize() =
@@ -278,7 +303,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
         boundaries.set
         (
             0,
-            new writePatch
+            new boundaryPatch
             (
                 "defaultFaces",
                 "patch",
@@ -289,14 +314,16 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
     }
 
     //- renumber cells
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];
 
         forAll(c, fI)
-			if( newFaceLabel[c[fI]] != -1 )
-            	c[fI] = newFaceLabel[c[fI]];
+            if( newFaceLabel[c[fI]] != -1 )
+                c[fI] = newFaceLabel[c[fI]];
     }
 
     //- update face subsets

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -30,47 +29,41 @@ Description
 #include "surfaceIntersectionsOctree.H"
 #include "polyMeshGenAddressing.H"
 
-#define DEBUGCutter
-
-# ifdef DEBUGCutter
-#include "triSurfaceSearch.H"
-#include "octreeDataTriSurface.H"
-#include "octree.H"
-# endif
+//#define DEBUGCutter
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-	
+
 void meshSurfaceCutter::findInternalPointsAndIntersections()
 {
-	//- create poly edges
-	const polyMeshGenAddressing& addressingData = mesh_.addressingData();
-	const edgeList& edges = addressingData.edges();
-	const VRWGraph& faceEdges = addressingData.faceEdges();
+    //- create poly edges
+    const polyMeshGenAddressing& addressingData = mesh_.addressingData();
+    const edgeList& edges = addressingData.edges();
+    //const VRWGraph& faceEdges = addressingData.faceEdges();
 
     # ifdef DEBUGCutter
     Info << "Edges " << edges << endl;
     Info << "faceEdges " << faceEdges << endl;
     # endif
 
-	//- create the octree
-	surfaceIntersectionsOctree so(surface_, 100, 10);
-	
-	const pointFieldPMG& points = mesh_.points();
+    //- create the octree
+    surfaceIntersectionsOctree so(surface_, 100, 10);
 
-	if( !newPointsPtr_ )
-		newPointsPtr_ = new DynList<point>();
-	DynList<point>& newPoints = *newPointsPtr_;
-	newPoints.setSize(points.size());
-	
-	if( !newPointLabelPtr_ )
-		newPointLabelPtr_ = new labelList();
+    const pointFieldPMG& points = mesh_.points();
+
+    if( !newPointsPtr_ )
+        newPointsPtr_ = new DynList<point>();
+    DynList<point>& newPoints = *newPointsPtr_;
+    newPoints.setSize(points.size());
+
+    if( !newPointLabelPtr_ )
+        newPointLabelPtr_ = new labelList();
     labelList& newPointLabels = *newPointLabelPtr_;
-	newPointLabels.setSize(points.size());
-	newPointLabels = -1;
-	
+    newPointLabels.setSize(points.size());
+    newPointLabels = -1;
+
     const label np = points.size();
     nPoints_ = 0;
     Serr << "Creating internal vertices:";
@@ -88,14 +81,14 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
             newPoints.append(points[pI]);
             nPoints_++;
         }
-            
+
         if( index++ >= np / 10 )
         {
             Serr << ".";
             index = 0;
         }
     }
-    
+
     Info << endl;
 
     # ifdef DEBUGCutter
@@ -116,12 +109,12 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
 
     pointTriIndex_.setSize(points.size());
 
-	if( !edgePointPtr_ )
-		edgePointPtr_ = new edgeList();
+    if( !edgePointPtr_ )
+        edgePointPtr_ = new edgeList();
     edgeList& edgePoint = *edgePointPtr_;
-	edgePoint.setSize(edges.size());
-	edgePoint = edge(-1, -1);
-	//Info << "Number of edges is " << edges.size() << endl;
+    edgePoint.setSize(edges.size());
+    edgePoint = edge(-1, -1);
+    //Info << "Number of edges is " << edges.size() << endl;
 
     index = 0;
 
@@ -141,14 +134,14 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
             {
                 edgePoint[eI].start() = nPoints_;
                 edgePoint[eI].end() = -1;
-				
-				# ifdef DEBUGCutter
-				Info << nl << "1. Points for edge " << eI
-					<< " are " << edges[eI] << endl;
-				Info << "Start vertex " << points[e.start()] << endl;
-				Info << "End vertex " << points[e.end()] << endl;
-				Info << "Intersection " << ss.rawPoint() << endl;
-				# endif
+
+                # ifdef DEBUGCutter
+                Info << nl << "1. Points for edge " << eI
+                    << " are " << edges[eI] << endl;
+                Info << "Start vertex " << points[e.start()] << endl;
+                Info << "End vertex " << points[e.end()] << endl;
+                Info << "Intersection " << ss.rawPoint() << endl;
+                # endif
 
                 newPoints.append(ss.rawPoint());
                 pointTriIndex_.newElmt(nPoints_).append(ss.index());
@@ -180,14 +173,14 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
             {
                 edgePoint[eI].start() = -1;
                 edgePoint[eI].end() = nPoints_;
-				
-				# ifdef DEBUGCutter
-				Info << nl << "2. Points for edge " << eI
-					<< " are " << edges[eI] << endl;
-				Info << "Start vertex " << points[e.start()] << endl;
-				Info << "End vertex " << points[e.end()] << endl;
-				Info << "Intersection " << ss.rawPoint() << endl;
-				# endif
+
+                # ifdef DEBUGCutter
+                Info << nl << "2. Points for edge " << eI
+                    << " are " << edges[eI] << endl;
+                Info << "Start vertex " << points[e.start()] << endl;
+                Info << "End vertex " << points[e.end()] << endl;
+                Info << "Intersection " << ss.rawPoint() << endl;
+                # endif
 
                 newPoints.append(ss.rawPoint());
                 pointTriIndex_.newElmt(nPoints_).append(ss.index());
@@ -224,14 +217,14 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
                 edgePoint[eI].start() = nPoints_;
                 newPoints.append(ss.rawPoint());
 
-				# ifdef DEBUGCutter
-				Info << nl << "3. Points for edge " << eI
-					<< " are " << edges[eI] << endl;
-				Info << "Start vertex " << points[e.start()] << endl;
-				Info << "End vertex " << points[e.end()] << endl;
-				Info << "Intersection1 " << ss.rawPoint() << endl;
-				Info << "Intersection2 " << ss1.rawPoint() << endl;
-				# endif
+                # ifdef DEBUGCutter
+                Info << nl << "3. Points for edge " << eI
+                    << " are " << edges[eI] << endl;
+                Info << "Start vertex " << points[e.start()] << endl;
+                Info << "End vertex " << points[e.end()] << endl;
+                Info << "Intersection1 " << ss.rawPoint() << endl;
+                Info << "Intersection2 " << ss1.rawPoint() << endl;
+                # endif
                 pointTriIndex_.newElmt(nPoints_).append(ss.index());
                 nPoints_++;
 
@@ -243,8 +236,8 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
             }
             else if( ss.hit() || ss1.hit() )
             {
-				Info << "ss " << ss << endl;
-				Info << "ss1 " << ss1 << endl;
+                Info << "ss " << ss << endl;
+                Info << "ss1 " << ss1 << endl;
                 FatalErrorIn
                 (
                     "void meshSurfaceCutter::createInternalMeshPointsAndFaces()"
@@ -304,16 +297,16 @@ void meshSurfaceCutter::findInternalPointsAndIntersections()
         Info << "edgePoint["<<eI<<"] are "<< edgePoint[eI] << endl;
     }
     # endif
-	
+
 }
 
 void meshSurfaceCutter::createInternalMeshPointsAndFaces()
 {
-	findInternalPointsAndIntersections();
+    findInternalPointsAndIntersections();
 
     const labelList owner = mesh_.owner();
     const labelList neighbour = mesh_.neighbour();
-	const faceListPMG& faces = mesh_.faces();
+    //const faceListPMG& faces = mesh_.faces();
 
     //- Finally, create new internal faces
     Serr << "Creating internal faces:";
@@ -341,7 +334,7 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
             # ifdef DEBUGCutter
             Info << "Cutting face " << faceI << " for cell "
                 << owner[faceI] << " and cell " << neighbour[faceI] << endl;
-			Info << "Original face " << faces[faceI] << endl;
+            Info << "Original face " << faces[faceI] << endl;
             # endif
 
             //- create a mesh face from a face of a Voronoi polyhedron
@@ -350,11 +343,11 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
                 boundaryCell_[owner[faceI]] = true;
                 boundaryCell_[neighbour[faceI]] = true;
             }
-			
-			# ifdef DEBUGCutter
-			Info << "New faces for face are " << facesFromFace_[faceI] << endl;
-			# endif
-			
+
+            # ifdef DEBUGCutter
+            Info << "New faces for face are " << facesFromFace_[faceI] << endl;
+            # endif
+
             if( index++ >= neighbour.size() / 10 )
             {
                 Serr << ".";
@@ -366,19 +359,19 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
     Info << endl;
 
     //- delete surface topology addressing
-    const_cast<triSurface&>(surface_).clearTopology();
+    const_cast<triSurf&>(surface_).clearAddressing();
 
     //- store internal faces
     forAll(nFacesInCell_, cI)
     {
         nFacesInCell_[cI] = 0;
     }
-	
+
     nIntFaces_ = 0;
-	
-	polyMeshGenModifier meshModifier(mesh_);
-	cellListPMG& newCells = meshModifier.cellsAccess();
-	faceListPMG& newFaces = meshModifier.facesAccess();
+
+    polyMeshGenModifier meshModifier(mesh_);
+    cellListPMG& newCells = meshModifier.cellsAccess();
+    faceListPMG& newFaces = meshModifier.facesAccess();
 
     forAll(facesFromFace_, faceI)
     {
@@ -395,13 +388,13 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
         //- that the owner and/or neighbour cells consist of two parts
         if( facesFromFace_[faceI].size() > 1 )
         {
-			# ifdef DEBUCutter
+            # ifdef DEBUCutter
             Info << "face " << faceI << " " << faces[faceI]
                 << nl << "owner " << owner[faceI]
                 << nl << "neighbour " << neighbour[faceI]
                 << nl << " is decomposed into "
                 << facesFromFace_[faceI] << endl;
-			# endif
+            # endif
             problematicTopology_[owner[faceI]] = true;
             problematicTopology_[neighbour[faceI]] = true;
         }
@@ -410,20 +403,20 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
         {
             const face& f = facesFromFace_[faceI][fJ];
             # ifdef DEBUGCutter
-            Info << "Storing face " << nIntFaces_ << "  " << f 
+            Info << "Storing face " << nIntFaces_ << "  " << f
                 << " into cells " << owner[faceI]
                 << " and " << neighbour[faceI] << endl;
             # endif
             if( f.size() > 2 )
-			{
-				//- store cut internal faces
-				const label own = owner[faceI];
-				const label nei = neighbour[faceI];
-				newCells[own][nFacesInCell_[own]++] = nIntFaces_;
-				newCells[nei][nFacesInCell_[nei]++] = nIntFaces_;
-				newFaces.newElmt(nIntFaces_++) = f;
-			}
-                
+            {
+                //- store cut internal faces
+                const label own = owner[faceI];
+                const label nei = neighbour[faceI];
+                newCells[own][nFacesInCell_[own]++] = nIntFaces_;
+                newCells[nei][nFacesInCell_[nei]++] = nIntFaces_;
+                newFaces.newElmt(nIntFaces_++) = f;
+            }
+
         }
     }
 
@@ -468,7 +461,7 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
     {
         Info << "Checking closedness for cell " << cellI
             << " consisting of newFaces " << newCells[cellI] << endl;
-        
+
         const edgeList edges = newCells[cellI].edges(newFaces);
         labelList nAppearances(edges.size(), 0);
 
@@ -523,7 +516,7 @@ void meshSurfaceCutter::createInternalMeshPointsAndFaces()
                 ) << "Edge " << edges[eI]
                     << " appears once in cell " << cellI
                     << " and it is not on the boundary" << abort(FatalError);
-            } 
+            }
     }
     # endif
 }

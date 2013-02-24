@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -53,17 +52,17 @@ bool meshSurfaceCutter::faceCutter
         Info << "Point " << f[pI] << " " << mesh_.points()[f[pI]] << endl;
     # endif
 
-	const edgeList& edges = mesh_.addressingData().edges();
+    const edgeList& edges = mesh_.addressingData().edges();
     const VRWGraph& faceEdges = mesh_.addressingData().faceEdges();
-	labelList fEdges(faceEdges.sizeOfRow(faceI));
-	forAllRow(faceEdges, faceI, eI)
-		fEdges[eI] = faceEdges(faceI, eI);
-	
-	const labelList& newPointLabels = *newPointLabelPtr_;
-	const edgeList& edgePoint = *edgePointPtr_;
+    labelList fEdges(faceEdges.sizeOfRow(faceI));
+    forAllRow(faceEdges, faceI, eI)
+        fEdges[eI] = faceEdges(faceI, eI);
+    
+    const labelList& newPointLabels = *newPointLabelPtr_;
+    const edgeList& edgePoint = *edgePointPtr_;
 
     # ifdef DEBUG_meshSurfaceCutter
-	const DynList<point>& newPoints = *newPointsPtr_;
+    const DynList<point>& newPoints = *newPointsPtr_;
     forAll(f, pI)
         Info << "Original edge " << pI << "  " << edges[fEdges[pI]] << endl;
     # endif

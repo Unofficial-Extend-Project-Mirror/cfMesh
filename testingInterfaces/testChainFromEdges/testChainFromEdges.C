@@ -40,25 +40,25 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	DynList<edge> bEdges;
-	bEdges.append(edge(33, 34));
-	bEdges.append(edge(33, 12));
-	bEdges.append(edge(34, 12));
-	bEdges.append(edge(12, 35));
-	bEdges.append(edge(40, 41));
-	bEdges.append(edge(40, 12));
-	bEdges.append(edge(41, 36));
-	bEdges.append(edge(35, 36));
-	
-	bEdges.append(edge(41, 50));
-	bEdges.append(edge(48, 57));
-	bEdges.append(edge(50, 57));
-	bEdges.append(edge(41, 48));
-	
-	sortEdgesIntoChains seic(bEdges);
-	
-	Info << "Sorted chains are " << seic.sortedChains() << endl;
-	
+    DynList<edge> bEdges;
+    bEdges.append(edge(33, 34));
+    bEdges.append(edge(33, 12));
+    bEdges.append(edge(34, 12));
+    bEdges.append(edge(12, 35));
+    bEdges.append(edge(40, 41));
+    bEdges.append(edge(40, 12));
+    bEdges.append(edge(41, 36));
+    bEdges.append(edge(35, 36));
+    
+    bEdges.append(edge(41, 50));
+    bEdges.append(edge(48, 57));
+    bEdges.append(edge(50, 57));
+    bEdges.append(edge(41, 48));
+    
+    sortEdgesIntoChains seic(bEdges);
+    
+    Info << "Sorted chains are " << seic.sortedChains() << endl;
+    
     Info << "End\n" << endl;
     return 0;
 }

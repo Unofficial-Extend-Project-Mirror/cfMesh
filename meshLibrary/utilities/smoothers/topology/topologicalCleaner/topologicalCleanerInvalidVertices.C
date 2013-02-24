@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -89,12 +88,12 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
         {
             materialForCell[cI] = material;
 
-            DynList<label> frontCells(10);
+            DynList<label> frontCells;
             frontCells.append(cI);
 
             do
             {
-                DynList<label> newFrontCells(10);
+                DynList<label> newFrontCells;
 
                 forAll(frontCells, fcI)
                 {
@@ -190,7 +189,9 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
     boolList removeCell(mesh_.cells().size(), false);
     bool changed(false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(edgeFaces, edgeI)
         if( edgeFaces.sizeOfRow(edgeI) > 2 )
         {
@@ -209,8 +210,8 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
         const VRWGraph& edgesAtProcs = mse.beAtProcs();
 
         DynList<label> neiProcs;
-        std::map<label, labelListPMG> exchangeData;
-        std::map<label, labelListPMG>::iterator eIter;
+        std::map<label, labelLongList> exchangeData;
+        std::map<label, labelLongList>::iterator eIter;
 
         forAll(edgeFaces, eI)
         {
@@ -235,10 +236,10 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
                         neiProcs.append(neiProc);
                         exchangeData.insert
                         (
-                            std::pair<label, labelListPMG>
+                            std::pair<label, labelLongList>
                             (
                                 neiProc,
-                                labelListPMG()
+                                labelLongList()
                             )
                         );
 
@@ -255,7 +256,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
         forAll(neiProcs, procI)
         {
             eIter = exchangeData.find(neiProcs[procI]);
-            const labelListPMG& dataToSend = eIter->second;
+            const labelLongList& dataToSend = eIter->second;
 
             OPstream toOtherProc
             (

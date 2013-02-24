@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,24 +40,24 @@ addToRunTimeSelectionTable(objectRefinement, sphereRefinement, dictionary);
 sphereRefinement::sphereRefinement()
 :
     objectRefinement(),
-	centre_(),
-	radius_(-1.0)
+    centre_(),
+    radius_(-1.0)
 {}
 
 sphereRefinement::sphereRefinement
 (
-	const word& name,
+    const word& name,
     const scalar cellSize,
-	const point& centre,
-	const scalar radius
+    const point& centre,
+    const scalar radius
 )
 :
     objectRefinement(),
-	centre_(centre),
-	radius_(radius)
+    centre_(centre),
+    radius_(radius)
 {
-	setName(name);
-	setCellSize(cellSize);
+    setName(name);
+    setCellSize(cellSize);
 }
 
 sphereRefinement::sphereRefinement
@@ -69,7 +68,7 @@ sphereRefinement::sphereRefinement
 :
     objectRefinement(name, dict)
 {
-	this->operator=(dict);
+    this->operator=(dict);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -79,19 +78,19 @@ bool sphereRefinement::intersectsObject(const boundBox& bb) const
     const point& c = (bb.max() + bb.min()) / 2.0;
     
     if( magSqr(c - centre_) < sqr(radius_) )
-		return true;
-	
-	return false;
+        return true;
+    
+    return false;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 dictionary sphereRefinement::dict(bool ignoreType) const
 {
-	dictionary dict;
+    dictionary dict;
 
-	dict.add("cellSize", cellSize());
-	dict.add("type", type());
+    dict.add("cellSize", cellSize());
+    dict.add("type", type());
 
     dict.add("centre", centre_);
     dict.add("radius", radius_);
@@ -101,19 +100,19 @@ dictionary sphereRefinement::dict(bool ignoreType) const
 
 void sphereRefinement::write(Ostream& os) const
 {
-	os  << " type:   " << type()
+    os  << " type:   " << type()
         << " centre: " << centre_
         << " radius: " << radius_;
 }
 
 void sphereRefinement::writeDict(Ostream& os, bool subDict) const
 {
-	if( subDict )
+    if( subDict )
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-	
-	os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    
+    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -147,10 +146,10 @@ void sphereRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void sphereRefinement::operator=(const dictionary& d)"
-		) << "Entry centre is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void sphereRefinement::operator=(const dictionary& d)"
+        ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
@@ -161,10 +160,10 @@ void sphereRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void sphereRefinement::operator=(const dictionary& d)"
-		) << "Entry radius is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void sphereRefinement::operator=(const dictionary& d)"
+        ) << "Entry radius is not specified!" << exit(FatalError);
         radius_ = -1.0;
     }
 }
@@ -173,14 +172,14 @@ void sphereRefinement::operator=(const dictionary& d)
 
 Ostream& sphereRefinement::operator<<(Ostream& os) const
 {
-	os << "name " << name() << nl;
-	os << "cell size " << cellSize() << nl;
-	write(os);
-	return os;
+    os << "name " << name() << nl;
+    os << "cell size " << cellSize() << nl;
+    write(os);
+    return os;
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 } // End namespace Foam
 
 // ************************************************************************* //

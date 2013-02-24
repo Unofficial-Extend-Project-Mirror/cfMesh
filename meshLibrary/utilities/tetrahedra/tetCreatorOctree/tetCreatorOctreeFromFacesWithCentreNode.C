@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -35,43 +34,43 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void tetCreatorOctree::createTetsFromFacesWithCentreNode()
 {
-	Info << "Creating tets from faces with centre node" << endl;
+    Info << "Creating tets from faces with centre node" << endl;
     
-	const labelList& cubeLabel = *cubeLabelPtr_;
-	const VRWGraph& nodeLabels = octreeCheck_.nodeLabels();
-	const VRWGraph& subNodeLabels = *subNodeLabelsPtr_;
-	const FRWGraph<label, 8>& pointLeaves = octreeCheck_.nodeLeaves();
-	
-	if( !faceCentreLabelPtr_ )
-		faceCentreLabelPtr_ = new VRWGraph(cubeLabel.size());
-	VRWGraph& faceCentreLabel = *faceCentreLabelPtr_;
-	
-	//- start creating tets
-	forAll(pointLeaves, pointI)
-	{
-		label pl[8];
-		bool create(true);
-		
-		for(label plI=0;plI<8;++plI)
-		{
-			pl[plI] = pointLeaves(pointI, plI);
-			if( pl[plI] == -1 ) 
-			{
-				create = false;
-				break;
-			}
-		}
-			
-		if( !create )
-			continue;
-		
-		//- create 6 tets for each possible combination
-		//- there are 12 possible combinations
+    const labelList& cubeLabel = *cubeLabelPtr_;
+    const VRWGraph& nodeLabels = octreeCheck_.nodeLabels();
+    const VRWGraph& subNodeLabels = *subNodeLabelsPtr_;
+    const FRWGraph<label, 8>& pointLeaves = octreeCheck_.nodeLeaves();
+    
+    if( !faceCentreLabelPtr_ )
+        faceCentreLabelPtr_ = new VRWGraph(cubeLabel.size());
+    VRWGraph& faceCentreLabel = *faceCentreLabelPtr_;
+    
+    //- start creating tets
+    forAll(pointLeaves, pointI)
+    {
+        label pl[8];
+        bool create(true);
+        
+        for(label plI=0;plI<8;++plI)
+        {
+            pl[plI] = pointLeaves(pointI, plI);
+            if( pl[plI] == -1 ) 
+            {
+                create = false;
+                break;
+            }
+        }
+            
+        if( !create )
+            continue;
+        
+        //- create 6 tets for each possible combination
+        //- there are 12 possible combinations
         for(label fI=0;fI<6;++fI)
         {
             const label* fEdges = meshOctreeCubeCoordinates::faceEdges_[fI];
@@ -196,7 +195,7 @@ void tetCreatorOctree::createTetsFromFacesWithCentreNode()
                 }
             }
         }
-	}
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

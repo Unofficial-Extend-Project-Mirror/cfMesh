@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     matrix2D
@@ -42,7 +41,7 @@ SourceFiles
 
 namespace Foam
 {
-	
+
 /*---------------------------------------------------------------------------*\
                            Class matrix2D Declaration
 \*---------------------------------------------------------------------------*/
@@ -51,43 +50,43 @@ class matrix2D
 : public FixedList<FixedList<scalar, 2>, 2>
 {
     // Private members
-        mutable scalar det_;
-		mutable bool calculatedDet_;
-	
+        scalar det_;
+        bool calculatedDet_;
+
     // Private member functions
-		//- calculate matrix determinant
-		inline void calculateDeterminant() const;
-	
+        //- calculate matrix determinant
+        inline void calculateDeterminant();
+
 public:
 
-	// Constructors
-		//- Null constructor
-		explicit inline matrix2D();
+    // Constructors
+        //- Null constructor
+        explicit inline matrix2D();
 
-		//- Copy constructor
-		inline matrix2D(const matrix2D&);
+        //- Copy constructor
+        inline matrix2D(const matrix2D&);
 
-	// Destructor
-		inline ~matrix2D();
+    // Destructor
+        inline ~matrix2D();
 
-	// Member functions
-		//- return matrix determinant
-		inline scalar determinant() const;
+    // Member functions
+        //- return matrix determinant
+        inline scalar determinant();
 
-		//- return inverse matrix
-		inline matrix2D inverse() const;
+        //- return inverse matrix
+        inline matrix2D inverse();
 
-		//- find the solution of the system with the given rhs
-		inline FixedList<scalar, 2> solve
-		(
-			const FixedList<scalar, 2>& source
-		) const;
+        //- find the solution of the system with the given rhs
+        inline FixedList<scalar, 2> solve
+        (
+            const FixedList<scalar, 2>& source
+        );
 
-		//- return the first component of the solution vector
-		inline scalar solveFirst(const FixedList<scalar, 2>& source) const;
-		
-		//- return the second component of the solution vector
-		inline scalar solveSecond(const FixedList<scalar, 2>& source) const;
+        //- return the first component of the solution vector
+        inline scalar solveFirst(const FixedList<scalar, 2>& source);
+
+        //- return the second component of the solution vector
+        inline scalar solveSecond(const FixedList<scalar, 2>& source);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

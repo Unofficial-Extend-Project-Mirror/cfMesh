@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -52,13 +51,13 @@ namespace Foam
 void cartesianMeshExtractor::createPolyMesh()
 {
     Info << "Creating polyMesh from octree" << endl;
-	
-	const meshOctree& octree = octreeCheck_.octree();
-	
+
+    const meshOctree& octree = octreeCheck_.octree();
+
     //- give labels to cubes which will be used as mesh cells
-	const List<direction>& cType = octreeCheck_.boxType();
-	
-	labelList& leafCellLabel = *leafCellLabelPtr_;
+    const List<direction>& cType = octreeCheck_.boxType();
+
+    labelList& leafCellLabel = *leafCellLabelPtr_;
     label nCells(0);
     forAll(cType, leafI)
     {
@@ -67,43 +66,43 @@ void cartesianMeshExtractor::createPolyMesh()
             (octree.returnLeaf(leafI).procNo() != Pstream::myProcNo())
         )
             continue;
-        
+
         if( cType[leafI] & meshOctreeAddressing::MESHCELL )
         {
             leafCellLabel[leafI] = nCells++;
         }
     }
 
-	//- access to mesh data
-	polyMeshGenModifier meshModifier(mesh_);
-	faceListPMG& faces = meshModifier.facesAccess();
-	cellListPMG& cells = meshModifier.cellsAccess();
-		
-	//- start creating octree mesh
+    //- access to mesh data
+    polyMeshGenModifier meshModifier(mesh_);
+    faceListPMG& faces = meshModifier.facesAccess();
+    cellListPMG& cells = meshModifier.cellsAccess();
+
+    //- start creating octree mesh
     cells.setSize(nCells);
     List<direction> nFacesInCell(nCells, direction(0));
     label nFaces(0);
-    
+
     const VRWGraph& octreeFaces = octreeCheck_.octreeFaces();
-    const labelListPMG& owner = octreeCheck_.octreeFaceOwner();
-    const labelListPMG& neighbour = octreeCheck_.octreeFaceNeighbour();
-    
+    const labelLongList& owner = octreeCheck_.octreeFaceOwner();
+    const labelLongList& neighbour = octreeCheck_.octreeFaceNeighbour();
+
     //- map storing box label and a direction for each processor face
     //- The map stores data in the same order on both sides of processor
     //- boundaries. This is a consequence of Morton ordering of
     //- leaf boxes in the octree.
-    std::map<label, labelListPMG> procFaces;
-    
+    std::map<label, labelLongList> procFaces;
+
     forAll(octreeFaces, faceI)
     {
         const label own = owner[faceI];
         const label nei = neighbour[faceI];
-        
+
         const label ownLabel = leafCellLabel[own];
         label neiLabel(-1);
         if( nei != -1 )
             neiLabel = leafCellLabel[nei];
-        
+
         if( (ownLabel != -1) && (neiLabel != -1) )
         {
             ++nFaces;
@@ -114,11 +113,11 @@ void cartesianMeshExtractor::createPolyMesh()
         {
             ++nFaces;
             ++nFacesInCell[ownLabel];
-            
+
             if( (nei != -1) && (cType[nei] & meshOctreeAddressing::MESHCELL) )
             {
                 const label procNo = octree.returnLeaf(nei).procNo();
-                
+
                 procFaces[procNo].append(faceI);
             }
         }
@@ -126,47 +125,47 @@ void cartesianMeshExtractor::createPolyMesh()
         {
             ++nFaces;
             ++nFacesInCell[neiLabel];
-            
+
             if( (own != -1) && (cType[own] & meshOctreeAddressing::MESHCELL) )
             {
                 const label procNo = octree.returnLeaf(own).procNo();
-                
+
                 procFaces[procNo].append(faceI);
             }
         }
     }
-        
+
     //- case is a serial run
     faces.setSize(nFaces);
     forAll(cells, cI)
         cells[cI].setSize(nFacesInCell[cI]);
     nFacesInCell = 0;
-        
+
     //- calculate faces in processor patches
     if( Pstream::parRun() )
     {
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             meshModifier.procBoundariesAccess();
-        
+
         //- set the number of procBoundaries
         procBoundaries.setSize(procFaces.size());
         std::ostringstream ss;
         ss << Pstream::myProcNo();
         const word name("processor"+ss.str()+"to");
         label nProcBoundaries(nFaces), patchI(0);
-        
+
         //- allocate memory for processor patches
-        std::map<label, labelListPMG>::const_iterator iter;
+        std::map<label, labelLongList>::const_iterator iter;
         for(iter=procFaces.begin();iter!=procFaces.end();++iter)
         {
             const label procI = iter->first;
-            
+
             std::ostringstream ssNei;
             ssNei << procI;
             procBoundaries.set
             (
                 patchI,
-                new writeProcessorPatch
+                new processorBoundaryPatch
                 (
                     name+ssNei.str(),
                     "processor",
@@ -176,7 +175,7 @@ void cartesianMeshExtractor::createPolyMesh()
                     procI
                 )
             );
-            
+
             nProcBoundaries -= iter->second.size();
             ++patchI;
         }
@@ -187,15 +186,15 @@ void cartesianMeshExtractor::createPolyMesh()
         for(iter=procFaces.begin();iter!=procFaces.end();++iter)
         {
             procBoundaries[patchI].patchStart() = nProcBoundaries;
-            
-            const labelListPMG& patchFaces = iter->second;
-            
+
+            const labelLongList& patchFaces = iter->second;
+
             forAll(patchFaces, pfI)
             {
                 const label fLabel = patchFaces[pfI];
                 const label own = owner[fLabel];
                 const label nei = neighbour[fLabel];
-                
+
                 const label curCell = leafCellLabel[own];
                 label neiCell(-1);
                 if( nei != -1 )
@@ -229,7 +228,7 @@ void cartesianMeshExtractor::createPolyMesh()
                         << abort(FatalError);
                 }
             }
-            
+
             if( procBoundaries[patchI].patchSize() !=
                 (nProcBoundaries - procBoundaries[patchI].patchStart())
             )
@@ -238,30 +237,30 @@ void cartesianMeshExtractor::createPolyMesh()
                     "cartesianMeshExtractor::createPolyMesh()"
                 ) << "Invalid patch size!" << Pstream::myProcNo()
                     << abort(FatalError);
-            
+
             ++patchI;
         }
     }
-    
+
     nFaces = 0;
-    
+
     forAll(octreeFaces, faceI)
     {
         const label own = owner[faceI];
         const label nei = neighbour[faceI];
-        
+
         const label ownLabel = leafCellLabel[own];
         label neiLabel(-1);
         if( nei != -1 )
             neiLabel = leafCellLabel[nei];
-        
+
         if( (ownLabel != -1) && (neiLabel != -1) )
         {
             //- internal face
             faces[nFaces].setSize(octreeFaces.sizeOfRow(faceI));
             forAllRow(octreeFaces, faceI, pI)
                 faces[nFaces][pI] = octreeFaces(faceI, pI);
-            
+
             cells[ownLabel][nFacesInCell[ownLabel]++] = nFaces;
             cells[neiLabel][nFacesInCell[neiLabel]++] = nFaces;
             ++nFaces;
@@ -273,12 +272,12 @@ void cartesianMeshExtractor::createPolyMesh()
                 //- face at a parallel boundary
                 continue;
             }
-            
+
             //- boundary face
             faces[nFaces].setSize(octreeFaces.sizeOfRow(faceI));
             forAllRow(octreeFaces, faceI, pI)
                 faces[nFaces][pI] = octreeFaces(faceI, pI);
-            
+
             cells[ownLabel][nFacesInCell[ownLabel]++] = nFaces;
             ++nFaces;
         }
@@ -289,24 +288,24 @@ void cartesianMeshExtractor::createPolyMesh()
                 //- face at a parallel boundary
                 continue;
             }
-            
+
             //- boundary face
             faces[nFaces].setSize(octreeFaces.sizeOfRow(faceI));
             faces[nFaces][0] = octreeFaces(faceI, 0);
             for(label pI=octreeFaces.sizeOfRow(faceI)-1;pI>0;--pI)
                 faces[nFaces][octreeFaces.sizeOfRow(faceI)-pI] =
                     octreeFaces(faceI, pI);
-            
+
             cells[neiLabel][nFacesInCell[neiLabel]++] = nFaces;
             ++nFaces;
         }
     }
-        
+
     # ifdef DEBUGMesh
     label nProcBoundaries(0);
     forAll(procBoundaries, patchI)
         nProcBoundaries += procBoundaries[patchI].patchSize();
-        
+
     if( faces.size() != (nProcBoundaries + nFaces) )
     {
         Serr << "Number of faces " << faces.size() << endl;
@@ -318,10 +317,10 @@ void cartesianMeshExtractor::createPolyMesh()
         ) << Pstream::myProcNo() << "This mesh is invalid!"
             << abort(FatalError);
     }
-    
+
     vectorField closedness(cells.size(), vector::zero);
     const labelList& owner = mesh_.owner();
-	const labelList& neighbour = mesh_.neighbour();
+    const labelList& neighbour = mesh_.neighbour();
     forAll(owner, faceI)
         if( owner[faceI] == -1 )
         {
@@ -353,8 +352,76 @@ void cartesianMeshExtractor::createPolyMesh()
 
     # endif
 
-	meshModifier.reorderBoundaryFaces();
-    
+    meshModifier.reorderBoundaryFaces();
+
+    if( octree.isQuadtree() )
+    {
+        //- generate empty patches
+        //- search for faces with a dominant z coordinate and store them
+        //- into an empty patch
+        meshSurfaceEngine mse(mesh_);
+        const vectorField& fNormals = mse.faceNormals();
+        const faceList::subList& bFaces = mse.boundaryFaces();
+        const labelList& fOwner = mse.faceOwners();
+        const vectorField& fCentres = mse.faceCentres();
+
+        const boundBox& bb = octree.rootBox();
+        const scalar tZ = 0.05 * (bb.max().z() - bb.min().z());
+
+        wordList patchNames(3);
+        patchNames[0] = "defaultFaces";
+        patchNames[1] = "unusedFacesBottom";
+        patchNames[2] = "unusedFacesTop";
+
+        VRWGraph boundaryFaces;
+        labelLongList newFaceOwner;
+        labelLongList newFacePatch;
+
+        forAll(fNormals, bfI)
+        {
+            //- store the face and its owner
+            boundaryFaces.appendList(bFaces[bfI]);
+            newFaceOwner.append(fOwner[bfI]);
+
+            const vector& fNormal = fNormals[bfI];
+
+            if( Foam::mag(fNormal.z()) > Foam::mag(fNormal.x() + fNormal.y()) )
+            {
+                if( Foam::mag(fCentres[bfI].z() - bb.min().z()) < tZ )
+                {
+                    newFacePatch.append(1);
+                }
+                else if( Foam::mag(fCentres[bfI].z() - bb.max().z()) < tZ )
+                {
+                    newFacePatch.append(2);
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void cartesianMeshExtractor::createPolyMesh()"
+                    ) << "Cannot distribute the face!!" << exit(FatalError);
+                }
+            }
+            else
+            {
+                newFacePatch.append(0);
+            }
+        }
+
+        //- replace the boundary with faces in correct patches
+        meshModifier.replaceBoundary
+        (
+            patchNames,
+            boundaryFaces,
+            newFaceOwner,
+            newFacePatch
+        );
+
+        meshModifier.boundariesAccess()[1].patchType() = "empty";
+        meshModifier.boundariesAccess()[2].patchType() = "empty";
+    }
+
     Info << "Finished creating polyMesh" << endl;
 }
 

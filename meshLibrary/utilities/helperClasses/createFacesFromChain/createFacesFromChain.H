@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     createFacesFromChain
@@ -43,67 +42,74 @@ SourceFiles
 
 namespace Foam
 {
-	
+
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
-                           Class createFacesFromChain Declaration
+                Class createFacesFromChain Declaration
 \*---------------------------------------------------------------------------*/
 
 class createFacesFromChain
 {
-	// Members
-		labelList chainPoints_;
-	
-		List<DynList<label> > regionsForPointAtPosition_;
-	
-		DynList<face> createdFaces_;
-		DynList<label> faceRegions_;
-	
-	// Private member functions
-		void findPointsBelongingToTheFace
-		(
-			const label currPos,
-			boolList& includePoints,
-			boolList& endPoints
-		) const;
-	
-		void shrinkTheChain
-		(
-			const label currPos,
-			const boolList& includePoints,
-			const boolList& endPoints
-		);
-	
-	public:
-		
-		createFacesFromChain
-		(
-			const labelList& chPoints,
-			const VRWGraph& pointRegions
-		);
-	
-		createFacesFromChain
-		(
-			const labelList& chPoints,
-			const List<DynList<label> >& pointRegions
-		);
-	
-		~createFacesFromChain();
-	
-	// Member functions
-		//- create faces which do not require an additional corner
-		void createFacesWithoutACorner();
-	
-		//- create faces with a corner
-		void createFacesWithACorner(const label);
-	
-		//- return created faces and the corresponding patches
-		const DynList<face>& createdFaces() const;
-		const DynList<label>& faceRegion() const;
-	
-		//- a list of points which have not yet been resolved
-		const labelList& unresolvedPoints() const;
+    // Members
+        labelList chainPoints_;
+
+        List<DynList<label> > regionsForPointAtPosition_;
+
+        DynList<face> createdFaces_;
+        DynList<label> faceRegions_;
+
+    // Private member functions
+        void findPointsBelongingToTheFace
+        (
+            const label currPos,
+            boolList& includePoints,
+            boolList& endPoints
+        ) const;
+
+        void shrinkTheChain
+        (
+            const label currPos,
+            const boolList& includePoints,
+            const boolList& endPoints
+        );
+
+    public:
+
+    // Constructors
+        //- construct from chain points and a graph of regions
+        //- to which each point belongs to
+        createFacesFromChain
+        (
+            const labelList& chPoints,
+            const VRWGraph& pointRegions
+        );
+
+        //- construct from chain points and regions
+        //- to which each point belongs to
+        createFacesFromChain
+        (
+            const labelList& chPoints,
+            const List<DynList<label> >& pointRegions
+        );
+
+    // Destructor
+
+        ~createFacesFromChain();
+
+    // Member functions
+        //- create faces which do not require an additional corner
+        void createFacesWithoutACorner();
+
+        //- create faces with a corner
+        void createFacesWithACorner(const label);
+
+        //- return created faces and the corresponding patches
+        const DynList<face>& createdFaces() const;
+        const DynList<label>& faceRegion() const;
+
+        //- a list of points which have not yet been resolved
+        const labelList& unresolvedPoints() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

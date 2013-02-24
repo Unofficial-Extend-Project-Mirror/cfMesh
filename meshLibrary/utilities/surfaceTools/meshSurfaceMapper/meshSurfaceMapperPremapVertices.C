@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -31,9 +30,12 @@ Description
 #include "meshSurfaceMapper.H"
 #include "meshOctree.H"
 #include "refLabelledPoint.H"
+#include "refLabelledPointScalar.H"
 #include "helperFunctionsPar.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -47,119 +49,141 @@ namespace Foam
 void meshSurfaceMapper::preMapVertices(const label nIterations)
 {
     Info << "Smoothing mesh surface before mapping. Iteration:" << flush;
-    
+
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const VRWGraph& pointFaces = surfaceEngine_.pointFaces();
-    
-    List<labelledPoint> preMapPositions(boundaryPoints.size());
-    
+    const VRWGraph& pointInFace = surfaceEngine_.pointInFaces();
+    const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+
+    List<labelledPointScalar> preMapPositions(boundaryPoints.size());
+    List<DynList<scalar, 6> > faceCentreDistances(bFaces.size());
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(bFaces, bfI)
+    {
+        const point& c = faceCentres[bfI];
+        const face& bf = bFaces[bfI];
+
+        faceCentreDistances[bfI].setSize(bf.size());
+
+        forAll(bf, pI)
+        {
+            faceCentreDistances[bfI][pI] = magSqr(points[bf[pI]] - c);
+        }
+    }
+
     for(label iterI=0;iterI<nIterations;++iterI)
     {
         //- use the shrinking laplace first
+        # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40)
+        # endif
         forAll(pointFaces, bpI)
         {
-            labelledPoint lp(0, vector::zero);
-            
-            forAllRow(pointFaces, bpI, bfI)
+            labelledPointScalar lp(bpI, vector::zero, 0.0);
+
+            const point& p = points[boundaryPoints[bpI]];
+
+            forAllRow(pointFaces, bpI, pfI)
             {
-                ++lp.pointLabel();
-                lp.coordinates() += faceCentres[pointFaces(bpI, bfI)];
+                const label bfI = pointFaces(bpI, pfI);
+                const point& fc = faceCentres[pointFaces(bpI, pfI)];
+                const label pos = pointInFace(bpI, pfI);
+                const scalar w
+                (
+                    max(magSqr(p - fc) / faceCentreDistances[bfI][pos], SMALL)
+                );
+                lp.coordinates() += w * faceCentres[bfI];
+                lp.scalarValue() += w;
             }
-            
+
             preMapPositions[bpI] = lp;
         }
-        
+
+        //- pointer needed in case of parallel calculation
+        const VRWGraph* bpAtProcsPtr(NULL);
+
         if( Pstream::parRun() )
         {
             const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+            bpAtProcsPtr = &bpAtProcs;
             const labelList& globalPointLabel =
                 surfaceEngine_.globalBoundaryPointLabel();
             const Map<label>& globalToLocal =
                 surfaceEngine_.globalToLocalBndPointAddressing();
-            
+
             //- collect data to be sent to other processors
-            std::map<label, LongList<refLabelledPoint> > exchangeData;
+            std::map<label, LongList<labelledPointScalar> > exchangeData;
             forAll(surfaceEngine_.bpNeiProcs(), i)
                 exchangeData.insert
                 (
                     std::make_pair
                     (
                         surfaceEngine_.bpNeiProcs()[i],
-                        LongList<refLabelledPoint>()
+                        LongList<labelledPointScalar>()
                     )
                 );
-            
+
             forAllConstIter(Map<label>, globalToLocal, it)
             {
                 const label bpI = it();
-                
+
                 forAllRow(bpAtProcs, bpI, procI)
                 {
                     const label neiProc = bpAtProcs(bpI, procI);
-                    
+
                     if( neiProc == Pstream::myProcNo() )
                         continue;
-                    
+
                     exchangeData[neiProc].append
                     (
-                        refLabelledPoint
+                        labelledPointScalar
                         (
                             globalPointLabel[bpI],
-                            preMapPositions[bpI]
+                            preMapPositions[bpI].coordinates(),
+                            preMapPositions[bpI].scalarValue()
                         )
                     );
                 }
             }
-            
+
             //- exchange data with other processors
-            LongList<refLabelledPoint> receivedData;
+            LongList<labelledPointScalar> receivedData;
             help::exchangeMap(exchangeData, receivedData);
-            
+
             //- combine collected data with the available data
             forAll(receivedData, i)
             {
-                const refLabelledPoint& rlp = receivedData[i];
-                const labelledPoint& lps = rlp.lPoint();
-                
-                const label bpI = globalToLocal[rlp.objectLabel()];
-                
-                labelledPoint& lp = preMapPositions[bpI];
-                lp.pointLabel() += lps.pointLabel();
+                const labelledPointScalar& lps = receivedData[i];
+
+                const label bpI = globalToLocal[lps.pointLabel()];
+
+                labelledPointScalar& lp = preMapPositions[bpI];
                 lp.coordinates() += lps.coordinates();
+                lp.scalarValue() += lps.scalarValue();
             }
         }
-        
-        //- calculate coordinates of points for searching
-        label size = preMapPositions.size();
-        # pragma omp parallel for shared(size)
-        for(label bpI=0;bpI<size;++bpI)
-        {
-            labelledPoint& lp = preMapPositions[bpI];
-            
-            if( lp.pointLabel() == 0 )
-            {
-                Warning << "Surface point " << bpI
-                    << " has no supporting faces" << endl;
-                continue;
-            }
-            
-            lp.coordinates() /= lp.pointLabel();
-        }
-        
+
         //- create the surface modifier and move the surface points
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-        
-        size = boundaryPoints.size();
-        # pragma omp parallel for if( size > 1000 ) shared(size) \
-        schedule(dynamic, Foam::max(100, size / (3 * omp_get_max_threads())))
-        for(label bpI=0;bpI<size;++bpI)
+        LongList<parMapperHelper> parallelBndNodes;
+
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(boundaryPoints, bpI)
         {
+            labelledPointScalar& lps = preMapPositions[bpI];
+
+            lps.coordinates() /= lps.scalarValue();
+
             const point& p = points[boundaryPoints[bpI]];
-            
-            label patch;
+
+            label patch, nearestTri;
             point pMap = p;
             scalar dSq;
 
@@ -167,21 +191,43 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             (
                 pMap,
                 dSq,
+                nearestTri,
                 patch,
-                preMapPositions[bpI].coordinates()
+                lps.coordinates()
             );
-            
+
             const point newP = 0.5 * (pMap + p);
-            
+
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
+
+            if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                parallelBndNodes.append
+                (
+                    parMapperHelper
+                    (
+                        newP,
+                        dSq,
+                        bpI,
+                        patch
+                    )
+                );
+            }
         }
-        
+
+        //- make sure that the vertices at inter-processor boundaries
+        //- are mapped onto the same location
+        mapToSmallestDistance(parallelBndNodes);
+
+        //- update the surface geometry of the
         surfaceModifier.updateGeometry();
-        surfaceModifier.syncVerticesAtParallelBoundaries();
-        
+
         Info << "." << flush;
     }
-    
+
     Info << endl;
 }
 

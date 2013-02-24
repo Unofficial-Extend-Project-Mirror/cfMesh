@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -48,9 +47,9 @@ label meshOctree::findLeafContainingVertex
     Info << "Finding leaf for vertex " << p << endl;
     # endif
 
-    const meshOctreeCube* oc = initialCubePtr_;
+    const meshOctreeCube* ocPtr = initialCubePtr_;
 
-    if( !oc->isVertexInside(rootBox_, p) )
+    if( !ocPtr->isVertexInside(rootBox_, p) )
     {
         # ifdef OCTREE_DEBUG
         Info << "Vertex " << p << " is not in the initial cube" << endl;
@@ -62,10 +61,10 @@ label meshOctree::findLeafContainingVertex
 
     do
     {
-        if( oc && !oc->isLeaf() )
+        if( ocPtr && !ocPtr->isLeaf() )
         {
             //- find a subCube containing the vertex;
-            const point c = oc->centre(rootBox_);
+            const point c = ocPtr->centre(rootBox_);
 
             label scI(0);
 
@@ -73,10 +72,10 @@ label meshOctree::findLeafContainingVertex
                 scI |= 1;
             if( p.y() >= c.y() )
                 scI |= 2;
-            if( p.z() >= c.z() )
+            if( !isQuadtree_ && p.z() >= c.z() )
                 scI |= 4;
 
-            oc = oc->subCube(scI);
+            ocPtr = ocPtr->subCube(scI);
         }
         else
         {
@@ -84,9 +83,9 @@ label meshOctree::findLeafContainingVertex
         }
     } while( !finished );
 
-    if( oc )
+    if( ocPtr )
     {
-        return oc->cubeLabel();
+        return ocPtr->cubeLabel();
     }
 
     return meshOctreeCubeBasic::OTHERPROC;
@@ -98,46 +97,52 @@ label meshOctree::findNeighbourOverNode
     const label nodeI
 ) const
 {
-    const meshOctreeCubeCoordinates coords(cc + regularityPositions_[18+nodeI]);
+    if( isQuadtree_ )
+        return -1;
 
-    const meshOctreeCube* nei = findCubeForPosition(coords);
+    const meshOctreeCubeCoordinates nc(cc + regularityPositions_[18+nodeI]);
 
-    if( !nei )
+    const meshOctreeCube* neiPtr = findCubeForPosition(nc);
+
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (coords.posX() >= levelLimiter) || (coords.posX() < 0) ||
-            (coords.posY() >= levelLimiter) || (coords.posY() < 0) ||
-            (coords.posZ() >= levelLimiter) || (coords.posZ() < 0)
+            (nc.posX() >= levelLimiter) || (nc.posX() < 0) ||
+            (nc.posY() >= levelLimiter) || (nc.posY() < 0) ||
+            (!isQuadtree_ && (nc.posZ() >= levelLimiter || nc.posZ() < 0)) ||
+            (isQuadtree_ && (nc.posZ() != initialCubePtr_->posZ()))
         )
         {
             return -1;
         }
-        else
+        else if( Pstream::parRun() )
         {
             return meshOctreeCubeBasic::OTHERPROC;
         }
+
+        return -1;
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        return nei->cubeLabel();
+        return neiPtr->cubeLabel();
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
             if( scPtr )
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
@@ -151,7 +156,7 @@ label meshOctree::findNeighbourOverNode
         "label meshOctree::findNeighbourOverNode("
         "const meshOctreeCubeCoordinates& cc,"
         "const label nodeI) const"
-    ) << "Should not come here!" << abort(FatalError);
+    ) << "Should not be here!" << abort(FatalError);
 
     return -1;
 }
@@ -163,55 +168,73 @@ void meshOctree::findNeighboursOverEdge
     DynList<label>& neighbourLeaves
 ) const
 {
-    const meshOctreeCubeCoordinates coords(cc + regularityPositions_[6+eI]);
+    if( isQuadtree_ && (eI >= 8) )
+    {
+        neighbourLeaves.append(-1);
+        return;
+    }
 
-    const meshOctreeCube* nei = findCubeForPosition(coords);
+    const meshOctreeCubeCoordinates nc(cc + regularityPositions_[6+eI]);
 
-    if( !nei )
+    const meshOctreeCube* neiPtr = findCubeForPosition(nc);
+
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (coords.posX() >= levelLimiter) || (coords.posX() < 0) ||
-            (coords.posY() >= levelLimiter) || (coords.posY() < 0) ||
-            (coords.posZ() >= levelLimiter) || (coords.posZ() < 0)
+            (nc.posX() >= levelLimiter) || (nc.posX() < 0) ||
+            (nc.posY() >= levelLimiter) || (nc.posY() < 0) ||
+            (!isQuadtree_ && (nc.posZ() >= levelLimiter || nc.posZ() < 0)) ||
+            (isQuadtree_ && (nc.posZ() != initialCubePtr_->posZ()))
         )
         {
             neighbourLeaves.append(-1);
         }
-        else
+        else if( Pstream::parRun() )
         {
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        neighbourLeaves.append(nei->cubeLabel());
+        neighbourLeaves.append(neiPtr->cubeLabel());
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
 
             if( scPtr )
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
         }
 
         const label* eNodes = meshOctreeCubeCoordinates::edgeNodes_[eI];
-        neighbourLeaves.append(sc[7-eNodes[1]]);
-        neighbourLeaves.append(sc[7-eNodes[0]]);
+
+        if( !isQuadtree_)
+        {
+            neighbourLeaves.append(sc[7-eNodes[1]]);
+            neighbourLeaves.append(sc[7-eNodes[0]]);
+        }
+        else
+        {
+            if( sc[7-eNodes[1]] >= 0 )
+                neighbourLeaves.append(sc[7-eNodes[1]]);
+            if( (sc[7-eNodes[0]] >= 0) && (sc[7-eNodes[0]] != sc[7-eNodes[1]]) )
+                neighbourLeaves.append(sc[7-eNodes[0]]);
+        }
     }
 }
 
@@ -222,6 +245,12 @@ void meshOctree::findNeighboursInDirection
     DynList<label>& neighbourLeaves
 ) const
 {
+    if( isQuadtree_ && dir >= 4 )
+    {
+        neighbourLeaves.append(-1);
+        return;
+    }
+
     label cpx = cc.posX();
     label cpy = cc.posY();
     label cpz = cc.posZ();
@@ -259,49 +288,50 @@ void meshOctree::findNeighboursInDirection
         break;
     }
 
-    const meshOctreeCube* nei =
+    const meshOctreeCube* neiPtr =
         findCubeForPosition
         (
             meshOctreeCubeCoordinates(cpx, cpy, cpz, cc.level())
         );
 
-    if( !nei )
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
             (cpx >= levelLimiter) || (cpx < 0) ||
             (cpy >= levelLimiter) || (cpy < 0) ||
-            (cpz >= levelLimiter) || (cpz < 0)
+            (!isQuadtree_ && (cpz >= levelLimiter || cpz < 0)) ||
+            (isQuadtree_ && (cpz != initialCubePtr_->posZ()))
         )
         {
             neighbourLeaves.append(-1);
         }
-        else
+        else if( Pstream::parRun() )
         {
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        neighbourLeaves.append(nei->cubeLabel());
+        neighbourLeaves.append(neiPtr->cubeLabel());
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
 
             if( scPtr )
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
@@ -309,7 +339,12 @@ void meshOctree::findNeighboursInDirection
 
         const label* fNodes = meshOctreeCubeCoordinates::faceNodes_[dir];
         for(label i=0;i<4;++i)
+        {
+            if( isQuadtree_ && sc[7-fNodes[i]] < 0 )
+                continue;
+
             neighbourLeaves.append(sc[7-fNodes[i]]);
+        }
     }
 }
 
@@ -321,7 +356,8 @@ void meshOctree::findNeighboursForLeaf
 {
     neighbourLeaves.clear();
 
-    for(label i=0;i<6;++i)
+    const label nCubeFaces = isQuadtree_?4:6;
+    for(label i=0;i<nCubeFaces;++i)
     {
         findNeighboursInDirection(cc, i, neighbourLeaves);
     }
@@ -336,15 +372,20 @@ void meshOctree::findAllLeafNeighbours
     neighbourLeaves.clear();
 
     //- neighbours over nodes
-    for(label i=0;i<8;++i)
-        neighbourLeaves.append(findNeighbourOverNode(cc, i));
+    if( !isQuadtree_ )
+    {
+        for(label i=0;i<8;++i)
+            neighbourLeaves.append(findNeighbourOverNode(cc, i));
+    }
 
     //- neighbours over edges
-    for(label i=0;i<12;++i)
+    const label nCubeEdges = isQuadtree_?8:12;
+    for(label i=0;i<nCubeEdges;++i)
         findNeighboursOverEdge(cc, i, neighbourLeaves);
 
     //- neighbours over faces
-    for(label i=0;i<6;++i)
+    const label nCubeFaces = isQuadtree_?4:6;
+    for(label i=0;i<nCubeFaces;++i)
         findNeighboursInDirection(cc, i, neighbourLeaves);
 }
 
@@ -362,7 +403,7 @@ void meshOctree::findLeavesForCubeVertex
 
     for(label i=0;i<8;++i)
     {
-    	positions[i] = cc + vrtLeavesPos_[vrtI][i];
+        positions[i] = cc + vrtLeavesPos_[vrtI][i];
     }
 
     forAll(positions, posI)
@@ -403,17 +444,18 @@ meshOctreeCube* meshOctree::findCubeForPosition
     if(
         (cpx >= levelLimiter) || (cpx < 0) ||
         (cpy >= levelLimiter) || (cpy < 0) ||
-        (cpz >= levelLimiter) || (cpz < 0)
+        (!isQuadtree_ && (cpz >= levelLimiter || cpz < 0)) ||
+        (isQuadtree_ && (cpz != initialCubePtr_->posZ()))
     )
     {
         return NULL;
     }
 
-    meshOctreeCube* nei(initialCubePtr_);
+    meshOctreeCube* neiPtr(initialCubePtr_);
 
     for(label i=(l-1);i>=0;--i)
     {
-        if( nei && !nei->isLeaf() )
+        if( neiPtr && !neiPtr->isLeaf() )
         {
             levelLimiter = (1 << i);
 
@@ -423,10 +465,10 @@ meshOctreeCube* meshOctree::findCubeForPosition
                 scI |= 1;
             if( cpy & levelLimiter )
                 scI |= 2;
-            if( cpz & levelLimiter )
+            if( !isQuadtree_ && (cpz & levelLimiter) )
                 scI |= 4;
 
-            nei = nei->subCube(scI);
+            neiPtr = neiPtr->subCube(scI);
         }
         else
         {
@@ -435,10 +477,10 @@ meshOctreeCube* meshOctree::findCubeForPosition
     }
 
     # ifdef OCTREE_DEBUG
-    Info << "Found position is " << *nei << endl;
+    Info << "Found position is " << *neiPtr << endl;
     # endif
 
-    return nei;
+    return neiPtr;
 }
 
 label meshOctree::findLeafLabelForPosition
@@ -446,19 +488,20 @@ label meshOctree::findLeafLabelForPosition
     const meshOctreeCubeCoordinates& cc
 ) const
 {
-    const meshOctreeCube* oc = findCubeForPosition(cc);
+    const meshOctreeCube* ocPtr = findCubeForPosition(cc);
 
-    if( oc && oc->isLeaf() )
+    if( ocPtr && ocPtr->isLeaf() )
     {
-        return oc->cubeLabel();
+        return ocPtr->cubeLabel();
     }
-    else if( !oc && (neiProcs_.size() != 0) )
+    else if( !ocPtr && (neiProcs_.size() != 0) )
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (cc.posX() < levelLimiter) || (cc.posX() >= 0) ||
-            (cc.posY() < levelLimiter) || (cc.posY() >= 0) ||
-            (cc.posZ() < levelLimiter) || (cc.posZ() >= 0)
+            (cc.posX() < levelLimiter) && (cc.posX() >= 0) &&
+            (cc.posY() < levelLimiter) && (cc.posY() >= 0) &&
+            ((!isQuadtree_ && (cc.posZ() < levelLimiter && cc.posZ() >= 0)) ||
+            (isQuadtree_ && (cc.posZ() == initialCubePtr_->posZ())))
         )
         {
             return meshOctreeCubeBasic::OTHERPROC;

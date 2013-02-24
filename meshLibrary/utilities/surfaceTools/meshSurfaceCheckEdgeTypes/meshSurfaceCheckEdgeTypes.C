@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -36,7 +35,9 @@ Description
 #include "labelledPoint.H"
 
 #include <map>
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -61,23 +62,33 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     boolList problematicPoint(pointFaces.size());
     edgeTypes_.setSize(edges.size());
 
+    # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
     if( bFaces.size() < 1000 )
         nThreads = 1;
+    # endif
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgeTypes_, edgeI)
             edgeTypes_[edgeI] = NONE;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(problematicPoint, pointI)
             problematicPoint[pointI] = false;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -116,10 +127,12 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- start checking feature edges
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgeFaces, edgeI)
         {
             if( edgeFaces.sizeOfRow(edgeI) == 2 )
@@ -128,10 +141,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                 const label f1 = edgeFaces(edgeI, 1);
 
                 if( facePatch[f0] == facePatch[f1] )
-                {
                     edgeTypes_[edgeI] |= PATCHEDGE;
-                    continue;
-                }
 
                 const edge e = edges[edgeI];
 
@@ -193,11 +203,11 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
         //- make sure that problematic points
         //- are consistent ove processor boundaries
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(bpNeiProcs, i)
             exchangeData.insert
             (
-                std::make_pair(bpNeiProcs[i], labelListPMG())
+                std::make_pair(bpNeiProcs[i], labelLongList())
             );
 
         forAllConstIter(Map<label>, globalToLocal, bpIter)
@@ -218,7 +228,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             }
         }
 
-        labelListPMG receiveData;
+        labelLongList receiveData;
         help::exchangeMap(exchangeData, receiveData);
 
         forAll(receiveData, i)
@@ -365,12 +375,11 @@ meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceCheckEdgeTypes::~meshSurfaceCheckEdgeTypes()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceCheckEdgeTypes::convexEdges(labelListPMG& convexEdges) const
+void meshSurfaceCheckEdgeTypes::convexEdges(labelLongList& convexEdges) const
 {
     convexEdges.clear();
 
@@ -381,7 +390,7 @@ void meshSurfaceCheckEdgeTypes::convexEdges(labelListPMG& convexEdges) const
     }
 }
 
-void meshSurfaceCheckEdgeTypes::concaveEdges(labelListPMG& concaveEdges) const
+void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
 {
     concaveEdges.clear();
 

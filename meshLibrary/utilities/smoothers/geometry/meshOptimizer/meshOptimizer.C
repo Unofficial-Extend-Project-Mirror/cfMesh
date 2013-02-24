@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -39,20 +38,20 @@ Description
 
 namespace Foam
 {
-	
+
 // * * * * * * * * Private member functions * * * * * * * * * * * * * * * * * //
-	
+
 const meshSurfaceEngine& meshOptimizer::meshSurface() const
 {
-	if( !msePtr_ )
-		msePtr_ = new meshSurfaceEngine(mesh_);
-	
-	return *msePtr_;
+    if( !msePtr_ )
+        msePtr_ = new meshSurfaceEngine(mesh_);
+
+    return *msePtr_;
 }
 
 void meshOptimizer::clearSurface()
 {
-	deleteDemandDrivenData(msePtr_);
+    deleteDemandDrivenData(msePtr_);
 }
 
 label meshOptimizer::findBadFaces
@@ -62,7 +61,7 @@ label meshOptimizer::findBadFaces
 ) const
 {
     badFaces.clear();
-    
+
     polyMeshGenChecks::checkFacePyramids
     (
         mesh_,
@@ -71,7 +70,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkFaceFlatness
     (
         mesh_,
@@ -80,7 +79,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkCellPartTetrahedra
     (
         mesh_,
@@ -89,7 +88,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkFaceAreas
     (
         mesh_,
@@ -98,9 +97,9 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-    
+
     return nBadFaces;
 }
 
@@ -111,7 +110,7 @@ label meshOptimizer::findLowQualityFaces
 ) const
 {
     badFaces.clear();
-    
+
     polyMeshGenChecks::checkFaceDotProduct
     (
         mesh_,
@@ -119,7 +118,7 @@ label meshOptimizer::findLowQualityFaces
         70.0,
         &badFaces
     );
-    
+
     polyMeshGenChecks::checkFaceSkewness
     (
         mesh_,
@@ -127,9 +126,9 @@ label meshOptimizer::findLowQualityFaces
         2.0,
         &badFaces
     );
-    
+
     const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-    
+
     return nBadFaces;
 }
 
@@ -138,31 +137,31 @@ label meshOptimizer::findLowQualityFaces
 // Construct from mesh
 meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 :
-	mesh_(mesh),
+    mesh_(mesh),
     vertexLocation_(mesh.points().size(), INSIDE),
-	msePtr_(NULL)
+    msePtr_(NULL)
 {
-	const meshSurfaceEngine& mse = meshSurface();
-	const labelList& bPoints = mse.boundaryPoints();
-	
+    const meshSurfaceEngine& mse = meshSurface();
+    const labelList& bPoints = mse.boundaryPoints();
+
     //- mark boundary vertices
-	forAll(bPoints, bpI)
+    forAll(bPoints, bpI)
         vertexLocation_[bPoints[bpI]] = BOUNDARY;
-    
+
     //- mark edge vertices
     meshSurfacePartitioner mPart(mse);
-    forAllConstIter(labelHashSet, mPart.edgeNodes(), it)
+    forAllConstIter(labelHashSet, mPart.edgePoints(), it)
         vertexLocation_[bPoints[it.key()]] = EDGE;
-    
+
     //- mark corner vertices
     forAllConstIter(labelHashSet, mPart.corners(), it)
         vertexLocation_[bPoints[it.key()]] = CORNER;
-    
+
     if( Pstream::parRun() )
     {
         const polyMeshGenAddressing& addresing = mesh_.addressingData();
         const VRWGraph& pointAtProcs = addresing.pointAtProcs();
-        
+
         forAll(pointAtProcs, pointI)
             if( pointAtProcs.sizeOfRow(pointI) != 0 )
                 vertexLocation_[pointI] |= PARALLELBOUNDARY;
@@ -173,7 +172,7 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 
 meshOptimizer::~meshOptimizer()
 {
-	clearSurface();
+    clearSurface();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

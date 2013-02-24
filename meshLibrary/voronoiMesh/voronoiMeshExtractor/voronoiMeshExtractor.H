@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     voronoiMeshExtractor
@@ -53,41 +52,41 @@ namespace Foam
 class voronoiMeshExtractor
 {
     // Private data
-		//- create tets
-		tetCreatorOctree tetCreator_;
-	
-		//- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- edges connected to a vertex in the tet mesh
-		mutable VRWGraph* pointEdgesPtr_;
-	
-		//- edges of the tetrahedrization
-		mutable LongList<edge>* edgesPtr_;
-	
-		//- tets around each edge
-		mutable VRWGraph* edgeTetsPtr_;
-	
-		//- is edge at the boundary
-		mutable boolList* boundaryEdgePtr_;
-		
+        //- create tets
+        tetCreatorOctree tetCreator_;
+    
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+    
+        //- edges connected to a vertex in the tet mesh
+        mutable VRWGraph* pointEdgesPtr_;
+    
+        //- edges of the tetrahedrization
+        mutable LongList<edge>* edgesPtr_;
+    
+        //- tets around each edge
+        mutable VRWGraph* edgeTetsPtr_;
+    
+        //- is edge at the boundary
+        mutable boolList* boundaryEdgePtr_;
+        
     // Private member functions
-		//- create and return addressing
-		void createAddressing() const;
-		
-		const VRWGraph& pointEdges() const;
-		const LongList<edge>& edges() const;
-		const VRWGraph& edgeTets() const;
-		const boolList& boundaryEdge() const;
-		
+        //- create and return addressing
+        void createAddressing() const;
+        
+        const VRWGraph& pointEdges() const;
+        const LongList<edge>& edges() const;
+        const VRWGraph& edgeTets() const;
+        const boolList& boundaryEdge() const;
+        
         //- create points of the voronoi mesh
         void createPoints();
 
         //- create mesh data
         void createPolyMesh();
-		
-		//- delete all pointer data
-		void clearOut();
+        
+        //- delete all pointer data
+        void clearOut();
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -104,8 +103,8 @@ public:
         voronoiMeshExtractor
         (
             const meshOctree& octree,
-			const IOdictionary& meshDict,
-			polyMeshGen& mesh
+            const IOdictionary& meshDict,
+            polyMeshGen& mesh
         );
 
     // Destructor
@@ -114,7 +113,7 @@ public:
 
 
     // Member Functions
-		void createMesh();
+        void createMesh();
 };
 
 

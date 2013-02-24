@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -32,142 +31,236 @@ Description
 #include "OFstream.H"
 #include "Time.H"
 
+#include "gzstream.h"
+
+#include "triSurface.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-	
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurf::calculateFaceGroups() const
+void triSurf::readFromFTR(const fileName& fName)
 {
-	nFaceGroups_ = 0;
-	
-	faceGroupPtr_ = new labelListPMG(triSurface::size(), -1);
-	labelListPMG& faceGroup = *faceGroupPtr_;
-	
-	const labelListList& faceEdges = this->faceEdges();
-	const labelListList& edgeFaces = this->edgeFaces();
-	
-	labelListPMG front;
-	
-	forAll(faceGroup, fI)
-	{
-		if( faceGroup[fI] != -1 )
-			continue;
-		
-		front.clear();
-		front.append(fI);
-		faceGroup[fI] = nFaceGroups_;
-		
-		while( front.size() != 0 )
-		{
-			const label fLabel = front.removeLastElement();
-			
-			const labelList& fEdges = faceEdges[fLabel];
-			forAll(fEdges, feI)
-			{
-				const label eI = fEdges[feI];
-				
-				if( edgeFaces[eI].size() != 2 )
-					continue;
-				
-				label nei = edgeFaces[eI][0];
-				if( nei == fLabel )
-					nei = edgeFaces[eI][1];
-				
-				if( faceGroup[nei] == -1 )
-				{
-					faceGroup[nei] = nFaceGroups_;
-					front.append(nei);
-				}
-			}
-		}
-		
-		++nFaceGroups_;
-	}
+    IFstream fStream(fName);
+
+    fStream >> triSurfFacets::patches_;
+
+    fStream >> triSurfPoints::points_;
+
+    fStream >> triSurfFacets::triangles_;
+}
+
+void triSurf::writeToFTR(const fileName& fName) const
+{
+    OFstream fStream(fName);
+
+    fStream << triSurfFacets::patches_;
+
+    fStream << nl;
+
+    fStream << triSurfPoints::points_;
+
+    fStream << nl;
+
+    fStream << triSurfFacets::triangles_;
+}
+
+void triSurf::readFromFMS(const fileName& fName)
+{
+    IFstream fStream(fName);
+
+    //- read the list of patches defined on the surface mesh
+    fStream >> triSurfFacets::patches_;
+
+    //- read points
+    fStream >> triSurfPoints::points_;
+
+    //- read surface triangles
+    fStream >> triSurfFacets::triangles_;
+
+    //- read feature edges
+    fStream >> triSurfFeatureEdges::featureEdges_;
+
+    List<meshSubset> subsets;
+
+    //- read point subsets
+    fStream >> subsets;
+    forAll(subsets, subsetI)
+        triSurfPoints::pointSubsets_.insert(subsetI, subsets[subsetI]);
+
+    subsets.clear();
+
+    //- read facet subsets
+    fStream >> subsets;
+    forAll(subsets, subsetI)
+        triSurfFacets::facetSubsets_.insert(subsetI, subsets[subsetI]);
+
+    subsets.clear();
+
+    //- read subsets on feature edges
+    fStream >> subsets;
+    forAll(subsets, subsetI)
+        triSurfFeatureEdges::featureEdgeSubsets_.insert
+        (
+            subsetI,
+            subsets[subsetI]
+        );
+}
+
+void triSurf::writeToFMS(const fileName& fName) const
+{
+    OFstream fStream(fName);
+
+    //- write patches
+    fStream << triSurfFacets::patches_;
+
+    fStream << nl;
+
+    //- write points
+    fStream << triSurfPoints::points_;
+
+    fStream << nl;
+
+    //- write triangles
+    fStream << triSurfFacets::triangles_;
+
+    fStream << nl;
+
+    //- write feature edges
+    fStream << triSurfFeatureEdges::featureEdges_;
+
+    fStream << nl;
+
+    //- write point subsets
+    List<meshSubset> subsets;
+    label i(0);
+    subsets.setSize(pointSubsets_.size());
+    forAllConstIter(Map<meshSubset>, pointSubsets_, it)
+        subsets[i++] = it();
+    fStream << subsets;
+
+    fStream << nl;
+
+    //- write subsets of facets
+    subsets.setSize(triSurfFacets::facetSubsets_.size());
+    i = 0;
+    forAllConstIter(Map<meshSubset>, triSurfFacets::facetSubsets_, it)
+        subsets[i++] = it();
+    fStream << subsets;
+
+    fStream << nl;
+
+    //- write subets of feature edges
+    subsets.setSize(triSurfFeatureEdges::featureEdgeSubsets_.size());
+    i = 0;
+    forAllConstIter
+    (
+        Map<meshSubset>,
+        triSurfFeatureEdges::featureEdgeSubsets_,
+        it
+    )
+        subsets[i++] = it();
+    fStream << subsets;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurf::triSurf(const fileName& name)
+triSurf::triSurf()
 :
-	triSurface(name),
-	triSubsets_(),
-	nFaceGroups_(-1),
-	faceGroupPtr_(NULL)
-{
-}
+    triSurfPoints(),
+    triSurfFacets(),
+    triSurfFeatureEdges(),
+    triSurfAddressing(triSurfPoints::points_, triSurfFacets::triangles_)
+{}
 
+//- Construct from parts
 triSurf::triSurf
 (
-	const List<labelledTri>& triangles,
-	const geometricSurfacePatchList& patches,
-	const pointField& points,
-	std::map<word, labelListPMG>& faceSubsets
+    const LongList<labelledTri>& triangles,
+    const geometricSurfacePatchList& patches,
+    const edgeLongList& featureEdges,
+    const pointField& points
 )
 :
-	triSurface(triangles, patches, points),
-	triSubsets_(),
-	nFaceGroups_(-1),
-	faceGroupPtr_(NULL)
+    triSurfPoints(points),
+    triSurfFacets(triangles, patches),
+    triSurfFeatureEdges(featureEdges),
+    triSurfAddressing(triSurfPoints::points_, triSurfFacets::triangles_)
+{}
+
+//- Read from file
+triSurf::triSurf(const fileName& fName)
+:
+    triSurfPoints(),
+    triSurfFacets(),
+    triSurfFeatureEdges(),
+    triSurfAddressing(triSurfPoints::points_, triSurfFacets::triangles_)
 {
-	std::map<word, labelListPMG>::const_iterator iter;
-	for(iter=faceSubsets.begin();iter!=faceSubsets.end();++iter)
-	{
-		triSubsets_.insert
-		(
-			std::pair<word, labelListPMG>(iter->first, iter->second)
-		);
-	}
+    readSurface(fName);
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 triSurf::~triSurf()
-{
-}
-	
+{}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurf::readFaceSubsets(const fileName& fName)
+void triSurf::readSurface(const fileName& fName)
 {
-	IFstream file(fName);
-	
-	//- read the number of subsets
-	label nSubsets;
-	file >> nSubsets;
-	
-	// read subsets
-	for(label subsetI=0;subsetI<nSubsets;++subsetI)
-	{
-		word name;
-		file >> name;
-		labelListPMG set;
-		file >> set;
-		
-		this->addFacetsToSubset(name, set);
-	}
+    if( fName.ext() == "fms" || fName.ext() == "FMS" )
+    {
+        readFromFMS(fName);
+    }
+    else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
+    {
+        readFromFTR(fName);
+    }
+    else
+    {
+        triSurface copySurface(fName);
+
+        //- copy the points
+        triSurfPoints::points_.setSize(copySurface.points().size());
+        forAll(copySurface.points(), pI)
+            triSurfPoints::points_[pI] = copySurface.points()[pI];
+
+        //- copy the triangles
+        triSurfFacets::triangles_.setSize(copySurface.size());
+        forAll(copySurface, tI)
+            triSurfFacets::triangles_[tI] = copySurface[tI];
+
+        //- copy patches
+        triSurfFacets::patches_ = copySurface.patches();
+    }
 }
 
-void triSurf::writeFaceSubsets(const fileName& fName) const
+void triSurf::writeSurface(const fileName& fName) const
 {
-	OFstream file(fName);
-	
-	label nSubsets(0);
-	
-	//- find the number of subsets
-	std::map<word, labelListPMG>::const_iterator iter;
-	for(iter = triSubsets_.begin();iter != triSubsets_.end();++iter)
-		++nSubsets;
-	file << nSubsets << nl;
-	
-	//- write subsets
-	for(iter = triSubsets_.begin();iter != triSubsets_.end();++iter)
-	{
-		file << iter->first << nl;
-		file << iter->second << nl;
-	}
+    if( fName.ext() == "fms" || fName.ext() == "FMS" )
+    {
+        writeToFMS(fName);
+    }
+    else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
+    {
+        writeToFTR(fName);
+    }
+    else
+    {
+        const pointField& pts = this->points();
+        const LongList<labelledTri>& facets = this->facets();
+        const geometricSurfacePatchList& patches = this->patches();
+
+        List<labelledTri> newTrias(facets.size());
+        forAll(facets, tI)
+            newTrias[tI] = facets[tI];
+
+        triSurface newSurf(newTrias, patches, pts);
+        newSurf.write(fName);
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

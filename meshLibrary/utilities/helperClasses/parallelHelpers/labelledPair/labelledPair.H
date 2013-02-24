@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     labelledPair
@@ -47,18 +46,18 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                 Class labelledPair Declaration
 \*---------------------------------------------------------------------------*/
-    
+
 class labelledPair
 {
     // Private data
         //- label
         label pLabel_;
-    
+
         //- pair data
         labelPair pair_;
-    
+
     public:
-        
+
     // Constructors
         //- Null construct
         labelledPair()
@@ -66,7 +65,7 @@ class labelledPair
             pLabel_(-1),
             pair_()
         {}
-        
+
         //- Construct from label and pair
         labelledPair
         (
@@ -77,32 +76,32 @@ class labelledPair
             pLabel_(pl),
             pair_(lp)
         {}
-            
+
     // Destructor
         ~labelledPair()
         {}
-            
+
     // Member functions
         //- return pair label
         inline label pairLabel() const
         {
             return pLabel_;
         }
-        
+
         //- return the pair
         inline const labelPair& pair() const
         {
             return pair_;
         }
-        
+
     // Member operators
-        
+
         inline void operator=(const labelledPair& lpp)
         {
             pLabel_ = lpp.pLabel_;
             pair_ = lpp.pair_;
         }
-        
+
         inline bool operator==
         (
             const labelledPair& lpp
@@ -110,13 +109,17 @@ class labelledPair
         {
             if( pLabel_ != lpp.pLabel_ )
                 return false;
-			
-			if( (pair_ != lpp.pair_) && (pair_.reversePair() != lpp.pair_) )
-				return false;
-            
-            return true;
+
+            const labelPair& op = lpp.pair_;
+
+            if( (pair_.first() == op.first()) && (pair_.second() == op.second()) )
+                return true;
+            if( (pair_.first() == op.second()) && (pair_.second() == op.first()) )
+                return true;
+
+            return false;
         }
-        
+
         inline bool operator!=
         (
             const labelledPair& lcc
@@ -124,33 +127,33 @@ class labelledPair
         {
             return !this->operator==(lcc);
         }
-		
-		inline bool operator<(const labelledPair& lpp) const
-		{
-			if( pLabel_ < lpp.pLabel_ )
-			{
-				return true;
-			}
-			else if( pLabel_ > lpp.pLabel_ )
-			{
-				return false;
-			}
-			
-			if(
-				(pair_.first() + pair_.second()) <
-				(lpp.pair().first() + lpp.pair().second())
-			)
-				return true;
-			
-			if(
-				Foam::min(pair_.first(), pair_.second()) <
-				Foam::min(lpp.pair().first(), lpp.pair().second())
-			)
-				return true;
-			
-			return false;
-		}
-        
+
+        inline bool operator<(const labelledPair& lpp) const
+        {
+            if( pLabel_ < lpp.pLabel_ )
+            {
+                return true;
+            }
+            else if( pLabel_ > lpp.pLabel_ )
+            {
+                return false;
+            }
+
+            if(
+                (pair_.first() + pair_.second()) <
+                (lpp.pair().first() + lpp.pair().second())
+            )
+                return true;
+
+            if(
+                Foam::min(pair_.first(), pair_.second()) <
+                Foam::min(lpp.pair().first(), lpp.pair().second())
+            )
+                return true;
+
+            return false;
+        }
+
     // Friend operators
         friend Ostream& operator<<
         (
@@ -170,7 +173,7 @@ class labelledPair
 
             return os;
         }
-        
+
         friend Istream& operator>>
         (
             Istream& is,
@@ -179,16 +182,16 @@ class labelledPair
         {
             // Read beginning of labelledPair
             is.readBegin("labelledPair");
-        
+
             is >> lpp.pLabel_;
             is >> lpp.pair_;
-            
+
             // Read end of labelledPair
             is.readEnd("labelledPair");
-        
+
             // Check state of Istream
             is.check("operator>>(Istream&, labelledPair");
-            
+
             return is;
         }
 };

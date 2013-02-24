@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     meshSurfaceMapper
@@ -38,7 +37,7 @@ SourceFiles
 
 #include "labelList.H"
 #include "pointField.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "parMapperHelper.H"
 
 #include <map>
@@ -68,7 +67,8 @@ class meshSurfaceMapper
         const meshOctree& meshOctree_;
     
         //- mesh surface partitioner
-        mutable meshSurfacePartitioner* surfaceEnginePartitionerPtr_;
+        mutable const meshSurfacePartitioner* surfaceEnginePartitionerPtr_;
+        const bool deletePartitioner_;
     
         //- triSurface partitioner
         mutable triSurfacePartitioner* surfPartitionerPtr_;
@@ -99,19 +99,19 @@ class meshSurfaceMapper
         
     // Private member functions
         //- map corner nodes to the boundary
-        void mapCorners(const labelListPMG& nodesToMap);
+        void mapCorners(const labelLongList& nodesToMap);
         
         //- find mapping distance for selected points
         void findMappingDistance
         (
-            const labelListPMG& nodesToMap,
+            const labelLongList& nodesToMap,
             std::map<label, scalar>& mappingDistance
         ) const;
         
     // Private member functions needed for parallel execution
         
         //- check if nodes at parallel boundaries are selected at all processors
-        void selectNodesAtParallelBnd(const labelListPMG&);
+        void selectNodesAtParallelBnd(const labelLongList&);
 
         //- map to the smallest distance
         //- makes sense for parallel calculations, only
@@ -130,6 +130,9 @@ public:
         //- Construct from meshSurfaceEngine and octree
         meshSurfaceMapper(const meshSurfaceEngine&, const meshOctree&);
 
+        //- Construct from meshSurfacePartitioner and octree
+        meshSurfaceMapper(const meshSurfacePartitioner&, const meshOctree&);
+
     // Destructor
 
         ~meshSurfaceMapper();
@@ -145,7 +148,7 @@ public:
         
         //- projects selected surface vertices to their nearest location
         //- on the surface mesh
-        void mapVerticesOntoSurface(const labelListPMG& nodesToMap);
+        void mapVerticesOntoSurface(const labelLongList& nodesToMap);
         
         //- projects corner and edge vertices onto their nearest location
         //- on the surface mesh
@@ -153,7 +156,7 @@ public:
         
         //- projects selected edge vertices onto their nearest
         //- locations on the surface mesh
-        void mapEdgeNodes(const labelListPMG& nodesToMap);
+        void mapEdgeNodes(const labelLongList& nodesToMap);
         
         //- projects surface vertices onto the surface with respect
         //- to the surface patch they belong to. Edges and corner are respected
@@ -161,7 +164,7 @@ public:
         
         //- projects selected surface vertices onto the surface with respect
         //- to the surface patch they belong to. Edges and corner are respected
-        void mapVerticesOntoSurfacePatches(const labelListPMG& nodesToMap);
+        void mapVerticesOntoSurfacePatches(const labelLongList& nodesToMap);
         
         //- a combination of mapping and smoothing intended for better
         //- feature capturing

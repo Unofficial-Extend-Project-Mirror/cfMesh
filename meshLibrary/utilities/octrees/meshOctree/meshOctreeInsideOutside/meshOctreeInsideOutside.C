@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -29,9 +28,11 @@ Description
 #include "meshOctreeInsideOutside.H"
 #include "triSurf.H"
 #include "boundBox.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -115,7 +116,9 @@ void meshOctreeInsideOutside::initialiseBoxes()
 {
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( leaves.size() > 1000 )
+    # endif
     forAll(leaves, leafI)
     {
         if( leaves[leafI]->hasContainedElements() )
@@ -134,141 +137,158 @@ void meshOctreeInsideOutside::frontalMarking()
     communicationCubes_.clear();
     neighbouringGroups_.clear();
 
-    labelListPMG frontCubes;
-    DynList<label> neighbours(24);
+    labelLongList frontCubes;
+    DynList<label> neighbours;
 
-    label nGroup(0), chunkI(0), nChunks, chunkSize;
+    label nGroup(0), nThreads(1);
 
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
 
     boolList commCubes(leaves.size(), false);
 
-    # pragma omp parallel if( leaves.size() > 1000 ) \
+    # ifdef USE_OMP
+    if( leaves.size() > 1000 )
+        nThreads = 3 * omp_get_num_procs();
+
+    # pragma omp parallel num_threads(nThreads) \
     private(frontCubes, neighbours)
+    # endif
     {
         LongList<std::pair<label, label> > threadCommPairs;
 
-        # pragma omp master
-        {
-            nChunks = 3 * omp_get_num_threads();
-            chunkSize = leaves.size() / nChunks + 1;
-        }
+        # ifdef USE_OMP
+        const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
 
-        # pragma omp barrier
+        const label chunkSize = leaves.size() / nThreads + 1;
 
-        while( chunkI < nChunks )
+        const label minLeaf = threadI * chunkSize;
+
+        const label maxLeaf = Foam::min(leaves.size(), minLeaf + chunkSize);
+
+        for(label leafI=minLeaf;leafI<maxLeaf;++leafI)
         {
-            label minLeaf, maxLeaf;
+            if( leaves[leafI]->hasContainedElements() )
+                continue;
+            if( cubeGroup_[leafI] != -1 )
+                continue;
+
+            label groupI;
+            # ifdef USE_OMP
             # pragma omp critical
-            minLeaf = chunkI++ * chunkSize;
+            # endif
+            groupI = nGroup++;
 
-            if( minLeaf >= leaves.size() )
-                break;
+            direction cType(meshOctreeCubeBasic::UNKNOWN);
+            frontCubes.clear();
+            frontCubes.append(leafI);
+            cubeGroup_[leafI] = groupI;
 
-            maxLeaf = Foam::min(leaves.size(), minLeaf + chunkSize);
+            labelLongList neiDATACubes;
 
-            for(label leafI=minLeaf;leafI<maxLeaf;++leafI)
+            while( frontCubes.size() )
             {
-                if( leaves[leafI]->hasContainedElements() )
-                    continue;
-                if( cubeGroup_[leafI] != -1 )
-                    continue;
+                const label fLabel = frontCubes.removeLastElement();
+                octree.findNeighboursForLeaf(fLabel, neighbours);
 
-                label groupI;
-                # pragma omp critical
-                groupI = nGroup++;
-
-                direction cType(meshOctreeCubeBasic::UNKNOWN);
-                frontCubes.clear();
-                frontCubes.append(leafI);
-                cubeGroup_[leafI] = groupI;
-
-                labelListPMG neiDATACubes;
-
-                while( frontCubes.size() )
+                forAll(neighbours, neiI)
                 {
-                    const label fLabel = frontCubes.removeLastElement();
-                    octree.findNeighboursForLeaf(fLabel, neighbours);
-
-                    forAll(neighbours, neiI)
+                    const label nei = neighbours[neiI];
+                    if( (nei >= minLeaf) && (nei < maxLeaf) )
                     {
-                        const label nei = neighbours[neiI];
-                        if( (nei >= minLeaf) && (nei < maxLeaf) )
-                        {
-                            if( cubeGroup_[nei] != -1 )
-                                continue;
+                        if( cubeGroup_[nei] != -1 )
+                            continue;
 
-                            if( leaves[nei]->hasContainedElements() )
-                            {
-                                neiDATACubes.append(nei);
-                            }
-                            else
-                            {
-                                frontCubes.append(nei);
-                                cubeGroup_[nei] = groupI;
-                            }
-                        }
-                        else if( nei == -1 )
+                        if( leaves[nei]->hasContainedElements() )
                         {
-                            cType = meshOctreeCubeBasic::OUTSIDE;
-                        }
-                        else if( nei == meshOctreeCubeBasic::OTHERPROC )
-                        {
-                            commCubes[fLabel] = true;
+                            neiDATACubes.append(nei);
                         }
                         else
                         {
-                            if( leaves[nei]->hasContainedElements() )
-                            {
-                                neiDATACubes.append(nei);
-                            }
-                            else
-                            {
-                                threadCommPairs.append
-                                (
-                                    std::make_pair(fLabel, nei)
-                                );
-                            }
+                            frontCubes.append(nei);
+                            cubeGroup_[nei] = groupI;
+                        }
+                    }
+                    else if( nei == -1 )
+                    {
+                        cType = meshOctreeCubeBasic::OUTSIDE;
+                    }
+                    else if( nei == meshOctreeCubeBasic::OTHERPROC )
+                    {
+                        commCubes[fLabel] = true;
+                    }
+                    else
+                    {
+                        if( leaves[nei]->hasContainedElements() )
+                        {
+                            neiDATACubes.append(nei);
+                        }
+                        else
+                        {
+                            threadCommPairs.append
+                            (
+                                std::make_pair(fLabel, nei)
+                            );
                         }
                     }
                 }
+            }
 
-                # pragma omp critical
-                {
-                    if( groupI >= boundaryDATACubes_.size() )
-                        boundaryDATACubes_.setSize(groupI+1);
+            # ifdef USE_OMP
+            # pragma omp critical
+            # endif
+            {
+                if( groupI >= boundaryDATACubes_.size() )
+                    boundaryDATACubes_.setSize(groupI+1);
 
-                    boundaryDATACubes_.setRow(groupI, neiDATACubes);
-                    groupType_[groupI] = cType;
-                }
+                boundaryDATACubes_.setRow(groupI, neiDATACubes);
+                groupType_[groupI] = cType;
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
-        # pragma omp master
-        neighbouringGroups_.setSize(nGroup);
-
-        # pragma omp barrier
-
-        forAll(threadCommPairs, pairI)
+        //- find group to neighbouring groups addressing
+        List<DynList<label> > localNeiGroups(nGroup);
+        forAll(threadCommPairs, cfI)
         {
-            const std::pair<label, label>& cubesPair = threadCommPairs[pairI];
-            const label groupI = cubeGroup_[cubesPair.first];
-            const label neiGroup = cubeGroup_[cubesPair.second];
+            const std::pair<label, label>& lp = threadCommPairs[cfI];
+            const label groupI = cubeGroup_[lp.first];
+            const label neiGroup = cubeGroup_[lp.second];
 
-            if( neiGroup >= nGroup )
-                FatalError << "neiGroup " << neiGroup << " is >= than "
+            if( (neiGroup >= nGroup) || (groupI >= nGroup) )
+                FatalError << "neiGroup " << neiGroup
+                    << " groupI " << groupI << " are >= than "
                     << "nGroups " << nGroup << abort(FatalError);
 
-            if(
-                (neiGroup != -1) &&
-                !neighbouringGroups_.contains(groupI, neiGroup)
-            )
+            if( neiGroup != -1 )
             {
-                # pragma omp critical
-                neighbouringGroups_.append(groupI, neiGroup);
+                localNeiGroups[groupI].appendIfNotIn(neiGroup);
+                localNeiGroups[neiGroup].appendIfNotIn(groupI);
+            }
+        }
+
+        # ifdef USE_OMP
+        # pragma omp critical
+        # endif
+        {
+            neighbouringGroups_.setSize(nGroup);
+
+            forAll(localNeiGroups, groupI)
+            {
+                const DynList<label>& lGroups = localNeiGroups[groupI];
+
+                neighbouringGroups_.appendIfNotIn(groupI, groupI);
+
+                forAll(lGroups, i)
+                {
+                    neighbouringGroups_.append(groupI, lGroups[i]);
+                }
             }
         }
     }
@@ -321,7 +341,7 @@ void meshOctreeInsideOutside::markOutsideCubes()
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
 
-    DynList<label> neighbours(24);
+    DynList<label> neighbours;
     label nChanged;
     bool keepUpdating;
 
@@ -385,8 +405,10 @@ void meshOctreeInsideOutside::markOutsideCubes()
             //- local boxes are their neighbours. If a local neighbour is
             //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
             //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findNeighboursForLeaf(receivedCoords[i], neighbours);
@@ -457,8 +479,8 @@ void meshOctreeInsideOutside::reviseDataBoxes()
     //- triangles in different patches
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
-    const triSurface& surface = octree.surface();
-    DynList<label> neighbours(60);
+    const triSurf& surface = octree.surface();
+    DynList<label> neighbours;
 
     boolList checkedPatches(leaves.size(), false);
 
@@ -471,8 +493,10 @@ void meshOctreeInsideOutside::reviseDataBoxes()
         LongList<meshOctreeCubeCoordinates> checkCoordinates;
         labelHashSet transferCoordinates;
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
+        # endif
         forAll(leaves, leafI)
             if( Pstream::parRun() && hasOutsideNeighbour_[leafI] )
             {
@@ -480,7 +504,9 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 forAll(neighbours, neiI)
                     if( neighbours[neiI] == meshOctreeCubeBasic::OTHERPROC )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         {
                             if( !transferCoordinates.found(leafI) )
                             {
@@ -549,8 +575,10 @@ void meshOctreeInsideOutside::reviseDataBoxes()
 
             //- check if any of the local neighbours is a data box with
             //- no OUTSIDE neighbours
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findAllLeafNeighbours(receivedCoords[i], neighbours);
@@ -707,8 +735,10 @@ void meshOctreeInsideOutside::markInsideCubes()
             receivedCoords
         );
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedCoords.size() > 100 ) \
         private(neighbours) schedule(dynamic, 20)
+        # endif
         forAll(receivedCoords, i)
         {
             octree.findNeighboursForLeaf(receivedCoords[i], neighbours);
@@ -760,8 +790,10 @@ void meshOctreeInsideOutside::markInsideCubes()
             //- local boxes are their neighbours. If a local neighbour is
             //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
             //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nChanged)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findNeighboursForLeaf(receivedCoords[i], neighbours);

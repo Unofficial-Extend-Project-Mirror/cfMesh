@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -39,7 +38,7 @@ inline label meshOctreeAddressing::numberOfNodes() const
     if( !nodeLabelsPtr_ )
         createNodeLabels();
     
-	return nNodes_;
+    return nNodes_;
 }
 
 inline const pointField& meshOctreeAddressing::octreePoints() const
@@ -49,55 +48,55 @@ inline const pointField& meshOctreeAddressing::octreePoints() const
     
     return *octreePointsPtr_;
 }
-	
+    
 inline const VRWGraph& meshOctreeAddressing::nodeLabels() const
 {
-	if( !nodeLabelsPtr_ )
-		createNodeLabels();
-	
-	return *nodeLabelsPtr_;
+    if( !nodeLabelsPtr_ )
+        createNodeLabels();
+    
+    return *nodeLabelsPtr_;
 }
 
 inline const FRWGraph<label, 8>& meshOctreeAddressing::nodeLeaves() const
 {
-	if( !nodeLeavesPtr_ )
-		createNodeLeaves();
-	
-	return *nodeLeavesPtr_;
+    if( !nodeLeavesPtr_ )
+        createNodeLeaves();
+    
+    return *nodeLeavesPtr_;
 }
-		
+        
 inline const List<direction>& meshOctreeAddressing::boxType() const
 {
-	if( !boxTypePtr_ )
-		findUsedBoxes();
-	
-	return *boxTypePtr_;
+    if( !boxTypePtr_ )
+        findUsedBoxes();
+    
+    return *boxTypePtr_;
 }
 
 inline void meshOctreeAddressing::setBoxType
 (
-	const label boxI,
-	const direction type
+    const label boxI,
+    const direction type
 )
 {
-	if( boxTypePtr_ )
-	{
-		List<direction>& boxType = *boxTypePtr_;
-		boxType[boxI] |= type;
-	}
+    if( boxTypePtr_ )
+    {
+        List<direction>& boxType = *boxTypePtr_;
+        boxType[boxI] |= type;
+    }
 }
 
 inline const meshOctree& meshOctreeAddressing::octree() const
 {
-	return octree_;
+    return octree_;
 }
 
 inline const List<direction>& meshOctreeAddressing::nodeType() const
 {
-	if( !nodeTypePtr_ )
-		calculateNodeType();
-	
-	return *nodeTypePtr_;
+    if( !nodeTypePtr_ )
+        calculateNodeType();
+    
+    return *nodeTypePtr_;
 }
 
 inline const VRWGraph& meshOctreeAddressing::octreeFaces() const
@@ -108,7 +107,7 @@ inline const VRWGraph& meshOctreeAddressing::octreeFaces() const
     return *octreeFacesPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::octreeFaceOwner() const
+inline const labelLongList& meshOctreeAddressing::octreeFaceOwner() const
 {
     if( !octreeFacesOwnersPtr_ )
         createOctreeFaces();
@@ -116,7 +115,7 @@ inline const labelListPMG& meshOctreeAddressing::octreeFaceOwner() const
     return *octreeFacesOwnersPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::octreeFaceNeighbour() const
+inline const labelLongList& meshOctreeAddressing::octreeFaceNeighbour() const
 {
     if( !octreeFacesNeighboursPtr_ )
         createOctreeFaces();
@@ -196,7 +195,7 @@ inline const VRWGraph& meshOctreeAddressing::edgeFaces() const
     return *edgeFacesPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::globalPointLabel() const
+inline const labelLongList& meshOctreeAddressing::globalPointLabel() const
 {
     if( !globalPointLabelPtr_ )
         calcGlobalPointLabels();
@@ -221,7 +220,7 @@ inline const VRWGraph& meshOctreeAddressing::pointAtProcs() const
     return *pointProcsPtr_;
 }
         
-inline const labelListPMG& meshOctreeAddressing::globalFaceLabel() const
+inline const labelLongList& meshOctreeAddressing::globalFaceLabel() const
 {
     if( !globalFaceLabelPtr_ )
         calcGlobalFaceLabels();
@@ -246,7 +245,7 @@ inline const VRWGraph& meshOctreeAddressing::faceAtProcs() const
     return *faceProcsPtr_;
 }
         
-inline const labelListPMG& meshOctreeAddressing::globalLeafLabel() const
+inline const labelLongList& meshOctreeAddressing::globalLeafLabel() const
 {
     if( !globalLeafLabelPtr_ )
         calcGlobalLeafLabels();

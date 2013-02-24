@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -35,7 +34,9 @@ Description
 #include "labelPair.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -59,7 +60,9 @@ bool allHexMesh(const polyMeshGen& mesh)
 
     bool allHex(true);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(cells, cellI)
     {
         const cell& c = cells[cellI];
@@ -80,7 +83,7 @@ label findColumnCells
 (
     const polyMeshGen& mesh,
     const label faceI,
-    labelListPMG& columnCells
+    labelLongList& columnCells
 )
 {
     columnCells.setSize(0);
@@ -92,7 +95,7 @@ label findColumnCells
 
     boolList addedCell(mesh.cells().size(), false);
 
-    labelListPMG front;
+    labelLongList front;
     front.append(faceI);
 
     while( front.size() )
@@ -129,7 +132,7 @@ label findColumnCells
     const word& columnCellSet
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     findColumnCells(mesh, faceI, columnCells);
 
     const label cID = mesh.addCellSubset(columnCellSet);
@@ -147,7 +150,9 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const boolList& columnCells
     const cellListPMG& cells = mesh.cells();
 
     bool selfIntersecting(false);
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
+    # endif
     forAll(cells, cellI)
     {
         if( !columnCells[cellI] || selfIntersecting )
@@ -185,11 +190,13 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const boolList& columnCells
     return selfIntersecting;
 }
 
-bool selfIntersectingColumn(const polyMeshGen& mesh, const labelListPMG& columnCells)
+bool selfIntersectingColumn(const polyMeshGen& mesh, const labelLongList& columnCells)
 {
     boolList cellsInColumn(mesh.cells().size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(columnCells, i)
         cellsInColumn[columnCells[i]] = true;
 
@@ -198,7 +205,7 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const labelListPMG& columnC
 
 bool selfIntersectingColumn(const polyMeshGen& mesh, const word& columnCellSet)
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
 
     const label setID = mesh.cellSubsetIndex(columnCellSet);
     mesh.cellsInSubset(setID, columnCells);
@@ -226,7 +233,7 @@ label findSheetCells
 (
     const polyMeshGen& mesh,
     const edge& sheetEdge,
-    labelListPMG& cellsInSheet
+    labelLongList& cellsInSheet
 )
 {
     cellsInSheet.setSize(0);
@@ -241,7 +248,7 @@ label findSheetCells
     const VRWGraph& edgeCells = mesh.addressingData().edgeCells();
     const VRWGraph& cellEdges = mesh.addressingData().cellEdges();
 
-    labelListPMG front;
+    labelLongList front;
 
     forAllRow(pointEdges, sheetEdge.start(), peI)
     {
@@ -318,7 +325,7 @@ label findSheetCells
     const word& sheetCellSet
 )
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     findSheetCells(mesh, sheetEdge, sheetCells);
 
     const label cID = mesh.addCellSubset(sheetCellSet);
@@ -339,8 +346,10 @@ bool hasSheetDigons(const polyMeshGen& mesh, const boolList& sheetCells)
 
     bool hasDigons(false);
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
     # pragma omp parallel for num_threads(nThreads) schedule(static)
+    # endif
     forAll(sheetCells, cellI)
     {
         if( !sheetCells[cellI] )
@@ -378,20 +387,26 @@ bool hasSheetDigons(const polyMeshGen& mesh, const boolList& sheetCells)
 bool hasSheetDigons
 (
     const polyMeshGen& mesh,
-    const labelListPMG& sheetCells
+    const labelLongList& sheetCells
 )
 {
     boolList sCells(mesh.cells().size());
 
+    # ifdef USE_OMP
     # pragma omp parallel if( mesh.cells().size() > 1000 )
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(sCells, i)
             sCells[i] = false;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(sheetCells, i)
             sCells[sheetCells[i]] = true;
     }
@@ -403,7 +418,7 @@ bool hasSheetDigons(const polyMeshGen& mesh, const word& sheetCellSet)
 {
     const label sheetID = mesh.cellSubsetIndex(sheetCellSet);
 
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     mesh.cellsInSubset(sheetID, sheetCells);
 
     return hasSheetDigons(mesh, sheetCells);
@@ -429,7 +444,7 @@ bool collapseColumn
     const label positionInFace
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     findColumnCells(mesh, faceI, columnCells);
 
     const label pointI = mesh.faces()[faceI][positionInFace];
@@ -442,7 +457,7 @@ bool collapseColumn
 bool collapseColumn
 (
     polyMeshGen& mesh,
-    const labelListPMG& columnCells,
+    const labelLongList& columnCells,
     const label pointI
 )
 {
@@ -552,7 +567,7 @@ bool collapseColumn
     //- find all points connected to the selected point
     boolList removePoint(mesh.points().size(), false);
 
-    labelListPMG front;
+    labelLongList front;
     front.append(pointI);
     while( front.size() )
     {
@@ -597,7 +612,7 @@ bool collapseColumn
             FatalErrorIn
             (
                 "bool collapseColumn(polyMeshGen&,"
-                "const labelListPMG&, const label"
+                "const labelLongList&, const label"
             ) << "Cannot find position in face " << faceI << exit(FatalError);
 
         const label pPos = f[pos];
@@ -781,7 +796,7 @@ bool collapseColumn
     const label pointI
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     const label cID = mesh.cellSubsetIndex(columnCellSet);
     mesh.cellsInSubset(cID, columnCells);
 
@@ -792,7 +807,7 @@ bool collapseColumn
 //- the sheet into a set of faces
 bool extractSheet(polyMeshGen& mesh, const edge& sheetEdge)
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     findSheetCells(mesh, sheetEdge, sheetCells);
 
     return extractSheet(mesh, sheetCells);
@@ -821,7 +836,7 @@ bool extractSheet(polyMeshGen& mesh, const boolList& sheetCells)
     VRWGraph pFaces;
     pFaces.reverseAddressing(mesh.points().size(), faces);
 
-    labelListPMG newPointLabel(mesh.points().size(), -1);
+    labelLongList newPointLabel(mesh.points().size(), -1);
 
     //- find faces which shall be removed from the mesh
     //- as a consequence of sheet extraction
@@ -1130,11 +1145,13 @@ bool extractSheet(polyMeshGen& mesh, const boolList& sheetCells)
     return true;
 }
 
-bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet)
+bool extractSheet(polyMeshGen& mesh, const labelLongList& cellsInSheet)
 {
     boolList sheetCells(mesh.cells().size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for
+    # endif
     forAll(cellsInSheet, i)
         sheetCells[cellsInSheet[i]] = true;
 
@@ -1143,7 +1160,7 @@ bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet)
 
 bool extractSheet(polyMeshGen& mesh, const word& sheetCellSet)
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     const label cID = mesh.cellSubsetIndex(sheetCellSet);
     mesh.cellsInSubset(cID, sheetCells);
 

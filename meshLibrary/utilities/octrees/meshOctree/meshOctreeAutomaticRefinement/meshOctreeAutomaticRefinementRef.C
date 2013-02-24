@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -38,7 +37,9 @@ Description
 
 #include "Map.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGAutoRef
 
@@ -78,7 +79,7 @@ void meshOctreeAutomaticRefinement::automaticRefinement()
 bool meshOctreeAutomaticRefinement::curvatureRefinement()
 {
     List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
-    labelListPMG refinementCandidates;
+    labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
     while( refineBasedOnCurvature(refineBox, refinementCandidates) )
@@ -93,7 +94,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 {
     bool refine(false);
     List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
-    labelListPMG refinementCandidates;
+    labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
     while( refineBasedOnContainedCorners(refineBox, refinementCandidates) )
@@ -126,14 +127,14 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
     const boundBox& rootBox = octree_.rootBox();
-    const triSurface& surface = octree_.surface();
-    const pointField& points = surface.localPoints();
+    const triSurf& surface = octree_.surface();
+    const pointField& points = surface.points();
     const triSurfacePartitioner& sPart = this->partitioner();
 
     //- find leaves which contains corner nodes
@@ -145,7 +146,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
     forAll(corners, cornerI)
     {
         const label cLabel =
-	    octree_.findLeafContainingVertex(points[corners[cornerI]]);
+        octree_.findLeafContainingVertex(points[corners[cornerI]]);
 
         if( cLabel < 0 )
             continue;
@@ -162,10 +163,12 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
         }
     }
 
-    DynList<label> leavesInBox(128);
+    DynList<label> leavesInBox;
+    # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
     private(leavesInBox) shared(cornerInLeaf) \
     reduction(+ : nMarked) schedule(dynamic, 20)
+    # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
@@ -218,16 +221,16 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const boundBox& rootBox = octree_.rootBox();
     const triSurfacePartitioner& sPart = this->partitioner();
 
     //- find leaves which contains corner nodes
-    const List<labelHashSet>& pPart = sPart.partitionPartitions();
-    const labelList& edgePartition = sPart.edgePartitions();
-    const List<labelHashSet>& ePart = sPart.edgePartitionEdgePartitions();
+    const List<labelHashSet>& pPatches = sPart.patchPatches();
+    const labelList& edgeGroups = sPart.edgeGroups();
+    const List<labelHashSet>& eNeiGroups = sPart.edgeGroupEdgeGroups();
 
     # ifdef DEBUGAutoRef
     Info << "pPart " << pPart << endl;
@@ -236,13 +239,15 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     label nMarked(0);
 
     meshOctreeModifier octreeModifier(octree_);
-    const triSurface& surf = octree_.surface();
+    const triSurf& surf = octree_.surface();
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
-    DynList<label> patches, ePartitions, helper(100);
+    DynList<label> patches, eGroups, helper;
+    # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
-    private(patches, ePartitions, helper) \
+    private(patches, eGroups, helper) \
     reduction(+ : nMarked) schedule(dynamic, 20)
+    # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
@@ -265,9 +270,9 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
         //- find edge partitions contained in this box
         helper.clear();
         octree_.findEdgesInBox(bb, helper);
-        ePartitions.clear();
+        eGroups.clear();
         forAll(helper, i)
-            ePartitions.appendIfNotIn(edgePartition[helper[i]]);
+            eGroups.appendIfNotIn(edgeGroups[helper[i]]);
 
         # ifdef DEBUGAutoRef
         Info << "patches for leaf " << leafI << " are " << patches << endl;
@@ -277,7 +282,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
         forAll(patches, patchI)
         {
             for(label patchJ=(patchI+1);patchJ<patches.size();++patchJ)
-                if( !pPart[patches[patchI]].found(patches[patchJ]) )
+                if( !pPatches[patches[patchI]].found(patches[patchJ]) )
                 {
                     # ifdef DEBUGAutoRef
                     Info << "2.Here" << endl;
@@ -288,10 +293,10 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
                 }
         }
 
-        forAll(ePartitions, ePartI)
+        forAll(eGroups, egI)
         {
-            for(label ePartJ=ePartI+1;ePartJ<ePartitions.size();++ePartJ)
-                if( !ePart[ePartitions[ePartI]].found(ePartitions[ePartJ]) )
+            for(label egJ=egI+1;egJ<eGroups.size();++egJ)
+                if( !eNeiGroups[eGroups[egI]].found(eGroups[egJ]) )
                 {
                     refine = true;
                     break;
@@ -322,7 +327,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const triSurfaceCurvatureEstimator& curv = curvature();
@@ -330,10 +335,12 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
     const boundBox& rootBox = octree_.rootBox();
 
     label nMarked(0);
-    DynList<label> containedTrias(100);
+    DynList<label> containedTrias;
+    # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 10000 ) \
     private(containedTrias) \
     reduction(+ : nMarked) schedule(dynamic, 100)
+    # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
@@ -392,17 +399,18 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const boundBox& rootBox = octree_.rootBox();
     const triSurf& surf = octree_.surface();
 
     label nMarked(0);
-    DynList<label> neighbours(64), helper(128);
+    DynList<label> helper;
+    # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
-    private(neighbours, helper) \
-    reduction(+ : nMarked) schedule(dynamic, 20)
+    private(helper) reduction(+ : nMarked) schedule(dynamic, 20)
+    # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
@@ -444,18 +452,18 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
     }
 
     reduce(nMarked, sumOp<label>());
-	Info << nMarked << " boxed marked by proximity criteria" << endl;
+    Info << nMarked << " boxed marked by proximity criteria" << endl;
 
     if( nMarked != 0 )
         return true;
 
-	return false;
+    return false;
 }
 
 void meshOctreeAutomaticRefinement::refineSelectedBoxes
 (
     List<direction>& refineBox,
-    labelListPMG& refCandidates
+    labelLongList& refCandidates
 )
 {
     deleteDemandDrivenData(octreeAddressingPtr_);

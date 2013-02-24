@@ -37,7 +37,6 @@ Description
 #include "polyMeshGen.H"
 #include "surfaceMorpherCells.H"
 #include "topologicalCleaner.H"
-#include "writeMeshEnsight.H"
 #include "polyMeshGenAddressing.H"
 
 using namespace Foam;
@@ -50,20 +49,20 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	polyMeshGen pmg(runTime);
-	pmg.read();
-	
+
+    polyMeshGen pmg(runTime);
+    pmg.read();
+
     //- test number of nodes per processor face
     const pointFieldPMG& points = pmg.points();
     const faceListPMG& faces = pmg.faces();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         pmg.procBoundaries();
-    
+
     //- check face count
     const label nIntFaces = pmg.nInternalFaces();
     label nBndFaces(0);
-    const PtrList<writePatch>& boundaries = pmg.boundaries();
+    const PtrList<boundaryPatch>& boundaries = pmg.boundaries();
     forAll(boundaries, patchI)
         nBndFaces += boundaries[patchI].patchSize();
     label nProcFaces(0);
@@ -72,17 +71,17 @@ int main(int argc, char *argv[])
 
     if( (nIntFaces+nBndFaces+nProcFaces) != faces.size() )
         FatalError << "Number of faces is not correct!" << abort(FatalError);
-    
+
     //- check if the centres of the proc patch match
     forAll(procBoundaries, patchI)
     {
         vectorField cents(procBoundaries[patchI].patchSize());
-        
+
         const label start = procBoundaries[patchI].patchStart();
         const label end = start + cents.size();
         for(label faceI=start;faceI<end;++faceI)
             cents[faceI-start] = faces[faceI].centre(points);
-        
+
         OPstream toOtherProc
         (
             Pstream::nonBlocking,
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
         );
         toOtherProc << cents;
     }
-    
+
     forAll(procBoundaries, patchI)
     {
         vectorField otherCentres;
@@ -100,7 +99,7 @@ int main(int argc, char *argv[])
             procBoundaries[patchI].neiProcNo()
         );
         fromOtherProc >> otherCentres;
-        
+
         const label start = procBoundaries[patchI].patchStart();
         const label end = start + procBoundaries[patchI].patchSize();
         for(label faceI=start;faceI<end;++faceI)
@@ -115,7 +114,7 @@ int main(int argc, char *argv[])
                 Serr << "Face centres do not match!" << endl;
             }
     }
-    
+
     //- check number of vertices in proc-boundary faces
     forAll(procBoundaries, patchI)
     {
@@ -124,7 +123,7 @@ int main(int argc, char *argv[])
         const label end = start + nVrtPerFace.size();
         for(label faceI=start;faceI<end;++faceI)
             nVrtPerFace[faceI-start] = faces[faceI].size();
-        
+
         OPstream toOtherProc
         (
             Pstream::nonBlocking,
@@ -132,7 +131,7 @@ int main(int argc, char *argv[])
         );
         toOtherProc << nVrtPerFace;
     }
-    
+
     forAll(procBoundaries, patchI)
     {
         labelList nVrtPerFace;
@@ -142,21 +141,21 @@ int main(int argc, char *argv[])
             procBoundaries[patchI].neiProcNo()
         );
         fromOtherProc >> nVrtPerFace;
-        
+
         label nTotalNei(0);
         forAll(nVrtPerFace, fI)
             nTotalNei += nVrtPerFace[fI];
-        
+
         label nTotalOwn(0);
-        
+
         const label start = procBoundaries[patchI].patchStart();
         const label end = start + nVrtPerFace.size();
         for(label faceI=start;faceI<end;++faceI)
             nTotalOwn += faces[faceI].size();
-        
+
         if( nTotalNei != nTotalOwn )
             Serr << "Patches do not contain same number of points!" << endl;
-        
+
         for(label faceI=start;faceI<end;++faceI)
             if( nVrtPerFace[faceI-start] != faces[faceI].size() )
             {
@@ -170,7 +169,7 @@ int main(int argc, char *argv[])
                     << abort(FatalError);
             }
     }
-    
+
     //- test if vertices of processor boundaries match
     forAll(procBoundaries, patchI)
     {
@@ -179,7 +178,7 @@ int main(int argc, char *argv[])
         label nPointsToSend(0);
         for(label faceI=start;faceI<end;++faceI)
             nPointsToSend += faces[faceI].size();
-        
+
         pointField pointsToSend(nPointsToSend);
         nPointsToSend = 0;
         for(label faceI=start;faceI<end;++faceI)
@@ -188,7 +187,7 @@ int main(int argc, char *argv[])
             forAll(f, pI)
                 pointsToSend[nPointsToSend++] = points[f[pI]];
         }
-        
+
         OPstream toOtherProc
         (
             Pstream::nonBlocking,
@@ -196,18 +195,18 @@ int main(int argc, char *argv[])
         );
         toOtherProc << pointsToSend;
     }
-    
+
     forAll(procBoundaries, patchI)
     {
         pointField pointsToReceive;
-        
+
         IPstream fromOtherProc
         (
             Pstream::nonBlocking,
             procBoundaries[patchI].neiProcNo()
         );
         fromOtherProc >> pointsToReceive;
-        
+
         label counter(0);
         const label start = procBoundaries[patchI].patchStart();
         const label end = start + procBoundaries[patchI].patchSize();
@@ -224,8 +223,8 @@ int main(int argc, char *argv[])
                         << patchI << " is not correct!" << abort(FatalError);
                 }
         }
-	}
-    
+    }
+
 /*    Serr << Pstream::myProcNo() << "Global point labels "
         << pmg.addressingData().globalPointLabel() << endl;
     Serr << Pstream::myProcNo() << "Point procs "

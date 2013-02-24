@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -71,7 +70,7 @@ void meshOctreeModifier::refineTreeForCoordinates
 
     meshOctreeCube* nei(octree_.initialCubePtr_);
 
-	for(label i=(l-1);i>=0;--i)
+    for(label i=(l-1);i>=0;--i)
     {
         const label levelLimiter = (1 << i);
 
@@ -164,20 +163,6 @@ void meshOctreeModifier::refineTreeForCoordinates
 
         if( nei->isLeaf() )
         {
-/*            label containedTrianglesI(-1), containedEdgesI(-1);
-
-            if( containedTriangles.size() )
-            {
-                containedTrianglesI = octree_.containedTriangles_.size();
-                octree_.containedTriangles_.appendList(containedTriangles);
-            }
-
-            if( containedEdges.size() )
-            {
-                containedEdgesI = octree_.containedEdges_.size();
-                octree_.containedEdges_.appendList(containedEdges);
-            }
-*/
             //- refine the missing cube
             //nei->refineMissingCube(scI, containedTrianglesI, containedEdgesI);
             nei->refineMissingCube
@@ -278,7 +263,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
 
     //- cubes which share a common, face, edge or vertex are added into
     //- the current processor's tree
-    DynList<label> neighbours(56);
+    DynList<label> neighbours;
     forAll(receivedCoordinates, ccI)
     {
         octree_.findAllLeafNeighbours
@@ -344,7 +329,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     }
     # endif
 
-	Info << "Finished adding an additional layer of octree cubes" << endl;
+    Info << "Finished adding an additional layer of octree cubes" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

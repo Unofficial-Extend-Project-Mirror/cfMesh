@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -30,13 +29,14 @@ Description
 #include "helperFunctions.H"
 #include "polyMeshGenAddressing.H"
 #include "meshSurfaceEngine.H"
+#include "meshSurfacePartitioner.H"
 #include "labelledPointScalar.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 #ifdef DEBUGExtrudeLayer
-#include "writeMeshFPMA.H"
-#include "writeMeshFLMA.H"
 #include "polyMeshGenChecks.H"
 #endif
 
@@ -109,7 +109,9 @@ void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
     extrudedFaces_.setSize(counter);
     pairOrientation_.setSize(counter);
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( faceInFront.size() > 100 ) schedule(guided)
+    # endif
     forAll(faceInFront, faceI)
     {
         if( faceInFront[faceI] < 0 )
@@ -173,7 +175,9 @@ void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
     }
 
     //- renumber the cells
+    # ifdef USE_OMP
     # pragma omp parallel for if( faceInFront.size() > 100 ) schedule(guided)
+    # endif
     forAll(faceInFront, faceI)
     {
         if( faceInFront[faceI] < 0 )
@@ -215,7 +219,9 @@ void extrudeLayer::createNewVertices()
     //- find the points in the marked front
     List<direction> frontPoints(points.size(), NONE);
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( points.size() > 1000 ) schedule(guided)
+    # endif
     forAll(extrudedFaces_, efI)
     {
         const face& f = faces[extrudedFaces_[efI].first()];
@@ -233,9 +239,9 @@ void extrudeLayer::createNewVertices()
         const DynList<label>& pProcs = addr.pointNeiProcs();
 
         //- allocate the map
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(pProcs, i)
-            exchangeData.insert(std::make_pair(pProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(pProcs[i], labelLongList()));
 
         //- collect the information about markes points at processor boundaries
         forAllConstIter(Map<label>, globalToLocal, it)
@@ -258,8 +264,10 @@ void extrudeLayer::createNewVertices()
         LongList<label> receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedData.size() > 1000 ) \
         schedule(guided)
+        # endif
         forAll(receivedData, i)
         {
             frontPoints[globalToLocal[receivedData[i]]] =
@@ -287,14 +295,14 @@ void extrudeLayer::createNewVertices()
         }
 
         //- create new vertices at processor boundaries
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         const polyMeshGenAddressing& addr = mesh_.addressingData();
         const VRWGraph& pAtProcs = addr.pointAtProcs();
-        const labelListPMG& globalPointLabel = addr.globalPointLabel();
+        const labelLongList& globalPointLabel = addr.globalPointLabel();
         const Map<label>& globalToLocal = addr.globalToLocalPointAddressing();
         const DynList<label>& pProcs = addr.pointNeiProcs();
-        const labelListPMG& globalCellLabel = addr.globalCellLabel();
+        const labelLongList& globalCellLabel = addr.globalCellLabel();
 
         //- create the information which faces are attached to points
         //- at parallel boundaries in dual form where each edge represents
@@ -415,9 +423,9 @@ void extrudeLayer::createNewVertices()
         returnReduce(1, sumOp<label>());
         Pout << "Exchanging data with other processors" << endl;
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(pProcs, i)
-            exchangeData.insert(std::make_pair(pProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(pProcs[i], labelLongList()));
 
         //- fill in the exchangeData map
         forAllConstIter(dualEdgesMap, procPointsDual, dIter)
@@ -431,7 +439,7 @@ void extrudeLayer::createNewVertices()
                 if( neiProc == Pstream::myProcNo() )
                     continue;
 
-                labelListPMG& dts = exchangeData[neiProc];
+                labelLongList& dts = exchangeData[neiProc];
 
                 dts.append(globalPointLabel[pointI]);
 
@@ -447,7 +455,7 @@ void extrudeLayer::createNewVertices()
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         //- update local data
@@ -714,7 +722,6 @@ void extrudeLayer::createNewVertices()
             mesh_.addPointToSubset(frontID, pI);
     }
 
-    writeMeshFLMA(mesh_, "withNewVertices");
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif
@@ -836,10 +843,14 @@ void extrudeLayer::movePoints()
         }
     }
 
+    # ifdef USE_OMP
     # pragma omp parallel if( displacements.size() > 100 )
+    # endif
     {
         //- find displacement vectors
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(displacements, pI)
         {
             if( pointAtProcBnd[pI] )
@@ -889,15 +900,19 @@ void extrudeLayer::movePoints()
             displacements[pI] = normal * thickness;
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(displacements, pI)
             points[nOrigPoints_+pI] += displacements[pI];
     }
 
     # ifdef DEBUGExtrudeLayer
-    writeMeshFPMA(mesh_, "movedPoints");
+    mesh_.write();
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif
@@ -909,7 +924,7 @@ void extrudeLayer::createNewFacesParallel()
         return;
 
     VRWGraph newProcFaces;
-    labelListPMG faceProcPatch;
+    labelLongList faceProcPatch;
 
     //- add faces into the mesh
     polyMeshGenModifier(mesh_).addProcessorFaces(newProcFaces, faceProcPatch);
@@ -1210,15 +1225,17 @@ void extrudeLayer::updateBoundary()
         patchNames[patchI] = mesh_.boundaries()[patchI].patchName();
 
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners;
-    labelListPMG newBoundaryPatches;
+    labelLongList newBoundaryOwners;
+    labelLongList newBoundaryPatches;
 
     meshSurfaceEngine mse(mesh_);
     const faceList::subList& bFaces = mse.boundaryFaces();
     const labelList& bfOwner = mse.faceOwners();
     const labelList& facePatch = mse.boundaryFacePatches();
     const labelList& bp = mse.bp();
-    const VRWGraph& pointPatches = mse.pointPatches();
+
+    meshSurfacePartitioner mPart(mse);
+    const VRWGraph& pointPatches = mPart.pointPatches();
 
     //- store existing boundary faces. They remain in the mesh
     forAll(bFaces, bfI)

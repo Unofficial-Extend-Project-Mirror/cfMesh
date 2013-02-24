@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -45,14 +44,11 @@ Description
 #include "boundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
+#include "triSurfacePatchManipulator.H"
+#include "refineBoundaryLayers.H"
+#include "triSurfaceMetaData.H"
 
 //#define DEBUG
-//#define DEBUGfpma
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFPMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -64,19 +60,14 @@ namespace Foam
 void tetMeshGenerator::createTetMesh()
 {
     //- create tet Mesh from octree and Delaunay tets
-    tetMeshExtractorOctree tme ( *octreePtr_, meshDict_, mesh_ );
+    tetMeshExtractorOctree tme(*octreePtr_, meshDict_, mesh_);
 
     tme.createMesh();
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "tetMesh" );
-# else
-    writeMeshEnsight ( mesh_, "tetMesh" );
-# endif
-    ::exit ( EXIT_FAILURE );
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::surfacePreparation()
@@ -86,150 +77,148 @@ void tetMeshGenerator::surfacePreparation()
     //- It also checks topology of cells after morphing is performed
     do
     {
-        surfaceMorpherCells* cmPtr = new surfaceMorpherCells ( mesh_ );
+        surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
         cmPtr->morphMesh();
-        deleteDemandDrivenData ( cmPtr );
+        deleteDemandDrivenData(cmPtr);
     }
-    while ( topologicalCleaner ( mesh_ ).cleanTopology() );
+    while( topologicalCleaner(mesh_).cleanTopology() );
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "afterTopoCleaning" );
-# else
-    writeMeshEnsight ( mesh_, "afterTopoCleaning" );
-# endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::mapMeshToSurface()
 {
     //- calculate mesh surface
-    meshSurfaceEngine* msePtr = new meshSurfaceEngine ( mesh_ );
+    meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
 
     //- map mesh surface on the geometry surface
-    meshSurfaceMapper ( *msePtr, *octreePtr_ ).mapVerticesOntoSurface();
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "afterMapping" );
-# else
-    writeMeshEnsight ( mesh_, "afterMapping" );
-# endif
+    meshSurfaceMapper(*msePtr, *octreePtr_).mapVerticesOntoSurface();
+
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 
     //- untangle surface faces
-    meshSurfaceOptimizer ( *msePtr, *octreePtr_ ).preOptimizeSurface();
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "afterSurfaceSmoothing" );
-# else
-    writeMeshEnsight ( mesh_, "afterSurfaceSmoothing" );
-# endif
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
-    deleteDemandDrivenData ( msePtr );
+    //::exit(0);
+    # endif
+
+    deleteDemandDrivenData(msePtr);
 }
 
 void tetMeshGenerator::mapEdgesAndCorners()
 {
-    meshSurfaceEdgeExtractorNonTopo ( mesh_, *octreePtr_ );
+    meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "withEdges" );
-# else
-    writeMeshEnsight ( mesh_, "withEdges" );
-#endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::optimiseMeshSurface()
 {
-    meshSurfaceEngine mse ( mesh_ );
-    meshSurfaceOptimizer ( mse, *octreePtr_ ).optimizeSurface();
+    meshSurfaceEngine mse(mesh_);
+    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_, "optSurfaceWithEdges" );
-# else
-    writeMeshEnsight ( mesh_, "optSurfaceWithEdges" );
-#endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::generateBoudaryLayers()
 {
-    boundaryLayers bl ( mesh_ );
-
-    if ( meshDict_.found ( "boundaryLayers" ) )
+    if( meshDict_.found("boundaryLayers") )
     {
-        wordList createLayers ( meshDict_.lookup ( "boundaryLayers" ) );
+        boundaryLayers bl(mesh_);
 
-        forAll ( createLayers, patchI )
-        bl.addLayerForPatch ( createLayers[patchI] );
+        const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
+
+        if( bndLayers.found("nLayers") )
+        {
+            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
+
+            if( nLayers > 0 )
+                bl.addLayerForAllPatches();
+        }
+        else if( bndLayers.found("patchBoundaryLayers") )
+        {
+            const dictionary& patchLayers =
+                bndLayers.subDict("patchBoundaryLayers");
+            const wordList createLayers = patchLayers.toc();
+
+            forAll(createLayers, patchI)
+                bl.addLayerForPatch(createLayers[patchI]);
+        }
     }
 
-# ifdef DEBUG
-    writeMeshEnsight ( mesh_, "meshWithBndLayer" );
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
-    meshOptimizer optimizer ( mesh_ );
+    meshOptimizer optimizer(mesh_);
 
-    optimizer.optimizeSurface ( *octreePtr_ );
+    optimizer.optimizeSurface(*octreePtr_);
 
-    deleteDemandDrivenData ( octreePtr_ );
+    deleteDemandDrivenData(octreePtr_);
 
     optimizer.optimizeMeshFV();
+    optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeMeshFV();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_,"optimisedMesh" );
-# else
-    writeMeshEnsight ( mesh_, "optimisedMesh" );
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
+}
+
+void tetMeshGenerator::refBoundaryLayers()
+{
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
+
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.untangleMeshFV();
+    }
 }
 
 void tetMeshGenerator::replaceBoundaries()
 {
-    renameBoundaryPatches rbp ( mesh_, meshDict_ );
+    renameBoundaryPatches rbp(mesh_, meshDict_);
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_,"renamedPatchesMesh" );
-# else
-    writeMeshEnsight ( mesh_, "renamedPatchesMesh" );
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::renumberMesh()
 {
-    polyMeshGenModifier ( mesh_ ).renumberMesh();
+    polyMeshGenModifier(mesh_).renumberMesh();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA ( mesh_,"renumberedMesh" );
-# else
-    writeMeshEnsight ( mesh_, "renumberedMesh" );
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::generateMesh()
@@ -248,6 +237,8 @@ void tetMeshGenerator::generateMesh()
 
     optimiseFinalMesh();
 
+    refBoundaryLayers();
+
     renumberMesh();
 
     replaceBoundaries();
@@ -256,55 +247,7 @@ void tetMeshGenerator::generateMesh()
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from Time
-tetMeshGenerator::tetMeshGenerator
-(
-    const Time& time
-)
-        :
-        runTime_ ( time ),
-        surfacePtr_ ( NULL ),
-        meshDict_
-        (
-            IOobject
-            (
-                "meshDict",
-                runTime_.system(),
-                runTime_,
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE
-            )
-        ),
-        octreePtr_ ( NULL ),
-        mesh_ ( time )
-{
-    if ( true )
-    {
-        checkMeshDict cmd ( meshDict_ );
-    }
-
-    const fileName surfaceFile = meshDict_.lookup ( "surfaceFile" );
-
-    surfacePtr_ = new triSurf ( runTime_.path() /surfaceFile );
-
-    if ( meshDict_.found ( "subsetFileName" ) )
-    {
-        const fileName subsetFileName = meshDict_.lookup ( "subsetFileName" );
-        surfacePtr_->readFaceSubsets ( runTime_.path() /subsetFileName );
-    }
-
-    octreePtr_ = new meshOctree ( *surfacePtr_ );
-
-    meshOctreeCreator ( *octreePtr_, meshDict_ ).createOctreeBoxes();
-
-    generateMesh();
-}
-
-/*
-tetMeshGenerator::tetMeshGenerator
-(
-    const Time& time,
-    const volScalarField& localCellSize
-)
+tetMeshGenerator::tetMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(NULL),
@@ -313,31 +256,64 @@ tetMeshGenerator::tetMeshGenerator
         IOobject
         (
             "meshDict",
-            runTime_.constant(),
+            runTime_.system(),
             runTime_,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     ),
     octreePtr_(NULL),
-	mesh_(time)
+    mesh_(time)
 {
-    fileName surfaceFile = meshDict_.lookup("surfaceFile");
+    if( true )
+    {
+        checkMeshDict cmd(meshDict_);
+    }
 
-    surfacePtr_ = new triSurface(runTime_.path()/surfaceFile);
+    const fileName surfaceFile = meshDict_.lookup("surfaceFile");
+
+    surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
+
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+    }
+
+    if( surfacePtr_->featureEdges().size() != 0 )
+    {
+        //- create surface patches based on the feature edges
+        //- and update the meshDict based on the given data
+        triSurfacePatchManipulator manipulator(*surfacePtr_);
+
+        const triSurf* surfaceWithPatches =
+            manipulator.surfaceWithPatches(&meshDict_);
+
+        //- delete the old surface and assign the new one
+        deleteDemandDrivenData(surfacePtr_);
+        surfacePtr_ = surfaceWithPatches;
+    }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
 
+    meshOctreeCreator* octreeCreatorPtr =
+        new meshOctreeCreator(*octreePtr_, meshDict_);
+    octreeCreatorPtr->createOctreeBoxes();
+    deleteDemandDrivenData(octreeCreatorPtr);
+
     generateMesh();
 }
-*/
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshGenerator::~tetMeshGenerator()
 {
-    deleteDemandDrivenData ( surfacePtr_ );
-    deleteDemandDrivenData ( octreePtr_ );
+    deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(octreePtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

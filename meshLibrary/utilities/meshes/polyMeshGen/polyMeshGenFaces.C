@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -40,94 +39,94 @@ namespace Foam
 
 void polyMeshGenFaces::clearOut() const
 {
-	deleteDemandDrivenData(ownerPtr_);
-	deleteDemandDrivenData(neighbourPtr_);
+    deleteDemandDrivenData(ownerPtr_);
+    deleteDemandDrivenData(neighbourPtr_);
 }
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Constructors
 //- Null constructor
 polyMeshGenFaces::polyMeshGenFaces(const Time& runTime)
 :
-	polyMeshGenPoints(runTime),
-	faces_
-	(
-		IOobject
-		(
-			"faces",
-			runTime.constant(),
-			"polyMesh",
-			runTime
-		),
-		0
-	),
+    polyMeshGenPoints(runTime),
+    faces_
+    (
+        IOobject
+        (
+            "faces",
+            runTime.constant(),
+            "polyMesh",
+            runTime
+        ),
+        0
+    ),
     procBoundaries_(),
-	boundaries_(),
+    boundaries_(),
     faceSubsets_(),
-	nIntFaces_(0),
-	ownerPtr_(NULL),
-	neighbourPtr_(NULL)
+    nIntFaces_(0),
+    ownerPtr_(NULL),
+    neighbourPtr_(NULL)
 {
 }
 
 //- Construct from components without the boundary
 polyMeshGenFaces::polyMeshGenFaces
 (
-	const Time& runTime,
-	const pointField& points,
-	const faceList& faces
+    const Time& runTime,
+    const pointField& points,
+    const faceList& faces
 )
 :
-	polyMeshGenPoints(runTime, points),
-	faces_
-	(
-		IOobject
-		(
-			"faces",
-			runTime.constant(),
-			"polyMesh",
-			runTime
-		),
-		faces
-	),
+    polyMeshGenPoints(runTime, points),
+    faces_
+    (
+        IOobject
+        (
+            "faces",
+            runTime.constant(),
+            "polyMesh",
+            runTime
+        ),
+        faces
+    ),
     procBoundaries_(),
-	boundaries_(),
+    boundaries_(),
     faceSubsets_(),
-	nIntFaces_(0),
-	ownerPtr_(NULL),
-	neighbourPtr_(NULL)
+    nIntFaces_(0),
+    ownerPtr_(NULL),
+    neighbourPtr_(NULL)
 {
 }
 
 //- Construct from components with the boundary
 polyMeshGenFaces::polyMeshGenFaces
 (
-	const Time& runTime,
-	const pointField& points,
-	const faceList& faces,
-	const wordList& patchNames,
-	const labelList& patchStart,
-	const labelList& nFacesInPatch
+    const Time& runTime,
+    const pointField& points,
+    const faceList& faces,
+    const wordList& patchNames,
+    const labelList& patchStart,
+    const labelList& nFacesInPatch
 )
 :
-	polyMeshGenPoints(runTime, points),
-	faces_
-	(
-		IOobject
-		(
-			"faces",
-			runTime.constant(),
-			"polyMesh",
-			runTime
-		),	
-		faces
-	),
+    polyMeshGenPoints(runTime, points),
+    faces_
+    (
+        IOobject
+        (
+            "faces",
+            runTime.constant(),
+            "polyMesh",
+            runTime
+        ),    
+        faces
+    ),
     procBoundaries_(),
-	boundaries_(),
+    boundaries_(),
     faceSubsets_(),
-	nIntFaces_(0),
-	ownerPtr_(NULL),
-	neighbourPtr_(NULL)
+    nIntFaces_(0),
+    ownerPtr_(NULL),
+    neighbourPtr_(NULL)
 {
     if( Pstream::parRun() )
         FatalErrorIn
@@ -141,28 +140,28 @@ polyMeshGenFaces::polyMeshGenFaces
             "const labelList& nFacesInPatch)"
         ) << "Cannot do this in parallel!" << exit(FatalError);
     
-	boundaries_.setSize(patchNames.size());
-	forAll(patchNames, patchI)
-	{
-		boundaries_.set
-		(
-			patchI,
-			new writePatch
-			(
-				patchNames[patchI],
-				"patch",
-				nFacesInPatch[patchI],
-				patchStart[patchI]
-			)
-		);
-	}
+    boundaries_.setSize(patchNames.size());
+    forAll(patchNames, patchI)
+    {
+        boundaries_.set
+        (
+            patchI,
+            new boundaryPatch
+            (
+                patchNames[patchI],
+                "patch",
+                nFacesInPatch[patchI],
+                patchStart[patchI]
+            )
+        );
+    }
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Destructor
 polyMeshGenFaces::~polyMeshGenFaces()
 {
-	clearOut();
+    clearOut();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -183,10 +182,10 @@ label polyMeshGenFaces::faceIsInProcPatch(const label faceLabel) const
         return -1;
     
     forAllReverse(procBoundaries_, patchI)
-		if( faceLabel >= procBoundaries_[patchI].patchStart() )
-			return patchI;
+        if( faceLabel >= procBoundaries_[patchI].patchStart() )
+            return patchI;
 
-	return -1;
+    return -1;
 }
 
 label polyMeshGenFaces::faceIsInPatch(const label faceLabel) const
@@ -195,11 +194,11 @@ label polyMeshGenFaces::faceIsInPatch(const label faceLabel) const
     if( faceLabel >= (boundaries_[i].patchStart()+boundaries_[i].patchSize()) )
         return -1;
     
-	forAllReverse(boundaries_, patchI)
-		if( faceLabel >= boundaries_[patchI].patchStart() )
-			return patchI;
+    forAllReverse(boundaries_, patchI)
+        if( faceLabel >= boundaries_[patchI].patchStart() )
+            return patchI;
 
-	return -1;
+    return -1;
 }
 
 label polyMeshGenFaces::addFaceSubset(const word& setName)
@@ -270,62 +269,62 @@ void polyMeshGenFaces::read()
     polyMeshGenPoints::read();
     
     faceIOList fcs
-	(
-		IOobject
-		(
-			"faces",
-			runTime_.constant(),
-			"polyMesh",
-			runTime_,
-			IOobject::MUST_READ
-		)
-	);
-	faces_ = fcs;
-	
-	deleteDemandDrivenData(ownerPtr_);
-	deleteDemandDrivenData(neighbourPtr_);
-	
-	ownerPtr_ =
-		new labelIOList
-		(
-			IOobject
-			(
-				"owner",
-				runTime_.constant(),
-				"polyMesh",
-				runTime_,
-				IOobject::MUST_READ
-			)
-		);
-	
-	neighbourPtr_ =
-		new labelIOList
-		(
-			IOobject
-			(
-				"neighbour",
-				runTime_.constant(),
-				"polyMesh",
-				runTime_,
-				IOobject::MUST_READ
-			)
-		);
+    (
+        IOobject
+        (
+            "faces",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::MUST_READ
+        )
+    );
+    faces_ = fcs;
+    
+    deleteDemandDrivenData(ownerPtr_);
+    deleteDemandDrivenData(neighbourPtr_);
+    
+    ownerPtr_ =
+        new labelIOList
+        (
+            IOobject
+            (
+                "owner",
+                runTime_.constant(),
+                "polyMesh",
+                runTime_,
+                IOobject::MUST_READ
+            )
+        );
+    
+    neighbourPtr_ =
+        new labelIOList
+        (
+            IOobject
+            (
+                "neighbour",
+                runTime_.constant(),
+                "polyMesh",
+                runTime_,
+                IOobject::MUST_READ
+            )
+        );
         
     if( neighbourPtr_->size() != ownerPtr_->size() )
         neighbourPtr_->setSize(ownerPtr_->size(), -1);
     
-    	//- read boundary information
-	IOPtrList<writePatchBase> patches
-	(
-		IOobject
-		(
-			"boundary",
-			runTime_.constant(),
-			"polyMesh",
-			runTime_,
-			IOobject::MUST_READ
-		)
-	);
+        //- read boundary information
+    IOPtrList<boundaryPatchBase> patches
+    (
+        IOobject
+        (
+            "boundary",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::MUST_READ
+        )
+    );
     
     label i(0);
     forAll(patches, patchI)
@@ -333,23 +332,23 @@ void polyMeshGenFaces::read()
             ++i;
         
     procBoundaries_.setSize(i);
-	boundaries_.setSize(patches.size()-i);
-	
+    boundaries_.setSize(patches.size()-i);
+    
     i=0;
-	forAll(patches, patchI)
+    forAll(patches, patchI)
         if( patches[patchI].type() != "processor" )
         {
-			boundaries_.set
-			(
-				i,
-				new writePatch
-				(
-					patches[patchI].patchName(),
-					patches[patchI].patchType(),
-					patches[patchI].patchSize(),
-					patches[patchI].patchStart()
-				)
-			);
+            boundaries_.set
+            (
+                i,
+                new boundaryPatch
+                (
+                    patches[patchI].patchName(),
+                    patches[patchI].patchType(),
+                    patches[patchI].patchSize(),
+                    patches[patchI].patchStart()
+                )
+            );
             ++i;
         }
         
@@ -360,7 +359,7 @@ void polyMeshGenFaces::read()
             procBoundaries_.set
             (
                 i++,
-                new writeProcessorPatch
+                new processorBoundaryPatch
                 (
                     patches[patchI].patchName(),
                     patches[patchI].dict()
@@ -368,7 +367,7 @@ void polyMeshGenFaces::read()
             );
         }
 
-	nIntFaces_ = boundaries_[0].patchStart();
+    nIntFaces_ = boundaries_[0].patchStart();
     
     //- read face subsets
     IOobjectList allSets
@@ -396,14 +395,14 @@ void polyMeshGenFaces::write() const
     polyMeshGenPoints::write();
     
     faces_.write();
-	
-	if( !ownerPtr_ || !neighbourPtr_ )
-		calculateOwnersAndNeighbours();
-	ownerPtr_->write();
-	neighbourPtr_->write();
-	
+    
+    if( !ownerPtr_ || !neighbourPtr_ )
+        calculateOwnersAndNeighbours();
+    ownerPtr_->write();
+    neighbourPtr_->write();
+    
     //- write boundary data
-	PtrList<writePatchBase> ptchs
+    PtrList<boundaryPatchBase> ptchs
     (
         procBoundaries_.size() + boundaries_.size()
     );
@@ -417,10 +416,10 @@ void polyMeshGenFaces::write() const
         dict.add("type", boundaries_[patchI].patchType());
         dict.add("nFaces", boundaries_[patchI].patchSize());
         dict.add("startFace", boundaries_[patchI].patchStart());
-		ptchs.set
+        ptchs.set
         (
             i++, 
-            writePatchBase::New
+            boundaryPatchBase::New
             (
                 boundaries_[patchI].patchName(),
                 dict
@@ -434,29 +433,29 @@ void polyMeshGenFaces::write() const
         ptchs.set
         (
             i++,
-            writePatchBase::New
+            boundaryPatchBase::New
             (
                 procBoundaries_[patchI].patchName(),
                 procBoundaries_[patchI].dict()
             )
         );
     }
-		
-    IOPtrList<writePatchBase> patches
-	(
-		IOobject
-		(
-			"boundary",
-			runTime_.constant(),
-			"polyMesh",
-			runTime_,
-			IOobject::NO_READ,
-			IOobject::AUTO_WRITE
-		),
-		ptchs
-	);
+        
+    IOPtrList<boundaryPatchBase> patches
+    (
+        IOobject
+        (
+            "boundary",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        ptchs
+    );
     
-	patches.write();
+    patches.write();
     
     //- write face subsets
     std::map<label, meshSubset>::const_iterator setIt;
@@ -475,7 +474,7 @@ void polyMeshGenFaces::write() const
             )
         );
         
-        labelListPMG containedElements;
+        labelLongList containedElements;
         setIt->second.containedElements(containedElements);
         
         forAll(containedElements, i)

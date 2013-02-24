@@ -36,7 +36,6 @@ Description
 #include "Time.H"
 #include "objectRegistry.H"
 #include "triSurf.H"
-#include "writeOctreeEnsight.H"
 
 #include <sstream>
 
@@ -71,22 +70,24 @@ int main(int argc, char *argv[])
     if( Pstream::parRun() )
         surfaceFile = ".."/surfaceFile;
 
+    Info << "Reading surface from file " << surfaceFile << endl;
     triSurf surf(runTime.path()/surfaceFile);
 
-    if( meshDict.found("subsetFileName") )
+/*    if( meshDict.found("subsetFileName") )
     {
         fileName subsetFileName = meshDict.lookup("subsetFileName");
         if( Pstream::parRun() )
             subsetFileName = ".."/subsetFileName;
         surf.readFaceSubsets(runTime.path()/subsetFileName);
     }
+*/
 
-    surf.edgeFaces();
-    surf.faceEdges();
+    surf.edgeFacets();
+    surf.facetEdges();
 
     const scalar startTime = runTime.elapsedClockTime();
 
-    meshOctree* moPtr = new meshOctree(surf);
+    meshOctree* moPtr = new meshOctree(surf, true);
     meshOctreeCreator* mcPtr = new meshOctreeCreator(*moPtr, meshDict);
     mcPtr->createOctreeBoxes();
     deleteDemandDrivenData(mcPtr);
@@ -104,25 +105,7 @@ int main(int argc, char *argv[])
             << " and " << moPtr->returnLeaf(i-1).coordinates()
             << abort(FatalError);
     }
-    /*  if( Pstream::parRun() )
-        {
-            std::ostringstream ss;
 
-            ss << Pstream::myProcNo();
-
-            //writeOctreeEnsight(*moPtr, "insideBoxes"+ss.str(), meshOctreeCube::INSIDE);
-            //writeOctreeEnsight(*moPtr, "unknownBoxes"+ss.str(), meshOctreeCube::UNKNOWN);
-            //writeOctreeEnsight(*moPtr, "outsideBoxes"+ss.str(), meshOctreeCube::OUTSIDE);
-            writeOctreeEnsight(*moPtr, "dataBoxes"+ss.str(), meshOctreeCube::DATA);
-        }
-        else
-        {
-            writeOctreeEnsight(*moPtr, "insideBoxes", meshOctreeCube::INSIDE);
-            //writeOctreeEnsight(*moPtr, "unknownBoxes", meshOctreeCube::UNKNOWN);
-            writeOctreeEnsight(*moPtr, "outsideBoxes", meshOctreeCube::OUTSIDE);
-            writeOctreeEnsight(*moPtr, "dataBoxes", meshOctreeCube::DATA);
-        }
-    */
     deleteDemandDrivenData(moPtr);
 
     Info<< "Execution time for octree creation = "

@@ -1,32 +1,31 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "surfaceIntersectionsOctreeCube.H"
 #include "helperFunctions.H"
 
@@ -42,7 +41,7 @@ namespace Foam
 bool surfaceIntersectionsOctreeCube::intersectsTriangle(const label tI) const
 {
     const pointField& points = surface_.points();
-    const labelledTri& ltri = surface_.localFaces()[tI];
+    const labelledTri& ltri = surface_[tI];
 
     point max_(-GREAT, -GREAT, -GREAT);
     point min_(GREAT, GREAT, GREAT);
@@ -51,7 +50,7 @@ bool surfaceIntersectionsOctreeCube::intersectsTriangle(const label tI) const
         max_ = Foam::max(points[ltri[pI]], max_);
         min_ = Foam::min(points[ltri[pI]], min_);
     }
-    
+
     min_ -= point(SMALL, SMALL, SMALL);
     max_ += point(SMALL, SMALL, SMALL);
 
@@ -198,13 +197,15 @@ void surfaceIntersectionsOctreeCube::intersectionCandidates
         Info << "Cube " << cubeBox_ << " contains elements "
             << containedElements_ << endl;
         # endif
-        point intersection;
+
         //- add elements within the cube
         for(SLList<label>::const_iterator eIter = containedElements_.begin();
             eIter != containedElements_.end();
             ++eIter
         )
         {
+            point intersection;
+
             if(
                 help::triLineIntersection
                 (
@@ -215,13 +216,15 @@ void surfaceIntersectionsOctreeCube::intersectionCandidates
                     intersection
                 )
             )
-                cp.append(pointIndexHit(true,intersection, eIter()));
+                cp.append(pointIndexHit(true, intersection, eIter()));
         }
-        
+
         //- check subCubes if there are any
         if( subCubesPtr_ )
         {
-            const FixedList<surfaceIntersectionsOctreeCube*, 8>& subCubes_ = *subCubesPtr_;
+            const FixedList<surfaceIntersectionsOctreeCube*, 8>& subCubes_ =
+                *subCubesPtr_;
+
             forAll(subCubes_, cubeI)
                 subCubes_[cubeI]->intersectionCandidates(cp, s, e);
         }

@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -35,7 +34,6 @@ Description
 //#define DEBUGMaterials
 
 # ifdef DEBUGMaterials
-#include "writeOctreeEnsight.H"
 #include "helperFunctions.H"
 # endif
 
@@ -52,8 +50,8 @@ void triSurfaceDetectMaterials::createPartitions()
     facePartition_ = -1;
     nPartitions_ = 0;
 
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& faceEdges = surf_.facetEdges();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     forAll(surf_, triI)
     {
@@ -61,24 +59,23 @@ void triSurfaceDetectMaterials::createPartitions()
             continue;
 
         facePartition_[triI] = nPartitions_;
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
 
         while( front.size() )
         {
             const label fLabel = front.removeLastElement();
 
-            const labelList& fEdges = faceEdges[fLabel];
-            forAll(fEdges, feI)
+            forAllRow(faceEdges, fLabel, feI)
             {
-                const label edgeI = fEdges[feI];
+                const label edgeI = faceEdges(fLabel, feI);
 
-                if( edgeFaces[edgeI].size() != 2 )
+                if( edgeFaces.sizeOfRow(edgeI) != 2 )
                     continue;
 
-                label nei = edgeFaces[edgeI][0];
+                label nei = edgeFaces(edgeI, 0);
                 if( nei == fLabel )
-                    nei = edgeFaces[edgeI][1];
+                    nei = edgeFaces(edgeI, 1);
 
                 if( facePartition_[nei] == -1 )
                 {
@@ -115,12 +112,12 @@ void triSurfaceDetectMaterials::createOctree()
     if( !octreePtr_ )
         octreePtr_ = new meshOctree(surf_);
 
-    const edgeList& edges = surf_.edges();
+    const edgeLongList& edges = surf_.edges();
 
     if( edges.size() == 0 )
         FatalError << "Surface mesh has no edges!!" << exit(FatalError);
 
-    const pointField& points = surf_.localPoints();
+    const pointField& points = surf_.points();
 
     scalar averageLength(0.0), minLength(VGREAT);
     forAll(edges, eI)
@@ -181,7 +178,7 @@ void triSurfaceDetectMaterials::createOctree()
     //- refine coarse boxes. This is performed by refinining octree boxes
     //- containing more than one partition in its vicinity
     const boundBox& rootBox = octreePtr_->rootBox();
-    const labelListList& pointTriangles = surf_.pointFaces();
+    const VRWGraph& pointTriangles = surf_.pointFacets();
 
     DynList<const meshOctreeCube*, 256> neis;
     do
@@ -230,7 +227,7 @@ void triSurfaceDetectMaterials::createOctree()
             //- check if there exist any corners or edges in the boundBox
             forAllConstIter(labelHashSet, containedPts, pIter)
             {
-                const labelList& pTriangles = pointTriangles[pIter.key()];
+                const constRow pTriangles = pointTriangles[pIter.key()];
 
                 labelHashSet partitions;
                 forAll(pTriangles, i)
@@ -297,10 +294,6 @@ void triSurfaceDetectMaterials::createOctree()
     Info << "Number of INSIDE leaves " << nInside << endl;
     Info << "Number of OUTSIDE leaves " << nOutside << endl;
     Info << "Number of UNKNOWN leaves " << nUnknown << endl;
-
-    # ifdef DEBUGMaterials
-    writeOctreeEnsight(*octreePtr_, "refinedOctree", meshOctreeCubeBasic::DATA);
-    # endif
 }
 
 void triSurfaceDetectMaterials::refineOctree()
@@ -351,7 +344,7 @@ void triSurfaceDetectMaterials::findOctreeGroups()
     octreeGroupForBox_ = -1;
     nOctreeGroups_ = 0;
 
-    DynList<label> neighs(24);
+    DynList<label> neighs;
     for(label leafI=0;leafI<nLeaves;++leafI)
     {
         if( octreeGroupForBox_[leafI] != -1 )
@@ -361,7 +354,7 @@ void triSurfaceDetectMaterials::findOctreeGroups()
         if( octreePtr_->hasContainedTriangles(leafI) )
             continue;
 
-        labelListPMG front;
+        labelLongList front;
         octreeGroupForBox_[leafI] = nOctreeGroups_;
         front.append(leafI);
 
@@ -407,7 +400,7 @@ void triSurfaceDetectMaterials::findMaterialsAndWalls()
     partitionType_ = 0;
 
     const label nLeaves = octreePtr_->numberOfLeaves();
-    DynList<label> containedTriangles(64), neighbours(24);
+    DynList<label> containedTriangles, neighbours;
     for(label leafI=0;leafI<nLeaves;++leafI)
     {
         //const meshOctreeCubeBasic& oc = octreePtr_->returnLeaf(leafI);
@@ -567,7 +560,7 @@ void triSurfaceDetectMaterials::findMaterialsAndWalls()
     //- renumber partitionMaterials_ according to newGroupLabels
     forAll(partitionMaterials_, partitionI)
     {
-        DynList<label> partitions(partitionMaterials_.sizeOfRow(partitionI));
+        DynList<label> partitions;
         forAllRow(partitionMaterials_, partitionI, i)
             partitions.appendIfNotIn
             (

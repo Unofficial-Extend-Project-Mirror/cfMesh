@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -29,7 +28,9 @@ Description
 #include "meshOctreeModifier.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGSearch
 
@@ -49,7 +50,7 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
     //- this is needed for parallel runs to reduce the bandwidth
     labelHashSet transferCoordinates;
 
-    labelListPMG front;
+    labelLongList front;
     forAll(refineBox, leafI)
     {
         if( refineBox[leafI] )
@@ -64,16 +65,22 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
         nMarked = 0;
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
+        # ifdef USE_OMP
         # pragma omp parallel if( front.size() > 1000 ) \
         private(neighbours) reduction(+ : nMarked)
+        # endif
         {
-            labelListPMG tFront;
+            labelLongList tFront;
 
+            # ifdef USE_OMP
             # pragma omp for
+            # endif
             forAll(front, i)
                 tFront.append(front[i]);
 
+            # ifdef USE_OMP
             # pragma omp barrier
+            # endif
 
             front.clear();
 
@@ -103,7 +110,9 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
                     {
                         neighbours[posI] = NULL;
 
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         {
                             if( !transferCoordinates.found(leafI) )
                             {
@@ -140,8 +149,10 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
             );
 
             //- check consistency with received cube coordinates
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
-            schedule(guided, 20)
+            schedule(dynamic, 40)
+            # endif
             forAll(receivedCoords, ccI)
             {
                 forAll(rp, posI)
@@ -162,7 +173,9 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
                     {
                         refineBox[nei->cubeLabel()] = 1;
 
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         front.append(nei->cubeLabel());
                     }
                 }
@@ -185,7 +198,9 @@ bool meshOctreeModifier::ensureCorrectRegularitySons(List<direction>& refineBox)
 
     label nMarked(0);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100) reduction(+ : nMarked)
+    # endif
     forAll(leaves, leafI)
     {
         if( !refineBox[leafI] )
@@ -207,7 +222,9 @@ bool meshOctreeModifier::ensureCorrectRegularitySons(List<direction>& refineBox)
             else if( neiLeaf == meshOctreeCube::OTHERPROC )
             {
                 //- propagate this information to other processors
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 transferCoordinates.append(cc);
             }
         }
@@ -222,8 +239,10 @@ bool meshOctreeModifier::ensureCorrectRegularitySons(List<direction>& refineBox)
             receivedCoords
         );
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedCoords.size() > 100 ) \
         reduction(+ : nMarked)
+        # endif
         forAll(receivedCoords, ccI)
         {
             const meshOctreeCubeCoordinates& cc = receivedCoords[ccI];
