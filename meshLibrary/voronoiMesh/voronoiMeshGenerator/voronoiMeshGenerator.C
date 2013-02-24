@@ -35,15 +35,21 @@ Description
 #include "voronoiMeshExtractor.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
-#include "meshSurfaceEdgeExtractorNonTopo.H"
-#include "decomposeCellsNearConcaveEdges.H"
-#include "surfaceMorpherCells.H"
+//#include "meshSurfaceEdgeExtractorNonTopo.H"
+//#include "decomposeCellsNearConcaveEdges.H"
+//#include "surfaceMorpherCells.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
-#include "topologicalCleaner.H"
+//#include "topologicalCleaner.H"
 #include "boundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
+
+#include "checkCellConnectionsOverFaces.H"
+#include "checkIrregularSurfaceConnections.H"
+#include "checkNonMappableCellConnections.H"
+#include "checkBoundaryFacesSharingTwoEdges.H"
+#include "meshSurfaceEdgeExtractorFUN.H"
 
 //#define DEBUG
 //#define DEBUGfpma
@@ -61,137 +67,149 @@ namespace Foam
 // * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
 void voronoiMeshGenerator::createVoronoiMesh()
-{	
-	//- create voronoi mesh from octree and Delaunay tets
-	voronoiMeshExtractor vme(*octreePtr_, meshDict_, mesh_);
+{
+    //- create voronoi mesh from octree and Delaunay tets
+    voronoiMeshExtractor vme(*octreePtr_, meshDict_, mesh_);
 
-	vme.createMesh();
-	
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "voronoiMesh");
-	# else
-	writeMeshEnsight(mesh_, "voronoiMesh");
-	# endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    vme.createMesh();
+
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "voronoiMesh");
+    # else
+    writeMeshEnsight(mesh_, "voronoiMesh");
+    # endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-	
+
 void voronoiMeshGenerator::surfacePreparation()
 {
-	//- removes unnecessary cells and morph the boundary
+    //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
-	//- It also checks topology of cells after morphing is performed
-	do
-	{
-		surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
-		cmPtr->morphMesh();
-		deleteDemandDrivenData(cmPtr);
-	} while( topologicalCleaner(mesh_).cleanTopology() );
-	
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterTopoCleaning");
-	# else
-	writeMeshEnsight(mesh_, "afterTopoCleaning");
-	# endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    //- It also checks topology of cells after morphing is performed
+    bool changed;
+    do
+    {
+        changed = false;
+
+        checkIrregularSurfaceConnections checkConnections(mesh_);
+        if( checkConnections.checkAndFixIrregularConnections() )
+            changed = true;
+
+        if( checkNonMappableCellConnections(mesh_).removeCells() )
+            changed = true;
+
+        if( checkCellConnectionsOverFaces(mesh_).checkCellGroups() )
+            changed = true;
+    } while( changed );
+
+    checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
+
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterTopoCleaning");
+    # else
+    writeMeshEnsight(mesh_, "afterTopoCleaning");
+    # endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+
 void voronoiMeshGenerator::mapMeshToSurface()
 {
-	//- calculate mesh surface
+    //- calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
 
-	//- map mesh surface on the geometry surface		
-	meshSurfaceMapper mapper(*msePtr, *octreePtr_);
+    //- map mesh surface on the geometry surface
+    meshSurfaceMapper mapper(*msePtr, *octreePtr_);
     mapper.preMapVertices();
     mapper.mapVerticesOntoSurface();
- 
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterMapping");
-	# else
-	writeMeshEnsight(mesh_, "afterMapping");
-	# endif
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
-	
-	//- untangle surface faces
-	meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-	# else
-	writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-	# endif
-	mesh_.write();
-	::exit(EXIT_FAILURE);
-	# endif
+
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterMapping");
+    # else
+    writeMeshEnsight(mesh_, "afterMapping");
+    # endif
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
+
+    //- untangle surface faces
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
+    # else
+    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
+    # endif
+    mesh_.write();
+    ::exit(EXIT_FAILURE);
+    # endif
     deleteDemandDrivenData(msePtr);
 }
 
 void voronoiMeshGenerator::mapEdgesAndCorners()
 {
-	meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-	
-	# ifdef DEBUG
-	mesh_.write();
-	//meshOptimizer(*octreePtr_, mesh_).preOptimize();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "withEdges");
-	# else
-	writeMeshEnsight(mesh_, "withEdges");
-	#endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    //meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
+    meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_);
+
+    # ifdef DEBUG
+    mesh_.write();
+    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "withEdges");
+    # else
+    writeMeshEnsight(mesh_, "withEdges");
+    #endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
 
 void voronoiMeshGenerator::optimiseMeshSurface()
 {
-	meshSurfaceEngine mse(mesh_);
-	meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-	
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-	# else
-	writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-	#endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    meshSurfaceEngine mse(mesh_);
+    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
+
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "optSurfaceWithEdges");
+    # else
+    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
+    #endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
 
 void voronoiMeshGenerator::decomposeConcaveCells()
 {
-	decomposeCellsNearConcaveEdges dm(mesh_);
-	
-	# ifdef DEBUG
-	mesh_.write();
-	//meshOptimizer(*octreePtr_, mesh_).preOptimize();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "decomposedConcaveCells");
-	# else
-	writeMeshEnsight(mesh_, "decomposedConcaveCells");
-	#endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    //decomposeCellsNearConcaveEdges dm(mesh_);
+
+    # ifdef DEBUG
+    mesh_.write();
+    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "decomposedConcaveCells");
+    # else
+    writeMeshEnsight(mesh_, "decomposedConcaveCells");
+    #endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+
 void voronoiMeshGenerator::generateBoudaryLayers()
 {
-	boundaryLayers bl(mesh_);
-    
-	if( meshDict_.found("boundaryLayers") )
+    boundaryLayers bl(mesh_);
+
+    if( meshDict_.found("boundaryLayers") )
     {
         wordList createLayers(meshDict_.lookup("boundaryLayers"));
-        
+
         forAll(createLayers, patchI)
             bl.addLayerForPatch(createLayers[patchI]);
     }
@@ -199,81 +217,81 @@ void voronoiMeshGenerator::generateBoudaryLayers()
     {
         //bl.createOTopologyLayers();
         bl.addLayerForAllPatches();
-	}
-	
-	# ifdef DEBUG
-	writeMeshEnsight(mesh_, "meshWithBndLayer");
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
+    }
+
+    # ifdef DEBUG
+    writeMeshEnsight(mesh_, "meshWithBndLayer");
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
-	//- final optimisation
-	meshOptimizer optimizer(mesh_);
-    
+    //- final optimisation
+    meshOptimizer optimizer(mesh_);
+
     optimizer.optimizeSurface(*octreePtr_);
-    
+
     deleteDemandDrivenData(octreePtr_);
-    
+
     optimizer.optimizeMeshFV();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"optimisedMesh");
-	# else
-	writeMeshEnsight(mesh_, "optimisedMesh");
-	#endif
-	# endif
+
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"optimisedMesh");
+    # else
+    writeMeshEnsight(mesh_, "optimisedMesh");
+    #endif
+    # endif
 }
 
 void voronoiMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-    
+
     # ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"renamedPatchesMesh");
-	# else
-	writeMeshEnsight(mesh_, "renamedPatchesMesh");
-	#endif
-	# endif
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"renamedPatchesMesh");
+    # else
+    writeMeshEnsight(mesh_, "renamedPatchesMesh");
+    #endif
+    # endif
 }
 
 void voronoiMeshGenerator::renumberMesh()
 {
-	polyMeshGenModifier(mesh_).renumberMesh();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"renumberedMesh");
-	# else
-	writeMeshEnsight(mesh_, "renumberedMesh");
-	#endif
-	# endif
+    polyMeshGenModifier(mesh_).renumberMesh();
+
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"renumberedMesh");
+    # else
+    writeMeshEnsight(mesh_, "renumberedMesh");
+    #endif
+    # endif
 }
-	
+
 void voronoiMeshGenerator::generateMesh()
 {
-	createVoronoiMesh();
-	
-	surfacePreparation();
-	
-	mapMeshToSurface();
-	
-	mapEdgesAndCorners();
-	
-	optimiseMeshSurface();
-	
-	decomposeConcaveCells();
+    createVoronoiMesh();
 
-	generateBoudaryLayers();
-	
-	optimiseFinalMesh();
-	
-	renumberMesh();
-    
+    surfacePreparation();
+
+    mapMeshToSurface();
+
+    mapEdgesAndCorners();
+
+    optimiseMeshSurface();
+
+    //decomposeConcaveCells();
+
+    generateBoudaryLayers();
+
+    optimiseFinalMesh();
+
+    renumberMesh();
+
     replaceBoundaries();
 }
 
@@ -287,8 +305,8 @@ voronoiMeshGenerator::voronoiMeshGenerator
 :
     runTime_(time),
     surfacePtr_(NULL),
-	octreePtr_(NULL),
-	pointRegionsPtr_(NULL),
+    octreePtr_(NULL),
+    pointRegionsPtr_(NULL),
     meshDict_
     (
         IOobject
@@ -300,24 +318,24 @@ voronoiMeshGenerator::voronoiMeshGenerator
             IOobject::NO_WRITE
         )
     ),
-	mesh_(time)
+    mesh_(time)
 {
     if( true )
         checkMeshDict cmd(meshDict_);
-    
+
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
-	
-	if( meshDict_.found("subsetFileName") )
-	{
-		const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-		surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
-	}
+
+    if( meshDict_.found("subsetFileName") )
+    {
+        const fileName subsetFileName = meshDict_.lookup("subsetFileName");
+        surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
+    }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
-	
-	meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
+
+    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
 }
@@ -331,8 +349,8 @@ voronoiMeshGenerator::voronoiMeshGenerator
 :
     runTime_(time),
     surfacePtr_(NULL),
-	octreePtr_(NULL),
-	pointRegionsPtr_(NULL),
+    octreePtr_(NULL),
+    pointRegionsPtr_(NULL),
     meshDict_
     (
         IOobject
@@ -344,7 +362,7 @@ voronoiMeshGenerator::voronoiMeshGenerator
             IOobject::NO_WRITE
         )
     ),
-	mesh_(time)
+    mesh_(time)
 {
     fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
@@ -362,14 +380,14 @@ voronoiMeshGenerator::~voronoiMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(octreePtr_);
-	deleteDemandDrivenData(pointRegionsPtr_);
+    deleteDemandDrivenData(pointRegionsPtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshGenerator::writeMesh() const
-{	
-	mesh_.write();
+{
+    mesh_.write();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
