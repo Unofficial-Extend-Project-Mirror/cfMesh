@@ -37,10 +37,10 @@ Description
 #include "meshSurfaceMapper.H"
 //#include "meshSurfaceEdgeExtractorNonTopo.H"
 //#include "decomposeCellsNearConcaveEdges.H"
-//#include "surfaceMorpherCells.H"
+#include "surfaceMorpherCells.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
-//#include "topologicalCleaner.H"
+#include "topologicalCleaner.H"
 #include "boundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
@@ -89,7 +89,15 @@ void voronoiMeshGenerator::surfacePreparation()
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
-    bool changed;
+    do
+    {
+        surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
+        cmPtr->morphMesh();
+        deleteDemandDrivenData(cmPtr);
+    }
+    while( topologicalCleaner(mesh_).cleanTopology() );
+
+/*    bool changed;
     do
     {
         changed = false;
@@ -106,6 +114,7 @@ void voronoiMeshGenerator::surfacePreparation()
     } while( changed );
 
     checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
+    */
 
     # ifdef DEBUG
     mesh_.write();
@@ -335,7 +344,10 @@ voronoiMeshGenerator::voronoiMeshGenerator
 
     octreePtr_ = new meshOctree(*surfacePtr_);
 
-    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
+    meshOctreeCreator* octreeCreatorPtr =
+        new meshOctreeCreator(*octreePtr_, meshDict_);
+    octreeCreatorPtr->createOctreeBoxes();
+    deleteDemandDrivenData(octreeCreatorPtr);
 
     generateMesh();
 }

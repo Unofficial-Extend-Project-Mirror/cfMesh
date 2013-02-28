@@ -171,17 +171,18 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     objectEntries.clear();
 
     scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
+
     List<direction> refLevels(refObjects.size(), globalRefLevel_);
     label nMarked;
     do
     {
         nMarked = 0;
         forAll(refObjects, oI)
-        if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
-        {
-            ++nMarked;
-            ++refLevels[oI];
-        }
+            if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
+            {
+                ++nMarked;
+                ++refLevels[oI];
+            }
 
         s /= 2.0;
 

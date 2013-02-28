@@ -45,6 +45,7 @@ namespace Foam
 meshOctreeCreator::meshOctreeCreator(meshOctree& mo)
 :
     octree_(mo),
+    scalingFactor_(1.0),
     meshDictPtr_(NULL),
     hexRefinement_(false),
     globalRefLevel_(0),
@@ -58,6 +59,7 @@ meshOctreeCreator::meshOctreeCreator
 )
 :
     octree_(mo),
+    scalingFactor_(1.0),
     meshDictPtr_(&dict),
     hexRefinement_(false),
     globalRefLevel_(0),
@@ -73,6 +75,7 @@ meshOctreeCreator::meshOctreeCreator
 )
 :
     octree_(mo),
+    scalingFactor_(1.0),
     meshDict_(dict),
     hexRefinement_(false),
     globalRefLevel_(0),
@@ -100,6 +103,11 @@ meshOctreeCreator::~meshOctreeCreator()
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void meshOctreeCreator::setScalingFactor(const scalar s)
+{
+    scalingFactor_ = s;
+}
 
 void meshOctreeCreator::activateHexRefinement()
 {

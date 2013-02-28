@@ -57,7 +57,11 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         return;
     }
 
-    const scalar maxSize(readScalar(meshDictPtr_->lookup("maxCellSize")));
+    const scalar maxSize
+    (
+        scalingFactor_ *
+        readScalar(meshDictPtr_->lookup("maxCellSize"))
+    );
 
     octreeModifier.searchRangeAccess() = 0.25 * maxSize;
 
@@ -116,7 +120,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
     {
         direction boundaryRefLevel_ = globalRefLevel_;
         scalar cs(readScalar(meshDictPtr_->lookup("boundaryCellSize")));
-        cs *= (1.0 + SMALL);
+        cs *= (scalingFactor_ + SMALL);
 
         octreeModifier.searchRangeAccess() = cs;
 
@@ -166,7 +170,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 continue;
 
             scalar cs = refPatches[patchI].cellSize();
-            cs *= (1.0 + SMALL);
+            cs *= (scalingFactor_ + SMALL);
 
             label addLevel(0);
             do
@@ -216,7 +220,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             }
 
             scalar cs = refPatches[patchI].cellSize();
-            cs *= (1.0 + SMALL);
+            cs *= (scalingFactor_+ SMALL);
 
             label addLevel(0);
             do
