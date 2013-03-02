@@ -55,7 +55,7 @@ void meshOctreeAddressing::clearNodeAddressing()
     deleteDemandDrivenData(octreePointsPtr_);
 	deleteDemandDrivenData(nodeLabelsPtr_);
 	deleteDemandDrivenData(nodeLeavesPtr_);
-	
+
 	deleteDemandDrivenData(nodeTypePtr_);
 }
 
@@ -138,17 +138,28 @@ meshOctreeAddressing::meshOctreeAddressing
     globalLeafToLocalPtr_(NULL),
     leafAtProcsPtr_(NULL)
 {
-	if( !useDATABoxes && dict.found("keepCellsIntersectingBoundary") )
-	{
-		useDATABoxes_ = readBool(dict.lookup("keepCellsIntersectingBoundary"));
-	}
-    
+    if( !useDATABoxes && dict.found("keepCellsIntersectingBoundary") )
+    {
+        useDATABoxes_ = readBool(dict.lookup("keepCellsIntersectingBoundary"));
+    }
+
+    if( dict.found("nonManifoldMeshing") )
+    {
+        const bool nonManifoldMesh
+        (
+            readBool(dict.lookup("nonManifoldMeshing"))
+        );
+
+        if( nonManifoldMesh )
+            useDATABoxes_ = true;
+    }
+
     if( Pstream::parRun() )
     {
         meshOctreeModifier om(const_cast<meshOctree&>(octree_));
         om.addLayerFromNeighbouringProcessors();
     }
-	
+
 	//- check for glued regions
 	checkGluedRegions();
 }
@@ -166,10 +177,10 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
 {
     const labelListPMG& owner = octreeFaceOwner();
     const labelListPMG& neighbour = octreeFaceNeighbour();
-    
+
     if( neighbour[fI] < 0 )
         return false;
-    
+
     Map<label> nAppearances;
     DynList<label> triangles(100);
     octree_.containedTriangles(owner[fI], triangles);
@@ -184,7 +195,7 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
             nAppearances.insert(triangles[triI], 1);
         }
     }
-    
+
     triangles.clear();
     octree_.containedTriangles(neighbour[fI], triangles);
     forAll(triangles, triI)
@@ -198,7 +209,7 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
             nAppearances.insert(triangles[triI], 1);
         }
     }
-    
+
     forAllConstIter(Map<label>, nAppearances, iter)
     {
         if( iter() == 2 )
@@ -209,16 +220,16 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
                 octree_.returnLeaf(neighbour[fI]).level()
             )
                 return true;
-            
+
             //- check intersection by geometric testing
             const triSurf& surf = octree_.surface();
             const pointField& points = this->octreePoints();
             const VRWGraph& faces = this->octreeFaces();
-            
+
             face f(faces.sizeOfRow(fI));
             forAll(f, pI)
                 f[pI] = faces(fI, pI);
-            
+
             if(
                 help::doFaceAndTriangleIntersect
                 (
@@ -231,31 +242,31 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
                 return true;
         }
     }
-    
+
     return false;
 }
 
 bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
 {
     const VRWGraph& edgeCubes = this->edgeLeaves();
-    
+
     Map<label> nAppearances;
     DynList<label> triangles(100);
     bool sameLevel(true);
-    
+
     forAllRow(edgeCubes, eI, i)
     {
         const label leafI = edgeCubes(eI, i);
         if( !octree_.hasContainedTriangles(leafI) )
             return false;
-        
+
         if
         (
             octree_.returnLeaf(leafI).level() !=
             octree_.returnLeaf(edgeCubes(eI, 0)).level()
         )
             sameLevel = false;
-        
+
         triangles.clear();
         octree_.containedTriangles(leafI, triangles);
         forAll(triangles, triI)
@@ -270,19 +281,19 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
             }
         }
     }
-    
+
     forAllConstIter(Map<label>, nAppearances, iter)
     {
         if( iter() == edgeCubes.sizeOfRow(eI) )
         {
             if( sameLevel )
                 return true;
-            
+
             //- check for geometric intersection
             const LongList<edge>& edges = this->octreeEdges();
             const pointField& points = this->octreePoints();
             point intersection;
-            
+
             if(
                 help::triLineIntersection
                 (
@@ -296,7 +307,7 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
                 return true;
         }
     }
-    
+
     return false;
 }
 
@@ -307,22 +318,22 @@ void meshOctreeAddressing::edgeIntersections
 ) const
 {
     intersections.clear();
-    
+
     const LongList<edge>& edges = this->octreeEdges();
     const pointField& points = this->octreePoints();
     const VRWGraph& edgeCubes = this->edgeLeaves();
     const scalar tol =
         SMALL * mag(points[edges[eI].start()] - points[edges[eI].end()]);
-    
+
     Map<label> nAppearances;
     DynList<label> triangles(100);
-    
+
     forAllRow(edgeCubes, eI, i)
     {
         const label leafI = edgeCubes(eI, i);
         if( !octree_.hasContainedTriangles(leafI) )
             return;
-        
+
         triangles.clear();
         octree_.containedTriangles(leafI, triangles);
         forAll(triangles, triI)
@@ -337,14 +348,14 @@ void meshOctreeAddressing::edgeIntersections
             }
         }
     }
-    
+
     forAllConstIter(Map<label>, nAppearances, iter)
     {
         if( iter() == edgeCubes.sizeOfRow(eI) )
         {
             //- check for geometric intersection
             point intersection;
-            
+
             if(
                 help::triLineIntersection
                 (
@@ -360,7 +371,7 @@ void meshOctreeAddressing::edgeIntersections
                 forAll(intersections, i)
                     if( mag(intersections[i] - intersection) <= tol )
                         store = false;
-                
+
                 if( store )
                     intersections.append(intersection);
             }
@@ -378,7 +389,7 @@ void meshOctreeAddressing::cubesAroundEdge
 	const VRWGraph& nl = this->nodeLabels();
 	const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
 	const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
-	
+
 	switch( eI )
 	{
 		case 0: case 1: case 2: case 3:
@@ -423,9 +434,9 @@ label meshOctreeAddressing::findEdgeCentre
 	const VRWGraph& nl = this->nodeLabels();
 	const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
 	const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
-	
+
 	const direction level = oc.level();
-	
+
 	label fI(-1);
 	switch( eI )
 	{
@@ -450,14 +461,14 @@ label meshOctreeAddressing::findEdgeCentre
 			) << "Invalid edge specified!!" << abort(FatalError);
 		} break;
 	};
-	
+
 	for(label i=0;i<4;++i)
 	{
         const label fNode = meshOctreeCubeCoordinates::faceNodes_[fI][i];
-        
+
 		if( pLeaves(nodeI, fNode) < 0 )
 			continue;
-		
+
 		const label leafJ = pLeaves(nodeI, fNode);
 		if( octree_.returnLeaf(leafJ).level() > level )
         {
@@ -465,7 +476,7 @@ label meshOctreeAddressing::findEdgeCentre
 			return nl(leafJ, meshOctreeCubeCoordinates::faceNodes_[fI][shift]);
         }
 	}
-	
+
 	return -1;
 }
 

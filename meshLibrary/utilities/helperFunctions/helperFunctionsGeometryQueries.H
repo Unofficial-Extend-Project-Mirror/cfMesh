@@ -39,6 +39,9 @@ SourceFiles
 #include "plane.H"
 #include "face.H"
 
+#include "triangle.H"
+#include "tetrahedron.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class boolList;
@@ -48,7 +51,7 @@ class triSurface;
 
 namespace Foam
 {
-    
+
 /*---------------------------------------------------------------------------*\
                     Namespace help functions Declaration
 \*---------------------------------------------------------------------------*/
@@ -79,7 +82,7 @@ namespace help
         const edge& e,
         const pointField& ep
     );
-    
+
     //- check if the point p belongs to the plane
     inline bool vertexInPlane(const point& p, const plane& pl);
 
@@ -90,7 +93,7 @@ namespace help
         const point& edgePoint1,
         const point& p
     );
-    
+
     //- find the vertex on the edge nearest to the point p
     inline point nearestPointOnTheEdgeExact
     (
@@ -98,7 +101,7 @@ namespace help
         const point& edgePoint1,
         const point& p
     );
-    
+
     //- find and return the distance between the edge and the point p
     inline scalar distanceOfPointFromTheEdge
     (
@@ -106,7 +109,7 @@ namespace help
         const point& edgePoint1,
         const point& p
     );
-    
+
     //- find the nearest points on the edge and the line
     inline bool nearestEdgePointToTheLine
     (
@@ -117,7 +120,7 @@ namespace help
         point& nearestOnEdge,
         point& nearestOnLine
     );
-    
+
     //- check if the edge intersects the plane
     inline bool planeIntersectsEdge
     (
@@ -126,7 +129,23 @@ namespace help
         const plane& pl,
         point& intersection
     );
-    
+
+    //- check if a vertex lies inside the tetrahedron
+    inline bool pointInTetrahedron
+    (
+        const point& p,
+        const tetrahedron<point, point>& tet
+    );
+
+    //- check if a line intersects the triangle, and return the intersection
+    inline bool triLineIntersection
+    (
+        const triangle<point, point>& tria,
+        const point& lineStart,
+        const point& lineEnd,
+        point& intersection
+    );
+
     //- check if a line intersects the triangle and return the intersection
     inline bool triLineIntersection
     (
@@ -136,7 +155,7 @@ namespace help
         const point&,
         point&
     );
-    
+
     //- check if the line intersects the bounding box
     inline bool boundBoxLineIntersection
     (
@@ -144,7 +163,7 @@ namespace help
         const point&,
         const boundBox&
     );
-    
+
     //- check if the surface triangle and the face intersect
     inline bool doFaceAndTriangleIntersect
     (
@@ -153,7 +172,7 @@ namespace help
         const face& f,
         const pointField& facePoints
     );
-    
+
     //- find the nearest vertex on the surface triangle to the given point
     inline point nearestPointOnTheTriangle
     (
@@ -161,7 +180,7 @@ namespace help
         const triSurface&,
         const point&
     );
-    
+
     //- check if the point is inside or outside the face
     inline bool pointInsideFace
     (
@@ -170,7 +189,7 @@ namespace help
         const vector& n,
         const pointField& fp
     );
-    
+
     //- check if the point is inside or outside the face
     inline bool pointInsideFace
     (
@@ -178,10 +197,10 @@ namespace help
         const face& f,
         const pointField& fp
     );
-    
+
     //- check if the vertex is on the positive side of the face plane
     inline bool isVertexVisible(const point& p, const plane& pl);
-    
+
     //- find number of face groups within a given range
     inline label numberOfFaceGroups
     (
@@ -190,7 +209,7 @@ namespace help
         const scalar range,
         const triSurface& surface
     );
-    
+
     //- find the number of edge groups within the given range
     inline label numberOfEdgeGroups
     (

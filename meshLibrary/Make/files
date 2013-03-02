@@ -22,6 +22,9 @@ renameBoundaryPatches = utilities/surfaceTools/renameBoundaryPatches
 
 hexHelpers = utilities/hexahedra/hexHelpers
 
+intersectionTools = utilities/intersectionTools
+findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
+
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
@@ -181,6 +184,8 @@ $(partTetMesh)/partTetMeshSimplex.C
 $(triSurf)/triSurf.C
 
 $(hexHelpers)/hexHelpers.C
+
+$(findCellsIntersectingSurface)/findCellsIntersectingSurface.C
 
 $(tetrahedra)/tessellationElement.C
 $(tetrahedra)/tetTessellation.C

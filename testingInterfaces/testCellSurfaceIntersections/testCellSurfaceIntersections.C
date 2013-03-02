@@ -36,8 +36,8 @@ Description
 #include "Time.H"
 #include "polyMesh.H"
 #include "polyMeshGen.H"
-#include "cartesianMeshExtractor.H"
 #include "triSurf.H"
+#include "findCellsIntersectingSurface.H"
 
 #include <sstream>
 
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-	IOdictionary meshDict
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -82,31 +82,14 @@ int main(int argc, char *argv[])
     meshOctree mo(surf);
 	meshOctreeCreator(mo, meshDict).createOctreeBoxes();
 
-    meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
+    polyMeshGen pmg(runTime);
+    pmg.read();
 
-	Info<< "Execution time for octree creation = "
-        << runTime.elapsedCpuTime()
-        << " s\n" << endl << endl;
-
-	polyMeshGen pmg(runTime);
-	cartesianMeshExtractor cmg(mo, meshDict, pmg);
-
-	//cmg.decomposeSplitHexes();
-	cmg.createMesh();
+    findCellsIntersectingSurface ss(pmg, mo);
+    ss.addIntersectedCellsToSubset("intersectedCells");
 
     pmg.write();
 
-/*    if( Pstream::parRun() )
-    {
-        std::ostringstream ss;
-		ss << Pstream::myProcNo();
-        writeMeshEnsight(pmg, "cartesianMesh"+ss.str());
-    }
-    else
-    {
-        writeMeshEnsight(pmg, "cartesianMesh");
-	}
-*/
     Info << "End\n" << endl;
     return 0;
 }

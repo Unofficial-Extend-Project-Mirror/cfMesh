@@ -233,23 +233,71 @@ inline bool planeIntersectsEdge
     return false;
 }
 
+inline bool pointInTetrahedron
+(
+    const point& p,
+    const tetrahedron<point, point>& tet
+)
+{
+    const vector v0 = tet.a() - tet.d();
+    const vector v1 = tet.b() - tet.d();
+    const vector v2 = tet.c() - tet.d();
+    const vector sp = p - tet.d();
+
+    matrix3D mat;
+    FixedList<scalar, 3> source;
+    for(label i=0;i<3;++i)
+    {
+        mat[i][0] = v0[i];
+        mat[i][1] = v1[i];
+        mat[i][2] = v2[i];
+        source[i] = sp[i];
+    }
+
+    //- check the determinant of the transformation
+    const scalar det = mat.determinant();
+
+    if( mag(det) < VSMALL )
+        return false;
+
+    //- get the coordinates of the point in the barycentric corrdinate system
+    const scalar u0 = mat.solveFirst(source);
+
+    if( (u0 < -SMALL) || (u0 > (1.0+SMALL)) )
+        return false;
+
+    const scalar u1 = mat.solveSecond(source);
+
+    if( (u1 < -SMALL) || ((u0+u1) > (1.0+SMALL)) )
+        return false;
+
+    const scalar u2 = mat.solveThird(source);
+
+    if( (u2 < -SMALL) || (u2 > (1.0+SMALL)) )
+        return false;
+
+
+    const scalar u3 = 1.0 - u0 - u1 - u2;
+
+    if( (u3 < -SMALL) || (u3 > (1.0+SMALL)) )
+        return false;
+
+    return true;
+}
+
 inline bool triLineIntersection
 (
-    const triSurface& surface,
-    const label tI,
-    const point& s,
-    const point& e,
+    const triangle<point, point>& tria,
+    const point& lineStart,
+    const point& lineEnd,
     point& intersection
 )
 {
-    const pointField& points = surface.points();
-    const labelledTri& ltri = surface.localFaces()[tI];
-
-    const point& p0 = points[ltri[0]];
-    const vector v(s - e);
-    const vector v0 = points[ltri[1]] - p0;
-    const vector v1 = points[ltri[2]] - p0;
-    const vector sp = s - p0;
+    const point& p0 = tria.a();
+    const vector v(lineStart - lineEnd);
+    const vector v0 = tria.b() - p0;
+    const vector v1 = tria.c() - p0;
+    const vector sp = lineStart - p0;
 
     matrix3D mat;
     FixedList<scalar, 3> source;
@@ -281,8 +329,30 @@ inline bool triLineIntersection
     if( (u1 < -SMALL) || ((u0+u1) > (1.0+SMALL)) )
         return false;
 
-    intersection = s - t * v;
+    intersection = lineStart - t * v;
     return true;
+}
+
+inline bool triLineIntersection
+(
+    const triSurface& surface,
+    const label tI,
+    const point& s,
+    const point& e,
+    point& intersection
+)
+{
+    const pointField& pts = surface.localPoints();
+    const labelledTri& tri = surface[tI];
+
+    triangle<point, point> tria
+    (
+        pts[tri[0]],
+        pts[tri[1]],
+        pts[tri[2]]
+    );
+
+    return triLineIntersection(tria, s, e, intersection);
 }
 
 inline bool boundBoxLineIntersection
@@ -361,16 +431,28 @@ inline bool doFaceAndTriangleIntersect
     forAll(triEdges, eI)
     {
         const edge& e = triEdges[eI];
-        help::planeIntersectsEdge
-        (
-            triPoints[e.start()],
-            triPoints[e.end()],
-            pl,
-            intersection
-        );
 
-        if( help::pointInsideFace(intersection, f, n, facePoints) )
-            return true;
+        forAll(f, pI)
+        {
+            triangle<point, point> tria
+            (
+                facePoints[f[pI]],
+                facePoints[f.nextLabel(pI)],
+                centre
+            );
+
+            const bool currIntersection =
+                help::triLineIntersection
+                (
+                    tria,
+                    triPoints[e.start()],
+                    triPoints[e.end()],
+                    intersection
+                );
+
+            if( currIntersection )
+                return true;
+        }
     }
 
     //- check if any face edges intersect the triangle
