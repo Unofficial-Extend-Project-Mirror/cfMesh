@@ -67,42 +67,42 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
     //- create storage for the data
-	std::map<label, labelledPoint> localData;
+    std::map<label, labelledPoint> localData;
  
     //- create data which shall be exchanged with other processors
     std::map<label, LongList<refLabelledPoint> > exchangeData;
     forAll(procPoints, pI)
     {
-		const label pointI = procPoints[pI];
-		
-		localData.insert(std::make_pair(pointI, labelledPoint(0,vector::zero)));
-		labelledPoint& lpd = localData[pointI];
-		
+        const label pointI = procPoints[pI];
+        
+        localData.insert(std::make_pair(pointI, labelledPoint(0,vector::zero)));
+        labelledPoint& lpd = localData[pointI];
+        
         forAllRow(pPoints, pointI, ppI)
         {
             const label nei = pPoints(pointI, ppI);
             
             if( smoothOnlySurfaceNodes && (vertexLocation_[nei] & INSIDE) )
                 continue;
-			
-			if( pointAtProcs.sizeOfRow(nei) != 0 )
-			{
-				label pMin(Pstream::nProcs());
-				forAllRow(pointAtProcs, nei, procI)
-				{
-					const label procJ = pointAtProcs(nei, procI);
-					if( (procJ < pMin) && pointAtProcs.contains(pointI, procJ) )
-						pMin = procJ;
-				}
-				
-				if( pMin != Pstream::myProcNo() )
-					continue;
-			}
-			
-			++lpd.pointLabel();
-			lpd.coordinates() += points[nei];
+            
+            if( pointAtProcs.sizeOfRow(nei) != 0 )
+            {
+                label pMin(Pstream::nProcs());
+                forAllRow(pointAtProcs, nei, procI)
+                {
+                    const label procJ = pointAtProcs(nei, procI);
+                    if( (procJ < pMin) && pointAtProcs.contains(pointI, procJ) )
+                        pMin = procJ;
+                }
+                
+                if( pMin != Pstream::myProcNo() )
+                    continue;
+            }
+            
+            ++lpd.pointLabel();
+            lpd.coordinates() += points[nei];
         }
-		
+        
         forAllRow(pointAtProcs, pointI, procI)
         {
             const label neiProc = pointAtProcs(pointI, procI);
@@ -118,8 +118,8 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
             }
             
             //- add data to the list which will be sent to other processor
-			LongList<refLabelledPoint>& dts = exchangeData[neiProc];
-			dts.append(refLabelledPoint(globalPointLabel[pointI], lpd));
+            LongList<refLabelledPoint>& dts = exchangeData[neiProc];
+            dts.append(refLabelledPoint(globalPointLabel[pointI], lpd));
         }
     }
 
@@ -152,32 +152,32 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
             points[pointI] = newP;
         }
     }
-	
-	# ifdef DEBUGSmooth
-	//- check
-	std::map<label, LongList<labelledPoint> > check;
-	forAll(procPoints, pI)
-	{
-		const label pointI = procPoints[pI];
-		
-		forAllRow(pointAtProcs, pointI, i)
-		{
-			const label procI = pointAtProcs(pointI, i);
-			if( procI == Pstream::myProcNo() )
-				continue;
-			if( check.find(procI) == check.end() )
-			{
-				check.insert(std::make_pair(procI, LongList<labelledPoint>()));
-			}
-			
-			LongList<labelledPoint>& data = check[procI];
-			data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
-		}
-	}
-	
+    
+    # ifdef DEBUGSmooth
+    //- check
+    std::map<label, LongList<labelledPoint> > check;
+    forAll(procPoints, pI)
+    {
+        const label pointI = procPoints[pI];
+        
+        forAllRow(pointAtProcs, pointI, i)
+        {
+            const label procI = pointAtProcs(pointI, i);
+            if( procI == Pstream::myProcNo() )
+                continue;
+            if( check.find(procI) == check.end() )
+            {
+                check.insert(std::make_pair(procI, LongList<labelledPoint>()));
+            }
+            
+            LongList<labelledPoint>& data = check[procI];
+            data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
+        }
+    }
+    
     LongList<labelledPoint> data;
     help::exchangeMap(check, data);
-		
+        
     forAll(data, i)
     {
         const label pointI = globalToLocal[data[i].pointLabel()];
@@ -186,7 +186,7 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
             Pout << "Crap " << globalPointLabel[pointI] << " coordinates "
                 << points[pointI] << " point there " << data[i] << endl;
     }
-	# endif
+    # endif
 }
 
 void meshOptimizer::laplaceSmoother::laplacianPCParallel
@@ -211,25 +211,25 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
     //- create storage for the data
-	std::map<label, labelledPoint> localData;
+    std::map<label, labelledPoint> localData;
  
     //- create data which shall be exchanged with other processors
     std::map<label, LongList<refLabelledPoint> > exchangeData;
     forAll(procPoints, pI)
     {
-		const label pointI = procPoints[pI];
-		
-		localData.insert(std::make_pair(pointI, labelledPoint(0,vector::zero)));
-		labelledPoint& lpd = localData[pointI];
-		
+        const label pointI = procPoints[pI];
+        
+        localData.insert(std::make_pair(pointI, labelledPoint(0,vector::zero)));
+        labelledPoint& lpd = localData[pointI];
+        
         forAllRow(pCells, pointI, pcI)
         {
             const label cellI = pCells(pointI, pcI);
-			
-			++lpd.pointLabel();
-			lpd.coordinates() += centres[cellI];
+            
+            ++lpd.pointLabel();
+            lpd.coordinates() += centres[cellI];
         }
-		
+        
         forAllRow(pointAtProcs, pointI, procI)
         {
             const label neiProc = pointAtProcs(pointI, procI);
@@ -245,8 +245,8 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
             }
             
             //- add data to the list which will be sent to other processor
-			LongList<refLabelledPoint>& dts = exchangeData[neiProc];
-			dts.append(refLabelledPoint(globalPointLabel[pointI], lpd));
+            LongList<refLabelledPoint>& dts = exchangeData[neiProc];
+            dts.append(refLabelledPoint(globalPointLabel[pointI], lpd));
         }
     }
 
@@ -279,32 +279,32 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
             points[pointI] = newP;
         }
     }
-	
-	# ifdef DEBUGSmooth
-	//- check
-	std::map<label, LongList<labelledPoint> > check;
-	forAll(procPoints, pI)
-	{
-		const label pointI = procPoints[pI];
-		
-		forAllRow(pointAtProcs, pointI, i)
-		{
-			const label procI = pointAtProcs(pointI, i);
-			if( procI == Pstream::myProcNo() )
-				continue;
-			if( check.find(procI) == check.end() )
-			{
-				check.insert(std::make_pair(procI, LongList<labelledPoint>()));
-			}
-			
-			LongList<labelledPoint>& data = check[procI];
-			data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
-		}
-	}
-	
+    
+    # ifdef DEBUGSmooth
+    //- check
+    std::map<label, LongList<labelledPoint> > check;
+    forAll(procPoints, pI)
+    {
+        const label pointI = procPoints[pI];
+        
+        forAllRow(pointAtProcs, pointI, i)
+        {
+            const label procI = pointAtProcs(pointI, i);
+            if( procI == Pstream::myProcNo() )
+                continue;
+            if( check.find(procI) == check.end() )
+            {
+                check.insert(std::make_pair(procI, LongList<labelledPoint>()));
+            }
+            
+            LongList<labelledPoint>& data = check[procI];
+            data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
+        }
+    }
+    
     LongList<labelledPoint> data;
     help::exchangeMap(check, data);
-		
+        
     forAll(data, i)
     {
         const label pointI = globalToLocal[data[i].pointLabel()];
@@ -313,7 +313,7 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
             Pout << "Crap " << globalPointLabel[pointI] << " coordinates "
                 << points[pointI] << " point there " << data[i] << endl;
     }
-	# endif
+    # endif
 }
 
 void meshOptimizer::laplaceSmoother::laplacianWPCParallel
@@ -339,15 +339,15 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
     //- create storage for the data
-	std::map<label, labelledPointScalar> localData;
+    std::map<label, labelledPointScalar> localData;
  
     //- create data which shall be exchanged with other processors
     std::map<label, LongList<labelledPointScalar> > exchangeData;
     forAll(procPoints, pI)
     {
-		const label pointI = procPoints[pI];
-		
-		localData.insert
+        const label pointI = procPoints[pI];
+        
+        localData.insert
         (
             std::make_pair
             (
@@ -355,17 +355,17 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
                 labelledPointScalar(globalPointLabel[pointI], vector::zero, 0.)
             )
         );
-		labelledPointScalar& lps = localData[pointI];
-		
+        labelledPointScalar& lps = localData[pointI];
+        
         forAllRow(pCells, pointI, pcI)
         {
             const label cellI = pCells(pointI, pcI);
-			
-			const scalar w = Foam::max(volumes[cellI], VSMALL);
-			lps.coordinates() += w * centres[cellI];
+            
+            const scalar w = Foam::max(volumes[cellI], VSMALL);
+            lps.coordinates() += w * centres[cellI];
             lps.scalarValue() += w;
         }
-		
+        
         forAllRow(pointAtProcs, pointI, procI)
         {
             const label neiProc = pointAtProcs(pointI, procI);
@@ -381,8 +381,8 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
             }
             
             //- add data to the list which will be sent to other processor
-			LongList<labelledPointScalar>& dts = exchangeData[neiProc];
-			dts.append(lps);
+            LongList<labelledPointScalar>& dts = exchangeData[neiProc];
+            dts.append(lps);
         }
     }
 
@@ -415,32 +415,32 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
             points[pointI] = newP;
         }
     }
-	
-	# ifdef DEBUGSmooth
-	//- check
-	std::map<label, LongList<labelledPoint> > check;
-	forAll(procPoints, pI)
-	{
-		const label pointI = procPoints[pI];
-		
-		forAllRow(pointAtProcs, pointI, i)
-		{
-			const label procI = pointAtProcs(pointI, i);
-			if( procI == Pstream::myProcNo() )
-				continue;
-			if( check.find(procI) == check.end() )
-			{
-				check.insert(std::make_pair(procI, LongList<labelledPoint>()));
-			}
-			
-			LongList<labelledPoint>& data = check[procI];
-			data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
-		}
-	}
-	
+    
+    # ifdef DEBUGSmooth
+    //- check
+    std::map<label, LongList<labelledPoint> > check;
+    forAll(procPoints, pI)
+    {
+        const label pointI = procPoints[pI];
+        
+        forAllRow(pointAtProcs, pointI, i)
+        {
+            const label procI = pointAtProcs(pointI, i);
+            if( procI == Pstream::myProcNo() )
+                continue;
+            if( check.find(procI) == check.end() )
+            {
+                check.insert(std::make_pair(procI, LongList<labelledPoint>()));
+            }
+            
+            LongList<labelledPoint>& data = check[procI];
+            data.append(labelledPoint(globalPointLabel[pointI],points[pointI]));
+        }
+    }
+    
     LongList<labelledPoint> data;
     help::exchangeMap(check, data);
-		
+        
     forAll(data, i)
     {
         const label pointI = globalToLocal[data[i].pointLabel()];
@@ -449,7 +449,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
             Pout << "Crap " << globalPointLabel[pointI] << " coordinates "
                 << points[pointI] << " point there " << data[i] << endl;
     }
-	# endif
+    # endif
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

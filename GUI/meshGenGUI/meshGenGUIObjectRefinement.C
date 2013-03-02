@@ -35,89 +35,89 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 bool meshGenGUI::objectRefinementEntryExist() const
 {
-	return meshDict_.found("objectRefinements");
+    return meshDict_.found("objectRefinements");
 }
 
 PtrList<entry> meshGenGUI::objectRefinements() const
 {
-	if( !objectRefinementEntryExist() )
-	{
-		return PtrList<entry>();
-	}
-	
-	// Read polyPatchList
-	Istream& is = meshDict_.lookup("objectRefinements");
+    if( !objectRefinementEntryExist() )
+    {
+        return PtrList<entry>();
+    }
+    
+    // Read polyPatchList
+    Istream& is = meshDict_.lookup("objectRefinements");
 
-	PtrList<entry> objectEntries(is);
+    PtrList<entry> objectEntries(is);
     
     return objectEntries;
 }
 
 void meshGenGUI::addObjectRefinement(const objectRefinement& object)
 {
-	if( objectRefinementEntryExist() )
-	{
-		PtrList<entry> objectEntries(meshDict_.lookup("objectRefinements"));
-		const label s = objectEntries.size();
-		
-		objectEntries.setSize(s+1);
-		objectEntries.set
-		(
-			s,
-			new dictionaryEntry(object.name(), object.dict())
-		);
-		
-		meshDict_.remove("objectRefinements");
-		meshDict_.add("objectRefinements", objectEntries);
-	}
-	else
-	{
-		PtrList<entry> objectEntries(1);
-		objectEntries.set
-		(
-			0,
-			new dictionaryEntry
-			(
-				object.name(),
-				object.dict()
-			)
-		);
-		
-		meshDict_.add("objectRefinements", objectEntries);
-	}
+    if( objectRefinementEntryExist() )
+    {
+        PtrList<entry> objectEntries(meshDict_.lookup("objectRefinements"));
+        const label s = objectEntries.size();
+        
+        objectEntries.setSize(s+1);
+        objectEntries.set
+        (
+            s,
+            new dictionaryEntry(object.name(), object.dict())
+        );
+        
+        meshDict_.remove("objectRefinements");
+        meshDict_.add("objectRefinements", objectEntries);
+    }
+    else
+    {
+        PtrList<entry> objectEntries(1);
+        objectEntries.set
+        (
+            0,
+            new dictionaryEntry
+            (
+                object.name(),
+                object.dict()
+            )
+        );
+        
+        meshDict_.add("objectRefinements", objectEntries);
+    }
 }
 
 void meshGenGUI::removeObjectRefinement(const word& name)
 {
-	if( !objectRefinementEntryExist() )
-		return;
-	
-	PtrList<entry> objectEntries(meshDict_.lookup("objectRefinements"));
-	meshDict_.remove("objectRefinements");
-	
-	if( objectEntries.size() == 1 )
-		return;
-	
-	PtrList<entry> refs(objectEntries.size()-1);
-	label counter(0);
-	forAll(objectEntries, i)
-		if( objectEntries[i].keyword() != name )
-		{
-			refs.set
-			(
-				counter++,
-				new dictionaryEntry
-				(
-					objectEntries[i].keyword(),
-					objectEntries[i].dict()
-				)
-			);
-		}
-		
-	meshDict_.add("objectRefinements", refs);
+    if( !objectRefinementEntryExist() )
+        return;
+    
+    PtrList<entry> objectEntries(meshDict_.lookup("objectRefinements"));
+    meshDict_.remove("objectRefinements");
+    
+    if( objectEntries.size() == 1 )
+        return;
+    
+    PtrList<entry> refs(objectEntries.size()-1);
+    label counter(0);
+    forAll(objectEntries, i)
+        if( objectEntries[i].keyword() != name )
+        {
+            refs.set
+            (
+                counter++,
+                new dictionaryEntry
+                (
+                    objectEntries[i].keyword(),
+                    objectEntries[i].dict()
+                )
+            );
+        }
+        
+    meshDict_.add("objectRefinements", refs);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

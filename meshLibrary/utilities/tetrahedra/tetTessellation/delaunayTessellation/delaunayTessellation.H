@@ -53,13 +53,13 @@ public:
     // Constructors
 
         //- Construct from list of points
-		delaunayTessellation(const LongList<point>&);
+        delaunayTessellation(const LongList<point>&);
 
-		//- Construct from triangulated surface
-		delaunayTessellation(const triSurface& surf);
+        //- Construct from triangulated surface
+        delaunayTessellation(const triSurface& surf);
 
-		//- Construct from boundBox
-		delaunayTessellation(const boundBox& bb);
+        //- Construct from boundBox
+        delaunayTessellation(const boundBox& bb);
 
     // Destructor
 
@@ -67,22 +67,22 @@ public:
 
     // Member functions
 
-		//- add point which is already in the list of points
-		bool addPoint(const label pI);
+        //- add point which is already in the list of points
+        bool addPoint(const label pI);
 
-		//- create a new point from the centroid of the given element
-		//- and add it into the tessellation
-		void addCentroid(const label elmtI);
+        //- create a new point from the centroid of the given element
+        //- and add it into the tessellation
+        void addCentroid(const label elmtI);
 
-		//- create a new point from the circumcentre of the given element
-		//- and add it into the tessellation
-		void addCircumCentre(const label elmtI);
-		
-		//- create a new point at the centre of the given edge of the element
-		//- and add it into the tessellation
-		void addEdgeCentre(const label elmtI, const direction eI); 
+        //- create a new point from the circumcentre of the given element
+        //- and add it into the tessellation
+        void addCircumCentre(const label elmtI);
+        
+        //- create a new point at the centre of the given edge of the element
+        //- and add it into the tessellation
+        void addEdgeCentre(const label elmtI, const direction eI); 
 
-		//- check if the tesselation obeys Delaunay properties
+        //- check if the tesselation obeys Delaunay properties
         void checkTessellation() const;
 };
 

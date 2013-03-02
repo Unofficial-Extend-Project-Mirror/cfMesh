@@ -40,7 +40,7 @@ Description
 
 namespace Foam
 {
-	
+    
 void meshOctreeAutomaticRefinement::createOctreeAddressing() const
 {
     octreeAddressingPtr_ =
@@ -55,7 +55,7 @@ const
 
     return *octreeAddressingPtr_;
 }
-	
+    
 void meshOctreeAutomaticRefinement::createSurfacePartitioner() const
 {
     partitionerPtr_ = new triSurfacePartitioner(octree_.surface());
@@ -68,7 +68,7 @@ const triSurfacePartitioner& meshOctreeAutomaticRefinement::partitioner() const
 
     return *partitionerPtr_;
 }
-	
+    
 void meshOctreeAutomaticRefinement::createCurvatureEstimator() const
 {
     curvaturePtr_ = new triSurfaceCurvatureEstimator(octree_.surface());
@@ -102,7 +102,7 @@ void meshOctreeAutomaticRefinement::setMaxRefLevel()
         do
         {
             finished = false;
-	
+    
             const scalar lSize = size / pow(2, maxRefLevel_);
 
             if( lSize < cs )

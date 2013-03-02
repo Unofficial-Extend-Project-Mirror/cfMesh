@@ -51,69 +51,69 @@ namespace Foam
 class boundaryFacesGenerator
 {
     // private data
-		//- triangulated surface
-		const triSurface& surface_;
+        //- triangulated surface
+        const triSurface& surface_;
 
         //- mesh data
-		polyMeshGen& mesh_;
-	
-		//- helpers
+        polyMeshGen& mesh_;
+    
+        //- helpers
         List<direction>& nFacesInCell_;
         const boolList& boundaryCell_;
-		VRWGraph& pointRegions_;
-	
-		label& nPoints_;
+        VRWGraph& pointRegions_;
+    
+        label& nPoints_;
         const label nIntFaces_;
 
-		//- boundary faces
-		VRWGraph boundaryFaces_;
-		labelListPMG boundaryOwners_;
-		labelListPMG boundaryPatches_;
-		bool hasFacesInDefaultPatch_;
-		label defaultPatchID_;
-	
-		//- surface corners
-		DynList<label> surfaceCorners_;
-		DynList< DynList<label> > cornersPatches_;
+        //- boundary faces
+        VRWGraph boundaryFaces_;
+        labelListPMG boundaryOwners_;
+        labelListPMG boundaryPatches_;
+        bool hasFacesInDefaultPatch_;
+        label defaultPatchID_;
+    
+        //- surface corners
+        DynList<label> surfaceCorners_;
+        DynList< DynList<label> > cornersPatches_;
 
     // private member functions
-		//- find patches for the given vertex
+        //- find patches for the given vertex
         labelList patchesForPoint(const label) const;
 
-		//- find patches for a given cell
-		void determineCellPatches(const label, DynList<label>&);
-		
-		//- find boundary chains for the given cell
-		void createBoundaryChainsForCell(const label, labelListList&);
-		
-		void createFacesForChain
-		(
-			const labelList& chainVertices,
-			const DynList<label>& patches,
-			List<DynList<face> >& facesForChain
-		);
-		void createFacesForChainWithCorner
-		(
-			const label cornerLabel,
-			const labelList& bChain,
-			const DynList<label>& patches,
-			List<DynList<face> >& facesForChain
-		);
-		void createFacesForChainWithoutCorners
-		(
-			const labelList& bChain,
-			const DynList<label>& patches,
-			List<DynList<face> >& facesForChain
-		);
-		void createBoundaryFacesForCell(const label);
+        //- find patches for a given cell
+        void determineCellPatches(const label, DynList<label>&);
+        
+        //- find boundary chains for the given cell
+        void createBoundaryChainsForCell(const label, labelListList&);
+        
+        void createFacesForChain
+        (
+            const labelList& chainVertices,
+            const DynList<label>& patches,
+            List<DynList<face> >& facesForChain
+        );
+        void createFacesForChainWithCorner
+        (
+            const label cornerLabel,
+            const labelList& bChain,
+            const DynList<label>& patches,
+            List<DynList<face> >& facesForChain
+        );
+        void createFacesForChainWithoutCorners
+        (
+            const labelList& bChain,
+            const DynList<label>& patches,
+            List<DynList<face> >& facesForChain
+        );
+        void createBoundaryFacesForCell(const label);
 
         void createBoundaryFaces();
-		
-		//- store boundary faces into the mesh
-		void storeBoundaryFaces();
-		
-		//- find surface corners
-		void createSurfaceCornersAndPatches();
+        
+        //- store boundary faces into the mesh
+        void storeBoundaryFaces();
+        
+        //- find surface corners
+        void createSurfaceCornersAndPatches();
 
         //- disallows bitwise construct
         void operator=(const boundaryFacesGenerator&);
@@ -128,12 +128,12 @@ public:
         //- construct components
         boundaryFacesGenerator
         (
-			polyMeshGen& mesh,
-			List<direction>& nFacesInCell,
-			label& nPoints,
-			const label nIntFaces,
-			const boolList& boundaryCell,
-			VRWGraph& pointPatches,
+            polyMeshGen& mesh,
+            List<direction>& nFacesInCell,
+            label& nPoints,
+            const label nIntFaces,
+            const boolList& boundaryCell,
+            VRWGraph& pointPatches,
             const triSurface& surface
         );
 

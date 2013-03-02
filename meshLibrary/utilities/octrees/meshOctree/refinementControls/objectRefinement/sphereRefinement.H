@@ -53,12 +53,12 @@ class sphereRefinement
 :
     public objectRefinement
 {
-	// Private data
-		//- centre of the sphere
-		point centre_;
-	
-		//- radius of the sphere
-		scalar radius_;
+    // Private data
+        //- centre of the sphere
+        point centre_;
+    
+        //- radius of the sphere
+        scalar radius_;
 
 public:
 
@@ -82,31 +82,31 @@ public:
 
         //- Construct from dictionary
         sphereRefinement(const word& name, const dictionary& dict);
-		
-		//- Construct and return a clone
+        
+        //- Construct and return a clone
         virtual autoPtr<objectRefinement> clone
-		(
-			const sphereRefinement& sr
-		) const
+        (
+            const sphereRefinement& sr
+        ) const
         {
             return autoPtr<objectRefinement>
-			(
-				new sphereRefinement
-				(
-					sr.name(),
-					sr.cellSize(),
-					sr.centre_,
-					sr.radius_
-				)
-			);
+            (
+                new sphereRefinement
+                (
+                    sr.name(),
+                    sr.cellSize(),
+                    sr.centre_,
+                    sr.radius_
+                )
+            );
         }
-	
-	// Member Functions
-	
-		//- check if a boundBox intersects or is inside the object
-		bool intersectsObject(const boundBox&) const;
-		
-	//- Return as dictionary of entries
+    
+    // Member Functions
+    
+        //- check if a boundBox intersects or is inside the object
+        bool intersectsObject(const boundBox&) const;
+        
+    //- Return as dictionary of entries
         dictionary dict(bool ignoreType = false) const;
 
       // Write
@@ -116,15 +116,15 @@ public:
 
         //- Write dictionary
         void writeDict(Ostream&, bool subDict = true) const;
-		
-	// Member Operators
+        
+    // Member Operators
 
         //- assign from dictionary
         void operator=(const dictionary&);
 
     // IOstream Operators
 
-		Ostream& operator<<(Ostream&) const;
+        Ostream& operator<<(Ostream&) const;
 };
 
 

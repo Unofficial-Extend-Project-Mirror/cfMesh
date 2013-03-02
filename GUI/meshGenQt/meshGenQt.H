@@ -62,39 +62,39 @@ class meshGenQtGeneralSettings;
 
 class meshGenQt
 :
-	public QMainWindow
+    public QMainWindow
 {
-		Q_OBJECT
-	
-	// Private data
-	
-		//- mesh generation dictionary
-		meshGenGUI meshGui_;
-	
-		//- main window data
-		QPushButton* saveButtonPtr_;
-		QPushButton* quitButtonPtr_;
-		QTabWidget* tabWidgetPtr_;
-		meshGenQtGeneralSettings* tabGeneralSettingsPtr_;
-		QWidget* tabRefinementPtr_;
-		QWidget* tabPatchRenamePtr_;
-	
+        Q_OBJECT
+    
+    // Private data
+    
+        //- mesh generation dictionary
+        meshGenGUI meshGui_;
+    
+        //- main window data
+        QPushButton* saveButtonPtr_;
+        QPushButton* quitButtonPtr_;
+        QTabWidget* tabWidgetPtr_;
+        meshGenQtGeneralSettings* tabGeneralSettingsPtr_;
+        QWidget* tabRefinementPtr_;
+        QWidget* tabPatchRenamePtr_;
+    
 private slots:
-	
-	// Private callback functions
+    
+    // Private callback functions
 
-		//- save meshDict file
-		void saveMeshDictCallback()
-		{
-			meshGui_.writeDict();
-		}
+        //- save meshDict file
+        void saveMeshDictCallback()
+        {
+            meshGui_.writeDict();
+        }
 
 private:
-	
-	// Private member functions
-	
-		//- create main window
-		void createMainWindow();
+    
+    // Private member functions
+    
+        //- create main window
+        void createMainWindow();
 
         //- Disallow default bitwise copy construct
         meshGenQt(const meshGenQt&);

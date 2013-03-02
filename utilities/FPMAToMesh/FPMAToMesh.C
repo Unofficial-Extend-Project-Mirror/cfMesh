@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Writes the mesh in fpma format readable by AVL's CfdWM
+    Writes the mesh in fpma format readable by AVL's CfdWM
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,12 +64,12 @@ int main(int argc, char *argv[])
     points.setSize(counter);
     forAll(points, pointI)
     {
-	point p;
-	file >> p.x();
-	file >> p.y();
-	file >> p.z();
-	
-	points[pointI] = p;
+    point p;
+    file >> p.x();
+    file >> p.y();
+    file >> p.z();
+    
+    points[pointI] = p;
     }
     
     //- read the number of faces
@@ -82,14 +82,14 @@ int main(int argc, char *argv[])
     forAll(faces, faceI)
     {
         file >> counter;
-	
-	face f;
-	f.setSize(counter);
-	
-	forAll(f, pI)
-	  file >> f[pI];
-	
-	faces[faceI] = f.reverseFace();
+    
+    face f;
+    f.setSize(counter);
+    
+    forAll(f, pI)
+      file >> f[pI];
+    
+    faces[faceI] = f.reverseFace();
     }
     
     //- read the number of cells
@@ -101,14 +101,14 @@ int main(int argc, char *argv[])
     
     forAll(cells, cellI)
     {
-	file >> counter;
-	
-	cell& c = cells[cellI];
-	
-	c.setSize(counter);
-	
-	forAll(c, fI)
-	    file >> c[fI];
+    file >> counter;
+    
+    cell& c = cells[cellI];
+    
+    c.setSize(counter);
+    
+    forAll(c, fI)
+        file >> c[fI];
     }
     
     //- read selections
@@ -119,60 +119,60 @@ int main(int argc, char *argv[])
     
     for(label setI=0;setI<counter;++setI)
     {
-	word sName;
-	file >> sName;
-	
-	label type;
-	file >> type;
-	
-	label nEntries;
-	file >> nEntries;
-	
-	switch( type )
-	{
-	    case 3:
-	    {
-		//- face selection
-		const label id = pmg.addFaceSubset(sName);
-		
-		patchNames.setSize(patchNames.size()+1);
-		patchNames[patchNames.size()-1] = sName;
-		subsetToPatch.insert(id, patchNames.size()-1);
-		
-		Info << "Reading face selection " << sName << endl;
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addFaceToSubset(id, entryI);
-		}
-	    } break;
-	    case 2:
-	    {
-		//- cell selection
-		const label id = pmg.addCellSubset(sName);
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addCellToSubset(id, entryI);
-		}
-	    } break;
-	    case 1:
-	    {
-		//- node selection
-		const label id = pmg.addPointSubset(sName);
-		
-		for(label i=0;i<nEntries;++i)
-		{
-		    label entryI;
-		    file >> entryI;
-		    pmg.addPointToSubset(id, entryI);
-		}
-	    } break;
-	};
+    word sName;
+    file >> sName;
+    
+    label type;
+    file >> type;
+    
+    label nEntries;
+    file >> nEntries;
+    
+    switch( type )
+    {
+        case 3:
+        {
+        //- face selection
+        const label id = pmg.addFaceSubset(sName);
+        
+        patchNames.setSize(patchNames.size()+1);
+        patchNames[patchNames.size()-1] = sName;
+        subsetToPatch.insert(id, patchNames.size()-1);
+        
+        Info << "Reading face selection " << sName << endl;
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addFaceToSubset(id, entryI);
+        }
+        } break;
+        case 2:
+        {
+        //- cell selection
+        const label id = pmg.addCellSubset(sName);
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addCellToSubset(id, entryI);
+        }
+        } break;
+        case 1:
+        {
+        //- node selection
+        const label id = pmg.addPointSubset(sName);
+        
+        for(label i=0;i<nEntries;++i)
+        {
+            label entryI;
+            file >> entryI;
+            pmg.addPointToSubset(id, entryI);
+        }
+        } break;
+    };
     }
     
     //- create patches from face selections
@@ -186,26 +186,26 @@ int main(int argc, char *argv[])
     
     forAll(faceSubsets, setI)
     {
-	labelListPMG setFaces;
-	pmg.facesInSubset(faceSubsets[setI], setFaces);
-	
-	forAll(setFaces, i)
-	{
-	    boundaryFaces.appendList(faces[setFaces[i]]);
-	    boundaryOwner.append(owner[setFaces[i]]);
-	    boundaryPatches.append(subsetToPatch[faceSubsets[setI]]);
-	}
-	
-	pmg.removeFaceSubset(faceSubsets[setI]);
+    labelListPMG setFaces;
+    pmg.facesInSubset(faceSubsets[setI], setFaces);
+    
+    forAll(setFaces, i)
+    {
+        boundaryFaces.appendList(faces[setFaces[i]]);
+        boundaryOwner.append(owner[setFaces[i]]);
+        boundaryPatches.append(subsetToPatch[faceSubsets[setI]]);
+    }
+    
+    pmg.removeFaceSubset(faceSubsets[setI]);
     }
     
     meshModifier.reorderBoundaryFaces();
     meshModifier.replaceBoundary
     (
-	patchNames,
-	boundaryFaces,
-	boundaryOwner,
-	boundaryPatches
+    patchNames,
+    boundaryFaces,
+    boundaryOwner,
+    boundaryPatches
     );
     
     pmg.write();

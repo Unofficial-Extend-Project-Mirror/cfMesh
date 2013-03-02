@@ -40,7 +40,7 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
             delete [] data;
         
         UList<T>::reset(newData, s);
-		//this->UList<T>::operator=(UList<T>(newData, s));
+        //this->UList<T>::operator=(UList<T>(newData, s));
     }
     else if( (s > staticSize) && (s < UList<T>::size()) )
     {
@@ -53,7 +53,7 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
         delete [] data;
         
         UList<T>::reset(newData, s);
-		//this->UList<T>::operator=(UList<T>(newData, s));
+        //this->UList<T>::operator=(UList<T>(newData, s));
     }
     else if( (s <= staticSize) && (UList<T>::size() > staticSize) )
     {
@@ -65,7 +65,7 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
             delete [] data;
         
         UList<T>::reset(staticData_, staticSize);
-		//this->UList<T>::operator=(UList<T>(staticData_, staticSize));
+        //this->UList<T>::operator=(UList<T>(staticData_, staticSize));
     }
 }
 
@@ -75,11 +75,11 @@ inline void Foam::DynList<T, staticSize>::checkIndex(const label i) const
     if( (i < 0) || (i >= nextFree_) )
     {
         FatalErrorIn
-		(
-			"void Foam::DynList<T, label, Offset>::"
-			"checkIndex(const label i) const"
-		) << "Index " << i << " is not in range " << 0
-			<< " and " << nextFree_ << abort(FatalError);  
+        (
+            "void Foam::DynList<T, label, Offset>::"
+            "checkIndex(const label i) const"
+        ) << "Index " << i << " is not in range " << 0
+            << " and " << nextFree_ << abort(FatalError);  
     }        
 }
 
@@ -200,32 +200,32 @@ inline void Foam::DynList<T, staticSize>::append(const T& e)
 template<class T, Foam::label staticSize>
 inline void Foam::DynList<T, staticSize>::appendIfNotIn(const T& e)
 {
-	if( !contains(e) )
-		 append(e);
+    if( !contains(e) )
+         append(e);
 }
 
 template<class T, Foam::label staticSize>
 inline bool Foam::DynList<T, staticSize>::contains(const T& e) const
 {
-	for(label i=0;i<nextFree_;++i)
+    for(label i=0;i<nextFree_;++i)
     {
-		if( UList<T>::operator[](i) == e )
-			return true;
+        if( UList<T>::operator[](i) == e )
+            return true;
     }
-		
-	return false;
+        
+    return false;
 }
 
 template<class T, Foam::label staticSize>
 inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition(const T& e) const
 {
-	for(label i=0;i<nextFree_;++i)
+    for(label i=0;i<nextFree_;++i)
     {
-		if( UList<T>::operator[](i) == e )
-			return i;
+        if( UList<T>::operator[](i) == e )
+            return i;
     }
-		
-	return -1;
+        
+    return -1;
 }
 
 template<class T, Foam::label staticSize>
@@ -246,16 +246,16 @@ inline T Foam::DynList<T, staticSize>::removeLastElement()
 template<class T, Foam::label staticSize>
 inline T Foam::DynList<T, staticSize>::removeElement(const label i)
 {
-	if( nextFree_ == 0 )
+    if( nextFree_ == 0 )
     {
         FatalErrorIn
         (
             "void Foam::DynList<T, staticSize>::remove()"
         )   << "List is empty" << abort(FatalError);
     }
-	
+    
     T el = this->operator[](i);
-	this->operator[](i) = this->operator[](nextFree_-1);
+    this->operator[](i) = this->operator[](nextFree_-1);
     --nextFree_;
     
     return el;
@@ -264,7 +264,7 @@ inline T Foam::DynList<T, staticSize>::removeElement(const label i)
 template<class T, Foam::label staticSize>
 inline T& Foam::DynList<T, staticSize>::newElmt(const label i)
 {
-	return this->operator()(i);
+    return this->operator()(i);
 }
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //

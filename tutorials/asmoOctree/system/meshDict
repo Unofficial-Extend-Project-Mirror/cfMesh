@@ -39,9 +39,9 @@ minCellSize 0.0125;
 patchCellSize
 3
 (
-	defaultFaces0006 0.005
-	defaultFaces0007 0.0025
-	defaultFaces0009 0.0025
+    defaultFaces0006 0.005
+    defaultFaces0007 0.0025
+    defaultFaces0009 0.0025
 );
 /*
 keepCellsIntersectingPatches
@@ -54,5 +54,5 @@ keepCellsIntersectingPatches
 */
 
 internalVertex (1.5 -0.4 0.8);
- 	
+     
 // ************************************************************************* //

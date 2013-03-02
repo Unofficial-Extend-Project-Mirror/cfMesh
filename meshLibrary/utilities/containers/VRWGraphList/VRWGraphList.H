@@ -27,7 +27,7 @@ Class
 
 Description
     This class is an implementation of a list of graphs
-	with variable column width. The implementation is memory efficient.
+    with variable column width. The implementation is memory efficient.
 
 SourceFiles
     VRWGraphListI.H
@@ -52,23 +52,23 @@ namespace Foam
 
 class VRWGraphList
 {
-		
+        
     // Private data
-		//- graph containing the data
-		VRWGraph data_;
-	
-		//- number of rows
-		LongList<rowElement> rows_;
+        //- graph containing the data
+        VRWGraph data_;
+    
+        //- number of rows
+        LongList<rowElement> rows_;
 
-	// Private member functions
-		//- check index
-		inline void checkIndex
-		(
-			const label i,
-			const label j,
-			const label k
-		) const;
-	
+    // Private member functions
+        //- check index
+        inline void checkIndex
+        (
+            const label i,
+            const label j,
+            const label k
+        ) const;
+    
 public:
 
     // Constructors
@@ -77,11 +77,11 @@ public:
         inline VRWGraphList();
 
         //- Copy contructor
-		inline VRWGraphList(const VRWGraphList&);
+        inline VRWGraphList(const VRWGraphList&);
 
-	// Destructor
+    // Destructor
 
-		inline ~VRWGraphList();
+        inline ~VRWGraphList();
 
     // Member Functions
 
@@ -89,12 +89,12 @@ public:
 
             //- Returns the number of graphs
             inline label size() const;
-			
-			//- Returns the number of rows in the graph at that position
-			inline label sizeOfGraph(const label posI) const;
-			
-			//- Return the number of element in the row at the given position
-			inline label sizeOfRow(const label posI, const label rowI) const;
+            
+            //- Returns the number of rows in the graph at that position
+            inline label sizeOfGraph(const label posI) const;
+            
+            //- Return the number of element in the row at the given position
+            inline label sizeOfRow(const label posI, const label rowI) const;
 
             //- Clear the graph
             inline void clear();
@@ -102,23 +102,23 @@ public:
     // Member Operators
 
         //- Append a graph at the end of the graphList
-		template<class GraphType>
+        template<class GraphType>
         inline void appendGraph(const GraphType& l);
-		
-		//- get and set operators
-		inline label operator()
-		(
-			const label i,
-			const label j,
-			const label k
-		) const;
-		
-		inline label& operator()(const label i, const label j, const label k);
-		
-		inline const subGraph<const VRWGraph> operator[](const label i) const;
-		
-		//- Assignment operator
-		inline void operator=(const VRWGraphList&);
+        
+        //- get and set operators
+        inline label operator()
+        (
+            const label i,
+            const label j,
+            const label k
+        ) const;
+        
+        inline label& operator()(const label i, const label j, const label k);
+        
+        inline const subGraph<const VRWGraph> operator[](const label i) const;
+        
+        //- Assignment operator
+        inline void operator=(const VRWGraphList&);
 
 
     // IOstream operators

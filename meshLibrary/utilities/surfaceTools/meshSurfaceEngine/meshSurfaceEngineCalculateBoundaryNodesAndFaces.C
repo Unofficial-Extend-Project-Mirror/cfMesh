@@ -48,34 +48,34 @@ namespace Foam
 
 void meshSurfaceEngine::calculateBoundaryFaces() const
 {
-	if( mesh_.boundaries().size() != 0 )
-	{
-		const faceListPMG& faces = mesh_.faces();
-		const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    if( mesh_.boundaries().size() != 0 )
+    {
+        const faceListPMG& faces = mesh_.faces();
+        const PtrList<writePatch>& boundaries = mesh_.boundaries();
 
         label nBoundaryFaces(0);
         forAll(boundaries, patchI)
             nBoundaryFaces += boundaries[patchI].patchSize();
 
-		boundaryFacesPtr_ =
-			new faceList::subList
-			(
-				faces,
-				nBoundaryFaces,
-				boundaries[0].patchStart()
-			);
+        boundaryFacesPtr_ =
+            new faceList::subList
+            (
+                faces,
+                nBoundaryFaces,
+                boundaries[0].patchStart()
+            );
 
         reduce(nBoundaryFaces, sumOp<label>());
         Info << "Found " << nBoundaryFaces << " boundary faces " << endl;
-	}
-	else
-	{
-    	FatalErrorIn
-		(
-			"void meshSurfaceEngine::calculateBoundaryFaces() const"
-		) << "Boundary faces are not at the end of the face list!"
-			<< exit(FatalError);
-	}
+    }
+    else
+    {
+        FatalErrorIn
+        (
+            "void meshSurfaceEngine::calculateBoundaryFaces() const"
+        ) << "Boundary faces are not at the end of the face list!"
+            << exit(FatalError);
+    }
 }
 
 void meshSurfaceEngine::calculateBoundaryOwners() const
@@ -85,7 +85,7 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
     const faceList::subList& boundaryFaces = this->boundaryFaces();
 
     if( !boundaryFaceOwnersPtr_ )
-	boundaryFaceOwnersPtr_ = new labelList(boundaryFaces.size());
+    boundaryFaceOwnersPtr_ = new labelList(boundaryFaces.size());
 
     labelList& owners = *boundaryFaceOwnersPtr_;
 
@@ -93,7 +93,7 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
 
     # pragma omp parallel for schedule(static, 1)
     forAll(boundaryFaces, fI)
-	owners[fI] = owner[start+fI];
+    owners[fI] = owner[start+fI];
 }
 
 void meshSurfaceEngine::calculateBoundaryNodes() const
@@ -662,15 +662,15 @@ void meshSurfaceEngine::calculatePointNormals() const
         forAllRow(pFaces, pI, pfI)
             normal += fNormals[pFaces(pI, pfI)];
 
-		const scalar d = mag(normal);
-		if( d > VSMALL )
-		{
-			normal /= d;
-		}
-		else
-		{
-			normal = vector::zero;
-		}
+        const scalar d = mag(normal);
+        if( d > VSMALL )
+        {
+            normal /= d;
+        }
+        else
+        {
+            normal = vector::zero;
+        }
 
         (*pointNormalsPtr_)[pI] = normal;
     }
@@ -680,19 +680,19 @@ void meshSurfaceEngine::calculatePointNormals() const
 
 void meshSurfaceEngine::calculateFaceNormals() const
 {
-	const faceList::subList& bFaces = this->boundaryFaces();
-	const pointFieldPMG& points = mesh_.points();
+    const faceList::subList& bFaces = this->boundaryFaces();
+    const pointFieldPMG& points = mesh_.points();
 
-	faceNormalsPtr_ = new vectorField(bFaces.size());
+    faceNormalsPtr_ = new vectorField(bFaces.size());
 
     const label size = bFaces.size();
-	# pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( size > 1000 )
     for(label bfI=0;bfI<size;++bfI)
-	{
-		const face& bf = bFaces[bfI];
+    {
+        const face& bf = bFaces[bfI];
 
-		faceNormalsPtr_->operator[](bfI) = bf.normal(points);
-	}
+        faceNormalsPtr_->operator[](bfI) = bf.normal(points);
+    }
 }
 
 void meshSurfaceEngine::calculateFaceCentres() const
@@ -700,12 +700,12 @@ void meshSurfaceEngine::calculateFaceCentres() const
     const faceList::subList& bFaces = this->boundaryFaces();
     const pointFieldPMG& points = mesh_.points();
 
-	faceCentresPtr_ = new vectorField(bFaces.size());
+    faceCentresPtr_ = new vectorField(bFaces.size());
 
     const label size = bFaces.size();
-	# pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( size > 1000 )
     for(label bfI=0;bfI<size;++bfI)
-		faceCentresPtr_->operator[](bfI) = bFaces[bfI].centre(points);
+        faceCentresPtr_->operator[](bfI) = bFaces[bfI].centre(points);
 }
 
 void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
@@ -923,11 +923,11 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
             }
 
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				dts.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                dts.byteSize()
+            );
             toOtherProc << dts;
         }
 
@@ -988,7 +988,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
     const VRWGraph& pointFaces = this->pointFaces();
 
     faceEdgesPtr_ = new VRWGraph(bFaces.size());
-	VRWGraph& faceEdges = *faceEdgesPtr_;
+    VRWGraph& faceEdges = *faceEdgesPtr_;
 
     labelList nfe(bFaces.size());
 
@@ -1034,7 +1034,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
 void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
-	const VRWGraph& pointFaces = this->pointFaces();
+    const VRWGraph& pointFaces = this->pointFaces();
     const edgeList& edges = this->edges();
     const labelList& bp = this->bp();
 
@@ -1111,19 +1111,19 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 
 void meshSurfaceEngine::calculateFaceFacesAddressing() const
 {
-	const VRWGraph& edgeFaces = this->edgeFaces();
+    const VRWGraph& edgeFaces = this->edgeFaces();
 
-	const faceList::subList& bFaces = boundaryFaces();
-	faceFacesPtr_ = new VRWGraph(bFaces.size());
-	VRWGraph& faceFaces = *faceFacesPtr_;
+    const faceList::subList& bFaces = boundaryFaces();
+    faceFacesPtr_ = new VRWGraph(bFaces.size());
+    VRWGraph& faceFaces = *faceFacesPtr_;
 
-	forAll(bFaces, bfI)
-		faceFaces.setRowSize(bfI, bFaces[bfI].size());
+    forAll(bFaces, bfI)
+        faceFaces.setRowSize(bfI, bFaces[bfI].size());
 
-	labelList nAppearances(bFaces.size(), 0);
+    labelList nAppearances(bFaces.size(), 0);
 
-	forAll(edgeFaces, efI)
-	{
+    forAll(edgeFaces, efI)
+    {
         if( edgeFaces.sizeOfRow(efI) == 2 )
         {
             const label f0 = edgeFaces(efI, 0);
@@ -1137,17 +1137,17 @@ void meshSurfaceEngine::calculateFaceFacesAddressing() const
             const label f0 = edgeFaces(efI, 0);
             faceFaces(f0, nAppearances[f0]++) = -1;
         }
-		else if( Pstream::parRun() && (edgeFaces.sizeOfRow(efI) != 0 ) )
-		{
-			FatalErrorIn
-			(
-				"void meshSurfaceEngine::calculateFaceFacesAddressing() const"
-			) << "The surface of the mesh is invalid!"
-				<< " The number of faces containing edge " << efI
-				<< " is " << edgeFaces.sizeOfRow(efI)
+        else if( Pstream::parRun() && (edgeFaces.sizeOfRow(efI) != 0 ) )
+        {
+            FatalErrorIn
+            (
+                "void meshSurfaceEngine::calculateFaceFacesAddressing() const"
+            ) << "The surface of the mesh is invalid!"
+                << " The number of faces containing edge " << efI
+                << " is " << edgeFaces.sizeOfRow(efI)
                 << " Cannot continue" << exit(FatalError);
-		}
-	}
+        }
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

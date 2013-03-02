@@ -51,46 +51,46 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 #   include "createPolyMesh.H"
-	
-	objectRegistry registry(runTime);
-	
-/*	labelList patchStarts(mesh.boundaryMesh().size());
-	labelList patchSizes(mesh.boundaryMesh().size());
-	
-	forAll(mesh.boundaryMesh(), patchI)
-	{
-		patchStarts[patchI] = mesh.boundaryMesh()[patchI].start();
-		patchSizes[patchI] = mesh.boundaryMesh()[patchI].size();
-	}
-	
-	polyMeshGen pmg
-	(
-		registry,
-		mesh.points(),
-		mesh.faces(),
-		mesh.cells(),
-		mesh.boundaryMesh().names(),
-		patchStarts,
-		patchSizes
-	);
+    
+    objectRegistry registry(runTime);
+    
+/*    labelList patchStarts(mesh.boundaryMesh().size());
+    labelList patchSizes(mesh.boundaryMesh().size());
+    
+    forAll(mesh.boundaryMesh(), patchI)
+    {
+        patchStarts[patchI] = mesh.boundaryMesh()[patchI].start();
+        patchSizes[patchI] = mesh.boundaryMesh()[patchI].size();
+    }
+    
+    polyMeshGen pmg
+    (
+        registry,
+        mesh.points(),
+        mesh.faces(),
+        mesh.cells(),
+        mesh.boundaryMesh().names(),
+        patchStarts,
+        patchSizes
+    );
 */
-	polyMeshGen pmg(registry);
-	pmg.read();
-	//writeMeshEnsight(pmg, "meshWithoutBndLayers");
-	
-	boundaryLayers bndLayers(pmg);
-	//bndLayers.addLayerForPatch("inlet");
-	//bndLayers.addLayerForPatch("symmetryplane");
-	//bndLayers.createOTopologyLayers();
-	bndLayers.addLayerForAllPatches();
-	
-	//pmg.write();
-	//meshOctree* octreePtr = NULL;
-	//meshOptimizer(*octreePtr, pmg).preOptimize();
-	
-	writeMeshEnsight(pmg, "meshWithBndLayers");
-	//pmg.addressingData().checkMesh(true);
-	
+    polyMeshGen pmg(registry);
+    pmg.read();
+    //writeMeshEnsight(pmg, "meshWithoutBndLayers");
+    
+    boundaryLayers bndLayers(pmg);
+    //bndLayers.addLayerForPatch("inlet");
+    //bndLayers.addLayerForPatch("symmetryplane");
+    //bndLayers.createOTopologyLayers();
+    bndLayers.addLayerForAllPatches();
+    
+    //pmg.write();
+    //meshOctree* octreePtr = NULL;
+    //meshOptimizer(*octreePtr, pmg).preOptimize();
+    
+    writeMeshEnsight(pmg, "meshWithBndLayers");
+    //pmg.addressingData().checkMesh(true);
+    
     Info << "End\n" << endl;
     return 0;
 }

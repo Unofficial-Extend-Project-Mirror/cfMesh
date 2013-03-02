@@ -57,7 +57,7 @@ class cellIOGraph
 public:
 
     //- Runtime type information
-		TypeName("cellIOGraph");
+        TypeName("cellIOGraph");
 
     // Constructors
 
@@ -78,7 +78,7 @@ public:
 
     // Member operators
 
-		void operator=(const cellIOGraph&);
+        void operator=(const cellIOGraph&);
         void operator=(const VRWGraph&);
 };
 

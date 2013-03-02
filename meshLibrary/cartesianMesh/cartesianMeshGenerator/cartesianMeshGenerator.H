@@ -68,38 +68,38 @@ class cartesianMeshGenerator
 
         //- pointer to the octree
         meshOctree* octreePtr_;
-	
-		//- mesh
-		polyMeshGen mesh_;
+    
+        //- mesh
+        polyMeshGen mesh_;
 
     // Private member functions
-		//- create cartesian mesh
-		void createCartesianMesh();
-	
-		//- prepare mesh surface
-		void surfacePreparation();
-		
-		//- map mesh to the surface and untangle surface
-		void mapMeshToSurface();
-		
-		//- capture edges and corners
-		void mapEdgesAndCorners();
-		
-		//- optimise surface mesh
-		void optimiseMeshSurface();
-		
-		//- add boundary layers
-		void generateBoudaryLayers();
-		
-		//- mesh optimisation
-		void optimiseFinalMesh();
+        //- create cartesian mesh
+        void createCartesianMesh();
+    
+        //- prepare mesh surface
+        void surfacePreparation();
+        
+        //- map mesh to the surface and untangle surface
+        void mapMeshToSurface();
+        
+        //- capture edges and corners
+        void mapEdgesAndCorners();
+        
+        //- optimise surface mesh
+        void optimiseMeshSurface();
+        
+        //- add boundary layers
+        void generateBoudaryLayers();
+        
+        //- mesh optimisation
+        void optimiseFinalMesh();
         
         //- replace boundaries
         void replaceBoundaries();
-		
-		//- renumber the mesh
-		void renumberMesh();
-		
+        
+        //- renumber the mesh
+        void renumberMesh();
+        
         //- generate mesh
         void generateMesh();
 

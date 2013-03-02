@@ -47,7 +47,7 @@ labelList meshSurfaceCutter::patchesForPoint(const label vI) const
 
         const DynList<label>& tria = pointTriIndex_[vI];
         short i(0);
-		forAll(tria, tI)
+        forAll(tria, tI)
             pcs[i++] = fcs[tria[tI]].region();
 
         return pcs;
@@ -60,24 +60,24 @@ labelList meshSurfaceCutter::patchesForPoint(const label vI) const
 
 void meshSurfaceCutter::createBoundaryFaces()
 {
-	VRWGraph pointPatches(nPoints_);
-	forAll(pointPatches, pI)
-	{
-		const labelList pp = patchesForPoint(pI);
-		forAll(pp, ppI)
-			pointPatches.append(pI, pp[ppI]);
-	}
-	
-	boundaryFacesGenerator
-	(
-		mesh_,
-		nFacesInCell_,
-		nPoints_,
-		nIntFaces_,
-		boundaryCell_,
-		pointPatches,
-		surface_
-	);
+    VRWGraph pointPatches(nPoints_);
+    forAll(pointPatches, pI)
+    {
+        const labelList pp = patchesForPoint(pI);
+        forAll(pp, ppI)
+            pointPatches.append(pI, pp[ppI]);
+    }
+    
+    boundaryFacesGenerator
+    (
+        mesh_,
+        nFacesInCell_,
+        nPoints_,
+        nIntFaces_,
+        boundaryCell_,
+        pointPatches,
+        surface_
+    );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

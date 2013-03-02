@@ -43,38 +43,38 @@ meshGenGTK::meshGenGTK
     label argc, char* argv[], const objectRegistry& reg
 )
 :
-	meshGui_(reg),
-	generalPageFramePtr_(NULL),
-	mainWindowPtr_(NULL),
-	localRefinementFramePtr_(NULL),
-	keepCellsIntersectingPatchesFramePtr_(NULL),
-	bndLayersFramePtr_(NULL),
-	localSettingsMainFramePtr_(NULL),
-	
-	boxRefinementFramePtr_(NULL),
-	lineRefinementFramePtr_(NULL),
-	coneRefinementFramePtr_(NULL),
-	sphereRefinementFramePtr_(NULL),
-	objectRefinementMainFramePtr_(NULL),
-	
-	renameBoundaryFramePtr_(NULL)
+    meshGui_(reg),
+    generalPageFramePtr_(NULL),
+    mainWindowPtr_(NULL),
+    localRefinementFramePtr_(NULL),
+    keepCellsIntersectingPatchesFramePtr_(NULL),
+    bndLayersFramePtr_(NULL),
+    localSettingsMainFramePtr_(NULL),
+    
+    boxRefinementFramePtr_(NULL),
+    lineRefinementFramePtr_(NULL),
+    coneRefinementFramePtr_(NULL),
+    sphereRefinementFramePtr_(NULL),
+    objectRefinementMainFramePtr_(NULL),
+    
+    renameBoundaryFramePtr_(NULL)
 {
-	gtk_init(&argc, &argv);
-	
-	createLocalSettingsMainWindowPage();
-	createGeneralPage();
-	createObjectRefinementMainWindowPage();
-	createRenameBoundaryMainWindowPage();
-	createMainWindowPage();
-	
-	gtk_main();
+    gtk_init(&argc, &argv);
+    
+    createLocalSettingsMainWindowPage();
+    createGeneralPage();
+    createObjectRefinementMainWindowPage();
+    createRenameBoundaryMainWindowPage();
+    createMainWindowPage();
+    
+    gtk_main();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshGenGTK::~meshGenGTK()
 {
-	meshGui_.writeDict();
+    meshGui_.writeDict();
     gtk_main_quit();
 }
 

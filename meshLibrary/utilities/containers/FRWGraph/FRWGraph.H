@@ -27,7 +27,7 @@ Class
 
 Description
     This class is an implementation of a graph with the fixed row width.
-	The implementation is memory efficient.
+    The implementation is memory efficient.
 
 SourceFiles
     FRWGraphI.H

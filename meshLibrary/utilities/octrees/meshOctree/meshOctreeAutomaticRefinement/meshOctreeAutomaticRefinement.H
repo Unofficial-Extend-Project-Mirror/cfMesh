@@ -27,7 +27,7 @@ Class
 
 Description
     Automatic octree for mesh generation. This class checks if the current
-	octree resolution is enough to resolve all surface features
+    octree resolution is enough to resolve all surface features
 
 SourceFiles
     meshOctreeAutomaticRefinement.C
@@ -87,7 +87,7 @@ class meshOctreeAutomaticRefinement
         //- curvature estimator pointer
         mutable triSurfaceCurvatureEstimator* curvaturePtr_;
 
-       	//- calculate curvaturePtr_
+           //- calculate curvaturePtr_
         void createCurvatureEstimator() const;
         const triSurfaceCurvatureEstimator& curvature() const;
 
@@ -151,7 +151,7 @@ public:
     // Destructor
 
         ~meshOctreeAutomaticRefinement();
-		
+        
     // Member Functions
         //- activate hex refinement
         void activateHexRefinement();

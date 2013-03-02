@@ -80,9 +80,9 @@ void knuppMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
         gradGrad += gfx * gfx;
     }
 }
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex),
@@ -93,15 +93,15 @@ knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 {
     forAll(tets_, tetI)
     {
-	const partTet& pt = tets_[tetI];
-	const triangle<point, point> tri
-	(
-	    points_[pt.a()],
-	    points_[pt.b()],
-	    points_[pt.c()]
-	);
+    const partTet& pt = tets_[tetI];
+    const triangle<point, point> tri
+    (
+        points_[pt.a()],
+        points_[pt.b()],
+        points_[pt.c()]
+    );
         
-	const vector n = tri.normal();
+    const vector n = tri.normal();
         const scalar d = mag(n);
         
         if( d > VSMALL )
@@ -113,7 +113,7 @@ knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
     
     beta_ = 0.01 * bb_.mag();
 }
-			
+            
 
 knuppMetric::~knuppMetric()
 {
@@ -190,7 +190,7 @@ void knuppMetric::optimizeNodePosition(const scalar tolObsolete)
             
                 # ifdef DEBUGSmooth
                 Info << "Second grad " << gradGradF << endl;
-		Info << "inv(gradGradF, determinant) " << inv(gradGradF, determinant) << endl;
+        Info << "inv(gradGradF, determinant) " << inv(gradGradF, determinant) << endl;
                 Info << "Gradient " << gradF << endl;
                 Info << "Determinant " << determinant << endl;
                 Info << "Displacement " << disp << endl;
@@ -198,25 +198,25 @@ void knuppMetric::optimizeNodePosition(const scalar tolObsolete)
                 # endif
                 
 
-		scalar relax(0.8);
-		label nLoops(0);
-		while( func > lastFunc )
-		{
-		    p_ = pOrig - relax * disp;
-		    relax *= 0.5;
-		    func = evaluateMetric();
-		  
-		    if( func < lastFunc )
-			continue;
-		    
-		    //- it seems that this direction is wrong
-		    if( ++nLoops == 5 )
-		    {
-			p_ = pOrig;
-			disp = vector::zero;
-			func = 0.0;
-		    }
-		}
+        scalar relax(0.8);
+        label nLoops(0);
+        while( func > lastFunc )
+        {
+            p_ = pOrig - relax * disp;
+            relax *= 0.5;
+            func = evaluateMetric();
+          
+            if( func < lastFunc )
+            continue;
+            
+            //- it seems that this direction is wrong
+            if( ++nLoops == 5 )
+            {
+            p_ = pOrig;
+            disp = vector::zero;
+            func = 0.0;
+            }
+        }
                 
                 lastFunc = func;
             }

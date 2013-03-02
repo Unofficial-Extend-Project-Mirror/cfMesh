@@ -53,14 +53,14 @@ class coneRefinement
 :
     public objectRefinement
 {
-	// Private data
-		//- start point and the radius
-		point p0_;
-		scalar r0_;
-	
-		//- end point and the radius
-		point p1_;
-		scalar r1_;
+    // Private data
+        //- start point and the radius
+        point p0_;
+        scalar r0_;
+    
+        //- end point and the radius
+        point p1_;
+        scalar r1_;
 
 public:
 
@@ -80,39 +80,39 @@ public:
             const scalar cellSize,
             const point& p0,
             const scalar radius0,
-			const point& p1,
-			const scalar radius1
+            const point& p1,
+            const scalar radius1
         );
 
         //- Construct from dictionary
         coneRefinement(const word& name, const dictionary& dict);
-		
-		//- Construct and return a clone
+        
+        //- Construct and return a clone
         virtual autoPtr<objectRefinement> clone
-		(
-			const coneRefinement& sr
-		) const
+        (
+            const coneRefinement& sr
+        ) const
         {
             return autoPtr<objectRefinement>
-			(
-				new coneRefinement
-				(
-					sr.name(),
-					sr.cellSize(),
-					sr.p0_,
-					sr.r0_,
-					sr.p1_,
-					sr.r1_
-				)
-			);
+            (
+                new coneRefinement
+                (
+                    sr.name(),
+                    sr.cellSize(),
+                    sr.p0_,
+                    sr.r0_,
+                    sr.p1_,
+                    sr.r1_
+                )
+            );
         }
-	
-	// Member Functions
-	
-		//- check if a boundBox intersects or is inside the object
-		bool intersectsObject(const boundBox&) const;
-		
-	//- Return as dictionary of entries
+    
+    // Member Functions
+    
+        //- check if a boundBox intersects or is inside the object
+        bool intersectsObject(const boundBox&) const;
+        
+    //- Return as dictionary of entries
         dictionary dict(bool ignoreType = false) const;
 
       // Write
@@ -122,15 +122,15 @@ public:
 
         //- Write dictionary
         void writeDict(Ostream&, bool subDict = true) const;
-		
-	// Member Operators
+        
+    // Member Operators
 
         //- assign from dictionary
         void operator=(const dictionary&);
 
     // IOstream Operators
 
-		Ostream& operator<<(Ostream&) const;
+        Ostream& operator<<(Ostream&) const;
 };
 
 

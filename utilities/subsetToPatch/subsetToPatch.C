@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Creates surface patches from surface subsets
+    Creates surface patches from surface subsets
 
 \*---------------------------------------------------------------------------*/
 
@@ -65,7 +65,7 @@ triSurf* makePatchFromSubset
             origSurf.facesInSubset(subsetNames[subsetI]);
         
         const label regionI = origSurf.patches().size() + subsetI;
-	
+    
         forAll(subsetFaces, fI)
         {
             newTriangles[subsetFaces[fI]].region() = regionI;
@@ -106,7 +106,7 @@ triSurf* makePatchFromSubset
     //- copy subsets for the new surface
     DynList<word> existingSubsets;
     origSurf.existingFaceSubsets(existingSubsets);
-	
+    
     std::map<word, labelListPMG> newSubsets;
     forAll(existingSubsets, sI)
         newSubsets.insert
@@ -121,7 +121,7 @@ triSurf* makePatchFromSubset
     //- delete subsets converted to patches
     forAll(subsetNames, subsetI)
         newSubsets.erase(subsetNames[subsetI]);
-	
+    
     triSurf* newSurfPtr =
         new triSurf(newTriangles, newPatches, origSurf.points(), newSubsets);
     
@@ -142,15 +142,15 @@ int main(int argc, char *argv[])
     fileName inFileName(args.args()[1]);
     fileName subsetFileName(args.args()[2]);
     word subsetName(args.args()[3]);
-	
+    
     triSurf* origSurfPtr = new triSurf(inFileName);
     origSurfPtr->readFaceSubsets(subsetFileName);
-	
+    
     DynList<word> subsetNames;
     if( !origSurfPtr->doesFaceSubsetExist(subsetName) )
     {
         Warning << "Subset " << subsetName
-	    << " checking subsets containing this string!" << endl;
+        << " checking subsets containing this string!" << endl;
         DynList<word> existingSubsets;
         origSurfPtr->existingFaceSubsets(existingSubsets);
         
@@ -178,7 +178,7 @@ int main(int argc, char *argv[])
     newSurfPtr->write(inFileName, false);
     newSurfPtr->writeFaceSubsets(subsetFileName);
     deleteDemandDrivenData(newSurfPtr);
-	
+    
     Info << "End\n" << endl;
     return 0;
 }

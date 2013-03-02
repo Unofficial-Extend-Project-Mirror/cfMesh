@@ -35,7 +35,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void checkMeshDict::checkPatchCellSize()

@@ -61,7 +61,7 @@ class tetMeshOptimisation
 {
     // Private data
         //- reference to the tet mesh
-		partTetMesh& tetMesh_;
+        partTetMesh& tetMesh_;
     
     // Private member functions needed for parallel runs
         //- make sure that all processors have the same points

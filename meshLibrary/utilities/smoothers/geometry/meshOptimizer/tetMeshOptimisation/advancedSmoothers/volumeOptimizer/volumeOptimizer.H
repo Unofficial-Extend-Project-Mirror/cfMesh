@@ -27,7 +27,7 @@ Class
 
 Description
     Mesh smoothing without any topological changes. The vertex is put into
-	location which minimises the objective function.
+    location which minimises the objective function.
 
 SourceFiles
     volumeOptimizer.C
@@ -50,34 +50,34 @@ class partTetMeshSimplex;
 /*---------------------------------------------------------------------------*\
                     Class volumeOptimizer Declaration
 \*---------------------------------------------------------------------------*/
-	
+    
 //- class for volume optimizer
 class volumeOptimizer
 :
     public simplexSmoother
 {
-	// Private member functions
-		//- evaluate functional
-		scalar evaluateFunc() const;
-	
-		//- find appropriate value of K
-		scalar evaluateStabilisationFactor() const;
-		
-		//- evaluate gradients of the functional
-		void evaluateGradientsExact(vector&, tensor&) const;
-	
-	public:
-	
-	// Constructor
+    // Private member functions
+        //- evaluate functional
+        scalar evaluateFunc() const;
+    
+        //- find appropriate value of K
+        scalar evaluateStabilisationFactor() const;
+        
+        //- evaluate gradients of the functional
+        void evaluateGradientsExact(vector&, tensor&) const;
+    
+    public:
+    
+    // Constructor
         //- construct from partTetMeshSimplex
         volumeOptimizer(partTetMeshSimplex& simplex);
-	
-	// Destructor
-		~volumeOptimizer();
-	
-	// Member functions
-		//- find the best position for the node
-		void optimizeNodePosition(const scalar tol = 0.001);
+    
+    // Destructor
+        ~volumeOptimizer();
+    
+    // Member functions
+        //- find the best position for the node
+        void optimizeNodePosition(const scalar tol = 0.001);
 };
 
 

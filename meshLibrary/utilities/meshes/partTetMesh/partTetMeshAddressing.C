@@ -39,16 +39,16 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 void partTetMesh::createPointsAndTets(const List<direction>& useCell)
 {
-	const pointFieldPMG& points = origMesh_.points();
-	const faceListPMG& faces = origMesh_.faces();
-	const cellListPMG& cells = origMesh_.cells();
-	const labelList& owner = origMesh_.owner();
-	const labelList& neighbour = origMesh_.neighbour();
+    const pointFieldPMG& points = origMesh_.points();
+    const faceListPMG& faces = origMesh_.faces();
+    const cellListPMG& cells = origMesh_.cells();
+    const labelList& owner = origMesh_.owner();
+    const labelList& neighbour = origMesh_.neighbour();
     const PtrList<writePatch>& boundaries = origMesh_.boundaries();
     const PtrList<writeProcessorPatch>& procBoundaries =
         origMesh_.procBoundaries();
@@ -110,14 +110,14 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
         forAll(receivedData, faceI)
             ++usedFace[start+receivedData[faceI]];
     }
-	
-	const vectorField& faceCentres = origMesh_.addressingData().faceCentres();
-	const vectorField& cellCentres = origMesh_.addressingData().cellCentres();
-	
-	labelListPMG nodeLabelForPoint(points.size(), -1);
-	labelListPMG nodeLabelForFace(faces.size(), -1);
-	labelListPMG nodeLabelForCell(cells.size(), -1);
-	
+    
+    const vectorField& faceCentres = origMesh_.addressingData().faceCentres();
+    const vectorField& cellCentres = origMesh_.addressingData().cellCentres();
+    
+    labelListPMG nodeLabelForPoint(points.size(), -1);
+    labelListPMG nodeLabelForFace(faces.size(), -1);
+    labelListPMG nodeLabelForCell(cells.size(), -1);
+    
     points_.clear();
     smoothVertex_.clear();
     
@@ -237,10 +237,10 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     
     //- create tets
     tetMatcher tet;
-	forAll(useCell, cI)
-		if( useCell[cI] )
-		{
-			const cell& c = cells[cI];
+    forAll(useCell, cI)
+        if( useCell[cI] )
+        {
+            const cell& c = cells[cI];
             
             if( tet.matchShape(false, faces, owner, cI, cells[cI]) )
             {
@@ -260,110 +260,110 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
                 
                 continue;
             }
-			
-			nodeLabelForCell[cI] = points_.size();
-			const label centreLabel = points_.size();
+            
+            nodeLabelForCell[cI] = points_.size();
+            const label centreLabel = points_.size();
             points_.append(cellCentres[cI]);
             smoothVertex_.append(CELLCENTRE);
-			
-			forAll(c, fI)
-			{
-				const face& f = faces[c[fI]];
-					
-				if( owner[c[fI]] == cI )
-				{
-					if( f.size() == 3 )
-					{
-						partTet tet
-						(
-							nodeLabelForPoint[f[0]],
-							nodeLabelForPoint[f[2]],
-							nodeLabelForPoint[f[1]],
-							centreLabel
-						);
-						
-						# ifdef DEBUGSmooth
-						Info << "1.1 Tet " << tets_.size() << " is "
-							<< tet << endl;
-						# endif
-						
-						tets_.append(tet);
-					}
-					else
-					{
-						forAll(f, pI)
-						{
-							partTet tet
-							(
-								nodeLabelForPoint[f[pI]],
-								nodeLabelForPoint[f.prevLabel(pI)],
-								nodeLabelForFace[c[fI]],
-								centreLabel
-							);
-							
-							# ifdef DEBUGSmooth
-							Info << "1.2 Tet " << tets_.size() << " is "
-								<< tet << endl;
-							# endif
-							
-							tets_.append(tet);
-						}
-					}
-				}
-				else
-				{
-					if( f.size() == 3 )
-					{
-						partTet tet
-						(
-							nodeLabelForPoint[f[0]],
-							nodeLabelForPoint[f[1]],
-							nodeLabelForPoint[f[2]],
-							centreLabel
-						);
-						
-						# ifdef DEBUGSmooth
-						Info << "2.1 Tet " << tets_.size() << " is "
-							<< tet << endl;
-						# endif
-						
-						tets_.append(tet);
-					}
-					else
-					{
-						forAll(f, pI)
-						{
-							partTet tet
-							(
-								nodeLabelForPoint[f[pI]],
-								nodeLabelForPoint[f.nextLabel(pI)],
-								nodeLabelForFace[c[fI]],
-								centreLabel
-							);
-							
-							# ifdef DEBUGSmooth
-							Info << "2.2 Tet " << tets_.size() << " is "
-								<< tet << endl;
-							# endif
-							
-							tets_.append(tet);
-						}
-					}
-				}
-			}
-		}
-		
-	//- create node labels in origMesh_
-	nodeLabelInOrigMesh_.setSize(points_.size());
-	nodeLabelInOrigMesh_ = -1;
-	forAll(nodeLabelForPoint, pI)
-		if( nodeLabelForPoint[pI] != -1 )
-		{
-			nodeLabelInOrigMesh_[nodeLabelForPoint[pI]] = pI;
-		}
-	
-	//- create pointTets_
-	pointTets_.reverseAddressing(points_.size(), tets_);
+            
+            forAll(c, fI)
+            {
+                const face& f = faces[c[fI]];
+                    
+                if( owner[c[fI]] == cI )
+                {
+                    if( f.size() == 3 )
+                    {
+                        partTet tet
+                        (
+                            nodeLabelForPoint[f[0]],
+                            nodeLabelForPoint[f[2]],
+                            nodeLabelForPoint[f[1]],
+                            centreLabel
+                        );
+                        
+                        # ifdef DEBUGSmooth
+                        Info << "1.1 Tet " << tets_.size() << " is "
+                            << tet << endl;
+                        # endif
+                        
+                        tets_.append(tet);
+                    }
+                    else
+                    {
+                        forAll(f, pI)
+                        {
+                            partTet tet
+                            (
+                                nodeLabelForPoint[f[pI]],
+                                nodeLabelForPoint[f.prevLabel(pI)],
+                                nodeLabelForFace[c[fI]],
+                                centreLabel
+                            );
+                            
+                            # ifdef DEBUGSmooth
+                            Info << "1.2 Tet " << tets_.size() << " is "
+                                << tet << endl;
+                            # endif
+                            
+                            tets_.append(tet);
+                        }
+                    }
+                }
+                else
+                {
+                    if( f.size() == 3 )
+                    {
+                        partTet tet
+                        (
+                            nodeLabelForPoint[f[0]],
+                            nodeLabelForPoint[f[1]],
+                            nodeLabelForPoint[f[2]],
+                            centreLabel
+                        );
+                        
+                        # ifdef DEBUGSmooth
+                        Info << "2.1 Tet " << tets_.size() << " is "
+                            << tet << endl;
+                        # endif
+                        
+                        tets_.append(tet);
+                    }
+                    else
+                    {
+                        forAll(f, pI)
+                        {
+                            partTet tet
+                            (
+                                nodeLabelForPoint[f[pI]],
+                                nodeLabelForPoint[f.nextLabel(pI)],
+                                nodeLabelForFace[c[fI]],
+                                centreLabel
+                            );
+                            
+                            # ifdef DEBUGSmooth
+                            Info << "2.2 Tet " << tets_.size() << " is "
+                                << tet << endl;
+                            # endif
+                            
+                            tets_.append(tet);
+                        }
+                    }
+                }
+            }
+        }
+        
+    //- create node labels in origMesh_
+    nodeLabelInOrigMesh_.setSize(points_.size());
+    nodeLabelInOrigMesh_ = -1;
+    forAll(nodeLabelForPoint, pI)
+        if( nodeLabelForPoint[pI] != -1 )
+        {
+            nodeLabelInOrigMesh_[nodeLabelForPoint[pI]] = pI;
+        }
+    
+    //- create pointTets_
+    pointTets_.reverseAddressing(points_.size(), tets_);
     
     //- create addressing for parallel runs
     if( Pstream::parRun() )
@@ -377,19 +377,19 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
         
         createBufferLayers();
     }
-	
-	# ifdef DEBUGSmooth
-	forAll(nodeLabelInOrigMesh_, pI)
-		if( 
-			(nodeLabelInOrigMesh_[pI] != -1) &&
-			(mag(points_[pI] - points[nodeLabelInOrigMesh_[pI]]) > SMALL)
-		)
-			FatalErrorIn
-			(
-				"void partTetMesh::createPointsAndTets"
-				"(const boolList& useCell)"
-			) << "Node " << pI << " is dislocated" << abort(FatalError);
-	# endif
+    
+    # ifdef DEBUGSmooth
+    forAll(nodeLabelInOrigMesh_, pI)
+        if( 
+            (nodeLabelInOrigMesh_[pI] != -1) &&
+            (mag(points_[pI] - points[nodeLabelInOrigMesh_[pI]]) > SMALL)
+        )
+            FatalErrorIn
+            (
+                "void partTetMesh::createPointsAndTets"
+                "(const boolList& useCell)"
+            ) << "Node " << pI << " is dislocated" << abort(FatalError);
+    # endif
 }
 
 void partTetMesh::createSMOOTHPointsOrdering() const

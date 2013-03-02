@@ -35,43 +35,43 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void tetCreatorOctree::createTetsFromFacesWithCentreNode()
 {
-	Info << "Creating tets from faces with centre node" << endl;
+    Info << "Creating tets from faces with centre node" << endl;
     
-	const labelList& cubeLabel = *cubeLabelPtr_;
-	const VRWGraph& nodeLabels = octreeCheck_.nodeLabels();
-	const VRWGraph& subNodeLabels = *subNodeLabelsPtr_;
-	const FRWGraph<label, 8>& pointLeaves = octreeCheck_.nodeLeaves();
-	
-	if( !faceCentreLabelPtr_ )
-		faceCentreLabelPtr_ = new VRWGraph(cubeLabel.size());
-	VRWGraph& faceCentreLabel = *faceCentreLabelPtr_;
-	
-	//- start creating tets
-	forAll(pointLeaves, pointI)
-	{
-		label pl[8];
-		bool create(true);
-		
-		for(label plI=0;plI<8;++plI)
-		{
-			pl[plI] = pointLeaves(pointI, plI);
-			if( pl[plI] == -1 ) 
-			{
-				create = false;
-				break;
-			}
-		}
-			
-		if( !create )
-			continue;
-		
-		//- create 6 tets for each possible combination
-		//- there are 12 possible combinations
+    const labelList& cubeLabel = *cubeLabelPtr_;
+    const VRWGraph& nodeLabels = octreeCheck_.nodeLabels();
+    const VRWGraph& subNodeLabels = *subNodeLabelsPtr_;
+    const FRWGraph<label, 8>& pointLeaves = octreeCheck_.nodeLeaves();
+    
+    if( !faceCentreLabelPtr_ )
+        faceCentreLabelPtr_ = new VRWGraph(cubeLabel.size());
+    VRWGraph& faceCentreLabel = *faceCentreLabelPtr_;
+    
+    //- start creating tets
+    forAll(pointLeaves, pointI)
+    {
+        label pl[8];
+        bool create(true);
+        
+        for(label plI=0;plI<8;++plI)
+        {
+            pl[plI] = pointLeaves(pointI, plI);
+            if( pl[plI] == -1 ) 
+            {
+                create = false;
+                break;
+            }
+        }
+            
+        if( !create )
+            continue;
+        
+        //- create 6 tets for each possible combination
+        //- there are 12 possible combinations
         for(label fI=0;fI<6;++fI)
         {
             const label* fEdges = meshOctreeCubeCoordinates::faceEdges_[fI];
@@ -196,7 +196,7 @@ void tetCreatorOctree::createTetsFromFacesWithCentreNode()
                 }
             }
         }
-	}
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

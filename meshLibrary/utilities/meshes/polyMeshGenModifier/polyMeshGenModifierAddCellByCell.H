@@ -48,27 +48,27 @@ namespace Foam
 class polyMeshGenModifierAddCellByCell
 : public polyMeshGenModifier
 {
-	// Private data
-		//- number of faces
-		label nFaces_;
-		LongList<face> newFaces_;
-	
-		//- number of cells
-		label nCells_;
-		LongList<cell> newCells_;
+    // Private data
+        //- number of faces
+        label nFaces_;
+        LongList<face> newFaces_;
+    
+        //- number of cells
+        label nCells_;
+        LongList<cell> newCells_;
 
 public:
 
-	// Constructors
-		//- Construct from the reference to the mesh
-		polyMeshGenModifierAddCellByCell(polyMeshGen& mesh);
-			
-	// Destructor
-		~polyMeshGenModifierAddCellByCell();
-		
-	// Member functions
-		//- add a single cell (vertices must be added);
-		void addCell(const faceList& cell);
+    // Constructors
+        //- Construct from the reference to the mesh
+        polyMeshGenModifierAddCellByCell(polyMeshGen& mesh);
+            
+    // Destructor
+        ~polyMeshGenModifierAddCellByCell();
+        
+    // Member functions
+        //- add a single cell (vertices must be added);
+        void addCell(const faceList& cell);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

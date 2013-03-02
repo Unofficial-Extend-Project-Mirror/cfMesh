@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-	IOdictionary meshDict
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -64,48 +64,48 @@ int main(int argc, char *argv[])
         )
     );
 
-	fileName surfaceFile = meshDict.lookup("surfaceFile");
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
-		surfaceFile = ".."/surfaceFile;
+        surfaceFile = ".."/surfaceFile;
 
     triSurf surf(runTime.path()/surfaceFile);
 
-	if( meshDict.found("subsetFileName") )
-	{
-		fileName subsetFileName = meshDict.lookup("subsetFileName");
+    if( meshDict.found("subsetFileName") )
+    {
+        fileName subsetFileName = meshDict.lookup("subsetFileName");
         if( Pstream::parRun() )
-			subsetFileName = ".."/subsetFileName;
-		surf.readFaceSubsets(runTime.path()/subsetFileName);
-	}
+            subsetFileName = ".."/subsetFileName;
+        surf.readFaceSubsets(runTime.path()/subsetFileName);
+    }
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
 
     meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
 
-	Info<< "Execution time for octree creation = "
+    Info<< "Execution time for octree creation = "
         << runTime.elapsedCpuTime()
         << " s\n" << endl << endl;
 
-	polyMeshGen pmg(runTime);
-	cartesianMeshExtractor cmg(mo, meshDict, pmg);
+    polyMeshGen pmg(runTime);
+    cartesianMeshExtractor cmg(mo, meshDict, pmg);
 
-	//cmg.decomposeSplitHexes();
-	cmg.createMesh();
+    //cmg.decomposeSplitHexes();
+    cmg.createMesh();
 
     pmg.write();
 
 /*    if( Pstream::parRun() )
     {
         std::ostringstream ss;
-		ss << Pstream::myProcNo();
+        ss << Pstream::myProcNo();
         writeMeshEnsight(pmg, "cartesianMesh"+ss.str());
     }
     else
     {
         writeMeshEnsight(pmg, "cartesianMesh");
-	}
+    }
 */
     Info << "End\n" << endl;
     return 0;

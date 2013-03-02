@@ -295,8 +295,8 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
         cell& c = cells[cellI];
 
         forAll(c, fI)
-			if( newFaceLabel[c[fI]] != -1 )
-            	c[fI] = newFaceLabel[c[fI]];
+            if( newFaceLabel[c[fI]] != -1 )
+                c[fI] = newFaceLabel[c[fI]];
     }
 
     //- update face subsets

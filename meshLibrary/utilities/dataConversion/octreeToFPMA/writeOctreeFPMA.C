@@ -48,36 +48,36 @@ void writeOctreeFPMA(const meshOctree& octree, const word& fName)
     const word postProcDir = "FPMA";
     
     const word prepend = fName + '.';
-	Serr << "Writting mesh into " << postProcDir << endl;
+    Serr << "Writting mesh into " << postProcDir << endl;
 
     fileName postProcPath;
-	if( Pstream::parRun() )
-	{
-		std::ostringstream ss;
-		ss << Pstream::myProcNo();
-		postProcPath = "processor"+ss.str()/postProcDir;
-	}
-	else
-	{
-		postProcPath = postProcDir;
-	}
+    if( Pstream::parRun() )
+    {
+        std::ostringstream ss;
+        ss << Pstream::myProcNo();
+        postProcPath = "processor"+ss.str()/postProcDir;
+    }
+    else
+    {
+        postProcPath = postProcDir;
+    }
 
-	if( !Foam::isDir(postProcPath) )
-	{
-		mkDir(postProcPath);
-	}
+    if( !Foam::isDir(postProcPath) )
+    {
+        mkDir(postProcPath);
+    }
 
-	// Open the Case file
-	const fileName fpmaFileName = fName + ".fpma";
-	
-	Info << "Writting octree into " << fpmaFileName << endl;
+    // Open the Case file
+    const fileName fpmaFileName = fName + ".fpma";
+    
+    Info << "Writting octree into " << fpmaFileName << endl;
 
-	OFstream fpmaGeometryFile(postProcPath/fpmaFileName);
-	
+    OFstream fpmaGeometryFile(postProcPath/fpmaFileName);
+    
     // Construct the octree mesh
     dictionary dict;
     octreeMeshFPMA Mesh(octree, dict);
-	Mesh.write(fpmaGeometryFile);
+    Mesh.write(fpmaGeometryFile);
 }
 
 }

@@ -54,14 +54,14 @@ class renameBoundaryPatches
 {
     // Private data
         //- mesh
-		polyMeshGen& mesh_;
-	
-		//- dictionary containing relevant information
-		const IOdictionary& meshDict_;
+        polyMeshGen& mesh_;
+    
+        //- dictionary containing relevant information
+        const IOdictionary& meshDict_;
 
     // Private member functions
-		//- calculate new boundary and replace the existing one
-		void calculateNewBoundary();
+        //- calculate new boundary and replace the existing one
+        void calculateNewBoundary();
         
         //- Disallow default bitwise copy construct
         renameBoundaryPatches(const renameBoundaryPatches&);
@@ -76,8 +76,8 @@ public:
         //- Construct from mesh and IOdictionary
         renameBoundaryPatches
         (
-			polyMeshGen& mesh,
-			const IOdictionary& meshDict
+            polyMeshGen& mesh,
+            const IOdictionary& meshDict
         );
 
     // Destructor

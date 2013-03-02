@@ -47,7 +47,7 @@ void polyMeshGenAddressing::calcCellPoints() const
     else
     {
         const cellListPMG& cells = mesh_.cells();
-		const faceListPMG& faces = mesh_.faces();
+        const faceListPMG& faces = mesh_.faces();
         
         //- create the storage
         cpPtr_ = new VRWGraph(cells.size());

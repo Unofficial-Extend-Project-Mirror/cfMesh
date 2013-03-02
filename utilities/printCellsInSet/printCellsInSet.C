@@ -45,33 +45,33 @@ using namespace Foam;
 int main(int argc, char *argv[])
 {
     argList::validArgs.append("cellSet");
-	
+    
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	Info<< "Reading mesh for time = " << runTime.value() << endl;
-	polyMesh mesh(runTime);
+    
+    Info<< "Reading mesh for time = " << runTime.value() << endl;
+    polyMesh mesh(runTime);
 
     word setName(args.args()[3]);
 
     Info<< "Reading cell set from " << setName << endl << endl;
-	cellSet cs(mesh, setName);
+    cellSet cs(mesh, setName);
 
-	//- printCells contained in the cellSet
-	const cellList& cells = mesh.cells();
-	const faceList& faces = mesh.faces();
-	
-	forAll(cells, cellI)
-		if( cs.found(cellI) )
-		{
-			const cell& c = cells[cellI];
-			Info << "Cell " << cellI << " consists of faces " << c << endl;
-			
-			forAll(c, fI)
-				Info << "Face " << c[fI] << " is " << faces[c[fI]] << endl;
-			
-			Info << nl << endl;
-		}
+    //- printCells contained in the cellSet
+    const cellList& cells = mesh.cells();
+    const faceList& faces = mesh.faces();
+    
+    forAll(cells, cellI)
+        if( cs.found(cellI) )
+        {
+            const cell& c = cells[cellI];
+            Info << "Cell " << cellI << " consists of faces " << c << endl;
+            
+            forAll(c, fI)
+                Info << "Face " << c[fI] << " is " << faces[c[fI]] << endl;
+            
+            Info << nl << endl;
+        }
 
     Info << "End\n" << endl;
     return 0;

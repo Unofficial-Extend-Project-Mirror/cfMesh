@@ -38,29 +38,29 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 void renameBoundaryPatches::calculateNewBoundary()
 {
     Info << "Renaming boundary patches" << endl;
     
-	const dictionary& dict = meshDict_.subDict("renameBoundary");
-	
-	std::map<word, label> patchToLabel;
-	forAll(mesh_.boundaries(), patchI)
+    const dictionary& dict = meshDict_.subDict("renameBoundary");
+    
+    std::map<word, label> patchToLabel;
+    forAll(mesh_.boundaries(), patchI)
     {
-		patchToLabel.insert
-		(
-			std::pair<word, label>
-			(
-				mesh_.boundaries()[patchI].patchName(),
-				patchI
-			)
-		);
+        patchToLabel.insert
+        (
+            std::pair<word, label>
+            (
+                mesh_.boundaries()[patchI].patchName(),
+                patchI
+            )
+        );
     }
     
-	labelList patchToNew(mesh_.boundaries().size(), -1);
+    labelList patchToNew(mesh_.boundaries().size(), -1);
     
     wordList newPatchNames(patchToNew.size());
     wordList newPatchTypes(patchToNew.size());
@@ -122,11 +122,11 @@ void renameBoundaryPatches::calculateNewBoundary()
     }
     
     word defaultName("");
-	if( dict.found("defaultName") )
-		defaultName = word(dict.lookup("defaultName"));
-	word defaultType("patch");
-	if( dict.found("defaultType") )
-		defaultType = word(dict.lookup("defaultType"));
+    if( dict.found("defaultName") )
+        defaultName = word(dict.lookup("defaultName"));
+    word defaultType("patch");
+    if( dict.found("defaultType") )
+        defaultType = word(dict.lookup("defaultType"));
     
     if( dict.found("defaultName") )
     {
@@ -135,19 +135,19 @@ void renameBoundaryPatches::calculateNewBoundary()
         newPatchTypes[newPatchI] = defaultType;
         ++newPatchI;
     }
-	else
-	{
-		forAll(patchToNew, patchI)
-		{
-			if( patchToNew[patchI] != -1 )
-				continue;
-			
-			patchToNew[patchI] = newPatchI;
-			newPatchNames[newPatchI] = mesh_.boundaries()[patchI].patchName();
-			newPatchTypes[newPatchI] = mesh_.boundaries()[patchI].patchType();
-			++newPatchI;
-		}
-	}
+    else
+    {
+        forAll(patchToNew, patchI)
+        {
+            if( patchToNew[patchI] != -1 )
+                continue;
+            
+            patchToNew[patchI] = newPatchI;
+            newPatchNames[newPatchI] = mesh_.boundaries()[patchI].patchName();
+            newPatchTypes[newPatchI] = mesh_.boundaries()[patchI].patchType();
+            ++newPatchI;
+        }
+    }
     
     if( newPatchI == 0 )
         return;
@@ -212,14 +212,14 @@ void renameBoundaryPatches::calculateNewBoundary()
 renameBoundaryPatches::renameBoundaryPatches
 (
     polyMeshGen& mesh,
-	const IOdictionary& meshDict
+    const IOdictionary& meshDict
 )
 :
-	mesh_(mesh),
-	meshDict_(meshDict)
+    mesh_(mesh),
+    meshDict_(meshDict)
 {
-	if( meshDict.found("renameBoundary") )
-		calculateNewBoundary();
+    if( meshDict.found("renameBoundary") )
+        calculateNewBoundary();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

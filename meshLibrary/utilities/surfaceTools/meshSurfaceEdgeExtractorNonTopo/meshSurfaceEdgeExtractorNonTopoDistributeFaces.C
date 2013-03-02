@@ -47,24 +47,24 @@ namespace Foam
 
 void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
 {
-	meshSurfaceEngine mse(mesh_);
-	
-	const faceList::subList& bFaces = mse.boundaryFaces();
-	const labelList& faceOwner = mse.faceOwners();
-	const pointFieldPMG& points = mse.points();
-	
-	//- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
-	const triSurface& surface = meshOctree_.surface();
-	const label nPatches = surface.patches().size();
-	
-	wordList patchNames(nPatches);
-	VRWGraph newBoundaryFaces;
-	labelListPMG newBoundaryOwners(bFaces.size());
-	labelListPMG newBoundaryPatches(bFaces.size());
-	
-	//- set patchNames
-	forAll(surface.patches(), patchI)
-			patchNames[patchI] = surface.patches()[patchI].name();
+    meshSurfaceEngine mse(mesh_);
+    
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const labelList& faceOwner = mse.faceOwners();
+    const pointFieldPMG& points = mse.points();
+    
+    //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
+    const triSurface& surface = meshOctree_.surface();
+    const label nPatches = surface.patches().size();
+    
+    wordList patchNames(nPatches);
+    VRWGraph newBoundaryFaces;
+    labelListPMG newBoundaryOwners(bFaces.size());
+    labelListPMG newBoundaryPatches(bFaces.size());
+    
+    //- set patchNames
+    forAll(surface.patches(), patchI)
+            patchNames[patchI] = surface.patches()[patchI].name();
     
     //- append boundary faces
     forAll(bFaces, bfI)
@@ -72,42 +72,42 @@ void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
         newBoundaryFaces.appendList(bFaces[bfI]);
         newBoundaryOwners[bfI] = faceOwner[bfI];
     }
-	
-	//- find the region for face by finding the patch nearest
-	//- to the face centre
+    
+    //- find the region for face by finding the patch nearest
+    //- to the face centre
     # pragma omp parallel for if( bFaces.size() > 100 ) schedule(guided)
-	forAll(bFaces, bfI)
-	{
-		const point c = bFaces[bfI].centre(points);
+    forAll(bFaces, bfI)
+    {
+        const point c = bFaces[bfI].centre(points);
         
         label facePatch;
         point p;
         scalar distSq;
-		
-		meshOctree_.findNearestSurfacePoint(p, distSq, facePatch, c);
-		
-		if( (facePatch > -1) && (facePatch < nPatches) )
-		{
-			newBoundaryPatches[bfI] = facePatch;
-		}
-		else
-		{
-			FatalErrorIn
-			(
-				"void meshSurfaceEdgeExtractorNonTopo::"
-				"distributeBoundaryFaces()"
-			) << "Cannot distribute a face " << bFaces[bfI] << " into any "
-				<< "surface patch!. Exiting.." << exit(FatalError);
-		}
-	}
-	
-	polyMeshGenModifier(mesh_).replaceBoundary
-	(
-		patchNames,
-		newBoundaryFaces,
-		newBoundaryOwners,
-		newBoundaryPatches
-	);
+        
+        meshOctree_.findNearestSurfacePoint(p, distSq, facePatch, c);
+        
+        if( (facePatch > -1) && (facePatch < nPatches) )
+        {
+            newBoundaryPatches[bfI] = facePatch;
+        }
+        else
+        {
+            FatalErrorIn
+            (
+                "void meshSurfaceEdgeExtractorNonTopo::"
+                "distributeBoundaryFaces()"
+            ) << "Cannot distribute a face " << bFaces[bfI] << " into any "
+                << "surface patch!. Exiting.." << exit(FatalError);
+        }
+    }
+    
+    polyMeshGenModifier(mesh_).replaceBoundary
+    (
+        patchNames,
+        newBoundaryFaces,
+        newBoundaryOwners,
+        newBoundaryPatches
+    );
 }
 
 void meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()

@@ -40,14 +40,14 @@ namespace Foam
 // Construct from octree and mesh data
 tetPointsCreator::tetPointsCreator
 (
-	tetTessellation& tessellation,
+    tetTessellation& tessellation,
     const meshOctree& octree
 )
 :
-	tessellation_(tessellation),
+    tessellation_(tessellation),
     octree_(octree)
 {
-	createPoints();
+    createPoints();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

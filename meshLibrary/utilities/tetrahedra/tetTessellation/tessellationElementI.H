@@ -33,7 +33,7 @@ namespace Foam
 
 inline void tessellationElement::setNode(const direction i, const label nodeI)
 {
-	data_[i] = nodeI;
+    data_[i] = nodeI;
 }
 
 inline label tessellationElement::neighbour(const direction i) const
@@ -43,49 +43,49 @@ inline label tessellationElement::neighbour(const direction i) const
 
 inline void tessellationElement::setNeighbour
 (
-	const direction i,
-	const label neiI
+    const direction i,
+    const label neiI
 )
 {
-	neighbours_[i] = neiI;
+    neighbours_[i] = neiI;
 }
 
 inline triFace tessellationElement::face(const direction i) const
 {
-	switch( i )
-	{
-		case 0:
-		{
-			return triFace(data_[1], data_[3], data_[2]);
-		} break;
-		case 1:
-		{
-			return triFace(data_[0], data_[2], data_[3]);
-		} break;
-		case 2:
-		{
-			return triFace(data_[0], data_[3], data_[1]);
-		} break;
-		case 3:
-		{
-			return triFace(data_[0], data_[1], data_[2]);
-		} break;
-	};
-	
-	return triFace();
+    switch( i )
+    {
+        case 0:
+        {
+            return triFace(data_[1], data_[3], data_[2]);
+        } break;
+        case 1:
+        {
+            return triFace(data_[0], data_[2], data_[3]);
+        } break;
+        case 2:
+        {
+            return triFace(data_[0], data_[3], data_[1]);
+        } break;
+        case 3:
+        {
+            return triFace(data_[0], data_[1], data_[2]);
+        } break;
+    };
+    
+    return triFace();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 inline void tessellationElement::operator=(const tessellationElement& elmt)
 {
-	for(label i=0;i<4;++i)
-	{
-		data_[i] = elmt[i];
-		neighbours_[i] = elmt.neighbour(i);
-	}
-	
-	influence_ = elmt.influence_;
+    for(label i=0;i<4;++i)
+    {
+        data_[i] = elmt[i];
+        neighbours_[i] = elmt.neighbour(i);
+    }
+    
+    influence_ = elmt.influence_;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

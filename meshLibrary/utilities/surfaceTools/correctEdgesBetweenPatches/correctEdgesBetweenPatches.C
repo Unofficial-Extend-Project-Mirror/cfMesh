@@ -37,7 +37,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 const meshSurfaceEngine& correctEdgesBetweenPatches::meshSurface() const
@@ -58,13 +58,13 @@ void correctEdgesBetweenPatches::replaceBoundary()
 {
     clearMeshSurface();
     
-	polyMeshGenModifier(mesh_).replaceBoundary
-	(
-		patchNames_,
-		newBoundaryFaces_,
-		newBoundaryOwners_,
-		newBoundaryPatches_
-	);
+    polyMeshGenModifier(mesh_).replaceBoundary
+    (
+        patchNames_,
+        newBoundaryFaces_,
+        newBoundaryOwners_,
+        newBoundaryPatches_
+    );
 }
 
 void correctEdgesBetweenPatches::decomposeCorrectedCells()
@@ -83,21 +83,21 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
 // Construct from mesh, octree, regions for boundary vertices
 correctEdgesBetweenPatches::correctEdgesBetweenPatches
 (
-	polyMeshGen& mesh
+    polyMeshGen& mesh
 )
 :
-	mesh_(mesh),
-	msePtr_(NULL),
-	patchNames_(mesh.boundaries().size()),
-	newBoundaryFaces_(),
-	newBoundaryOwners_(),
-	newBoundaryPatches_(),
-	decomposeCell_(mesh_.cells().size(), false),
-	decompose_(false)
+    mesh_(mesh),
+    msePtr_(NULL),
+    patchNames_(mesh.boundaries().size()),
+    newBoundaryFaces_(),
+    newBoundaryOwners_(),
+    newBoundaryPatches_(),
+    decomposeCell_(mesh_.cells().size(), false),
+    decompose_(false)
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	forAll(boundaries, patchI)
-		patchNames_[patchI] = boundaries[patchI].patchName();
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    forAll(boundaries, patchI)
+        patchNames_[patchI] = boundaries[patchI].patchName();
     
     checkFacePatches();
 
@@ -112,7 +112,7 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches
 
 correctEdgesBetweenPatches::~correctEdgesBetweenPatches()
 {
-	deleteDemandDrivenData(msePtr_);
+    deleteDemandDrivenData(msePtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

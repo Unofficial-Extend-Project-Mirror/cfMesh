@@ -110,9 +110,9 @@ class labelledPair
         {
             if( pLabel_ != lpp.pLabel_ )
                 return false;
-			
-			if( (pair_ != lpp.pair_) && (pair_.reversePair() != lpp.pair_) )
-				return false;
+            
+            if( (pair_ != lpp.pair_) && (pair_.reversePair() != lpp.pair_) )
+                return false;
             
             return true;
         }
@@ -124,32 +124,32 @@ class labelledPair
         {
             return !this->operator==(lcc);
         }
-		
-		inline bool operator<(const labelledPair& lpp) const
-		{
-			if( pLabel_ < lpp.pLabel_ )
-			{
-				return true;
-			}
-			else if( pLabel_ > lpp.pLabel_ )
-			{
-				return false;
-			}
-			
-			if(
-				(pair_.first() + pair_.second()) <
-				(lpp.pair().first() + lpp.pair().second())
-			)
-				return true;
-			
-			if(
-				Foam::min(pair_.first(), pair_.second()) <
-				Foam::min(lpp.pair().first(), lpp.pair().second())
-			)
-				return true;
-			
-			return false;
-		}
+        
+        inline bool operator<(const labelledPair& lpp) const
+        {
+            if( pLabel_ < lpp.pLabel_ )
+            {
+                return true;
+            }
+            else if( pLabel_ > lpp.pLabel_ )
+            {
+                return false;
+            }
+            
+            if(
+                (pair_.first() + pair_.second()) <
+                (lpp.pair().first() + lpp.pair().second())
+            )
+                return true;
+            
+            if(
+                Foam::min(pair_.first(), pair_.second()) <
+                Foam::min(lpp.pair().first(), lpp.pair().second())
+            )
+                return true;
+            
+            return false;
+        }
         
     // Friend operators
         friend Ostream& operator<<

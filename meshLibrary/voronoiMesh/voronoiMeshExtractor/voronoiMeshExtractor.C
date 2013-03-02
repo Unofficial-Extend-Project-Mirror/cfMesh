@@ -35,15 +35,15 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::clearOut()
 {
-	deleteDemandDrivenData(pointEdgesPtr_);
-	deleteDemandDrivenData(edgesPtr_);
-	deleteDemandDrivenData(edgeTetsPtr_);
-	deleteDemandDrivenData(boundaryEdgePtr_);
+    deleteDemandDrivenData(pointEdgesPtr_);
+    deleteDemandDrivenData(edgesPtr_);
+    deleteDemandDrivenData(edgeTetsPtr_);
+    deleteDemandDrivenData(boundaryEdgePtr_);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -52,16 +52,16 @@ void voronoiMeshExtractor::clearOut()
 voronoiMeshExtractor::voronoiMeshExtractor
 (
     const meshOctree& octree,
-	const IOdictionary& meshDict,
-	polyMeshGen& mesh
+    const IOdictionary& meshDict,
+    polyMeshGen& mesh
 )
 :
     tetCreator_(octree, meshDict),
-	mesh_(mesh),
-	pointEdgesPtr_(NULL),
-	edgesPtr_(NULL),
-	edgeTetsPtr_(NULL),
-	boundaryEdgePtr_(NULL)
+    mesh_(mesh),
+    pointEdgesPtr_(NULL),
+    edgesPtr_(NULL),
+    edgeTetsPtr_(NULL),
+    boundaryEdgePtr_(NULL)
 {
 }
 
@@ -69,29 +69,29 @@ voronoiMeshExtractor::voronoiMeshExtractor
 
 voronoiMeshExtractor::~voronoiMeshExtractor()
 {
-	clearOut();
+    clearOut();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::createMesh()
 {
-	Info << "Extracting voronoi mesh" << endl;
-	
-	//- copy tet points into the mesh
-	createPoints();
+    Info << "Extracting voronoi mesh" << endl;
+    
+    //- copy tet points into the mesh
+    createPoints();
 
-	//- create the mesh
+    //- create the mesh
     createPolyMesh();
-	
-	polyMeshGenModifier(mesh_).reorderBoundaryFaces();
-	polyMeshGenModifier(mesh_).removeUnusedVertices();
-	
-	Info << "Mesh has :" << nl
-		<< mesh_.points().size() << " vertices " << nl
-		<< mesh_.faces().size() << " faces" << nl
-		<< mesh_.cells().size() << " cells" << endl;
-	
+    
+    polyMeshGenModifier(mesh_).reorderBoundaryFaces();
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
+    
+    Info << "Mesh has :" << nl
+        << mesh_.points().size() << " vertices " << nl
+        << mesh_.faces().size() << " faces" << nl
+        << mesh_.cells().size() << " cells" << endl;
+    
     Info << "Finished extracting voronoi mesh" << endl;
 }
 

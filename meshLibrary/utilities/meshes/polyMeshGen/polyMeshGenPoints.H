@@ -55,44 +55,44 @@ class polyMeshGenPoints
 protected:
     
     // Protected data
-		//- reference to the Time registry
-		const Time& runTime_;
+        //- reference to the Time registry
+        const Time& runTime_;
 
-		//- list of vertices
-		pointFieldPMG points_;
+        //- list of vertices
+        pointFieldPMG points_;
 
         //- map of point subsets
         std::map<label, meshSubset> pointSubsets_;
-	
-	// Disallow bitwise assignment
-		void operator=(const polyMeshGenPoints&);
-	
-		polyMeshGenPoints(const polyMeshGenPoints&);
+    
+    // Disallow bitwise assignment
+        void operator=(const polyMeshGenPoints&);
+    
+        polyMeshGenPoints(const polyMeshGenPoints&);
 
 public:
-	
-	friend class polyMeshGenModifier;
+    
+    friend class polyMeshGenModifier;
 
-	// Constructors
-		//- Null constructor
-		polyMeshGenPoints(const Time&);
+    // Constructors
+        //- Null constructor
+        polyMeshGenPoints(const Time&);
 
-		//- Construct from components without the boundary
-		polyMeshGenPoints
-		(
-			const Time&,
-			const pointField& points
-		);
-		
-	// Destructor
-		~polyMeshGenPoints();
-		
-	// Member functions
-		//- access to Time
-		inline const Time& returnTime() const;
-		
-		//- access to points
-		inline const pointFieldPMG& points() const;
+        //- Construct from components without the boundary
+        polyMeshGenPoints
+        (
+            const Time&,
+            const pointField& points
+        );
+        
+    // Destructor
+        ~polyMeshGenPoints();
+        
+    // Member functions
+        //- access to Time
+        inline const Time& returnTime() const;
+        
+        //- access to points
+        inline const pointFieldPMG& points() const;
         
         //- non-const access to points
         inline pointFieldPMG& points();
@@ -113,12 +113,12 @@ public:
         inline void pointsInSubset(const label, ListType&) const;
         template<class ListType>
         inline void updatePointSubsets(const ListType&);
-		
-	// Read mesh
-		void read();
-		
-	// Write mesh
-		void write() const;
+        
+    // Read mesh
+        void read();
+        
+    // Write mesh
+        void write() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

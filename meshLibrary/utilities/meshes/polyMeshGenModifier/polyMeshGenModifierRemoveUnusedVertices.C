@@ -74,7 +74,7 @@ void polyMeshGenModifier::removeUnusedVertices()
 
     mesh_.updatePointSubsets(newLabel);
 
-	mesh_.clearOut();
+    mesh_.clearOut();
     this->clearOut();
 }
 

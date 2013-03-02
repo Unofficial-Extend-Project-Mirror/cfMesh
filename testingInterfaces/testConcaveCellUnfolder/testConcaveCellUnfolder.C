@@ -54,10 +54,10 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 #   include "createPolyMesh.H"
-	
-	objectRegistry registry(runTime);
-	
-	IOdictionary meshDict
+    
+    objectRegistry registry(runTime);
+    
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -68,48 +68,48 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	const fileName surfaceFile = meshDict.lookup("surfaceFile");
+    
+    const fileName surfaceFile = meshDict.lookup("surfaceFile");
 
     triSurf surf(registry.path()/surfaceFile);
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(8);
-	
-	// construct the polyMeshGen
-	labelList starts(mesh.boundaryMesh().names().size());
-	labelList nFacesInPatch(starts.size());
-	
-	forAll(mesh.boundaryMesh(), patchI)
-	{
-		starts[patchI] = mesh.boundaryMesh()[patchI].start();
-		nFacesInPatch[patchI] = mesh.boundaryMesh()[patchI].size();
-	}
-	
-	polyMeshGen pmg
-	(
-		registry,
-		mesh.points(),
-		mesh.faces(),
-		mesh.cells(),
-		mesh.boundaryMesh().names(),
-		starts,
-		nFacesInPatch
-	);
-	
-	//- optimize surface to get rid of nearby vertices
-	meshSurfaceEngine* msePtr = new meshSurfaceEngine(pmg);
-	meshSurfaceOptimizer(*msePtr, mo).optimizeSurface();
-	deleteDemandDrivenData(msePtr);
+    meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(8);
+    
+    // construct the polyMeshGen
+    labelList starts(mesh.boundaryMesh().names().size());
+    labelList nFacesInPatch(starts.size());
+    
+    forAll(mesh.boundaryMesh(), patchI)
+    {
+        starts[patchI] = mesh.boundaryMesh()[patchI].start();
+        nFacesInPatch[patchI] = mesh.boundaryMesh()[patchI].size();
+    }
+    
+    polyMeshGen pmg
+    (
+        registry,
+        mesh.points(),
+        mesh.faces(),
+        mesh.cells(),
+        mesh.boundaryMesh().names(),
+        starts,
+        nFacesInPatch
+    );
+    
+    //- optimize surface to get rid of nearby vertices
+    meshSurfaceEngine* msePtr = new meshSurfaceEngine(pmg);
+    meshSurfaceOptimizer(*msePtr, mo).optimizeSurface();
+    deleteDemandDrivenData(msePtr);
 
-	
-	dualUnfoldConcaveCells(pmg, mo).unfoldInvalidCells();
-	
-	pmg.write();
-	writeMeshEnsight(pmg, "correctedEdges");
-	pmg.addressingData().checkMesh(true);
-	
+    
+    dualUnfoldConcaveCells(pmg, mo).unfoldInvalidCells();
+    
+    pmg.write();
+    writeMeshEnsight(pmg, "correctedEdges");
+    pmg.addressingData().checkMesh(true);
+    
     Info << "End\n" << endl;
     return 0;
 }

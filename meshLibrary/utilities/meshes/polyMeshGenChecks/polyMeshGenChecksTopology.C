@@ -176,7 +176,7 @@ bool checkUpperTriangular
 
             forAllRow(cc, cellI, nbrI)
             {
-				const label neiI = cc(cellI, nbrI);
+                const label neiI = cc(cellI, nbrI);
                 if( (neiI > cellI) && !usedNbr[nbrI] && (neiI < minNei) )
                 {
                     nextNei = nbrI;
@@ -373,7 +373,7 @@ bool checkFaceVertices
     const faceListPMG& faces = mesh.faces();
 
     label nErrorFaces = 0;
-	const label nPoints = mesh.points().size();
+    const label nPoints = mesh.points().size();
 
     forAll(faces, fI)
     {

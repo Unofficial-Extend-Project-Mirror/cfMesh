@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	objectRegistry registry(runTime);
-	
-	IOdictionary meshDict
+    
+    objectRegistry registry(runTime);
+    
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -63,40 +63,40 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	const fileName surfaceFile = meshDict.lookup("surfaceFile");
+    
+    const fileName surfaceFile = meshDict.lookup("surfaceFile");
 
     triSurf surf(registry.path()/surfaceFile);
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(8);
-	
-	// construct the polyMeshGen
-	polyMeshGen pmg(registry);
-	pmg.read();
-	
-	// find regions for boundary vertices
-	meshSurfaceEngine mse(pmg);
-	
-	labelList pointRegion(pmg.points().size(), -1);
-	
-	Info << "Finding boundary regions for boundary vertices" << endl;
-	const labelList& bPoints = mse.boundaryPoints();
-	forAll(bPoints, bpI)
-	{
-		point& p = pmg.points()[bPoints[bpI]];
-		point np;
-		mo.findNearestSurfacePoint(np, pointRegion[bPoints[bpI]], p);
-		p = np;
-	}
-	
-	Info << "Extracting edges" << endl;
-	meshSurfaceEdgeExtractor(pmg, mo, pointRegion);
-	
-	writeMeshEnsight(pmg, "meshWithEdges");
-	pmg.addressingData().checkMesh(true);
-	
+    meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(8);
+    
+    // construct the polyMeshGen
+    polyMeshGen pmg(registry);
+    pmg.read();
+    
+    // find regions for boundary vertices
+    meshSurfaceEngine mse(pmg);
+    
+    labelList pointRegion(pmg.points().size(), -1);
+    
+    Info << "Finding boundary regions for boundary vertices" << endl;
+    const labelList& bPoints = mse.boundaryPoints();
+    forAll(bPoints, bpI)
+    {
+        point& p = pmg.points()[bPoints[bpI]];
+        point np;
+        mo.findNearestSurfacePoint(np, pointRegion[bPoints[bpI]], p);
+        p = np;
+    }
+    
+    Info << "Extracting edges" << endl;
+    meshSurfaceEdgeExtractor(pmg, mo, pointRegion);
+    
+    writeMeshEnsight(pmg, "meshWithEdges");
+    pmg.addressingData().checkMesh(true);
+    
     Info << "End\n" << endl;
     return 0;
 }

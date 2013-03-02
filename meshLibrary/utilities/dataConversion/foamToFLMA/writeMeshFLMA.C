@@ -44,27 +44,27 @@ namespace Foam
 
 void writeMeshFLMA(const polyMeshGen& mesh, const word& fName)
 {
-	const Time& time = mesh.returnTime();
-	
+    const Time& time = mesh.returnTime();
+    
     const word postProcDir = "FLMA";
 
     fileName postProcPath = time.path()/postProcDir;
 
-	if( !Foam::isDir(postProcPath) )
-	{
-		mkDir(postProcPath);
-	}
+    if( !Foam::isDir(postProcPath) )
+    {
+        mkDir(postProcPath);
+    }
 
-	// Open the flma file
-	const fileName flmaFileName = fName + ".flma";
-	
-	Info << "Writting mesh into " << flmaFileName << endl;
+    // Open the flma file
+    const fileName flmaFileName = fName + ".flma";
+    
+    Info << "Writting mesh into " << flmaFileName << endl;
 
-	OFstream flmaGeometryFile(postProcPath/flmaFileName);
-	
+    OFstream flmaGeometryFile(postProcPath/flmaFileName);
+    
     // Construct the flma mesh
     flmaMesh Mesh(mesh);
-	Mesh.write(flmaGeometryFile);
+    Mesh.write(flmaGeometryFile);
 }
 
 }

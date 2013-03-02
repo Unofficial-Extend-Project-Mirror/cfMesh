@@ -35,7 +35,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -43,15 +43,15 @@ namespace Foam
 // Construct from mesh, octree, regions for boundary vertices
 decomposeCellsNearConcaveEdges::decomposeCellsNearConcaveEdges
 (
-	polyMeshGen& mesh
+    polyMeshGen& mesh
 )
 :
-	mesh_(mesh),
-	decomposeCell_(mesh_.cells().size(), false)
-{			
-	findConcaveFacesAndCells();
-	
-	decomposeConcaveCells();
+    mesh_(mesh),
+    decomposeCell_(mesh_.cells().size(), false)
+{            
+    findConcaveFacesAndCells();
+    
+    decomposeConcaveCells();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

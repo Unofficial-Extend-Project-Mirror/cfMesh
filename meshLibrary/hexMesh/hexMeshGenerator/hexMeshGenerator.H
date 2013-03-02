@@ -68,38 +68,38 @@ class hexMeshGenerator
 
         //- pointer to the octree
         meshOctree* octreePtr_;
-	
-		//- mesh
-		polyMeshGen mesh_;
+    
+        //- mesh
+        polyMeshGen mesh_;
 
     // Private member functions
         //- generate octree based on user's refinement settings
         void generateOctree();
     
-		//- generate dual mesh
-		void generateDualMesh();
-	
-		//- prepare mesh surface
-		void surfacePreparation();
-		
-		//- map mesh to the surface and untangle surface
-		void mapMeshToSurface();
-		
-		//- optimise surface of the mesh
-		void optimiseMeshSurface();
+        //- generate dual mesh
+        void generateDualMesh();
+    
+        //- prepare mesh surface
+        void surfacePreparation();
+        
+        //- map mesh to the surface and untangle surface
+        void mapMeshToSurface();
+        
+        //- optimise surface of the mesh
+        void optimiseMeshSurface();
 
-		//- add boundary layers
-		void generateBoundaryLayers();
-		
-		//- mesh optimisation
-		void optimiseFinalMesh();
+        //- add boundary layers
+        void generateBoundaryLayers();
+        
+        //- mesh optimisation
+        void optimiseFinalMesh();
         
         //- replace boundaries
         void replaceBoundaries();
-		
-		//- renumber the mesh
-		void renumberMesh();
-		
+        
+        //- renumber the mesh
+        void renumberMesh();
+        
         //- generate mesh
         void generateMesh();
 

@@ -70,63 +70,63 @@ namespace Foam
 
 class polyMeshGenAddressing
 {
-	// Mesh data
+    // Mesh data
 
         //- reference to the mesh
         const polyMeshGenCells& mesh_;
 
-	// Shapes
+    // Shapes
 
-		//- Edges
-		mutable edgeList* edgesPtr_;
-
-
-	// Connectivity
-
-		//- Cell-cells
-		mutable VRWGraph* ccPtr_;
-
-		//- Edge-cells
-		mutable VRWGraph* ecPtr_;
-
-		//- Point-cells
-		mutable VRWGraph* pcPtr_;
-
-		//- Edge-faces
-		mutable VRWGraph* efPtr_;
-
-		//- Point-faces
-		mutable VRWGraph* pfPtr_;
-
-		//- Cell-edges
-		mutable VRWGraph* cePtr_;
-
-		//- Face-edges
-		mutable VRWGraph* fePtr_;
-
-		//- Point-edges
-		mutable VRWGraph* pePtr_;
-
-		//- Point-points
-		mutable VRWGraph* ppPtr_;
-
-		//- Cell-points
-		mutable VRWGraph* cpPtr_;
+        //- Edges
+        mutable edgeList* edgesPtr_;
 
 
-	// Geometric data
+    // Connectivity
 
-		//- Cell centres
-		mutable vectorField* cellCentresPtr_;
+        //- Cell-cells
+        mutable VRWGraph* ccPtr_;
 
-		//- Face centres
-		mutable vectorField* faceCentresPtr_;
+        //- Edge-cells
+        mutable VRWGraph* ecPtr_;
 
-		//- Cell volumes
-		mutable scalarField* cellVolumesPtr_;
+        //- Point-cells
+        mutable VRWGraph* pcPtr_;
 
-		//- Face areas
-		mutable vectorField* faceAreasPtr_;
+        //- Edge-faces
+        mutable VRWGraph* efPtr_;
+
+        //- Point-faces
+        mutable VRWGraph* pfPtr_;
+
+        //- Cell-edges
+        mutable VRWGraph* cePtr_;
+
+        //- Face-edges
+        mutable VRWGraph* fePtr_;
+
+        //- Point-edges
+        mutable VRWGraph* pePtr_;
+
+        //- Point-points
+        mutable VRWGraph* ppPtr_;
+
+        //- Cell-points
+        mutable VRWGraph* cpPtr_;
+
+
+    // Geometric data
+
+        //- Cell centres
+        mutable vectorField* cellCentresPtr_;
+
+        //- Face centres
+        mutable vectorField* faceCentresPtr_;
+
+        //- Cell volumes
+        mutable scalarField* cellVolumesPtr_;
+
+        //- Face areas
+        mutable vectorField* faceAreasPtr_;
         
     // Parallel demand driven data
         
@@ -249,7 +249,7 @@ class polyMeshGenAddressing
         //- Calculate edge vectors
         void calcEdgeVectors() const;
         
-	// Disallow bitwise construct
+    // Disallow bitwise construct
         //- Default constructor
         polyMeshGenAddressing();
 

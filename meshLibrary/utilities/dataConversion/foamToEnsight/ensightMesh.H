@@ -72,17 +72,17 @@ class ensightMesh
             const faceListPMG& faces,
             OFstream& ensightGeometryFile
         ) const;
-		
-		void writeFaces
-		(
-			const faceList& patchFaces,
-			OFstream& ensightGeometryFile
-		) const;
-		
-		void writePatches
-		(
-			OFstream& ensightGeometryFile
-		) const;
+        
+        void writeFaces
+        (
+            const faceList& patchFaces,
+            OFstream& ensightGeometryFile
+        ) const;
+        
+        void writePatches
+        (
+            OFstream& ensightGeometryFile
+        ) const;
 
 public:
 

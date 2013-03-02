@@ -40,9 +40,9 @@ namespace Foam
 
 defineTemplateTypeNameAndDebugWithName
 (
-	IOPtrList<writePatchBase>,
-	"polyBoundaryMesh",
-	0
+    IOPtrList<writePatchBase>,
+    "polyBoundaryMesh",
+    0
 );
     
 defineTypeNameAndDebug(writePatchBase, 0);

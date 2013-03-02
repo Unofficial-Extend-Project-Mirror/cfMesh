@@ -27,7 +27,7 @@ Class
 
 Description
     Provides information regarding surface partitions on the surface
-	triangulation, and connectivity between various surface partitions.
+    triangulation, and connectivity between various surface partitions.
 
 SourceFiles
     triSurfaceDetectMaterials.C
@@ -55,7 +55,7 @@ class meshOctree;
 class triSurfaceDetectMaterials
 {
     // Private data
-		//- reference to triSurf
+        //- reference to triSurf
         const triSurf& surf_;
     
         //- pointer to the octree
@@ -78,9 +78,9 @@ class triSurfaceDetectMaterials
         List<direction> partitionType_;
 
     // Private member functions
-		//- create partitioning
+        //- create partitioning
         void createPartitions();
-		
+        
         //- create the octree
         void createOctree();
         
@@ -118,7 +118,7 @@ public:
 
 
     // Member Functions
-		
+        
         //- detect surface parts belonging to different materials
         void detectMaterialsAndInternalWalls();
 

@@ -56,25 +56,25 @@ class tetTessellation;
 class tetPointsCreator
 {
     // Private data
-		//- reference to the Delaunay tessellation
-		tetTessellation& tessellation_;
-	
+        //- reference to the Delaunay tessellation
+        tetTessellation& tessellation_;
+    
         //- reference to the octree
         const meshOctree& octree_;
 
     // Private member functions
         //- create vertices and pointLeaves addressing
         void createPoints();
-	
-	// Helper functions
-		//- checks if the point is inside the surface
-		bool isPointInsideSurface(const point&) const;
-	
-		//- find out if this element has been changed already
-		bool isElementChanged(const label elmtI, const label nElements) const;
-	
-		//- return cell size at the given location
-		scalar cellSizeAtLocation(const point&) const;
+    
+    // Helper functions
+        //- checks if the point is inside the surface
+        bool isPointInsideSurface(const point&) const;
+    
+        //- find out if this element has been changed already
+        bool isElementChanged(const label elmtI, const label nElements) const;
+    
+        //- return cell size at the given location
+        scalar cellSizeAtLocation(const point&) const;
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -90,7 +90,7 @@ public:
         //- Construct from octree and mesh data
         tetPointsCreator
         (
-			tetTessellation& tessellation,
+            tetTessellation& tessellation,
             const meshOctree& octree
         );
 

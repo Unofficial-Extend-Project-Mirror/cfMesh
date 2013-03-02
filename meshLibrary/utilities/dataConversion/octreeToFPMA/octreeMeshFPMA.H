@@ -52,7 +52,7 @@ namespace Foam
 class octreeMeshFPMA
 {
     // Private data
-		//- octree addressing
+        //- octree addressing
         meshOctreeAddressing addressing_;
 
     // Private Member Functions
@@ -67,21 +67,21 @@ class octreeMeshFPMA
         (
             OFstream& fpmaGeometryFile
         ) const;
-	
-		void writeFaces
-		(
-			OFstream& fpmaGeometryFile
-		) const;
+    
+        void writeFaces
+        (
+            OFstream& fpmaGeometryFile
+        ) const;
 
         void writeCells
         (
             OFstream& fpmaGeometryFile
         ) const;
-		
-		void writeSelections
-		(
-			OFstream& fpmaGeometryFile
-		) const;
+        
+        void writeSelections
+        (
+            OFstream& fpmaGeometryFile
+        ) const;
         
 public:
 

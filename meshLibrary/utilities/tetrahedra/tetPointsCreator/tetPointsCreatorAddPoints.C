@@ -37,88 +37,88 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void tetPointsCreator::createPoints()
 {
-	//- create initial bunch of points from centroids of the existing tets
-	//- repeat this until the first internal point is found
-	const LongList<point>& tetPoints = tessellation_.points();
-	const LongList<tessellationElement>& elmts = tessellation_.elmts();
-	LongList<bool> internalPoint(tetPoints.size(), false);
+    //- create initial bunch of points from centroids of the existing tets
+    //- repeat this until the first internal point is found
+    const LongList<point>& tetPoints = tessellation_.points();
+    const LongList<tessellationElement>& elmts = tessellation_.elmts();
+    LongList<bool> internalPoint(tetPoints.size(), false);
 
-	bool found;
-	label nIter(0);
-	do
-	{
-		Info << "Tessellation has " << tetPoints.size() << " points" << endl;
-		Info << "Number of tets " << elmts.size() << endl;
-		found = false;
-		const label nPoints = tetPoints.size();
-		const label nElements = elmts.size();
-		for(label elmtI=0;elmtI<nElements;++elmtI)
-		//forAll(elmts, elmtI)
-		{
-			if( isElementChanged(elmtI, nPoints) )
-				continue;
-			
-			const tessellationElement& elmt = elmts[elmtI];
-			const point p = elmt.centroid(tetPoints);
-			
-			if( isPointInsideSurface(p) )
-			{
-				tessellation_.addCentroid(elmtI);
-				found = true;
-			}
-		}
-	} while( found && (++nIter < 7) );
-	
-	tessellation_.checkTessellation();
+    bool found;
+    label nIter(0);
+    do
+    {
+        Info << "Tessellation has " << tetPoints.size() << " points" << endl;
+        Info << "Number of tets " << elmts.size() << endl;
+        found = false;
+        const label nPoints = tetPoints.size();
+        const label nElements = elmts.size();
+        for(label elmtI=0;elmtI<nElements;++elmtI)
+        //forAll(elmts, elmtI)
+        {
+            if( isElementChanged(elmtI, nPoints) )
+                continue;
+            
+            const tessellationElement& elmt = elmts[elmtI];
+            const point p = elmt.centroid(tetPoints);
+            
+            if( isPointInsideSurface(p) )
+            {
+                tessellation_.addCentroid(elmtI);
+                found = true;
+            }
+        }
+    } while( found && (++nIter < 7) );
+    
+    tessellation_.checkTessellation();
 }
 
 bool tetPointsCreator::isPointInsideSurface(const point& p) const
 {
-	const label cLabel = octree_.findLeafContainingVertex(p);
-	
-	if( cLabel == -1 )
-		return false;
-	
-	if(
-		(octree_.returnLeaf(cLabel).cubeType() & meshOctreeCubeBasic::INSIDE) ||
-		(octree_.returnLeaf(cLabel).cubeType() & meshOctreeCubeBasic::DATA)
-	)
-		return true;
-	
-	return false;
+    const label cLabel = octree_.findLeafContainingVertex(p);
+    
+    if( cLabel == -1 )
+        return false;
+    
+    if(
+        (octree_.returnLeaf(cLabel).cubeType() & meshOctreeCubeBasic::INSIDE) ||
+        (octree_.returnLeaf(cLabel).cubeType() & meshOctreeCubeBasic::DATA)
+    )
+        return true;
+    
+    return false;
 }
 
 bool tetPointsCreator::isElementChanged
 (
-	const label elmtI,
-	const label nElements
+    const label elmtI,
+    const label nElements
 ) const
 {
-	if( elmtI >= nElements )
-		return true;
-	
-	const tessellationElement& elmt = tessellation_.elmts()[elmtI];
-	
-	for(direction i=0;i<DIM;++i)
-		if( elmt[i] >= nElements )
-			return true;
-	
-	return false;
+    if( elmtI >= nElements )
+        return true;
+    
+    const tessellationElement& elmt = tessellation_.elmts()[elmtI];
+    
+    for(direction i=0;i<DIM;++i)
+        if( elmt[i] >= nElements )
+            return true;
+    
+    return false;
 }
 
 scalar tetPointsCreator::cellSizeAtLocation(const point& p) const
 {
-	const label cLabel = octree_.findLeafContainingVertex(p);
-	
-	if( cLabel == -1 )
-		return VGREAT;
-	
-	return octree_.returnLeaf(cLabel).size(octree_.rootBox());
+    const label cLabel = octree_.findLeafContainingVertex(p);
+    
+    if( cLabel == -1 )
+        return VGREAT;
+    
+    return octree_.returnLeaf(cLabel).size(octree_.rootBox());
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

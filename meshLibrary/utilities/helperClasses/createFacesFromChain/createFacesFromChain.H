@@ -43,7 +43,7 @@ SourceFiles
 
 namespace Foam
 {
-	
+    
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
@@ -52,58 +52,58 @@ class VRWGraph;
 
 class createFacesFromChain
 {
-	// Members
-		labelList chainPoints_;
-	
-		List<DynList<label> > regionsForPointAtPosition_;
-	
-		DynList<face> createdFaces_;
-		DynList<label> faceRegions_;
-	
-	// Private member functions
-		void findPointsBelongingToTheFace
-		(
-			const label currPos,
-			boolList& includePoints,
-			boolList& endPoints
-		) const;
-	
-		void shrinkTheChain
-		(
-			const label currPos,
-			const boolList& includePoints,
-			const boolList& endPoints
-		);
-	
-	public:
-		
-		createFacesFromChain
-		(
-			const labelList& chPoints,
-			const VRWGraph& pointRegions
-		);
-	
-		createFacesFromChain
-		(
-			const labelList& chPoints,
-			const List<DynList<label> >& pointRegions
-		);
-	
-		~createFacesFromChain();
-	
-	// Member functions
-		//- create faces which do not require an additional corner
-		void createFacesWithoutACorner();
-	
-		//- create faces with a corner
-		void createFacesWithACorner(const label);
-	
-		//- return created faces and the corresponding patches
-		const DynList<face>& createdFaces() const;
-		const DynList<label>& faceRegion() const;
-	
-		//- a list of points which have not yet been resolved
-		const labelList& unresolvedPoints() const;
+    // Members
+        labelList chainPoints_;
+    
+        List<DynList<label> > regionsForPointAtPosition_;
+    
+        DynList<face> createdFaces_;
+        DynList<label> faceRegions_;
+    
+    // Private member functions
+        void findPointsBelongingToTheFace
+        (
+            const label currPos,
+            boolList& includePoints,
+            boolList& endPoints
+        ) const;
+    
+        void shrinkTheChain
+        (
+            const label currPos,
+            const boolList& includePoints,
+            const boolList& endPoints
+        );
+    
+    public:
+        
+        createFacesFromChain
+        (
+            const labelList& chPoints,
+            const VRWGraph& pointRegions
+        );
+    
+        createFacesFromChain
+        (
+            const labelList& chPoints,
+            const List<DynList<label> >& pointRegions
+        );
+    
+        ~createFacesFromChain();
+    
+    // Member functions
+        //- create faces which do not require an additional corner
+        void createFacesWithoutACorner();
+    
+        //- create faces with a corner
+        void createFacesWithACorner(const label);
+    
+        //- return created faces and the corresponding patches
+        const DynList<face>& createdFaces() const;
+        const DynList<label>& faceRegion() const;
+    
+        //- a list of points which have not yet been resolved
+        const labelList& unresolvedPoints() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

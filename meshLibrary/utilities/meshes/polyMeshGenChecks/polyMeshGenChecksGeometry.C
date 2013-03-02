@@ -119,7 +119,7 @@ bool checkClosedCells
 {
     // Check that all cells labels are valid
     const cellListPMG& cells = mesh.cells();
-	const label nFaces = mesh.faces().size();
+    const label nFaces = mesh.faces().size();
 
     label nErrorClosed = 0;
 
@@ -175,9 +175,9 @@ bool checkClosedCells
         sumClosed[own[faceI]] += areas[faceI];
         sumMagClosed[own[faceI]] += mag(areas[faceI]);
     
-		if( nei[faceI] == -1 )
-			continue;
-		
+        if( nei[faceI] == -1 )
+            continue;
+        
         // Subtract from neighbour
         sumClosed[nei[faceI]] -= areas[faceI];
         sumMagClosed[nei[faceI]] += mag(areas[faceI]);
@@ -619,7 +619,7 @@ bool checkFaceDotProduct
 
     const labelList& own = mesh.owner();
     const labelList& nei = mesh.neighbour();
-	const label nInternalFaces = mesh.nInternalFaces();
+    const label nInternalFaces = mesh.nInternalFaces();
 
     // Severe nonorthogonality threshold
     const scalar severeNonorthogonalityThreshold =
@@ -868,15 +868,15 @@ bool checkFacePyramids
     # pragma omp parallel for schedule(guided) reduction(+ : nErrorPyrs)
     forAll(faces, faceI)
     {
-		if( changedFacePtr && !(*changedFacePtr)[faceI] )
-			continue;
-		
+        if( changedFacePtr && !(*changedFacePtr)[faceI] )
+            continue;
+        
         // Create the owner pyramid - it will have negative volume
         const scalar pyrVol = pyramidPointFaceRef
-		(
-			faces[faceI],
-			ctrs[owner[faceI]]
-		).mag(points);
+        (
+            faces[faceI],
+            ctrs[owner[faceI]]
+        ).mag(points);
         
         bool badFace(false);
 
@@ -1026,7 +1026,7 @@ bool checkFaceSkewness
     //- larger than the face area vector
     const labelList& own = mesh.owner();
     const labelList& nei = mesh.neighbour();
-	const label nInternalFaces = mesh.nInternalFaces();
+    const label nInternalFaces = mesh.nInternalFaces();
     const vectorField& centres = mesh.addressingData().cellCentres();
     const vectorField& fCentres = mesh.addressingData().faceCentres();
 
@@ -1264,7 +1264,7 @@ bool checkFaceUniformity
 
     const labelList& owner = mesh.owner();
     const labelList& neighbour = mesh.neighbour();
-	const label nInternalFaces = mesh.nInternalFaces();
+    const label nInternalFaces = mesh.nInternalFaces();
 
     scalar maxUniformity = 0.0;
     scalar minUniformity = VGREAT;
@@ -1568,7 +1568,7 @@ bool checkFaceFlatness
     const bool report,
     const scalar warnFlatness,
     labelHashSet* setPtr,
-	const boolList* changedFacePtr
+    const boolList* changedFacePtr
 )
 {
     if( warnFlatness < 0 || warnFlatness > 1 )

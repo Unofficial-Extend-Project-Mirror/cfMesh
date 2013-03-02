@@ -523,7 +523,7 @@ class groupingOp
 
 void checkCellConnectionsOverFaces::findCellGroups()
 {
-	Info << "Checking cell connections" << endl;
+    Info << "Checking cell connections" << endl;
     
     //mesh_.write();
     //returnReduce(1, sumOp<label>());
@@ -532,11 +532,11 @@ void checkCellConnectionsOverFaces::findCellGroups()
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
-	
-	labelListPMG front, communicationFaces;
+    
+    labelListPMG front, communicationFaces;
     label chunkI(0), nChunks, chunkSize;
     VRWGraph neighbouringGroups;
-	
+    
     # pragma omp parallel if( cells.size() > 1000 ) \
     private(front, communicationFaces)
     {
@@ -829,8 +829,8 @@ void checkCellConnectionsOverFaces::findCellGroups()
     
     nGroups_ = Foam::max(globalGroupLabel_) + 1;
     reduce(nGroups_, maxOp<label>());
-	
-	Info << "Finished checking cell connections" << endl;
+    
+    Info << "Finished checking cell connections" << endl;
 }
 
 // * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //

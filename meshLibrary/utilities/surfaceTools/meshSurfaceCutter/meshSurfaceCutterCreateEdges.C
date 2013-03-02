@@ -41,9 +41,9 @@ void meshSurfaceCutter::createEdges
     labelListList& faceEdges
 ) const
 {
-	const pointFieldPMG& points = mesh_.points();
-	const faceListPMG& faces = mesh_.faces();
-	
+    const pointFieldPMG& points = mesh_.points();
+    const faceListPMG& faces = mesh_.faces();
+    
     //- set sizes of lists
     faceEdges.setSize(faces.size());
     //- create point faces addressing

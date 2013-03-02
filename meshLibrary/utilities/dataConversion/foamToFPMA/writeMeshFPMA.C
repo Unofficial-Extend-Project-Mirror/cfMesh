@@ -46,36 +46,36 @@ namespace Foam
 
 void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
 {
-	const Time& time = mesh.returnTime();
-	
+    const Time& time = mesh.returnTime();
+    
     const word postProcDir = "FPMA";
 
     fileName postProcPath = time.path()/postProcDir;
 
-	if( !Foam::isDir(postProcPath) )
-	{
-		mkDir(postProcPath);
-	}
+    if( !Foam::isDir(postProcPath) )
+    {
+        mkDir(postProcPath);
+    }
 
-	// Open the Case file
-	const fileName fpmaFileName = fName + ".fpma";
-	
-	Info << "Writting mesh into " << fpmaFileName << endl;
+    // Open the Case file
+    const fileName fpmaFileName = fName + ".fpma";
+    
+    Info << "Writting mesh into " << fpmaFileName << endl;
 
-/*	OFstream fpmaGeometryFile
-	(
-		postProcPath/fpmaFileName,
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream fpmaGeometryFile
+    (
+        postProcPath/fpmaFileName,
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
     
-	OFstream fpmaGeometryFile(postProcPath/fpmaFileName);
-	
+    OFstream fpmaGeometryFile(postProcPath/fpmaFileName);
+    
     // Construct the EnSight mesh
     fpmaMesh Mesh(mesh);
-	Mesh.write(fpmaGeometryFile);
+    Mesh.write(fpmaGeometryFile);
 }
 
 void createFIRESelections(polyMeshGen& mesh)

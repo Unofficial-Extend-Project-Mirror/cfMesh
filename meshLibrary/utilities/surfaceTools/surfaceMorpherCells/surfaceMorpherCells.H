@@ -27,7 +27,7 @@ Class
 
 Description
     Changes the boundary of the mesh template, such that each boundary cell
-	has only one boundary face.
+    has only one boundary face.
 
 SourceFiles
     surfaceMorpherCells.C
@@ -53,49 +53,49 @@ namespace Foam
 class surfaceMorpherCells
 {
     // Private data
-		//- mesh modifier
-		polyMeshGen& mesh_;
+        //- mesh modifier
+        polyMeshGen& mesh_;
 
-		//- number of internal faces
+        //- number of internal faces
         label nIntFaces_;
-	
-		//- true for vertices which are at the boundary
+    
+        //- true for vertices which are at the boundary
         boolList boundaryVertex_;
-	
-		//- true for cells which are at the boundary
-		List<direction> cellFlags_;
-	
-		//- new boundary faces and owner cells
-		VRWGraph newBoundaryFaces_;
-		labelListPMG newBoundaryOwners_;
-		labelListPMG newBoundaryPatches_;
-	
-	// Private enumerators
-		enum cellTypes
-		{
-			NONE = 0,
-			BOUNDARY = 1,
-			CHANGED = 2
-		};
+    
+        //- true for cells which are at the boundary
+        List<direction> cellFlags_;
+    
+        //- new boundary faces and owner cells
+        VRWGraph newBoundaryFaces_;
+        labelListPMG newBoundaryOwners_;
+        labelListPMG newBoundaryPatches_;
+    
+    // Private enumerators
+        enum cellTypes
+        {
+            NONE = 0,
+            BOUNDARY = 1,
+            CHANGED = 2
+        };
 
     // Private member functions
         //- find surface vertices
         void findBoundaryVertices();
-		
-		//- find boundary cells
-		void findBoundaryCells();
-		
-		//- remove cells with all vertices at the boundary
-		bool removeCellsWithAllVerticesAtTheBoundary();
-		
-		//- morph boundary faces
+        
+        //- find boundary cells
+        void findBoundaryCells();
+        
+        //- remove cells with all vertices at the boundary
+        bool removeCellsWithAllVerticesAtTheBoundary();
+        
+        //- morph boundary faces
         bool morphBoundaryFaces();
-		
+        
         //- morph internal faces
-		bool morphInternalFaces();
-		
-		//- replace the boundary of the mesh with the newly created one
-		void replaceMeshBoundary();
+        bool morphInternalFaces();
+        
+        //- replace the boundary of the mesh with the newly created one
+        void replaceMeshBoundary();
 
         //- Disallow default bitwise copy construct
         surfaceMorpherCells(const surfaceMorpherCells&);

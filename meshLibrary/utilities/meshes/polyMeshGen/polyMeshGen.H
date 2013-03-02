@@ -50,29 +50,29 @@ class polyMeshGen
 public:
     
     // Constructors
-		//- Null constructor
-		polyMeshGen(const Time& t);
+        //- Null constructor
+        polyMeshGen(const Time& t);
 
-		//- Construct from components without the boundary
-		polyMeshGen
-		(
-			const Time& t,
-			const pointField& points,
-			const faceList& faces,
-			const cellList& cells
-		);
+        //- Construct from components without the boundary
+        polyMeshGen
+        (
+            const Time& t,
+            const pointField& points,
+            const faceList& faces,
+            const cellList& cells
+        );
 
-		//- Construct from components with the boundary
-		polyMeshGen
-		(
-			const Time& t,
-			const pointField& points,
-			const faceList& faces,
-			const cellList& cells,
-			const wordList& patchNames,
-			const labelList& patchStart,
-			const labelList& nFacesInPatch
-		);
+        //- Construct from components with the boundary
+        polyMeshGen
+        (
+            const Time& t,
+            const pointField& points,
+            const faceList& faces,
+            const cellList& cells,
+            const wordList& patchNames,
+            const labelList& patchStart,
+            const labelList& nFacesInPatch
+        );
         
     // Destructor
 

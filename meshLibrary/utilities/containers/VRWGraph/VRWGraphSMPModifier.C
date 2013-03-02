@@ -33,7 +33,7 @@ License
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
@@ -43,12 +43,12 @@ VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
 
 VRWGraphSMPModifier::~VRWGraphSMPModifier()
 {}
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
 {
-	const label nGraphs = graphParts.size();
+    const label nGraphs = graphParts.size();
     const label nRows = graphParts[0].size();
     forAll(graphParts, i)
     {
@@ -196,7 +196,7 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -222,7 +222,7 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -238,7 +238,7 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
     if( graph_.size() < 1000 )
         nThreads = 1;
     
-	DynList<label> nRows, nEntries;
+    DynList<label> nRows, nEntries;
     nRows.setSize(nThreads);
     nEntries.setSize(nThreads);
     
@@ -314,7 +314,7 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
 
 void VRWGraphSMPModifier::operator=(const VRWGraph& og)
 {
-	graph_.data_.setSize(og.data_.size());
+    graph_.data_.setSize(og.data_.size());
     graph_.rows_.setSize(og.rows_.size());
     
     # pragma omp parallel

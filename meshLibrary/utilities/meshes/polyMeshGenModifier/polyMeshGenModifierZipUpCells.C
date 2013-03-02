@@ -42,14 +42,14 @@ namespace Foam
 
 void polyMeshGenModifier::zipUpCells()
 {
-	this->clearOut();
-	
+    this->clearOut();
+    
     Info<< "Zipping up topologically open cells" << endl;
-	
-	const pointFieldPMG& points = mesh_.points();
-	const cellListPMG& cells = mesh_.cells();
-	
-	faceListPMG& faces = mesh_.faces_;
+    
+    const pointFieldPMG& points = mesh_.points();
+    const cellListPMG& cells = mesh_.cells();
+    
+    faceListPMG& faces = mesh_.faces_;
 
     // Algorithm:
     // Take the original mesh and visit all cells.  For every cell
@@ -78,34 +78,34 @@ void polyMeshGenModifier::zipUpCells()
     do
     {
         nChangedFacesInMesh = 0;
-		
+        
         //- calculate pointFaces addressing
         # ifdef DEBUG_ZIPUP
         Info << "Starting pointFaces addressing " << endl;
         # endif
 
-		List<direction> nUsage(points.size(), direction(0));
-		forAll(faces, fI)
-		{
-			const face& f = faces[fI];
-			forAll(f, pI)
-				++nUsage[f[pI]];
-		}
-		
-		VRWGraph pFaces(points.size());
-		forAll(nUsage, pI)
-			pFaces.setRowSize(pI, nUsage[pI]);
-		
-		nUsage = 0;
-		
-		forAll(faces, fI)
-		{
-			const face& f = faces[fI];
-			forAll(f, pI)
-				pFaces(f[pI], nUsage[f[pI]]++) = fI;
-		}
-		
-		nUsage.clear();
+        List<direction> nUsage(points.size(), direction(0));
+        forAll(faces, fI)
+        {
+            const face& f = faces[fI];
+            forAll(f, pI)
+                ++nUsage[f[pI]];
+        }
+        
+        VRWGraph pFaces(points.size());
+        forAll(nUsage, pI)
+            pFaces.setRowSize(pI, nUsage[pI]);
+        
+        nUsage = 0;
+        
+        forAll(faces, fI)
+        {
+            const face& f = faces[fI];
+            forAll(f, pI)
+                pFaces(f[pI], nUsage[f[pI]]++) = fI;
+        }
+        
+        nUsage.clear();
 
         # ifdef DEBUG_ZIPUP
         Info << "Starting zipping cells " << endl;
@@ -551,21 +551,21 @@ void polyMeshGenModifier::zipUpCells()
 
                 // In order to avoid edge-to-edge comparison, get faces using
                 // point-face addressing in two goes.
-				const label start = testEdge.start();
-				const label end = testEdge.end();
-				
-				labelList facesSharingEdge
-				(
-					pFaces.sizeOfRow(start) +
-					pFaces.sizeOfRow(end)
-				);
+                const label start = testEdge.start();
+                const label end = testEdge.end();
+                
+                labelList facesSharingEdge
+                (
+                    pFaces.sizeOfRow(start) +
+                    pFaces.sizeOfRow(end)
+                );
                 label nfse = 0;
-				
-				forAllRow(pFaces, start, pfI)
-					facesSharingEdge[nfse++] = pFaces(start, pfI);
-				
-				forAllRow(pFaces, end, pfI)
-					facesSharingEdge[nfse++] = pFaces(end, pfI);
+                
+                forAllRow(pFaces, start, pfI)
+                    facesSharingEdge[nfse++] = pFaces(start, pfI);
+                
+                forAllRow(pFaces, end, pfI)
+                    facesSharingEdge[nfse++] = pFaces(end, pfI);
 
                 forAll(facesSharingEdge, faceI)
                 {
@@ -709,13 +709,13 @@ void polyMeshGenModifier::zipUpCells()
                                     nNewFacePoints++;
                                 }
                             }
-							
-							forAll(newFace, pI)
-								pFaces.appendIfNotIn
-								(
-									newFace[pI],
-									currentFaceIndex
-								);
+                            
+                            forAll(newFace, pI)
+                                pFaces.appendIfNotIn
+                                (
+                                    newFace[pI],
+                                    currentFaceIndex
+                                );
 
 #                           ifdef DEBUG_ZIPUP
                             Info<< "oldFace: "

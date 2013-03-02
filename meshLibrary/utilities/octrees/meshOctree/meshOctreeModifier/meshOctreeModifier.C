@@ -45,7 +45,7 @@ meshOctreeModifier::meshOctreeModifier
     meshOctree& octree
 )
 :
-	octree_(octree)
+    octree_(octree)
 {}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

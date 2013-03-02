@@ -78,8 +78,8 @@ class extrudeLayer
     
         //- original point label
         labelListPMG origPointLabel_;
-	
-	// Private member functions
+    
+    // Private member functions
         //- duplicate faces which will be extruded
         void createDuplicateFrontFaces(const LongList<labelPair>&);
         
@@ -184,11 +184,11 @@ class extrudeLayer
         
         //- Disallow bitwise assignment
         void operator=(const extrudeLayer&);
-	
+    
     public:
-		
+        
         // Constructors
-	
+    
         //- Construct from mesh, extrusion faces, thickness and number of layers
         extrudeLayer
         (
@@ -196,11 +196,11 @@ class extrudeLayer
             const LongList<labelPair>& extrusionFront,
             const scalar thickness = -1.0
         );
-	
-	// Destructor
+    
+    // Destructor
         ~extrudeLayer();
-	
-	// Public member functions
+    
+    // Public member functions
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

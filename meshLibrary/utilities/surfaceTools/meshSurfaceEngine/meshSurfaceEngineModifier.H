@@ -44,14 +44,14 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-					Class meshSurfaceEngineModifier Declaration
+                    Class meshSurfaceEngineModifier Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshSurfaceEngineModifier
 {
     // Private data
         //- reference to the meshSurfaceEngine
-		meshSurfaceEngine& surfaceEngine_;
+        meshSurfaceEngine& surfaceEngine_;
 
         //- Disallow default bitwise copy construct
         meshSurfaceEngineModifier(const meshSurfaceEngineModifier&);
@@ -60,26 +60,26 @@ class meshSurfaceEngineModifier
         void operator=(const meshSurfaceEngineModifier&);
 
 public:
-	
+    
     // Constructors
 
         //- Construct from reference to meshSurfaceEngine
         meshSurfaceEngineModifier(meshSurfaceEngine& surfaceEngine);
 
-		//- Construct from const reference to meshSurfaceEngine
-		meshSurfaceEngineModifier(const meshSurfaceEngine& surfaceEngine);
+        //- Construct from const reference to meshSurfaceEngine
+        meshSurfaceEngineModifier(const meshSurfaceEngine& surfaceEngine);
 
     // Destructor
 
         ~meshSurfaceEngineModifier();
 
     // Member Functions
-		
-		//- relocate the selected boundary vertex
-		void moveBoundaryVertexNoUpdate(const label bpI, const point& newP);
-		
+        
+        //- relocate the selected boundary vertex
+        void moveBoundaryVertexNoUpdate(const label bpI, const point& newP);
+        
         //- relocate the selected boundary vertex and update geometry data
-		void moveBoundaryVertex(const label bpI, const point& newP);
+        void moveBoundaryVertex(const label bpI, const point& newP);
         
         //- update normals of boundary vertices at processor boundaries
         inline void updateVertexNormals()

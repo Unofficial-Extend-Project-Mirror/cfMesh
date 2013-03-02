@@ -47,15 +47,15 @@ class meshOctree;
  
 void writeOctreeEnsight
 (
-	const meshOctree& octree,
-	const word& fName
+    const meshOctree& octree,
+    const word& fName
 );
 
 void writeOctreeEnsight
 (
-	const meshOctree& octree,
-	const word& fName,
-	const direction cubeType
+    const meshOctree& octree,
+    const word& fName,
+    const direction cubeType
 );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

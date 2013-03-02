@@ -38,7 +38,7 @@ namespace Foam
 // Construct from meshSurfaceEngine. Holds reference!
 meshSurfacePartitioner::meshSurfacePartitioner
 (
-	const meshSurfaceEngine& meshSurface
+    const meshSurfaceEngine& meshSurface
 )
 :
     meshSurface_(meshSurface),

@@ -362,7 +362,7 @@ void meshOctree::findLeavesForCubeVertex
 
     for(label i=0;i<8;++i)
     {
-    	positions[i] = cc + vrtLeavesPos_[vrtI][i];
+        positions[i] = cc + vrtLeavesPos_[vrtI][i];
     }
 
     forAll(positions, posI)

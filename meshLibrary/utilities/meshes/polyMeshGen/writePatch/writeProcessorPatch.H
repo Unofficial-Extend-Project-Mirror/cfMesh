@@ -77,36 +77,36 @@ public:
         virtual autoPtr<writePatchBase> clone() const
         {
             return autoPtr<writePatchBase>
-			(
-				new writeProcessorPatch
-				(
-					patchName(),
+            (
+                new writeProcessorPatch
+                (
+                    patchName(),
                     patchType(),
                     patchSize(),
                     patchStart(),
                     myProcNo_,
                     neighbProcNo_
-				)
-			);
+                )
+            );
         }
 
         virtual autoPtr<writePatchBase> clone
-		(
-			const writeProcessorPatch& pp
-		) const
+        (
+            const writeProcessorPatch& pp
+        ) const
         {
             return autoPtr<writePatchBase>
-			(
-				new writeProcessorPatch
-				(
-					pp.patchName(),
+            (
+                new writeProcessorPatch
+                (
+                    pp.patchName(),
                     pp.patchType(),
                     pp.patchSize(),
                     pp.patchStart(),
                     pp.myProcNo_,
                     pp.neighbProcNo_
-				)
-			);
+                )
+            );
         }
         
     // Member functions

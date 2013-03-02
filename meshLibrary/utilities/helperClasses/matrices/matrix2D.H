@@ -42,7 +42,7 @@ SourceFiles
 
 namespace Foam
 {
-	
+    
 /*---------------------------------------------------------------------------*\
                            Class matrix2D Declaration
 \*---------------------------------------------------------------------------*/
@@ -52,42 +52,42 @@ class matrix2D
 {
     // Private members
         mutable scalar det_;
-		mutable bool calculatedDet_;
-	
+        mutable bool calculatedDet_;
+    
     // Private member functions
-		//- calculate matrix determinant
-		inline void calculateDeterminant() const;
-	
+        //- calculate matrix determinant
+        inline void calculateDeterminant() const;
+    
 public:
 
-	// Constructors
-		//- Null constructor
-		explicit inline matrix2D();
+    // Constructors
+        //- Null constructor
+        explicit inline matrix2D();
 
-		//- Copy constructor
-		inline matrix2D(const matrix2D&);
+        //- Copy constructor
+        inline matrix2D(const matrix2D&);
 
-	// Destructor
-		inline ~matrix2D();
+    // Destructor
+        inline ~matrix2D();
 
-	// Member functions
-		//- return matrix determinant
-		inline scalar determinant() const;
+    // Member functions
+        //- return matrix determinant
+        inline scalar determinant() const;
 
-		//- return inverse matrix
-		inline matrix2D inverse() const;
+        //- return inverse matrix
+        inline matrix2D inverse() const;
 
-		//- find the solution of the system with the given rhs
-		inline FixedList<scalar, 2> solve
-		(
-			const FixedList<scalar, 2>& source
-		) const;
+        //- find the solution of the system with the given rhs
+        inline FixedList<scalar, 2> solve
+        (
+            const FixedList<scalar, 2>& source
+        ) const;
 
-		//- return the first component of the solution vector
-		inline scalar solveFirst(const FixedList<scalar, 2>& source) const;
-		
-		//- return the second component of the solution vector
-		inline scalar solveSecond(const FixedList<scalar, 2>& source) const;
+        //- return the first component of the solution vector
+        inline scalar solveFirst(const FixedList<scalar, 2>& source) const;
+        
+        //- return the second component of the solution vector
+        inline scalar solveSecond(const FixedList<scalar, 2>& source) const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

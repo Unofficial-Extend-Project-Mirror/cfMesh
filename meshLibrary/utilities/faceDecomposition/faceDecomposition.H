@@ -49,18 +49,18 @@ namespace Foam
 class faceDecomposition
 {
     // private data
-		const face& f_;
-	
-		const pointField& points_;
+        const face& f_;
+    
+        const pointField& points_;
 
     // private member functions
-		//- find concave vertex and return its position
-		//- in the face
-		label concaveVertex() const;
-	
-		//- decomposes the face into triangle starting from
-		//- the given vertex
-	    faceList decomposeFaceIntoTriangles(const label cv) const;
+        //- find concave vertex and return its position
+        //- in the face
+        label concaveVertex() const;
+    
+        //- decomposes the face into triangle starting from
+        //- the given vertex
+        faceList decomposeFaceIntoTriangles(const label cv) const;
 
         //- disallows bitwise construct
         void operator=(const faceDecomposition&);
@@ -75,27 +75,27 @@ public:
         //- construct components
         faceDecomposition
         (
-			const face&,
-			const pointField&
+            const face&,
+            const pointField&
         );
 
         //- Destructor
         ~faceDecomposition();
 
     // Member functions
-		//- check if the face is convex
-		bool isFaceConvex() const;
+        //- check if the face is convex
+        bool isFaceConvex() const;
 
-		//- check if the face is planar
-		bool isFacePlanar() const;
-		bool isFacePlanar(const scalar tol) const;
+        //- check if the face is planar
+        bool isFacePlanar() const;
+        bool isFacePlanar(const scalar tol) const;
 
-		//- decompose face into triangles
-		faceList decomposeFaceIntoTriangles() const;
-		
-		//- decompose face into the minimal number
-		//- of convex faces
-		faceList decomposeFace() const;
+        //- decompose face into triangles
+        faceList decomposeFaceIntoTriangles() const;
+        
+        //- decompose face into the minimal number
+        //- of convex faces
+        faceList decomposeFace() const;
 };
 
 

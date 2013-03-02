@@ -43,7 +43,7 @@ SourceFiles
 
 namespace Foam
 {
-	
+    
 class IOdictionary;
 
 /*---------------------------------------------------------------------------*\
@@ -55,28 +55,28 @@ class cartesianMeshExtractor
     // Private data
         //- reference to the octree addressing
         meshOctreeAddressing octreeCheck_;
-	
-		//- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- decompose split hex cells
-		bool decomposeSplitHexes_;
-	
-		//- cell label for a given leaf
-		labelList* leafCellLabelPtr_;
+    
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+    
+        //- decompose split hex cells
+        bool decomposeSplitHexes_;
+    
+        //- cell label for a given leaf
+        labelList* leafCellLabelPtr_;
 
     // Private member functions
-		//- delete all freestore data
-		void clearOut();
+        //- delete all freestore data
+        void clearOut();
 
         //- create vertices and pointLeaves addressing
         void createPointsAndAddressing();
 
         //- create mesh data
         void createPolyMesh();
-		
-		//- decompose split hexes into pyramids and tets
-		void decomposeSplitHexesIntoTetsAndPyramids();
+        
+        //- decompose split hexes into pyramids and tets
+        void decomposeSplitHexesIntoTetsAndPyramids();
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -93,8 +93,8 @@ public:
         cartesianMeshExtractor
         (
             meshOctree& octree,
-			const IOdictionary& meshDict,
-			polyMeshGen& mesh
+            const IOdictionary& meshDict,
+            polyMeshGen& mesh
         );
 
     // Destructor
@@ -104,11 +104,11 @@ public:
 
     // Member Functions
 
-		//- decompose split hexes into standard cells
-		void decomposeSplitHexes();
-		
-		//- create the mesh with the above options
-		void createMesh();
+        //- decompose split hexes into standard cells
+        void decomposeSplitHexes();
+        
+        //- create the mesh with the above options
+        void createMesh();
 };
 
 

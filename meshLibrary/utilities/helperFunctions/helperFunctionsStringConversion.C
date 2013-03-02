@@ -45,12 +45,12 @@ namespace help
 
 scalar textToScalar(const word& w)
 {
-	std::stringstream ss;
-	ss << w;
-	
-	double s;
-	ss >> s;
-	return s;
+    std::stringstream ss;
+    ss << w;
+    
+    double s;
+    ss >> s;
+    return s;
 }
 
 //- convert the text to label
@@ -61,18 +61,18 @@ label textToLabel(const word& w)
 
 word scalarToText(const scalar s)
 {
-	std::ostringstream ss;
-	ss << s;
-	
-	return ss.str();
+    std::ostringstream ss;
+    ss << s;
+    
+    return ss.str();
 }
 
 word labelToText(const label l)
 {
     std::ostringstream ss;
-	ss << l;
-	
-	return ss.str();
+    ss << l;
+    
+    return ss.str();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

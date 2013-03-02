@@ -59,63 +59,63 @@ namespace Foam
 
 class meshGenQtGeneralSettings
 :
-	public QWidget
+    public QWidget
 {
-		Q_OBJECT
-	
-	// Private data
-	
-		//- mesh generation dictionary
-		meshGenGUI& meshGui_;
-	
-		//- main window data
-		QPushButton* openButtonPtr_;
-		QLineEdit* surfaceFileEditPtr_;
-		QLineEdit* maxCellSizeEditPtr_;
-	
-		QCheckBox* bndCellSizeCheckPtr_;
-		QLineEdit* bndCellSizeEditPtr_;
-	
-		QCheckBox* autoRefineCheckPtr_;
-		QLineEdit* autoRefineCellSizeEditPtr_;
-		
-		QCheckBox* keepBndCellsCheckPtr_;
-		QCheckBox* gluedMeshCheckPtr_;
-	
+        Q_OBJECT
+    
+    // Private data
+    
+        //- mesh generation dictionary
+        meshGenGUI& meshGui_;
+    
+        //- main window data
+        QPushButton* openButtonPtr_;
+        QLineEdit* surfaceFileEditPtr_;
+        QLineEdit* maxCellSizeEditPtr_;
+    
+        QCheckBox* bndCellSizeCheckPtr_;
+        QLineEdit* bndCellSizeEditPtr_;
+    
+        QCheckBox* autoRefineCheckPtr_;
+        QLineEdit* autoRefineCellSizeEditPtr_;
+        
+        QCheckBox* keepBndCellsCheckPtr_;
+        QCheckBox* gluedMeshCheckPtr_;
+    
 private slots:
-	
-	// Private callback functions
+    
+    // Private callback functions
 
-		//- open surface file
-		void openSurfaceFile();
-		
-		//- set max cell size
-		void setMaxCellSize(const QString&);
+        //- open surface file
+        void openSurfaceFile();
+        
+        //- set max cell size
+        void setMaxCellSize(const QString&);
 
-		//- set activity of bndCellSize
-		void activateBndCellSize();
+        //- set activity of bndCellSize
+        void activateBndCellSize();
 
-		//- set bndCellSize
-		void setBndCellSize(const QString&);
+        //- set bndCellSize
+        void setBndCellSize(const QString&);
 
-		//- set activity of auto refinement
-		void activateMinCellSize();
+        //- set activity of auto refinement
+        void activateMinCellSize();
 
-		//- set min size in auto refinement
-		void setMinCellSize(const QString&);
+        //- set min size in auto refinement
+        void setMinCellSize(const QString&);
 
-		//- set activity of keepCellsIntersectingBoundary
-		void activateKeepCellsIntersectingBoundary();
-		
-		//- set activity of glued mesh check
-		void activateCheckForGluedMesh();
-		
+        //- set activity of keepCellsIntersectingBoundary
+        void activateKeepCellsIntersectingBoundary();
+        
+        //- set activity of glued mesh check
+        void activateCheckForGluedMesh();
+        
 private:
-	
-	// Private member functions
-	
-		//- create window
-		void createWindow();
+    
+    // Private member functions
+    
+        //- create window
+        void createWindow();
 
         //- Disallow default bitwise copy construct
         meshGenQtGeneralSettings(const meshGenQtGeneralSettings&);

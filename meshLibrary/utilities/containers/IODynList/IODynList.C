@@ -41,7 +41,7 @@ template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList(const IOobject& io)
 :
     regIOobject(io),
-	DynList<T, IndexType>()
+    DynList<T, IndexType>()
 {
     if
     (
@@ -58,8 +58,8 @@ IODynList<T, IndexType>::IODynList(const IOobject& io)
 template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList
 (
-	const IOobject& io,
-	const IndexType size
+    const IOobject& io,
+    const IndexType size
 )
 :
     regIOobject(io),
@@ -70,8 +70,8 @@ IODynList<T, IndexType>::IODynList
 template<class T, class IndexType>
 IODynList<T, IndexType>::IODynList
 (
-	const IOobject& io,
-	const DynList<T, IndexType>& list
+    const IOobject& io,
+    const DynList<T, IndexType>& list
 )
 :
     regIOobject(io),
@@ -82,15 +82,15 @@ IODynList<T, IndexType>::IODynList
         readStream(typeName) >> *this;
         close();
     }
-	
-	DynList<T, IndexType>::operator=(list);
+    
+    DynList<T, IndexType>::operator=(list);
 }
 
 
 template<class T, class IndexType>
 void IODynList<T, IndexType>::operator=
 (
-	const IODynList<T, IndexType>& rhs
+    const IODynList<T, IndexType>& rhs
 )
 {
     DynList<T, IndexType>::operator=(rhs);
@@ -100,7 +100,7 @@ void IODynList<T, IndexType>::operator=
 template<class T, class IndexType>
 void IODynList<T, IndexType>::operator=
 (
-	const DynList<T, IndexType>& rhs
+    const DynList<T, IndexType>& rhs
 )
 {
     DynList<T, IndexType>::operator=(rhs);

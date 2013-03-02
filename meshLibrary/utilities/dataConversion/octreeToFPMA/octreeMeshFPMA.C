@@ -41,7 +41,7 @@ Foam::octreeMeshFPMA::octreeMeshFPMA
     const dictionary& dict
 )
 :
-	addressing_(octree, dict, false)
+    addressing_(octree, dict, false)
 {
     addressing_.boxType();
     for(label leafI=0;leafI<octree.numberOfLeaves();++leafI)
@@ -62,15 +62,15 @@ void Foam::octreeMeshFPMA::writePoints
 ) const
 {
     const pointField& points = addressing_.octreePoints();
-	fpmaGeometryFile << points.size() << nl;
-	
-	forAll(points, pointI)
-	{
-		const point& p = points[pointI];
-		fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
-	
-	fpmaGeometryFile << nl;
+    fpmaGeometryFile << points.size() << nl;
+    
+    forAll(points, pointI)
+    {
+        const point& p = points[pointI];
+        fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
+    }
+    
+    fpmaGeometryFile << nl;
 }
 
 void octreeMeshFPMA::writeCells
@@ -78,16 +78,16 @@ void octreeMeshFPMA::writeCells
     OFstream& fpmaGeometryFile
 ) const
 {
-	const VRWGraph& cells = addressing_.leafFaces();
-	
-	fpmaGeometryFile << cells.size() << nl;
-	forAll(cells, cellI)
-	{
-		fpmaGeometryFile << cells.sizeOfRow(cellI);
-		forAllRow(cells, cellI, fI)
-			fpmaGeometryFile << ' ' << cells(cellI, fI);
-		fpmaGeometryFile << nl;
-	}
+    const VRWGraph& cells = addressing_.leafFaces();
+    
+    fpmaGeometryFile << cells.size() << nl;
+    forAll(cells, cellI)
+    {
+        fpmaGeometryFile << cells.sizeOfRow(cellI);
+        forAllRow(cells, cellI, fI)
+            fpmaGeometryFile << ' ' << cells(cellI, fI);
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::octreeMeshFPMA::writeFaces
@@ -95,25 +95,25 @@ void Foam::octreeMeshFPMA::writeFaces
     OFstream& fpmaGeometryFile
 ) const
 {
-	const VRWGraph& faces = addressing_.octreeFaces();
-	fpmaGeometryFile << faces.size() << nl;
-	forAll(faces, faceI)
-	{
-		const constRow f = faces[faceI];
-		
-		fpmaGeometryFile << f.size();
-		forAllReverse(f, pI)
-			fpmaGeometryFile << ' ' << f[pI];
-		fpmaGeometryFile << nl;
-	}
+    const VRWGraph& faces = addressing_.octreeFaces();
+    fpmaGeometryFile << faces.size() << nl;
+    forAll(faces, faceI)
+    {
+        const constRow f = faces[faceI];
+        
+        fpmaGeometryFile << f.size();
+        forAllReverse(f, pI)
+            fpmaGeometryFile << ' ' << f[pI];
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::octreeMeshFPMA::writeSelections
 (
-	Foam::OFstream& fpmaGeometryFile
+    Foam::OFstream& fpmaGeometryFile
 ) const
 {
-	fpmaGeometryFile << 4 << nl;
+    fpmaGeometryFile << 4 << nl;
     //- create outside selection
     fpmaGeometryFile << "Outside" << nl << 2 << nl;
     labelListPMG selBoxes;
@@ -176,13 +176,13 @@ void octreeMeshFPMA::write
     OFstream& fpmaGeometryFile
 ) const
 {
-	writePoints(fpmaGeometryFile);
-	
-	writeFaces(fpmaGeometryFile);
+    writePoints(fpmaGeometryFile);
+    
+    writeFaces(fpmaGeometryFile);
 
-	writeCells(fpmaGeometryFile);
+    writeCells(fpmaGeometryFile);
 
-	writeSelections(fpmaGeometryFile);
+    writeSelections(fpmaGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

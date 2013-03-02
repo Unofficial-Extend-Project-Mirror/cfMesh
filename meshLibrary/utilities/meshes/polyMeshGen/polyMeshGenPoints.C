@@ -39,18 +39,18 @@ namespace Foam
 //- Null constructor
 polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
 :
-	runTime_(runTime),
-	points_
-	(
-		IOobject
-		(
-			"points",
-			runTime.constant(),
-			"polyMesh",
-			runTime
-		),
-		0
-	),
+    runTime_(runTime),
+    points_
+    (
+        IOobject
+        (
+            "points",
+            runTime.constant(),
+            "polyMesh",
+            runTime
+        ),
+        0
+    ),
     pointSubsets_()
 {
 }
@@ -58,26 +58,26 @@ polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
 //- Construct from time and points
 polyMeshGenPoints::polyMeshGenPoints
 (
-	const Time& runTime,
-	const pointField& points
+    const Time& runTime,
+    const pointField& points
 )
 :
-	runTime_(runTime),
-	points_
-	(
-		IOobject
-		(
-			"points",
-			runTime.constant(),
-			"polyMesh",
-			runTime
-		),
-		points
-	),
+    runTime_(runTime),
+    points_
+    (
+        IOobject
+        (
+            "points",
+            runTime.constant(),
+            "polyMesh",
+            runTime
+        ),
+        points
+    ),
     pointSubsets_()
 {
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Destructor
 polyMeshGenPoints::~polyMeshGenPoints()
@@ -147,18 +147,18 @@ label polyMeshGenPoints::pointSubsetIndex(const word& subsetName) const
 
 void polyMeshGenPoints::read()
 {
-	pointIOField pts
-	(
-		IOobject
-		(
-			"points",
-			runTime_.constant(),
-			"polyMesh",
-			runTime_,
-			IOobject::MUST_READ
-		)
-	);
-	points_ = pts;
+    pointIOField pts
+    (
+        IOobject
+        (
+            "points",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::MUST_READ
+        )
+    );
+    points_ = pts;
     
     //- read point subsets
     IOobjectList allSets

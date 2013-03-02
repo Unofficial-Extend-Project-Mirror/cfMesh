@@ -437,7 +437,7 @@ void reverseAddressingSMP
             if( it != data.end() )
             {
                 const DynList<labelPair, 64>& entries = it->second;
-	  
+      
                 forAll(entries, j)
                     ++nAppearances[entries[j].first()];
             }
@@ -464,7 +464,7 @@ void reverseAddressingSMP
             if( it != data.end() )
             {
                 const DynList<labelPair, 64>& entries = it->second;
-	  
+      
                 forAll(entries, j)
                 {
                     const label entryI = entries[j].first();
@@ -502,7 +502,7 @@ void reverseAddressingSMP
             if( it != data.end() )
             {
                 const DynList<labelPair, 64>& entries = it->second;
-	  
+      
                 forAll(entries, j)
                 {
                     const label entryI = entries[j].first();

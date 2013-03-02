@@ -53,33 +53,33 @@ class tessellationElement
 : public partTet
 {
     // Private data
-	
-		//- neighbours of the given element
-		label neighbours_[4];
-	
+    
+        //- neighbours of the given element
+        label neighbours_[4];
+    
 public:
 
     // Constructors
 
         //- Construct null
-		tessellationElement();
+        tessellationElement();
 
-		//- Construct from nodes
+        //- Construct from nodes
         tessellationElement
-		(
-			const label a,
-			const label b,
-			const label c,
-			const label d
-		);
+        (
+            const label a,
+            const label b,
+            const label c,
+            const label d
+        );
 
     // Destructor
 
         ~tessellationElement();
 
-	// Enumerations and public members
+    // Enumerations and public members
 
-		//- types of influence a node can have on an tessellationElement
+        //- types of influence a node can have on an tessellationElement
         enum typesOfInfluence
         {
             NONE = 0,
@@ -92,17 +92,17 @@ public:
         direction influence_;
 
     // Member functions
-		//- swap node with another one
-		inline void setNode(const direction, const label);
+        //- swap node with another one
+        inline void setNode(const direction, const label);
 
-		//- Return index of a neighbour in the given direction
+        //- Return index of a neighbour in the given direction
         inline label neighbour(const direction) const;
-		
-		//- set neighbour in a given direction
-		inline void setNeighbour(const direction, const label);
-		
-		//- return face in the given direction
-		inline triFace face(const direction) const;
+        
+        //- set neighbour in a given direction
+        inline void setNeighbour(const direction, const label);
+        
+        //- return face in the given direction
+        inline triFace face(const direction) const;
 
         //- Return the influence the point r has on this tessellationElement.
         //  Result is the difference between the sqr of the radius of
@@ -110,15 +110,15 @@ public:
         //  centre of the circumcircle.  The result is positive if the point
         //  is inside the circle (i.e. influences it).
         scalar influencedBy
-		(
-			const LongList<point>& points,
-			const point& r
-		) const;
+        (
+            const LongList<point>& points,
+            const point& r
+        ) const;
 
-		// Ostream Operator
+        // Ostream Operator
         friend Ostream& operator<<(Ostream&, const tessellationElement&);
-		
-		inline void operator=(const tessellationElement&);
+        
+        inline void operator=(const tessellationElement&);
 };
 
 

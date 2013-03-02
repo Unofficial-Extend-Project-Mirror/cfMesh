@@ -38,107 +38,107 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::createPoints()
 {
-	const LongList<point>& tetPoints = tetCreator_.tetPoints();
-	const LongList<partTet>& tets = tetCreator_.tets();
-	
-	pointFieldPMG& points = mesh_.points();
-	points.setSize(tets.size());
-	
-	# ifdef DEBUGVoronoi
-	Info << "Number of tets " << tets.size() << endl;
-	# endif
-	
-	forAll(tets, tetI)
-	{
-		points[tetI] = tets[tetI].centroid(tetPoints);
-		
-		# ifdef DEBUGVoronoi
-		Info << "Point " << tetI << " has coordinates "
-			<< points[tetI] << endl;
-		Info << "Tet of origin " << tetI << " has nodes "
-			<< tets[tetI] << endl;
-		# endif
-	}
+    const LongList<point>& tetPoints = tetCreator_.tetPoints();
+    const LongList<partTet>& tets = tetCreator_.tets();
+    
+    pointFieldPMG& points = mesh_.points();
+    points.setSize(tets.size());
+    
+    # ifdef DEBUGVoronoi
+    Info << "Number of tets " << tets.size() << endl;
+    # endif
+    
+    forAll(tets, tetI)
+    {
+        points[tetI] = tets[tetI].centroid(tetPoints);
+        
+        # ifdef DEBUGVoronoi
+        Info << "Point " << tetI << " has coordinates "
+            << points[tetI] << endl;
+        Info << "Tet of origin " << tetI << " has nodes "
+            << tets[tetI] << endl;
+        # endif
+    }
 }
 
 void voronoiMeshExtractor::createPolyMesh()
 {
-	const VRWGraph& pointEdges = this->pointEdges();
-	const VRWGraph& edgeTets = this->edgeTets();
-	const boolList& boundaryEdge = this->boundaryEdge();
-	const LongList<edge>& edges = this->edges();
-	const LongList<partTet>& tets = tetCreator_.tets();
-	
-	polyMeshGenModifierAddCellByCell meshModifier(mesh_);
-	
-	forAll(pointEdges, pointI)
-	{
-		bool create(true);
-		forAllRow(pointEdges, pointI, eI)
-			if( boundaryEdge[pointEdges(pointI, eI)] )
-			{
-				create = false;
-				break;
-			}
-		
-		if( !create || (pointEdges.sizeOfRow(pointI) == 0) )
-			continue;
-		
-		faceList cellFaces(pointEdges.sizeOfRow(pointI));
-		
-		forAllRow(pointEdges, pointI, faceI)
-		{
-			const label edgeI = pointEdges(pointI, faceI);
-			
-			//- check if the face orientation needs to be changed
-			bool flip(false);
-			const partTet& tet = tets[edgeTets(edgeI, 0)];
-			const partTet& tet1 = tets[edgeTets(edgeI, 1)];
-			tessellationElement tEl(tet[0], tet[1], tet[2], tet[3]);
-			for(label i=0;i<4;++i)
-			{
-				const triFace tf = tEl.face(i);
-				label nShared(0);
-				for(label j=0;j<3;++j)
-					if( tet1.whichPosition(tf[j]) != -1 )
-						++nShared;
-				
-				if( nShared == 3 )
-				{
-					const edge& e = edges[edgeI];
-					
-					const edgeList tEdges = tf.edges();
-					forAll(tEdges, teI)
-						if( tEdges[teI] == e )
-						{
-							if( pointI == tEdges[teI].start() )
-								flip = true;
-							
-							break;
-						}
-					
-					break;
-				}
-			}
-			
-			face& f = cellFaces[faceI];
-			f.setSize(edgeTets.sizeOfRow(edgeI));
-			
-			//- fill the faces with the node labels
-			forAll(f, pI)
-				f[pI] = edgeTets(edgeI, pI);
-			
-			if( flip )
-				f = f.reverseFace();
-		}
-		
-		meshModifier.addCell(cellFaces);
-	}
+    const VRWGraph& pointEdges = this->pointEdges();
+    const VRWGraph& edgeTets = this->edgeTets();
+    const boolList& boundaryEdge = this->boundaryEdge();
+    const LongList<edge>& edges = this->edges();
+    const LongList<partTet>& tets = tetCreator_.tets();
+    
+    polyMeshGenModifierAddCellByCell meshModifier(mesh_);
+    
+    forAll(pointEdges, pointI)
+    {
+        bool create(true);
+        forAllRow(pointEdges, pointI, eI)
+            if( boundaryEdge[pointEdges(pointI, eI)] )
+            {
+                create = false;
+                break;
+            }
+        
+        if( !create || (pointEdges.sizeOfRow(pointI) == 0) )
+            continue;
+        
+        faceList cellFaces(pointEdges.sizeOfRow(pointI));
+        
+        forAllRow(pointEdges, pointI, faceI)
+        {
+            const label edgeI = pointEdges(pointI, faceI);
+            
+            //- check if the face orientation needs to be changed
+            bool flip(false);
+            const partTet& tet = tets[edgeTets(edgeI, 0)];
+            const partTet& tet1 = tets[edgeTets(edgeI, 1)];
+            tessellationElement tEl(tet[0], tet[1], tet[2], tet[3]);
+            for(label i=0;i<4;++i)
+            {
+                const triFace tf = tEl.face(i);
+                label nShared(0);
+                for(label j=0;j<3;++j)
+                    if( tet1.whichPosition(tf[j]) != -1 )
+                        ++nShared;
+                
+                if( nShared == 3 )
+                {
+                    const edge& e = edges[edgeI];
+                    
+                    const edgeList tEdges = tf.edges();
+                    forAll(tEdges, teI)
+                        if( tEdges[teI] == e )
+                        {
+                            if( pointI == tEdges[teI].start() )
+                                flip = true;
+                            
+                            break;
+                        }
+                    
+                    break;
+                }
+            }
+            
+            face& f = cellFaces[faceI];
+            f.setSize(edgeTets.sizeOfRow(edgeI));
+            
+            //- fill the faces with the node labels
+            forAll(f, pI)
+                f[pI] = edgeTets(edgeI, pI);
+            
+            if( flip )
+                f = f.reverseFace();
+        }
+        
+        meshModifier.addCell(cellFaces);
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

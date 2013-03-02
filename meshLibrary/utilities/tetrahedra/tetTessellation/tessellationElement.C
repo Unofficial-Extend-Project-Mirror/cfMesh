@@ -37,20 +37,20 @@ namespace Foam
 
 tessellationElement::tessellationElement()
 :
-	partTet(),
-	influence_(NONE)
+    partTet(),
+    influence_(NONE)
 {
 }
 
 tessellationElement::tessellationElement
 (
     const label a,
-	const label b,
-	const label c,
-	const label d
+    const label b,
+    const label c,
+    const label d
 )
 :
-	partTet(a, b, c, d),
+    partTet(a, b, c, d),
     influence_(NONE)
 {
     for(label dir=0;dir<4;++dir)
@@ -67,12 +67,12 @@ tessellationElement::~tessellationElement()
 
 scalar tessellationElement::influencedBy
 (
-	const LongList<point>& points,
-	const point& r
+    const LongList<point>& points,
+    const point& r
 ) const
 {
-	const point crcm = crcmCentre(points);
-	
+    const point crcm = crcmCentre(points);
+    
     const scalar d = (magSqr(crcm - points[a()]) - magSqr(crcm - r));
 
 #   ifdef DEBUGtessalation
@@ -89,16 +89,16 @@ scalar tessellationElement::influencedBy
 
 Ostream& operator<<(Ostream& os, const tessellationElement& elmt)
 {
-	partTet t(elmt);
+    partTet t(elmt);
     os << t;
 
-	os << " neighbours are ";
+    os << " neighbours are ";
     for(label ineigh=0;ineigh<4;++ineigh)
     {
         os << " " << elmt.neighbours_[ineigh];
     }
-	os << endl;
-	
+    os << endl;
+    
     return os;
 }
 

@@ -145,21 +145,21 @@ public:
 
         //- Append an element at the end of the list
         inline void append(const T& e);
-		
-		//- Append an element at the end of the list if it is not yet
-		//- present in the list (takes linear time)
-		inline void appendIfNotIn(const T& e);
-		
-		//- check if the element is in the list (takes linear time)
-		inline bool contains(const T& e) const;
-		inline label containsAtPosition(const T& e) const;
+        
+        //- Append an element at the end of the list if it is not yet
+        //- present in the list (takes linear time)
+        inline void appendIfNotIn(const T& e);
+        
+        //- check if the element is in the list (takes linear time)
+        inline bool contains(const T& e) const;
+        inline label containsAtPosition(const T& e) const;
 
         //- Return and remove the top element
         inline T removeLastElement();
-		inline T removeElement(const label i);
-		
-		//- return a refence to the element. Resize the list if necessary
-		inline T& newElmt(const label);
+        inline T removeElement(const label i);
+        
+        //- return a refence to the element. Resize the list if necessary
+        inline T& newElmt(const label);
 
         //- Return non-const access to an element,
         //-  resizing the list if necessary

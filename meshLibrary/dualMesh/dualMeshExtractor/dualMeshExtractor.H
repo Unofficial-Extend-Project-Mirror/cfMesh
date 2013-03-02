@@ -56,82 +56,82 @@ class meshOctree;
 class dualMeshExtractor
 {
     // Private data
-		//- helper for cell creation
-		static const direction faceFlip_[6][4];
+        //- helper for cell creation
+        static const direction faceFlip_[6][4];
 
         //- reference to the octree
         meshOctreeAddressing octreeAddressing_;
-	
-		//- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- centre node labels
-		labelListPMG* centreNodeLabelPtr_;
+    
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+    
+        //- centre node labels
+        labelListPMG* centreNodeLabelPtr_;
 
     // Private member functions
-		//- delete freestore data
-		void clearOut();
-	
+        //- delete freestore data
+        void clearOut();
+    
         //- create vertices and pointLeaves addressing
         void createPoints();
 
         //- create mesh data
         void createPolyMesh();
-		
-	// Nested classes
-		class decomposeCreatedPoly
-		{
-			// Private data
-				const faceList& cellFaces_;
-			
-				const Map<direction>& nodeLevel_;
-			
-				boolListList splitFaceNode_;
-			
-				//- list of edges over which a face has been split
-				DynList<edge> splitEdge_;
-			
-				//- list containing information if a face
-				//- is a product of splitting
-				DynList<bool> splitFace_;
-			
-				//- a list of decomposed faces
-				DynList<face> decomposedFaces_;
-			
-				//- helper data
-				labelListList dfe_;
-				labelListList def_;
-				DynList<edge> de_;
-				boolList se_;
-			
-			// Private member functions
-				//- decompose non-planar faces into triangles
-				void decomposeFaces();
-			
-				//- calculate helper data
-				void calculateHelperAddressing();
-				
-				//- find additional splitting edges
-				void selectAdditionalSplitEdges();
-			
-				//- distribute new faces into cells
-				void selectFacesForCell(List<faceList>& cFaces);
-			
-				//- create missing faces to topologically close new cells
-				void createMissingFaces(List<faceList>& cFaces);
-			
-			public:
-				
-				decomposeCreatedPoly
-				(
-					const faceList& cf,
-					const Map<direction>& nl
-				);
-			
-				~decomposeCreatedPoly();
-			
-				void decomposeCell(List<faceList>& decCells);
-		};
+        
+    // Nested classes
+        class decomposeCreatedPoly
+        {
+            // Private data
+                const faceList& cellFaces_;
+            
+                const Map<direction>& nodeLevel_;
+            
+                boolListList splitFaceNode_;
+            
+                //- list of edges over which a face has been split
+                DynList<edge> splitEdge_;
+            
+                //- list containing information if a face
+                //- is a product of splitting
+                DynList<bool> splitFace_;
+            
+                //- a list of decomposed faces
+                DynList<face> decomposedFaces_;
+            
+                //- helper data
+                labelListList dfe_;
+                labelListList def_;
+                DynList<edge> de_;
+                boolList se_;
+            
+            // Private member functions
+                //- decompose non-planar faces into triangles
+                void decomposeFaces();
+            
+                //- calculate helper data
+                void calculateHelperAddressing();
+                
+                //- find additional splitting edges
+                void selectAdditionalSplitEdges();
+            
+                //- distribute new faces into cells
+                void selectFacesForCell(List<faceList>& cFaces);
+            
+                //- create missing faces to topologically close new cells
+                void createMissingFaces(List<faceList>& cFaces);
+            
+            public:
+                
+                decomposeCreatedPoly
+                (
+                    const faceList& cf,
+                    const Map<direction>& nl
+                );
+            
+                ~decomposeCreatedPoly();
+            
+                void decomposeCell(List<faceList>& decCells);
+        };
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -148,8 +148,8 @@ public:
         dualMeshExtractor
         (
             const meshOctree& octree,
-			const IOdictionary& dict,
-			polyMeshGen& mesh
+            const IOdictionary& dict,
+            polyMeshGen& mesh
         );
 
     // Destructor
@@ -159,7 +159,7 @@ public:
 
     // Member Functions
 
-	void createMesh();
+    void createMesh();
 };
 
 

@@ -47,7 +47,7 @@ namespace Foam
 
 //- Forward declarations
 class triSurface;
-	
+    
 static meshGenGUI* guiPtr(NULL);
 
 /*---------------------------------------------------------------------------*\
@@ -56,49 +56,49 @@ static meshGenGUI* guiPtr(NULL);
 
 class meshGenGTK
 {
-	// Private data
-	
-		//- mesh generation dictionary
-		meshGenGUI meshGui_;
+    // Private data
     
-		//- pages
-		GtkWidget* generalPageFramePtr_;
-		GtkWidget* mainWindowPtr_;
-		GtkWidget* localRefinementFramePtr_;
-		GtkWidget* keepCellsIntersectingPatchesFramePtr_;
-		GtkWidget* bndLayersFramePtr_;
-		GtkWidget* localSettingsMainFramePtr_;
+        //- mesh generation dictionary
+        meshGenGUI meshGui_;
+    
+        //- pages
+        GtkWidget* generalPageFramePtr_;
+        GtkWidget* mainWindowPtr_;
+        GtkWidget* localRefinementFramePtr_;
+        GtkWidget* keepCellsIntersectingPatchesFramePtr_;
+        GtkWidget* bndLayersFramePtr_;
+        GtkWidget* localSettingsMainFramePtr_;
 
-		GtkWidget* boxRefinementFramePtr_;
-		GtkWidget* lineRefinementFramePtr_;
-		GtkWidget* coneRefinementFramePtr_;
-		GtkWidget* sphereRefinementFramePtr_;
-		GtkWidget* objectRefinementMainFramePtr_;
-	
-		GtkWidget* renameBoundaryFramePtr_;
+        GtkWidget* boxRefinementFramePtr_;
+        GtkWidget* lineRefinementFramePtr_;
+        GtkWidget* coneRefinementFramePtr_;
+        GtkWidget* sphereRefinementFramePtr_;
+        GtkWidget* objectRefinementMainFramePtr_;
+    
+        GtkWidget* renameBoundaryFramePtr_;
 
 private:
-	
-	// Private member functions
-		//- create pages
-		void createGeneralPage();
-		void createMainWindowPage();
+    
+    // Private member functions
+        //- create pages
+        void createGeneralPage();
+        void createMainWindowPage();
 
-		//- pages for local features
-		void createLocalRefinementWindowPage();
-		void createKeepCellsIntersectingPatchesWindowPage();
-		void createBndLayersWindowPage();
-		void createLocalSettingsMainWindowPage();
+        //- pages for local features
+        void createLocalRefinementWindowPage();
+        void createKeepCellsIntersectingPatchesWindowPage();
+        void createBndLayersWindowPage();
+        void createLocalSettingsMainWindowPage();
 
-		//- pages for object refinement
-		void createBoxRefinementWindowPage();
-		void createLineRefinementWindowPage();
-		void createConeRefinementWindowPage();
-		void createSphereRefinementWindowPage();
-		void createObjectRefinementMainWindowPage();
+        //- pages for object refinement
+        void createBoxRefinementWindowPage();
+        void createLineRefinementWindowPage();
+        void createConeRefinementWindowPage();
+        void createSphereRefinementWindowPage();
+        void createObjectRefinementMainWindowPage();
 
-		//- pages for boundary renaming
-		void createRenameBoundaryMainWindowPage();
+        //- pages for boundary renaming
+        void createRenameBoundaryMainWindowPage();
 
         //- Disallow default bitwise copy construct
         meshGenGTK(const meshGenGTK&);

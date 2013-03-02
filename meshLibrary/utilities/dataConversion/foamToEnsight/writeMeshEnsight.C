@@ -44,51 +44,51 @@ namespace Foam
 
 void writeMeshEnsight(const polyMeshGen& mesh, const word& fName)
 {
-	const Time& time = mesh.returnTime();
-	
+    const Time& time = mesh.returnTime();
+    
     const word postProcDir = "EnSight"+fName;
-	const word prepend = fName + '.';
-	Info << "Writting mesh into " << postProcDir << endl;
+    const word prepend = fName + '.';
+    Info << "Writting mesh into " << postProcDir << endl;
 
     fileName postProcPath = time.path()/postProcDir;
 
-	if( Foam::isDir(postProcPath) )
-	{
-		Foam::rmDir(postProcPath);
-	}
+    if( Foam::isDir(postProcPath) )
+    {
+        Foam::rmDir(postProcPath);
+    }
 
-	Foam::mkDir(postProcPath);
+    Foam::mkDir(postProcPath);
 
-	// Open the Case file
-	fileName ensightCaseFileName = prepend + "case";
+    // Open the Case file
+    fileName ensightCaseFileName = prepend + "case";
 
-/*	OFstream ensightCaseFile
-	(
-		postProcPath/ensightCaseFileName,
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream ensightCaseFile
+    (
+        postProcPath/ensightCaseFileName,
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
-	OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
+    OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
 
-	Info<< nl << "Case file is " << ensightCaseFileName << endl;
+    Info<< nl << "Case file is " << ensightCaseFileName << endl;
 
-/*	OFstream ensightGeometryFile
-	(
-		postProcPath/prepend+"000.mesh",
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream ensightGeometryFile
+    (
+        postProcPath/prepend+"000.mesh",
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
-	OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
-	
+    OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
+    
     // Construct the EnSight mesh
     ensightMesh eMesh(mesh);
-	eMesh.write(ensightGeometryFile);
+    eMesh.write(ensightGeometryFile);
 
-	//- write the case file
+    //- write the case file
     ensightCaseFile << "FORMAT" << nl;
     ensightCaseFile << "type: ensight gold" << nl << nl;
 
@@ -101,7 +101,7 @@ void writeMeshEnsight(const polyMeshGen& mesh, const word& fName)
             << "model:        1     "
             << (geomCaseFileName + ".mesh").c_str() << nl;
     }
-	
+    
     ensightCaseFile << nl << "TIME" << nl
         << "time set:                      " << 1 << nl
         << "number of steps:               " << 1 << nl

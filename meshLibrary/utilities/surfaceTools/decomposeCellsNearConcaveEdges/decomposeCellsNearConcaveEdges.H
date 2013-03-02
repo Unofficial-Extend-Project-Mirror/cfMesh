@@ -51,19 +51,19 @@ namespace Foam
 class decomposeCellsNearConcaveEdges
 {
     // Private data
-		//- mesh
-		polyMeshGen& mesh_;
-	
-		//- holds data which cells have to be decomposed
-		boolList decomposeCell_;
+        //- mesh
+        polyMeshGen& mesh_;
+    
+        //- holds data which cells have to be decomposed
+        boolList decomposeCell_;
 
     // Private member functions
  
-	 	//- find problematic cells which need to be decomposed
-		void findConcaveFacesAndCells();
-		
-		//- perform patch correction
-		void decomposeConcaveCells();
+         //- find problematic cells which need to be decomposed
+        void findConcaveFacesAndCells();
+        
+        //- perform patch correction
+        void decomposeConcaveCells();
 
         //- Disallow default bitwise copy construct
         decomposeCellsNearConcaveEdges(const decomposeCellsNearConcaveEdges&);

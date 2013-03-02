@@ -47,89 +47,89 @@ namespace Foam
 
 partTetMesh::partTetMesh(polyMeshGen& mesh)
 :
-	origMesh_(mesh),
-	points_(),
-	tets_(),
-	nodeLabelInOrigMesh_(),
-	smoothVertex_(),
-	pointTets_(),
+    origMesh_(mesh),
+    points_(),
+    tets_(),
+    nodeLabelInOrigMesh_(),
+    smoothVertex_(),
+    pointTets_(),
     internalPointsOrderPtr_(NULL),
     boundaryPointsOrderPtr_(NULL),
     pAtProcsPtr_(NULL),
     globalToLocalPointAddressingPtr_(NULL),
     neiProcsPtr_(NULL),
-	pAtParallelBoundariesPtr_(NULL),
+    pAtParallelBoundariesPtr_(NULL),
     pAtBufferLayersPtr_(NULL)
 {
-	List<direction> useCell(mesh.cells().size(), direction(1));
-	
-	createPointsAndTets(useCell);
+    List<direction> useCell(mesh.cells().size(), direction(1));
+    
+    createPointsAndTets(useCell);
 }
 
 partTetMesh::partTetMesh
 (
-	polyMeshGen& mesh,
-	labelHashSet& badFaces,
-	const direction additionalLayers
+    polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const direction additionalLayers
 )
 :
-	origMesh_(mesh),
-	points_(),
-	tets_(),
-	nodeLabelInOrigMesh_(),
-	smoothVertex_(),
-	pointTets_(),
+    origMesh_(mesh),
+    points_(),
+    tets_(),
+    nodeLabelInOrigMesh_(),
+    smoothVertex_(),
+    pointTets_(),
     internalPointsOrderPtr_(NULL),
     boundaryPointsOrderPtr_(NULL),
     globalPointLabelPtr_(NULL),
     pAtProcsPtr_(NULL),
     globalToLocalPointAddressingPtr_(NULL),
     neiProcsPtr_(NULL),
-	pAtParallelBoundariesPtr_(NULL),
+    pAtParallelBoundariesPtr_(NULL),
     pAtBufferLayersPtr_(NULL)
 {
-	const faceListPMG& faces = mesh.faces();
-	const cellListPMG& cells = mesh.cells();
-	const VRWGraph& pointCells = mesh.addressingData().pointCells();
-	
-	List<direction> useCell(cells.size(), direction(0));
-	
-	//- select cells containing at least one vertex of the bad faces
-	forAll(faces, faceI)
-		if( badFaces.found(faceI) )
-		{
-			const face& f = faces[faceI];
-			
-			forAll(f, pI)
-			{
-				forAllRow(pointCells, f[pI], pcI)
-					useCell[pointCells(f[pI], pcI)] = 1;
-			}
-		}
-		
-	//- add additional layer of cells
-	for(label layerI=1;layerI<(additionalLayers+1);++layerI)
-	{
-		forAll(useCell, cI)
-			if( useCell[cI] == layerI )
-			{
-				const cell& c = cells[cI];
-				
-				forAll(c, fI)
-				{
-					const face& f = faces[c[fI]];
-					
-					forAll(f, pI)
-					{
-						forAllRow(pointCells, f[pI], pcI)
-						{
-							const label cLabel = pointCells(f[pI], pcI);
-							if( !useCell[cLabel] )
-								useCell[cLabel] = layerI + 1;
-						}
-					}
-				}
-			}
+    const faceListPMG& faces = mesh.faces();
+    const cellListPMG& cells = mesh.cells();
+    const VRWGraph& pointCells = mesh.addressingData().pointCells();
+    
+    List<direction> useCell(cells.size(), direction(0));
+    
+    //- select cells containing at least one vertex of the bad faces
+    forAll(faces, faceI)
+        if( badFaces.found(faceI) )
+        {
+            const face& f = faces[faceI];
+            
+            forAll(f, pI)
+            {
+                forAllRow(pointCells, f[pI], pcI)
+                    useCell[pointCells(f[pI], pcI)] = 1;
+            }
+        }
+        
+    //- add additional layer of cells
+    for(label layerI=1;layerI<(additionalLayers+1);++layerI)
+    {
+        forAll(useCell, cI)
+            if( useCell[cI] == layerI )
+            {
+                const cell& c = cells[cI];
+                
+                forAll(c, fI)
+                {
+                    const face& f = faces[c[fI]];
+                    
+                    forAll(f, pI)
+                    {
+                        forAllRow(pointCells, f[pI], pcI)
+                        {
+                            const label cLabel = pointCells(f[pI], pcI);
+                            if( !useCell[cLabel] )
+                                useCell[cLabel] = layerI + 1;
+                        }
+                    }
+                }
+            }
             
         if( Pstream::parRun() )
         {
@@ -183,9 +183,9 @@ partTetMesh::partTetMesh
                 }
             }
         }
-	}
-	
-	createPointsAndTets(useCell);
+    }
+    
+    createPointsAndTets(useCell);
 }
 
 partTetMesh::~partTetMesh()
@@ -196,7 +196,7 @@ partTetMesh::~partTetMesh()
     deleteDemandDrivenData(pAtProcsPtr_);
     deleteDemandDrivenData(globalToLocalPointAddressingPtr_);
     deleteDemandDrivenData(neiProcsPtr_);
-	deleteDemandDrivenData(pAtParallelBoundariesPtr_);
+    deleteDemandDrivenData(pAtParallelBoundariesPtr_);
     deleteDemandDrivenData(pAtBufferLayersPtr_);
 }
 
@@ -383,30 +383,30 @@ void partTetMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
 
 void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
 {
-	pointFieldPMG& pts = origMesh_.points();
+    pointFieldPMG& pts = origMesh_.points();
 
-	boolList changedNode(pts.size(), false);
+    boolList changedNode(pts.size(), false);
     
     # pragma omp parallel for if( pts.size() > 1000 ) \
     schedule(guided, 10)
-	forAll(nodeLabelInOrigMesh_, pI)
-		if( nodeLabelInOrigMesh_[pI] != -1 )
-		{
-			changedNode[nodeLabelInOrigMesh_[pI]] = true;
-			pts[nodeLabelInOrigMesh_[pI]] = points_[pI];
-		}
-		
-	if( changedFacePtr )
-	{
-		boolList& chF = *changedFacePtr;
-		chF = false;
-		
+    forAll(nodeLabelInOrigMesh_, pI)
+        if( nodeLabelInOrigMesh_[pI] != -1 )
+        {
+            changedNode[nodeLabelInOrigMesh_[pI]] = true;
+            pts[nodeLabelInOrigMesh_[pI]] = points_[pI];
+        }
+        
+    if( changedFacePtr )
+    {
+        boolList& chF = *changedFacePtr;
+        chF = false;
+        
         const cellListPMG& cells = origMesh_.cells();
         const VRWGraph& pointCells = origMesh_.addressingData().pointCells();
         
         # pragma omp parallel for if( pointCells.size() > 100 ) \
         schedule(dynamic, 20)
-		forAll(pointCells, pointI)
+        forAll(pointCells, pointI)
         {
             if( changedNode[pointI] )
             {
@@ -460,64 +460,64 @@ void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
             forAll(receivedData, i)
                 chF[start+receivedData[i]] = true;
         }
-		
+        
         //- update geometry information
-		const_cast<polyMeshGenAddressing&>
-		(
-			origMesh_.addressingData()
-		).updateGeometry(chF);
-	}
-	else
-	{
-		const_cast<polyMeshGenAddressing&>
-		(
-			origMesh_.addressingData()
-		).clearGeom();
-	}
+        const_cast<polyMeshGenAddressing&>
+        (
+            origMesh_.addressingData()
+        ).updateGeometry(chF);
+    }
+    else
+    {
+        const_cast<polyMeshGenAddressing&>
+        (
+            origMesh_.addressingData()
+        ).clearGeom();
+    }
 }
 
 void partTetMesh::createPolyMesh(polyMeshGen& pmg) const
 {
-	polyMeshGenModifier meshModifier(pmg);
-	
-	pointFieldPMG& pAccess = meshModifier.pointsAccess();
-	pAccess.setSize(points_.size());
-	forAll(points_, pI)
-		pAccess[pI] = points_[pI];
-	
-	VRWGraphList cellFaces;
-	
-	forAll(tets_, tetI)
-	{
-		const partTet& tet = tets_[tetI];
-		
-		FixedList<FixedList<label, 3>, 4> tetFaces;
+    polyMeshGenModifier meshModifier(pmg);
+    
+    pointFieldPMG& pAccess = meshModifier.pointsAccess();
+    pAccess.setSize(points_.size());
+    forAll(points_, pI)
+        pAccess[pI] = points_[pI];
+    
+    VRWGraphList cellFaces;
+    
+    forAll(tets_, tetI)
+    {
+        const partTet& tet = tets_[tetI];
         
-		//- face 0
-		tetFaces[0][0] = tet[0];
-		tetFaces[0][1] = tet[2];
-		tetFaces[0][2] = tet[1];
-		
-		//- face 1
-		tetFaces[1][0] = tet[0];
-		tetFaces[1][1] = tet[1];
-		tetFaces[1][2] = tet[3];
-		
-		//- face 2
-		tetFaces[2][0] = tet[0];
-		tetFaces[2][1] = tet[3];
-		tetFaces[2][2] = tet[2];
-		
-		//- face 3
-		tetFaces[3][0] = tet[1];
-		tetFaces[3][1] = tet[2];
-		tetFaces[3][2] = tet[3];
+        FixedList<FixedList<label, 3>, 4> tetFaces;
+        
+        //- face 0
+        tetFaces[0][0] = tet[0];
+        tetFaces[0][1] = tet[2];
+        tetFaces[0][2] = tet[1];
+        
+        //- face 1
+        tetFaces[1][0] = tet[0];
+        tetFaces[1][1] = tet[1];
+        tetFaces[1][2] = tet[3];
+        
+        //- face 2
+        tetFaces[2][0] = tet[0];
+        tetFaces[2][1] = tet[3];
+        tetFaces[2][2] = tet[2];
+        
+        //- face 3
+        tetFaces[3][0] = tet[1];
+        tetFaces[3][1] = tet[2];
+        tetFaces[3][2] = tet[3];
         
         cellFaces.appendGraph(tetFaces);
-	}
-	
-	meshModifier.addCells(cellFaces);
-	meshModifier.reorderBoundaryFaces();
+    }
+    
+    meshModifier.addCells(cellFaces);
+    meshModifier.reorderBoundaryFaces();
     
     //- store points into subsets
     const label bndPointID = pmg.addPointSubset("boundaryPoints");

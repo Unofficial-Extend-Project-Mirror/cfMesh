@@ -62,41 +62,41 @@ class plane;
 class meshSurfaceOptimizer
 {
     // Private data
-		//- reference to the mesh surface
-		meshSurfaceEngine& surfaceEngine_;
-	
+        //- reference to the mesh surface
+        meshSurfaceEngine& surfaceEngine_;
+    
         //- reference to the octree
         const meshOctree& meshOctree_;
-	
-		//- type of surface vertex
-		List<direction> vertexType_;
-	
-		//- form trihedra
-		mutable LongList<triFace>* trianglesPtr_;
-		mutable VRWGraph* pointTrianglesPtr_;
+    
+        //- type of surface vertex
+        List<direction> vertexType_;
+    
+        //- form trihedra
+        mutable LongList<triFace>* trianglesPtr_;
+        mutable VRWGraph* pointTrianglesPtr_;
 
     // Private member functions
-		//- classify surface vertices as PARTITION, EDGE, CORNER
-		void classifySurfaceVertices();
-	
-		//- calculate surface triangulation
-		void calculateTrianglesAndAddressing() const;
-		inline const LongList<triFace>& triangles() const;
-		inline const VRWGraph& pointTriangles() const;
-		
-		//- find vertices which are inverted
-		label findInvertedVertices(boolList& smoothVertex) const;
-	
-		//- transform into a 2D space in plane
-		inline bool transformIntoPlane
-		(
-			const label bpI,
-			const plane& pl,
-			vector& vecX,
-			vector& vecY,
-			DynList<point>& pts,
-			DynList<triFace>& trias
-		) const;
+        //- classify surface vertices as PARTITION, EDGE, CORNER
+        void classifySurfaceVertices();
+    
+        //- calculate surface triangulation
+        void calculateTrianglesAndAddressing() const;
+        inline const LongList<triFace>& triangles() const;
+        inline const VRWGraph& pointTriangles() const;
+        
+        //- find vertices which are inverted
+        label findInvertedVertices(boolList& smoothVertex) const;
+    
+        //- transform into a 2D space in plane
+        inline bool transformIntoPlane
+        (
+            const label bpI,
+            const plane& pl,
+            vector& vecX,
+            vector& vecY,
+            DynList<point>& pts,
+            DynList<triFace>& trias
+        ) const;
         
         //- transform into a 2D space in plane for parallel boundaries
         inline bool transformIntoPlaneParallel
@@ -105,10 +105,10 @@ class meshSurfaceOptimizer
             const plane& pl,
             const std::map<label, DynList<parTriFace> >& m,
             vector& vecX,
-			vector& vecY,
-			DynList<point>& pts,
-			DynList<triFace>& trias
-		) const;
+            vector& vecY,
+            DynList<point>& pts,
+            DynList<triFace>& trias
+        ) const;
         
         //- new position of a node after laplacian smoothing
         //- the position is the average of neighbouring vertex positions
@@ -150,7 +150,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-	
+    
         //- smooth the node using the laplacian smoother
         //- new position is the average of the neighbouring vertices
         void nodeDisplacementLaplacian
@@ -167,16 +167,16 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-		
-		//- smooth the node using surface optimizer
-		void nodeDisplacementSurfaceOptimizer
-		(
-			const label bpI,
-			const scalar tol = 1.0
-		);
-		
-		//- smooth edge node
-		void edgeNodeDisplacement(const label bpI) const;
+        
+        //- smooth the node using surface optimizer
+        void nodeDisplacementSurfaceOptimizer
+        (
+            const label bpI,
+            const scalar tol = 1.0
+        );
+        
+        //- smooth edge node
+        void edgeNodeDisplacement(const label bpI) const;
         
     // Functions needed for parallel runs
     
@@ -219,15 +219,15 @@ class meshSurfaceOptimizer
 
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceOptimizer&);
-		
-	// Enumerators
-		enum vertexTypes
-		{
-			PARTITION = 1,
-			EDGE = 2,
-			CORNER = 4,
+        
+    // Enumerators
+        enum vertexTypes
+        {
+            PARTITION = 1,
+            EDGE = 2,
+            CORNER = 4,
             PROCBND = 8
-		};
+        };
 
 public:
 
@@ -236,8 +236,8 @@ public:
         //- Construct from mesh surface and octree
         meshSurfaceOptimizer
         (
-			meshSurfaceEngine& surface,
-			const meshOctree& octree
+            meshSurfaceEngine& surface,
+            const meshOctree& octree
         );
 
 
@@ -246,11 +246,11 @@ public:
         ~meshSurfaceOptimizer();
 
     // Member Functions
-		//- optimisation before the edges and corners are created
-		void preOptimizeSurface();
+        //- optimisation before the edges and corners are created
+        void preOptimizeSurface();
 
-		//- optimize boundary nodes after boundary regions are created
-		void optimizeSurface(const label nIterations = 5);
+        //- optimize boundary nodes after boundary regions are created
+        void optimizeSurface(const label nIterations = 5);
 };
 
 

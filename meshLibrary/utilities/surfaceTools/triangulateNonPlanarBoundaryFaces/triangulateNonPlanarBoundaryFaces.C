@@ -42,50 +42,50 @@ namespace Foam
 
 void triangulateNonPlanarBoundaryFaces::findBoundaryCellsToDecompose()
 {
-	const pointFieldPMG& points = mesh_.points();
-	const labelList& owner = mesh_.owner();
-	const faceListPMG& faces = mesh_.faces();
-	
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	
-	label nDecompose(0);
-	
-	forAll(boundaries, patchI)
-	{
-		const label start = boundaries[patchI].patchStart();
-		const label end = start + boundaries[patchI].patchSize();
-		
-		for(label faceI=start;faceI<end;++faceI)
-		{
-			const face& f = faces[faceI];
-			
-			forAll(f, pI)
-				pointPatches_[f[pI]].appendIfNotIn(patchI);
-			
-			//- do not waste time on triangles
-			if( f.size() < 4 ) continue;
-		
-			if( !faceDecomposition(f, points).isFacePlanar() )
-			{
-				++nDecompose;
-				decomposeCell_[owner[faceI]] = true;
-			}
-		}
-	}
-	
-	Info << "Found " << nDecompose << " non-planar boundary faces" << endl;
+    const pointFieldPMG& points = mesh_.points();
+    const labelList& owner = mesh_.owner();
+    const faceListPMG& faces = mesh_.faces();
+    
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    
+    label nDecompose(0);
+    
+    forAll(boundaries, patchI)
+    {
+        const label start = boundaries[patchI].patchStart();
+        const label end = start + boundaries[patchI].patchSize();
+        
+        for(label faceI=start;faceI<end;++faceI)
+        {
+            const face& f = faces[faceI];
+            
+            forAll(f, pI)
+                pointPatches_[f[pI]].appendIfNotIn(patchI);
+            
+            //- do not waste time on triangles
+            if( f.size() < 4 ) continue;
+        
+            if( !faceDecomposition(f, points).isFacePlanar() )
+            {
+                ++nDecompose;
+                decomposeCell_[owner[faceI]] = true;
+            }
+        }
+    }
+    
+    Info << "Found " << nDecompose << " non-planar boundary faces" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 triangulateNonPlanarBoundaryFaces::triangulateNonPlanarBoundaryFaces
 (
-	polyMeshGen& mesh
+    polyMeshGen& mesh
 )
     :
-	mesh_(mesh),
+    mesh_(mesh),
     decomposeCell_(mesh.cells().size(), false),
-	pointPatches_(mesh.points().size())
+    pointPatches_(mesh.points().size())
 {
 }
 
@@ -98,13 +98,13 @@ void triangulateNonPlanarBoundaryFaces::decomposeMesh()
 {
     FatalError << "Not implemented" << exit(FatalError);
     
-	Info << "Decomposing non-planar boundary faces" << endl;
-	findBoundaryCellsToDecompose();
-	
-	decomposeCells decomposeNonPlanarCells(mesh_);
-	decomposeNonPlanarCells.decomposeMesh(decomposeCell_);
-	
-	Info << "Finished decomposing non-planar boundary faces" << endl;
+    Info << "Decomposing non-planar boundary faces" << endl;
+    findBoundaryCellsToDecompose();
+    
+    decomposeCells decomposeNonPlanarCells(mesh_);
+    decomposeNonPlanarCells.decomposeMesh(decomposeCell_);
+    
+    Info << "Finished decomposing non-planar boundary faces" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

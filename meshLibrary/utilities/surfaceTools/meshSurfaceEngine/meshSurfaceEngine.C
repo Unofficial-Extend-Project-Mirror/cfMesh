@@ -43,10 +43,10 @@ namespace Foam
 // Construct from surface. Holds reference!
 meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
 :
-	mesh_(mesh),
+    mesh_(mesh),
     boundaryPointsPtr_(NULL),
     boundaryFacesPtr_(NULL),
-	boundaryFacePatchPtr_(NULL),
+    boundaryFacePatchPtr_(NULL),
     boundaryFaceOwnersPtr_(NULL),
     pointFacesPtr_(NULL),
     pointInFacePtr_(NULL),
@@ -56,10 +56,10 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
     edgesPtr_(NULL),
     bpEdgesPtr_(NULL),
     edgeFacesPtr_(NULL),
-	faceEdgesPtr_(NULL),
-	faceFacesPtr_(NULL),
+    faceEdgesPtr_(NULL),
+    faceFacesPtr_(NULL),
     pointNormalsPtr_(NULL),
-	faceNormalsPtr_(NULL),
+    faceNormalsPtr_(NULL),
     faceCentresPtr_(NULL),
     
     globalBoundaryPointLabelPtr_(NULL),
@@ -75,7 +75,7 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
     globalBoundaryFaceLabelPtr_(NULL)
 {
     calculateBoundaryFaces();
-	calculateBoundaryNodes();
+    calculateBoundaryNodes();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -110,7 +110,7 @@ const cellListPMG& meshSurfaceEngine::cells() const
 const labelList& meshSurfaceEngine::bp() const
 {
     if( !bppPtr_ )
-	{
+    {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
             FatalErrorIn
@@ -121,8 +121,8 @@ const labelList& meshSurfaceEngine::bp() const
         # endif
         
         calculateBoundaryFaces();
-		calculateBoundaryNodes();
-	}
+        calculateBoundaryNodes();
+    }
 
     return *bppPtr_;
 }
@@ -130,7 +130,7 @@ const labelList& meshSurfaceEngine::bp() const
 const labelList& meshSurfaceEngine::boundaryPoints() const
 {
     if( !boundaryPointsPtr_ )
-	{
+    {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
             FatalErrorIn
@@ -140,8 +140,8 @@ const labelList& meshSurfaceEngine::boundaryPoints() const
                 << " This is not thread safe" << exit(FatalError);
         # endif
         
-		calculateBoundaryNodes();
-	}
+        calculateBoundaryNodes();
+    }
 
     return *boundaryPointsPtr_;
 }
@@ -149,7 +149,7 @@ const labelList& meshSurfaceEngine::boundaryPoints() const
 const faceList::subList& meshSurfaceEngine::boundaryFaces() const
 {
     if( !boundaryFacesPtr_ )
-	{
+    {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
             FatalErrorIn
@@ -161,14 +161,14 @@ const faceList::subList& meshSurfaceEngine::boundaryFaces() const
         # endif
         
         calculateBoundaryFaces();
-	}
+    }
 
     return *boundaryFacesPtr_;
 }
 
 const labelList& meshSurfaceEngine::boundaryFacePatches() const
 {
-	if( !boundaryFacePatchPtr_ )
+    if( !boundaryFacePatchPtr_ )
     {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
@@ -180,16 +180,16 @@ const labelList& meshSurfaceEngine::boundaryFacePatches() const
                 << " This is not thread safe" << exit(FatalError);
         # endif
         
-		calculateBoundaryFacePatches();
+        calculateBoundaryFacePatches();
     }
-	
-	return *boundaryFacePatchPtr_;
+    
+    return *boundaryFacePatchPtr_;
 }
 
 const labelList& meshSurfaceEngine::faceOwners() const
 {
     if( !boundaryFaceOwnersPtr_ )
-	{
+    {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
             FatalErrorIn
@@ -199,8 +199,8 @@ const labelList& meshSurfaceEngine::faceOwners() const
                 << " This is not thread safe" << exit(FatalError);
         # endif
         
-		calculateBoundaryOwners();
-	}
+        calculateBoundaryOwners();
+    }
 
     return *boundaryFaceOwnersPtr_;
 }
@@ -302,7 +302,7 @@ const vectorField& meshSurfaceEngine::pointNormals() const
 
 const vectorField& meshSurfaceEngine::faceNormals() const
 {
-	if( !faceNormalsPtr_ )
+    if( !faceNormalsPtr_ )
     {
         # ifdef FULLDEBUG
         if( omp_in_parallel() )
@@ -313,10 +313,10 @@ const vectorField& meshSurfaceEngine::faceNormals() const
                 << " This is not thread safe" << exit(FatalError);
         # endif
         
-		calculateFaceNormals();
+        calculateFaceNormals();
     }
-	
-	return *faceNormalsPtr_;
+    
+    return *faceNormalsPtr_;
 }
 
 const vectorField& meshSurfaceEngine::faceCentres() const
@@ -653,7 +653,7 @@ void meshSurfaceEngine::clearOut()
 {
     deleteDemandDrivenData(boundaryPointsPtr_);
     deleteDemandDrivenData(boundaryFacesPtr_);
-	deleteDemandDrivenData(boundaryFacePatchPtr_);
+    deleteDemandDrivenData(boundaryFacePatchPtr_);
     deleteDemandDrivenData(boundaryFaceOwnersPtr_);
     deleteDemandDrivenData(pointFacesPtr_);
     deleteDemandDrivenData(pointInFacePtr_);
@@ -661,13 +661,13 @@ void meshSurfaceEngine::clearOut()
     deleteDemandDrivenData(bppPtr_);
     deleteDemandDrivenData(pointPointsPtr_);
     deleteDemandDrivenData(pointNormalsPtr_);
-	deleteDemandDrivenData(faceNormalsPtr_);
+    deleteDemandDrivenData(faceNormalsPtr_);
     deleteDemandDrivenData(faceCentresPtr_);
     deleteDemandDrivenData(edgesPtr_);
     deleteDemandDrivenData(bpEdgesPtr_);
     deleteDemandDrivenData(edgeFacesPtr_);
-	deleteDemandDrivenData(faceEdgesPtr_);
-	deleteDemandDrivenData(faceFacesPtr_);
+    deleteDemandDrivenData(faceEdgesPtr_);
+    deleteDemandDrivenData(faceFacesPtr_);
     
     deleteDemandDrivenData(globalBoundaryPointLabelPtr_);
     deleteDemandDrivenData(globalBoundaryPointToLocalPtr_);

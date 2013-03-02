@@ -92,7 +92,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
     const label nIterations
 )
 {
-	const VRWGraph& pPoints = mesh_.addressingData().pointPoints();
+    const VRWGraph& pPoints = mesh_.addressingData().pointPoints();
     pointFieldPMG& points = mesh_.points();
 
     for(label iterationI=0;iterationI<nIterations;++iterationI)
@@ -122,7 +122,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
                 newP += points[pLabel];
                 ++counter;
             }
-	
+    
             if( counter != 0 )
             {
                 newP /= counter;

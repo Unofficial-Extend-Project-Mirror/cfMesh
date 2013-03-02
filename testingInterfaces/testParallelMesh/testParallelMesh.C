@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	polyMeshGen pmg(runTime);
-	pmg.read();
-	
+    
+    polyMeshGen pmg(runTime);
+    pmg.read();
+    
     //- test number of nodes per processor face
     const pointFieldPMG& points = pmg.points();
     const faceListPMG& faces = pmg.faces();
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
                         << patchI << " is not correct!" << abort(FatalError);
                 }
         }
-	}
+    }
     
 /*    Serr << Pstream::myProcNo() << "Global point labels "
         << pmg.addressingData().globalPointLabel() << endl;

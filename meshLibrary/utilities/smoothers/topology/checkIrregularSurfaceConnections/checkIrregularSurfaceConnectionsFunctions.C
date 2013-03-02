@@ -93,7 +93,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         {
             const label cellI = pointCells(pointI, cI);
             
-			if( cellGroup.found(cellI) )
+            if( cellGroup.found(cellI) )
                 continue;
             
             cellGroup.insert(cellI, nGroup);
@@ -471,14 +471,14 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
     
     labelHashSet badEdges;
 
-	forAll(edgeFaces, edgeI)
-		if( edgeFaces.sizeOfRow(edgeI) > 2 )
-		{
+    forAll(edgeFaces, edgeI)
+        if( edgeFaces.sizeOfRow(edgeI) > 2 )
+        {
             badVertices.insert(edges[edgeI].start());
             badVertices.insert(edges[edgeI].end());
             
             badEdges.insert(edgeI);
-		}
+        }
         
     if( Pstream::parRun() )
     {

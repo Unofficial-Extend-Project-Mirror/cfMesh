@@ -57,7 +57,7 @@ class faceIOGraph
 public:
 
     //- Runtime type information
-		TypeName("faceIOGraph");
+        TypeName("faceIOGraph");
 
     // Constructors
 
@@ -78,7 +78,7 @@ public:
 
     // Member operators
 
-		void operator=(const faceIOGraph&);
+        void operator=(const faceIOGraph&);
         void operator=(const VRWGraph&);
 };
 

@@ -27,8 +27,8 @@ Application
 
 Description
     - creates an octree and generates its dual.
-	- dual is used as mesh template which is the treated to conform to
-	- the geometry surface
+    - dual is used as mesh template which is the treated to conform to
+    - the geometry surface
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,10 +48,10 @@ int main(int argc, char *argv[])
 #   include "createTime.H"
 
     dualMeshGenerator omg(runTime);
-	
+    
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << endl;
-	
+    
     omg.writeMesh();
 
     Info << "End\n" << endl;

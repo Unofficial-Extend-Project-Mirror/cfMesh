@@ -27,7 +27,7 @@ Class
 
 Description
     Provides information regarding surface partitions on the surface
-	triangulation, and connectivity between various surface partitions.
+    triangulation, and connectivity between various surface partitions.
 
 SourceFiles
     triSurfacePartitioner.C
@@ -55,15 +55,15 @@ namespace Foam
 class triSurfacePartitioner
 {
     // Private data
-		//- reference to triSurface
-		const triSurface& surface_;
-	
-		//- corner nodes
-		labelList corners_;
-		List<DynList<label> > cornerPatches_;
-	
-		//- information which partitions share an edge with a given partition
-		List<labelHashSet> partitionPartitions_;
+        //- reference to triSurface
+        const triSurface& surface_;
+    
+        //- corner nodes
+        labelList corners_;
+        List<DynList<label> > cornerPatches_;
+    
+        //- information which partitions share an edge with a given partition
+        List<labelHashSet> partitionPartitions_;
     
         //- edge partitions
         labelList edgePartitions_;
@@ -79,14 +79,14 @@ class triSurfacePartitioner
         std::map<std::pair<label, label>, labelHashSet> edgePartitionsCorners_;
 
     // Private member functions
-		//- calculate partitions
-		void calculatePartitionAddressing();
-	
-		//- find surface corners
-		void calculateCornersAndAddressing();
-	
-		//- calculate partitionPartitions_ addressing
-		void calculatePartitionPartitions();
+        //- calculate partitions
+        void calculatePartitionAddressing();
+    
+        //- find surface corners
+        void calculateCornersAndAddressing();
+    
+        //- calculate partitionPartitions_ addressing
+        void calculatePartitionPartitions();
         
         //- calculate edge partitions
         void calculateEdgePartitions();
@@ -116,14 +116,14 @@ public:
 
 
     // Member Functions
-		//- return corner nodes
-		const labelList& corners() const;
-		
-		//- return corner patches
-		const List<DynList<label> >& cornerPatches() const;
+        //- return corner nodes
+        const labelList& corners() const;
         
-		//- return partition-partitions addressing
-		const List<labelHashSet>& partitionPartitions() const;
+        //- return corner patches
+        const List<DynList<label> >& cornerPatches() const;
+        
+        //- return partition-partitions addressing
+        const List<labelHashSet>& partitionPartitions() const;
 
         //- return edge partitions. Partitions of edges which are not
         //- the feature edges is set to -1

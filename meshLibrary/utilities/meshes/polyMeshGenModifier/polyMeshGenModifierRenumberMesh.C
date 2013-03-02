@@ -243,7 +243,7 @@ void polyMeshGenModifier::renumberMesh()
         }
     }
 
-	faceListPMG& oldFaces = this->facesAccess();
+    faceListPMG& oldFaces = this->facesAccess();
     faceList newFaces(oldFaces.size());
 
     forAll(newFaces, faceI)
@@ -280,7 +280,7 @@ void polyMeshGenModifier::renumberMesh()
     this->clearOut();
     mesh_.clearOut();
 
-	Info << "Finished renumbering the mesh" << endl;
+    Info << "Finished renumbering the mesh" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

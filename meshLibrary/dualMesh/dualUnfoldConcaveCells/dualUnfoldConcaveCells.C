@@ -43,27 +43,27 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 void dualUnfoldConcaveCells::replaceBoundary()
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	wordList patchNames(boundaries.size());
-	forAll(boundaries, patchI)
-		patchNames[patchI] = boundaries[patchI].patchName();
-	
-	polyMeshGenModifier meshModifier(mesh_);
-	meshModifier.replaceBoundary
-	(
-		patchNames,
-		newBoundaryFaces_,
-		newBoundaryOwners_,
-		newBoundaryPatches_
-	);
-	
-	newBoundaryFaces_.setSize(0);
-	newBoundaryOwners_.setSize(0);
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    wordList patchNames(boundaries.size());
+    forAll(boundaries, patchI)
+        patchNames[patchI] = boundaries[patchI].patchName();
+    
+    polyMeshGenModifier meshModifier(mesh_);
+    meshModifier.replaceBoundary
+    (
+        patchNames,
+        newBoundaryFaces_,
+        newBoundaryOwners_,
+        newBoundaryPatches_
+    );
+    
+    newBoundaryFaces_.setSize(0);
+    newBoundaryOwners_.setSize(0);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -71,19 +71,19 @@ void dualUnfoldConcaveCells::replaceBoundary()
 // Construct from polyMeshGen
 dualUnfoldConcaveCells::dualUnfoldConcaveCells
 (
-	polyMeshGen& mesh,
-	const meshOctree& octree
+    polyMeshGen& mesh,
+    const meshOctree& octree
 )
 :
-	mesh_(mesh),
-	octree_(octree),
-	typeOfCell_(mesh.cells().size(), INTERNALCELL),
-	typeOfVertex_(mesh.points().size(), NONE),
-	newBoundaryFaces_(),
-	newBoundaryOwners_(),
-	newBoundaryPatches_()
+    mesh_(mesh),
+    octree_(octree),
+    typeOfCell_(mesh.cells().size(), INTERNALCELL),
+    typeOfVertex_(mesh.points().size(), NONE),
+    newBoundaryFaces_(),
+    newBoundaryOwners_(),
+    newBoundaryPatches_()
 {
-	mesh_.clearAddressingData();
+    mesh_.clearAddressingData();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -96,45 +96,45 @@ dualUnfoldConcaveCells::~dualUnfoldConcaveCells()
 
 void dualUnfoldConcaveCells::unfoldInvalidCells()
 {
-	const meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
-	
-	if( findConcaveEdges(*msePtr) )
-	{
-		markVertexTypes(*msePtr);
-		
-		storeAndMergeBoundaryFaces(*msePtr);
-		
-		createNeighbouringBoundaryFaces(*msePtr);
-		
-		storeRemainingBoundaryFaces(*msePtr);
-		
-		removeConcaveVerticesFromIntFaces(*msePtr);
-		
-		deleteDemandDrivenData(msePtr);
-		
-		replaceBoundary();
-		
-		checkAndRepairBoundary();
-		
-		polyMeshGenModifier(mesh_).removeUnusedVertices();
-		
-		# ifdef DEBUGEdges
-		mesh_.addressingData().checkMesh(true);
-		mesh_.write();
-		::exit(EXIT_FAILURE);
-		# endif
-		
-		correctEdgesBetweenPatches correctEdges(mesh_);
+    const meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
+    
+    if( findConcaveEdges(*msePtr) )
+    {
+        markVertexTypes(*msePtr);
+        
+        storeAndMergeBoundaryFaces(*msePtr);
+        
+        createNeighbouringBoundaryFaces(*msePtr);
+        
+        storeRemainingBoundaryFaces(*msePtr);
+        
+        removeConcaveVerticesFromIntFaces(*msePtr);
+        
+        deleteDemandDrivenData(msePtr);
+        
+        replaceBoundary();
+        
+        checkAndRepairBoundary();
+        
+        polyMeshGenModifier(mesh_).removeUnusedVertices();
+        
+        # ifdef DEBUGEdges
+        mesh_.addressingData().checkMesh(true);
+        mesh_.write();
+        ::exit(EXIT_FAILURE);
+        # endif
+        
+        correctEdgesBetweenPatches correctEdges(mesh_);
         meshSurfaceMapper(*msePtr, octree_).mapCornersAndEdges();
-		
-		# ifdef DEBUGEdges
-		mesh_.addressingData().checkMesh();
-		# endif
-	}
-	else
-	{
-		deleteDemandDrivenData(msePtr);
-	}
+        
+        # ifdef DEBUGEdges
+        mesh_.addressingData().checkMesh();
+        # endif
+    }
+    else
+    {
+        deleteDemandDrivenData(msePtr);
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

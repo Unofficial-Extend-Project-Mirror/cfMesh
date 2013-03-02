@@ -83,21 +83,21 @@ class flmaMesh
         (
             OFstream& flmaGeometryFile
         ) const;
-	
-		void writeCellTypes
-		(
-			OFstream& flmaGeometryFile
-		) const;
+    
+        void writeCellTypes
+        (
+            OFstream& flmaGeometryFile
+        ) const;
 
         void writeCells
         (
             OFstream& flmaGeometryFile
         ) const;
-		
-		void writeSelections
-		(
-			OFstream& flmaGeometryFile
-		) const;
+        
+        void writeSelections
+        (
+            OFstream& flmaGeometryFile
+        ) const;
 
 public:
 

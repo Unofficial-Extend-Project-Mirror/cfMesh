@@ -48,9 +48,9 @@ void polyMeshGenAddressing::calcFaceCentresAndAreas() const
             << "Face centres or face areas already calculated"
             << abort(FatalError);
     }
-	
-	const pointFieldPMG& points = mesh_.points();
-	const faceListPMG& faces = mesh_.faces();
+    
+    const pointFieldPMG& points = mesh_.points();
+    const faceListPMG& faces = mesh_.faces();
 
     faceCentresPtr_ = new vectorField(faces.size());
     vectorField& fCtrs = *faceCentresPtr_;

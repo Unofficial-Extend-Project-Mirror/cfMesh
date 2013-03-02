@@ -56,7 +56,7 @@ class checkNonMappableCellConnections
 {
     // Private data
         //- Reference to polyMeshGen
-		polyMeshGen& mesh_;
+        polyMeshGen& mesh_;
     
         //- type of cell
         labelList cellType_;
@@ -95,7 +95,7 @@ public:
 
     // Member Functions
         //- find problematic cells
-		void findCells(labelHashSet& badCells);
+        void findCells(labelHashSet& badCells);
 
         //- find and remove problematic cells
         bool removeCells();

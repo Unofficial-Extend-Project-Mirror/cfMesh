@@ -41,51 +41,51 @@ void meshSurfaceCutter::checkFaceDirections()
     labelList own(polyFaces_.size(),-1);
     labelList nei(nIntFaces_,-1);
 
-	help::calculateOwnersAndNeighbours
-	(
-		polyFaces_,
-		polyCells_,
-		own,
-		nei
-	);
+    help::calculateOwnersAndNeighbours
+    (
+        polyFaces_,
+        polyCells_,
+        own,
+        nei
+    );
 
     //- check if the boundary face normals point outside
     for(register label faceI=patchStart_[0];faceI < polyFaces_.size();faceI++)
     {
-		const cell& c = polyCells_[own[faceI]];
-		
-		const edgeList fEdges = polyFaces_[faceI].edges();
-		
-		forAll(c, fI)
-			if( faceI != c[fI] )
-			{
-				const edgeList nEdges = polyFaces_[c[fI]].edges();
-				
-				forAll(fEdges, eI)
-				{
-					bool found(false);
-					
-					forAll(nEdges, eJ)
-						if( fEdges[eI] == nEdges[eJ] )
-						{
-							if(
-								(
-									(own[c[fI]] == own[faceI]) &&
-									(fEdges[eI].start() == nEdges[eJ].start())
-								) ||
-								(
-									(nei[c[fI]] == own[faceI]) &&
-									(fEdges[eI].start() == nEdges[eJ].end())
-								)
-							)
-								polyFaces_[faceI] =
-									polyFaces_[faceI].reverseFace();
-						}
-						
-					if( found )
-						break;
-				}
-			}
+        const cell& c = polyCells_[own[faceI]];
+        
+        const edgeList fEdges = polyFaces_[faceI].edges();
+        
+        forAll(c, fI)
+            if( faceI != c[fI] )
+            {
+                const edgeList nEdges = polyFaces_[c[fI]].edges();
+                
+                forAll(fEdges, eI)
+                {
+                    bool found(false);
+                    
+                    forAll(nEdges, eJ)
+                        if( fEdges[eI] == nEdges[eJ] )
+                        {
+                            if(
+                                (
+                                    (own[c[fI]] == own[faceI]) &&
+                                    (fEdges[eI].start() == nEdges[eJ].start())
+                                ) ||
+                                (
+                                    (nei[c[fI]] == own[faceI]) &&
+                                    (fEdges[eI].start() == nEdges[eJ].end())
+                                )
+                            )
+                                polyFaces_[faceI] =
+                                    polyFaces_[faceI].reverseFace();
+                        }
+                        
+                    if( found )
+                        break;
+                }
+            }
     }
 }
 

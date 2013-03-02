@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
-	
+    
     omg.writeMesh();
 
     Info << "End\n" << endl;

@@ -76,12 +76,12 @@ dictionary writeProcessorPatch::dict() const
 {
     dictionary dict;
 
-	dict.add("type", type_);
+    dict.add("type", type_);
 
     dict.add("nFaces", nFaces_);
     dict.add("startFace", startFace_);
-	dict.add("myProcNo", myProcNo_);
-	dict.add("neighbProcNo", neighbProcNo_);
+    dict.add("myProcNo", myProcNo_);
+    dict.add("neighbProcNo", neighbProcNo_);
 
     return dict;
 }
@@ -112,14 +112,14 @@ Ostream& writeProcessorPatch::operator<<(Ostream& os) const
 
 Istream& writeProcessorPatch::operator>>(Istream& is)
 {
-	token t;
-	is >> name_ >> t;
-	is >> t >> type_ >> t;
-	is >> t >> nFaces_ >> t;
-	is >> t >> startFace_ >> t;
+    token t;
+    is >> name_ >> t;
+    is >> t >> type_ >> t;
+    is >> t >> nFaces_ >> t;
+    is >> t >> startFace_ >> t;
     is >> t >> myProcNo_ >> t;
     is >> t >> neighbProcNo_ >> t;
-	is >> t;
+    is >> t;
 
     return is;
 }

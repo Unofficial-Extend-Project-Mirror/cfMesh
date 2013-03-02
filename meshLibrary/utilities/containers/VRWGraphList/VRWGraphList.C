@@ -36,14 +36,14 @@ Foam::Ostream& Foam::operator<<
     const Foam::VRWGraphList& DL
 )
 {
-	os << DL.size() << nl << token::BEGIN_LIST;
-	
-	for(register label i=0;i<DL.size();++i)
-	{
-		os << nl << DL[i];
-	}
-	
-	os << nl << token::END_LIST;
+    os << DL.size() << nl << token::BEGIN_LIST;
+    
+    for(register label i=0;i<DL.size();++i)
+    {
+        os << nl << DL[i];
+    }
+    
+    os << nl << token::END_LIST;
     return os;
 }
 
@@ -55,15 +55,15 @@ Foam::Istream& Foam::operator>>
     Foam::VRWGraphList<T, width>& DL
 )
 {
-	label size;
-	T e;
-	is >> size;
-	DL.setSize(size);
-	for(IndexType i=0;i<size;++i)
-	{
-		is >> e;
-		DL[i] = e;
-	}
+    label size;
+    T e;
+    is >> size;
+    DL.setSize(size);
+    for(IndexType i=0;i<size;++i)
+    {
+        is >> e;
+        DL[i] = e;
+    }
 
     return is;
 }

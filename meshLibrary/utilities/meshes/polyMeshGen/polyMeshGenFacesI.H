@@ -36,34 +36,34 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 inline const faceListPMG& polyMeshGenFaces::faces() const
 {
-	return faces_;
+    return faces_;
 }
-		
+        
 inline label polyMeshGenFaces::nInternalFaces() const
 {
-	if( !(ownerPtr_ && neighbourPtr_) )
-		calculateOwnersAndNeighbours();
+    if( !(ownerPtr_ && neighbourPtr_) )
+        calculateOwnersAndNeighbours();
 
-	return nIntFaces_;
+    return nIntFaces_;
 }
 
 inline const labelList& polyMeshGenFaces::owner() const
 {
-	if( !ownerPtr_ )
-		calculateOwnersAndNeighbours();
-	
-	return *ownerPtr_;
+    if( !ownerPtr_ )
+        calculateOwnersAndNeighbours();
+    
+    return *ownerPtr_;
 }
 
 inline const labelList& polyMeshGenFaces::neighbour() const
 {
-	if( !neighbourPtr_ )
-		calculateOwnersAndNeighbours();
-	
-	return *neighbourPtr_;
+    if( !neighbourPtr_ )
+        calculateOwnersAndNeighbours();
+    
+    return *neighbourPtr_;
 }
 
 inline const PtrList<writeProcessorPatch>&
@@ -74,7 +74,7 @@ polyMeshGenFaces::procBoundaries() const
 
 inline const PtrList<writePatch>& polyMeshGenFaces::boundaries() const
 {
-	return boundaries_;
+    return boundaries_;
 }
 
 inline void polyMeshGenFaces::addFaceToSubset

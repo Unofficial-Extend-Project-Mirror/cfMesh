@@ -70,13 +70,13 @@ label faceDecomposition::concaveVertex() const
             }
 
             label vrtIndex = edges[eI].commonVertex(edges[next]);
-			/*
+            /*
             if(
                 pointTriIndex_[vrtIndex] &&
                 pointTriIndex_[vrtIndex]->size() > 1
             )
-			*/
-			concaveVrt = vrtIndex;
+            */
+            concaveVrt = vrtIndex;
         }
     }
 
@@ -87,12 +87,12 @@ label faceDecomposition::concaveVertex() const
 //- Constructor
 faceDecomposition::faceDecomposition
 (
-	const face& f,
-	const pointField& pts
+    const face& f,
+    const pointField& pts
 )
 :
-	f_(f),
-	points_(pts)
+    f_(f),
+    points_(pts)
 {
 }
 
@@ -113,7 +113,7 @@ bool faceDecomposition::isFaceConvex() const
 
 bool faceDecomposition::isFacePlanar(const scalar tol) const
 {
-	vector nref = f_.normal(points_);
+    vector nref = f_.normal(points_);
     nref /= mag(nref);
 
     forAll(f_, pI)
@@ -138,7 +138,7 @@ bool faceDecomposition::isFacePlanar() const
     
     tol *= 0.05;
 
-	return isFacePlanar(tol);
+    return isFacePlanar(tol);
 }
 
 faceList faceDecomposition::decomposeFace() const
@@ -267,13 +267,13 @@ faceList faceDecomposition::decomposeFaceIntoTriangles(const label cv) const
         Info << "face " << faceNo << "  " << f_
             << " is decomposed into " << fcs << endl;
         # endif
-		
-		return fcs;
+        
+        return fcs;
     }
-	
-	faceList fcs(1, f_);
-	
-	return fcs;
+    
+    faceList fcs(1, f_);
+    
+    return fcs;
 }
 
 faceList faceDecomposition::decomposeFaceIntoTriangles() const

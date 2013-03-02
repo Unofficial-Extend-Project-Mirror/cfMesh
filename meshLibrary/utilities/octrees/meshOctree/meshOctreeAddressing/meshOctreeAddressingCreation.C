@@ -67,17 +67,17 @@ void meshOctreeAddressing::createOctreePoints() const
         forAllRow(nodeLabels, cubeI, pI)
         {
             forAllRow(nodeLabels, cubeI, nI)
-				octreePoints[nodeLabels(cubeI, nI)] = vertices[nI];
+                octreePoints[nodeLabels(cubeI, nI)] = vertices[nI];
         }
     }
 }
 
 void meshOctreeAddressing::createNodeLabels() const
 {
-	const List<direction>& boxType = this->boxType();
+    const List<direction>& boxType = this->boxType();
 
-	nodeLabelsPtr_ = new VRWGraph(octree_.numberOfLeaves());
-	VRWGraph& nodeLabels = *nodeLabelsPtr_;
+    nodeLabelsPtr_ = new VRWGraph(octree_.numberOfLeaves());
+    VRWGraph& nodeLabels = *nodeLabelsPtr_;
 
     //- allocate storage for node labels
     forAll(nodeLabels, leafI)
@@ -232,11 +232,11 @@ void meshOctreeAddressing::createNodeLabels() const
 void meshOctreeAddressing::createNodeLeaves() const
 {
     const List<direction>& boxType = this->boxType();
-	const VRWGraph& nodeLabels = this->nodeLabels();
+    const VRWGraph& nodeLabels = this->nodeLabels();
 
-	//- allocate nodeLeavesPtr_
-	nodeLeavesPtr_ = new FRWGraph<label, 8>(nNodes_);
-	FRWGraph<label, 8>& nodeLeaves = *nodeLeavesPtr_;
+    //- allocate nodeLeavesPtr_
+    nodeLeavesPtr_ = new FRWGraph<label, 8>(nNodes_);
+    FRWGraph<label, 8>& nodeLeaves = *nodeLeavesPtr_;
 
     boolList storedNode(nNodes_, false);
     # pragma omp parallel for schedule(dynamic, 100)
@@ -270,20 +270,20 @@ void meshOctreeAddressing::createNodeLeaves() const
 
 void meshOctreeAddressing::findUsedBoxes() const
 {
-	boxTypePtr_ = new List<direction>(octree_.numberOfLeaves(), NONE);
-	List<direction>& boxType = *boxTypePtr_;
+    boxTypePtr_ = new List<direction>(octree_.numberOfLeaves(), NONE);
+    List<direction>& boxType = *boxTypePtr_;
 
     # pragma omp parallel for schedule(dynamic, 40)
     forAll(boxType, leafI)
-	{
-		const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
+    {
+        const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
 
-		if(
-			!octree_.hasContainedTriangles(leafI) &&
-			(leaf.cubeType() & meshOctreeCubeBasic::INSIDE)
-		)
-			boxType[leafI] |= MESHCELL;
-	}
+        if(
+            !octree_.hasContainedTriangles(leafI) &&
+            (leaf.cubeType() & meshOctreeCubeBasic::INSIDE)
+        )
+            boxType[leafI] |= MESHCELL;
+    }
 
     if( meshDict_.found("nonManifoldMeshing") )
     {
@@ -304,14 +304,14 @@ void meshOctreeAddressing::findUsedBoxes() const
         }
     }
 
-	if( useDATABoxes_ )
-	{
-		Info << "Using DATA boxes" << endl;
+    if( useDATABoxes_ )
+    {
+        Info << "Using DATA boxes" << endl;
 
         forAll(boxType, leafI)
         {
-			if( octree_.hasContainedTriangles(leafI) )
-				boxType[leafI] |= MESHCELL;
+            if( octree_.hasContainedTriangles(leafI) )
+                boxType[leafI] |= MESHCELL;
         }
 
         //- do not use boxes intersecting given patches
@@ -365,13 +365,13 @@ void meshOctreeAddressing::findUsedBoxes() const
                 }
             }
         }
-	}
-	else if( meshDict_.found("keepCellsIntersectingPatches") )
-	{
-		const wordHashSet patchesToKeep
-		(
-			meshDict_.lookup("keepCellsIntersectingPatches")
-		);
+    }
+    else if( meshDict_.found("keepCellsIntersectingPatches") )
+    {
+        const wordHashSet patchesToKeep
+        (
+            meshDict_.lookup("keepCellsIntersectingPatches")
+        );
 
         const triSurf& ts = octree_.surface();
         boolList keepFacets(ts.size(), false);
@@ -415,34 +415,34 @@ void meshOctreeAddressing::findUsedBoxes() const
                 }
             }
         }
-	}
+    }
 
-	//- set BOUNDARY flag to boxes which do not have a MESHCELL flag
-	DynList<label> neighs;
-	# pragma omp parallel for if( boxType.size() > 1000 ) \
+    //- set BOUNDARY flag to boxes which do not have a MESHCELL flag
+    DynList<label> neighs;
+    # pragma omp parallel for if( boxType.size() > 1000 ) \
     private(neighs) schedule(dynamic, 20)
-	forAll(boxType, leafI)
-	{
-		if( boxType[leafI] & MESHCELL )
-		{
-			for(label i=0;i<6;++i)
-			{
-				neighs.clear();
-				octree_.findNeighboursInDirection(leafI, i, neighs);
+    forAll(boxType, leafI)
+    {
+        if( boxType[leafI] & MESHCELL )
+        {
+            for(label i=0;i<6;++i)
+            {
+                neighs.clear();
+                octree_.findNeighboursInDirection(leafI, i, neighs);
 
-				forAll(neighs, neiI)
-				{
-					const label neiLabel = neighs[neiI];
+                forAll(neighs, neiI)
+                {
+                    const label neiLabel = neighs[neiI];
 
                     if( neiLabel < 0 )
                         continue;
 
-					if( !(boxType[neiLabel] & MESHCELL) )
-						boxType[neiLabel] = BOUNDARY;
-				}
-			}
-		}
-	}
+                    if( !(boxType[neiLabel] & MESHCELL) )
+                        boxType[neiLabel] = BOUNDARY;
+                }
+            }
+        }
+    }
 
     if( Pstream::parRun() )
     {
@@ -492,41 +492,41 @@ void meshOctreeAddressing::findUsedBoxes() const
 
 void meshOctreeAddressing::calculateNodeType() const
 {
-	const FRWGraph<label, 8>& nodeLeaves = this->nodeLeaves();
+    const FRWGraph<label, 8>& nodeLeaves = this->nodeLeaves();
 
-	nodeTypePtr_ = new List<direction>(nNodes_, NONE);
-	List<direction>& nodeType = *nodeTypePtr_;
+    nodeTypePtr_ = new List<direction>(nNodes_, NONE);
+    List<direction>& nodeType = *nodeTypePtr_;
 
-	# pragma omp parallel for schedule(static, 1)
-	forAll(nodeLeaves, nodeI)
-	{
-		forAllRow(nodeLeaves, nodeI, nlI)
-		{
-			const label leafI = nodeLeaves(nodeI, nlI);
+    # pragma omp parallel for schedule(static, 1)
+    forAll(nodeLeaves, nodeI)
+    {
+        forAllRow(nodeLeaves, nodeI, nlI)
+        {
+            const label leafI = nodeLeaves(nodeI, nlI);
 
-			if( leafI == -1 )
-				continue;
+            if( leafI == -1 )
+                continue;
 
-			const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
+            const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
 
-			if(
+            if(
                 (oc.cubeType() & meshOctreeCubeBasic::OUTSIDE) ||
                 (oc.cubeType() & meshOctreeCubeBasic::UNKNOWN)
             )
-			{
-				nodeType[nodeI] |= OUTERNODE;
-				break;
-			}
-			else if(
-				!octree_.hasContainedTriangles(leafI) &&
-				(oc.cubeType() &  meshOctreeCubeBasic::INSIDE)
-			)
-			{
-				nodeType[nodeI] |= INNERNODE;
-				break;
-			}
-		}
-	}
+            {
+                nodeType[nodeI] |= OUTERNODE;
+                break;
+            }
+            else if(
+                !octree_.hasContainedTriangles(leafI) &&
+                (oc.cubeType() &  meshOctreeCubeBasic::INSIDE)
+            )
+            {
+                nodeType[nodeI] |= INNERNODE;
+                break;
+            }
+        }
+    }
 }
 
 void meshOctreeAddressing::createOctreeFaces() const
@@ -537,252 +537,252 @@ void meshOctreeAddressing::createOctreeFaces() const
 
     const VRWGraph& nodeLabels = this->nodeLabels();
     const List<direction>& boxType = this->boxType();
-	this->nodeLeaves();
+    this->nodeLeaves();
 
-	label nFaces(0);
-	labelList rowSizes, chunkSizes;
+    label nFaces(0);
+    labelList rowSizes, chunkSizes;
 
-	# pragma omp parallel
-	{
-		//- faces are created and stored into helper arrays, and each thread
-		//- allocates its own graph for storing faces. The faces are generated
-		//- by dividing the octree leaves into chunks, and distributing these
-		//- chunks over the threads. There are four chunks per each thread to
-		//- improve load balancing. The number of faces generated in each chunk
-		//- is stored and later in used to store the faces into the octree faces
-		//- graph in the correct order
-		VRWGraph helperFaces;
-		labelListPMG helperOwner, helperNeighbour;
+    # pragma omp parallel
+    {
+        //- faces are created and stored into helper arrays, and each thread
+        //- allocates its own graph for storing faces. The faces are generated
+        //- by dividing the octree leaves into chunks, and distributing these
+        //- chunks over the threads. There are four chunks per each thread to
+        //- improve load balancing. The number of faces generated in each chunk
+        //- is stored and later in used to store the faces into the octree faces
+        //- graph in the correct order
+        VRWGraph helperFaces;
+        labelListPMG helperOwner, helperNeighbour;
 
-		const label nChunks = 4 * omp_get_num_threads();
-		const label chunkSize = boxType.size() / nChunks + 1;
+        const label nChunks = 4 * omp_get_num_threads();
+        const label chunkSize = boxType.size() / nChunks + 1;
 
-		# pragma omp master
-		{
-			chunkSizes.setSize(nChunks);
-			chunkSizes = 0;
-		}
+        # pragma omp master
+        {
+            chunkSizes.setSize(nChunks);
+            chunkSizes = 0;
+        }
 
-		# pragma omp barrier
+        # pragma omp barrier
 
-		for
-		(
-			label chunkI=omp_get_thread_num();
-			chunkI<nChunks;
-			chunkI+=omp_get_num_threads()
-		)
-		{
-			const label start = chunkSize * chunkI;
-			const label end = Foam::min(start+chunkSize, boxType.size());
+        for
+        (
+            label chunkI=omp_get_thread_num();
+            chunkI<nChunks;
+            chunkI+=omp_get_num_threads()
+        )
+        {
+            const label start = chunkSize * chunkI;
+            const label end = Foam::min(start+chunkSize, boxType.size());
 
-			const label nBefore = helperFaces.size();
+            const label nBefore = helperFaces.size();
 
-			for(label leafI=start;leafI<end;++leafI)
-			{
-				const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
+            for(label leafI=start;leafI<end;++leafI)
+            {
+                const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
 
-				if( boxType[leafI] & MESHCELL )
-				{
-					FixedList<label, 12> edgeCentreLabel;
-					for(label i=0;i<12;++i)
-						edgeCentreLabel[i] = findEdgeCentre(leafI, i);
+                if( boxType[leafI] & MESHCELL )
+                {
+                    FixedList<label, 12> edgeCentreLabel;
+                    for(label i=0;i<12;++i)
+                        edgeCentreLabel[i] = findEdgeCentre(leafI, i);
 
-					for(label fI=0;fI<6;++fI)
-					{
-						DynList<label> neighbours;
-						octree_.findNeighboursInDirection
-						(
-							leafI,
-							fI,
-							neighbours
-						);
+                    for(label fI=0;fI<6;++fI)
+                    {
+                        DynList<label> neighbours;
+                        octree_.findNeighboursInDirection
+                        (
+                            leafI,
+                            fI,
+                            neighbours
+                        );
 
-						if( neighbours.size() != 1 )
-							continue;
+                        if( neighbours.size() != 1 )
+                            continue;
 
-						const label nei = neighbours[0];
+                        const label nei = neighbours[0];
 
-						//- stop if the neighbour is on other processor
-						if( nei == meshOctreeCubeBasic::OTHERPROC )
-							continue;
+                        //- stop if the neighbour is on other processor
+                        if( nei == meshOctreeCubeBasic::OTHERPROC )
+                            continue;
 
-						//- create face
-						DynList<label, 8> f;
-						for(label pI=0;pI<4;++pI)
-						{
-							const label nI =
-								meshOctreeCubeCoordinates::faceNodes_[fI][pI];
-							const label feI =
-								meshOctreeCubeCoordinates::faceEdges_[fI][pI];
+                        //- create face
+                        DynList<label, 8> f;
+                        for(label pI=0;pI<4;++pI)
+                        {
+                            const label nI =
+                                meshOctreeCubeCoordinates::faceNodes_[fI][pI];
+                            const label feI =
+                                meshOctreeCubeCoordinates::faceEdges_[fI][pI];
 
-							f.append(nodeLabels(leafI, nI));
+                            f.append(nodeLabels(leafI, nI));
 
-							if( edgeCentreLabel[feI] != -1 )
-								f.append(edgeCentreLabel[feI]);
-						}
+                            if( edgeCentreLabel[feI] != -1 )
+                                f.append(edgeCentreLabel[feI]);
+                        }
 
-						if( nei < 0 )
-						{
-							//- face is at the boundary of the octree
-							helperFaces.appendList(f);
-							helperOwner.append(leafI);
-							helperNeighbour.append(-1);
-						}
-						else if( boxType[nei] & MESHCELL )
-						{
-							//- face is an internal face
-							if( nei > leafI )
-							{
-								helperFaces.appendList(f);
-								helperOwner.append(leafI);
-								helperNeighbour.append(nei);
-							}
-							else if
-							(
-								octree_.returnLeaf(nei).level() < oc.level()
-							)
-							{
-								//- append a reversed face
-								label i(1);
-								for(label j=f.size()-1;j>i;--j)
-								{
-									const label add = f[j];
-									f[j] = f[i];
-									f[i] = add;
-									++i;
-								}
+                        if( nei < 0 )
+                        {
+                            //- face is at the boundary of the octree
+                            helperFaces.appendList(f);
+                            helperOwner.append(leafI);
+                            helperNeighbour.append(-1);
+                        }
+                        else if( boxType[nei] & MESHCELL )
+                        {
+                            //- face is an internal face
+                            if( nei > leafI )
+                            {
+                                helperFaces.appendList(f);
+                                helperOwner.append(leafI);
+                                helperNeighbour.append(nei);
+                            }
+                            else if
+                            (
+                                octree_.returnLeaf(nei).level() < oc.level()
+                            )
+                            {
+                                //- append a reversed face
+                                label i(1);
+                                for(label j=f.size()-1;j>i;--j)
+                                {
+                                    const label add = f[j];
+                                    f[j] = f[i];
+                                    f[i] = add;
+                                    ++i;
+                                }
 
-								helperFaces.appendList(f);
-								helperOwner.append(nei);
-								helperNeighbour.append(leafI);
-							}
-						}
-						else if( boxType[nei] & BOUNDARY )
-						{
-							//- face is at the boundary of the mesh cells
-							helperFaces.appendList(f);
-							helperOwner.append(leafI);
-							helperNeighbour.append(nei);
-						}
-					}
-				}
-				else if( boxType[leafI] & BOUNDARY )
-				{
-					for(label fI=0;fI<6;++fI)
-					{
-						DynList<label> neighbours;
-						octree_.findNeighboursInDirection
-						(
-							leafI,
-							fI,
-							neighbours
-						);
+                                helperFaces.appendList(f);
+                                helperOwner.append(nei);
+                                helperNeighbour.append(leafI);
+                            }
+                        }
+                        else if( boxType[nei] & BOUNDARY )
+                        {
+                            //- face is at the boundary of the mesh cells
+                            helperFaces.appendList(f);
+                            helperOwner.append(leafI);
+                            helperNeighbour.append(nei);
+                        }
+                    }
+                }
+                else if( boxType[leafI] & BOUNDARY )
+                {
+                    for(label fI=0;fI<6;++fI)
+                    {
+                        DynList<label> neighbours;
+                        octree_.findNeighboursInDirection
+                        (
+                            leafI,
+                            fI,
+                            neighbours
+                        );
 
-						if( neighbours.size() != 1 )
-							continue;
-						const label nei = neighbours[0];
-						if( nei < 0 )
-							continue;
-						if(
-							(boxType[nei] & MESHCELL) &&
-							(octree_.returnLeaf(nei).level() < oc.level())
-						)
-						{
-							//- add a boundary face
-							const label* fNodes =
-								meshOctreeCubeCoordinates::faceNodes_[fI];
-							face cf(4);
-							for(label i=0;i<4;++i)
-							{
-								cf[i] = nodeLabels(leafI, fNodes[i]);
-							}
+                        if( neighbours.size() != 1 )
+                            continue;
+                        const label nei = neighbours[0];
+                        if( nei < 0 )
+                            continue;
+                        if(
+                            (boxType[nei] & MESHCELL) &&
+                            (octree_.returnLeaf(nei).level() < oc.level())
+                        )
+                        {
+                            //- add a boundary face
+                            const label* fNodes =
+                                meshOctreeCubeCoordinates::faceNodes_[fI];
+                            face cf(4);
+                            for(label i=0;i<4;++i)
+                            {
+                                cf[i] = nodeLabels(leafI, fNodes[i]);
+                            }
 
-							helperFaces.appendList(cf.reverseFace());
-							helperOwner.append(nei);
-							helperNeighbour.append(leafI);
-						}
-					}
-				}
-			}
+                            helperFaces.appendList(cf.reverseFace());
+                            helperOwner.append(nei);
+                            helperNeighbour.append(leafI);
+                        }
+                    }
+                }
+            }
 
-			//- store the size of this chunk
-			chunkSizes[chunkI] = helperFaces.size() - nBefore;
-		}
+            //- store the size of this chunk
+            chunkSizes[chunkI] = helperFaces.size() - nBefore;
+        }
 
-		//- set the sizes of faces graph
-		# pragma omp critical
-		nFaces += helperFaces.size();
+        //- set the sizes of faces graph
+        # pragma omp critical
+        nFaces += helperFaces.size();
 
-		# pragma omp barrier
+        # pragma omp barrier
 
-		# pragma omp master
-		{
-			rowSizes.setSize(nFaces);
-			octreeFacesPtr_->setSize(nFaces);
-			octreeFacesOwnersPtr_->setSize(nFaces);
-			octreeFacesNeighboursPtr_->setSize(nFaces);
-		}
+        # pragma omp master
+        {
+            rowSizes.setSize(nFaces);
+            octreeFacesPtr_->setSize(nFaces);
+            octreeFacesOwnersPtr_->setSize(nFaces);
+            octreeFacesNeighboursPtr_->setSize(nFaces);
+        }
 
-		# pragma omp barrier
+        # pragma omp barrier
 
-		//- set the size of face graph rows and copy owners and neighbours
-		for
-		(
-			label chunkI=omp_get_thread_num();
-			chunkI<nChunks;
-			chunkI+=omp_get_num_threads()
-		)
-		{
-			label start(0), localStart(0);
-			for(label i=0;i<chunkI;++i)
-				start += chunkSizes[i];
-			for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
-				localStart += chunkSizes[i];
+        //- set the size of face graph rows and copy owners and neighbours
+        for
+        (
+            label chunkI=omp_get_thread_num();
+            chunkI<nChunks;
+            chunkI+=omp_get_num_threads()
+        )
+        {
+            label start(0), localStart(0);
+            for(label i=0;i<chunkI;++i)
+                start += chunkSizes[i];
+            for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
+                localStart += chunkSizes[i];
 
-			for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)
-			{
-				octreeFacesOwnersPtr_->operator[](start) =
-					helperOwner[localStart];
-				octreeFacesNeighboursPtr_->operator[](start) =
-					helperNeighbour[localStart];
-				rowSizes[start++] = helperFaces.sizeOfRow(localStart++);
-			}
-		}
+            for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)
+            {
+                octreeFacesOwnersPtr_->operator[](start) =
+                    helperOwner[localStart];
+                octreeFacesNeighboursPtr_->operator[](start) =
+                    helperNeighbour[localStart];
+                rowSizes[start++] = helperFaces.sizeOfRow(localStart++);
+            }
+        }
 
-		# pragma omp barrier
+        # pragma omp barrier
 
-		//- set the size of octree faces
-		# pragma omp master
-		VRWGraphSMPModifier(*octreeFacesPtr_).setSizeAndRowSize(rowSizes);
+        //- set the size of octree faces
+        # pragma omp master
+        VRWGraphSMPModifier(*octreeFacesPtr_).setSizeAndRowSize(rowSizes);
 
-		# pragma omp barrier
+        # pragma omp barrier
 
-		//- copy the data into octree faces
-		for
-		(
-			label chunkI=omp_get_thread_num();
-			chunkI<nChunks;
-			chunkI+=omp_get_num_threads()
-		)
-		{
-			label start(0), localStart(0);
+        //- copy the data into octree faces
+        for
+        (
+            label chunkI=omp_get_thread_num();
+            chunkI<nChunks;
+            chunkI+=omp_get_num_threads()
+        )
+        {
+            label start(0), localStart(0);
 
-			for(label i=0;i<chunkI;++i)
-				start += chunkSizes[i];
-			for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
-				localStart += chunkSizes[i];
+            for(label i=0;i<chunkI;++i)
+                start += chunkSizes[i];
+            for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
+                localStart += chunkSizes[i];
 
-			for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)
-			{
-				for(label i=0;i<helperFaces.sizeOfRow(localStart);++i)
-					octreeFacesPtr_->operator()(start, i) =
-						helperFaces(localStart, i);
+            for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)
+            {
+                for(label i=0;i<helperFaces.sizeOfRow(localStart);++i)
+                    octreeFacesPtr_->operator()(start, i) =
+                        helperFaces(localStart, i);
 
-				++start;
-				++localStart;
-			}
-		}
-	}
+                ++start;
+                ++localStart;
+            }
+        }
+    }
 
     # ifdef DEBUGVrt
     List<vector> sum(octree_.numberOfLeaves(), vector::zero);

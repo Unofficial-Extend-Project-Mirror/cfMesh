@@ -129,20 +129,20 @@ void Foam::flmaMesh::writePoints
     Foam::OFstream& flmaGeometryFile
 ) const
 {
-	flmaGeometryFile << (mesh_.points().size()+additionalPoints_.size()) << nl;
-	const pointFieldPMG& points = mesh_.points();
-	forAll(points, pointI)
-	{
-		const point& p = points[pointI];
-		flmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
+    flmaGeometryFile << (mesh_.points().size()+additionalPoints_.size()) << nl;
+    const pointFieldPMG& points = mesh_.points();
+    forAll(points, pointI)
+    {
+        const point& p = points[pointI];
+        flmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
+    }
     forAll(additionalPoints_, pointI)
     {
         const point& p = additionalPoints_[pointI];
         flmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
-	
-	flmaGeometryFile << nl;
+    }
+    
+    flmaGeometryFile << nl;
 }
 
 void flmaMesh::writeCells
@@ -152,13 +152,13 @@ void flmaMesh::writeCells
 {
     const labelList& owner = mesh_.owner();
     const faceListPMG& faces = mesh_.faces();
-	const cellListPMG& cells = mesh_.cells();
-	tetMatcher tet;
+    const cellListPMG& cells = mesh_.cells();
+    tetMatcher tet;
     pyrMatcher pyr;
     hexMatcher hex;
     prismMatcher prism;
     
-	flmaGeometryFile << cells.size() << nl;
+    flmaGeometryFile << cells.size() << nl;
     
     forAll(cells, cellI)
     {
@@ -210,11 +210,11 @@ void Foam::flmaMesh::writeCellTypes
 
 void Foam::flmaMesh::writeSelections
 (
-	Foam::OFstream& flmaGeometryFile
+    Foam::OFstream& flmaGeometryFile
 ) const
 {
     //- write patches as face selections
-	const PtrList<writePatch>& patches = mesh_.boundaries();
+    const PtrList<writePatch>& patches = mesh_.boundaries();
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     const cellListPMG& cells = mesh_.cells();
@@ -238,7 +238,7 @@ void Foam::flmaMesh::writeSelections
     nSubsets += indices.size();
     Info << "Mesh has " << indices.size() << " cell subsets" << endl;
     
-	flmaGeometryFile << nSubsets << nl;
+    flmaGeometryFile << nSubsets << nl;
     
     //- write patches as face selections
     forAll(patches, patchI)
@@ -439,13 +439,13 @@ void flmaMesh::write
     OFstream& flmaGeometryFile
 ) const
 {
-	writePoints(flmaGeometryFile);
+    writePoints(flmaGeometryFile);
 
-	writeCells(flmaGeometryFile);
+    writeCells(flmaGeometryFile);
     
     writeCellTypes(flmaGeometryFile);
 
-	writeSelections(flmaGeometryFile);
+    writeSelections(flmaGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

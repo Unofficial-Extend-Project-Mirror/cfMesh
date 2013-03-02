@@ -40,15 +40,15 @@ namespace Foam
 
 void meshGenGUI::createSurface(const fileName& name) const
 {
-	surfacePtr_ = new triSurface(name);
+    surfacePtr_ = new triSurface(name);
 }
 
 const triSurface& meshGenGUI::surface() const
 {
-	if( !surfacePtr_ )
-		createSurface(surfaceFileName());
-	
-	return *surfacePtr_;
+    if( !surfacePtr_ )
+        createSurface(surfaceFileName());
+    
+    return *surfacePtr_;
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -59,9 +59,9 @@ meshGenGUI::meshGenGUI
     const objectRegistry& reg
 )
 :
-	meshDict_
-	(
-		IOobject
+    meshDict_
+    (
+        IOobject
         (
             "meshDict",
             reg.time().system(),
@@ -70,9 +70,9 @@ meshGenGUI::meshGenGUI
             IOobject::AUTO_WRITE
         )
     ),
-	surfacePtr_(NULL)
+    surfacePtr_(NULL)
 {
-	Info << meshDict_ << endl;
+    Info << meshDict_ << endl;
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

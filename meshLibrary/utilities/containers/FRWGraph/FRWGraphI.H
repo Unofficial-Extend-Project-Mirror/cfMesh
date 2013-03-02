@@ -27,25 +27,25 @@ License
 template<class T, Foam::label width>
 void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
 {
-	if( (i < 0) || (i >= nRows_) )
-	{
-		FatalErrorIn
-		(
-			"void Foam::FRWGraph<T,width>::"
-			"checkIndex(const label i, const label j) const"
-		) << "Row index " << Foam::label(i)
-			<< " is not in range " << Foam::label(0)
-			<< " and " << nRows_ << abort(FatalError);
-	}
-	
-	if( (j < 0) || (j >= width) )
-		FatalErrorIn
-		(
-			"void Foam::FRWGraph<T,width>::"
-			"checkIndex(label const i) const"
-		) << "Column index " << Foam::label(j)
-			<< " is not in range " << Foam::label(0)
-			<< " and " << width << abort(FatalError);
+    if( (i < 0) || (i >= nRows_) )
+    {
+        FatalErrorIn
+        (
+            "void Foam::FRWGraph<T,width>::"
+            "checkIndex(const label i, const label j) const"
+        ) << "Row index " << Foam::label(i)
+            << " is not in range " << Foam::label(0)
+            << " and " << nRows_ << abort(FatalError);
+    }
+    
+    if( (j < 0) || (j >= width) )
+        FatalErrorIn
+        (
+            "void Foam::FRWGraph<T,width>::"
+            "checkIndex(label const i) const"
+        ) << "Column index " << Foam::label(j)
+            << " is not in range " << Foam::label(0)
+            << " and " << width << abort(FatalError);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -54,8 +54,8 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::FRWGraph()
 :
-	data_(),
-	nRows_(0)
+    data_(),
+    nRows_(0)
 {
 }
 
@@ -66,8 +66,8 @@ inline Foam::FRWGraph<T,width>::FRWGraph
     const label s
 )
 :
-	data_(s * width),
-	nRows_(s)
+    data_(s * width),
+    nRows_(s)
 {
 }
 
@@ -77,22 +77,22 @@ template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::FRWGraph
 (
     const label s,
-	const T& t
+    const T& t
 )
 :
-	data_(s * width, t),
-	nRows_(s)
+    data_(s * width, t),
+    nRows_(s)
 {
 }
 
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::FRWGraph
 (
-	const FRWGraph<T,width>& ol
+    const FRWGraph<T,width>& ol
 )
 :
-	data_(ol.data_),
-	nRows_(ol.nRows_)
+    data_(ol.data_),
+    nRows_(ol.nRows_)
 {
 }
 
@@ -113,111 +113,111 @@ inline Foam::label Foam::FRWGraph<T,width>::size() const
 template<class T, Foam::label width>
 inline Foam::label Foam::FRWGraph<T,width>::sizeOfRow(const label rowI) const
 {
-	return width;
+    return width;
 }
 
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::setSize(const label i)
 {
-	data_.setSize(i * width);
-	nRows_ = i;
+    data_.setSize(i * width);
+    nRows_ = i;
 }
 
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::clear()
 {
     data_.clear();
-	nRows_ = 0;
+    nRows_ = 0;
 }
 
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::appendFixedList
 (
-	const FixedList<T, width>& l
+    const FixedList<T, width>& l
 )
 {
-	forAll(l, elI)
-		data_.append(l[elI]);
-	++nRows_;
+    forAll(l, elI)
+        data_.append(l[elI]);
+    ++nRows_;
 }
 
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::setRow
 (
-	const label rowI,
-	const FixedList<T, width>& l
+    const label rowI,
+    const FixedList<T, width>& l
 )
 {
-	const label start = rowI * width;
-	forAll(l, elI)
-		data_[start+elI] = l[elI];
+    const label start = rowI * width;
+    forAll(l, elI)
+        data_[start+elI] = l[elI];
 }
 
 template<class T, Foam::label width>
 inline bool Foam::FRWGraph<T,width>::contains
 (
-	const label rowI,
+    const label rowI,
     const T& e
 ) const
 {
-	const label start = rowI * width;
-	for(register label i=0;i<width;++i)
-		if( data_[start+i] == e )
-			return true;
-	
-	return false;
+    const label start = rowI * width;
+    for(register label i=0;i<width;++i)
+        if( data_[start+i] == e )
+            return true;
+    
+    return false;
 }
 
 template<class T, Foam::label width>
 inline Foam::label Foam::FRWGraph<T,width>::containsAtPosition
 (
-	const label rowI,
+    const label rowI,
     const T& e
 ) const
 {
-	const label start = rowI * width;
-	for(register label i=0;i<width;++i)
-		if( data_[start+i] == e )
-			return i;
-	
-	return -1;
+    const label start = rowI * width;
+    for(register label i=0;i<width;++i)
+        if( data_[start+i] == e )
+            return i;
+    
+    return -1;
 }
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 template<class T, Foam::label width>
 inline const T& Foam::FRWGraph<T,width>::operator()
 (
-	const label i,
-	const label j
+    const label i,
+    const label j
 ) const
 {
-	#ifdef FULLDEBUG
-	checkIndex(i, j);
-	#endif
-		
-	return data_[i * width + j];
+    #ifdef FULLDEBUG
+    checkIndex(i, j);
+    #endif
+        
+    return data_[i * width + j];
 }
 
 template<class T, Foam::label width>
 inline T& Foam::FRWGraph<T,width>::operator()
 (
-	const label i, const label j
+    const label i, const label j
 )
 {
-	#ifdef FULLDEBUG
-	checkIndex(i, j);
-	#endif
-		
-	return data_[i * width + j];
+    #ifdef FULLDEBUG
+    checkIndex(i, j);
+    #endif
+        
+    return data_[i * width + j];
 }
 
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::operator=
 (
-	const FRWGraph<T, width>& l
+    const FRWGraph<T, width>& l
 )
 {
-	data_ = l.data_;
+    data_ = l.data_;
 }
 
 

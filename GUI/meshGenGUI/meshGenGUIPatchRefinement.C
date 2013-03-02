@@ -37,60 +37,60 @@ namespace Foam
 
 bool meshGenGUI::patchCellSizeEntryExist() const
 {
-	return meshDict_.found("patchCellSize");
+    return meshDict_.found("patchCellSize");
 }
 
 void meshGenGUI::addPatchCellSize(const patchRefinement& pr)
 {
-	if( patchCellSizeEntryExist() )
-	{
-		List<patchRefinement> prList(meshDict_.lookup("patchCellSize"));
-		
-		const label size = prList.size();
-		prList.setSize(size + 1);
-		prList[size] = pr;
-		
-		meshDict_.remove("patchCellSize");
-		meshDict_.add("patchCellSize", prList);
-	}
-	else
-	{
-		List<patchRefinement> prList(1);
-		prList[0] = pr;
-		
-		meshDict_.add("patchCellSize", prList);
-	}
+    if( patchCellSizeEntryExist() )
+    {
+        List<patchRefinement> prList(meshDict_.lookup("patchCellSize"));
+        
+        const label size = prList.size();
+        prList.setSize(size + 1);
+        prList[size] = pr;
+        
+        meshDict_.remove("patchCellSize");
+        meshDict_.add("patchCellSize", prList);
+    }
+    else
+    {
+        List<patchRefinement> prList(1);
+        prList[0] = pr;
+        
+        meshDict_.add("patchCellSize", prList);
+    }
 }
 
 void meshGenGUI::removePatchCellSize(const word& patchName)
 {
-	if( patchCellSizeEntryExist() )
-	{
-		List<patchRefinement> prList(meshDict_.lookup("patchCellSize"));
-		
-		label pos(-1);
-		forAll(prList, elI)
-			if( prList[elI].patchName() == patchName )
-			{
-				pos = elI;
-				break;
-			}
-			
-		prList[pos] = prList[prList.size() - 1];
-		prList.setSize(prList.size() - 1);
-		
-		meshDict_.remove("patchCellSize");
-		meshDict_.add("patchCellSize", prList);
-	}
+    if( patchCellSizeEntryExist() )
+    {
+        List<patchRefinement> prList(meshDict_.lookup("patchCellSize"));
+        
+        label pos(-1);
+        forAll(prList, elI)
+            if( prList[elI].patchName() == patchName )
+            {
+                pos = elI;
+                break;
+            }
+            
+        prList[pos] = prList[prList.size() - 1];
+        prList.setSize(prList.size() - 1);
+        
+        meshDict_.remove("patchCellSize");
+        meshDict_.add("patchCellSize", prList);
+    }
 }
 
 List<patchRefinement> meshGenGUI::patchCellSize() const
 {
-	if( !patchCellSizeEntryExist() )
-		return List<patchRefinement>();
-	
-	List<patchRefinement> pr(meshDict_.lookup("patchCellSize"));
-	return pr;
+    if( !patchCellSizeEntryExist() )
+        return List<patchRefinement>();
+    
+    List<patchRefinement> pr(meshDict_.lookup("patchCellSize"));
+    return pr;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

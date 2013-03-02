@@ -50,8 +50,8 @@ void polyMeshGenAddressing::calcPointPoints() const
         VRWGraph& pp = *ppPtr_;
 
         const faceListPMG& faces = mesh_.faces();
-		const VRWGraph& pointFaces = this->pointFaces();
-		
+        const VRWGraph& pointFaces = this->pointFaces();
+        
         labelList nPoints(pointFaces.size());
         
         const label nThreads = 3 * omp_get_num_procs();

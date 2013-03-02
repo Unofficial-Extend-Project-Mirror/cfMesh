@@ -64,7 +64,7 @@ void meshOctree::findNearestSurfacePoint
 
     //- find nearest surface vertex to the point p
     bool found;
-	label iterationI(0);
+    label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
 
     do
@@ -133,7 +133,7 @@ void meshOctree::findNearestSurfacePointInRegion
 
     //- find nearest surface vertex to the point p
     bool found;
-	label iterationI(0);
+    label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
 
     do

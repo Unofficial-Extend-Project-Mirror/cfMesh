@@ -55,22 +55,22 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
 
     //- update vertex normals
     meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
-	
-	//- create storage for data
-	std::map<label, labelledPoint> localData;
-	
+    
+    //- create storage for data
+    std::map<label, labelledPoint> localData;
+    
     //- exchange data with other processors
     std::map<label, LongList<refLabelledPoint> > exchangeData;
     
     const pointField& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-	const VRWGraph& pPoints = surfaceEngine_.pointPoints();
+    const VRWGraph& pPoints = surfaceEngine_.pointPoints();
     const vectorField& pNormals = surfaceEngine_.pointNormals();
     const labelList& globalPointLabel =
         surfaceEngine_.globalBoundaryPointLabel();
-	const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
-	const Map<label>& globalToLocal =
-		surfaceEngine_.globalToLocalBndPointAddressing();
+    const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+    const Map<label>& globalToLocal =
+        surfaceEngine_.globalToLocalBndPointAddressing();
     
     //- perform smoothing
     forAll(nodesToSmooth, pI)
@@ -83,33 +83,33 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         const plane pl(points[bPoints[bpI]], pNormals[bpI]);
         
         //- project points onto the plane
-		localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
-		labelledPoint& lpd = localData[bpI];
-		
-		forAllRow(pPoints, bpI, ppI)
-		{
-			const label nei = pPoints(bpI, ppI);
-			
-			if( bpAtProcs.sizeOfRow(nei) != 0 )
-			{
-				label pMin(Pstream::nProcs());
-				forAllRow(bpAtProcs, nei, procI)
-				{
-					const label procJ = bpAtProcs(nei, procI);
-					if( (procJ < pMin) && bpAtProcs.contains(bpI, procJ) )
-						pMin = procJ;
-				}
-				
-				if( pMin != Pstream::myProcNo() )
-					continue;
-			}
-			
-			const point& p = points[bPoints[nei]];
-			++lpd.pointLabel();
-			lpd.coordinates() += transformIntoPlane?pl.nearestPoint(p):p;
+        localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
+        labelledPoint& lpd = localData[bpI];
+        
+        forAllRow(pPoints, bpI, ppI)
+        {
+            const label nei = pPoints(bpI, ppI);
+            
+            if( bpAtProcs.sizeOfRow(nei) != 0 )
+            {
+                label pMin(Pstream::nProcs());
+                forAllRow(bpAtProcs, nei, procI)
+                {
+                    const label procJ = bpAtProcs(nei, procI);
+                    if( (procJ < pMin) && bpAtProcs.contains(bpI, procJ) )
+                        pMin = procJ;
+                }
+                
+                if( pMin != Pstream::myProcNo() )
+                    continue;
+            }
+            
+            const point& p = points[bPoints[nei]];
+            ++lpd.pointLabel();
+            lpd.coordinates() += transformIntoPlane?pl.nearestPoint(p):p;
         }
-		
-		forAllRow(bpAtProcs, bpI, procI)
+        
+        forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
             if( neiProc == Pstream::myProcNo() )
@@ -124,12 +124,12 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
             }
             
             //- add data to the list which will be sent to other processor
-			LongList<refLabelledPoint>& dts = exchangeData[neiProc];
-			dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
+            LongList<refLabelledPoint>& dts = exchangeData[neiProc];
+            dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
         }
-	}
-	
-	//- exchange data with other processors
+    }
+    
+    //- exchange data with other processors
     LongList<refLabelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
     
@@ -144,16 +144,16 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         lpd.coordinates() += lp.lPoint().coordinates();
     }
 
-	forAll(nodesToSmooth, pI)
-	{
-		const label bpI = nodesToSmooth[pI];
-		
-		if( localData.find(bpI) == localData.end() )
-			continue;
-		
+    forAll(nodesToSmooth, pI)
+    {
+        const label bpI = nodesToSmooth[pI];
+        
+        if( localData.find(bpI) == localData.end() )
+            continue;
+        
         //- create new point position
         const labelledPoint& lp = localData[bpI];
-		const point newP = lp.coordinates() / lp.pointLabel();
+        const point newP = lp.coordinates() / lp.pointLabel();
         
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
         surfaceModifier.moveBoundaryVertex
@@ -178,24 +178,24 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 
     //- update vertex normals
     meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
-	
-	//- create storage for data
-	std::map<label, labelledPoint> localData;
-	
+    
+    //- create storage for data
+    std::map<label, labelledPoint> localData;
+    
     //- exchange data with other processors
     std::map<label, LongList<refLabelledPoint> > exchangeData;
     
     const pointField& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-	const VRWGraph& pFaces = surfaceEngine_.pointFaces();
+    const VRWGraph& pFaces = surfaceEngine_.pointFaces();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const vectorField& pNormals = surfaceEngine_.pointNormals();
     
     const labelList& globalPointLabel =
         surfaceEngine_.globalBoundaryPointLabel();
-	const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
-	const Map<label>& globalToLocal =
-		surfaceEngine_.globalToLocalBndPointAddressing();
+    const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+    const Map<label>& globalToLocal =
+        surfaceEngine_.globalToLocalBndPointAddressing();
     
     //- perform smoothing
     forAll(nodesToSmooth, pI)
@@ -208,17 +208,17 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         const plane pl(points[bPoints[bpI]], pNormals[bpI]);
         
         //- project points onto the plane
-		localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
-		labelledPoint& lpd = localData[bpI];
-		
-		forAllRow(pFaces, bpI, pfI)
-		{
-			const point& p = faceCentres[pFaces(bpI, pfI)];
-			++lpd.pointLabel();
-			lpd.coordinates() += transformIntoPlane?pl.nearestPoint(p):p;
+        localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
+        labelledPoint& lpd = localData[bpI];
+        
+        forAllRow(pFaces, bpI, pfI)
+        {
+            const point& p = faceCentres[pFaces(bpI, pfI)];
+            ++lpd.pointLabel();
+            lpd.coordinates() += transformIntoPlane?pl.nearestPoint(p):p;
         }
-		
-		forAllRow(bpAtProcs, bpI, procI)
+        
+        forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
             if( neiProc == Pstream::myProcNo() )
@@ -233,12 +233,12 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
             }
             
             //- add data to the list which will be sent to other processor
-			LongList<refLabelledPoint>& dts = exchangeData[neiProc];
-			dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
+            LongList<refLabelledPoint>& dts = exchangeData[neiProc];
+            dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
         }
-	}
-	
-	//- exchange data with other processors
+    }
+    
+    //- exchange data with other processors
     LongList<refLabelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
     
@@ -253,16 +253,16 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         lpd.coordinates() += lp.lPoint().coordinates();
     }
 
-	forAll(nodesToSmooth, pI)
-	{
-		const label bpI = nodesToSmooth[pI];
-		
-		if( localData.find(bpI) == localData.end() )
-			continue;
-		
+    forAll(nodesToSmooth, pI)
+    {
+        const label bpI = nodesToSmooth[pI];
+        
+        if( localData.find(bpI) == localData.end() )
+            continue;
+        
         //- create new point position
         const labelledPoint& lp = localData[bpI];
-		const point newP = lp.coordinates() / lp.pointLabel();
+        const point newP = lp.coordinates() / lp.pointLabel();
         
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
         surfaceModifier.moveBoundaryVertex

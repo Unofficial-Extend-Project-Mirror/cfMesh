@@ -44,8 +44,8 @@ namespace Foam
 {
     typedef IOLongList<point> pointIOFieldPMG;
     typedef IOLongList<face> faceIOListPMG;
-	typedef IOLongList<cell> cellIOListPMG;
-	typedef IOLongList<label> labelIOListPMG;
+    typedef IOLongList<cell> cellIOListPMG;
+    typedef IOLongList<label> labelIOListPMG;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

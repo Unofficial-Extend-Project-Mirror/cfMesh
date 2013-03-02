@@ -51,52 +51,52 @@ Foam::fpmaMesh::~fpmaMesh()
 
 void Foam::fpmaMesh::writePoints(Foam::OFstream& fpmaGeometryFile) const
 {
-	fpmaGeometryFile << mesh_.points().size() << nl;
-	const pointFieldPMG& points = mesh_.points();
-	forAll(points, pointI)
-	{
-		const point& p = points[pointI];
-		fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
-	
-	fpmaGeometryFile << nl;
+    fpmaGeometryFile << mesh_.points().size() << nl;
+    const pointFieldPMG& points = mesh_.points();
+    forAll(points, pointI)
+    {
+        const point& p = points[pointI];
+        fpmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
+    }
+    
+    fpmaGeometryFile << nl;
 }
 
 void fpmaMesh::writeCells(OFstream& fpmaGeometryFile) const
 {
-	const cellListPMG& cells = mesh_.cells();
-	
-	fpmaGeometryFile << cells.size() << nl;
-	forAll(cells, cellI)
-	{
-		const cell& c = cells[cellI];
-		
-		fpmaGeometryFile << c.size();
-		forAll(c, fI)
-			fpmaGeometryFile << ' ' << c[fI];
-		fpmaGeometryFile << nl;
-	}
+    const cellListPMG& cells = mesh_.cells();
+    
+    fpmaGeometryFile << cells.size() << nl;
+    forAll(cells, cellI)
+    {
+        const cell& c = cells[cellI];
+        
+        fpmaGeometryFile << c.size();
+        forAll(c, fI)
+            fpmaGeometryFile << ' ' << c[fI];
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
 {
-	const faceListPMG& faces = mesh_.faces();
-	fpmaGeometryFile << faces.size() << nl;
-	forAll(faces, faceI)
-	{
-		const face& f = faces[faceI];
-		
-		fpmaGeometryFile << f.size();
-		forAllReverse(f, pI)
-			fpmaGeometryFile << ' ' << f[pI];
-		fpmaGeometryFile << nl;
-	}
+    const faceListPMG& faces = mesh_.faces();
+    fpmaGeometryFile << faces.size() << nl;
+    forAll(faces, faceI)
+    {
+        const face& f = faces[faceI];
+        
+        fpmaGeometryFile << f.size();
+        forAllReverse(f, pI)
+            fpmaGeometryFile << ' ' << f[pI];
+        fpmaGeometryFile << nl;
+    }
 }
 
 void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 {
     //- write patches as face selections
-	const PtrList<writePatch>& patches = mesh_.boundaries();
+    const PtrList<writePatch>& patches = mesh_.boundaries();
     
     label nSubsets(0);
     
@@ -112,7 +112,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     nSubsets += indices.size();
     Info << "Mesh has " << indices.size() << " cell subsets" << endl;
     
-	fpmaGeometryFile << nSubsets << nl;
+    fpmaGeometryFile << nSubsets << nl;
     
     //- write patches as face selections
     forAll(patches, patchI)
@@ -177,13 +177,13 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 
 void fpmaMesh::write(OFstream& fpmaGeometryFile) const
 {
-	writePoints(fpmaGeometryFile);
-	
-	writeFaces(fpmaGeometryFile);
+    writePoints(fpmaGeometryFile);
+    
+    writeFaces(fpmaGeometryFile);
 
-	writeCells(fpmaGeometryFile);
+    writeCells(fpmaGeometryFile);
 
-	writeSubsets(fpmaGeometryFile);
+    writeSubsets(fpmaGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

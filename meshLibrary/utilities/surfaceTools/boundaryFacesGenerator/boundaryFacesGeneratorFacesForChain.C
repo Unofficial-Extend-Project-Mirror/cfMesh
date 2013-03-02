@@ -35,157 +35,157 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * Private member functions * * * * * * * * * * * //
 
 void boundaryFacesGenerator::createFacesForChain
 (
-	const labelList& chainVertices,
-	const DynList<label>& patches,
-	List< DynList<face> >& facesForChain
+    const labelList& chainVertices,
+    const DynList<label>& patches,
+    List< DynList<face> >& facesForChain
 )
 {
-	createFacesFromChain cffc(chainVertices, pointRegions_);
-	
-	//- create faces which do not need an additional corner first
-	cffc.createFacesWithoutACorner();
-	
-	if( cffc.unresolvedPoints().size() == 0 )
-	{
-		//- store created faces and return
-		const DynList<face>& createdFaces = cffc.createdFaces();
-		const DynList<label>& faceRegion = cffc.faceRegion();
-		
-		forAll(createdFaces, fI)
-		{
-			const label pos = patches.containsAtPosition(faceRegion[fI]);
-			const face& f = createdFaces[fI];
-			# ifdef DEBUGCutter
-			Info << "Storing face " << f << " at position " << pos << endl;
-			# endif
-			facesForChain[pos].append(f);
-		}
-		
-		return;
-	}
-	else if( cffc.unresolvedPoints().size() < 3 )
-	{
-		FatalErrorIn
-		(
-			"void boundaryFacesGenerator::createFacesForChain"
-			"("
-			"const labelList& chainVertices,"
-			"const DynList<label>& patches,"
-			"List< DynList<face> >& facesForChain"
-			")"
-		) << "I am not sure if this should ever happen!" << exit(FatalError);
-	}
-	
-	const labelList& unresolvedPoints = cffc.unresolvedPoints();
-	DynList<label> chainPatches(5);
-	forAll(unresolvedPoints, upI)
-	{
-		const labelList pp = patchesForPoint(unresolvedPoints[upI]);
-		
-		forAll(pp, ppI)
-			chainPatches.appendIfNotIn(pp[ppI]);
-	}
-	
-	if( chainPatches.size() < 3 )
-	{
-		//- expected three or more patches
-		//- this will be resolved by storing the face into a default patch
-		facesForChain[patches.size()].append(face(chainVertices));
-	}
-	else
-	{
-		//- find the cornerLabel
-		DynList<label> cornersCandidates;
-		
-		forAll(cornersPatches_, cornerI)
-		{
-			const DynList<label>& cPatches = cornersPatches_[cornerI];
-			
-			bool allFound(true);
-			forAll(cPatches, cpI)
-			{
-				bool found = chainPatches.contains(cPatches[cpI]);
-					
-				if( !found )
-				{
-					allFound = false;
-					break;
-				}
-			}
-			
-			if( allFound )
-				cornersCandidates.append(surfaceCorners_[cornerI]);
-		}
-		
-		if( cornersCandidates.size() != 0 )
-		{
-			label cornerLabel(-1);
-			
-			if( cornersCandidates.size() == 1 )
-			{
-				cornerLabel = cornersCandidates[0];
-			}
-			else
-			{
-				//- find nearest corner
-				point c(vector::zero);
-				forAll(chainVertices, cvI)
-					c += mesh_.points()[chainVertices[cvI]];
-				c /= chainVertices.size();
-				
-				scalar dist(VGREAT);
-				forAll(cornersCandidates, cornerI)
-					if(
-						mag
-						(
-							surface_.localPoints()[cornersCandidates[cornerI]] -
-							c
-						) < dist
-					)
-					{
-						dist =
-						mag
-						(
-							surface_.localPoints()[cornersCandidates[cornerI]] -
-							c
-						);
-						cornerLabel = cornersCandidates[cornerI];
-					}
-			}
-			
-			//- create faces including the corner
-			//- create faces with a corner vertex
-			cffc.createFacesWithACorner(nPoints_);
-			
-			//- add new mesh vertex
-			polyMeshGenModifier modifier(mesh_);
-			modifier.pointsAccess().newElmt(nPoints_++) =
-				surface_.localPoints()[cornerLabel];
-			
-			const DynList<face>& createdFaces = cffc.createdFaces();
-			const DynList<label>& faceRegion = cffc.faceRegion();
-			forAll(createdFaces, fI)
-			{
-				const label pos = patches.containsAtPosition(faceRegion[fI]);
-				const face& f = createdFaces[fI];
-				# ifdef DEBUGCutter
-				Info << "Storing face " << f << " at position " << pos << endl;
-				# endif
-				facesForChain[pos].append(f);
-			}
-		}
-		else
-		{
-			//- this is a tricky combination
-			//- store the face into the default patch
-			facesForChain[patches.size()].append(face(chainVertices));
-		}
-	}
+    createFacesFromChain cffc(chainVertices, pointRegions_);
+    
+    //- create faces which do not need an additional corner first
+    cffc.createFacesWithoutACorner();
+    
+    if( cffc.unresolvedPoints().size() == 0 )
+    {
+        //- store created faces and return
+        const DynList<face>& createdFaces = cffc.createdFaces();
+        const DynList<label>& faceRegion = cffc.faceRegion();
+        
+        forAll(createdFaces, fI)
+        {
+            const label pos = patches.containsAtPosition(faceRegion[fI]);
+            const face& f = createdFaces[fI];
+            # ifdef DEBUGCutter
+            Info << "Storing face " << f << " at position " << pos << endl;
+            # endif
+            facesForChain[pos].append(f);
+        }
+        
+        return;
+    }
+    else if( cffc.unresolvedPoints().size() < 3 )
+    {
+        FatalErrorIn
+        (
+            "void boundaryFacesGenerator::createFacesForChain"
+            "("
+            "const labelList& chainVertices,"
+            "const DynList<label>& patches,"
+            "List< DynList<face> >& facesForChain"
+            ")"
+        ) << "I am not sure if this should ever happen!" << exit(FatalError);
+    }
+    
+    const labelList& unresolvedPoints = cffc.unresolvedPoints();
+    DynList<label> chainPatches(5);
+    forAll(unresolvedPoints, upI)
+    {
+        const labelList pp = patchesForPoint(unresolvedPoints[upI]);
+        
+        forAll(pp, ppI)
+            chainPatches.appendIfNotIn(pp[ppI]);
+    }
+    
+    if( chainPatches.size() < 3 )
+    {
+        //- expected three or more patches
+        //- this will be resolved by storing the face into a default patch
+        facesForChain[patches.size()].append(face(chainVertices));
+    }
+    else
+    {
+        //- find the cornerLabel
+        DynList<label> cornersCandidates;
+        
+        forAll(cornersPatches_, cornerI)
+        {
+            const DynList<label>& cPatches = cornersPatches_[cornerI];
+            
+            bool allFound(true);
+            forAll(cPatches, cpI)
+            {
+                bool found = chainPatches.contains(cPatches[cpI]);
+                    
+                if( !found )
+                {
+                    allFound = false;
+                    break;
+                }
+            }
+            
+            if( allFound )
+                cornersCandidates.append(surfaceCorners_[cornerI]);
+        }
+        
+        if( cornersCandidates.size() != 0 )
+        {
+            label cornerLabel(-1);
+            
+            if( cornersCandidates.size() == 1 )
+            {
+                cornerLabel = cornersCandidates[0];
+            }
+            else
+            {
+                //- find nearest corner
+                point c(vector::zero);
+                forAll(chainVertices, cvI)
+                    c += mesh_.points()[chainVertices[cvI]];
+                c /= chainVertices.size();
+                
+                scalar dist(VGREAT);
+                forAll(cornersCandidates, cornerI)
+                    if(
+                        mag
+                        (
+                            surface_.localPoints()[cornersCandidates[cornerI]] -
+                            c
+                        ) < dist
+                    )
+                    {
+                        dist =
+                        mag
+                        (
+                            surface_.localPoints()[cornersCandidates[cornerI]] -
+                            c
+                        );
+                        cornerLabel = cornersCandidates[cornerI];
+                    }
+            }
+            
+            //- create faces including the corner
+            //- create faces with a corner vertex
+            cffc.createFacesWithACorner(nPoints_);
+            
+            //- add new mesh vertex
+            polyMeshGenModifier modifier(mesh_);
+            modifier.pointsAccess().newElmt(nPoints_++) =
+                surface_.localPoints()[cornerLabel];
+            
+            const DynList<face>& createdFaces = cffc.createdFaces();
+            const DynList<label>& faceRegion = cffc.faceRegion();
+            forAll(createdFaces, fI)
+            {
+                const label pos = patches.containsAtPosition(faceRegion[fI]);
+                const face& f = createdFaces[fI];
+                # ifdef DEBUGCutter
+                Info << "Storing face " << f << " at position " << pos << endl;
+                # endif
+                facesForChain[pos].append(f);
+            }
+        }
+        else
+        {
+            //- this is a tricky combination
+            //- store the face into the default patch
+            facesForChain[patches.size()].append(face(chainVertices));
+        }
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

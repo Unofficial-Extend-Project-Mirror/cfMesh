@@ -134,11 +134,11 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             }
             
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				dts.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                dts.byteSize()
+            );
             toOtherProc << dts;
         }
         
@@ -249,11 +249,11 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             }
             
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				dts.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                dts.byteSize()
+            );
             toOtherProc << dts;
         }
         
@@ -288,11 +288,11 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                         "void meshSurfaceEngine::"
                         "calcGlobalBoundaryPointLabels() const"
                     ) << "Point labels in proc boundary "
-						<< procBoundaries[patchI].patchName()
-						<< " face " << f << " pI = " << pI
-						<< nl << " label " << globalPointLabel[bp[f[pI]]]
-						<< nl << " other global label " << globalLabel
-						<< " do not match!" << abort(FatalError);
+                        << procBoundaries[patchI].patchName()
+                        << " face " << f << " pI = " << pI
+                        << nl << " label " << globalPointLabel[bp[f[pI]]]
+                        << nl << " other global label " << globalLabel
+                        << " do not match!" << abort(FatalError);
                 }
             }
         }
@@ -441,11 +441,11 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             }
             
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				dts.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                dts.byteSize()
+            );
             toOtherProc << dts;
         }
         
@@ -571,11 +571,11 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             }
             
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				dts.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                dts.byteSize()
+            );
             toOtherProc << dts;
         }
         

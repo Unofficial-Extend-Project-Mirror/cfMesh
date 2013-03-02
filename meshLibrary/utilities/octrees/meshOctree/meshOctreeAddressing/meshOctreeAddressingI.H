@@ -39,7 +39,7 @@ inline label meshOctreeAddressing::numberOfNodes() const
     if( !nodeLabelsPtr_ )
         createNodeLabels();
     
-	return nNodes_;
+    return nNodes_;
 }
 
 inline const pointField& meshOctreeAddressing::octreePoints() const
@@ -49,55 +49,55 @@ inline const pointField& meshOctreeAddressing::octreePoints() const
     
     return *octreePointsPtr_;
 }
-	
+    
 inline const VRWGraph& meshOctreeAddressing::nodeLabels() const
 {
-	if( !nodeLabelsPtr_ )
-		createNodeLabels();
-	
-	return *nodeLabelsPtr_;
+    if( !nodeLabelsPtr_ )
+        createNodeLabels();
+    
+    return *nodeLabelsPtr_;
 }
 
 inline const FRWGraph<label, 8>& meshOctreeAddressing::nodeLeaves() const
 {
-	if( !nodeLeavesPtr_ )
-		createNodeLeaves();
-	
-	return *nodeLeavesPtr_;
+    if( !nodeLeavesPtr_ )
+        createNodeLeaves();
+    
+    return *nodeLeavesPtr_;
 }
-		
+        
 inline const List<direction>& meshOctreeAddressing::boxType() const
 {
-	if( !boxTypePtr_ )
-		findUsedBoxes();
-	
-	return *boxTypePtr_;
+    if( !boxTypePtr_ )
+        findUsedBoxes();
+    
+    return *boxTypePtr_;
 }
 
 inline void meshOctreeAddressing::setBoxType
 (
-	const label boxI,
-	const direction type
+    const label boxI,
+    const direction type
 )
 {
-	if( boxTypePtr_ )
-	{
-		List<direction>& boxType = *boxTypePtr_;
-		boxType[boxI] |= type;
-	}
+    if( boxTypePtr_ )
+    {
+        List<direction>& boxType = *boxTypePtr_;
+        boxType[boxI] |= type;
+    }
 }
 
 inline const meshOctree& meshOctreeAddressing::octree() const
 {
-	return octree_;
+    return octree_;
 }
 
 inline const List<direction>& meshOctreeAddressing::nodeType() const
 {
-	if( !nodeTypePtr_ )
-		calculateNodeType();
-	
-	return *nodeTypePtr_;
+    if( !nodeTypePtr_ )
+        calculateNodeType();
+    
+    return *nodeTypePtr_;
 }
 
 inline const VRWGraph& meshOctreeAddressing::octreeFaces() const

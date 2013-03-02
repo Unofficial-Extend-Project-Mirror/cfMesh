@@ -55,94 +55,94 @@ class polyMeshGenFaces
 protected:
     
     // Protected data
-		//- list of faces
-		faceListPMG faces_;
+        //- list of faces
+        faceListPMG faces_;
     
         //- inter-processor boundaries. These faces are located after the other
         //- boundary faces in the list of faces. The processor
         //- boundaries are internal faces in the end.
         PtrList<writeProcessorPatch> procBoundaries_;
-	
-		//- boundary data
-		PtrList<writePatch> boundaries_;
+    
+        //- boundary data
+        PtrList<writePatch> boundaries_;
 
         //- face subsets
         std::map<label, meshSubset> faceSubsets_;
-	
-	// Addressing data
-		//- number of internal faces, owner and neighbour
-		mutable label nIntFaces_;
-		mutable labelIOList* ownerPtr_;
-		mutable labelIOList* neighbourPtr_;
-		
-	// Private member functions
+    
+    // Addressing data
+        //- number of internal faces, owner and neighbour
+        mutable label nIntFaces_;
+        mutable labelIOList* ownerPtr_;
+        mutable labelIOList* neighbourPtr_;
+        
+    // Private member functions
     
         //- calculate owner and neighbour addressing
         virtual void calculateOwnersAndNeighbours() const = 0;
-		
-		//- clear all pointer data
-		void clearOut() const;
-	
-	// Disallow bitwise assignment
-		void operator=(const polyMeshGenFaces&);
-	
-		polyMeshGenFaces(const polyMeshGenFaces&);
+        
+        //- clear all pointer data
+        void clearOut() const;
+    
+    // Disallow bitwise assignment
+        void operator=(const polyMeshGenFaces&);
+    
+        polyMeshGenFaces(const polyMeshGenFaces&);
 
 public:
-	
-	friend class polyMeshGenModifier;
+    
+    friend class polyMeshGenModifier;
 
-	// Constructors
-		//- Null constructor
-		polyMeshGenFaces(const Time&);
+    // Constructors
+        //- Null constructor
+        polyMeshGenFaces(const Time&);
 
-		//- Construct from components without the boundary
-		polyMeshGenFaces
-		(
-			const Time&,
-			const pointField& points,
-			const faceList& faces
-		);
+        //- Construct from components without the boundary
+        polyMeshGenFaces
+        (
+            const Time&,
+            const pointField& points,
+            const faceList& faces
+        );
 
-		//- Construct from components with the boundary
-		polyMeshGenFaces
-		(
-			const Time&,
-			const pointField& points,
-			const faceList& faces,
-			const wordList& patchNames,
-			const labelList& patchStart,
-			const labelList& nFacesInPatch
-		);
-		
-	// Destructor
-		virtual ~polyMeshGenFaces();
-		
-	// Member functions
+        //- Construct from components with the boundary
+        polyMeshGenFaces
+        (
+            const Time&,
+            const pointField& points,
+            const faceList& faces,
+            const wordList& patchNames,
+            const labelList& patchStart,
+            const labelList& nFacesInPatch
+        );
+        
+    // Destructor
+        virtual ~polyMeshGenFaces();
+        
+    // Member functions
 
-		//- access to faces
-		inline const faceListPMG& faces() const;
-		
-		//- return number of internal faces
-		inline label nInternalFaces() const;
-		
-		//- owner and neighbour cells for faces
-		inline const labelList& owner() const;
-		inline const labelList& neighbour() const;
-		
+        //- access to faces
+        inline const faceListPMG& faces() const;
+        
+        //- return number of internal faces
+        inline label nInternalFaces() const;
+        
+        //- owner and neighbour cells for faces
+        inline const labelList& owner() const;
+        inline const labelList& neighbour() const;
+        
     // Boundary data
     
         //- inter-processor boundaries
         inline const PtrList<writeProcessorPatch>& procBoundaries() const;
         
         //- return processor patch label for the given face label
-		label faceIsInProcPatch(const label faceLabel) const;
+        label faceIsInProcPatch(const label faceLabel) const;
         
-		//- ordinary boundaries
-		inline const PtrList<writePatch>& boundaries() const;
-		
-		//- return patch label for the given face label
-		label faceIsInPatch(const label faceLabel) const;
+        //- ordinary boundaries
+        inline const PtrList<writePatch>& boundaries() const;
+        
+        //- return patch label for the given face label
+        label faceIsInPatch(const label faceLabel) const;
     
     // Subsets
     
@@ -159,12 +159,12 @@ public:
         template<class ListType>
         inline void updateFaceSubsets(const ListType&);
         inline void updateFaceSubsets(const VRWGraph&);
-		
-	// Read mesh
-		void read();
-		
-	// Write mesh
-		void write() const;
+        
+    // Read mesh
+        void read();
+        
+    // Write mesh
+        void write() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

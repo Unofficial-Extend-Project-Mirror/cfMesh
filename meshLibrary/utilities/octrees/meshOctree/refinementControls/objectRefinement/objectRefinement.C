@@ -32,7 +32,7 @@ License
 
 namespace Foam
 {
-	
+    
 defineTypeNameAndDebug(objectRefinement, 0);
 defineRunTimeSelectionTable(objectRefinement, dictionary);
 
@@ -41,7 +41,7 @@ defineRunTimeSelectionTable(objectRefinement, dictionary);
 objectRefinement::objectRefinement()
 :
     name_(),
-	cellSize_()
+    cellSize_()
 {}
 
 
@@ -52,7 +52,7 @@ objectRefinement::objectRefinement
 )
 :
     name_(name),
-	cellSize_(readScalar(dict.lookup("cellSize")))
+    cellSize_(readScalar(dict.lookup("cellSize")))
 {
 }
 
@@ -161,9 +161,9 @@ void coordinateSystem::operator=(const dictionary& rhs)
 
 Ostream& operator<<(Ostream& os, const objectRefinement& obr)
 {
-	os << obr.name() << nl;
-	obr.writeDict(os, true);
-	return os;
+    os << obr.name() << nl;
+    obr.writeDict(os, true);
+    return os;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

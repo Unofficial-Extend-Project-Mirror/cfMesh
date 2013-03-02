@@ -59,7 +59,7 @@ class checkBoundaryFacesSharingTwoEdges
 {
     // Private data
         //- Reference to polyMeshGen
-		polyMeshGen& mesh_;
+        polyMeshGen& mesh_;
     
         //- pointer to meshSurfaceEngine
         mutable meshSurfaceEngine* meshSurfacePtr_;
@@ -118,7 +118,7 @@ public:
 
     // Member Functions
         //- find boundary points connected to two boundary faces, only
-		void findPoints(labelHashSet& badPoints);
+        void findPoints(labelHashSet& badPoints);
 
         //- find boundary points connected to two boundary faces
         //- remove points if possible, decompose boundary faces otherwise

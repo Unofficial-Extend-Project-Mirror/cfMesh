@@ -37,33 +37,33 @@ boundaryCellSize 10;
 patchCellSize
 19
 (
-	// outer rim
-	patch0 5
-	// blade seat edge
-	patch5 1.25
+    // outer rim
+    patch0 5
+    // blade seat edge
+    patch5 1.25
 
-	// shaft
-	patch6 10
+    // shaft
+    patch6 10
 
-	// thin edges at blade ends
-	patch37 0.625
-	patch55 0.625
-	patch72 0.625
-	patch89 0.625
-	patch86 0.625
-	patch114 0.625
-	patch138 0.625
-	patch157 0.625
+    // thin edges at blade ends
+    patch37 0.625
+    patch55 0.625
+    patch72 0.625
+    patch89 0.625
+    patch86 0.625
+    patch114 0.625
+    patch138 0.625
+    patch157 0.625
 
-	// blades
-	patch8   5
-	patch11  5
+    // blades
+    patch8   5
+    patch11  5
         patch12  5
-	patch16  5
-	patch19  5
-	patch24  5
-	patch27  5
-	patch30  5
+    patch16  5
+    patch19  5
+    patch24  5
+    patch27  5
+    patch30  5
 );
 
 subsetFileName  "Fan1.sftr";
@@ -71,15 +71,15 @@ subsetFileName  "Fan1.sftr";
 subsetCellSize
 1
 (
-	_refine_1 2.5
+    _refine_1 2.5
 );
 
 keepCellsIntersectingPatches
 3
 (
-	patch0
-	patch1
-	patch2
+    patch0
+    patch1
+    patch2
 );
 
 keepCellsIntersectingBoundary 1;

@@ -51,12 +51,12 @@ class checkCellConnectionsOverFaces
 {
     // Private data
         //- Reference to polyMeshGen
-		polyMeshGen& mesh_;
-	
+        polyMeshGen& mesh_;
+    
         //- each cell is assigned a group
         //- cells which can be visited over face neighbours are assigned
         //- to the same group
-		labelList cellGroup_;
+        labelList cellGroup_;
     
         //- global group label (needed for parallel execution)
         labelList globalGroupLabel_;
@@ -65,8 +65,8 @@ class checkCellConnectionsOverFaces
         label nGroups_;
 
     // Private member functions
-		//- decompose marked cells
-		void findCellGroups();
+        //- decompose marked cells
+        void findCellGroups();
 
         //- Disallow default bitwise copy construct
         checkCellConnectionsOverFaces(const checkCellConnectionsOverFaces&);
@@ -88,7 +88,7 @@ public:
     // Member Functions
         //- check if all cells are connected as a single domain
         //- return true if the mesh has been changed
-		bool checkCellGroups();
+        bool checkCellGroups();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

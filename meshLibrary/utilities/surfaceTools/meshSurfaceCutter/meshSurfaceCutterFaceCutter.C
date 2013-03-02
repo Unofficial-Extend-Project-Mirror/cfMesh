@@ -53,17 +53,17 @@ bool meshSurfaceCutter::faceCutter
         Info << "Point " << f[pI] << " " << mesh_.points()[f[pI]] << endl;
     # endif
 
-	const edgeList& edges = mesh_.addressingData().edges();
+    const edgeList& edges = mesh_.addressingData().edges();
     const VRWGraph& faceEdges = mesh_.addressingData().faceEdges();
-	labelList fEdges(faceEdges.sizeOfRow(faceI));
-	forAllRow(faceEdges, faceI, eI)
-		fEdges[eI] = faceEdges(faceI, eI);
-	
-	const labelList& newPointLabels = *newPointLabelPtr_;
-	const edgeList& edgePoint = *edgePointPtr_;
+    labelList fEdges(faceEdges.sizeOfRow(faceI));
+    forAllRow(faceEdges, faceI, eI)
+        fEdges[eI] = faceEdges(faceI, eI);
+    
+    const labelList& newPointLabels = *newPointLabelPtr_;
+    const edgeList& edgePoint = *edgePointPtr_;
 
     # ifdef DEBUG_meshSurfaceCutter
-	const DynList<point>& newPoints = *newPointsPtr_;
+    const DynList<point>& newPoints = *newPointsPtr_;
     forAll(f, pI)
         Info << "Original edge " << pI << "  " << edges[fEdges[pI]] << endl;
     # endif

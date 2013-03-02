@@ -37,136 +37,136 @@ namespace Foam
 
 void meshGenGUI::setSurfaceFileName(const fileName& fName)
 {
-	if( meshDict_.found("surfaceFile") )
-		meshDict_.remove("surfaceFile");
-	
-	meshDict_.add("surfaceFile", fName);
+    if( meshDict_.found("surfaceFile") )
+        meshDict_.remove("surfaceFile");
+    
+    meshDict_.add("surfaceFile", fName);
 }
 
 fileName meshGenGUI::surfaceFileName() const
 {
-	if( !meshDict_.found("surfaceFile") )
-	{
-		fileName f("");
-		const_cast<IOdictionary&>(meshDict_).add("surfaceFile", f);
-	}
-	
-	return meshDict_.lookup("surfaceFile");
+    if( !meshDict_.found("surfaceFile") )
+    {
+        fileName f("");
+        const_cast<IOdictionary&>(meshDict_).add("surfaceFile", f);
+    }
+    
+    return meshDict_.lookup("surfaceFile");
 }
 
 void meshGenGUI::setMaxCellSize(const scalar s)
 {
-	if( meshDict_.found("maxCellSize") )
-		meshDict_.remove("maxCellSize");
-	
-	meshDict_.add("maxCellSize", s);
+    if( meshDict_.found("maxCellSize") )
+        meshDict_.remove("maxCellSize");
+    
+    meshDict_.add("maxCellSize", s);
 }
 
 scalar meshGenGUI::maxCellSize() const
 {
-	if( !meshDict_.found("maxCellSize") )
-		const_cast<IOdictionary&>(meshDict_).add("maxCellSize", 1.0);
-	
-	return readScalar(meshDict_.lookup("maxCellSize"));
+    if( !meshDict_.found("maxCellSize") )
+        const_cast<IOdictionary&>(meshDict_).add("maxCellSize", 1.0);
+    
+    return readScalar(meshDict_.lookup("maxCellSize"));
 }
-		
+        
 bool meshGenGUI::boundaryCellSizeEntryExist() const
 {
-	word w("boundaryCellSize");
-	return meshDict_.found(w);
+    word w("boundaryCellSize");
+    return meshDict_.found(w);
 }
 
 void meshGenGUI::removeBoundaryCellSize()
 {
-	meshDict_.remove("boundaryCellSize");
+    meshDict_.remove("boundaryCellSize");
 }
 
 void meshGenGUI::setBoundaryCellSize(const scalar s)
 {
-	if( boundaryCellSizeEntryExist() )
-		meshDict_.remove("boundaryCellSize");
-	
-	meshDict_.add("boundaryCellSize", s);
+    if( boundaryCellSizeEntryExist() )
+        meshDict_.remove("boundaryCellSize");
+    
+    meshDict_.add("boundaryCellSize", s);
 }
 
 scalar meshGenGUI::boundaryCellSize() const
 {
-	return readScalar(meshDict_.lookup("boundaryCellSize"));
+    return readScalar(meshDict_.lookup("boundaryCellSize"));
 }
-		
+        
 bool meshGenGUI::minCellSizeEntryExist() const
 {
-	return meshDict_.found("minCellSize");
+    return meshDict_.found("minCellSize");
 }
 
 void meshGenGUI::removeMinCellSize()
 {
-	if( minCellSizeEntryExist() )
-		meshDict_.remove("minCellSize");
+    if( minCellSizeEntryExist() )
+        meshDict_.remove("minCellSize");
 }
 
 void meshGenGUI::setMinCellSize(const scalar s)
 {
-	removeMinCellSize();
-	
-	meshDict_.add("minCellSize", s);
+    removeMinCellSize();
+    
+    meshDict_.add("minCellSize", s);
 }
 
 scalar meshGenGUI::minCellSize() const
 {
-	return readScalar(meshDict_.lookup("minCellSize"));
+    return readScalar(meshDict_.lookup("minCellSize"));
 }
-		
+        
 bool meshGenGUI::keepCellsIntersectingBoundaryEntryExist() const
 {
-	return meshDict_.found("keepCellsIntersectingBoundary");
+    return meshDict_.found("keepCellsIntersectingBoundary");
 }
 
 void meshGenGUI::setKeepCellsIntersectingBoundary()
 {
-	removeKeepCellsIntersectingBoundary();
-	
-	meshDict_.add("keepCellsIntersectingBoundary", 1);
+    removeKeepCellsIntersectingBoundary();
+    
+    meshDict_.add("keepCellsIntersectingBoundary", 1);
 }
 
 void meshGenGUI::removeKeepCellsIntersectingBoundary()
 {
-	if( keepCellsIntersectingBoundaryEntryExist() )
-		meshDict_.remove("keepCellsIntersectingBoundary");
+    if( keepCellsIntersectingBoundaryEntryExist() )
+        meshDict_.remove("keepCellsIntersectingBoundary");
 }
 
 bool meshGenGUI::keepCellsIntersectingBoundary() const
 {
-	if( !keepCellsIntersectingBoundaryEntryExist() )
-		return false;
-	
-	return meshDict_.lookup("keepCellsIntersectingBoundary");
+    if( !keepCellsIntersectingBoundaryEntryExist() )
+        return false;
+    
+    return meshDict_.lookup("keepCellsIntersectingBoundary");
 }
-		
+        
 bool meshGenGUI::checkForGluedMeshEntryExist() const
 {
-	return meshDict_.found("checkForGluedMesh");
+    return meshDict_.found("checkForGluedMesh");
 }
 
 void meshGenGUI::setCheckForGluedMesh()
 {
-	removeCheckForGluedMesh();
-	
-	meshDict_.add("checkForGluedMesh", 1);
+    removeCheckForGluedMesh();
+    
+    meshDict_.add("checkForGluedMesh", 1);
 }
 
 void meshGenGUI::removeCheckForGluedMesh()
 {
-	if( checkForGluedMeshEntryExist() )
-		meshDict_.remove("checkForGluedMesh");
+    if( checkForGluedMeshEntryExist() )
+        meshDict_.remove("checkForGluedMesh");
 }
 
 bool meshGenGUI::checkForGluedMesh() const
 {
-	if( !checkForGluedMeshEntryExist() )
-		return false;
-	
-	return readBool(meshDict_.lookup("checkForGluedMesh"));
+    if( !checkForGluedMeshEntryExist() )
+        return false;
+    
+    return readBool(meshDict_.lookup("checkForGluedMesh"));
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

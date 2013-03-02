@@ -35,105 +35,105 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * Private member functions * * * * * * * * * * * //
-	
+    
 void boundaryFacesGenerator::createBoundaryFaces()
 {
-	//- set sizes of boundary cells
-	polyMeshGenModifier meshModifier(mesh_);
-	cellListPMG& cells = meshModifier.cellsAccess();
-	forAll(boundaryCell_, cellI)
-		if( boundaryCell_[cellI] )
-			cells[cellI].setSize(nFacesInCell_[cellI]);
-			
-	//- create boundary faces
-	forAll(boundaryCell_, cellI)
-		if( boundaryCell_[cellI] )
-			createBoundaryFacesForCell(cellI);
+    //- set sizes of boundary cells
+    polyMeshGenModifier meshModifier(mesh_);
+    cellListPMG& cells = meshModifier.cellsAccess();
+    forAll(boundaryCell_, cellI)
+        if( boundaryCell_[cellI] )
+            cells[cellI].setSize(nFacesInCell_[cellI]);
+            
+    //- create boundary faces
+    forAll(boundaryCell_, cellI)
+        if( boundaryCell_[cellI] )
+            createBoundaryFacesForCell(cellI);
 }
 
 void boundaryFacesGenerator::storeBoundaryFaces()
 {
-	wordList patchNames;
-	if( hasFacesInDefaultPatch_ )
-	{
-		patchNames.setSize(surface_.patches().size() + 1);
-		patchNames[surface_.patches().size()] = "defaultFaces";
-	}
-	else
-	{
-		patchNames.setSize(surface_.patches().size());
-	}
-	
-	forAll(surface_.patches(), patchI)
-		patchNames[patchI] = surface_.patches()[patchI].name();
-	
-	polyMeshGenModifier(mesh_).replaceBoundary
-	(
-		patchNames,
-		boundaryFaces_,
-		boundaryOwners_,
-		boundaryPatches_
-	);
-	polyMeshGenModifier(mesh_).removeUnusedVertices();
+    wordList patchNames;
+    if( hasFacesInDefaultPatch_ )
+    {
+        patchNames.setSize(surface_.patches().size() + 1);
+        patchNames[surface_.patches().size()] = "defaultFaces";
+    }
+    else
+    {
+        patchNames.setSize(surface_.patches().size());
+    }
+    
+    forAll(surface_.patches(), patchI)
+        patchNames[patchI] = surface_.patches()[patchI].name();
+    
+    polyMeshGenModifier(mesh_).replaceBoundary
+    (
+        patchNames,
+        boundaryFaces_,
+        boundaryOwners_,
+        boundaryPatches_
+    );
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
 }
 
 void boundaryFacesGenerator::createSurfaceCornersAndPatches()
 {
-	const labelListList& pointFaces = surface_.pointFaces();
-	forAll(pointFaces, pI)
-	{
-		const labelList& pFaces = pointFaces[pI];
-		
-		DynList<label> patches(5);
-		forAll(pFaces, pfI)
-			patches.appendIfNotIn(surface_[pFaces[pfI]].region());
-		
-		//- corners are points in at least three regions
-		if( patches.size() > 2 )
-		{
-			surfaceCorners_.append(pI);
-			cornersPatches_.append(patches);
-		}
-	}
-	
-	Info << "The surface has " << surfaceCorners_.size() << " corners" << endl;
+    const labelListList& pointFaces = surface_.pointFaces();
+    forAll(pointFaces, pI)
+    {
+        const labelList& pFaces = pointFaces[pI];
+        
+        DynList<label> patches(5);
+        forAll(pFaces, pfI)
+            patches.appendIfNotIn(surface_[pFaces[pfI]].region());
+        
+        //- corners are points in at least three regions
+        if( patches.size() > 2 )
+        {
+            surfaceCorners_.append(pI);
+            cornersPatches_.append(patches);
+        }
+    }
+    
+    Info << "The surface has " << surfaceCorners_.size() << " corners" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 boundaryFacesGenerator::boundaryFacesGenerator
 (
-	polyMeshGen& mesh,
-	List<direction>& nFacesInCell,
-	label& nPoints,
-	const label nIntFaces,
-	const boolList& boundaryCell,
-	VRWGraph& pointPatches,
-	const triSurface& surface
+    polyMeshGen& mesh,
+    List<direction>& nFacesInCell,
+    label& nPoints,
+    const label nIntFaces,
+    const boolList& boundaryCell,
+    VRWGraph& pointPatches,
+    const triSurface& surface
 )
 :
-	surface_(surface),
-	mesh_(mesh),
-	nFacesInCell_(nFacesInCell),
-	boundaryCell_(boundaryCell),
-	pointRegions_(pointPatches),
-	nPoints_(nPoints),
-	nIntFaces_(nIntFaces),
-	boundaryFaces_(),
-	boundaryOwners_(),
-	boundaryPatches_(),
-	hasFacesInDefaultPatch_(false),
-	defaultPatchID_(surface.patches().size()),
-	surfaceCorners_(surface.patches().size()),
-	cornersPatches_(surface.patches().size())
+    surface_(surface),
+    mesh_(mesh),
+    nFacesInCell_(nFacesInCell),
+    boundaryCell_(boundaryCell),
+    pointRegions_(pointPatches),
+    nPoints_(nPoints),
+    nIntFaces_(nIntFaces),
+    boundaryFaces_(),
+    boundaryOwners_(),
+    boundaryPatches_(),
+    hasFacesInDefaultPatch_(false),
+    defaultPatchID_(surface.patches().size()),
+    surfaceCorners_(surface.patches().size()),
+    cornersPatches_(surface.patches().size())
 {
-	createSurfaceCornersAndPatches();
-	
+    createSurfaceCornersAndPatches();
+    
     createBoundaryFaces();
-	
-	storeBoundaryFaces();
+    
+    storeBoundaryFaces();
 
     boundaryOutwardOrientation boo(mesh);
 }

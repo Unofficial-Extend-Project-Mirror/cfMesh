@@ -76,7 +76,7 @@ class surfaceIntersectionsOctreeCube
         //- is the cube outside, data or outside of the domain
         direction cubeType_;
 
-		//- returns cube's edges
+        //- returns cube's edges
         List< List<point> > edges() const;
 
         //- Disallow default bitwise copy construct
@@ -95,7 +95,7 @@ public:
 
         ~surfaceIntersectionsOctreeCube();
 
-	// Enumerators
+    // Enumerators
         enum cubeTypes
         {
             OUTSIDE = 0,
@@ -109,16 +109,16 @@ public:
 
         //- is cube a leaf
         inline bool isLeaf() const;
-		
-		//- return and set cube type
-		direction cubeType() const
-		{
-			return cubeType_;
-		};
-		void setCubeType(const direction t)
-		{
-			cubeType_ = t;
-		}
+        
+        //- return and set cube type
+        direction cubeType() const
+        {
+            return cubeType_;
+        };
+        void setCubeType(const direction t)
+        {
+            cubeType_ = t;
+        }
 
         //- vertices
         FixedList<point, 8> vertices() const;

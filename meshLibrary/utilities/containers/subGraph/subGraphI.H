@@ -30,16 +30,16 @@ namespace Foam
 template<class graphType>
 inline void Foam::subGraph<graphType>::checkIndex(const label i) const
 {
-	if( (i < 0) || (i >= size_) )
-	{
-		FatalErrorIn
-		(
-			"void Foam::subGraph<graphType>::"
-			"checkIndex(const label i) const"
-		) << "Row index " << i
-			<< " is not in range " << Foam::label(0)
-			<< " and " << size_ << abort(FatalError);
-	}
+    if( (i < 0) || (i >= size_) )
+    {
+        FatalErrorIn
+        (
+            "void Foam::subGraph<graphType>::"
+            "checkIndex(const label i) const"
+        ) << "Row index " << i
+            << " is not in range " << Foam::label(0)
+            << " and " << size_ << abort(FatalError);
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -47,26 +47,26 @@ inline void Foam::subGraph<graphType>::checkIndex(const label i) const
 template<class graphType>
 inline Foam::subGraph<graphType>::subGraph
 (
-	graphType& g,
-	const label start,
-	const label size
+    graphType& g,
+    const label start,
+    const label size
 )
 :
-	data_(g),
-	start_(start),
-	size_(size)
+    data_(g),
+    start_(start),
+    size_(size)
 {
 }
 
 template<class graphType>
 inline Foam::subGraph<graphType>::subGraph
 (
-	const subGraph<graphType>& ol
+    const subGraph<graphType>& ol
 )
 :
-	data_(ol.data_),
-	start_(ol.start_),
-	size_(ol.size_)
+    data_(ol.data_),
+    start_(ol.start_),
+    size_(ol.size_)
 {
 }
 
@@ -87,43 +87,43 @@ inline Foam::label Foam::subGraph<graphType>::size() const
 template<class graphType>
 inline Foam::label Foam::subGraph<graphType>::sizeOfRow(const label rowI) const
 {
-	return data_.sizeOfRow(start_+rowI);
+    return data_.sizeOfRow(start_+rowI);
 }
 
 template<class graphType>
 inline void Foam::subGraph<graphType>::append(const label rowI, const label el)
 {
-	data_.append(start_+rowI, el);
+    data_.append(start_+rowI, el);
 }
 
 template<class graphType>
 inline void Foam::subGraph<graphType>::appendIfNotIn
 (
-	const label rowI,
-	const label el
+    const label rowI,
+    const label el
 )
 {
-	data_.appendIfNotIn(start_+rowI, el);
+    data_.appendIfNotIn(start_+rowI, el);
 }
 
 template<class graphType>
 inline bool Foam::subGraph<graphType>::contains
 (
-	const label rowI,
-	const label e
+    const label rowI,
+    const label e
 ) const
 {
-	return data_.contains(start_+rowI, e);
+    return data_.contains(start_+rowI, e);
 }
 
 template<class graphType>
 inline Foam::label Foam::subGraph<graphType>::containsAtPosition
 (
-	const label rowI,
+    const label rowI,
     const label e
 ) const
 {
-	return data_.containsAtPosition(start_+rowI, e);
+    return data_.containsAtPosition(start_+rowI, e);
 }
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
@@ -131,25 +131,25 @@ inline Foam::label Foam::subGraph<graphType>::containsAtPosition
 template<class graphType>
 inline Foam::label Foam::subGraph<graphType>::operator()
 (
-	const label i,
-	const label j
+    const label i,
+    const label j
 ) const
 {
-	# ifdef FULLDEBUG
-	checkIndex(i);
-	# endif
-	
-	return data_(start_+i, j);
+    # ifdef FULLDEBUG
+    checkIndex(i);
+    # endif
+    
+    return data_(start_+i, j);
 }
 
 template<class graphType>
 inline Foam::label& Foam::subGraph<graphType>::operator()
 (
-	const label i,
-	const label j
+    const label i,
+    const label j
 )
 {
-	return data_(start_+i, j);
+    return data_(start_+i, j);
 }
 
 
@@ -157,43 +157,43 @@ template<class graphType>
 inline const Foam::graphRow<const graphType>
 Foam::subGraph<graphType>::operator[]
 (
-	const label i
+    const label i
 ) const
 {
-	return data_[start_+i];
+    return data_[start_+i];
 }
 
 template<class graphType>
 inline Foam::graphRow<graphType>
 Foam::subGraph<graphType>::operator[](const label i)
 {
-	return data_[start_+i];
+    return data_[start_+i];
 }
 
 template<class graphType>
 inline Foam::Ostream& operator<<
 (
-	Foam::Ostream& os,
-	const Foam::subGraph<graphType>& sg
+    Foam::Ostream& os,
+    const Foam::subGraph<graphType>& sg
 )
 {
-	os << sg.size() << "\n" << "(";
-	for(Foam::label i=0;i<sg.size();++i)
-	{
-		os << "\n" << sg.sizeOfRow(i) << "(";
-		for(Foam::label j=0;j<sg.sizeOfRow(i);++j)
-		{
-			if( j > 0 ) os << " ";
-			
-			os << sg(i, j);
-		}
-		
-		os << ")";
-	}
-	
-	os << "\n" << ")";
+    os << sg.size() << "\n" << "(";
+    for(Foam::label i=0;i<sg.size();++i)
+    {
+        os << "\n" << sg.sizeOfRow(i) << "(";
+        for(Foam::label j=0;j<sg.sizeOfRow(i);++j)
+        {
+            if( j > 0 ) os << " ";
+            
+            os << sg(i, j);
+        }
+        
+        os << ")";
+    }
+    
+    os << "\n" << ")";
 
-	return os;
+    return os;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

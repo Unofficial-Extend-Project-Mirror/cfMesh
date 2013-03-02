@@ -37,62 +37,62 @@ namespace Foam
 
 bool meshGenGUI::keepCellsIntersectingPatchesEntryExist() const
 {
-	return meshDict_.found("keepCellsIntersectingPatches");
+    return meshDict_.found("keepCellsIntersectingPatches");
 }
 
 void meshGenGUI::addKeepCellsIntersectingPatches(const word& pName)
 {
-	if( keepCellsIntersectingPatchesEntryExist() )
-	{
-		wordList pList(meshDict_.lookup("keepCellsIntersectingPatches"));
-		
-		const label size = pList.size();
-		pList.setSize(size + 1);
-		pList[size] = pName;
-		
-		meshDict_.remove("keepCellsIntersectingPatches");
-		meshDict_.add("keepCellsIntersectingPatches", pList);
-	}
-	else
-	{
-		wordList pList(1);
-		pList[0] = pName;
-		
-		meshDict_.add("keepCellsIntersectingPatches", pList);
-	}
+    if( keepCellsIntersectingPatchesEntryExist() )
+    {
+        wordList pList(meshDict_.lookup("keepCellsIntersectingPatches"));
+        
+        const label size = pList.size();
+        pList.setSize(size + 1);
+        pList[size] = pName;
+        
+        meshDict_.remove("keepCellsIntersectingPatches");
+        meshDict_.add("keepCellsIntersectingPatches", pList);
+    }
+    else
+    {
+        wordList pList(1);
+        pList[0] = pName;
+        
+        meshDict_.add("keepCellsIntersectingPatches", pList);
+    }
 }
 
 void meshGenGUI::removeKeepCellsIntersectingPatches(const word& pName)
 {
-	if( keepCellsIntersectingPatchesEntryExist() )
-	{
-		wordList pList(meshDict_.lookup("keepCellsIntersectingPatches"));
-		
-		label pos(-1);
-		forAll(pList, elI)
-			if( pList[elI] == pName )
-			{
-				pos = elI;
-				break;
-			}
-			
-		pList[pos] = pList[pList.size() - 1];
-		pList.setSize(pList.size() - 1);
-		
-		meshDict_.remove("keepCellsIntersectingPatches");
-		
-		if( pList.size() != 0 )
-			meshDict_.add("keepCellsIntersectingPatches", pList);
-	}
+    if( keepCellsIntersectingPatchesEntryExist() )
+    {
+        wordList pList(meshDict_.lookup("keepCellsIntersectingPatches"));
+        
+        label pos(-1);
+        forAll(pList, elI)
+            if( pList[elI] == pName )
+            {
+                pos = elI;
+                break;
+            }
+            
+        pList[pos] = pList[pList.size() - 1];
+        pList.setSize(pList.size() - 1);
+        
+        meshDict_.remove("keepCellsIntersectingPatches");
+        
+        if( pList.size() != 0 )
+            meshDict_.add("keepCellsIntersectingPatches", pList);
+    }
 }
 
 wordList meshGenGUI::keepCellsIntersectingPatches() const
 {
-	if( !keepCellsIntersectingPatchesEntryExist() )
-		return wordList();
-	
-	wordList pNames(meshDict_.lookup("keepCellsIntersectingPatches"));
-	return pNames;
+    if( !keepCellsIntersectingPatchesEntryExist() )
+        return wordList();
+    
+    wordList pNames(meshDict_.lookup("keepCellsIntersectingPatches"));
+    return pNames;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

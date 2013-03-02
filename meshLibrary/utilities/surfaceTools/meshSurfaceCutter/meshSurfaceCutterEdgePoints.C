@@ -47,16 +47,16 @@ void meshSurfaceCutter::findBoundaryEdgePoints
     const boolList& inwardPoint
 )
 {
-	DynList<point>& newPoints = *newPointsPtr_;
-	
-	const faceListPMG& faces = mesh_.faces();
-	const pointFieldPMG& meshPoints = mesh_.points();
-	
+    DynList<point>& newPoints = *newPointsPtr_;
+    
+    const faceListPMG& faces = mesh_.faces();
+    const pointFieldPMG& meshPoints = mesh_.points();
+    
     # ifdef DEBUGCutter
     Info << "Creating edge points for face " << faceI << endl;
-	Info << "Face consists of vertices " << faces[faceI] << endl;
-	const pointField fvrt = faces[faceI].points(meshPoints);
-	Info << "Vertices " << fvrt << endl;
+    Info << "Face consists of vertices " << faces[faceI] << endl;
+    const pointField fvrt = faces[faceI].points(meshPoints);
+    Info << "Vertices " << fvrt << endl;
     # endif
 
     label inward(-1);
@@ -77,9 +77,9 @@ void meshSurfaceCutter::findBoundaryEdgePoints
 
         vector normal = f.normal(meshPoints);
         normal /= mag(normal);
-		#ifdef DEBUGCutter
-		Info << "Face normal " << normal << endl;
-		# endif
+        #ifdef DEBUGCutter
+        Info << "Face normal " << normal << endl;
+        # endif
         
         const pointField& points = surface_.points();
         const List<labelledTri>& faces = surface_.localFaces();
@@ -148,8 +148,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                     # ifdef DEBUGCutter
                     Info << "SEarch tri " << searchTri << "   "
                         << faces[searchTri] << endl;
-					Info << "Vertices in the triangle "
-						<< faces[searchTri].points(points) << endl;
+                    Info << "Vertices in the triangle "
+                        << faces[searchTri].points(points) << endl;
                     Info << "intersected edges " << intersectedEdges << endl;
                     Info << "Intersections " << edgePoints << endl;
                     Info << "intersected vertices "
@@ -236,13 +236,13 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                FatalErrorIn
                                 (
                                     "void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "findBoundaryEdgePoints()"
                                 ) << " Cannot close face " << faceI
                                     << " because your data is higly degenerate"
                                     << ". Please smooth your triangulated"
                                     << " surface and try again!"
                                     << abort(FatalError);
-							
+                            
                             const scalar d0 =
                                 mag
                                 (
@@ -275,8 +275,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                     << newPoints[newF[npI]] << endl;
                                 FatalErrorIn
                                 (
-									"void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "void meshSurfaceCutter::"
+                                    "findBoundaryEdgePoints()"
                                 ) << "Cannot find the vertex on the edge!!"
                                     << " Cannot close face " << faceI
                                     << abort(FatalError);
@@ -372,8 +372,8 @@ void meshSurfaceCutter::findBoundaryEdgePoints
                                     << intersectedNeighbours << endl;
                                 FatalErrorIn
                                 (
-									"void meshSurfaceCutter::"
-									"findBoundaryEdgePoints()"
+                                    "void meshSurfaceCutter::"
+                                    "findBoundaryEdgePoints()"
                                 ) << "Cannot find the vertex on the edge!!"
                                     << " Cannot close face " << faceI
                                     << abort(FatalError);

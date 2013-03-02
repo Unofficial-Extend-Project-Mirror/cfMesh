@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Finds feature edges and corners of a triangulated surface
+    Finds feature edges and corners of a triangulated surface
 
 \*---------------------------------------------------------------------------*/
 

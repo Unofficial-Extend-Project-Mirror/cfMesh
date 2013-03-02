@@ -35,94 +35,94 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 void tetTessellation::createInitialTets()
 {
-	boundaryPoints_[0] = points_.size();
-	points_.append(min_);
-	boundaryPoints_[1] = points_.size();
-	points_.append(point(max_.x(), min_.y(), min_.z()));
-	boundaryPoints_[2] = points_.size();
-	points_.append(point(max_.x(), max_.y(), min_.z()));
-	boundaryPoints_[3] = points_.size();
-	points_.append(point(min_.x(), max_.y(), min_.z()));
-	boundaryPoints_[4] = points_.size();
-	points_.append(point(min_.x(), min_.y(), max_.z()));
-	boundaryPoints_[5] = points_.size();
-	points_.append(point(max_.x(), min_.y(), max_.z()));
-	boundaryPoints_[6] = points_.size();
-	points_.append(max_);
-	boundaryPoints_[7] = points_.size();
-	points_.append(point(min_.x(), max_.y(), max_.z()));
-	
-	DynList<label> tetLabels(5);
-	tetLabels.append(elmts_.size());
-	elmts_.append
-	(
-		tessellationElement
-		(
-			boundaryPoints_[0],
-			boundaryPoints_[4],
-			boundaryPoints_[1],
-			boundaryPoints_[3]
-		)
-	);
-	tetLabels.append(elmts_.size());
-	elmts_.append
-	(
-		tessellationElement
-		(
-			boundaryPoints_[5],
-			boundaryPoints_[1],
-			boundaryPoints_[4],
-			boundaryPoints_[6]
-		)
-	);
-	tetLabels.append(elmts_.size());
-	elmts_.append
-	(
-		tessellationElement
-		(
-			boundaryPoints_[7],
-			boundaryPoints_[4],
-			boundaryPoints_[3],
-			boundaryPoints_[6]
-		)
-	);
-	tetLabels.append(elmts_.size());
-	elmts_.append
-	(
-		tessellationElement
-		(
-			boundaryPoints_[2],
-			boundaryPoints_[3],
-			boundaryPoints_[1],
-			boundaryPoints_[6]
-		)
-	);
-	tetLabels.append(elmts_.size());
-	elmts_.append
-	(
-		tessellationElement
-		(
-			boundaryPoints_[3],
-			boundaryPoints_[4],
-			boundaryPoints_[1],
-			boundaryPoints_[6]
-		)
-	);
-	
-	elmts_[tetLabels[0]].setNeighbour(0, tetLabels[4]);
-	elmts_[tetLabels[1]].setNeighbour(0, tetLabels[4]);
-	elmts_[tetLabels[2]].setNeighbour(0, tetLabels[4]);
-	elmts_[tetLabels[3]].setNeighbour(0, tetLabels[4]);
-	
-	elmts_[tetLabels[4]].setNeighbour(0, tetLabels[1]);
-	elmts_[tetLabels[4]].setNeighbour(1, tetLabels[3]);
-	elmts_[tetLabels[4]].setNeighbour(2, tetLabels[2]);
-	elmts_[tetLabels[4]].setNeighbour(3, tetLabels[0]);
+    boundaryPoints_[0] = points_.size();
+    points_.append(min_);
+    boundaryPoints_[1] = points_.size();
+    points_.append(point(max_.x(), min_.y(), min_.z()));
+    boundaryPoints_[2] = points_.size();
+    points_.append(point(max_.x(), max_.y(), min_.z()));
+    boundaryPoints_[3] = points_.size();
+    points_.append(point(min_.x(), max_.y(), min_.z()));
+    boundaryPoints_[4] = points_.size();
+    points_.append(point(min_.x(), min_.y(), max_.z()));
+    boundaryPoints_[5] = points_.size();
+    points_.append(point(max_.x(), min_.y(), max_.z()));
+    boundaryPoints_[6] = points_.size();
+    points_.append(max_);
+    boundaryPoints_[7] = points_.size();
+    points_.append(point(min_.x(), max_.y(), max_.z()));
+    
+    DynList<label> tetLabels(5);
+    tetLabels.append(elmts_.size());
+    elmts_.append
+    (
+        tessellationElement
+        (
+            boundaryPoints_[0],
+            boundaryPoints_[4],
+            boundaryPoints_[1],
+            boundaryPoints_[3]
+        )
+    );
+    tetLabels.append(elmts_.size());
+    elmts_.append
+    (
+        tessellationElement
+        (
+            boundaryPoints_[5],
+            boundaryPoints_[1],
+            boundaryPoints_[4],
+            boundaryPoints_[6]
+        )
+    );
+    tetLabels.append(elmts_.size());
+    elmts_.append
+    (
+        tessellationElement
+        (
+            boundaryPoints_[7],
+            boundaryPoints_[4],
+            boundaryPoints_[3],
+            boundaryPoints_[6]
+        )
+    );
+    tetLabels.append(elmts_.size());
+    elmts_.append
+    (
+        tessellationElement
+        (
+            boundaryPoints_[2],
+            boundaryPoints_[3],
+            boundaryPoints_[1],
+            boundaryPoints_[6]
+        )
+    );
+    tetLabels.append(elmts_.size());
+    elmts_.append
+    (
+        tessellationElement
+        (
+            boundaryPoints_[3],
+            boundaryPoints_[4],
+            boundaryPoints_[1],
+            boundaryPoints_[6]
+        )
+    );
+    
+    elmts_[tetLabels[0]].setNeighbour(0, tetLabels[4]);
+    elmts_[tetLabels[1]].setNeighbour(0, tetLabels[4]);
+    elmts_[tetLabels[2]].setNeighbour(0, tetLabels[4]);
+    elmts_[tetLabels[3]].setNeighbour(0, tetLabels[4]);
+    
+    elmts_[tetLabels[4]].setNeighbour(0, tetLabels[1]);
+    elmts_[tetLabels[4]].setNeighbour(1, tetLabels[3]);
+    elmts_[tetLabels[4]].setNeighbour(2, tetLabels[2]);
+    elmts_[tetLabels[4]].setNeighbour(3, tetLabels[0]);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -169,10 +169,10 @@ tetTessellation::tetTessellation
 
     # ifdef DEBUGTessalation
     Info << "Elements " << elmts_ << endl;
-	forAll(elmts_, eI)
-		Info << "Volume of element " << eI
-			<< " is " << elmts_[eI].mag(points_) << endl;
-	Info << "Number of points is " << points_.size() << endl;
+    forAll(elmts_, eI)
+        Info << "Volume of element " << eI
+            << " is " << elmts_[eI].mag(points_) << endl;
+    Info << "Number of points is " << points_.size() << endl;
     Info << "Number of tetrahedra is  " << elmts_.size() << endl;
     # endif
 }
@@ -194,9 +194,9 @@ tetTessellation::tetTessellation
 
     # ifdef DEBUGTessalation
     Info << "Elements " << elmts_ << endl;
-	forAll(elmts_, eI)
-		Info << "Volume of element " << eI
-			<< " is " << elmts_[eI].mag(points_) << endl; 
+    forAll(elmts_, eI)
+        Info << "Volume of element " << eI
+            << " is " << elmts_[eI].mag(points_) << endl; 
     # endif
 }
 
@@ -214,9 +214,9 @@ tetTessellation::tetTessellation(const boundBox& bb)
 
     # ifdef DEBUGTessalation
     Info << "Elements " << elmts_ << endl;
-	forAll(elmts_, eI)
-		Info << "Volume of element " << eI
-			<< " is " << elmts_[eI].mag(points_) << endl; 
+    forAll(elmts_, eI)
+        Info << "Volume of element " << eI
+            << " is " << elmts_[eI].mag(points_) << endl; 
     # endif
 }
 

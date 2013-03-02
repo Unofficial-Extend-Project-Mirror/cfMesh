@@ -45,15 +45,15 @@ namespace Foam
 void meshOptimizer::optimizeSurface(const meshOctree& octree)
 {
     Info << "Optimizing positions of surface nodes" << endl;
-	
-	meshSurfaceEngine& mse = const_cast<meshSurfaceEngine&>(meshSurface());
-	meshSurfaceOptimizer surfaceOptimizer(mse, octree);
+    
+    meshSurfaceEngine& mse = const_cast<meshSurfaceEngine&>(meshSurface());
+    meshSurfaceOptimizer surfaceOptimizer(mse, octree);
 
-	surfaceOptimizer.optimizeSurface();
+    surfaceOptimizer.optimizeSurface();
     
     meshSurfaceMapper(mse, octree).mapVerticesOntoSurfacePatches();
-	
-	clearSurface();
+    
+    clearSurface();
 
     Info << "Finished optimizing positions of surface nodes" << endl;
 }

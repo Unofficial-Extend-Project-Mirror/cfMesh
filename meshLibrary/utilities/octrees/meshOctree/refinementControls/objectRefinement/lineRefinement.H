@@ -53,12 +53,12 @@ class lineRefinement
 :
     public objectRefinement
 {
-	// Private data
-		//- start point of the line
-		point p0_;
-	
-		//- end point of the line
-		point p1_;
+    // Private data
+        //- start point of the line
+        point p0_;
+    
+        //- end point of the line
+        point p1_;
 
 public:
 
@@ -82,31 +82,31 @@ public:
 
         //- Construct from dictionary
         lineRefinement(const word& name, const dictionary& dict);
-		
-		//- Construct and return a clone
+        
+        //- Construct and return a clone
         virtual autoPtr<objectRefinement> clone
-		(
-			const lineRefinement& sr
-		) const
+        (
+            const lineRefinement& sr
+        ) const
         {
             return autoPtr<objectRefinement>
-			(
-				new lineRefinement
-				(
-					sr.name(),
-					sr.cellSize(),
-					sr.p0_,
-					sr.p1_
-				)
-			);
+            (
+                new lineRefinement
+                (
+                    sr.name(),
+                    sr.cellSize(),
+                    sr.p0_,
+                    sr.p1_
+                )
+            );
         }
-	
-	// Member Functions
-	
-		//- check if the line intersects the box
-		bool intersectsObject(const boundBox&) const;
-		
-	//- Return as dictionary of entries
+    
+    // Member Functions
+    
+        //- check if the line intersects the box
+        bool intersectsObject(const boundBox&) const;
+        
+    //- Return as dictionary of entries
         dictionary dict(bool ignoreType = false) const;
 
       // Write
@@ -116,15 +116,15 @@ public:
 
         //- Write dictionary
         void writeDict(Ostream&, bool subDict = true) const;
-		
-	// Member Operators
+        
+    // Member Operators
 
         //- assign from dictionary
         void operator=(const dictionary&);
 
     // IOstream Operators
 
-		Ostream& operator<<(Ostream&) const;
+        Ostream& operator<<(Ostream&) const;
 };
 
 

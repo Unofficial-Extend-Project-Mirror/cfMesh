@@ -38,57 +38,57 @@ namespace Foam
 
 void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 {
-	//mesh_.clearOut();
+    //mesh_.clearOut();
 
     Info << "Removing faces" << endl;
-	faceListPMG& faces = mesh_.faces_;
-	cellListPMG& cells = mesh_.cells_;
+    faceListPMG& faces = mesh_.faces_;
+    cellListPMG& cells = mesh_.cells_;
 
-	label nFaces(0);
-	labelListPMG newFaceLabel(faces.size(), -1);
+    label nFaces(0);
+    labelListPMG newFaceLabel(faces.size(), -1);
 
-	//- copy internal faces
+    //- copy internal faces
     const label nInternalFaces = mesh_.nInternalFaces();
     for(label faceI=0;faceI<nInternalFaces;++faceI)
         if( !removeFace[faceI] )
-		{
-			if( nFaces < faceI )
-				faces[nFaces].transfer(faces[faceI]);
+        {
+            if( nFaces < faceI )
+                faces[nFaces].transfer(faces[faceI]);
 
             newFaceLabel[faceI] = nFaces;
-			++nFaces;
+            ++nFaces;
         }
 
-	//- copy boundary faces
-	PtrList<writePatch>& boundaries = mesh_.boundaries_;
-	labelList patchStart(boundaries.size());
-	labelList nFacesInPatch(boundaries.size());
-	label npI(0);
-	forAll(boundaries, patchI)
-	{
-		const label oldStart = boundaries[patchI].patchStart();
-		const label oldNumFacesInPatch = boundaries[patchI].patchSize();
+    //- copy boundary faces
+    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    labelList patchStart(boundaries.size());
+    labelList nFacesInPatch(boundaries.size());
+    label npI(0);
+    forAll(boundaries, patchI)
+    {
+        const label oldStart = boundaries[patchI].patchStart();
+        const label oldNumFacesInPatch = boundaries[patchI].patchSize();
 
-		patchStart[npI] = nFaces;
-		nFacesInPatch[npI] = 0;
+        patchStart[npI] = nFaces;
+        nFacesInPatch[npI] = 0;
 
-		for(label faceI=0;faceI<oldNumFacesInPatch;++faceI)
-			if( !removeFace[oldStart+faceI] )
-			{
-				++nFacesInPatch[npI];
-				if( nFaces < (oldStart+faceI) )
-					faces[nFaces].transfer(faces[oldStart+faceI]);
-				newFaceLabel[oldStart+faceI] = nFaces++;
-			}
+        for(label faceI=0;faceI<oldNumFacesInPatch;++faceI)
+            if( !removeFace[oldStart+faceI] )
+            {
+                ++nFacesInPatch[npI];
+                if( nFaces < (oldStart+faceI) )
+                    faces[nFaces].transfer(faces[oldStart+faceI]);
+                newFaceLabel[oldStart+faceI] = nFaces++;
+            }
 
         ++npI;
-	}
+    }
 
-	forAll(boundaries, patchI)
-	{
-		boundaries[patchI].patchStart() = patchStart[patchI];
-		boundaries[patchI].patchSize() = nFacesInPatch[patchI];
-	}
+    forAll(boundaries, patchI)
+    {
+        boundaries[patchI].patchStart() = patchStart[patchI];
+        boundaries[patchI].patchSize() = nFacesInPatch[patchI];
+    }
 
     if( Pstream::parRun() )
     {
@@ -124,11 +124,11 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
                     removeProcFace[faceI] = true;
 
             OPstream toOtherProc
-			(
+            (
                 Pstream::blocking,
-				procBoundaries[patchI].neiProcNo(),
-				removeProcFace.byteSize()
-			);
+                procBoundaries[patchI].neiProcNo(),
+                removeProcFace.byteSize()
+            );
             toOtherProc << removeProcFace;
         }
 
@@ -217,7 +217,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
     //- update face subsets in the mesh
     mesh_.updateFaceSubsets(newFaceLabel);
 
-	//- change cells
+    //- change cells
     # pragma omp parallel for if( cells.size() > 1000 ) schedule(dynamic, 40)
     forAll(cells, cellI)
     {
@@ -235,7 +235,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             c[fI] = newC[fI];
     }
 
-	mesh_.clearOut();
+    mesh_.clearOut();
 
     Info << "Finished removing faces" << endl;
 }
@@ -340,7 +340,7 @@ void polyMeshGenModifier::removeDuplicateFaces()
             c[fI] = newC[fI];
     }
 
-	mesh_.clearOut();
+    mesh_.clearOut();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

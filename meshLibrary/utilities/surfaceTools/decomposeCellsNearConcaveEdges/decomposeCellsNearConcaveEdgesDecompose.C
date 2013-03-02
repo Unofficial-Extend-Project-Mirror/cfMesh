@@ -43,85 +43,85 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void decomposeCellsNearConcaveEdges::findConcaveFacesAndCells()
 {
-	meshSurfaceEngine mse(mesh_);
-	const faceList::subList& bFaces = mse.boundaryFaces();
-	const labelList& facePatch = mse.boundaryFacePatches();
-	const VRWGraph& edgeFaces = mse.edgeFaces();
-	const edgeList& edges = mse.edges();
-	const pointFieldPMG& points = mesh_.points();
-	
-	boolList concaveVertex(points.size(), false);
-	forAll(edgeFaces, eI)
-	{
-		const label bfI = edgeFaces[eI][0];
-		const label bfJ = edgeFaces[eI][1];
-		
-		const face& f0 = bFaces[bfI];
-		const face& f1 = bFaces[bfJ];
-		
-		if(
-			(facePatch[bfI] != facePatch[bfJ]) &&
-			!help::isSharedEdgeConvex(points, f0, f1)
-		)
-		{
-			const edge& e = edges[eI];
-			concaveVertex[e[0]] = true;
-			concaveVertex[e[1]] = true;
-		}
-	}
-	
-	//- decompose concave internal faces
-	decomposeFaces(mesh_).decomposeConcaveInternalFaces(concaveVertex);
-	
-	//- find which cells need to be decomposed
-	# ifdef DEBUGDec
-	const label id = mesh_.addCellSubset("decomposeCells");
-	# endif
+    meshSurfaceEngine mse(mesh_);
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const labelList& facePatch = mse.boundaryFacePatches();
+    const VRWGraph& edgeFaces = mse.edgeFaces();
+    const edgeList& edges = mse.edges();
+    const pointFieldPMG& points = mesh_.points();
     
-	const faceListPMG& faces = mesh_.faces();
-	const labelList& owner = mesh_.owner();
-	const labelList& neighbour = mesh_.neighbour();
-	const label nIntFaces = mesh_.nInternalFaces();
-	for(label faceI=0;faceI<nIntFaces;++faceI)
-	{
-		const face& f = faces[faceI];
-		
-		forAll(f, pI)
+    boolList concaveVertex(points.size(), false);
+    forAll(edgeFaces, eI)
+    {
+        const label bfI = edgeFaces[eI][0];
+        const label bfJ = edgeFaces[eI][1];
+        
+        const face& f0 = bFaces[bfI];
+        const face& f1 = bFaces[bfJ];
+        
+        if(
+            (facePatch[bfI] != facePatch[bfJ]) &&
+            !help::isSharedEdgeConvex(points, f0, f1)
+        )
+        {
+            const edge& e = edges[eI];
+            concaveVertex[e[0]] = true;
+            concaveVertex[e[1]] = true;
+        }
+    }
+    
+    //- decompose concave internal faces
+    decomposeFaces(mesh_).decomposeConcaveInternalFaces(concaveVertex);
+    
+    //- find which cells need to be decomposed
+    # ifdef DEBUGDec
+    const label id = mesh_.addCellSubset("decomposeCells");
+    # endif
+    
+    const faceListPMG& faces = mesh_.faces();
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
+    const label nIntFaces = mesh_.nInternalFaces();
+    for(label faceI=0;faceI<nIntFaces;++faceI)
+    {
+        const face& f = faces[faceI];
+        
+        forAll(f, pI)
         {
             if( f[pI] >= concaveVertex.size() )
                 continue;
             
-			if( concaveVertex[f[pI]] )
-			{
-				decomposeCell_[owner[faceI]] = true;
-				decomposeCell_[neighbour[faceI]] = true;
-				
-				# ifdef DEBUGDec
-				mesh_.addCellToSubset(id, owner[faceI]);
-				mesh_.addCellToSubset(id, neighbour[faceI]);
-				# endif
-				
-				break;
-			}
+            if( concaveVertex[f[pI]] )
+            {
+                decomposeCell_[owner[faceI]] = true;
+                decomposeCell_[neighbour[faceI]] = true;
+                
+                # ifdef DEBUGDec
+                mesh_.addCellToSubset(id, owner[faceI]);
+                mesh_.addCellToSubset(id, neighbour[faceI]);
+                # endif
+                
+                break;
+            }
         }
-	}
-	
-	# ifdef DEBUGDec
+    }
+    
+    # ifdef DEBUGDec
     Info << "Writting mesh" << endl;
-	mesh_.write();
-	::exit(1);
-	# endif
-}	
+    mesh_.write();
+    ::exit(1);
+    # endif
+}    
 
 void decomposeCellsNearConcaveEdges::decomposeConcaveCells()
 {
-	decomposeCells dc(mesh_);
-	dc.decomposeMesh(decomposeCell_);
+    decomposeCells dc(mesh_);
+    dc.decomposeMesh(decomposeCell_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -60,24 +60,24 @@ class VRWGraph;
 
 class partTetMesh
 {
-	// Private data
+    // Private data
         //- reference to the original mesh
-		polyMeshGen& origMesh_;
-	
+        polyMeshGen& origMesh_;
+    
         //- points in the tet mesh
-		LongList<point> points_;
-	
+        LongList<point> points_;
+    
         //- tetrahedra making the mesh
-		LongList<partTet> tets_;
-	
+        LongList<partTet> tets_;
+    
         //- label of node in the polyMeshGen
-		labelListPMG nodeLabelInOrigMesh_;
-	
+        labelListPMG nodeLabelInOrigMesh_;
+    
         //- shall a node be used for smoothing or not
-		LongList<direction> smoothVertex_;
-	
-		//- addressing data
-		VRWGraph pointTets_;
+        LongList<direction> smoothVertex_;
+    
+        //- addressing data
+        VRWGraph pointTets_;
     
         //- internal point ordering for parallel runs
         mutable VRWGraph* internalPointsOrderPtr_;
@@ -97,17 +97,17 @@ class partTetMesh
         
         //- processors which should communicate with the current one
         mutable DynList<label>* neiProcsPtr_;
-		
-		//- labels of points at parallel boundaries
-		mutable labelListPMG* pAtParallelBoundariesPtr_;
+        
+        //- labels of points at parallel boundaries
+        mutable labelListPMG* pAtParallelBoundariesPtr_;
         
         //- labels of points serving as buffer layers on other processors
         mutable labelListPMG* pAtBufferLayersPtr_;
-	
-	// Private member functions
-	
-		//- create points and tets
-		void createPointsAndTets(const List<direction>&);
+    
+    // Private member functions
+    
+        //- create points and tets
+        void createPointsAndTets(const List<direction>&);
         
         //- create parallel addressing
         void createParallelAddressing
@@ -125,21 +125,21 @@ class partTetMesh
         
         //- create order of boundary points for parallel execution
         void createBOUNDARYPointsOrdering() const;
-	
+    
 public:
-	
-	// Constructors
-		//- construct from polyMeshGen
-		partTetMesh(polyMeshGen& mesh);
-		
-		//- construct from polyMeshGen, bad faces and the number
-		//- of additional layers
-		partTetMesh
-		(
-			polyMeshGen& mesh,
-			labelHashSet& badFaces,
-			const direction additionalLayers = 0
-		);
+    
+    // Constructors
+        //- construct from polyMeshGen
+        partTetMesh(polyMeshGen& mesh);
+        
+        //- construct from polyMeshGen, bad faces and the number
+        //- of additional layers
+        partTetMesh
+        (
+            polyMeshGen& mesh,
+            labelHashSet& badFaces,
+            const direction additionalLayers = 0
+        );
 
     // Enumerators
 
@@ -153,35 +153,35 @@ public:
             BOUNDARY = 16
         };
 
-	// Destructor
-		~partTetMesh();
-	
-	// Member functions
-		//- access to points, tets and other data
+    // Destructor
+        ~partTetMesh();
+    
+    // Member functions
+        //- access to points, tets and other data
         inline const LongList<point>& points() const
         {
             return points_;
         }
-		
-		inline const LongList<partTet>& tets() const
-		{
-			return tets_;
-		}
-		
-		inline const VRWGraph& pointTets() const
-		{
-			return pointTets_;
-		}
-		
-		inline const LongList<direction>& smoothVertex() const
-		{
-			return smoothVertex_;
-		}
-		
-		inline const labelListPMG& nodeLabelInOrigMesh() const
-		{
-			return nodeLabelInOrigMesh_;
-		}
+        
+        inline const LongList<partTet>& tets() const
+        {
+            return tets_;
+        }
+        
+        inline const VRWGraph& pointTets() const
+        {
+            return pointTets_;
+        }
+        
+        inline const LongList<direction>& smoothVertex() const
+        {
+            return smoothVertex_;
+        }
+        
+        inline const labelListPMG& nodeLabelInOrigMesh() const
+        {
+            return nodeLabelInOrigMesh_;
+        }
         
     // Access to point ordering for Gauss-Seidel type of iteration
         //- return vertex ordering which can be executed in parallel
@@ -225,23 +225,23 @@ public:
             
             return *neiProcsPtr_;
         }
-		
-		inline const labelListPMG& pointsAtProcessorBoundaries() const
-		{
-			if( !Pstream::parRun() )
-				FatalError << "This is a serial run" << abort(FatalError);
-			
-			return *pAtParallelBoundariesPtr_;
-		}
+        
+        inline const labelListPMG& pointsAtProcessorBoundaries() const
+        {
+            if( !Pstream::parRun() )
+                FatalError << "This is a serial run" << abort(FatalError);
+            
+            return *pAtParallelBoundariesPtr_;
+        }
         
         inline const labelListPMG& bufferLayerPoints() const
         {
             if( !Pstream::parRun() )
-				FatalError << "This is a serial run" << abort(FatalError);
+                FatalError << "This is a serial run" << abort(FatalError);
             
             return *pAtBufferLayersPtr_;
         }
-		
+        
     // Modifiers
         
         //- move the vertex to a new position
@@ -252,10 +252,10 @@ public:
         void updateVerticesSMP(const List<LongList<labelledPoint> >&);
         
         //- updates the vertices of the original polyMeshGen
-		void updateOrigMesh(boolList* changedFacePtr = NULL);
-		
+        void updateOrigMesh(boolList* changedFacePtr = NULL);
+        
         //- creates polyMeshGen from this partTetMesh
-		void createPolyMesh(polyMeshGen& pmg) const;
+        void createPolyMesh(polyMeshGen& pmg) const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

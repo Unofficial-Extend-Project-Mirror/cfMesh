@@ -45,7 +45,7 @@ void polyMeshGenAddressing::calcPointFaces() const
     else
     {
         const faceListPMG& faces = mesh_.faces();
-		const label nPoints = mesh_.points().size();
+        const label nPoints = mesh_.points().size();
  
         //- create the addressing
         pfPtr_ = new VRWGraph();

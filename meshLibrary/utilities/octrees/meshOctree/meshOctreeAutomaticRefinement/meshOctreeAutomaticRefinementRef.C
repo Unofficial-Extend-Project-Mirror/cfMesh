@@ -145,7 +145,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
     forAll(corners, cornerI)
     {
         const label cLabel =
-	    octree_.findLeafContainingVertex(points[corners[cornerI]]);
+        octree_.findLeafContainingVertex(points[corners[cornerI]]);
 
         if( cLabel < 0 )
             continue;
@@ -444,12 +444,12 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
     }
 
     reduce(nMarked, sumOp<label>());
-	Info << nMarked << " boxed marked by proximity criteria" << endl;
+    Info << nMarked << " boxed marked by proximity criteria" << endl;
 
     if( nMarked != 0 )
         return true;
 
-	return false;
+    return false;
 }
 
 void meshOctreeAutomaticRefinement::refineSelectedBoxes

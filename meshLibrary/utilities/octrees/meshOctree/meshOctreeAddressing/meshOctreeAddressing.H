@@ -27,7 +27,7 @@ Class
 
 Description
     Automatic octree for mesh generation. This class checks if the current
-	octree resolution is enough to resolve all surface features
+    octree resolution is enough to resolve all surface features
 
 SourceFiles
     meshOctreeAddressing.C
@@ -61,32 +61,32 @@ class IOdictionary;
 class meshOctreeAddressing
 {
     // Private data
-		//- reference to the octree
-		const meshOctree& octree_;
-	
-		//- reference to the dictionary
-		const dictionary& meshDict_;
+        //- reference to the octree
+        const meshOctree& octree_;
+    
+        //- reference to the dictionary
+        const dictionary& meshDict_;
 
-		//- use DATA boxes
-		bool useDATABoxes_;
-	
-		//- number of created octree nodes
-		mutable label nNodes_;
+        //- use DATA boxes
+        bool useDATABoxes_;
+    
+        //- number of created octree nodes
+        mutable label nNodes_;
     
         //- coordinates of octree nodes
         mutable pointField* octreePointsPtr_;
-	
-		//- node labels
-		mutable VRWGraph* nodeLabelsPtr_;
+    
+        //- node labels
+        mutable VRWGraph* nodeLabelsPtr_;
     
         //- node leaves
-		mutable FRWGraph<label, 8>* nodeLeavesPtr_;
+        mutable FRWGraph<label, 8>* nodeLeavesPtr_;
     
-		//- identify which boxes should be used as mesh cells
-		mutable List<direction>* boxTypePtr_;
+        //- identify which boxes should be used as mesh cells
+        mutable List<direction>* boxTypePtr_;
         
         //- identify created nodes as OUTERNODE or INNERNODE
-		mutable List<direction>* nodeTypePtr_;
+        mutable List<direction>* nodeTypePtr_;
         
     // Additional addressing useful for some algorithms
         //- faces of the octree
@@ -147,22 +147,22 @@ class meshOctreeAddressing
         
         //- leaf at procs
         mutable VRWGraph* leafAtProcsPtr_;
-	
-	// Private member functions
+    
+    // Private member functions
         //- calculate octreePointsPtr_
         void createOctreePoints() const;
         
-		//- calculate nodeLabelsPtr_
-		void createNodeLabels() const;
-	
-		//- calculate nodeLeavesPtr_
-		void createNodeLeaves() const;
-		
-		//- assemble boxTypePtr_ list
-		void findUsedBoxes() const;
-		
-		//- calculate nodeTypePtr_
-		void calculateNodeType() const;
+        //- calculate nodeLabelsPtr_
+        void createNodeLabels() const;
+    
+        //- calculate nodeLeavesPtr_
+        void createNodeLeaves() const;
+        
+        //- assemble boxTypePtr_ list
+        void findUsedBoxes() const;
+        
+        //- calculate nodeTypePtr_
+        void calculateNodeType() const;
         
         //- calculate faces
         void createOctreeFaces() const;
@@ -187,17 +187,17 @@ class meshOctreeAddressing
         
         //- calculate edge-faces
         void calculateEdgeFaces() const;
-	
-		//- Clear allocated data
-		void clearOut();
+    
+        //- Clear allocated data
+        void clearOut();
         void clearBoxTypes();
         void clearNodeAddressing();
         void clearOctreeFaces();
         void clearAddressing();
         void clearParallelAddressing();
-		
-		//- check if distinct parts are glued together
-		void checkGluedRegions();
+        
+        //- check if distinct parts are glued together
+        void checkGluedRegions();
     
     // Private member functions for parallel runs
     
@@ -218,29 +218,29 @@ public:
 
         //- Construct from surface and dictionary
         meshOctreeAddressing
-		(
-			const meshOctree& mo,
-			const dictionary& dict,
-			bool useDATABoxes = false
-		);
+        (
+            const meshOctree& mo,
+            const dictionary& dict,
+            bool useDATABoxes = false
+        );
 
     // Destructor
 
         ~meshOctreeAddressing();
 
-	// Enumerators
+    // Enumerators
 
-		enum octreeCubeTypes
-		{
-			NONE = 0,
-			MESHCELL = 1,
-			BOUNDARY = 2,
-			SPLITHEX = 4,
-			INNERNODE = 8,
-			OUTERNODE = 16,
-			BOUNDARYNODE = 32
-		};
-		
+        enum octreeCubeTypes
+        {
+            NONE = 0,
+            MESHCELL = 1,
+            BOUNDARY = 2,
+            SPLITHEX = 4,
+            INNERNODE = 8,
+            OUTERNODE = 16,
+            BOUNDARYNODE = 32
+        };
+        
     // Member Functions
         
         //- check if there exist any non-signly connected edges and vertices
@@ -248,26 +248,26 @@ public:
         //- for the cartesian template
         void checkAndFixIrregularConnections();
 
-		//- return number of octree nodes
-		inline label numberOfNodes() const;
+        //- return number of octree nodes
+        inline label numberOfNodes() const;
         
         //- return coordinates of octree vertices
         inline const pointField& octreePoints() const;
 
-		//- return nodeLabels
-		inline const VRWGraph& nodeLabels() const;
+        //- return nodeLabels
+        inline const VRWGraph& nodeLabels() const;
 
-		//- return nodeLeaves
-		inline const FRWGraph<label, 8>& nodeLeaves() const;
-		
-		//- return which octree boxes are used for mesh creation
-		inline const List<direction>& boxType() const;
+        //- return nodeLeaves
+        inline const FRWGraph<label, 8>& nodeLeaves() const;
+        
+        //- return which octree boxes are used for mesh creation
+        inline const List<direction>& boxType() const;
         
         //- return type of node (INNERNODE,or OUTERNODE)
         inline const List<direction>& nodeType() const;
-		
-		//- set box type
-		inline void setBoxType(const label boxI, const direction type);
+        
+        //- set box type
+        inline void setBoxType(const label boxI, const direction type);
         
         //- return octree faces, created for MESHCELL boxes
         inline const VRWGraph& octreeFaces() const;
@@ -315,20 +315,20 @@ public:
         
         //- return edge-faces addressing
         inline const VRWGraph& edgeFaces() const;
-		
-		//- return const reference to meshOctree
-		inline const meshOctree& octree() const;
-		
-		//- find cubes around an edge (cubes must be at the same level)
-		void cubesAroundEdge
-		(
-			const label leafI,
-			const direction eI,
-			FixedList<label, 4>& edgeCubes
-		) const;
-		
-		//- find edge centre if it exists
-		label findEdgeCentre(const label leafI, const direction eI) const;
+        
+        //- return const reference to meshOctree
+        inline const meshOctree& octree() const;
+        
+        //- find cubes around an edge (cubes must be at the same level)
+        void cubesAroundEdge
+        (
+            const label leafI,
+            const direction eI,
+            FixedList<label, 4>& edgeCubes
+        ) const;
+        
+        //- find edge centre if it exists
+        label findEdgeCentre(const label leafI, const direction eI) const;
     
     // Access to data needed for parallel execution
     

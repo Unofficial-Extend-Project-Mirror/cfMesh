@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	objectRegistry registry(runTime);
-	
-	IOdictionary meshDict
+    
+    objectRegistry registry(runTime);
+    
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -66,28 +66,28 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	const fileName surfaceFile = meshDict.lookup("surfaceFile");
+    
+    const fileName surfaceFile = meshDict.lookup("surfaceFile");
 
     triSurf surf(registry.path()/surfaceFile);
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeBoxes();
-	
-	polyMeshGen pmg(registry);
+    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    
+    polyMeshGen pmg(registry);
 
-	dualMeshExtractor dme(mo, meshDict, pmg);
-	dme.createMesh();
-	
-	meshOptimizer mOpt(pmg);
-	mOpt.untangleMeshFV();
-	
-	writeMeshEnsight(pmg, "dualMesh");
-	//writeMeshFPMA(pmg, "dualMesh");
-	pmg.addressingData().checkMesh(true);
-	pmg.write();
-	
+    dualMeshExtractor dme(mo, meshDict, pmg);
+    dme.createMesh();
+    
+    meshOptimizer mOpt(pmg);
+    mOpt.untangleMeshFV();
+    
+    writeMeshEnsight(pmg, "dualMesh");
+    //writeMeshFPMA(pmg, "dualMesh");
+    pmg.addressingData().checkMesh(true);
+    pmg.write();
+    
     Info << "End\n" << endl;
     return 0;
 }

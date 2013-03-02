@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Converts STAR CD surfaces into stl or other formats
+    Converts STAR CD surfaces into stl or other formats
 
 \*---------------------------------------------------------------------------*/
 
@@ -61,56 +61,56 @@ int main(int argc, char *argv[])
     }
 
     IFstream surfFile(inFileName);
-	
-	//- parse the number of vertices
-	token t;
-	do
-	{
-		surfFile >> t;
-	} while( !t.isLabel() );
-	pointField points(t.labelToken());
-	Info << "Surface has " << points.size() << " points" << endl;
-	
-	//- find the number of elements
-	do
-	{
-		surfFile >> t;
-	} while( !t.isLabel() );
+    
+    //- parse the number of vertices
+    token t;
+    do
+    {
+        surfFile >> t;
+    } while( !t.isLabel() );
+    pointField points(t.labelToken());
+    Info << "Surface has " << points.size() << " points" << endl;
+    
+    //- find the number of elements
+    do
+    {
+        surfFile >> t;
+    } while( !t.isLabel() );
     List<labelledTri> triFaces(t.labelToken());
-	Info << "Surface has " << triFaces.size() << " facets" << endl;
-	
-	//- read vertices
-	do
-	{
-		surfFile >> t;
-	} while( t.isWord() && (t.wordToken() != "end_header") );
-	
-	forAll(points, pointI)
-	{
-		point& p = points[pointI];
-		
-		surfFile >> p.x();
-		surfFile >> p.y();
-		surfFile >> p.z();
-	}
-	
-	//- read triangles
-	forAll(triFaces, triI)
-	{
-		label nPts;
-		surfFile >> nPts;
-		if( nPts != 3 )
-		{
-			Info << "Facet " << triI << " is not a triangle!!" << endl;
-			Warning << "Cannot convert this surface!" << endl;
-			return 0;
-		}
-		
-		for(label i=0;i<nPts;++i)
-			surfFile >> triFaces[triI][i];
-		
-		triFaces[triI].region() = 0;
-	}
+    Info << "Surface has " << triFaces.size() << " facets" << endl;
+    
+    //- read vertices
+    do
+    {
+        surfFile >> t;
+    } while( t.isWord() && (t.wordToken() != "end_header") );
+    
+    forAll(points, pointI)
+    {
+        point& p = points[pointI];
+        
+        surfFile >> p.x();
+        surfFile >> p.y();
+        surfFile >> p.z();
+    }
+    
+    //- read triangles
+    forAll(triFaces, triI)
+    {
+        label nPts;
+        surfFile >> nPts;
+        if( nPts != 3 )
+        {
+            Info << "Facet " << triI << " is not a triangle!!" << endl;
+            Warning << "Cannot convert this surface!" << endl;
+            return 0;
+        }
+        
+        for(label i=0;i<nPts;++i)
+            surfFile >> triFaces[triI][i];
+        
+        triFaces[triI].region() = 0;
+    }
 
     triSurface surf(triFaces, points);
 

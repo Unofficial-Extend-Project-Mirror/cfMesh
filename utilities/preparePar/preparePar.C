@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	objectRegistry registry(runTime);
-	
-	IOdictionary meshDict
+    
+    objectRegistry registry(runTime);
+    
+    IOdictionary meshDict
     (
         IOobject
         (
@@ -60,39 +60,39 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-	
-	IOdictionary decomposeParDict
-	(
-		IOobject
-		(
-			"decomposeParDict",
-			registry.time().system(),
+    
+    IOdictionary decomposeParDict
+    (
+        IOobject
+        (
+            "decomposeParDict",
+            registry.time().system(),
             registry,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     );
-	
-	const label nProcessors
-	(
-		readLabel(decomposeParDict.lookup("numberOfSubdomains"))
-	);
-	
-	for(label procI=0;procI<nProcessors;++procI)
-	{
-		fileName file("processor");
-		std::ostringstream ss;
-		ss << procI;
-		file += ss.str();
-		Info << "Creating " << file << endl;
-		
-		//- create a directory for processor data
-		mkDir(runTime.path()/file);
-		
-		//- copy the contents of the const directory into processor*
-		cp(registry.path()/"constant", runTime.path()/file);
-	}
-	
+    
+    const label nProcessors
+    (
+        readLabel(decomposeParDict.lookup("numberOfSubdomains"))
+    );
+    
+    for(label procI=0;procI<nProcessors;++procI)
+    {
+        fileName file("processor");
+        std::ostringstream ss;
+        ss << procI;
+        file += ss.str();
+        Info << "Creating " << file << endl;
+        
+        //- create a directory for processor data
+        mkDir(runTime.path()/file);
+        
+        //- copy the contents of the const directory into processor*
+        cp(registry.path()/"constant", runTime.path()/file);
+    }
+    
     Info << "End\n" << endl;
     return 0;
 }

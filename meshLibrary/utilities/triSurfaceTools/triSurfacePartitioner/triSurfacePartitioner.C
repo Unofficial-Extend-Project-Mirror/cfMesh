@@ -45,19 +45,19 @@ namespace Foam
 
 triSurfacePartitioner::triSurfacePartitioner
 (
-	const triSurface& surface
+    const triSurface& surface
 )
 :
-	surface_(surface),
+    surface_(surface),
     corners_(),
-	cornerPatches_(),
-	partitionPartitions_(surface.patches().size()),
+    cornerPatches_(),
+    partitionPartitions_(surface.patches().size()),
     edgePartitions_(),
     edgePartitionEdgePartitions_(),
     partitionsEdgeParts_(),
     edgePartitionsCorners_()
 {
-	calculatePartitionAddressing();
+    calculatePartitionAddressing();
 }
 
 triSurfacePartitioner::~triSurfacePartitioner()
@@ -67,17 +67,17 @@ triSurfacePartitioner::~triSurfacePartitioner()
 
 const labelList& triSurfacePartitioner::corners() const
 {
-	return corners_;
+    return corners_;
 }
 
 const List<DynList<label> >& triSurfacePartitioner::cornerPatches() const
 {
-	return cornerPatches_;
+    return cornerPatches_;
 }
 
 const List<labelHashSet>& triSurfacePartitioner::partitionPartitions() const
 {
-	return partitionPartitions_;
+    return partitionPartitions_;
 }
 
 const labelList& triSurfacePartitioner::edgePartitions() const
@@ -144,7 +144,7 @@ void triSurfacePartitioner::cornersBetweenEdgePartitions
             corners.append(corn[cornerI]);
     }
 }
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

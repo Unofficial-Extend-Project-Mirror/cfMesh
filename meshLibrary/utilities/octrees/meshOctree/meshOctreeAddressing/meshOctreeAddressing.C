@@ -51,12 +51,12 @@ void meshOctreeAddressing::clearOut()
 
 void meshOctreeAddressing::clearNodeAddressing()
 {
-	nNodes_ = 0;
+    nNodes_ = 0;
     deleteDemandDrivenData(octreePointsPtr_);
-	deleteDemandDrivenData(nodeLabelsPtr_);
-	deleteDemandDrivenData(nodeLeavesPtr_);
+    deleteDemandDrivenData(nodeLabelsPtr_);
+    deleteDemandDrivenData(nodeLeavesPtr_);
 
-	deleteDemandDrivenData(nodeTypePtr_);
+    deleteDemandDrivenData(nodeTypePtr_);
 }
 
 void meshOctreeAddressing::clearBoxTypes()
@@ -104,18 +104,18 @@ meshOctreeAddressing::meshOctreeAddressing
 (
     const meshOctree& mo,
     const dictionary& dict,
-	bool useDATABoxes
+    bool useDATABoxes
 )
 :
-	octree_(mo),
-	meshDict_(dict),
-	useDATABoxes_(useDATABoxes),
-	nNodes_(0),
+    octree_(mo),
+    meshDict_(dict),
+    useDATABoxes_(useDATABoxes),
+    nNodes_(0),
     octreePointsPtr_(NULL),
-	nodeLabelsPtr_(NULL),
-	nodeLeavesPtr_(NULL),
-	boxTypePtr_(NULL),
-	nodeTypePtr_(NULL),
+    nodeLabelsPtr_(NULL),
+    nodeLeavesPtr_(NULL),
+    boxTypePtr_(NULL),
+    nodeTypePtr_(NULL),
     octreeFacesPtr_(NULL),
     octreeFacesOwnersPtr_(NULL),
     octreeFacesNeighboursPtr_(NULL),
@@ -160,15 +160,15 @@ meshOctreeAddressing::meshOctreeAddressing
         om.addLayerFromNeighbouringProcessors();
     }
 
-	//- check for glued regions
-	checkGluedRegions();
+    //- check for glued regions
+    checkGluedRegions();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshOctreeAddressing::~meshOctreeAddressing()
 {
-	clearOut();
+    clearOut();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -381,103 +381,103 @@ void meshOctreeAddressing::edgeIntersections
 
 void meshOctreeAddressing::cubesAroundEdge
 (
-	const label leafI,
-	const direction eI,
-	FixedList<label, 4>& edgeCubes
+    const label leafI,
+    const direction eI,
+    FixedList<label, 4>& edgeCubes
 ) const
 {
-	const VRWGraph& nl = this->nodeLabels();
-	const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
-	const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
+    const VRWGraph& nl = this->nodeLabels();
+    const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
+    const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
 
-	switch( eI )
-	{
-		case 0: case 1: case 2: case 3:
-		{
-			edgeCubes[0] = pLeaves(nodeI, 1);
-			edgeCubes[1] = pLeaves(nodeI, 3);
-			edgeCubes[2] = pLeaves(nodeI, 5);
-			edgeCubes[3] = pLeaves(nodeI, 7);
-		} break;
-		case 4: case 5: case 6: case 7:
-		{
-			edgeCubes[0] = pLeaves(nodeI, 2);
-			edgeCubes[1] = pLeaves(nodeI, 3);
-			edgeCubes[2] = pLeaves(nodeI, 6);
-			edgeCubes[3] = pLeaves(nodeI, 7);
-		} break;
-		case 8: case 9: case 10: case 11:
-		{
-			edgeCubes[0] = pLeaves(nodeI, 4);
-			edgeCubes[1] = pLeaves(nodeI, 5);
-			edgeCubes[2] = pLeaves(nodeI, 6);
-			edgeCubes[3] = pLeaves(nodeI, 7);
-		} break;
-		default:
-		{
-			FatalErrorIn
-			(
-				"void tetMeshExtractorOctree::cubesAroundEdge(const label,"
-				"const direction, FixedList<label, 4>&)"
-			) << "Invalid edge specified!!" << abort(FatalError);
-		} break;
-	};
+    switch( eI )
+    {
+        case 0: case 1: case 2: case 3:
+        {
+            edgeCubes[0] = pLeaves(nodeI, 1);
+            edgeCubes[1] = pLeaves(nodeI, 3);
+            edgeCubes[2] = pLeaves(nodeI, 5);
+            edgeCubes[3] = pLeaves(nodeI, 7);
+        } break;
+        case 4: case 5: case 6: case 7:
+        {
+            edgeCubes[0] = pLeaves(nodeI, 2);
+            edgeCubes[1] = pLeaves(nodeI, 3);
+            edgeCubes[2] = pLeaves(nodeI, 6);
+            edgeCubes[3] = pLeaves(nodeI, 7);
+        } break;
+        case 8: case 9: case 10: case 11:
+        {
+            edgeCubes[0] = pLeaves(nodeI, 4);
+            edgeCubes[1] = pLeaves(nodeI, 5);
+            edgeCubes[2] = pLeaves(nodeI, 6);
+            edgeCubes[3] = pLeaves(nodeI, 7);
+        } break;
+        default:
+        {
+            FatalErrorIn
+            (
+                "void tetMeshExtractorOctree::cubesAroundEdge(const label,"
+                "const direction, FixedList<label, 4>&)"
+            ) << "Invalid edge specified!!" << abort(FatalError);
+        } break;
+    };
 }
 
 label meshOctreeAddressing::findEdgeCentre
 (
-	const label leafI,
-	const direction eI
+    const label leafI,
+    const direction eI
 ) const
 {
-	const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
-	const VRWGraph& nl = this->nodeLabels();
-	const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
-	const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
+    const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
+    const VRWGraph& nl = this->nodeLabels();
+    const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
+    const FRWGraph<label, 8>& pLeaves = this->nodeLeaves();
 
-	const direction level = oc.level();
+    const direction level = oc.level();
 
-	label fI(-1);
-	switch( eI )
-	{
-		case 0: case 1: case 2: case 3:
-		{
-			fI = 1;
-		} break;
-		case 4: case 5: case 6: case 7:
-		{
-			fI = 3;
-		} break;
-		case 8: case 9: case 10: case 11:
-		{
-			fI = 5;
-		} break;
-		default:
-		{
-			FatalErrorIn
-			(
-				"label meshOctreeAddressing::findEdgeCentre"
+    label fI(-1);
+    switch( eI )
+    {
+        case 0: case 1: case 2: case 3:
+        {
+            fI = 1;
+        } break;
+        case 4: case 5: case 6: case 7:
+        {
+            fI = 3;
+        } break;
+        case 8: case 9: case 10: case 11:
+        {
+            fI = 5;
+        } break;
+        default:
+        {
+            FatalErrorIn
+            (
+                "label meshOctreeAddressing::findEdgeCentre"
                 "(const label leafI, const direction eI) const"
-			) << "Invalid edge specified!!" << abort(FatalError);
-		} break;
-	};
+            ) << "Invalid edge specified!!" << abort(FatalError);
+        } break;
+    };
 
-	for(label i=0;i<4;++i)
-	{
+    for(label i=0;i<4;++i)
+    {
         const label fNode = meshOctreeCubeCoordinates::faceNodes_[fI][i];
 
-		if( pLeaves(nodeI, fNode) < 0 )
-			continue;
+        if( pLeaves(nodeI, fNode) < 0 )
+            continue;
 
-		const label leafJ = pLeaves(nodeI, fNode);
-		if( octree_.returnLeaf(leafJ).level() > level )
+        const label leafJ = pLeaves(nodeI, fNode);
+        if( octree_.returnLeaf(leafJ).level() > level )
         {
             const label shift = (i+2)%4;
-			return nl(leafJ, meshOctreeCubeCoordinates::faceNodes_[fI][shift]);
+            return nl(leafJ, meshOctreeCubeCoordinates::faceNodes_[fI][shift]);
         }
-	}
+    }
 
-	return -1;
+    return -1;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

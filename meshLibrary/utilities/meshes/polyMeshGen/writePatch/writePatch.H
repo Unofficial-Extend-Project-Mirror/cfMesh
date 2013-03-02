@@ -71,29 +71,29 @@ public:
         virtual autoPtr<writePatchBase> clone() const
         {
             return autoPtr<writePatchBase>
-			(
-				new writePatch
-				(
-					patchName(),
+            (
+                new writePatch
+                (
+                    patchName(),
                     patchType(),
                     patchSize(),
                     patchStart()
-				)
-			);
+                )
+            );
         }
     
         virtual autoPtr<writePatchBase> clone(const writePatch& wp) const
         {
             return autoPtr<writePatchBase>
-			(
-				new writePatch
-				(
-					wp.patchName(),
+            (
+                new writePatch
+                (
+                    wp.patchName(),
                     wp.patchType(),
                     wp.patchSize(),
                     wp.patchStart()
-				)
-			);
+                )
+            );
         }
         
         //- Return as dictionary of entries

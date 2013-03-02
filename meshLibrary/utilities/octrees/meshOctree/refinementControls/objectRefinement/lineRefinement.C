@@ -41,24 +41,24 @@ addToRunTimeSelectionTable(objectRefinement, lineRefinement, dictionary);
 lineRefinement::lineRefinement()
 :
     objectRefinement(),
-	p0_(),
-	p1_()
+    p0_(),
+    p1_()
 {}
 
 lineRefinement::lineRefinement
 (
-	const word& name,
+    const word& name,
     const scalar cellSize,
-	const point& p0,
-	const point& p1
+    const point& p0,
+    const point& p1
 )
 :
     objectRefinement(),
-	p0_(p0),
-	p1_(p1)
+    p0_(p0),
+    p1_(p1)
 {
-	setName(name);
-	setCellSize(cellSize);
+    setName(name);
+    setCellSize(cellSize);
 }
 
 lineRefinement::lineRefinement
@@ -69,7 +69,7 @@ lineRefinement::lineRefinement
 :
     objectRefinement(name, dict)
 {
-	this->operator=(dict);
+    this->operator=(dict);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -77,8 +77,8 @@ lineRefinement::lineRefinement
 bool lineRefinement::intersectsObject(const boundBox& bb) const
 {
     //- check if the cube contains start point or end point
-	const scalar l = bb.max().x() - bb.min().x();
-	
+    const scalar l = bb.max().x() - bb.min().x();
+    
     const point min = bb.min() - l * vector(SMALL, SMALL, SMALL);
     const point max = bb.max() + l * vector(SMALL, SMALL, SMALL);
 
@@ -207,10 +207,10 @@ bool lineRefinement::intersectsObject(const boundBox& bb) const
 
 dictionary lineRefinement::dict(bool ignoreType) const
 {
-	dictionary dict;
+    dictionary dict;
 
-	dict.add("cellSize", cellSize());
-	dict.add("type", type());
+    dict.add("cellSize", cellSize());
+    dict.add("type", type());
 
     dict.add("p0", p0_);
     dict.add("p1", p1_);
@@ -220,19 +220,19 @@ dictionary lineRefinement::dict(bool ignoreType) const
 
 void lineRefinement::write(Ostream& os) const
 {
-	os  << " type:   " << type()
+    os  << " type:   " << type()
         << " p0: " << p0_
         << " p1: " << p1_;
 }
 
 void lineRefinement::writeDict(Ostream& os, bool subDict) const
 {
-	if( subDict )
+    if( subDict )
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-	
-	os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    
+    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -266,10 +266,10 @@ void lineRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void lineRefinement::operator=(const dictionary& d)"
-		) << "Entry p0 is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void lineRefinement::operator=(const dictionary& d)"
+        ) << "Entry p0 is not specified!" << exit(FatalError);
         p0_ = vector::zero;
     }
 
@@ -280,10 +280,10 @@ void lineRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void lineRefinement::operator=(const dictionary& d)"
-		) << "Entry p1 is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void lineRefinement::operator=(const dictionary& d)"
+        ) << "Entry p1 is not specified!" << exit(FatalError);
         p1_ = vector::zero;
     }
 }
@@ -292,14 +292,14 @@ void lineRefinement::operator=(const dictionary& d)
 
 Ostream& lineRefinement::operator<<(Ostream& os) const
 {
-	os << "name " << name() << nl;
-	os << "cell size " << cellSize() << nl;
-	write(os);
-	return os;
+    os << "name " << name() << nl;
+    os << "cell size " << cellSize() << nl;
+    write(os);
+    return os;
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 } // End namespace Foam
 
 // ************************************************************************* //

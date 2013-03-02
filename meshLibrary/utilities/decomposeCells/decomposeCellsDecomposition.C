@@ -254,7 +254,7 @@ void decomposeCells::addNewCells()
         newBoundaryPatches_
     );
 
-	polyMeshGenModifier(mesh_).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

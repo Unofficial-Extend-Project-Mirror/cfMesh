@@ -41,42 +41,42 @@ namespace Foam
 
 void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
 {
-	if( trianglesPtr_ || pointTrianglesPtr_ )
-		FatalErrorIn
-		(
-			"void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const"
-		) << "Addressing is already calculated!" << abort(FatalError);
-	
-	const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
-	const labelList& bp = surfaceEngine_.bp();
-	
-	triFace triangle; //- helper
-	
-	pointTrianglesPtr_ = new VRWGraph(surfaceEngine_.boundaryPoints().size());
-	VRWGraph& pointTriangles = *pointTrianglesPtr_;
-	
-	trianglesPtr_ = new LongList<triFace>();
-	LongList<triFace>& triangles = *trianglesPtr_;
-	
-	//- start creating triangles
-	forAll(bFaces, bfI)
-	{
-		const face& bf = bFaces[bfI];
-		
-		forAll(bf, pI)
-		{
+    if( trianglesPtr_ || pointTrianglesPtr_ )
+        FatalErrorIn
+        (
+            "void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const"
+        ) << "Addressing is already calculated!" << abort(FatalError);
+    
+    const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+    const labelList& bp = surfaceEngine_.bp();
+    
+    triFace triangle; //- helper
+    
+    pointTrianglesPtr_ = new VRWGraph(surfaceEngine_.boundaryPoints().size());
+    VRWGraph& pointTriangles = *pointTrianglesPtr_;
+    
+    trianglesPtr_ = new LongList<triFace>();
+    LongList<triFace>& triangles = *trianglesPtr_;
+    
+    //- start creating triangles
+    forAll(bFaces, bfI)
+    {
+        const face& bf = bFaces[bfI];
+        
+        forAll(bf, pI)
+        {
             const label nTrias = bf.size() - 2;
-			triangle[0] = bp[bf[pI]];
+            triangle[0] = bp[bf[pI]];
             
             for(label i=0;i<nTrias;++i)
             {
                 triangle[1] = bp[bf[(pI+i+1)%bf.size()]];
                 triangle[2] = bp[bf[(pI+i+2)%bf.size()]];
-			
+            
                 triangles.append(triangle);
             }
-		}
-	}
+        }
+    }
     
     //- create point-triangles addressing
     labelList nTriaAtPoint(pointTriangles.size(), 0);

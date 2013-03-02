@@ -31,14 +31,14 @@ License
 #include "Time.H"
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
-	
+    
 template<class T, Foam::label Offset>
 void Foam::LongList<T, Offset>::writeEntry(Ostream& os) const
 {
-	if
+    if
     (
         size() &&
-		token::compound::isCompound
+        token::compound::isCompound
         (
             "LongList<" + word(pTraits<T>::typeName) + '>'
         )
@@ -53,11 +53,11 @@ void Foam::LongList<T, Offset>::writeEntry(Ostream& os) const
 template<class T, Foam::label Offset>
 void Foam::LongList<T, Offset>::writeEntry
 (
-	const word& keyword,
-	Ostream& os
+    const word& keyword,
+    Ostream& os
 ) const
 {
-	os.writeKeyword(keyword);
+    os.writeKeyword(keyword);
     writeEntry(os);
     os << token::END_STATEMENT << endl;
 }
@@ -126,10 +126,10 @@ Foam::Ostream& Foam::operator<<
             }
         }
     }
-	
-	// Check state of IOstream
+    
+    // Check state of IOstream
     os.check("Ostream& operator<<(Ostream&, const LongList&)");
-	
+    
     return os;
 }
 

@@ -43,11 +43,11 @@ label tetTessellation::findInitialElement(const point& p)
     label el = elmts_.size() - 1;
 
     //- find an tessellationElement which is influenced by the point
-	//- this brutal force search is not to be used for big tessellations
+    //- this brutal force search is not to be used for big tessellations
     const label nEl = elmts_.size();
-	for(label tI=0;tI<nEl;++tI)
-		if( elmts_[tI].influencedBy(points_, p) > VSM )
-			return tI;
+    for(label tI=0;tI<nEl;++tI)
+        if( elmts_[tI].influencedBy(points_, p) > VSM )
+            return tI;
 
     return el;
 }
@@ -58,15 +58,15 @@ void tetTessellation::treeSearch
     const point& p
 )
 {
-	tessellationElement& elmt = elmts_[elmtI];
-	
+    tessellationElement& elmt = elmts_[elmtI];
+    
     //- stop searching if there exist an element with unknown influence
     if( !pointOk_ ) return;
 
     //- stop searching it the tessellationElement is marked already
     if( elmt.influence_ & tessellationElement::GOOD ) return;
-		
-	const scalar infl = elmt.influencedBy(points_, p);
+        
+    const scalar infl = elmt.influencedBy(points_, p);
 
     if( infl > VSM )
     {
@@ -89,8 +89,8 @@ void tetTessellation::treeSearch
     {
         point& r = const_cast<point&>(p);
         Random rnd(0);
-		
-		const point crcm = elmt.crcmCentre(points_);
+        
+        const point crcm = elmt.crcmCentre(points_);
         point add =
             p -
             1e-7 *
@@ -127,8 +127,8 @@ void tetTessellation::treeSearch
 
 void tetTessellation::resetInfluences(const label elmtI)
 {
-	tessellationElement& elmt = elmts_[elmtI];
-	
+    tessellationElement& elmt = elmts_[elmtI];
+    
     if( !elmt.influence_ ) return;
 
     elmt.influence_ = tessellationElement::NONE;

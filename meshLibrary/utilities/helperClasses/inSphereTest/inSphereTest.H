@@ -27,7 +27,7 @@ Class
 
 Description
     Calculates if a point is inside a tetrahedron sphere or not. Uses adaptive-
-	precision arithmetic by J. R. Schewchuk
+    precision arithmetic by J. R. Schewchuk
 
 SourceFiles
     inSphereTest.C

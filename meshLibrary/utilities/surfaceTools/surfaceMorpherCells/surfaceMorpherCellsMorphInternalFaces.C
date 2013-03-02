@@ -577,7 +577,7 @@ bool surfaceMorpherCells::morphInternalFaces()
     labelHashSet zipCells;
     mesh_.addressingData().checkCellsZipUp(true, &zipCells);
     if( zipCells.size() )
-	{
+    {
         Serr << Pstream::myProcNo() << "Open cells appeared!" << endl;
         //mesh_.write();
         //writeMeshEnsight(mesh_, "openMeshAfterInternalMorph");

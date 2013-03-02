@@ -46,7 +46,7 @@ void polyMeshGenAddressing::calcCellCells() const
     }
     else
     {
-		const cellListPMG& cells = mesh_.cells();
+        const cellListPMG& cells = mesh_.cells();
         
         const labelList& own = mesh_.owner();
         const labelList& nei = mesh_.neighbour();

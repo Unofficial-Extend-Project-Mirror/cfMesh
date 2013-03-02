@@ -309,7 +309,7 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
         c.setSize(newC.size());
         forAll(newC, fJ)
         c[fJ] = newC[fJ];
-	}
+    }
 
     meshModifier.clearAll();
 

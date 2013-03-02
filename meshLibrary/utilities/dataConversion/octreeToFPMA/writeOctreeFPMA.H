@@ -47,8 +47,8 @@ class meshOctree;
  
 void writeOctreeFPMA
 (
-	const meshOctree& octree,
-	const word& fName
+    const meshOctree& octree,
+    const word& fName
 );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

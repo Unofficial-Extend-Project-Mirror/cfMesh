@@ -50,21 +50,21 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
+    
     polyMeshGen pmg(runTime);
     pmg.read();
-	
+    
     do
     {
         surfaceMorpherCells* morpherPtr = new surfaceMorpherCells(pmg);
         morpherPtr->morphMesh();
         deleteDemandDrivenData(morpherPtr);
     } while( topologicalCleaner(pmg).cleanTopology() );
-	
+    
     writeMeshEnsight(pmg, "morphedMesh");
     //pmg.addressingData().checkMesh(true);
     pmg.write();
-	
+    
     Info << "End\n" << endl;
     return 0;
 }

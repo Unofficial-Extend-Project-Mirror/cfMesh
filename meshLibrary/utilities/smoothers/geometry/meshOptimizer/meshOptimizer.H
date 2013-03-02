@@ -63,18 +63,18 @@ class meshOptimizer
 {
     // Private data
         //- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- location of vertex (internal, boundary, edge, corner)
+        polyMeshGen& mesh_;
+    
+        //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
-	
-		//- mesh surface
-		mutable meshSurfaceEngine* msePtr_;
+    
+        //- mesh surface
+        mutable meshSurfaceEngine* msePtr_;
 
     // Private member functions
-		//- return mesh surface
-		const meshSurfaceEngine& meshSurface() const;
-		void clearSurface();
+        //- return mesh surface
+        const meshSurfaceEngine& meshSurface() const;
+        void clearSurface();
     
         //- find problematic faces
         label findBadFaces(labelHashSet&, const boolList&) const;
@@ -123,7 +123,7 @@ class meshOptimizer
 
                 //- Disallow default bitwise assignment
                 void operator=(const laplaceSmoother&);
-	
+    
         public:
                 
             // Constructor
@@ -176,16 +176,16 @@ class meshOptimizer
 
         //- Disallow default bitwise assignment
         void operator=(const meshOptimizer&);
-		
-	// enumerators
-		enum vertexType_
-		{
-			INSIDE = 1,
-			BOUNDARY = 2,
-			EDGE = 4,
-			CORNER = 8,
+        
+    // enumerators
+        enum vertexType_
+        {
+            INSIDE = 1,
+            BOUNDARY = 2,
+            EDGE = 4,
+            CORNER = 8,
             PARALLELBOUNDARY = 16
-		};
+        };
 
 public:
 
@@ -203,15 +203,15 @@ public:
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);
 
-		//- performs mesh untangling based on detected negative normals
-		void untangleMeshFV();
+        //- performs mesh untangling based on detected negative normals
+        void untangleMeshFV();
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
         void optimizeLowQualityFaces();
 
-		//- final optimisation
-		void optimizeMeshFV();
+        //- final optimisation
+        void optimizeMeshFV();
 };
 
 

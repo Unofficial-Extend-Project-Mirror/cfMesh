@@ -40,7 +40,7 @@ namespace Foam
 inline partTet::partTet()
 {
 }
-	
+    
 inline partTet::partTet
 (
     const label a,
@@ -49,10 +49,10 @@ inline partTet::partTet
     const label d
 )
 {
-	data_[0] = a;
-	data_[1] = b;
-	data_[2] = c;
-	data_[3] = d;
+    data_[0] = a;
+    data_[1] = b;
+    data_[2] = c;
+    data_[3] = d;
 }
 
 inline partTet::~partTet()
@@ -88,145 +88,145 @@ inline label partTet::size() const
 
 inline label partTet::whichPosition(const label pointI) const
 {
-	for(label i=0;i<4;++i)
-		if( data_[i] == pointI )
-			return i;
-		
-	return -1;
+    for(label i=0;i<4;++i)
+        if( data_[i] == pointI )
+            return i;
+        
+    return -1;
 }
 
 template<class PointField>
 inline vector partTet::Sa(const PointField& points) const
 {
-	triangle<point, point> tria
-	(
-		points[data_[1]],
-		points[data_[2]],
-		points[data_[3]]
-	);
-	
-	return tria.normal();
+    triangle<point, point> tria
+    (
+        points[data_[1]],
+        points[data_[2]],
+        points[data_[3]]
+    );
+    
+    return tria.normal();
     //return triangle<point, point>(b_, c_, d_).normal();
 }
 
 template<class PointField>
 inline vector partTet::Sb(const PointField& points) const
 {
-	triangle<point, point> tria
-	(
-		points[data_[0]],
-		points[data_[3]],
-		points[data_[2]]
-	);
-	
-	return tria.normal();
+    triangle<point, point> tria
+    (
+        points[data_[0]],
+        points[data_[3]],
+        points[data_[2]]
+    );
+    
+    return tria.normal();
     //return triangle<point, point>(a_, d_, c_).normal();
 }
 
 template<class PointField>
 inline vector partTet::Sc(const PointField& points) const
 {
-	triangle<point, point> tria
-	(
-		points[data_[0]],
-		points[data_[1]],
-		points[data_[3]]
-	);
-	
-	return tria.normal();
+    triangle<point, point> tria
+    (
+        points[data_[0]],
+        points[data_[1]],
+        points[data_[3]]
+    );
+    
+    return tria.normal();
     //return triangle<point, point>(a_, b_, d_).normal();
 }
 
 template<class PointField>
 inline vector partTet::Sd(const PointField& points) const
 {
-	triangle<point, point> tria
-	(
-		points[data_[0]],
-		points[data_[2]],
-		points[data_[1]]
-	);
-	
-	return tria.normal();
+    triangle<point, point> tria
+    (
+        points[data_[0]],
+        points[data_[2]],
+        points[data_[1]]
+    );
+    
+    return tria.normal();
     //return triangle<point, point>(a_, c_, b_).normal();
 }
 
 template<class PointField>
 inline scalar partTet::mag(const PointField& points) const
 {
-	tetrahedron<point, point> tet
-	(
-		points[data_[0]],
-		points[data_[1]],
-		points[data_[2]],
-		points[data_[3]]
-	);
-	
-	return tet.mag();
+    tetrahedron<point, point> tet
+    (
+        points[data_[0]],
+        points[data_[1]],
+        points[data_[2]],
+        points[data_[3]]
+    );
+    
+    return tet.mag();
     //return (1.0/6.0)*(((b_ - a_) ^ (c_ - a_)) & (d_ - a_));
 }
 
 template<class PointField>
 inline point partTet::crcmCentre(const PointField& points) const
 {
-	tetrahedron<point, point> tet
-	(
-		points[data_[0]],
-		points[data_[1]],
-		points[data_[2]],
-		points[data_[3]]
-	);
-	
-	return tet.circumCentre();
+    tetrahedron<point, point> tet
+    (
+        points[data_[0]],
+        points[data_[1]],
+        points[data_[2]],
+        points[data_[3]]
+    );
+    
+    return tet.circumCentre();
 }
 
 template<class PointField>
 inline scalar partTet::crcmRadius(const PointField& points) const
 {
-	tetrahedron<point, point> tet
-	(
-		points[data_[0]],
-		points[data_[1]],
-		points[data_[2]],
-		points[data_[3]]
-	);
-	
-	return tet.circumRadius();
+    tetrahedron<point, point> tet
+    (
+        points[data_[0]],
+        points[data_[1]],
+        points[data_[2]],
+        points[data_[3]]
+    );
+    
+    return tet.circumRadius();
 }
 
 template<class PointField>
 inline point partTet::centroid(const PointField& points) const
 {
-	point p = points[data_[0]];
-	for(label i=1;i<4;++i)
-		p += points[data_[i]];
-	
-	p /= 4;
-	return p;
+    point p = points[data_[0]];
+    for(label i=1;i<4;++i)
+        p += points[data_[i]];
+    
+    p /= 4;
+    return p;
 }
 
 inline edgeList partTet::edges() const
 {
-	edgeList edges(6);
-	edges[0] = edge(data_[0], data_[1]);
-	edges[1] = edge(data_[0], data_[2]);
-	edges[2] = edge(data_[0], data_[3]);
+    edgeList edges(6);
+    edges[0] = edge(data_[0], data_[1]);
+    edges[1] = edge(data_[0], data_[2]);
+    edges[2] = edge(data_[0], data_[3]);
     edges[3] = edge(data_[3], data_[1]);
     edges[4] = edge(data_[1], data_[2]);
     edges[5] = edge(data_[3], data_[2]);
 
-	return edges;
+    return edges;
 }
 
 inline label partTet::operator[](const label i) const
 {
-	return data_[i];
+    return data_[i];
 }
 
 inline void partTet::operator=(const partTet& tet)
 {
-	for(label i=0;i<4;++i)
-		data_[i] = tet.data_[i];
+    for(label i=0;i<4;++i)
+        data_[i] = tet.data_[i];
 }
 
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //

@@ -39,7 +39,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void meshSurfaceOptimizer::classifySurfaceVertices()
@@ -50,7 +50,7 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
     
     //- set all vertices to partition
     vertexType_ = PARTITION;
-	
+    
     //- set corners
     forAllConstIter(labelHashSet, corners, it)
         vertexType_[it.key()] = CORNER;
@@ -79,25 +79,25 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
 // Construct from mesh surface and octree
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
-	meshSurfaceEngine& surface,
+    meshSurfaceEngine& surface,
     const meshOctree& octree
 )
 :
-	surfaceEngine_(surface),
+    surfaceEngine_(surface),
     meshOctree_(octree),
-	vertexType_(surface.boundaryPoints().size()),
-	trianglesPtr_(NULL),
-	pointTrianglesPtr_(NULL)
+    vertexType_(surface.boundaryPoints().size()),
+    trianglesPtr_(NULL),
+    pointTrianglesPtr_(NULL)
 {
-	classifySurfaceVertices();
+    classifySurfaceVertices();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
-	deleteDemandDrivenData(trianglesPtr_);
-	deleteDemandDrivenData(pointTrianglesPtr_);
+    deleteDemandDrivenData(trianglesPtr_);
+    deleteDemandDrivenData(pointTrianglesPtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

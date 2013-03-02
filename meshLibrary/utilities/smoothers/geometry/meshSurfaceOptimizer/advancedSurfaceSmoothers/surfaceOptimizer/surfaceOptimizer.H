@@ -52,7 +52,7 @@ namespace Foam
 class surfaceOptimizer
 {
     // Private data
-		//- reference to the simplex points
+        //- reference to the simplex points
         DynList<point>& pts_;
     
         //- reference to the triangles forming a simplex
@@ -71,7 +71,7 @@ public:
         //- Construct from transformed points and triangles forming a simplex
         surfaceOptimizer
         (
-			DynList<point>& pts,
+            DynList<point>& pts,
             const DynList<triFace>& trias
         );
 
@@ -81,9 +81,9 @@ public:
         ~surfaceOptimizer();
 
     // Member Functions
-		
-		//- optimizes position of a central point in the simplex
-		point optimizePoint(const scalar tol = 0.1);
+        
+        //- optimizes position of a central point in the simplex
+        point optimizePoint(const scalar tol = 0.1);
 };
 
 

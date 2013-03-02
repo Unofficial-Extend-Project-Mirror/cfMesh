@@ -39,9 +39,9 @@ namespace Foam
 
 void triSurfacePartitioner::calculatePartitionAddressing()
 {
-	calculateCornersAndAddressing();
-	
-	calculatePartitionPartitions();
+    calculateCornersAndAddressing();
+    
+    calculatePartitionPartitions();
     
     calculateEdgePartitions();
         
@@ -50,10 +50,10 @@ void triSurfacePartitioner::calculatePartitionAddressing()
     calculateEdgePartitionsToCorners();
 
 }
-	
+    
 void triSurfacePartitioner::calculateCornersAndAddressing()
 {
-	const labelListList& pointFaces = surface_.pointFaces();
+    const labelListList& pointFaces = surface_.pointFaces();
     const edgeList& edges = surface_.edges();
     const labelListList& edgeFaces = surface_.edgeFaces();
     
@@ -65,7 +65,7 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
             continue;
         
         const label sPatch = surface_[edgeFaces[eI][0]].region();
-		const label ePatch = surface_[edgeFaces[eI][1]].region();
+        const label ePatch = surface_[edgeFaces[eI][1]].region();
         
         if( sPatch != ePatch )
         {
@@ -85,51 +85,51 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
         
         ++nCorners;
     }
-	
-	corners_.setSize(nCorners);
-	cornerPatches_.setSize(nCorners);
-	nCorners = 0;
-	
+    
+    corners_.setSize(nCorners);
+    cornerPatches_.setSize(nCorners);
+    nCorners = 0;
+    
     //- store corner data
     DynList<label> patches(10);
-	forAll(pointFaces, pointI)
-	{
+    forAll(pointFaces, pointI)
+    {
         if( nEdgesAtNode[pointI] < direction(3) )
             continue;
         
-		const labelList& pf = pointFaces[pointI];
-		
-		patches.clear();
-		forAll(pf, pfI)
-			patches.appendIfNotIn(surface_[pf[pfI]].region());
-		
+        const labelList& pf = pointFaces[pointI];
+        
+        patches.clear();
+        forAll(pf, pfI)
+            patches.appendIfNotIn(surface_[pf[pfI]].region());
+        
         corners_[nCorners] = pointI;
         cornerPatches_[nCorners] = patches;
         ++nCorners;
-	}
+    }
 }
-	
+    
 void triSurfacePartitioner::calculatePartitionPartitions()
 {
-	const labelListList& edgeFaces = surface_.edgeFaces();
-	
-	forAll(edgeFaces, eI)
-	{
-		if( edgeFaces[eI].size() != 2 )
-		{
-			Warning << "Surface is not a manifold!!" << endl;
-			continue;
-		}
-		
-		const label sPatch = surface_[edgeFaces[eI][0]].region();
-		const label ePatch = surface_[edgeFaces[eI][1]].region();
-		
-		if( sPatch != ePatch )
-		{
-			partitionPartitions_[sPatch].insert(ePatch);
-			partitionPartitions_[ePatch].insert(sPatch);
-		}
-	}
+    const labelListList& edgeFaces = surface_.edgeFaces();
+    
+    forAll(edgeFaces, eI)
+    {
+        if( edgeFaces[eI].size() != 2 )
+        {
+            Warning << "Surface is not a manifold!!" << endl;
+            continue;
+        }
+        
+        const label sPatch = surface_[edgeFaces[eI][0]].region();
+        const label ePatch = surface_[edgeFaces[eI][1]].region();
+        
+        if( sPatch != ePatch )
+        {
+            partitionPartitions_[sPatch].insert(ePatch);
+            partitionPartitions_[ePatch].insert(sPatch);
+        }
+    }
 }
 
 void triSurfacePartitioner::calculateEdgePartitions()

@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Reads the AVL's surface mesh
+    Reads the AVL's surface mesh
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,18 +42,18 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-	argList::noParallel();
+    argList::noParallel();
     argList::validArgs.clear();
 
     argList::validArgs.append("input surface file");
-	argList::validArgs.append("output subset file");
+    argList::validArgs.append("output subset file");
     argList args(argc, argv);
 
     fileName inFileName(args.args()[1]);
-	fileName subsetFileName(args.args()[2]);
-	
-	triSurf origSurf(inFileName);
-	
+    fileName subsetFileName(args.args()[2]);
+    
+    triSurf origSurf(inFileName);
+    
     wordList patchNames(origSurf.patches().size());
     forAll(origSurf.patches(), patchI)
         patchNames[patchI] = origSurf.patches()[patchI].name();
@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
         
         origSurf.addFacetsToSubset(patchNames[patchI], subsetFacets);
     }
-	
-	origSurf.writeFaceSubsets(subsetFileName);
-	
+    
+    origSurf.writeFaceSubsets(subsetFileName);
+    
     Info << "End\n" << endl;
     
     return 0;

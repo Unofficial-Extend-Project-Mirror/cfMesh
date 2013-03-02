@@ -57,16 +57,16 @@ class meshSurfaceEngine
 {
     // Private data
         //- mesh
-		polyMeshGen& mesh_;
+        polyMeshGen& mesh_;
 
         //- boundary points
         mutable labelList* boundaryPointsPtr_;
 
         //- boundary faces
         mutable faceList::subList* boundaryFacesPtr_;
-	
-		//- patches boundary faces are in
-		mutable labelList* boundaryFacePatchPtr_;
+    
+        //- patches boundary faces are in
+        mutable labelList* boundaryFacePatchPtr_;
 
         //- face owners
         mutable labelList* boundaryFaceOwnersPtr_;
@@ -92,18 +92,18 @@ class meshSurfaceEngine
 
         //- edge faces addressing
         mutable VRWGraph* edgeFacesPtr_;
-		
-		//- face edges addressing
-		mutable VRWGraph* faceEdgesPtr_;
-		
-		//- face-faces addressing
-		mutable VRWGraph* faceFacesPtr_;
+        
+        //- face edges addressing
+        mutable VRWGraph* faceEdgesPtr_;
+        
+        //- face-faces addressing
+        mutable VRWGraph* faceFacesPtr_;
 
         //- point normals
         mutable vectorField* pointNormalsPtr_;
-		
-		//- face normals
-		mutable vectorField* faceNormalsPtr_;
+        
+        //- face normals
+        mutable vectorField* faceNormalsPtr_;
         
         //- face centres
         mutable vectorField* faceCentresPtr_;
@@ -145,10 +145,10 @@ class meshSurfaceEngine
 
         //- calculate boundary nodes, faces and addressing
         void calculateBoundaryFaces() const;
-		void calculateBoundaryOwners() const;
-		void calculateBoundaryNodes() const;
-		
-		void calculateBoundaryFacePatches() const;
+        void calculateBoundaryOwners() const;
+        void calculateBoundaryNodes() const;
+        
+        void calculateBoundaryFacePatches() const;
 
         void calculatePointFaces() const;
         
@@ -157,15 +157,15 @@ class meshSurfaceEngine
         void calculatePointPoints() const;
 
         void calculatePointNormals() const;
-		void calculateFaceNormals() const;
+        void calculateFaceNormals() const;
         void calculateFaceCentres() const;
         
         void updatePointNormalsAtProcBoundaries() const;
 
         void calculateEdgesAndAddressing() const;
         void calculateFaceEdgesAddressing() const;
-		void calculateEdgeFacesAddressing() const;
-		void calculateFaceFacesAddressing() const;
+        void calculateEdgeFacesAddressing() const;
+        void calculateFaceFacesAddressing() const;
         
     // Private member functions for parallel runs
     
@@ -186,8 +186,8 @@ class meshSurfaceEngine
 
 public:
 
-		friend class meshSurfaceEngineModifier;
-	
+        friend class meshSurfaceEngineModifier;
+    
     // Constructors
 
         //- Construct from mesh
@@ -206,9 +206,9 @@ public:
         const labelList& boundaryPoints() const;
 
         const faceList::subList& boundaryFaces() const;
-		
-		//- patch label for each boundary face
-		const labelList& boundaryFacePatches() const;
+        
+        //- patch label for each boundary face
+        const labelList& boundaryFacePatches() const;
 
         const labelList& faceOwners() const;
 
@@ -220,8 +220,8 @@ public:
         const VRWGraph& pointPoints() const;
 
         const vectorField& pointNormals() const;
-		
-		const vectorField& faceNormals() const;
+        
+        const vectorField& faceNormals() const;
         
         const vectorField& faceCentres() const;
 
@@ -232,10 +232,10 @@ public:
         const VRWGraph& boundaryPointEdges() const;
 
         const VRWGraph& edgeFaces() const;
-		
-		const VRWGraph& faceEdges() const;
-		
-		const VRWGraph& faceFaces() const;
+        
+        const VRWGraph& faceEdges() const;
+        
+        const VRWGraph& faceFaces() const;
         
     // Functions for parallel runs
         //- global boundary point label

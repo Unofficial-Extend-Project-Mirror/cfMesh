@@ -43,11 +43,11 @@ namespace Foam
 
 void cartesianMeshExtractor::decomposeSplitHexesIntoTetsAndPyramids()
 {
-	if( !decomposeSplitHexes_ ) return;
+    if( !decomposeSplitHexes_ ) return;
 
-	Info << "Decomposing split-hex cells" << endl;
-	
-	const faceListPMG& faces = mesh_.faces();
+    Info << "Decomposing split-hex cells" << endl;
+    
+    const faceListPMG& faces = mesh_.faces();
     
     //- decompose faces which have more than 4 vertices
     boolList decompose(faces.size(), false);
@@ -100,8 +100,8 @@ void cartesianMeshExtractor::decomposeSplitHexesIntoTetsAndPyramids()
         decomposeCells dc(mesh_);
         dc.decomposeMesh(decompose);
     }
-	
-	Info << "Finished decomposing split-hex cells" << endl;
+    
+    Info << "Finished decomposing split-hex cells" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

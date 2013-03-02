@@ -43,16 +43,16 @@ namespace Foam
 
 void meshSurfaceEdgeExtractor::createBoundaryFaces()
 {
-	boundaryFacesGenerator bfg
-	(
-		mesh_,
-		nFacesInCell_,
-		nPoints_,
-		mesh_.boundaries()[0].patchStart(),
-		boundaryCell_,
-		pointRegions_,
-		meshOctree_.surface()
-	);
+    boundaryFacesGenerator bfg
+    (
+        mesh_,
+        nFacesInCell_,
+        nPoints_,
+        mesh_.boundaries()[0].patchStart(),
+        boundaryCell_,
+        pointRegions_,
+        meshOctree_.surface()
+    );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

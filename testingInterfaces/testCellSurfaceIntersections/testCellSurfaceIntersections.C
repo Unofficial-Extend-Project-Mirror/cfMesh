@@ -64,23 +64,23 @@ int main(int argc, char *argv[])
         )
     );
 
-	fileName surfaceFile = meshDict.lookup("surfaceFile");
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
-		surfaceFile = ".."/surfaceFile;
+        surfaceFile = ".."/surfaceFile;
 
     triSurf surf(runTime.path()/surfaceFile);
 
-	if( meshDict.found("subsetFileName") )
-	{
-		fileName subsetFileName = meshDict.lookup("subsetFileName");
+    if( meshDict.found("subsetFileName") )
+    {
+        fileName subsetFileName = meshDict.lookup("subsetFileName");
         if( Pstream::parRun() )
-			subsetFileName = ".."/subsetFileName;
-		surf.readFaceSubsets(runTime.path()/subsetFileName);
-	}
+            subsetFileName = ".."/subsetFileName;
+        surf.readFaceSubsets(runTime.path()/subsetFileName);
+    }
 
-	// construct the octree
+    // construct the octree
     meshOctree mo(surf);
-	meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
 
     polyMeshGen pmg(runTime);
     pmg.read();

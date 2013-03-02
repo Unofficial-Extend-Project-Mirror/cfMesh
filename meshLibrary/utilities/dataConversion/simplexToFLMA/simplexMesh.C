@@ -34,22 +34,22 @@ namespace Foam
 
 void Foam::simplexMesh::writePoints(Foam::OFstream& flmaGeometryFile) const
 {
-	flmaGeometryFile << mesh_.pts().size() << nl;
-	const DynList<point, 128>& points = mesh_.pts();
-	forAll(points, pointI)
-	{
-		const point& p = points[pointI];
-		flmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
-	}
-	
-	flmaGeometryFile << nl;
+    flmaGeometryFile << mesh_.pts().size() << nl;
+    const DynList<point, 128>& points = mesh_.pts();
+    forAll(points, pointI)
+    {
+        const point& p = points[pointI];
+        flmaGeometryFile << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
+    }
+    
+    flmaGeometryFile << nl;
 }
 
 void simplexMesh::writeCells(OFstream& flmaGeometryFile) const
 {
     const DynList<partTet, 128>& tets = mesh_.tets();
     
-	flmaGeometryFile << tets.size() << nl;
+    flmaGeometryFile << tets.size() << nl;
     
     forAll(tets, tetI)
     {
@@ -72,7 +72,7 @@ void Foam::simplexMesh::writeCellTypes(OFstream& flmaGeometryFile) const
 
 void Foam::simplexMesh::writeSelections(Foam::OFstream& flmaGeometryFile) const
 {
-	flmaGeometryFile << 0;
+    flmaGeometryFile << 0;
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -97,13 +97,13 @@ void simplexMesh::write
     OFstream& flmaGeometryFile
 ) const
 {
-	writePoints(flmaGeometryFile);
+    writePoints(flmaGeometryFile);
 
-	writeCells(flmaGeometryFile);
+    writeCells(flmaGeometryFile);
     
     writeCellTypes(flmaGeometryFile);
 
-	writeSelections(flmaGeometryFile);
+    writeSelections(flmaGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

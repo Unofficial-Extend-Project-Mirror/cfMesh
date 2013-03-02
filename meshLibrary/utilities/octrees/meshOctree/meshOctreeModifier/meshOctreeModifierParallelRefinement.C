@@ -71,7 +71,7 @@ void meshOctreeModifier::refineTreeForCoordinates
 
     meshOctreeCube* nei(octree_.initialCubePtr_);
 
-	for(label i=(l-1);i>=0;--i)
+    for(label i=(l-1);i>=0;--i)
     {
         const label levelLimiter = (1 << i);
 
@@ -344,7 +344,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     }
     # endif
 
-	Info << "Finished adding an additional layer of octree cubes" << endl;
+    Info << "Finished adding an additional layer of octree cubes" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

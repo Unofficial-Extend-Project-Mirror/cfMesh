@@ -45,78 +45,78 @@ using namespace Foam;
 int main(int argc, char *argv[])
 {
     //argList::validArgs.append("cellSet");
-	
+    
 #   include "setRootCase.H"
 #   include "createTime.H"
-	
-	Info<< "Reading mesh for time = " << runTime.value() << endl;
-	polyMesh mesh(runTime);
+    
+    Info<< "Reading mesh for time = " << runTime.value() << endl;
+    polyMesh mesh(runTime);
 
-	cellSet cs
-	(
-		IOobject
-		(
-			"c0",
-			runTime.timeName(),
-			"polyMesh/sets",
-			runTime,
-			IOobject::NO_READ
-		)
-	);
-	
-	vector n, origin;
-	Info << "Normal x coord" ;
-	cin >> n.x();
-	Info << endl << "Normal y coord ";
-	cin >> n.y();
-	Info << endl << "Normal z coord";
-	cin >> n.z();
-	
-	Info << "Origin x coord" ;
-	cin >> origin.x();
-	Info << endl << "Origin y coord ";
-	cin >> origin.y();
-	Info << endl << "Origin z coord";
-	cin >> origin.z();
+    cellSet cs
+    (
+        IOobject
+        (
+            "c0",
+            runTime.timeName(),
+            "polyMesh/sets",
+            runTime,
+            IOobject::NO_READ
+        )
+    );
+    
+    vector n, origin;
+    Info << "Normal x coord" ;
+    cin >> n.x();
+    Info << endl << "Normal y coord ";
+    cin >> n.y();
+    Info << endl << "Normal z coord";
+    cin >> n.z();
+    
+    Info << "Origin x coord" ;
+    cin >> origin.x();
+    Info << endl << "Origin y coord ";
+    cin >> origin.y();
+    Info << endl << "Origin z coord";
+    cin >> origin.z();
 
     //Info<< "Reading cell set from " << setName << endl << endl;
-	//cellSet cs(mesh, setName);
+    //cellSet cs(mesh, setName);
 
-	//- printCells contained in the cellSet
-	const pointField& points = mesh.points();
-	const edgeList& edges = mesh.edges();
-	const labelListList& edgeCells = mesh.edgeCells();
-	
-	forAll(edges, eI)
-	{
-		const edge& e = edges[eI];
-		bool visibleS, visibleE;
-		if( ((points[e.start()] - origin) & n) >= 0.0 )
-		{
-			visibleS = true;
-		}
-		else
-		{
-			visibleS = false;
-		}
-		
-		if( ((points[e.end()] - origin) & n) >= 0.0 )
-		{
-			visibleE = true;
-		}
-		else
-		{
-			visibleE = false;
-		}
-		
-		if( visibleS ^ visibleE )
-		{
-			forAll(edgeCells[eI], ecI)
-				cs.insert(edgeCells[eI][ecI]);
-		}
-	}
-	
-	cs.write();
+    //- printCells contained in the cellSet
+    const pointField& points = mesh.points();
+    const edgeList& edges = mesh.edges();
+    const labelListList& edgeCells = mesh.edgeCells();
+    
+    forAll(edges, eI)
+    {
+        const edge& e = edges[eI];
+        bool visibleS, visibleE;
+        if( ((points[e.start()] - origin) & n) >= 0.0 )
+        {
+            visibleS = true;
+        }
+        else
+        {
+            visibleS = false;
+        }
+        
+        if( ((points[e.end()] - origin) & n) >= 0.0 )
+        {
+            visibleE = true;
+        }
+        else
+        {
+            visibleE = false;
+        }
+        
+        if( visibleS ^ visibleE )
+        {
+            forAll(edgeCells[eI], ecI)
+                cs.insert(edgeCells[eI][ecI]);
+        }
+    }
+    
+    cs.write();
 
     Info << "End\n" << endl;
     return 0;

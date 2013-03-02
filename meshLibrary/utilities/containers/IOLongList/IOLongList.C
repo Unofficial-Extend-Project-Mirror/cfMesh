@@ -41,7 +41,7 @@ template<class T, label Offset>
 IOLongList<T, Offset>::IOLongList(const IOobject& io)
 :
     regIOobject(io),
-	LongList<T, Offset>()
+    LongList<T, Offset>()
 {
     if
     (
@@ -58,8 +58,8 @@ IOLongList<T, Offset>::IOLongList(const IOobject& io)
 template<class T, label Offset>
 IOLongList<T, Offset>::IOLongList
 (
-	const IOobject& io,
-	const label size
+    const IOobject& io,
+    const label size
 )
 :
     regIOobject(io),
@@ -70,8 +70,8 @@ IOLongList<T, Offset>::IOLongList
 template<class T, label Offset>
 IOLongList<T, Offset>::IOLongList
 (
-	const IOobject& io,
-	const LongList<T, Offset>& list
+    const IOobject& io,
+    const LongList<T, Offset>& list
 )
 :
     regIOobject(io),
@@ -82,15 +82,15 @@ IOLongList<T, Offset>::IOLongList
         readStream(typeName) >> *this;
         close();
     }
-	
-	LongList<T, Offset>::operator=(list);
+    
+    LongList<T, Offset>::operator=(list);
 }
 
 
 template<class T, label Offset>
 void IOLongList<T, Offset>::operator=
 (
-	const IOLongList<T, Offset>& rhs
+    const IOLongList<T, Offset>& rhs
 )
 {
     LongList<T, Offset>::operator=(rhs);
@@ -100,7 +100,7 @@ void IOLongList<T, Offset>::operator=
 template<class T, label Offset>
 void IOLongList<T, Offset>::operator=
 (
-	const LongList<T, Offset>& rhs
+    const LongList<T, Offset>& rhs
 )
 {
     LongList<T, Offset>::operator=(rhs);

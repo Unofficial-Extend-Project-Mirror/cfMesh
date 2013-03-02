@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Finds feature edges and corners of a triangulated surface
+    Finds feature edges and corners of a triangulated surface
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,8 +48,8 @@ int main(int argc, char *argv[])
     argList::validArgs.clear();
     argList::validArgs.append("input surface file");
     argList::validArgs.append("output surface file");
-	argList::validOptions.insert("subsets", "fileName");
-	argList::validOptions.insert("angle", "scalar");
+    argList::validOptions.insert("subsets", "fileName");
+    argList::validOptions.insert("angle", "scalar");
     argList args(argc, argv);
 
     fileName inFileName(args.args()[1]);

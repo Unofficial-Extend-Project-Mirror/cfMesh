@@ -54,7 +54,7 @@ class VRWGraph;
 
 class meshSubset
 {
-	// Private data
+    // Private data
         //- name of the given subset
         word name_;
     
@@ -89,8 +89,8 @@ public:
             const ListType& elements
         );
 
-	// Destructor
-		~meshSubset();
+    // Destructor
+        ~meshSubset();
 
 
     // Member Functions
@@ -124,14 +124,14 @@ public:
             //- update subset after modification
             //- this modifier is used in case when elements are decomposed
             inline void updateSubset(const VRWGraph&);
-			
-		// Searches
-			//- find if the element exists in the subset
-			inline bool contains(const label) const;
+            
+        // Searches
+            //- find if the element exists in the subset
+            inline bool contains(const label) const;
 
     // IOstream operators
 
-			friend Ostream& operator<<(Ostream&, const meshSubset&);
+            friend Ostream& operator<<(Ostream&, const meshSubset&);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

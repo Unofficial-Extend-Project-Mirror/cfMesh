@@ -46,58 +46,58 @@ namespace Foam
 void writeOctreeEnsight(const meshOctree& octree, const word& fName)
 {
     const word postProcDir = "EnSight"+fName;
-	const word prepend = fName + '.';
-	Serr << "Writting mesh into " << postProcDir << endl;
+    const word prepend = fName + '.';
+    Serr << "Writting mesh into " << postProcDir << endl;
 
     fileName postProcPath;
-	if( Pstream::parRun() )
-	{
-		std::ostringstream ss;
-		ss << Pstream::myProcNo();
-		postProcPath = "processor"+ss.str()/postProcDir;
-	}
-	else
-	{
-		postProcPath = postProcDir;
-	}
+    if( Pstream::parRun() )
+    {
+        std::ostringstream ss;
+        ss << Pstream::myProcNo();
+        postProcPath = "processor"+ss.str()/postProcDir;
+    }
+    else
+    {
+        postProcPath = postProcDir;
+    }
 
-	if( Foam::isDir(postProcPath) )
-	{
-		rmDir(postProcPath);
-	}
+    if( Foam::isDir(postProcPath) )
+    {
+        rmDir(postProcPath);
+    }
 
-	mkDir(postProcPath);
+    mkDir(postProcPath);
 
-	// Open the Case file
-	fileName ensightCaseFileName = prepend + "case";
+    // Open the Case file
+    fileName ensightCaseFileName = prepend + "case";
 
-/*	OFstream ensightCaseFile
-	(
-		postProcPath/ensightCaseFileName,
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream ensightCaseFile
+    (
+        postProcPath/ensightCaseFileName,
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
-	OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
-	
-	Serr<< nl << "Case file is " << ensightCaseFileName << endl;
+    OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
+    
+    Serr<< nl << "Case file is " << ensightCaseFileName << endl;
 
-/*	OFstream ensightGeometryFile
-	(
-		postProcPath/prepend+"000.mesh",
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream ensightGeometryFile
+    (
+        postProcPath/prepend+"000.mesh",
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
-	OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
-	
+    OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
+    
     // Construct the EnSight mesh
     octreeMesh eMesh(octree);
-	eMesh.write(ensightGeometryFile);
+    eMesh.write(ensightGeometryFile);
 
-	//- write the case file
+    //- write the case file
     ensightCaseFile << "FORMAT" << nl;
     ensightCaseFile << "type: ensight gold" << nl << nl;
 
@@ -108,7 +108,7 @@ void writeOctreeEnsight(const meshOctree& octree, const word& fName)
         << "GEOMETRY" << nl
         << "model:        1     "
         << (geomCaseFileName + ".mesh").c_str() << nl;
-	
+    
     ensightCaseFile << nl << "TIME" << nl
         << "time set:                      " << 1 << nl
         << "number of steps:               " << 1 << nl
@@ -123,56 +123,56 @@ void writeOctreeEnsight(const meshOctree& octree, const word& fName)
 
 void writeOctreeEnsight
 (
-	const meshOctree& octree,
-	const word& fName,
-	const direction cubeType
+    const meshOctree& octree,
+    const word& fName,
+    const direction cubeType
 )
 {
-	//const Time& time = mesh.returnRegistry().time();
-	
+    //const Time& time = mesh.returnRegistry().time();
+    
     const word postProcDir = "EnSight"+fName;
-	const word prepend = fName + '.';
-	Info << "Writting mesh into " << postProcDir << endl;
+    const word prepend = fName + '.';
+    Info << "Writting mesh into " << postProcDir << endl;
 
     fileName postProcPath = postProcDir;
 
-	if( Foam::isDir(postProcPath))
-	{
-		rmDir(postProcPath);
-	}
+    if( Foam::isDir(postProcPath))
+    {
+        rmDir(postProcPath);
+    }
 
-	mkDir(postProcPath);
+    mkDir(postProcPath);
 
-	// Open the Case file
-	fileName ensightCaseFileName = prepend + "case";
+    // Open the Case file
+    fileName ensightCaseFileName = prepend + "case";
 
-/*	OFstream ensightCaseFile
-	(
-		postProcPath/ensightCaseFileName,
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
-*/	
-	OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
+/*    OFstream ensightCaseFile
+    (
+        postProcPath/ensightCaseFileName,
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
+*/    
+    OFstream ensightCaseFile(postProcPath/ensightCaseFileName);
 
-	Info<< nl << "Case file is " << ensightCaseFileName << endl;
+    Info<< nl << "Case file is " << ensightCaseFileName << endl;
 
-/*	OFstream ensightGeometryFile
-	(
-		postProcPath/prepend+"000.mesh",
-		IOstream::ASCII,
-		IOstream::currentVersion,
-		IOstream::UNCOMPRESSED
-	);
+/*    OFstream ensightGeometryFile
+    (
+        postProcPath/prepend+"000.mesh",
+        IOstream::ASCII,
+        IOstream::currentVersion,
+        IOstream::UNCOMPRESSED
+    );
 */
-	OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
-	
+    OFstream ensightGeometryFile(postProcPath/prepend+"000.mesh");
+    
     // Construct the EnSight mesh
     octreeMesh eMesh(octree, cubeType);
-	eMesh.write(ensightGeometryFile);
+    eMesh.write(ensightGeometryFile);
 
-	//- write the case file
+    //- write the case file
     ensightCaseFile << "FORMAT" << nl;
     ensightCaseFile << "type: ensight gold" << nl << nl;
 
@@ -185,7 +185,7 @@ void writeOctreeEnsight
             << "model:        1     "
             << (geomCaseFileName + ".mesh").c_str() << nl;
     }
-	
+    
     ensightCaseFile << nl << "TIME" << nl
         << "time set:                      " << 1 << nl
         << "number of steps:               " << 1 << nl

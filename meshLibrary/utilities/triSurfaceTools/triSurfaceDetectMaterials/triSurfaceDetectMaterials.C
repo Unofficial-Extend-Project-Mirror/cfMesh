@@ -39,7 +39,7 @@ namespace Foam
 
 triSurfaceDetectMaterials::triSurfaceDetectMaterials(const triSurf& surface)
 :
-	surf_(surface),
+    surf_(surface),
     octreePtr_(NULL),
     facePartition_(),
     nPartitions_(),
@@ -117,7 +117,7 @@ void triSurfaceDetectMaterials::writeMaterials(const fileName& fName) const
             Info << "Partition " << partI << " is an enclosed baffle" << endl;
     }
 }
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

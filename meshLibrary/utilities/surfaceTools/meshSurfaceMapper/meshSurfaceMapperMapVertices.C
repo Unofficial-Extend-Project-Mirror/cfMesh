@@ -208,14 +208,14 @@ void meshSurfaceMapper::mapVerticesOntoSurface()
 
 void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
 {
-	const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
+    const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
     
     const VRWGraph* bpAtProcsPtr(NULL);
     if( Pstream::parRun() )
         bpAtProcsPtr = &surfaceEngine_.bpAtProcs();
-	
-	meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+    
+    meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     LongList<parMapperHelper> parallelBndNodes;
  
     const label size = nodesToMap.size();
@@ -225,10 +225,10 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
     {
         const label bpI = nodesToMap[i];
         
-		# ifdef DEBUGMapping
+        # ifdef DEBUGMapping
         Info << nl << "Mapping vertex " << bpI << " with coordinates "
             << points[boundaryPoints[bpI]] << endl;
-		# endif
+        # endif
         
         label patch;
         point mapPoint;
@@ -242,7 +242,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
             points[boundaryPoints[bpI]]
         );
         
-		surfaceModifier.moveBoundaryVertexNoUpdate(bpI, mapPoint);
+        surfaceModifier.moveBoundaryVertexNoUpdate(bpI, mapPoint);
         
         if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
         {
@@ -258,10 +258,10 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
                 )
             );
         }
-		
-		# ifdef DEBUGMapping
+        
+        # ifdef DEBUGMapping
         Info << "Mapped point " << points[boundaryPoints[bpI]] << endl;
-		# endif
+        # endif
     }
     
     surfaceModifier.updateGeometry(nodesToMap);
@@ -317,8 +317,8 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     const VRWGraph* bpAtProcsPtr(NULL);
     if( Pstream::parRun() )
         bpAtProcsPtr = &surfaceEngine_.bpAtProcs();
-	
-	meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+    
+    meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     LongList<parMapperHelper> parallelBndNodes;
     
     const label size = nodesToMap.size();
@@ -359,9 +359,9 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
             );
         }
         
-		# ifdef DEBUGMapping
+        # ifdef DEBUGMapping
         Info << "Mapped point " << points[boundaryPoints[bpI]] << endl;
-		# endif
+        # endif
     }
     
     surfaceModifier.updateGeometry(nodesToMap);

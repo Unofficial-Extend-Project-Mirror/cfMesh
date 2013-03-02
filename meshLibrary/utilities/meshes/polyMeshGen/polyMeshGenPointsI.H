@@ -39,19 +39,19 @@ namespace Foam
 
 inline const Time& polyMeshGenPoints::returnTime() const
 {
-	return runTime_;
+    return runTime_;
 }
-		
+        
 inline const pointFieldPMG& polyMeshGenPoints::points() const
 {
-	return points_;
+    return points_;
 }
 
 inline pointFieldPMG& polyMeshGenPoints::points()
 {
     return points_;
 }
-		
+        
 inline void polyMeshGenPoints::appendVertex(const point& p)
 {
     points_.append(p);

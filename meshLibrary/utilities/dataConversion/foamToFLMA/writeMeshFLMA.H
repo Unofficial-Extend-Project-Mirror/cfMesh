@@ -26,7 +26,7 @@ Class
     writeMeshFLMA
 
 Description
-	Write mesh into flma format
+    Write mesh into flma format
 
 SourceFiles
     writeMeshFLMA.C

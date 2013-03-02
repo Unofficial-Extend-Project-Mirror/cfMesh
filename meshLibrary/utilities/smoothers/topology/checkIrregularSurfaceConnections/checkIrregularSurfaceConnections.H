@@ -54,7 +54,7 @@ class checkIrregularSurfaceConnections
 {
     // Private data
         //- Reference to polyMeshGen
-		polyMeshGen& mesh_;
+        polyMeshGen& mesh_;
     
         //- pointer to meshSurfaceEngine
         mutable meshSurfaceEngine* meshSurfacePtr_;
@@ -75,9 +75,9 @@ class checkIrregularSurfaceConnections
             deleteDemandDrivenData(meshSurfacePtr_);
         }
         
-		//- check if there exist vertices with more than one groups of cells
+        //- check if there exist vertices with more than one groups of cells
         //- attached to it
-		bool checkAndFixCellGroupsAtBndVertices
+        bool checkAndFixCellGroupsAtBndVertices
         (
             labelHashSet& badVertices,
             const bool removeConnections = false
@@ -122,7 +122,7 @@ public:
 
     // Member Functions
         //- find vertices where the surface is not valid
-		void checkIrregularVertices(labelHashSet& badVertices);
+        void checkIrregularVertices(labelHashSet& badVertices);
 
         //- find invalid connections and fix them on the fly
         bool checkAndFixIrregularConnections();

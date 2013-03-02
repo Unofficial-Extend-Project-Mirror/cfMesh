@@ -27,7 +27,7 @@ Class
 
 Description
     This class is an implementation of a graph with variable column width.
-	The imoplementation is memory efficient.
+    The imoplementation is memory efficient.
 
 SourceFiles
     VRWGraphI.H
@@ -48,49 +48,49 @@ SourceFiles
 
 namespace Foam
 {
-	
+    
 class VRWGraphModifier;
-	
+    
 class rowElement
 {
-	// Private data
-		label start_;
-		label size_;
-	
-	public:
-		
-		inline rowElement()
-		:
-			start_(),
-			size_()
-		{}
-			
-		inline rowElement(const label i, const label j)
-		:
-			start_(i),
-			size_(j)
-		{}
-			
-		inline ~rowElement()
-		{}
-			
-		inline label start() const
-		{
-			return start_;
-		}
-		inline label& start()
-		{
-			return start_;
-		}
-		
-		inline label size() const
-		{
-			return size_;
-		}
-		inline label& size()
-		{
-			return size_;
-		}
+    // Private data
+        label start_;
+        label size_;
+    
+    public:
+        
+        inline rowElement()
+        :
+            start_(),
+            size_()
+        {}
+            
+        inline rowElement(const label i, const label j)
+        :
+            start_(i),
+            size_(j)
+        {}
+            
+        inline ~rowElement()
+        {}
+            
+        inline label start() const
+        {
+            return start_;
+        }
+        inline label& start()
+        {
+            return start_;
+        }
+        
+        inline label size() const
+        {
+            return size_;
+        }
+        inline label& size()
+        {
+            return size_;
+        }
 };
 
 /*---------------------------------------------------------------------------*\
@@ -100,30 +100,30 @@ class rowElement
 class VRWGraph
 {
     // Private data
-		//- list containing the data
-		labelListPMG data_;
-	
-		//- number of rows
-		LongList<rowElement> rows_;
+        //- list containing the data
+        labelListPMG data_;
+    
+        //- number of rows
+        LongList<rowElement> rows_;
 
-	// Private member functions
-		//- check index
-		inline void checkIndex(const label i, const label j) const;
+    // Private member functions
+        //- check index
+        inline void checkIndex(const label i, const label j) const;
 
-	// Enumerators
-		enum typeOfEntries
-		{
-			NONE = 0,
-			INVALIDROW=-10,
-			FREEENTRY=-11,
-			FREESTART=-12
-		};
-	
+    // Enumerators
+        enum typeOfEntries
+        {
+            NONE = 0,
+            INVALIDROW=-10,
+            FREEENTRY=-11,
+            FREESTART=-12
+        };
+    
 public:
-	
-	// Friend classes
+    
+    // Friend classes
 
-		friend class VRWGraphSMPModifier;
+        friend class VRWGraphSMPModifier;
 
     // Constructors
 
@@ -135,25 +135,25 @@ public:
         
         //- Construct given number of rows and row size
         explicit inline VRWGraph
-		(
-			const label nRows,
-			const label nColumnsInRow
+        (
+            const label nRows,
+            const label nColumnsInRow
         );
 
-		//- Construct to given number of rows, row size and initialize
-		explicit inline VRWGraph
-		(
-			const label nRows,
-			const label nColumnsInRow,
-			const label t
-		);
+        //- Construct to given number of rows, row size and initialize
+        explicit inline VRWGraph
+        (
+            const label nRows,
+            const label nColumnsInRow,
+            const label t
+        );
 
         //- Copy contructor
-		inline VRWGraph(const VRWGraph&);
+        inline VRWGraph(const VRWGraph&);
 
-	// Destructor
+    // Destructor
 
-		inline ~VRWGraph();
+        inline ~VRWGraph();
 
     // Member Functions
 
@@ -161,18 +161,18 @@ public:
 
             //- Returns the number of rows
             inline label size() const;
-			
-			//- Returns the number of elements in the given row
-			inline label sizeOfRow(const label rowI) const;
+            
+            //- Returns the number of elements in the given row
+            inline label sizeOfRow(const label rowI) const;
 
         // Edit
 
             //- Reset the number of rows
             inline void setSize(const label);
-			
-			//- Reset the number of rows. The second argument specifies
-			//- the reserved column width
-			inline void setSizeAndColumnWidth
+            
+            //- Reset the number of rows. The second argument specifies
+            //- the reserved column width
+            inline void setSizeAndColumnWidth
             (
                 const label newNumRows,
                 const label rcWidth
@@ -181,9 +181,9 @@ public:
             //- Set the number of rows and the size of each row
             template<class ListType>
             inline void setSizeAndRowSize(const ListType&);
-			
-			//- Reset the size of the given row
-			inline void setRowSize(const label rowI, const label newSize);
+            
+            //- Reset the size of the given row
+            inline void setRowSize(const label rowI, const label newSize);
 
             //- Clear the graph
             inline void clear();
@@ -191,18 +191,18 @@ public:
     // Member Operators
 
         //- Append a list as a row at the end of the graph
-		template<class ListType>
+        template<class ListType>
         inline void appendList(const ListType& l);
-		
-		//- Append an element to the given row
-		inline void append(const label rowI, const label);
-		
-		//- Append an element to the given row if it does not exist there
-		inline void appendIfNotIn(const label rowI, const label);
-		
-		//- Set row with the list
-		template<class ListType>
-		inline void setRow(const label rowI, const ListType& l);
+        
+        //- Append an element to the given row
+        inline void append(const label rowI, const label);
+        
+        //- Append an element to the given row if it does not exist there
+        inline void appendIfNotIn(const label rowI, const label);
+        
+        //- Set row with the list
+        template<class ListType>
+        inline void setRow(const label rowI, const ListType& l);
         
         //- merge graphs with the identical number of rows
         //- into a single one. Use for SMP parallelisation
@@ -228,24 +228,24 @@ public:
         );
         
         inline void reverseAddressing(const VRWGraph& origGraph);
-		
-		//- optimize memory usage
-		// this should be used once the graph will not be resized any more
-		void optimizeMemoryUsage();
-		
-		//- check if the element is in the given row (takes linear time)
-		inline bool contains(const label rowI, const label e) const;
-		inline label containsAtPosition(const label rowI, const label e) const;
-		
-		//- get and set operators
-		inline label operator()(const label i, const label j) const;
-		inline label& operator()(const label i, const label j);
-		
-		inline constRow operator[](const label i) const;
-		inline row operator[](const label i);
-		
-		//- Assignment operator
-		inline void operator=(const VRWGraph&);
+        
+        //- optimize memory usage
+        // this should be used once the graph will not be resized any more
+        void optimizeMemoryUsage();
+        
+        //- check if the element is in the given row (takes linear time)
+        inline bool contains(const label rowI, const label e) const;
+        inline label containsAtPosition(const label rowI, const label e) const;
+        
+        //- get and set operators
+        inline label operator()(const label i, const label j) const;
+        inline label& operator()(const label i, const label j);
+        
+        inline constRow operator[](const label i) const;
+        inline row operator[](const label i);
+        
+        //- Assignment operator
+        inline void operator=(const VRWGraph&);
 
 
     // IOstream operators
@@ -274,7 +274,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #define forAllRow(graph, rowI, index) \
-	for(Foam::label index=0;index<(graph).sizeOfRow(rowI);++index)
+    for(Foam::label index=0;index<(graph).sizeOfRow(rowI);++index)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

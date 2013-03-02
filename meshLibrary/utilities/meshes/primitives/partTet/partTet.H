@@ -55,15 +55,15 @@ class Ostream;
 class partTet
 {
 protected:
-	
-	// Protected data
+    
+    // Protected data
         label data_[4];
 
 public:
 
     // Constructors
-		//- Null construct
-		inline partTet();
+        //- Null construct
+        inline partTet();
 
         //- Construct from point labels
         inline partTet
@@ -74,8 +74,8 @@ public:
             const label d
         );
 
-	// Destructor
-		~partTet();
+    // Destructor
+        ~partTet();
 
 
     // Member Functions
@@ -92,54 +92,54 @@ public:
             inline label d() const;
             
             inline label size() const;
-			
-		// Searches
-			//- find position of the node in the partTet
-			inline label whichPosition(const label) const;
+            
+        // Searches
+            //- find position of the node in the partTet
+            inline label whichPosition(const label) const;
 
         // Properties
 
             //- Return face normal
-			template<class PointField>
+            template<class PointField>
             inline vector Sa(const PointField&) const;
 
-			template<class PointField>
+            template<class PointField>
             inline vector Sb(const PointField&) const;
 
-			template<class PointField>
+            template<class PointField>
             inline vector Sc(const PointField&) const;
 
-			template<class PointField>
+            template<class PointField>
             inline vector Sd(const PointField&) const;
 
 
             //- Return volume
-			template<class PointField>
+            template<class PointField>
             inline scalar mag(const PointField&) const;
-			
-			//- Return circum-centre
-			template<class PointField>
-			inline point crcmCentre(const PointField&) const;
-			
-			template<class PointField>
-			inline scalar crcmRadius(const PointField&) const;
-			
-			//- Return centroid of the tetrahedron
-			template<class PointField>
-			inline point centroid(const PointField&) const;
-			
-			//- Return edges
-			edgeList edges() const;
-			
-	// Member operators
-	
-			inline label operator[](const label) const;
-			
-			inline void operator=(const partTet&);
+            
+            //- Return circum-centre
+            template<class PointField>
+            inline point crcmCentre(const PointField&) const;
+            
+            template<class PointField>
+            inline scalar crcmRadius(const PointField&) const;
+            
+            //- Return centroid of the tetrahedron
+            template<class PointField>
+            inline point centroid(const PointField&) const;
+            
+            //- Return edges
+            edgeList edges() const;
+            
+    // Member operators
+    
+            inline label operator[](const label) const;
+            
+            inline void operator=(const partTet&);
 
     // IOstream operators
 
-			friend Ostream& operator<<(Ostream&, const partTet&);
+            friend Ostream& operator<<(Ostream&, const partTet&);
 };
 
 

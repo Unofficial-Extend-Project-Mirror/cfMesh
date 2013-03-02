@@ -48,21 +48,21 @@ void writeSimplexFLMA(const partTetMeshSimplex& simplex, const word& fName)
 
     fileName postProcPath = postProcDir;
 
-	if( !Foam::isDir(postProcPath) )
-	{
-		mkDir(postProcPath);
-	}
+    if( !Foam::isDir(postProcPath) )
+    {
+        mkDir(postProcPath);
+    }
 
-	// Open the flma file
-	const fileName flmaFileName = fName + ".flma";
-	
-	Info << "Writting mesh into " << flmaFileName << endl;
+    // Open the flma file
+    const fileName flmaFileName = fName + ".flma";
+    
+    Info << "Writting mesh into " << flmaFileName << endl;
 
-	OFstream flmaGeometryFile(postProcPath/flmaFileName);
-	
+    OFstream flmaGeometryFile(postProcPath/flmaFileName);
+    
     // Construct the flma mesh
     simplexMesh Mesh(simplex);
-	Mesh.write(flmaGeometryFile);
+    Mesh.write(flmaGeometryFile);
 }
 
 }

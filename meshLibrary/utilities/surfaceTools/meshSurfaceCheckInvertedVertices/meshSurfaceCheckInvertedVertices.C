@@ -225,7 +225,7 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
     activePointsPtr_(activePointsPtr),
     invertedVertices_()
 {
-	checkVertices();
+    checkVertices();
 }
 
 meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
@@ -238,7 +238,7 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
     activePointsPtr_(NULL),
     invertedVertices_()
 {
-	checkVertices();
+    checkVertices();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

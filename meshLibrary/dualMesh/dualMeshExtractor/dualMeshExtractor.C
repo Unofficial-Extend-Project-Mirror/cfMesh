@@ -39,18 +39,18 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 const direction dualMeshExtractor::faceFlip_[6][4] =
-	{
-		{0, 4, 6, 2},
-		{5, 1, 3, 7},
-		{0, 2, 3, 1},
-		{4, 5, 7, 6},
-		{2, 6, 7, 3},
-		{0, 1, 5, 4}
-	};
-	
+    {
+        {0, 4, 6, 2},
+        {5, 1, 3, 7},
+        {0, 2, 3, 1},
+        {4, 5, 7, 6},
+        {2, 6, 7, 3},
+        {0, 1, 5, 4}
+    };
+    
 void dualMeshExtractor::clearOut()
 {
-	deleteDemandDrivenData(centreNodeLabelPtr_);
+    deleteDemandDrivenData(centreNodeLabelPtr_);
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -59,13 +59,13 @@ void dualMeshExtractor::clearOut()
 dualMeshExtractor::dualMeshExtractor
 (
     const meshOctree& octree,
-	const IOdictionary& dict,
-	polyMeshGen& mesh
+    const IOdictionary& dict,
+    polyMeshGen& mesh
 )
 :
     octreeAddressing_(octree, dict, true),
-	mesh_(mesh),
-	centreNodeLabelPtr_(NULL)
+    mesh_(mesh),
+    centreNodeLabelPtr_(NULL)
 {
 }
 
@@ -73,33 +73,33 @@ dualMeshExtractor::dualMeshExtractor
 
 dualMeshExtractor::~dualMeshExtractor()
 {
-	clearOut();
+    clearOut();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void dualMeshExtractor::createMesh()
 {
-	Info << "Extracting polyMesh" << endl;
-	
+    Info << "Extracting polyMesh" << endl;
+    
     createPoints();
 
     createPolyMesh();
-	
-	polyMeshGenModifier(mesh_).removeUnusedVertices();
-	polyMeshGenModifier(mesh_).reorderBoundaryFaces();
-	
-	Info << "Mesh has :" << nl
-		<< mesh_.points().size() << " vertices " << nl
-		<< mesh_.faces().size() << " faces" << nl
-		<< mesh_.cells().size() << " cells" << endl;
-	
-	# ifdef DEBUGDual
-	Info << "Points start at address " << long(&mesh_.points()) << endl;
-	Info << "Faces start at address " << long(&mesh_.faces()) << endl;
-	Info << "Cells start at address " << long(&mesh_.cells()) << endl;
-	# endif
-	
+    
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).reorderBoundaryFaces();
+    
+    Info << "Mesh has :" << nl
+        << mesh_.points().size() << " vertices " << nl
+        << mesh_.faces().size() << " faces" << nl
+        << mesh_.cells().size() << " cells" << endl;
+    
+    # ifdef DEBUGDual
+    Info << "Points start at address " << long(&mesh_.points()) << endl;
+    Info << "Faces start at address " << long(&mesh_.faces()) << endl;
+    Info << "Cells start at address " << long(&mesh_.cells()) << endl;
+    # endif
+    
     Info << "Finished extracting polyMesh" << endl;
 }
 

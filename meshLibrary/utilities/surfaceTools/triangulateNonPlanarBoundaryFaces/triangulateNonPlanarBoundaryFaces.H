@@ -51,12 +51,12 @@ namespace Foam
 class triangulateNonPlanarBoundaryFaces
 {
     // Private data
-		//- mesh modifier
-		polyMeshGen& mesh_;
+        //- mesh modifier
+        polyMeshGen& mesh_;
 
         boolList decomposeCell_;
-	
-		VRWGraph pointPatches_;
+    
+        VRWGraph pointPatches_;
 
     // Private member functions
         //- find surface vertices

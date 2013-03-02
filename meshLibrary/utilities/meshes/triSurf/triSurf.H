@@ -27,8 +27,8 @@ Class
 
 Description
     A class for triangulated surface used in the meshing process.
-	It is derived from triSurface with some additional subsets.
-	Subsets are vert useful for local mesh refinement.
+    It is derived from triSurface with some additional subsets.
+    Subsets are vert useful for local mesh refinement.
 
 SourceFiles
     triSurf.C

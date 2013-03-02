@@ -98,8 +98,8 @@ scalar patchRefinement::cellSize() const
 
 void patchRefinement::operator=(const patchRefinement& pr)
 {
-	patchName_ = pr.patchName_;
-	cellSize_ = pr.cellSize_;
+    patchName_ = pr.patchName_;
+    cellSize_ = pr.cellSize_;
 }
 
 Istream& operator>>(Istream& is, patchRefinement& pr)

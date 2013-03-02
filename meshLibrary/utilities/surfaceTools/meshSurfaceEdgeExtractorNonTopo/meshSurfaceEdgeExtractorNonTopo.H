@@ -55,19 +55,19 @@ class meshSurfaceEngine;
 class meshSurfaceEdgeExtractorNonTopo
 {
     // Private data
-		//- mesh
-		polyMeshGen& mesh_;
-	
-		//- octree
-		const meshOctree& meshOctree_;
+        //- mesh
+        polyMeshGen& mesh_;
+    
+        //- octree
+        const meshOctree& meshOctree_;
 
     // Private member functions
-	
-		//- distribute boundary faces into patches
-		void distributeBoundaryFaces();
-	
-		//- re-map points after edges have been extracted
-		void remapBoundaryPoints();
+    
+        //- distribute boundary faces into patches
+        void distributeBoundaryFaces();
+    
+        //- re-map points after edges have been extracted
+        void remapBoundaryPoints();
 
         //- Disallow default bitwise copy construct
         meshSurfaceEdgeExtractorNonTopo(const meshSurfaceEdgeExtractorNonTopo&);
@@ -82,7 +82,7 @@ public:
         //- Construct from mesh data
         meshSurfaceEdgeExtractorNonTopo
         (
-			polyMeshGen& mesh,
+            polyMeshGen& mesh,
             const meshOctree& octree
         );
 

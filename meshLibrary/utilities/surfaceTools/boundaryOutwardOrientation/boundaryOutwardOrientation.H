@@ -50,11 +50,11 @@ namespace Foam
 class boundaryOutwardOrientation
 {
     // Private data
-		//- refenrence to the mesh
-		polyMeshGen& mesh_;
-	
-		//- orientate boundary
-		void checkBoundaryOrientation();
+        //- refenrence to the mesh
+        polyMeshGen& mesh_;
+    
+        //- orientate boundary
+        void checkBoundaryOrientation();
 
         //- Disallow default bitwise copy construct
         boundaryOutwardOrientation(const boundaryOutwardOrientation&);

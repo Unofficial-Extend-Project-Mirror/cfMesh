@@ -37,10 +37,10 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 void hexMeshExtractor::clearOut()
 {
-	deleteDemandDrivenData(centreNodeLabelPtr_);
+    deleteDemandDrivenData(centreNodeLabelPtr_);
     deleteDemandDrivenData(subVerticesPtr_);
 }
 
@@ -76,19 +76,19 @@ void hexMeshExtractor::createMesh()
     Info << "Extracting hex mesh" << endl;
     
     classifyOctreePoints();
-	
+    
     createPoints();
 
     createHexMesh();
-	
+    
     polyMeshGenModifier(mesh_).removeUnusedVertices();
     polyMeshGenModifier(mesh_).reorderBoundaryFaces();
-	
+    
     Info << "Mesh has :" << nl
-	 << mesh_.points().size() << " vertices " << nl
-	 << mesh_.faces().size() << " faces" << nl
-	 << mesh_.cells().size() << " cells" << endl;
-	
+     << mesh_.points().size() << " vertices " << nl
+     << mesh_.faces().size() << " faces" << nl
+     << mesh_.cells().size() << " cells" << endl;
+    
     Info << "Finished extracting hex template" << endl;
 }
 

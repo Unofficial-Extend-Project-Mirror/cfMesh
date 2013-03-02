@@ -39,14 +39,14 @@ namespace Foam
 cellIOGraph::cellIOGraph(const IOobject& io)
 :
     regIOobject(io),
-	VRWGraph()
+    VRWGraph()
 {
 }
 
 cellIOGraph::cellIOGraph
 (
-	const IOobject& io,
-	const label size
+    const IOobject& io,
+    const label size
 )
 :
     regIOobject(io),
@@ -55,8 +55,8 @@ cellIOGraph::cellIOGraph
 
 cellIOGraph::cellIOGraph
 (
-	const IOobject& io,
-	const VRWGraph& g
+    const IOobject& io,
+    const VRWGraph& g
 )
 :
     regIOobject(io),
@@ -66,7 +66,7 @@ cellIOGraph::cellIOGraph
 
 void cellIOGraph::operator=(const cellIOGraph& rhs)
 {
-	VRWGraph::operator=(rhs);
+    VRWGraph::operator=(rhs);
 }
 
 void cellIOGraph::operator=(const VRWGraph& rhs)

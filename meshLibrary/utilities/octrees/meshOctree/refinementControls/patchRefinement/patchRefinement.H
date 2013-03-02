@@ -27,7 +27,7 @@ Class
 
 Description
     A class used for octree refinement. Refinement of boxes intersected
-	by a given patch to the prescribed size.
+    by a given patch to the prescribed size.
 
 SourceFiles
     patchRefinement.C
@@ -88,7 +88,7 @@ public:
   
     // Operators
 
-		void operator=(const patchRefinement&);
+        void operator=(const patchRefinement&);
         friend Istream& operator>>(Istream&, patchRefinement&);
         friend Ostream& operator<<(Ostream&, const patchRefinement&);
         friend bool operator==(const patchRefinement&, const patchRefinement&);

@@ -54,7 +54,7 @@ inline label meshOctree::numberOfLeaves() const
 
 inline const meshOctreeCubeBasic& meshOctree::returnLeaf
 (
-	const label leafI
+    const label leafI
 ) const
 {
     return *leaves_[leafI];
@@ -171,21 +171,21 @@ inline void meshOctree::findNeighboursOverEdge
 
 inline void meshOctree::findNeighboursInDirection
 (
-	const label leafI,
-	const label dir,
-	DynList<label>& neiLeaves
+    const label leafI,
+    const label dir,
+    DynList<label>& neiLeaves
 ) const
 {
-	findNeighboursInDirection(leaves_[leafI]->coordinates(), dir, neiLeaves);
+    findNeighboursInDirection(leaves_[leafI]->coordinates(), dir, neiLeaves);
 }
 
 inline void meshOctree::findNeighboursForLeaf
 (
-	const label leafI,
-	DynList<label>& neighbourLeaves
+    const label leafI,
+    DynList<label>& neighbourLeaves
 ) const
 {
-	findNeighboursForLeaf(leaves_[leafI]->coordinates(), neighbourLeaves);
+    findNeighboursForLeaf(leaves_[leafI]->coordinates(), neighbourLeaves);
 }
 
 inline void meshOctree::findAllLeafNeighbours

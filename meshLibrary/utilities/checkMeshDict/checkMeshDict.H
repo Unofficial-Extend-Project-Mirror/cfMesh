@@ -49,10 +49,10 @@ namespace Foam
 
 class checkMeshDict
 {
-		//- Reference to the mesh
+        //- Reference to the mesh
         const IOdictionary& meshDict_;
-	
-	// Private member functions
+    
+    // Private member functions
         //- check patchCellSize entry
         void checkPatchCellSize();
     
@@ -73,18 +73,18 @@ class checkMeshDict
     
         //- perform all checks
         void checkEntries();
-	
-	public:
-		
-	// Constructors
-	
-		//- Construct from IOdictionary
-		checkMeshDict(const IOdictionary& meshDict);
-	
-	// Destructor
-		~checkMeshDict();
-	
-	// Public member functions
+    
+    public:
+        
+    // Constructors
+    
+        //- Construct from IOdictionary
+        checkMeshDict(const IOdictionary& meshDict);
+    
+    // Destructor
+        ~checkMeshDict();
+    
+    // Public member functions
 };
 
 

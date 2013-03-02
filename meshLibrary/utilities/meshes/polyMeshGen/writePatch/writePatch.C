@@ -66,7 +66,7 @@ dictionary writePatch::dict() const
 {
     dictionary dict;
 
-	dict.add("type", type_);
+    dict.add("type", type_);
 
     dict.add("nFaces", nFaces_);
     dict.add("startFace", startFace_);
@@ -97,12 +97,12 @@ Ostream& writePatch::operator<<(Ostream& os) const
 
 Istream& writePatch::operator>>(Istream& is)
 {
-	token t;
-	is >> name_ >> t;
-	is >> t >> type_ >> t;
-	is >> t >> nFaces_ >> t;
-	is >> t >> startFace_ >> t;
-	is >> t;
+    token t;
+    is >> name_ >> t;
+    is >> t >> type_ >> t;
+    is >> t >> nFaces_ >> t;
+    is >> t >> startFace_ >> t;
+    is >> t;
 
     return is;
 }

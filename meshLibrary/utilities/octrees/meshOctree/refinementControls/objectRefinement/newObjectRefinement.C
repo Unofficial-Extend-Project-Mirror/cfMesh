@@ -52,7 +52,7 @@ autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
     word refType(typeName_());
     if( dict.found("type") )
     {
-		dict.lookup("type") >> refType;
+        dict.lookup("type") >> refType;
     }
 
     dictionaryConstructorTable::iterator cstrIter =

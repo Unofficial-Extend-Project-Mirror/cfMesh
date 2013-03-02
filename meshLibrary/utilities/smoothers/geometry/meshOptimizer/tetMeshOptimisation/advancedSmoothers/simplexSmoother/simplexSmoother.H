@@ -27,7 +27,7 @@ Class
 
 Description
     Mesh smoothing without any topological changes. The vertex is put into
-	location which minimises the objective function.
+    location which minimises the objective function.
 
 SourceFiles
     simplexSmoother.C
@@ -53,25 +53,25 @@ class partTetMeshSimplex;
 /*---------------------------------------------------------------------------*\
                     Class simplexSmoother Declaration
 \*---------------------------------------------------------------------------*/
-	
+    
 //- class for volume optimizer
 class simplexSmoother
 {
     protected:
-	
+    
     // Protected data
-		//- mesh points
-		DynList<point, 128>& points_;
-	
-		//- list tets around the given vertex
-		const DynList<partTet, 128>& tets_;
-	
-		//- label of the point
-		const label pointI_;
+        //- mesh points
+        DynList<point, 128>& points_;
+    
+        //- list tets around the given vertex
+        const DynList<partTet, 128>& tets_;
+    
+        //- label of the point
+        const label pointI_;
 
-		//- bound box
-		boundBox bb_;
-	
+        //- bound box
+        boundBox bb_;
+    
 private:
         
     // Private member functions
@@ -80,19 +80,19 @@ private:
         
         //- Disallow default bitwise assignment
         void operator=(const simplexSmoother&);
-	
-	public:
-	
-	// Constructor
+    
+    public:
+    
+    // Constructor
         //- construct from partTetMeshSimplex
         simplexSmoother(partTetMeshSimplex& simplex);
-	
-	// Destructor
-		virtual ~simplexSmoother();
-	
-	// Member functions
-		//- improve the position of the centre node
-		virtual void optimizeNodePosition(const scalar tol = 0.001) = 0;
+    
+    // Destructor
+        virtual ~simplexSmoother();
+    
+    // Member functions
+        //- improve the position of the centre node
+        virtual void optimizeNodePosition(const scalar tol = 0.001) = 0;
 };
 
 

@@ -101,7 +101,7 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
 
         if( oc.containedElements().size() > 0 )
         {
-			oc.setCubeType(surfaceIntersectionsOctreeCube::DATA);
+            oc.setCubeType(surfaceIntersectionsOctreeCube::DATA);
         }
         else
         {
@@ -160,7 +160,7 @@ surfaceIntersectionsOctreeCube* surfaceIntersectionsOctree::findLeafContainingVe
     # endif
 
     surfaceIntersectionsOctreeCube* oc =
-		const_cast<surfaceIntersectionsOctreeCube*>(&initialCube_);
+        const_cast<surfaceIntersectionsOctreeCube*>(&initialCube_);
 
     if( !oc->isVertexInside(p) )
     {

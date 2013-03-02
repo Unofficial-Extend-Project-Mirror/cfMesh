@@ -52,12 +52,12 @@ namespace Foam
 class octreeMesh
 {
     // Private data
-		//- points
-		pointField points_;
+        //- points
+        pointField points_;
 
-		cellShapeList boxes_;
-	
-		boolList useBox_;
+        cellShapeList boxes_;
+    
+        boolList useBox_;
 
     // Private Member Functions
 
@@ -77,8 +77,8 @@ class octreeMesh
         (
             OFstream& ensightGeometryFile
         ) const;
-		
-		void createPointsAndCells();
+        
+        void createPointsAndCells();
 public:
 
     // Public data
@@ -90,8 +90,8 @@ public:
         //- Construct from meshOctree
         octreeMesh(const meshOctree& octree);
 
-		//- Construct from meshOctree and cube type
-		octreeMesh(const meshOctree& octree, const direction cubeType);
+        //- Construct from meshOctree and cube type
+        octreeMesh(const meshOctree& octree, const direction cubeType);
 
     // Destructor
 

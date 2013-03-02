@@ -51,33 +51,33 @@ namespace Foam
 class meshSurfaceCutter
 {
     // private data
-		//- triangulated surface
-		const triSurface& surface_;
+        //- triangulated surface
+        const triSurface& surface_;
 
         //- mesh data
-		polyMeshGen& mesh_;
-	
-		//- helpers
-		label nIntFaces_;
+        polyMeshGen& mesh_;
+    
+        //- helpers
+        label nIntFaces_;
         label nPoints_;
         List<direction> nFacesInCell_;
         boolList problematicTopology_;
         boolList boundaryCell_;
-	
-		edgeList* edgePointPtr_;
-		DynList<point>* newPointsPtr_;
-		labelList* newPointLabelPtr_;
+    
+        edgeList* edgePointPtr_;
+        DynList<point>* newPointsPtr_;
+        labelList* newPointLabelPtr_;
         faceListList* facesFromFacePtr_;
         List< DynList<label> > pointTriIndex_;
 
     // private member functions
-		//- return patches for the given point
+        //- return patches for the given point
         labelList patchesForPoint(const label) const;
-		
-		//- find internal points and intersections with the surface
-		void findInternalPointsAndIntersections();
+        
+        //- find internal points and intersections with the surface
+        void findInternalPointsAndIntersections();
 
-		//- find vertices on boundary edges
+        //- find vertices on boundary edges
         void findBoundaryEdgePoints
         (
             const label,
@@ -86,17 +86,17 @@ class meshSurfaceCutter
             const boolList&
         );
 
-		//- cuts the face
+        //- cuts the face
         bool faceCutter
         (
             const label
         );
-		
-		void createInternalMeshPointsAndFaces();
-		
-		void createBoundaryFaces();
-		//void checkCellTopology();
-		//void checkFaceDirections();
+        
+        void createInternalMeshPointsAndFaces();
+        
+        void createBoundaryFaces();
+        //void checkCellTopology();
+        //void checkFaceDirections();
 
         //- disallows bitwise construct
         void operator=(const meshSurfaceCutter&);
@@ -111,7 +111,7 @@ public:
         //- construct components
         meshSurfaceCutter
         (
-			polyMeshGen& mesh,
+            polyMeshGen& mesh,
             const triSurface& surface
         );
 

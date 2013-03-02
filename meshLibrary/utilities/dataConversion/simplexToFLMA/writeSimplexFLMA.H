@@ -26,7 +26,7 @@ Class
     writeSimplexFLMA
 
 Description
-	Write a partTetMeshSimplex into flma format
+    Write a partTetMeshSimplex into flma format
 
 SourceFiles
     writeSimplexFLMA.C

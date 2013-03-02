@@ -45,19 +45,19 @@ namespace Foam
 // Construct from meshSurfaceEngine. Holds reference!
 meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
-	meshSurfaceEngine& surfaceEngine
+    meshSurfaceEngine& surfaceEngine
 )
 :
-	surfaceEngine_(surfaceEngine)
+    surfaceEngine_(surfaceEngine)
 {
 }
 
 meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
-	const meshSurfaceEngine& surfaceEngine
+    const meshSurfaceEngine& surfaceEngine
 )
 :
-	surfaceEngine_(const_cast<meshSurfaceEngine&>(surfaceEngine))
+    surfaceEngine_(const_cast<meshSurfaceEngine&>(surfaceEngine))
 {
 }
 
@@ -71,11 +71,11 @@ meshSurfaceEngineModifier::~meshSurfaceEngineModifier()
 
 void meshSurfaceEngineModifier::moveBoundaryVertexNoUpdate
 (
-	const label bpI,
-	const point& newP
+    const label bpI,
+    const point& newP
 )
 {
-	surfaceEngine_.mesh_.points()[surfaceEngine_.boundaryPoints()[bpI]] = newP;
+    surfaceEngine_.mesh_.points()[surfaceEngine_.boundaryPoints()[bpI]] = newP;
 }
 
 void meshSurfaceEngineModifier::moveBoundaryVertex
@@ -86,13 +86,13 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
 {
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     pointFieldPMG& points = surfaceEngine_.mesh_.points();
-	points[bPoints[bpI]] = newP;
+    points[bPoints[bpI]] = newP;
     
     if( surfaceEngine_.faceCentresPtr_ )
     {
         vectorField& faceCentres = *surfaceEngine_.faceCentresPtr_;
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-		const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+        const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
         
         forAllRow(pFaces, bpI, pfI)
         {
@@ -106,7 +106,7 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
     {
         vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-		const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+        const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
         
         forAllRow(pFaces, bpI, pfI)
         {
@@ -117,49 +117,49 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
     }
 
     if( surfaceEngine_.pointNormalsPtr_ )
-	{
+    {
         const vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
-		const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-		const VRWGraph& pPoints = surfaceEngine_.pointPoints();
-		
-		vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
-		vector n(vector::zero);
-		forAllRow(pFaces, bpI, pfI)
-			n += faceNormals[pFaces(bpI, pfI)];
-		
-		const scalar l = mag(n);
-		if( l > VSMALL )
-		{
-			n /= l;
-		}
-		else
-		{
-			n = vector::zero;
-		}
-		
-		pn[bpI] = n;
-		
-		//- change normal of vertices connected to bpI
-		forAllRow(pPoints, bpI, ppI)
-		{
-			const label bpJ = pPoints(bpI, ppI);
-			n = vector::zero;
-			forAllRow(pFaces, bpJ, pfI)
-				n += faceNormals[pFaces(bpJ, pfI)];
-			
-			const scalar d = mag(n);
-			if( d > VSMALL )
-			{
-				n /= d;
-			}
-			else
-			{
-				n = vector::zero;
-			}
-			
-			pn[bpJ] = n;
-		}
-	}
+        const VRWGraph& pFaces = surfaceEngine_.pointFaces();
+        const VRWGraph& pPoints = surfaceEngine_.pointPoints();
+        
+        vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
+        vector n(vector::zero);
+        forAllRow(pFaces, bpI, pfI)
+            n += faceNormals[pFaces(bpI, pfI)];
+        
+        const scalar l = mag(n);
+        if( l > VSMALL )
+        {
+            n /= l;
+        }
+        else
+        {
+            n = vector::zero;
+        }
+        
+        pn[bpI] = n;
+        
+        //- change normal of vertices connected to bpI
+        forAllRow(pPoints, bpI, ppI)
+        {
+            const label bpJ = pPoints(bpI, ppI);
+            n = vector::zero;
+            forAllRow(pFaces, bpJ, pfI)
+                n += faceNormals[pFaces(bpJ, pfI)];
+            
+            const scalar d = mag(n);
+            if( d > VSMALL )
+            {
+                n /= d;
+            }
+            else
+            {
+                n = vector::zero;
+            }
+            
+            pn[bpJ] = n;
+        }
+    }
 }
 
 void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
@@ -253,7 +253,7 @@ void meshSurfaceEngineModifier::updateGeometry
     if( surfaceEngine_.faceCentresPtr_ )
     {
         vectorField& faceCentres = *surfaceEngine_.faceCentresPtr_;
-		
+        
         size = updateFaces.size();
         # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
         for(label bfI=0;bfI<size;++bfI)
@@ -277,11 +277,11 @@ void meshSurfaceEngineModifier::updateGeometry
     }
 
     if( surfaceEngine_.pointNormalsPtr_ )
-	{
+    {
         const vectorField& faceNormals = surfaceEngine_.faceNormals();
-		const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-		
-		vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
+        const VRWGraph& pFaces = surfaceEngine_.pointFaces();
+        
+        vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
         size = updateBndNodes.size();
         # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
         for(label i=0;i<size;++i)
@@ -291,7 +291,7 @@ void meshSurfaceEngineModifier::updateGeometry
             vector n(vector::zero);
             forAllRow(pFaces, bpI, pfI)
                 n += faceNormals[pFaces(bpI, pfI)];
-		
+        
             const scalar l = mag(n);
             if( l > VSMALL )
             {
@@ -301,10 +301,10 @@ void meshSurfaceEngineModifier::updateGeometry
             {
                 n = vector::zero;
             }
-		
+        
             pn[bpI] = n;
         }
-	}
+    }
 }
 
 void meshSurfaceEngineModifier::updateGeometry()

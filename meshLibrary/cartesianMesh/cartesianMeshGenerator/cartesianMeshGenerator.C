@@ -65,39 +65,39 @@ namespace Foam
     
 void cartesianMeshGenerator::createCartesianMesh()
 {
-	//- create polyMesh from octree boxes
-	cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
-	
+    //- create polyMesh from octree boxes
+    cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
+    
     if( meshDict_.found("decomposePolyhedraIntoTetsAndPyrs") )
     {
         if( readBool(meshDict_.lookup("decomposePolyhedraIntoTetsAndPyrs")) )
             cme.decomposeSplitHexes();
     }
     
-	cme.createMesh();
-	
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "cartesianMesh");
-	# else
-	writeMeshEnsight(mesh_, "cartesianMesh");
-	# endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    cme.createMesh();
+    
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "cartesianMesh");
+    # else
+    writeMeshEnsight(mesh_, "cartesianMesh");
+    # endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-	
+    
 void cartesianMeshGenerator::surfacePreparation()
 {
-	//- removes unnecessary cells and morph the boundary
+    //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
-	//- It also checks topology of cells after morphing is performed
-/*	do
-	{
-		surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
-		cmPtr->morphMesh();
-		deleteDemandDrivenData(cmPtr);
-	} while( topologicalCleaner(mesh_).cleanTopology() );
+    //- It also checks topology of cells after morphing is performed
+/*    do
+    {
+        surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
+        cmPtr->morphMesh();
+        deleteDemandDrivenData(cmPtr);
+    } while( topologicalCleaner(mesh_).cleanTopology() );
     */
     
     bool changed;
@@ -114,24 +114,24 @@ void cartesianMeshGenerator::surfacePreparation()
         
         if( checkCellConnectionsOverFaces(mesh_).checkCellGroups() )
             changed = true;
-	} while( changed );
+    } while( changed );
     
     checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
     
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterTopoCleaning");
-	# else
-	writeMeshEnsight(mesh_, "afterTopoCleaning");
-	# endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterTopoCleaning");
+    # else
+    writeMeshEnsight(mesh_, "afterTopoCleaning");
+    # endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+        
 void cartesianMeshGenerator::mapMeshToSurface()
 {
-	//- calculate mesh surface
+    //- calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
     
     //- pre-map mesh surface
@@ -139,79 +139,79 @@ void cartesianMeshGenerator::mapMeshToSurface()
     mapper.preMapVertices();
     
     # ifdef DEBUG
-	# ifdef DEBUGfpma
+    # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "preMappedMesh");
     # else
-	writeMeshEnsight(mesh_, "preMappedMesh");
-	# endif
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
+    writeMeshEnsight(mesh_, "preMappedMesh");
+    # endif
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
     
-	//- map mesh surface on the geometry surface	
-	mapper.mapVerticesOntoSurface();
+    //- map mesh surface on the geometry surface    
+    mapper.mapVerticesOntoSurface();
     
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterMapping");
-	# else
-	writeMeshEnsight(mesh_, "afterMapping");
-	# endif
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
-	
-	//- untangle surface faces
-	meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-	# else
-	writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-	# endif
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterMapping");
+    # else
+    writeMeshEnsight(mesh_, "afterMapping");
+    # endif
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
+    
+    //- untangle surface faces
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+    
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
+    # else
+    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
+    # endif
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
     
     deleteDemandDrivenData(msePtr);
 }
 
 void cartesianMeshGenerator::mapEdgesAndCorners()
 {
-	meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
+    meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
     
-	# ifdef DEBUG
-	mesh_.write();
-	//meshOptimizer(*octreePtr_, mesh_).preOptimize();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "withEdges");
-	# else
-	writeMeshEnsight(mesh_, "withEdges");
-	#endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "withEdges");
+    # else
+    writeMeshEnsight(mesh_, "withEdges");
+    #endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
 
 void cartesianMeshGenerator::optimiseMeshSurface()
 {
-	meshSurfaceEngine mse(mesh_);
-	meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-	
-	# ifdef DEBUG
-	mesh_.write();
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-	# else
-	writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-	#endif
-	//::exit(EXIT_FAILURE);
-	# endif
+    meshSurfaceEngine mse(mesh_);
+    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
+    
+    # ifdef DEBUG
+    mesh_.write();
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_, "optSurfaceWithEdges");
+    # else
+    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
+    #endif
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+        
 void cartesianMeshGenerator::generateBoudaryLayers()
 {
-	boundaryLayers bl(mesh_);
+    boundaryLayers bl(mesh_);
     
     if( meshDict_.found("boundaryLayers") )
     {
@@ -224,37 +224,37 @@ void cartesianMeshGenerator::generateBoudaryLayers()
     {
         //bl.createOTopologyLayers();
         bl.addLayerForAllPatches();
-	}
+    }
     
-	# ifdef DEBUG
+    # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "meshWithBndLayer");
     # else 
-	writeMeshEnsight(mesh_, "meshWithBndLayer");
+    writeMeshEnsight(mesh_, "meshWithBndLayer");
     # endif
-	mesh_.write();
-	//::exit(EXIT_FAILURE);
-	# endif
+    mesh_.write();
+    //::exit(EXIT_FAILURE);
+    # endif
 }
-		
+        
 void cartesianMeshGenerator::optimiseFinalMesh()
 {
-	//- final optimisation
-	meshOptimizer optimizer(mesh_);
+    //- final optimisation
+    meshOptimizer optimizer(mesh_);
     
     optimizer.optimizeSurface(*octreePtr_);
     
     deleteDemandDrivenData(octreePtr_);
     
     optimizer.optimizeMeshFV();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"optimisedMesh");
-	# else
-	writeMeshEnsight(mesh_, "optimisedMesh");
-	#endif
-	# endif
+    
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"optimisedMesh");
+    # else
+    writeMeshEnsight(mesh_, "optimisedMesh");
+    #endif
+    # endif
 }
 
 void cartesianMeshGenerator::replaceBoundaries()
@@ -262,44 +262,44 @@ void cartesianMeshGenerator::replaceBoundaries()
     renameBoundaryPatches rbp(mesh_, meshDict_);
     
     # ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"renamedPatchesMesh");
-	# else
-	writeMeshEnsight(mesh_, "renamedPatchesMesh");
-	#endif
-	# endif
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"renamedPatchesMesh");
+    # else
+    writeMeshEnsight(mesh_, "renamedPatchesMesh");
+    #endif
+    # endif
 }
 
 void cartesianMeshGenerator::renumberMesh()
 {
-	polyMeshGenModifier(mesh_).renumberMesh();
-	
-	# ifdef DEBUG
-	# ifdef DEBUGfpma
-	writeMeshFPMA(mesh_,"renumberedMesh");
-	# else
-	writeMeshEnsight(mesh_, "renumberedMesh");
-	#endif
-	# endif
+    polyMeshGenModifier(mesh_).renumberMesh();
+    
+    # ifdef DEBUG
+    # ifdef DEBUGfpma
+    writeMeshFPMA(mesh_,"renumberedMesh");
+    # else
+    writeMeshEnsight(mesh_, "renumberedMesh");
+    #endif
+    # endif
 }
-	
+    
 void cartesianMeshGenerator::generateMesh()
 {
-	createCartesianMesh();
-	
-	surfacePreparation();
-	
-	mapMeshToSurface();
-	
-	mapEdgesAndCorners();
-	
-	optimiseMeshSurface();
+    createCartesianMesh();
+    
+    surfacePreparation();
+    
+    mapMeshToSurface();
+    
+    mapEdgesAndCorners();
+    
+    optimiseMeshSurface();
 
-	generateBoudaryLayers();
-	
-	optimiseFinalMesh();
-	
-	renumberMesh();
+    generateBoudaryLayers();
+    
+    optimiseFinalMesh();
+    
+    renumberMesh();
     
     replaceBoundaries();
 }
@@ -323,7 +323,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         )
     ),
     octreePtr_(NULL),
-	mesh_(time)
+    mesh_(time)
 {
     if( true )
     {
@@ -332,21 +332,21 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
     
     fileName surfaceFile = meshDict_.lookup("surfaceFile");
     if( Pstream::parRun() )
-		surfaceFile = ".."/surfaceFile;
+        surfaceFile = ".."/surfaceFile;
 
     surfacePtr_ = new triSurf(db_.path()/surfaceFile);
-	
-	if( meshDict_.found("subsetFileName") )
-	{
-		fileName subsetFileName = meshDict_.lookup("subsetFileName");
+    
+    if( meshDict_.found("subsetFileName") )
+    {
+        fileName subsetFileName = meshDict_.lookup("subsetFileName");
         if( Pstream::parRun() )
-			subsetFileName = ".."/subsetFileName;
-		surfacePtr_->readFaceSubsets(db_.path()/subsetFileName);
-	}
+            subsetFileName = ".."/subsetFileName;
+        surfacePtr_->readFaceSubsets(db_.path()/subsetFileName);
+    }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
-	
-	meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
+    
+    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
 }
@@ -372,7 +372,7 @@ cartesianMeshGenerator::cartesianMeshGenerator
         )
     ),
     octreePtr_(NULL),
-	mesh_(time)
+    mesh_(time)
 {
     fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
@@ -395,8 +395,8 @@ cartesianMeshGenerator::~cartesianMeshGenerator()
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void cartesianMeshGenerator::writeMesh() const
-{	
-	mesh_.write();
+{    
+    mesh_.write();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

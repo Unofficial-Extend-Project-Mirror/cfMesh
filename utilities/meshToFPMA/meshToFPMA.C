@@ -23,7 +23,7 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Description
-	Writes the mesh in fpma format readable by AVL's CfdWM
+    Writes the mesh in fpma format readable by AVL's CfdWM
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-	polyMeshGen pmg(runTime);
+    polyMeshGen pmg(runTime);
     pmg.read();
     
     if( Pstream::parRun() )
@@ -49,9 +49,9 @@ int main(int argc, char *argv[])
         polyMeshGenModifier(pmg).addBufferCells();
         createFIRESelections(pmg);
     }
-	
-	writeMeshFPMA(pmg, "convertedMesh");
-	
+    
+    writeMeshFPMA(pmg, "convertedMesh");
+    
     Info << "End\n" << endl;
     return 0;
 }

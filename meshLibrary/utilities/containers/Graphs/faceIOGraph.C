@@ -39,14 +39,14 @@ namespace Foam
 faceIOGraph::faceIOGraph(const IOobject& io)
 :
     regIOobject(io),
-	VRWGraph()
+    VRWGraph()
 {
 }
 
 faceIOGraph::faceIOGraph
 (
-	const IOobject& io,
-	const label size
+    const IOobject& io,
+    const label size
 )
 :
     regIOobject(io),
@@ -55,8 +55,8 @@ faceIOGraph::faceIOGraph
 
 faceIOGraph::faceIOGraph
 (
-	const IOobject& io,
-	const VRWGraph& g
+    const IOobject& io,
+    const VRWGraph& g
 )
 :
     regIOobject(io),
@@ -66,7 +66,7 @@ faceIOGraph::faceIOGraph
 
 void faceIOGraph::operator=(const faceIOGraph& rhs)
 {
-	VRWGraph::operator=(rhs);
+    VRWGraph::operator=(rhs);
 }
 
 void faceIOGraph::operator=(const VRWGraph& rhs)

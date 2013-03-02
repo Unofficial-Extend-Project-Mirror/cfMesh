@@ -41,7 +41,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void partTetMesh::createParallelAddressing
@@ -75,10 +75,10 @@ void partTetMesh::createParallelAddressing
     globalToLocal.clear();
     
     //- allocate storage for points at parallel boundaries
-	if( !pAtParallelBoundariesPtr_ )
-		pAtParallelBoundariesPtr_ = new labelListPMG();
-	labelListPMG& pAtParallelBoundaries = *pAtParallelBoundariesPtr_;
-	pAtParallelBoundaries.clear();
+    if( !pAtParallelBoundariesPtr_ )
+        pAtParallelBoundariesPtr_ = new labelListPMG();
+    labelListPMG& pAtParallelBoundaries = *pAtParallelBoundariesPtr_;
+    pAtParallelBoundaries.clear();
 
     //- create point-processors addressing
     std::map<label, labelListPMG> exchangeData;
@@ -232,13 +232,13 @@ void partTetMesh::createParallelAddressing
         
     //- create global to local mapping
     forAll(globalTetPointLabel, pI)
-	{
+    {
         if( pProcs.sizeOfRow(pI) != 0 )
-		{
-			pAtParallelBoundaries.append(pI);
+        {
+            pAtParallelBoundaries.append(pI);
             globalToLocal.insert(globalTetPointLabel[pI], pI);
-		}
-	}
+        }
+    }
     
     //- mark vertices at parallel boundaries
     forAll(smoothVertex_, pI)

@@ -31,7 +31,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 polyMeshGen::polyMeshGen(const Time& t)
@@ -77,7 +77,7 @@ polyMeshGen::polyMeshGen
     )
 {
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Destructor
 polyMeshGen::~polyMeshGen()

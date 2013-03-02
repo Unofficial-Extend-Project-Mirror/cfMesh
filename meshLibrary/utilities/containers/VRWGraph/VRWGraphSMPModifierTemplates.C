@@ -39,7 +39,7 @@ namespace Foam
 template<class ListType>
 void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
 {
-	graph_.rows_.setSize(s.size());
+    graph_.rows_.setSize(s.size());
     
     label nThreads = 3 * omp_get_num_procs();
     if( s.size() < 1000 )
@@ -193,7 +193,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -219,7 +219,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -342,7 +342,7 @@ void VRWGraphSMPModifier::reverseAddressing
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -368,7 +368,7 @@ void VRWGraphSMPModifier::reverseAddressing
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -489,7 +489,7 @@ void VRWGraphSMPModifier::reverseAddressing
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();
@@ -515,7 +515,7 @@ void VRWGraphSMPModifier::reverseAddressing
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
-	  
+      
             forAll(data, j)
             {
                 const label entryI = data[j].first();

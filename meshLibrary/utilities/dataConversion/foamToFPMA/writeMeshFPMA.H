@@ -26,7 +26,7 @@ Class
     writeMeshFPMA
 
 Description
-	Write mesh into fpma format
+    Write mesh into fpma format
 
 SourceFiles
     writeMeshFPMA.C

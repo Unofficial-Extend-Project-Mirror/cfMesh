@@ -52,25 +52,25 @@ namespace Foam
 class topologicalCleaner
 {
     // Private data
-		polyMeshGen& mesh_;
-	
-		bool changed_;
-	
-		boolList decomposeCell_;
+        polyMeshGen& mesh_;
+    
+        bool changed_;
+    
+        boolList decomposeCell_;
 
     // Private member functions
-	
+    
         //- check and fix incorrectly connected faces
         void checkNonConsecutiveBoundaryVertices();
-	
-		//- check and fix non-mappable faces
-		void checkNonMappableFaces();
-	
-		//- check and fix non-mappable cells
-		void checkNonMappableCells();
-	
-		//- decompose marked cells
-		void decomposeCells();
+    
+        //- check and fix non-mappable faces
+        void checkNonMappableFaces();
+    
+        //- check and fix non-mappable cells
+        void checkNonMappableCells();
+    
+        //- decompose marked cells
+        void decomposeCells();
 
         //- Disallow default bitwise copy construct
         topologicalCleaner(const topologicalCleaner&);
@@ -92,17 +92,17 @@ public:
 
 
     // Member Functions
-		//- clean topologically problematic cells
-		bool cleanTopology();
+        //- clean topologically problematic cells
+        bool cleanTopology();
 
-		//- check and fix vertices where two or more groups of cells meet
-		void checkInvalidConnectionsForVerticesCells
+        //- check and fix vertices where two or more groups of cells meet
+        void checkInvalidConnectionsForVerticesCells
         (
             labelHashSet* irregularNodes = NULL
         );
-	
-		//- check and fix vertices where two or more groups of faces meet
-		void checkInvalidConnectionsForVerticesFaces
+    
+        //- check and fix vertices where two or more groups of faces meet
+        void checkInvalidConnectionsForVerticesFaces
         (
             labelHashSet* irregularNodes = NULL
         );

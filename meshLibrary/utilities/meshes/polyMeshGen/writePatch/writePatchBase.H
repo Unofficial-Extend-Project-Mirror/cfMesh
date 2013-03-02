@@ -134,11 +134,11 @@ public:
         {
             return name_;
         }
-		
-		inline word& patchName()
-		{
-			return name_;
-		}
+        
+        inline word& patchName()
+        {
+            return name_;
+        }
         
         inline const word& patchType() const
         {

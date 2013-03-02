@@ -50,20 +50,20 @@ namespace Foam
 
 label meshSurfaceOptimizer::findInvertedVertices
 (
-	boolList& smoothVertex
+    boolList& smoothVertex
 ) const
 {
-	const labelList& bPoints = surfaceEngine_.boundaryPoints();
-	const VRWGraph& pPoints = surfaceEngine_.pointPoints();
-	
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
+    const VRWGraph& pPoints = surfaceEngine_.pointPoints();
+    
     if( smoothVertex.size() != bPoints.size() )
     {
         smoothVertex.setSize(bPoints.size());
         smoothVertex = true;
     }
     
-	label nInvertedTria(0);
-	
+    label nInvertedTria(0);
+    
     //- check the vertices at the surface
     //- mark the ones where the mesh is tangled
     meshSurfaceCheckInvertedVertices vrtCheck(surfaceEngine_, &smoothVertex);
@@ -78,22 +78,22 @@ label meshSurfaceOptimizer::findInvertedVertices
             smoothVertex[bpI] = true;
         }
     }
-	
+    
     if( Pstream::parRun() )
         reduce(nInvertedTria, sumOp<label>());
-	Info << "Number of inverted boundary faces is " << nInvertedTria << endl;
+    Info << "Number of inverted boundary faces is " << nInvertedTria << endl;
     
     if( nInvertedTria == 0 )
         return 0;
-	
-	//- add additional layers around inverted points
-	for(label i=0;i<2;++i)
-	{
-		boolList originallySelected = smoothVertex;
-		forAll(smoothVertex, bpI)
-			if( originallySelected[bpI] )
-				forAllRow(pPoints, bpI, ppI)
-					smoothVertex[pPoints(bpI, ppI)] = true;
+    
+    //- add additional layers around inverted points
+    for(label i=0;i<2;++i)
+    {
+        boolList originallySelected = smoothVertex;
+        forAll(smoothVertex, bpI)
+            if( originallySelected[bpI] )
+                forAllRow(pPoints, bpI, ppI)
+                    smoothVertex[pPoints(bpI, ppI)] = true;
         
         if( Pstream::parRun() )
         {
@@ -141,51 +141,51 @@ label meshSurfaceOptimizer::findInvertedVertices
                 smoothVertex[bpI] = true;
             }
         }
-	}
-	
-	return nInvertedTria;
+    }
+    
+    return nInvertedTria;
 }
 
 void meshSurfaceOptimizer::preOptimizeSurface()
 {
     Info << "Optimizing positions of surface nodes" << endl;
 
-	const labelList& bPoints = surfaceEngine_.boundaryPoints();
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
     surfaceEngine_.pointFaces();
     surfaceEngine_.faceCentres();
     surfaceEngine_.pointPoints();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
-	this->triangles();
-	this->pointTriangles();
-	
-	boolList smoothVertex;
-	
-	meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+    this->triangles();
+    this->pointTriangles();
+    
+    boolList smoothVertex;
+    
+    meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);
-	
-	bool remapVertex(true);
-	label nInvertedTria;
-	label nGlobalIter(0);
+    
+    bool remapVertex(true);
+    label nInvertedTria;
+    label nGlobalIter(0);
     
     labelListPMG procBndNodes, movedPoints;
-	
-	do
-	{
-		label nIter(0);
-		
-		do
-		{
-			nInvertedTria = findInvertedVertices(smoothVertex);
+    
+    do
+    {
+        label nIter(0);
+        
+        do
+        {
+            nInvertedTria = findInvertedVertices(smoothVertex);
 
-			if( nInvertedTria == 0 ) break;
-			
+            if( nInvertedTria == 0 ) break;
+            
             procBndNodes.clear();
             movedPoints.clear();
-			forAll(bPoints, bpI)
+            forAll(bPoints, bpI)
             {
-				if( smoothVertex[bpI] && (vertexType_[bpI] & PARTITION) )
-				{
+                if( smoothVertex[bpI] && (vertexType_[bpI] & PARTITION) )
+                {
                     movedPoints.append(bpI);
                     
                     if( vertexType_[bpI] & PROCBND )
@@ -262,18 +262,18 @@ void meshSurfaceOptimizer::preOptimizeSurface()
             
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
-	
-		} while( nInvertedTria && (++nIter < 20) );
-	
-		if( nInvertedTria )
-		{
-			Info << "Smoothing remaining inverted vertices " << endl;
+    
+        } while( nInvertedTria && (++nIter < 20) );
+    
+        if( nInvertedTria )
+        {
+            Info << "Smoothing remaining inverted vertices " << endl;
             
             movedPoints.clear();
             procBndNodes.clear();
-			forAll(smoothVertex, bpI)
-				if( smoothVertex[bpI] )
-				{
+            forAll(smoothVertex, bpI)
+                if( smoothVertex[bpI] )
+                {
                     movedPoints.append(bpI);
                     
                     if( vertexType_[bpI] & PROCBND )
@@ -282,8 +282,8 @@ void meshSurfaceOptimizer::preOptimizeSurface()
                         continue;
                     }
                     
-					nodeDisplacementLaplacianFC(bpI, false);
-				}
+                    nodeDisplacementLaplacianFC(bpI, false);
+                }
                 
             if( Pstream::parRun() )
             {
@@ -292,19 +292,19 @@ void meshSurfaceOptimizer::preOptimizeSurface()
             
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
-				
-			if( nGlobalIter > 3 )
-				remapVertex = false;
-		}
-	
-	} while( nInvertedTria && (++nGlobalIter < 10) );
+                
+            if( nGlobalIter > 3 )
+                remapVertex = false;
+        }
+    
+    } while( nInvertedTria && (++nGlobalIter < 10) );
     
     Info << "Finished optimizing positions of surface nodes" << endl;
 }
 
 void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 {
-	const labelList& bPoints = surfaceEngine_.boundaryPoints();
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
     
     //- needed for parallel execution
     surfaceEngine_.pointFaces();
@@ -326,12 +326,12 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     }
     
     meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);
-	
-	//- optimize edge vertices
-	Info << "Optimizing edges. Iteration:" << flush;
-	for(label i=0;i<nIterations;++i)
-	{
-		Info << "." << flush;
+    
+    //- optimize edge vertices
+    Info << "Optimizing edges. Iteration:" << flush;
+    for(label i=0;i<nIterations;++i)
+    {
+        Info << "." << flush;
         
         meshSurfaceEngineModifier bMod(surfaceEngine_);
         # pragma omp parallel if( edgePoints.size() > 1000 )
@@ -366,16 +366,16 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         }
         
         mapper.mapEdgeNodes(edgePoints);
-	}
-	Info << endl;
-	
-	//- optimize nodes of surface vertices which are not on surface edges
-	Info << "Optimizing surface vertices. Iteration:";
-	for(label i=0;i<nIterations;++i)
-	{
+    }
+    Info << endl;
+    
+    //- optimize nodes of surface vertices which are not on surface edges
+    Info << "Optimizing surface vertices. Iteration:";
+    for(label i=0;i<nIterations;++i)
+    {
         procBndNodes.clear();
         
-		Info << "." << flush;
+        Info << "." << flush;
 
         meshSurfaceEngineModifier bMod(surfaceEngine_);
         # pragma omp parallel if( vertexType_.size() > 100 )
@@ -414,7 +414,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         {
             nodeDisplacementLaplacianFCParallel(procBndNodes,true);
         }
-	}
+    }
     
     Info << endl;
 }

@@ -90,22 +90,22 @@ class labelledPointScalar
         {
             return pLabel_;
         }
-		
-		inline label& pointLabel()
-		{
-			return pLabel_;
-		}
+        
+        inline label& pointLabel()
+        {
+            return pLabel_;
+        }
         
         //- return point coordinates
         inline const point& coordinates() const
         {
             return coords_;
         }
-		
-		inline point& coordinates()
-		{
-			return coords_;
-		}
+        
+        inline point& coordinates()
+        {
+            return coords_;
+        }
         
         //- return scalar value
         inline const scalar& scalarValue() const

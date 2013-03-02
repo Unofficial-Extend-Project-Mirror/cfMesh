@@ -48,16 +48,16 @@ meshGenQt::meshGenQt
     label argc, char* argv[], const objectRegistry& reg
 )
 :
-	QMainWindow(),
-	meshGui_(reg),
-	saveButtonPtr_(NULL),
-	quitButtonPtr_(NULL),
-	tabWidgetPtr_(NULL),
-	tabGeneralSettingsPtr_(NULL),
-	tabRefinementPtr_(NULL),
-	tabPatchRenamePtr_(NULL)
+    QMainWindow(),
+    meshGui_(reg),
+    saveButtonPtr_(NULL),
+    quitButtonPtr_(NULL),
+    tabWidgetPtr_(NULL),
+    tabGeneralSettingsPtr_(NULL),
+    tabRefinementPtr_(NULL),
+    tabPatchRenamePtr_(NULL)
 {
-	createMainWindow();
+    createMainWindow();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -70,40 +70,40 @@ meshGenQt::~meshGenQt()
 
 void meshGenQt::createMainWindow()
 {
-	QWidget* widget = new QWidget(this);
-	widget->setGeometry(QRect(0, 0, 600, 480));
-	
-	//- create and add save button
-	saveButtonPtr_ = new QPushButton(QString("Save meshDict"), widget);
-	saveButtonPtr_->setGeometry(QRect(11, 11, 150, 24));
-	connect
-	(
-		saveButtonPtr_,
-		SIGNAL(clicked()),
-		this,
-		SLOT(saveMeshDictCallback())
-	);
-	
-	//- create and add quit button
-	quitButtonPtr_ = new QPushButton(QString("Quit"), widget);
-	quitButtonPtr_->setGeometry(QRect(160, 11, 180, 24));
-	connect(quitButtonPtr_, SIGNAL(clicked()), qApp, SLOT(quit()));
+    QWidget* widget = new QWidget(this);
+    widget->setGeometry(QRect(0, 0, 600, 480));
+    
+    //- create and add save button
+    saveButtonPtr_ = new QPushButton(QString("Save meshDict"), widget);
+    saveButtonPtr_->setGeometry(QRect(11, 11, 150, 24));
+    connect
+    (
+        saveButtonPtr_,
+        SIGNAL(clicked()),
+        this,
+        SLOT(saveMeshDictCallback())
+    );
+    
+    //- create and add quit button
+    quitButtonPtr_ = new QPushButton(QString("Quit"), widget);
+    quitButtonPtr_->setGeometry(QRect(160, 11, 180, 24));
+    connect(quitButtonPtr_, SIGNAL(clicked()), qApp, SLOT(quit()));
 
-	//- create the table
+    //- create the table
     tabWidgetPtr_ = new QTabWidget(widget);
-	tabWidgetPtr_->setGeometry(QRect(9, 41, 580, 406));
+    tabWidgetPtr_->setGeometry(QRect(9, 41, 580, 406));
 
-	tabGeneralSettingsPtr_ = new meshGenQtGeneralSettings(widget, meshGui_);
-	tabWidgetPtr_->addTab(tabGeneralSettingsPtr_, "General settings");
-	
-	QWidget* tab1 = new QWidget();
-	tabWidgetPtr_->addTab(tab1, "Refinement");
-	
-	//- set the front page 
-	this->setCentralWidget(widget);
-	
-	//- resize to the desired size
-	QSize size(600, 480);
+    tabGeneralSettingsPtr_ = new meshGenQtGeneralSettings(widget, meshGui_);
+    tabWidgetPtr_->addTab(tabGeneralSettingsPtr_, "General settings");
+    
+    QWidget* tab1 = new QWidget();
+    tabWidgetPtr_->addTab(tab1, "Refinement");
+    
+    //- set the front page 
+    this->setCentralWidget(widget);
+    
+    //- resize to the desired size
+    QSize size(600, 480);
     size = size.expandedTo(this->minimumSizeHint());
     this->resize(size);
 }

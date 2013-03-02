@@ -27,8 +27,8 @@ Class
 
 Description
     Checks for concave cells near surface edges. Removes vertices and merges
-	faces in order to untangle the mesh
-	
+    faces in order to untangle the mesh
+    
 SourceFiles
     dualUnfoldConcaveCells.C
 
@@ -44,7 +44,7 @@ SourceFiles
 
 namespace Foam
 {
-	
+    
 class meshSurfaceEngine;
 class meshOctree;
 
@@ -55,72 +55,72 @@ class meshOctree;
 class dualUnfoldConcaveCells
 {
     // Private data
-		//- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- reference to the octree
-		const meshOctree& octree_;
-	
-		//- list containing classification of cell type
-		List<direction> typeOfCell_;
-	
-		//- list containing classification of vertex type
-		List<direction> typeOfVertex_;
-	
-		//- new boundary faces and owner cells
-		VRWGraph newBoundaryFaces_;
-		labelListPMG newBoundaryOwners_;
-		labelListPMG newBoundaryPatches_;
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+    
+        //- reference to the octree
+        const meshOctree& octree_;
+    
+        //- list containing classification of cell type
+        List<direction> typeOfCell_;
+    
+        //- list containing classification of vertex type
+        List<direction> typeOfVertex_;
+    
+        //- new boundary faces and owner cells
+        VRWGraph newBoundaryFaces_;
+        labelListPMG newBoundaryOwners_;
+        labelListPMG newBoundaryPatches_;
 
     // Private member functions
-		//- find edges to remove
-		bool findConcaveEdges(const meshSurfaceEngine& mse);
-	
-		//- mark vertices according to their type
-		void markVertexTypes(const meshSurfaceEngine& mse);
-		
-		//- merge boundary faces of the given cell
-		label mergeBoundaryFacesOfCell(const label cellI);
-	
-		//- merge boundary faces of concave cells
-		void storeAndMergeBoundaryFaces(const meshSurfaceEngine& mse);
-		
-		//- create boundary faces for cells next to concave ones
-		void createNeighbouringBoundaryFaces(const meshSurfaceEngine& mse);
-		
-		//- store remaining boundary faces which have not been altered
-		void storeRemainingBoundaryFaces(const meshSurfaceEngine& mse);
-	
-		//- remove concave vertices from internal faces
-		void removeConcaveVerticesFromIntFaces(const meshSurfaceEngine& mse);
-	
-		//- replace mesh boundary with the newly created boundary faces
-		void replaceBoundary();
-		
-		//- perform a check to determine if all vertices have been removed
-		//- correctly, and that all treated cells are topologically closed
-		void checkAndRepairBoundary();
-		
-	// Enumerations
-	
-		enum vertexType_
-		{
-			NONE = 0,
-			CONCAVE = 1,
-			EDGE = 2,
-			CORNER = 4,
-			MOVED = 8,
-			REMOVE = 16
-		};
-		
-		enum cellType_
-		{
-			INTERNALCELL = 0,
-			BOUNDARYCELL = 1,
-			CONCAVECELL = 2,
-			TREATEDCELL = 4,
-			MERGEDCELL = 8
-		};
+        //- find edges to remove
+        bool findConcaveEdges(const meshSurfaceEngine& mse);
+    
+        //- mark vertices according to their type
+        void markVertexTypes(const meshSurfaceEngine& mse);
+        
+        //- merge boundary faces of the given cell
+        label mergeBoundaryFacesOfCell(const label cellI);
+    
+        //- merge boundary faces of concave cells
+        void storeAndMergeBoundaryFaces(const meshSurfaceEngine& mse);
+        
+        //- create boundary faces for cells next to concave ones
+        void createNeighbouringBoundaryFaces(const meshSurfaceEngine& mse);
+        
+        //- store remaining boundary faces which have not been altered
+        void storeRemainingBoundaryFaces(const meshSurfaceEngine& mse);
+    
+        //- remove concave vertices from internal faces
+        void removeConcaveVerticesFromIntFaces(const meshSurfaceEngine& mse);
+    
+        //- replace mesh boundary with the newly created boundary faces
+        void replaceBoundary();
+        
+        //- perform a check to determine if all vertices have been removed
+        //- correctly, and that all treated cells are topologically closed
+        void checkAndRepairBoundary();
+        
+    // Enumerations
+    
+        enum vertexType_
+        {
+            NONE = 0,
+            CONCAVE = 1,
+            EDGE = 2,
+            CORNER = 4,
+            MOVED = 8,
+            REMOVE = 16
+        };
+        
+        enum cellType_
+        {
+            INTERNALCELL = 0,
+            BOUNDARYCELL = 1,
+            CONCAVECELL = 2,
+            TREATEDCELL = 4,
+            MERGEDCELL = 8
+        };
 
         //- Disallow default bitwise copy construct
         dualUnfoldConcaveCells(const dualUnfoldConcaveCells&);
@@ -134,8 +134,8 @@ public:
         //- Construct from polyMeshGen
         dualUnfoldConcaveCells
         (
-			polyMeshGen& mesh,
-			const meshOctree& octree
+            polyMeshGen& mesh,
+            const meshOctree& octree
         );
 
     // Destructor
@@ -143,8 +143,8 @@ public:
         ~dualUnfoldConcaveCells();
 
     // Member Functions
-		//- clean topologically problematic cells
-		void unfoldInvalidCells();
+        //- clean topologically problematic cells
+        void unfoldInvalidCells();
 };
 
 

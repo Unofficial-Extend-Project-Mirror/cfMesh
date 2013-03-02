@@ -36,25 +36,25 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-	
+    
 meshSurfaceCutter::meshSurfaceCutter
 (
-	polyMeshGen& mesh,
-	const triSurface& surface
+    polyMeshGen& mesh,
+    const triSurface& surface
 )
 :
-	surface_(surface),
-	mesh_(mesh),
-	nIntFaces_(0),
-	nPoints_(mesh.points().size()),
-	nFacesInCell_(mesh.cells().size(), direction(0)),
-	problematicTopology_(mesh.cells().size(), false),
-	boundaryCell_(mesh.cells().size(), false),
-	edgePointPtr_(NULL),
-	newPointsPtr_(NULL),
-	newPointLabelPtr_(NULL),
-	facesFromFacePtr_(NULL),
-	pointTriIndex_()
+    surface_(surface),
+    mesh_(mesh),
+    nIntFaces_(0),
+    nPoints_(mesh.points().size()),
+    nFacesInCell_(mesh.cells().size(), direction(0)),
+    problematicTopology_(mesh.cells().size(), false),
+    boundaryCell_(mesh.cells().size(), false),
+    edgePointPtr_(NULL),
+    newPointsPtr_(NULL),
+    newPointLabelPtr_(NULL),
+    facesFromFacePtr_(NULL),
+    pointTriIndex_()
 
 {
     # ifdef DEBUGCutter
@@ -71,7 +71,7 @@ meshSurfaceCutter::meshSurfaceCutter
     Info << "Checking for cell consisting of two or more closed parts" << endl;
     # endif
     //checkCellTopology();
-	
+    
     # ifdef DEBUGCutter
     Info << "Checking directions of face normals" << endl;
     # endif

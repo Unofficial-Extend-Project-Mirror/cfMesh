@@ -41,24 +41,24 @@ addToRunTimeSelectionTable(objectRefinement, sphereRefinement, dictionary);
 sphereRefinement::sphereRefinement()
 :
     objectRefinement(),
-	centre_(),
-	radius_(-1.0)
+    centre_(),
+    radius_(-1.0)
 {}
 
 sphereRefinement::sphereRefinement
 (
-	const word& name,
+    const word& name,
     const scalar cellSize,
-	const point& centre,
-	const scalar radius
+    const point& centre,
+    const scalar radius
 )
 :
     objectRefinement(),
-	centre_(centre),
-	radius_(radius)
+    centre_(centre),
+    radius_(radius)
 {
-	setName(name);
-	setCellSize(cellSize);
+    setName(name);
+    setCellSize(cellSize);
 }
 
 sphereRefinement::sphereRefinement
@@ -69,7 +69,7 @@ sphereRefinement::sphereRefinement
 :
     objectRefinement(name, dict)
 {
-	this->operator=(dict);
+    this->operator=(dict);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -79,19 +79,19 @@ bool sphereRefinement::intersectsObject(const boundBox& bb) const
     const point& c = (bb.max() + bb.min()) / 2.0;
     
     if( magSqr(c - centre_) < sqr(radius_) )
-		return true;
-	
-	return false;
+        return true;
+    
+    return false;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 dictionary sphereRefinement::dict(bool ignoreType) const
 {
-	dictionary dict;
+    dictionary dict;
 
-	dict.add("cellSize", cellSize());
-	dict.add("type", type());
+    dict.add("cellSize", cellSize());
+    dict.add("type", type());
 
     dict.add("centre", centre_);
     dict.add("radius", radius_);
@@ -101,19 +101,19 @@ dictionary sphereRefinement::dict(bool ignoreType) const
 
 void sphereRefinement::write(Ostream& os) const
 {
-	os  << " type:   " << type()
+    os  << " type:   " << type()
         << " centre: " << centre_
         << " radius: " << radius_;
 }
 
 void sphereRefinement::writeDict(Ostream& os, bool subDict) const
 {
-	if( subDict )
+    if( subDict )
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-	
-	os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    
+    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -147,10 +147,10 @@ void sphereRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void sphereRefinement::operator=(const dictionary& d)"
-		) << "Entry centre is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void sphereRefinement::operator=(const dictionary& d)"
+        ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
@@ -161,10 +161,10 @@ void sphereRefinement::operator=(const dictionary& d)
     }
     else
     {
-		FatalErrorIn
-		(
-			"void sphereRefinement::operator=(const dictionary& d)"
-		) << "Entry radius is not specified!" << exit(FatalError);
+        FatalErrorIn
+        (
+            "void sphereRefinement::operator=(const dictionary& d)"
+        ) << "Entry radius is not specified!" << exit(FatalError);
         radius_ = -1.0;
     }
 }
@@ -173,14 +173,14 @@ void sphereRefinement::operator=(const dictionary& d)
 
 Ostream& sphereRefinement::operator<<(Ostream& os) const
 {
-	os << "name " << name() << nl;
-	os << "cell size " << cellSize() << nl;
-	write(os);
-	return os;
+    os << "name " << name() << nl;
+    os << "cell size " << cellSize() << nl;
+    write(os);
+    return os;
 }
-		
+        
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-		
+        
 } // End namespace Foam
 
 // ************************************************************************* //

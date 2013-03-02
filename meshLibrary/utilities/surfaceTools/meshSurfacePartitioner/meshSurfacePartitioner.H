@@ -52,7 +52,7 @@ class meshSurfacePartitioner
 {
     // Private data
         //- reference to mesh surface engine
-		const meshSurfaceEngine& meshSurface_;
+        const meshSurfaceEngine& meshSurface_;
     
         //- labels of corner nodes
         labelHashSet corners_;
@@ -77,7 +77,7 @@ class meshSurfacePartitioner
         void operator=(const meshSurfacePartitioner&);
 
 public:
-	
+    
     // Constructors
 
         //- Construct from mesh

@@ -70,66 +70,66 @@ partTetMeshSimplex::partTetMeshSimplex
         }
         
         # ifdef DEBUGSmooth
-		Info << "Tet " << tetI << " is " << tet << endl;
-		# endif
-		
-		const label pos = tet.whichPosition(pI);
-		switch( pos )
-		{
-			case 0:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet.b()],
-						addr[tet.d()],
-						addr[tet.c()],
-						addr[tet.a()]
-					);
-			} break;
-			case 1:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet.a()],
-						addr[tet.c()],
-						addr[tet.d()],
-						addr[tet.b()]
-					);
-			} break;
-			case 2:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet.a()],
-						addr[tet.d()],
-						addr[tet.b()],
-						addr[tet.c()]
-					);
-			} break;
-			case 3:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet.a()],
-						addr[tet.b()],
-						addr[tet.c()],
-						addr[tet.d()]
-					);
-			} break;
-			default:
-			{
-				FatalErrorIn
-				(
-					"partTetMeshSimplex::partTetMeshSimplex("
+        Info << "Tet " << tetI << " is " << tet << endl;
+        # endif
+        
+        const label pos = tet.whichPosition(pI);
+        switch( pos )
+        {
+            case 0:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet.b()],
+                        addr[tet.d()],
+                        addr[tet.c()],
+                        addr[tet.a()]
+                    );
+            } break;
+            case 1:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet.a()],
+                        addr[tet.c()],
+                        addr[tet.d()],
+                        addr[tet.b()]
+                    );
+            } break;
+            case 2:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet.a()],
+                        addr[tet.d()],
+                        addr[tet.b()],
+                        addr[tet.c()]
+                    );
+            } break;
+            case 3:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet.a()],
+                        addr[tet.b()],
+                        addr[tet.c()],
+                        addr[tet.d()]
+                    );
+            } break;
+            default:
+            {
+                FatalErrorIn
+                (
+                    "partTetMeshSimplex::partTetMeshSimplex("
                     "(const partTetMesh& tm, const label pI)"
-				) << "Point " << pI << " is not present in tet" << tet
-					<< abort(FatalError);
-			}
-		}
+                ) << "Point " << pI << " is not present in tet" << tet
+                    << abort(FatalError);
+            }
+        }
     }
 }
 
@@ -163,63 +163,63 @@ partTetMeshSimplex::partTetMeshSimplex
             if( tet[i].pointLabel() == gpI )
                 pos = i;
         }
-		
-		switch( pos )
-		{
-			case 0:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet[1].pointLabel()],
-						addr[tet[3].pointLabel()],
-						addr[tet[2].pointLabel()],
-						addr[tet[0].pointLabel()]
-					);
-			} break;
-			case 1:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet[0].pointLabel()],
-						addr[tet[2].pointLabel()],
-						addr[tet[3].pointLabel()],
-						addr[tet[1].pointLabel()]
-					);
-			} break;
-			case 2:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet[0].pointLabel()],
-						addr[tet[3].pointLabel()],
-						addr[tet[1].pointLabel()],
-						addr[tet[2].pointLabel()]
-					);
-			} break;
-			case 3:
-			{
-				tets_[tetI] =
-					partTet
-					(
-						addr[tet[0].pointLabel()],
-						addr[tet[1].pointLabel()],
-						addr[tet[2].pointLabel()],
-						addr[tet[3].pointLabel()]
-					);
-			} break;
-			default:
-			{
-				FatalErrorIn
-				(
-					"partTetMeshSimplex::partTetMeshSimplex("
+        
+        switch( pos )
+        {
+            case 0:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet[1].pointLabel()],
+                        addr[tet[3].pointLabel()],
+                        addr[tet[2].pointLabel()],
+                        addr[tet[0].pointLabel()]
+                    );
+            } break;
+            case 1:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet[0].pointLabel()],
+                        addr[tet[2].pointLabel()],
+                        addr[tet[3].pointLabel()],
+                        addr[tet[1].pointLabel()]
+                    );
+            } break;
+            case 2:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet[0].pointLabel()],
+                        addr[tet[3].pointLabel()],
+                        addr[tet[1].pointLabel()],
+                        addr[tet[2].pointLabel()]
+                    );
+            } break;
+            case 3:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        addr[tet[0].pointLabel()],
+                        addr[tet[1].pointLabel()],
+                        addr[tet[2].pointLabel()],
+                        addr[tet[3].pointLabel()]
+                    );
+            } break;
+            default:
+            {
+                FatalErrorIn
+                (
+                    "partTetMeshSimplex::partTetMeshSimplex("
                     "(const partTetMesh& tm, const label pI)"
-				) << "Point " << gpI << " is not present in tet" << tet
-					<< abort(FatalError);
-			}
-		}
+                ) << "Point " << gpI << " is not present in tet" << tet
+                    << abort(FatalError);
+            }
+        }
     }
 }
 

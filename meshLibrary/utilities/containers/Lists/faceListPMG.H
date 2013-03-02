@@ -27,7 +27,7 @@ Class
 
 Description
     This is a container with additional size to prevent re-allocation
-	every time it is resized
+    every time it is resized
 
 SourceFiles
     
@@ -50,63 +50,63 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class faceListPMG
-:	public regIOobject,
-	public faceList
+:    public regIOobject,
+    public faceList
 {
-	// Private data
-		//- number of used elements
-		label nElmts_;
-	
-	// Disallow bitwise assignment
-		void operator=(const faceListPMG&);
-	
-		faceListPMG(const faceListPMG&);
-	
-	// Disallow transfer from faceList
-		void transfer(faceList&);
-	
+    // Private data
+        //- number of used elements
+        label nElmts_;
+    
+    // Disallow bitwise assignment
+        void operator=(const faceListPMG&);
+    
+        faceListPMG(const faceListPMG&);
+    
+    // Disallow transfer from faceList
+        void transfer(faceList&);
+    
 public:
-	
-		TypeName("List");
-	
-	// Constructors
-		//- construct from IOobject
-		inline faceListPMG(const IOobject&);
+    
+        TypeName("List");
+    
+    // Constructors
+        //- construct from IOobject
+        inline faceListPMG(const IOobject&);
 
-		//- construct from IOobject and size
-		inline faceListPMG(const IOobject&, const label);
+        //- construct from IOobject and size
+        inline faceListPMG(const IOobject&, const label);
 
-		//- construct from IOobject and faceList
-		inline faceListPMG(const IOobject&, const faceList&);
+        //- construct from IOobject and faceList
+        inline faceListPMG(const IOobject&, const faceList&);
 
-	// Destructor
-		inline ~faceListPMG();
-			
-	// Member functions
-		//- return the number of used elements
-		inline label size() const;
+    // Destructor
+        inline ~faceListPMG();
+            
+    // Member functions
+        //- return the number of used elements
+        inline label size() const;
 
-		//- set the number of used elements
-		inline void setSize(const label nElmts);
+        //- set the number of used elements
+        inline void setSize(const label nElmts);
 
-		//- set the size to zero
-		inline void clear();
+        //- set the size to zero
+        inline void clear();
 
-		//- add a face at the end of the list
-		inline void append(const face&);
-		
-		//- return an element with bound checking
-		inline face& newElmt(const label);
+        //- add a face at the end of the list
+        inline void append(const face&);
+        
+        //- return an element with bound checking
+        inline face& newElmt(const label);
 
-		//- read/write the list onto disk
-		inline bool writeData(Ostream&) const;
+        //- read/write the list onto disk
+        inline bool writeData(Ostream&) const;
 
-	// Member operators
-		inline void operator=(const faceList&);
-	
-		friend inline Ostream& operator<<(Ostream&, const faceListPMG&);
-		
-		friend inline Istream& operator>>(Istream&, faceListPMG&);
+    // Member operators
+        inline void operator=(const faceList&);
+    
+        friend inline Ostream& operator<<(Ostream&, const faceListPMG&);
+        
+        friend inline Istream& operator>>(Istream&, faceListPMG&);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

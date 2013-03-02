@@ -27,7 +27,7 @@ Class
 
 Description
     Mesh smoothing using Knupp's metric. The metric is non-zero for inverted
-	tets only
+    tets only
 
 SourceFiles
     knuppMetric.C
@@ -57,8 +57,8 @@ class knuppMetric
     public simplexSmoother
 {
     // Private data
-	//- free vertex
-	point& p_;
+    //- free vertex
+    point& p_;
     
         //- normals of triangles forming the outer hull
         DynList<vector, 64> normals_;
@@ -79,15 +79,15 @@ class knuppMetric
 
     public:
 
-	knuppMetric(partTetMeshSimplex& simplex);
+    knuppMetric(partTetMeshSimplex& simplex);
 
-	// Destructor
-	~knuppMetric();
+    // Destructor
+    ~knuppMetric();
 
-	// Member functions
-	//- find the best position such that all tets making a simplex
-	//- have a positive volume
-	void optimizeNodePosition(const scalar tol = 0.001);
+    // Member functions
+    //- find the best position such that all tets making a simplex
+    //- have a positive volume
+    void optimizeNodePosition(const scalar tol = 0.001);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

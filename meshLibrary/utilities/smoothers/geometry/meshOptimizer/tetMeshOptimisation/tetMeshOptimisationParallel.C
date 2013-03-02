@@ -50,8 +50,8 @@ void tetMeshOptimisation::unifyNegativePoints(boolList& negativeNode) const
     const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
-	const labelListPMG& pAtParallelBoundaries =
-		tetMesh_.pointsAtProcessorBoundaries();
+    const labelListPMG& pAtParallelBoundaries =
+        tetMesh_.pointsAtProcessorBoundaries();
     
     std::map<label, labelListPMG> selectedNegativeNodes;
     forAll(neiProcs, procI)
@@ -97,8 +97,8 @@ void tetMeshOptimisation::exchangeData
     const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
-	const labelListPMG& pAtParallelBoundaries =
-		tetMesh_.pointsAtProcessorBoundaries();
+    const labelListPMG& pAtParallelBoundaries =
+        tetMesh_.pointsAtProcessorBoundaries();
     
     const LongList<point>& points = tetMesh_.points();
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
@@ -112,21 +112,21 @@ void tetMeshOptimisation::exchangeData
             std::make_pair(neiProcs[procI], LongList<parPartTet>())
         );
     
-	//- create storage in the m map
+    //- create storage in the m map
     m.clear();
-	forAll(pAtParallelBoundaries, i)
-	{
-		const label pI = pAtParallelBoundaries[i];
-		if( !(smoothVertex[pI] & partTetMesh::SMOOTH) )
-			continue;
+    forAll(pAtParallelBoundaries, i)
+    {
+        const label pI = pAtParallelBoundaries[i];
+        if( !(smoothVertex[pI] & partTetMesh::SMOOTH) )
+            continue;
         if( negativeNodePtr && !(*negativeNodePtr)[pI] )
             continue;
-		
-		m.insert(std::make_pair(pI, DynList<parPartTet>(12)));
-	}
-	
-	//- store local data into the maps
-	forAll(tets, tetI)
+        
+        m.insert(std::make_pair(pI, DynList<parPartTet>(12)));
+    }
+    
+    //- store local data into the maps
+    forAll(tets, tetI)
     {
         const partTet& tet = tets[tetI];
         
@@ -284,8 +284,8 @@ void tetMeshOptimisation::unifyCoordinatesParallel
     std::map<label, labelledPoint> parallelBndPoints;
     forAll(pAtParallelBoundaries, i)
     {
-		const label pI = pAtParallelBoundaries[i];
-		
+        const label pI = pAtParallelBoundaries[i];
+        
         if( !(smoothVertex[pI] & partTetMesh::PARALLELBOUNDARY) )
             continue;
         

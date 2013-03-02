@@ -27,7 +27,7 @@ Class
 
 Description
     Provides information regarding surface partitions on the surface
-	triangulation, and connectivity between various surface partitions.
+    triangulation, and connectivity between various surface partitions.
 
 SourceFiles
     triSurfaceCleanupDuplicatesDuplicates.C

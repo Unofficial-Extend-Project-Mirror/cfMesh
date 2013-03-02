@@ -49,53 +49,53 @@ class subdivisionTessellation
 : public tetTessellation
 {
     // Private member functions
-		//- mark all tetrahedra sharing edge e (used in addEdgeCentre)
+        //- mark all tetrahedra sharing edge e (used in addEdgeCentre)
         void treeSearch(const label elmtI, const edge& e);
-	
-		//- mark tetrahedron (used in addCentroid);
-		void treeSearch(const label elmtI);
-	
-		//- (used in addEdgeCentre);
-		void makeNewElementsBisect
-		(
-			const label elmtI,
-			const edge& e,
-			const label pI
-		);
-		
+    
+        //- mark tetrahedron (used in addCentroid);
+        void treeSearch(const label elmtI);
+    
+        //- (used in addEdgeCentre);
+        void makeNewElementsBisect
+        (
+            const label elmtI,
+            const edge& e,
+            const label pI
+        );
+        
 public:
 
     // Constructors
 
         //- Construct from list of points
-		subdivisionTessellation(const LongList<point>&);
+        subdivisionTessellation(const LongList<point>&);
 
-		//- Construct from triangulated surface
-		subdivisionTessellation(const triSurface& surf);
+        //- Construct from triangulated surface
+        subdivisionTessellation(const triSurface& surf);
 
-		//- Construct from boundBox
-		subdivisionTessellation(const boundBox& bb);
+        //- Construct from boundBox
+        subdivisionTessellation(const boundBox& bb);
 
     // Destructor
 
         ~subdivisionTessellation();
 
     // Member functions
-		//- this function is not implemented
-		bool addPoint(const label);
+        //- this function is not implemented
+        bool addPoint(const label);
 
-		//- create a new point from the centroid of the given element
-		//- and add it into the tessellation
-		void addCentroid(const label elmtI);
+        //- create a new point from the centroid of the given element
+        //- and add it into the tessellation
+        void addCentroid(const label elmtI);
 
-		//- this is not implemented
-		void addCircumCentre(const label);
-		
-		//- create a new point at the centre of the given edge of the element
-		//- and add it into the tessellation
-		void addEdgeCentre(const label elmtI, const direction eI); 
+        //- this is not implemented
+        void addCircumCentre(const label);
+        
+        //- create a new point at the centre of the given edge of the element
+        //- and add it into the tessellation
+        void addEdgeCentre(const label elmtI, const direction eI); 
 
-		//- check if all elements have positive volume
+        //- check if all elements have positive volume
         void checkTessellation() const;
 };
 

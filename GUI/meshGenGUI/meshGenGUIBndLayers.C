@@ -37,62 +37,62 @@ namespace Foam
 
 bool meshGenGUI::bndLayersEntryExist() const
 {
-	return meshDict_.found("boundaryLayers");
+    return meshDict_.found("boundaryLayers");
 }
 
 void meshGenGUI::addBndLayersPatches(const word& pName)
 {
-	if( bndLayersEntryExist() )
-	{
-		wordList pList(meshDict_.lookup("boundaryLayers"));
-		
-		const label size = pList.size();
-		pList.setSize(size + 1);
-		pList[size] = pName;
-		
-		meshDict_.remove("boundaryLayers");
-		meshDict_.add("boundaryLayers", pList);
-	}
-	else
-	{
-		wordList pList(1);
-		pList[0] = pName;
-		
-		meshDict_.add("boundaryLayers", pList);
-	}
+    if( bndLayersEntryExist() )
+    {
+        wordList pList(meshDict_.lookup("boundaryLayers"));
+        
+        const label size = pList.size();
+        pList.setSize(size + 1);
+        pList[size] = pName;
+        
+        meshDict_.remove("boundaryLayers");
+        meshDict_.add("boundaryLayers", pList);
+    }
+    else
+    {
+        wordList pList(1);
+        pList[0] = pName;
+        
+        meshDict_.add("boundaryLayers", pList);
+    }
 }
 
 void meshGenGUI::removeBndLayersPatches(const word& pName)
 {
-	if( bndLayersEntryExist() )
-	{
-		wordList pList(meshDict_.lookup("boundaryLayers"));
-		
-		label pos(-1);
-		forAll(pList, elI)
-			if( pList[elI] == pName )
-			{
-				pos = elI;
-				break;
-			}
-			
-		pList[pos] = pList[pList.size() - 1];
-		pList.setSize(pList.size() - 1);
-		
-		meshDict_.remove("boundaryLayers");
-		
-		if( pList.size() != 0 )
-			meshDict_.add("boundaryLayers", pList);
-	}
+    if( bndLayersEntryExist() )
+    {
+        wordList pList(meshDict_.lookup("boundaryLayers"));
+        
+        label pos(-1);
+        forAll(pList, elI)
+            if( pList[elI] == pName )
+            {
+                pos = elI;
+                break;
+            }
+            
+        pList[pos] = pList[pList.size() - 1];
+        pList.setSize(pList.size() - 1);
+        
+        meshDict_.remove("boundaryLayers");
+        
+        if( pList.size() != 0 )
+            meshDict_.add("boundaryLayers", pList);
+    }
 }
 
 wordList meshGenGUI::keepBndLayersPatches() const
 {
-	if( !bndLayersEntryExist() )
-		return wordList();
-	
-	wordList pNames(meshDict_.lookup("boundaryLayers"));
-	return pNames;
+    if( !bndLayersEntryExist() )
+        return wordList();
+    
+    wordList pNames(meshDict_.lookup("boundaryLayers"));
+    return pNames;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -230,7 +230,7 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
     clearOctreeFaces();
     clearAddressing();
     
-	Info << "Finished checking the surface of the selected boxes" << endl;
+    Info << "Finished checking the surface of the selected boxes" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

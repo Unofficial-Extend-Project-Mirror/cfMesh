@@ -43,18 +43,18 @@ namespace Foam
 // Construct from mesh, octree, regions for boundary vertices
 meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 (
-	polyMeshGen& mesh,
-	const meshOctree& octree
+    polyMeshGen& mesh,
+    const meshOctree& octree
 )
 :
-	mesh_(mesh),
-	meshOctree_(octree)
-{			
-	distributeBoundaryFaces();
+    mesh_(mesh),
+    meshOctree_(octree)
+{            
+    distributeBoundaryFaces();
     
     correctEdgesBetweenPatches featureEdges(mesh);
-	
-	remapBoundaryPoints();
+    
+    remapBoundaryPoints();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

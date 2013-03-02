@@ -44,7 +44,7 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     
 const meshSurfaceEngine& boundaryLayers::surfaceEngine() const
@@ -57,58 +57,58 @@ const meshSurfaceEngine& boundaryLayers::surfaceEngine() const
 
 void boundaryLayers::findPatchesToBeTreatedTogether()
 {
-	forAll(treatPatchesWithPatch_, patchI)
-		treatPatchesWithPatch_[patchI].append(patchI);
-	
-	const meshSurfaceEngine& mse = surfaceEngine();
-	
-	const VRWGraph& pPatches = mse.pointPatches();
-	const pointFieldPMG& points = mesh_.points();
-	const faceList::subList& bFaces = mse.boundaryFaces();
+    forAll(treatPatchesWithPatch_, patchI)
+        treatPatchesWithPatch_[patchI].append(patchI);
+    
+    const meshSurfaceEngine& mse = surfaceEngine();
+    
+    const VRWGraph& pPatches = mse.pointPatches();
+    const pointFieldPMG& points = mesh_.points();
+    const faceList::subList& bFaces = mse.boundaryFaces();
     const edgeList& edges = mse.edges();
-	const VRWGraph& eFaces = mse.edgeFaces();
-	const labelList& boundaryFacePatches = mse.boundaryFacePatches();
-	
-	//- patches must be treated together if there exist a corner where
-	//- more than three patches meet
+    const VRWGraph& eFaces = mse.edgeFaces();
+    const labelList& boundaryFacePatches = mse.boundaryFacePatches();
+    
+    //- patches must be treated together if there exist a corner where
+    //- more than three patches meet
     meshSurfacePartitioner mPart(mse);
     const labelHashSet& corners = mPart.corners();
-	forAllConstIter(labelHashSet, corners, it)
+    forAllConstIter(labelHashSet, corners, it)
     {
         const label bpI = it.key();
         
-		if( mPart.numberOfFeatureEdgesAtPoint(bpI) != 3 )
-		{
+        if( mPart.numberOfFeatureEdgesAtPoint(bpI) != 3 )
+        {
             labelHashSet commonPatches;
             DynList<label> allPatches;
             
-			forAllRow(pPatches, bpI, patchI)
-			{
+            forAllRow(pPatches, bpI, patchI)
+            {
                 const DynList<label>& tpwp =
                     treatPatchesWithPatch_[pPatches(bpI, patchI)];
                 
-				forAll(tpwp, pJ)
+                forAll(tpwp, pJ)
                 {
                     if( commonPatches.found(tpwp[pJ]) )
                         continue;
                     
                     commonPatches.insert(tpwp[pJ]);
-					allPatches.append(tpwp[pJ]);
+                    allPatches.append(tpwp[pJ]);
                 }
-			}
-			
-			forAllRow(pPatches, bpI, patchI)
-				treatPatchesWithPatch_[pPatches(bpI, patchI)] = allPatches;
-			
-			# ifdef DEBUGLayer
-			Info << "Corner " << bpI << " is shared by patches "
-				<< pPatches[bpI] << endl;
-			Info << "All patches " << allPatches << endl;
-			# endif
-		}
+            }
+            
+            forAllRow(pPatches, bpI, patchI)
+                treatPatchesWithPatch_[pPatches(bpI, patchI)] = allPatches;
+            
+            # ifdef DEBUGLayer
+            Info << "Corner " << bpI << " is shared by patches "
+                << pPatches[bpI] << endl;
+            Info << "All patches " << allPatches << endl;
+            # endif
+        }
     }
-	
-	//- patches must be treated together for concave geometries
+    
+    //- patches must be treated together for concave geometries
     //- edgeClassification map counts the number of convex and concave edges
     //- for a given patch. The first counts convex edges and the second counts
     //- concave ones. If the number of concave edges is of the considerable
@@ -118,8 +118,8 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     
     std::map<std::pair<label, label>, Pair<label> > edgeClassification;
     labelListPMG procEdges;
-	forAll(eFaces, eI)
-	{
+    forAll(eFaces, eI)
+    {
         if( eFaces.sizeOfRow(eI) != 2 )
         {
             procEdges.append(eI);
@@ -131,10 +131,10 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         if( invertedVertices.found(e[0]) || invertedVertices.found(e[1]) )
             continue;
         
-		const label patch0 = boundaryFacePatches[eFaces(eI, 0)];
-		const label patch1 = boundaryFacePatches[eFaces(eI, 1)];
-		if( patch0 != patch1 )
-		{
+        const label patch0 = boundaryFacePatches[eFaces(eI, 0)];
+        const label patch1 = boundaryFacePatches[eFaces(eI, 1)];
+        if( patch0 != patch1 )
+        {
             std::pair<label, label> pp
             (
                 Foam::min(patch0, patch1),
@@ -146,18 +146,18 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                     std::make_pair(pp, Pair<label>(0, 0))
                 );
             
-			const face& f1 = bFaces[eFaces(eI, 0)];
-			const face& f2 = bFaces[eFaces(eI, 1)];
-			if( !help::isSharedEdgeConvex(points, f1, f2) )
-			{
+            const face& f1 = bFaces[eFaces(eI, 0)];
+            const face& f2 = bFaces[eFaces(eI, 1)];
+            if( !help::isSharedEdgeConvex(points, f1, f2) )
+            {
                 ++edgeClassification[pp].second();
-			}
+            }
             else
             {
                 ++edgeClassification[pp].first();
             }
-		}
-	}
+        }
+    }
     
     if( Pstream::parRun() )
     {
@@ -411,8 +411,8 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 treatPatchesWithPatch_[patchJ].append(*iter);
         }
     }
-	
-	# ifdef DEBUGLayer
+    
+    # ifdef DEBUGLayer
     for(it=edgeClassification.begin();it!=edgeClassification.end();++it)
     {
         const std::pair<label, label>& edgePair = it->first;
@@ -421,46 +421,46 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
             << edgePair.second << " is " << nConvexAndConcave << endl;
     }
     
-	Info << "Patch names " << patchNames_ << endl;
-	Info << "Treat patches with patch " << treatPatchesWithPatch_ << endl;
-	# endif
+    Info << "Patch names " << patchNames_ << endl;
+    Info << "Treat patches with patch " << treatPatchesWithPatch_ << endl;
+    # endif
 }
 
 void boundaryLayers::addLayerForPatch(const label patchLabel)
 {
-	if( treatedPatch_[patchLabel] )
+    if( treatedPatch_[patchLabel] )
         return;
-	
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	
-	if( returnReduce(boundaries[patchLabel].patchSize(), sumOp<label>()) == 0 )
+    
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    
+    if( returnReduce(boundaries[patchLabel].patchSize(), sumOp<label>()) == 0 )
         return;
-	
-	boolList treatPatches(boundaries.size(), false);
-	if( patchWiseLayers_ )
-	{
-		forAll(treatPatchesWithPatch_[patchLabel], pI)
-			treatPatches[treatPatchesWithPatch_[patchLabel][pI]] = true;
-	}
-	else
-	{
-		forAll(treatedPatch_, patchI)
-			if( !treatedPatch_[patchI] )
-				treatPatches[patchI] = true;
-	}
-	
-	newLabelForVertex_.setSize(nPoints_);
-	newLabelForVertex_ = -1;
-	otherVrts_.clear();
-	patchKey_.clear();
-	
-	createNewVertices(treatPatches);
-	
-	createNewFacesAndCells(treatPatches);
-	
-	forAll(treatPatches, patchI)
-		if( treatPatches[patchI] )
-			treatedPatch_[patchI] = true;
+    
+    boolList treatPatches(boundaries.size(), false);
+    if( patchWiseLayers_ )
+    {
+        forAll(treatPatchesWithPatch_[patchLabel], pI)
+            treatPatches[treatPatchesWithPatch_[patchLabel][pI]] = true;
+    }
+    else
+    {
+        forAll(treatedPatch_, patchI)
+            if( !treatedPatch_[patchI] )
+                treatPatches[patchI] = true;
+    }
+    
+    newLabelForVertex_.setSize(nPoints_);
+    newLabelForVertex_ = -1;
+    otherVrts_.clear();
+    patchKey_.clear();
+    
+    createNewVertices(treatPatches);
+    
+    createNewFacesAndCells(treatPatches);
+    
+    forAll(treatPatches, patchI)
+        if( treatPatches[patchI] )
+            treatedPatch_[patchI] = true;
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -471,29 +471,29 @@ boundaryLayers::boundaryLayers
     polyMeshGen& mesh
 )
 :
-	mesh_(mesh),
+    mesh_(mesh),
     msePtr_(NULL),
-	patchWiseLayers_(true),
+    patchWiseLayers_(true),
     terminateLayersAtConcaveEdges_(false),
-	patchNames_(),
-	treatedPatch_(),
-	treatPatchesWithPatch_(),
-	newLabelForVertex_(),
-	otherVrts_(),
-	patchKey_(),
-	nPoints_(mesh.points().size())
+    patchNames_(),
+    treatedPatch_(),
+    treatPatchesWithPatch_(),
+    newLabelForVertex_(),
+    otherVrts_(),
+    patchKey_(),
+    nPoints_(mesh.points().size())
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	patchNames_.setSize(boundaries.size());
-	forAll(boundaries, patchI)
-		patchNames_[patchI] = boundaries[patchI].patchName();
-	
-	treatedPatch_.setSize(boundaries.size());
-	treatedPatch_ = false;
-	
-	treatPatchesWithPatch_.setSize(boundaries.size());
-	
-	findPatchesToBeTreatedTogether();
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    patchNames_.setSize(boundaries.size());
+    forAll(boundaries, patchI)
+        patchNames_[patchI] = boundaries[patchI].patchName();
+    
+    treatedPatch_.setSize(boundaries.size());
+    treatedPatch_ = false;
+    
+    treatPatchesWithPatch_.setSize(boundaries.size());
+    
+    findPatchesToBeTreatedTogether();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -510,47 +510,47 @@ boundaryLayers::~boundaryLayers()
 
 void boundaryLayers::addLayerForPatch(const word& patchName)
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	
-	forAll(boundaries, patchI)
-		if( boundaries[patchI].patchName() == patchName )
-			addLayerForPatch(patchI);
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    
+    forAll(boundaries, patchI)
+        if( boundaries[patchI].patchName() == patchName )
+            addLayerForPatch(patchI);
 }
-	
+    
 void boundaryLayers::createOTopologyLayers()
 {
-	patchWiseLayers_ = false;
+    patchWiseLayers_ = false;
 }
 
 void boundaryLayers::terminateLayersAtConcaveEdges()
 {
     terminateLayersAtConcaveEdges_ = true;
 }
-	
+    
 void boundaryLayers::addLayerForAllPatches()
 {
-	const PtrList<writePatch>& boundaries = mesh_.boundaries();
-	
-	if( !patchWiseLayers_ )
-	{
-		forAll(boundaries, patchI)
-			addLayerForPatch(patchI);
-	}
-	else
-	{
-		newLabelForVertex_.setSize(nPoints_);
-		newLabelForVertex_ = -1;
-		otherVrts_.clear();
-		patchKey_.clear();
-		
-		labelList treatedPatches(boundaries.size());
-		forAll(treatedPatches, i)
-			treatedPatches[i] = i;
-		
-		createNewVertices(treatedPatches);
+    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    
+    if( !patchWiseLayers_ )
+    {
+        forAll(boundaries, patchI)
+            addLayerForPatch(patchI);
+    }
+    else
+    {
+        newLabelForVertex_.setSize(nPoints_);
+        newLabelForVertex_ = -1;
+        otherVrts_.clear();
+        patchKey_.clear();
         
-		createLayerCells(treatedPatches);
-	}
+        labelList treatedPatches(boundaries.size());
+        forAll(treatedPatches, i)
+            treatedPatches[i] = i;
+        
+        createNewVertices(treatedPatches);
+        
+        createLayerCells(treatedPatches);
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

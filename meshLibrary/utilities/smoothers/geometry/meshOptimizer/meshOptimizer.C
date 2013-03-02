@@ -39,20 +39,20 @@ Description
 
 namespace Foam
 {
-	
+    
 // * * * * * * * * Private member functions * * * * * * * * * * * * * * * * * //
-	
+    
 const meshSurfaceEngine& meshOptimizer::meshSurface() const
 {
-	if( !msePtr_ )
-		msePtr_ = new meshSurfaceEngine(mesh_);
-	
-	return *msePtr_;
+    if( !msePtr_ )
+        msePtr_ = new meshSurfaceEngine(mesh_);
+    
+    return *msePtr_;
 }
 
 void meshOptimizer::clearSurface()
 {
-	deleteDemandDrivenData(msePtr_);
+    deleteDemandDrivenData(msePtr_);
 }
 
 label meshOptimizer::findBadFaces
@@ -138,15 +138,15 @@ label meshOptimizer::findLowQualityFaces
 // Construct from mesh
 meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 :
-	mesh_(mesh),
+    mesh_(mesh),
     vertexLocation_(mesh.points().size(), INSIDE),
-	msePtr_(NULL)
+    msePtr_(NULL)
 {
-	const meshSurfaceEngine& mse = meshSurface();
-	const labelList& bPoints = mse.boundaryPoints();
-	
+    const meshSurfaceEngine& mse = meshSurface();
+    const labelList& bPoints = mse.boundaryPoints();
+    
     //- mark boundary vertices
-	forAll(bPoints, bpI)
+    forAll(bPoints, bpI)
         vertexLocation_[bPoints[bpI]] = BOUNDARY;
     
     //- mark edge vertices
@@ -173,7 +173,7 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 
 meshOptimizer::~meshOptimizer()
 {
-	clearSurface();
+    clearSurface();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

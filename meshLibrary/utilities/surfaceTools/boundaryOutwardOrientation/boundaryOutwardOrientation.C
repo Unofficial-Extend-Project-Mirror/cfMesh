@@ -41,25 +41,25 @@ namespace Foam
 
 void boundaryOutwardOrientation::checkBoundaryOrientation()
 {
-	polyMeshGenModifier meshModifier_(mesh_);
-	faceListPMG& faces_ = meshModifier_.facesAccess();
-	const cellListPMG& cells_ = mesh_.cells();
-	const labelList& owner_ = mesh_.owner();
-	const labelList& neighbour_ = mesh_.neighbour();
-	
-	if( mesh_.boundaries().size() == 0 )
-	{
-		WarningIn
-		(
-			"void boundaryOutwardOrientation::checkBoundaryOrientation()"
-		) << "Boundary data is not yet calculated!! Cannot proceed!"
-			<< endl;
-	
-		return;
-	}
-	
-	const label nIntFaces_ = mesh_.nInternalFaces();
-	
+    polyMeshGenModifier meshModifier_(mesh_);
+    faceListPMG& faces_ = meshModifier_.facesAccess();
+    const cellListPMG& cells_ = mesh_.cells();
+    const labelList& owner_ = mesh_.owner();
+    const labelList& neighbour_ = mesh_.neighbour();
+    
+    if( mesh_.boundaries().size() == 0 )
+    {
+        WarningIn
+        (
+            "void boundaryOutwardOrientation::checkBoundaryOrientation()"
+        ) << "Boundary data is not yet calculated!! Cannot proceed!"
+            << endl;
+    
+        return;
+    }
+    
+    const label nIntFaces_ = mesh_.nInternalFaces();
+    
     for(register label faceI=nIntFaces_;faceI<faces_.size();faceI++)
     {
         const cell& c = cells_[owner_[faceI]];
@@ -92,11 +92,11 @@ void boundaryOutwardOrientation::checkBoundaryOrientation()
                 if( e.start() != -1 )
                 {
                     edge eOther(-1, -1);
-					const edgeList newBfEdges = newBf.edges();
-					forAll(newBfEdges, eJ)
-						if( newBfEdges[eJ] == e )
-							eOther = newBfEdges[eJ];
-				
+                    const edgeList newBfEdges = newBf.edges();
+                    forAll(newBfEdges, eJ)
+                        if( newBfEdges[eJ] == e )
+                            eOther = newBfEdges[eJ];
+                
                     if(
                         (
                             (owner_[c[fI]] == owner_[faceI] ) &&
@@ -124,12 +124,12 @@ void boundaryOutwardOrientation::checkBoundaryOrientation()
 
 boundaryOutwardOrientation::boundaryOutwardOrientation
 (
-	polyMeshGen& mesh
+    polyMeshGen& mesh
 )
     :
-	mesh_(mesh)
+    mesh_(mesh)
 {
-	checkBoundaryOrientation();
+    checkBoundaryOrientation();
 }
 
 boundaryOutwardOrientation::~boundaryOutwardOrientation()

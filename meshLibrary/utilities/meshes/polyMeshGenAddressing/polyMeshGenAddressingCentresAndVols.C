@@ -50,8 +50,8 @@ void polyMeshGenAddressing::calcCellCentresAndVols() const
             << "Cell centres or cell volumes already calculated"
             << abort(FatalError);
     }
-	
-	const cellListPMG& cells = mesh_.cells();
+    
+    const cellListPMG& cells = mesh_.cells();
 
     // set the accumulated cell centre to zero vector
     cellCentresPtr_ = new vectorField(cells.size());
@@ -75,7 +75,7 @@ void polyMeshGenAddressing::makeCellCentresAndVols
 {
     const labelList& own = mesh_.owner();
     const cellListPMG& cells = mesh_.cells();
-	const label nCells = cells.size();
+    const label nCells = cells.size();
     
     # pragma omp parallel for if( nCells > 1000 )
     for(label cellI=0;cellI<nCells;++cellI)

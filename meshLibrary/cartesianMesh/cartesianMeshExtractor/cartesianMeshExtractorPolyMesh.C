@@ -52,13 +52,13 @@ namespace Foam
 void cartesianMeshExtractor::createPolyMesh()
 {
     Info << "Creating polyMesh from octree" << endl;
-	
-	const meshOctree& octree = octreeCheck_.octree();
-	
+    
+    const meshOctree& octree = octreeCheck_.octree();
+    
     //- give labels to cubes which will be used as mesh cells
-	const List<direction>& cType = octreeCheck_.boxType();
-	
-	labelList& leafCellLabel = *leafCellLabelPtr_;
+    const List<direction>& cType = octreeCheck_.boxType();
+    
+    labelList& leafCellLabel = *leafCellLabelPtr_;
     label nCells(0);
     forAll(cType, leafI)
     {
@@ -74,12 +74,12 @@ void cartesianMeshExtractor::createPolyMesh()
         }
     }
 
-	//- access to mesh data
-	polyMeshGenModifier meshModifier(mesh_);
-	faceListPMG& faces = meshModifier.facesAccess();
-	cellListPMG& cells = meshModifier.cellsAccess();
-		
-	//- start creating octree mesh
+    //- access to mesh data
+    polyMeshGenModifier meshModifier(mesh_);
+    faceListPMG& faces = meshModifier.facesAccess();
+    cellListPMG& cells = meshModifier.cellsAccess();
+        
+    //- start creating octree mesh
     cells.setSize(nCells);
     List<direction> nFacesInCell(nCells, direction(0));
     label nFaces(0);
@@ -321,7 +321,7 @@ void cartesianMeshExtractor::createPolyMesh()
     
     vectorField closedness(cells.size(), vector::zero);
     const labelList& owner = mesh_.owner();
-	const labelList& neighbour = mesh_.neighbour();
+    const labelList& neighbour = mesh_.neighbour();
     forAll(owner, faceI)
         if( owner[faceI] == -1 )
         {
@@ -353,7 +353,7 @@ void cartesianMeshExtractor::createPolyMesh()
 
     # endif
 
-	meshModifier.reorderBoundaryFaces();
+    meshModifier.reorderBoundaryFaces();
     
     Info << "Finished creating polyMesh" << endl;
 }

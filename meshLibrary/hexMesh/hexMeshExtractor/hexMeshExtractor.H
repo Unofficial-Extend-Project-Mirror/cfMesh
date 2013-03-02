@@ -56,10 +56,10 @@ class hexMeshExtractor
     // Private data
         //- octree and addressing
         meshOctreeAddressing octreeAddressing_;
-	
+    
         //- reference to the mesh
         polyMeshGen& mesh_;
-	
+    
         //- centre node labels
         labelListPMG* centreNodeLabelPtr_;
     
@@ -75,7 +75,7 @@ class hexMeshExtractor
     
         //- classify octree points (CORNER, EDGECENTRE, FACECENTRE)
         void classifyOctreePoints();
-	
+    
         //- create mesh points and pointLeaves addressing
         void createPoints();
 
@@ -101,7 +101,7 @@ class hexMeshExtractor
             
                 //- const reference to the octree
                 const meshOctree& octree_;
-	
+    
                 //- centre node labels
                 const labelListPMG& centreNodeLabel_;
     
@@ -203,7 +203,7 @@ public:
 
     // Member Functions
 
-	void createMesh();
+    void createMesh();
 };
 
 

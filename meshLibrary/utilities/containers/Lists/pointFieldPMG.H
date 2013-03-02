@@ -27,7 +27,7 @@ Class
 
 Description
     This is a container with additional size to prevent re-allocation
-	every time it is resized
+    every time it is resized
 
 SourceFiles
     
@@ -50,63 +50,63 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class pointFieldPMG
-:	public regIOobject,
-	public pointField
+:    public regIOobject,
+    public pointField
 {
-	// Private data
-		//- number of used elements
-		label nElmts_;
-	
-	// Disallow bitwise assignment
-		void operator=(const pointFieldPMG&);
-	
-		pointFieldPMG(const pointFieldPMG&);
-	
-	// Disallow transfer from pointField
-		void transfer(pointField&);
-	
+    // Private data
+        //- number of used elements
+        label nElmts_;
+    
+    // Disallow bitwise assignment
+        void operator=(const pointFieldPMG&);
+    
+        pointFieldPMG(const pointFieldPMG&);
+    
+    // Disallow transfer from pointField
+        void transfer(pointField&);
+    
 public:
-	
-		TypeName("Field");
-	
-	// Constructors
-		//- construct from IOobject
-		inline pointFieldPMG(const IOobject&);
+    
+        TypeName("Field");
+    
+    // Constructors
+        //- construct from IOobject
+        inline pointFieldPMG(const IOobject&);
 
-		//- construct from IOobject and size
-		inline pointFieldPMG(const IOobject&, const label);
+        //- construct from IOobject and size
+        inline pointFieldPMG(const IOobject&, const label);
 
-		//- construct from IOobject and pointField
-		inline pointFieldPMG(const IOobject&, const pointField&);
+        //- construct from IOobject and pointField
+        inline pointFieldPMG(const IOobject&, const pointField&);
 
-	// Destructor
-		inline ~pointFieldPMG();
-			
-	// Member functions
-		//- return the number of used elements
-		inline label size() const;
+    // Destructor
+        inline ~pointFieldPMG();
+            
+    // Member functions
+        //- return the number of used elements
+        inline label size() const;
 
-		//- set the number of used elements
-		inline void setSize(const label nElmts);
+        //- set the number of used elements
+        inline void setSize(const label nElmts);
 
-		//- set the size to zero
-		inline void clear();
+        //- set the size to zero
+        inline void clear();
 
-		//- add a point at the end of the list
-		inline void append(const point&);
-		
-		//- return an element with bound checking
-		inline point& newElmt(const label);
+        //- add a point at the end of the list
+        inline void append(const point&);
+        
+        //- return an element with bound checking
+        inline point& newElmt(const label);
 
-		//- read/write the list onto disk
-		inline bool writeData(Ostream&) const;
+        //- read/write the list onto disk
+        inline bool writeData(Ostream&) const;
 
-	// Member operators
-		inline void operator=(const pointField&);
-	
-		friend inline Ostream& operator<<(Ostream&, const pointFieldPMG&);
-		
-		friend inline Istream& operator>>(Istream&, pointFieldPMG&);
+    // Member operators
+        inline void operator=(const pointField&);
+    
+        friend inline Ostream& operator<<(Ostream&, const pointFieldPMG&);
+        
+        friend inline Istream& operator>>(Istream&, pointFieldPMG&);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

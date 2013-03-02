@@ -27,8 +27,8 @@ Class
 
 Description
     This class is a modifier for VRWGraph which allows for multi-threaded
-	execution of most time-consuimg functions
-	
+    execution of most time-consuimg functions
+    
 SourceFiles
     VRWGraphSMPModifier.H
     VRWGraphSMPModifier.C
@@ -65,7 +65,7 @@ class VRWGraphSMPModifier
 
         //- Disallow bitwise assignment
         void operator=(const VRWGraphSMPModifier&);
-	
+    
 public:
 
     // Constructor
@@ -102,7 +102,7 @@ public:
         
         template<class ListType>
         void reverseAddressing(const ListType&, const VRWGraph&);
-		
+        
         //- optimize memory usage
         // this should be used once the graph will not be resized any more
         void optimizeMemoryUsage();

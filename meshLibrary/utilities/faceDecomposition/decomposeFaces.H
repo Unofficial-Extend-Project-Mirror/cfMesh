@@ -49,11 +49,11 @@ namespace Foam
 class decomposeFaces
 {
     // private data
-		//- reference to the mesh
-		polyMeshGen& mesh_;
-	
-		//- number of points
-		VRWGraph newFacesForFace_;
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+    
+        //- number of points
+        VRWGraph newFacesForFace_;
 
         //- disallows bitwise construct
         void operator=(const decomposeFaces&);
@@ -72,11 +72,11 @@ public:
         ~decomposeFaces();
 
     // Member functions
-		//- decompose selected faces into triangles using midnode subdivision
-		void decomposeMeshFaces(const boolList& decomposeFace);
+        //- decompose selected faces into triangles using midnode subdivision
+        void decomposeMeshFaces(const boolList& decomposeFace);
 
-		//- decompose internal faces containing concave nodes
-		void decomposeConcaveInternalFaces(const boolList& concaveVertex);
+        //- decompose internal faces containing concave nodes
+        void decomposeConcaveInternalFaces(const boolList& concaveVertex);
 };
 
 

@@ -55,14 +55,14 @@ class meshSurfaceEngine;
 class meshSurfaceEdgeExtractor
 {
     // Private data
-		//- mesh
-		polyMeshGen& mesh_;
-	
-		label nPoints_;
-	
-		boolList boundaryCell_;
-	
-		List<direction> nFacesInCell_;
+        //- mesh
+        polyMeshGen& mesh_;
+    
+        label nPoints_;
+    
+        boolList boundaryCell_;
+    
+        List<direction> nFacesInCell_;
 
         //- reference to the octree
         const meshOctree& meshOctree_;
@@ -71,14 +71,14 @@ class meshSurfaceEdgeExtractor
         VRWGraph pointRegions_;
 
     // Private member functions
-		//- remove old boundary faces
-		void removeOldBoundaryFaces();
-	
+        //- remove old boundary faces
+        void removeOldBoundaryFaces();
+    
         //- create vertices on surface edges
         void createEdgeVertices();
-	
-		//- create new boundary faces
-		void createBoundaryFaces();
+    
+        //- create new boundary faces
+        void createBoundaryFaces();
 
         //- Disallow default bitwise copy construct
         meshSurfaceEdgeExtractor(const meshSurfaceEdgeExtractor&);
@@ -93,9 +93,9 @@ public:
         //- Construct from mesh data
         meshSurfaceEdgeExtractor
         (
-			polyMeshGen& mesh,
+            polyMeshGen& mesh,
             const meshOctree& octree,
-			const labelList& pointRegion
+            const labelList& pointRegion
         );
 
     // Destructor
