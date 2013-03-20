@@ -104,7 +104,7 @@ const triSurf* triSurfaceDetectFeatureEdges::surfaceWithPatches
     detectedSurfaceRegions(facetsInPatch);
 
     //- create new list of boundary patches
-    List<labelledTri> newTriangles(facetInPatch_.size());
+    LongList<labelledTri> newTriangles(facetInPatch_.size());
     label counter(0);
     geometricSurfacePatchList newPatches(nPatches_);
 
@@ -147,33 +147,49 @@ const triSurf* triSurfaceDetectFeatureEdges::surfaceWithPatches
             newTriangles[counter++] = tria;
         }
 
-    //- update subsets
-    std::map<word, labelListPMG> newSubsets;
-
-    DynList<word> existingSubsets;
-    surf_.existingFaceSubsets(existingSubsets);
-
-    forAll(existingSubsets, subsetI)
-    {
-        const labelListPMG& subsetFacets =
-            surf_.facesInSubset(existingSubsets[subsetI]);
-
-        labelListPMG& newSubset = newSubsets[existingSubsets[subsetI]];
-        newSubset.setSize(subsetFacets.size());
-
-        forAll(subsetFacets, tI)
-            newSubset[tI] = newFacetLabel[subsetFacets[tI]];
-    }
-
-    //- create and return thr new surface mesh
+    //- create and return a new surface mesh
     triSurf* newSurfPtr =
         new triSurf
         (
             newTriangles,
             newPatches,
-            surf_.points(),
-            newSubsets
+            surf_.points()
         );
+
+    //- transfer facet subsets
+    DynList<label> subsetIDs;
+    surf_.facetSubsetIndices(subsetIDs);
+    forAll(subsetIDs, subsetI)
+    {
+        const word sName = surf_.facetSubsetName(subsetIDs[subsetI]);
+
+        const label newID = newSurfPtr->addFacetSubset(sName);
+
+        labelListPMG facetsInSubset;
+        surf_.facetsInSubset(subsetIDs[subsetI], facetsInSubset);
+
+        forAll(facetsInSubset, i)
+        {
+            const label fI = newFacetLabel[facetsInSubset[i]];
+
+            newSurfPtr->addFacetToSubset(newID, fI);
+        }
+    }
+
+    //- transfer point subsets
+    surf_.pointSubsetIndices(subsetIDs);
+    forAll(subsetIDs, subsetI)
+    {
+        const word sName = surf_.pointSubsetName(subsetIDs[subsetI]);
+
+        const label newID = newSurfPtr->addPointSubset(sName);
+
+        labelListPMG pointsInSubset;
+        surf_.pointsInSubset(subsetIDs[subsetI], pointsInSubset);
+
+        forAll(pointsInSubset, i)
+            newSurfPtr->addPointToSubset(newID, pointsInSubset[i]);
+    }
 
     return newSurfPtr;
 }

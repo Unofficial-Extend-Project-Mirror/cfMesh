@@ -27,7 +27,7 @@ Class
 
 Description
     A class for triangulated surface used in the meshing process.
-    It is derived from triSurface with some additional subsets.
+    It is derived from points and facets with some additional subsets.
     Subsets are vert useful for local mesh refinement.
 
 SourceFiles
@@ -38,7 +38,9 @@ SourceFiles
 #ifndef triSurf_H
 #define triSurf_H
 
-#include "triSurface.H"
+#include "triSurfPoints.H"
+#include "triSurfFacets.H"
+#include "triSurfAddressing.H"
 #include <map>
 #include "DynList.H"
 #include "labelListPMG.H"
@@ -48,44 +50,65 @@ SourceFiles
 namespace Foam
 {
 
+// Froward declarations
+class triSurfModifier;
+
 /*---------------------------------------------------------------------------*\
-                           Class triSurf Declaration
+                        Class triSurf Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurf
-: public triSurface
+:
+    public triSurfPoints,
+    public triSurfFacets,
+    public triSurfAddressing
 {
     // Private data
-        //- subsets of facets in the triangulation
-        std::map<word, labelListPMG> triSubsets_;
 
         //- groups of facets
         //- which can be visited over manifold edges
-        mutable label nFaceGroups_;
-        mutable labelListPMG* faceGroupPtr_;
+        //mutable label nFaceGroups_;
+        //mutable labelListPMG* faceGroupPtr_;
 
     // Private member functions
         //- calculate groups of facets
-        void calculateFaceGroups() const;
+        //void calculateFaceGroups() const;
+
+        void readFromSTL(const fileName&);
+        void writeToSTL(const fileName&) const;
+
+        void readFromSTLB(const fileName&);
+        void writeToSTLB(const fileName&) const;
+
+        void readFromFTR(const fileName&);
+        void writeToFTR(const fileName&) const;
+
+        inline LongList<labelledTri>& accessToFacets();
+        inline geometricSurfacePatchList& accessToPatches();
 
         //- Disallow default bitwise assignment
         void operator=(const triSurf&);
 
 public:
 
+    // Friend classes
+        friend class triSurfModifer;
+
     // Constructors
 
-        //- Construct from file name (uses extension to determine type)
-        triSurf(const fileName&);
+        //- Default construct
+        triSurf();
 
         //- Construct from parts
         triSurf
         (
-            const List<labelledTri>& triangles,
+            const LongList<labelledTri>& triangles,
             const geometricSurfacePatchList& patches,
-            const pointField& points,
-            std::map<word, labelListPMG>& faceSubsets
+            const pointField& points
         );
+
+        //- Read from file
+        triSurf(const fileName& fName);
 
     // Destructor
 
@@ -93,11 +116,11 @@ public:
 
 
     // Member Functions
-        //- read and write subset data
-        void readFaceSubsets(const fileName&);
-        void writeFaceSubsets(const fileName&) const;
+        //- read and write the surface
+        void readSurface(const fileName&);
+        void writeSurface(const fileName&) const;
 
-        //- returns the names of the existing subsets
+/*        //- returns the names of the existing subsets
         inline void existingFaceSubsets(DynList<word>&) const;
 
         //- return facets in subset
@@ -116,6 +139,7 @@ public:
 
         //- groups assigned to the surface facets
         inline const labelListPMG& faceGroups() const;
+        */
 };
 
 

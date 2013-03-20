@@ -25,6 +25,9 @@ hexHelpers = utilities/hexahedra/hexHelpers
 intersectionTools = utilities/intersectionTools
 findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
 
+nonManifoldMeshing = utilities/nonManifoldMeshing
+findNonManifoldInterfaces = $(nonManifoldMeshing)/findNonManifoldInterfaces
+
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
@@ -182,10 +185,16 @@ $(partTetMesh)/partTetMeshParallelAddressing.C
 $(partTetMesh)/partTetMeshSimplex.C
 
 $(triSurf)/triSurf.C
+$(triSurf)/triSurfPoints.C
+$(triSurf)/triSurfFacets.C
+$(triSurf)/triSurfAddressing.C
+$(triSurf)/triSurfModifier.C
 
 $(hexHelpers)/hexHelpers.C
 
 $(findCellsIntersectingSurface)/findCellsIntersectingSurface.C
+
+$(findNonManifoldInterfaces)/findNonManifoldInterfaces.C
 
 $(tetrahedra)/tessellationElement.C
 $(tetrahedra)/tetTessellation.C

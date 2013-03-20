@@ -341,9 +341,11 @@ void meshOctreeAddressing::findUsedBoxes() const
             //- remove facets in subsets
             forAllConstIter(HashSet<word>, patchesToRemove, it)
             {
-                if( ts.doesFaceSubsetExist(it.key()) )
+                const label subsetID = ts.facetSubsetIndex(it.key());
+                if( subsetID >= 0 )
                 {
-                    const labelListPMG& facets = ts.facesInSubset(it.key());
+                    labelListPMG facets;
+                    ts.facetsInSubset(subsetID, facets);
 
                     forAll(facets, i)
                         removeFacets[facets[i]] = true;
@@ -392,9 +394,12 @@ void meshOctreeAddressing::findUsedBoxes() const
         //- remove facets in subsets
         forAllConstIter(wordHashSet, patchesToKeep, it)
         {
-            if( ts.doesFaceSubsetExist(it.key()) )
+            const label subsetID = ts.facetSubsetIndex(it.key());
+
+            if( subsetID >= 0 )
             {
-                const labelListPMG& facets = ts.facesInSubset(it.key());
+                labelListPMG facets;
+                ts.facetsInSubset(subsetID, facets);
 
                 forAll(facets, i)
                     keepFacets[facets[i]] = true;

@@ -71,18 +71,20 @@ int main(int argc, char *argv[])
     if( Pstream::parRun() )
         surfaceFile = ".."/surfaceFile;
 
+    Info << "Reading surface from file " << surfaceFile << endl;
     triSurf surf(runTime.path()/surfaceFile);
 
-    if( meshDict.found("subsetFileName") )
+/*    if( meshDict.found("subsetFileName") )
     {
         fileName subsetFileName = meshDict.lookup("subsetFileName");
         if( Pstream::parRun() )
             subsetFileName = ".."/subsetFileName;
         surf.readFaceSubsets(runTime.path()/subsetFileName);
     }
+*/
 
-    surf.edgeFaces();
-    surf.faceEdges();
+    surf.edgeFacets();
+    surf.facetEdges();
 
     const scalar startTime = runTime.elapsedClockTime();
 

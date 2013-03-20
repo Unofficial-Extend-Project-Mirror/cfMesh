@@ -37,7 +37,7 @@ SourceFiles
 #ifndef triSurfaceCurvatureEstimator_H
 #define triSurfaceCurvatureEstimator_H
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "FRWGraph.H"
 #include "DynList.H"
 
@@ -54,7 +54,7 @@ class triSurfaceCurvatureEstimator
 {
     // Private data
         //- reference to triSurface
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- curvature of points at feature edges
         scalarField edgePointCurvature_;
@@ -95,7 +95,7 @@ public:
     // Constructors
 
         //- Construct from triSurface
-        triSurfaceCurvatureEstimator(const triSurface& surface);
+        triSurfaceCurvatureEstimator(const triSurf& surface);
 
     // Destructor
 

@@ -37,7 +37,7 @@ SourceFiles
 #define boundaryFacesGenerator_H
 
 #include "polyMeshGenModifier.H"
-#include "triSurface.H"
+#include "triSurf.H"
 #include "DynList.H"
 #include "labelListPMG.H"
 
@@ -52,16 +52,16 @@ class boundaryFacesGenerator
 {
     // private data
         //- triangulated surface
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- mesh data
         polyMeshGen& mesh_;
-    
+
         //- helpers
         List<direction>& nFacesInCell_;
         const boolList& boundaryCell_;
         VRWGraph& pointRegions_;
-    
+
         label& nPoints_;
         const label nIntFaces_;
 
@@ -71,7 +71,7 @@ class boundaryFacesGenerator
         labelListPMG boundaryPatches_;
         bool hasFacesInDefaultPatch_;
         label defaultPatchID_;
-    
+
         //- surface corners
         DynList<label> surfaceCorners_;
         DynList< DynList<label> > cornersPatches_;
@@ -82,10 +82,10 @@ class boundaryFacesGenerator
 
         //- find patches for a given cell
         void determineCellPatches(const label, DynList<label>&);
-        
+
         //- find boundary chains for the given cell
         void createBoundaryChainsForCell(const label, labelListList&);
-        
+
         void createFacesForChain
         (
             const labelList& chainVertices,
@@ -108,10 +108,10 @@ class boundaryFacesGenerator
         void createBoundaryFacesForCell(const label);
 
         void createBoundaryFaces();
-        
+
         //- store boundary faces into the mesh
         void storeBoundaryFaces();
-        
+
         //- find surface corners
         void createSurfaceCornersAndPatches();
 
@@ -134,7 +134,7 @@ public:
             const label nIntFaces,
             const boolList& boundaryCell,
             VRWGraph& pointPatches,
-            const triSurface& surface
+            const triSurf& surface
         );
 
         //- Destructor

@@ -457,7 +457,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
     //- triangles in different patches
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
-    const triSurface& surface = octree.surface();
+    const triSurf& surface = octree.surface();
     DynList<label> neighbours(60);
 
     boolList checkedPatches(leaves.size(), false);

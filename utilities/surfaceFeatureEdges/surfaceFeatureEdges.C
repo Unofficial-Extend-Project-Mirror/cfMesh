@@ -33,6 +33,7 @@ Description
 #include "triSurf.H"
 #include "OFstream.H"
 #include "OSspecific.H"
+#include "demandDrivenData.H"
 #include <cstdlib>
 #include <sstream>
 
@@ -48,7 +49,6 @@ int main(int argc, char *argv[])
     argList::validArgs.clear();
     argList::validArgs.append("input surface file");
     argList::validArgs.append("output surface file");
-    argList::validOptions.insert("subsets", "fileName");
     argList::validOptions.insert("angle", "scalar");
     argList args(argc, argv);
 
@@ -74,31 +74,14 @@ int main(int argc, char *argv[])
         Info << "Using 45 deg as default angle!" << endl;
     }
 
-    fileName setFile("");
-    if( args.options().found("subsets") )
-    {
-        setFile = args.options()["subsets"];
-    }
-
     triSurf originalSurface(inFileName);
-    if( setFile != "" )
-    {
-        Info << "Reading subset file " << setFile << endl;
-        originalSurface.readFaceSubsets(setFile);
-    }
 
     triSurfaceDetectFeatureEdges edgeDetector(originalSurface, tol);
 
     const triSurf* newSurfPtr = edgeDetector.surfaceWithPatches();
 
     Info << "Writing : " << outFileName << endl;
-    newSurfPtr->write(outFileName);
-    if( setFile != "" )
-    {
-        fileName newSetFile = outFileName.lessExt()+'.'+setFile.ext();
-        Info << "Writting renumbered sets into " << newSetFile << endl;
-        newSurfPtr->writeFaceSubsets(newSetFile);
-    }
+    newSurfPtr->writeSurface(outFileName);
 
     deleteDemandDrivenData(newSurfPtr);
 

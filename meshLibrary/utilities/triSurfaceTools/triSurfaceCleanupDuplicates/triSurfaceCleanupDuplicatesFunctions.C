@@ -27,6 +27,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "triSurfaceCleanupDuplicates.H"
+#include "triSurfModifier.H"
 #include "meshOctree.H"
 #include "demandDrivenData.H"
 
@@ -44,7 +45,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 {
     labelListPMG newTriangleLabel(surf_.size(), -1);
 
-    const labelListList& pointTriangles = surf_.pointFaces();
+    const VRWGraph& pointTriangles = surf_.pointFacets();
 
     //- check if there exist duplicate triangles
     label counter(0);
@@ -61,7 +62,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 
         forAll(pointTriangles[tri[0]], ptI)
         {
-            const label triJ = pointTriangles[tri[0]][ptI];
+            const label triJ = pointTriangles(tri[0], ptI);
 
             if( triJ <= triI )
                 continue;
@@ -84,7 +85,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
     Info << "New number of triangles " << counter << endl;
 
     //- create new list of triangles and store it in the surface mesh
-    List<labelledTri> newTriangles(counter);
+    LongList<labelledTri> newTriangles(counter);
 
     forAll(newTriangleLabel, triI)
     {
@@ -93,14 +94,8 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 
     updateTriangleLabels(newTriangleLabel);
 
-    triSurface newSurf
-    (
-        newTriangles,
-        surf_.patches(),
-        surf_.points()
-    );
-
-    const_cast<triSurface&>(static_cast<const triSurface&>(surf_)) = newSurf;
+    triSurfModifier(surf_).facetsAccess().transfer(newTriangles);
+    surf_.updateFacetsSubsets(newTriangleLabel);
 
     return true;
 }
@@ -108,7 +103,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 {
     pointField& pts = const_cast<pointField&>(surf_.points());
-    labelListPMG newPointLabel(surf_.localPoints().size());
+    labelListPMG newPointLabel(surf_.nPoints());
     bool foundDuplicates(false);
 
     # pragma omp parallel
@@ -170,9 +165,6 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
     if( !foundDuplicates )
         return false;
 
-    List<labelledTri>& triangles =
-        const_cast<List<labelledTri>&>(surf_.localFaces());
-
     //- remove vertices and update node labels
     label counter(0);
     forAll(pts, pI)
@@ -194,6 +186,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
     pts.setSize(counter);
 
     //- remove triangles containing duplicate points
+    LongList<labelledTri> newTriangles(surf_.facets());
     labelListPMG newTriangleLabel(surf_.size(), -1);
 
     counter = 0;
@@ -219,24 +212,17 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
         if( store )
         {
-            triangles[counter] = newTri;
+            newTriangles[counter] = newTri;
             newTriangleLabel[triI] = counter;
             ++counter;
         }
     }
 
-    triangles.setSize(counter);
+    newTriangles.setSize(counter);
 
-    updateTriangleLabels(newTriangleLabel);
-
-    triSurface newSurf
-    (
-        triangles,
-        surf_.patches(),
-        pts
-    );
-
-    const_cast<triSurface&>(static_cast<const triSurface&>(surf_)) = newSurf;
+    //- update the surface
+    triSurfModifier(surf_).facetsAccess().transfer(newTriangles);
+    surf_.updateFacetsSubsets(newTriangleLabel);
 
     return true;
 }

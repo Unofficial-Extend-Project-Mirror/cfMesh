@@ -1,6 +1,6 @@
 // Info << "Face intersects a vertex. This is tricky" << endl;
     const point& p = points[faces[searchTri][eI]];
-    const labelList& pf = surface_.pointFaces()[faces[searchTri][eI]];
+    const constRow pf = surface_.pointFacets()[faces[searchTri][eI]];
 
     DynList<label> patches;
     patches.append(searchTri);
@@ -11,14 +11,16 @@
         if( pf[pfI] != searchTri )
         {
             bool store(true);
-            
+
             forAll(patches, patchI)
                 if(
                     faces[pf[pfI]].region() ==
                     faces[patches[patchI]].region()
-                ) store = false;
-            
-            if( store ) patches.append(pf[pfI]);
+                )
+                    store = false;
+
+            if( store )
+                patches.append(pf[pfI]);
         }
 
     bool foundTri(false);
@@ -96,7 +98,7 @@
                                     neighbour = false;
                                     break;
                                 }
-                            
+
                             if( !neighbour ) break;
                         }
                     }

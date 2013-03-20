@@ -46,9 +46,9 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
 
     const scalar cosTol = Foam::cos(tol_);
 
-    const vectorField& normals = surf_.faceNormals();
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const vectorField& normals = surf_.facetNormals();
+    const VRWGraph& faceEdges = surf_.facetEdges();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     forAll(planarRegion_, triI)
     {
@@ -68,19 +68,16 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
         {
             const label fLabel = front.removeLastElement();
 
-            const labelList& fEdges = faceEdges[fLabel];
-            forAll(fEdges, feI)
+            forAllRow(faceEdges, fLabel, feI)
             {
-                const label edgeI = fEdges[feI];
+                const label edgeI = faceEdges(fLabel, feI);
 
-                const labelList& eFaces = edgeFaces[edgeI];
-
-                if( eFaces.size() != 2 )
+                if( edgeFaces.sizeOfRow(edgeI) != 2 )
                     continue;
 
-                forAll(eFaces, efI)
+                forAllRow(edgeFaces, edgeI, efI)
                 {
-                    const label fNei = eFaces[efI];
+                    const label fNei = edgeFaces(edgeI, efI);
 
                     if( planarRegion_[fNei] != -1 )
                         continue;
@@ -180,11 +177,11 @@ void triSurfaceDetectPlanarRegions::detectedRegions(const word prefix) const
     for(label regionI=0;regionI<nRegions_;++regionI)
     {
         const word subsetName = prefix+help::scalarToText(regionI);
-        const_cast<triSurf&>(surf_).addFacetsToSubset
-        (
-            subsetName,
-            facetsInRegion[regionI]
-        );
+
+        triSurf& surf = const_cast<triSurf&>(surf_);
+        const label subsetID = surf.addFacetSubset(subsetName);
+        forAll(facetsInRegion[regionI], fI)
+            surf.addFacetToSubset(subsetID, facetsInRegion[regionI][fI]);
     }
 }
 

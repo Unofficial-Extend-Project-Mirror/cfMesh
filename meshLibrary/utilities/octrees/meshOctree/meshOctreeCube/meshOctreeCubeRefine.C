@@ -28,6 +28,7 @@ Description
 
 #include "meshOctreeCube.H"
 #include "VRWGraph.H"
+#include "triSurf.H"
 
 #include <omp.h>
 
@@ -42,13 +43,13 @@ namespace Foam
 
 void meshOctreeCube::findContainedEdges
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& rootBox
 )
 {
-    const labelListList& faceEdges = surface.faceEdges();
-    const labelListList& edgeFaces = surface.edgeFaces();
-    const edgeList& edges = surface.edges();
+    const VRWGraph& faceEdges = surface.facetEdges();
+    const VRWGraph& edgeFaces = surface.edgeFacets();
+    const edgeListPMG& edges = surface.edges();
     const pointField& points = surface.points();
 
     const VRWGraph& containedElements = activeSlotPtr_->containedTriangles_;
@@ -58,26 +59,30 @@ void meshOctreeCube::findContainedEdges
     labelHashSet addEdge;
     forAllRow(containedElements, containedElementsLabel_, tI)
     {
-        const labelList& fEdges =
-            faceEdges[containedElements(containedElementsLabel_, tI)];
-        forAll(fEdges, feI)
+        const label facetI = containedElements(containedElementsLabel_, tI);
+
+        forAllRow(faceEdges, facetI, feI)
         {
-            if( addEdge.found(fEdges[feI]) )
+            const label edgeI = faceEdges(facetI, feI);
+
+            if( addEdge.found(edgeI) )
                 continue;
 
-            const labelList& eFaces = edgeFaces[fEdges[feI]];
-            if( eFaces.size() != 2 )
+            if( edgeFaces.sizeOfRow(edgeI) != 2 )
                 continue;
 
-            if( surface[eFaces[0]].region() != surface[eFaces[1]].region() )
+            if(
+                surface[edgeFaces(edgeI, 0)].region() !=
+                surface[edgeFaces(edgeI, 1)].region()
+            )
             {
-                const edge& edg = edges[fEdges[feI]];
+                const edge& edg = edges[edgeI];
                 const point& s = points[edg.start()];
                 const point& e = points[edg.end()];
                 if( intersectsLine(rootBox, s, e) )
                 {
-                    addEdge.insert(fEdges[feI]);
-                    addedEdges.append(fEdges[feI]);
+                    addEdge.insert(edgeI);
+                    addedEdges.append(edgeI);
                 }
             }
         }
@@ -94,7 +99,7 @@ void meshOctreeCube::findContainedEdges
 
 void meshOctreeCube::refineCube
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& rootBox,
     meshOctreeSlot* slotPtr
 )
@@ -211,7 +216,7 @@ void meshOctreeCube::refineCube
 
 void meshOctreeCube::refineMissingCube
 (
-    const triSurface& ts,
+    const triSurf& ts,
     const boundBox& rootBox,
     const label scI,
     meshOctreeSlot* slotPtr

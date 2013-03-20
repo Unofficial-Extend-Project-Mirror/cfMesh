@@ -64,7 +64,7 @@ void hexMeshGenerator::generateOctree()
 {
     if( !octreePtr_ )
         octreePtr_ = new meshOctree(*surfacePtr_);
-    
+
     meshOctreeCreator creator(*octreePtr_, meshDict_);
     creator.activateHexRefinement();
     creator.createOctreeBoxes();
@@ -100,10 +100,10 @@ void hexMeshGenerator::surfacePreparation()
         checkIrregularSurfaceConnections checkConnections(mesh_);
         if( checkConnections.checkAndFixIrregularConnections() )
             changed = true;
-        
+
         if( checkNonMappableCellConnections(mesh_).removeCells() )
             changed = true;
-        
+
         if( checkCellConnectionsOverFaces(mesh_).checkCellGroups() )
             changed = true;
     } while( changed );
@@ -118,7 +118,7 @@ void hexMeshGenerator::surfacePreparation()
     //::exit(EXIT_FAILURE);
     # endif
 }
-        
+
 void hexMeshGenerator::mapMeshToSurface()
 {
     //- calculate mesh surface
@@ -152,12 +152,12 @@ void hexMeshGenerator::mapMeshToSurface()
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
-    
+
     deleteDemandDrivenData(msePtr);
 
     //- extract edges and corners
     meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_);
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGflma
@@ -173,7 +173,7 @@ void hexMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGflma
@@ -183,15 +183,15 @@ void hexMeshGenerator::optimiseMeshSurface()
     #endif
     # endif
 }
-    
+
 void hexMeshGenerator::generateBoundaryLayers()
 {
     boundaryLayers bl(mesh_);
-    
+
     if( meshDict_.found("boundaryLayers") )
     {
         wordList createLayers(meshDict_.lookup("boundaryLayers"));
-        
+
         forAll(createLayers, patchI)
             bl.addLayerForPatch(createLayers[patchI]);
     }
@@ -210,7 +210,7 @@ void hexMeshGenerator::generateBoundaryLayers()
     mesh_.write();
     # endif
 }
-        
+
 void hexMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
@@ -221,7 +221,7 @@ void hexMeshGenerator::optimiseFinalMesh()
     deleteDemandDrivenData(octreePtr_);
 
     optimizer.optimizeMeshFV();
-    
+
     # ifdef DEBUG
     # ifdef DEBUGflma
     writeMeshFLMA(mesh_,"optimisedMesh");
@@ -234,7 +234,7 @@ void hexMeshGenerator::optimiseFinalMesh()
 void hexMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-    
+
     # ifdef DEBUG
     # ifdef DEBUGflma
     writeMeshFLMA(mesh_,"renamedPatchesMesh");
@@ -247,7 +247,7 @@ void hexMeshGenerator::replaceBoundaries()
 void hexMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-    
+
     # ifdef DEBUG
     # ifdef DEBUGflma
     writeMeshFLMA(mesh_,"renumberedMesh");
@@ -266,7 +266,7 @@ void hexMeshGenerator::generateMesh()
     mapMeshToSurface();
 
     optimiseMeshSurface();
-    
+
     generateBoundaryLayers();
 
     optimiseFinalMesh();
@@ -304,22 +304,22 @@ hexMeshGenerator::hexMeshGenerator
     {
         FatalError << "Cannot run in parallel" << exit(FatalError);
     }
-    
+
     if( true )
         checkMeshDict cmd(meshDict_);
-    
+
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
-    
-    if( meshDict_.found("subsetFileName") )
-    {
-        const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-        surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
-    }
-    
+
+//     if( meshDict_.found("subsetFileName") )
+//     {
+//         const fileName subsetFileName = meshDict_.lookup("subsetFileName");
+//         surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
+//     }
+
     generateOctree();
-    
+
     generateMesh();
 }
 

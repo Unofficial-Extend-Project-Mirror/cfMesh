@@ -44,7 +44,7 @@ triSurfaceCleanupDuplicates::triSurfaceCleanupDuplicates
 )
 :
     tolerance_(tol),
-    surf_(octree.surface()),
+    surf_(const_cast<triSurf&>(octree.surface())),
     octree_(octree),
     newTriangleLabel_(),
     done_(false)

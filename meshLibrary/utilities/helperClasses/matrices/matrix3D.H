@@ -43,7 +43,7 @@ SourceFiles
 
 namespace Foam
 {
-    
+
 /*---------------------------------------------------------------------------*\
                            Class matrix3D Declaration
 \*---------------------------------------------------------------------------*/
@@ -52,12 +52,12 @@ class matrix3D
 : public FixedList<FixedList<scalar, 3>, 3>
 {
     // Private members
-        mutable scalar det_;
-        mutable bool calculatedDet_;
-    
+        scalar det_;
+        bool calculatedDet_;
+
     // Private member functions
         //- calculate matrix determinant
-        inline void calculateDeterminant() const;
+        inline void calculateDeterminant();
 
 public:
 
@@ -73,25 +73,25 @@ public:
 
     // Member functions
         //- return matrix determinant
-        inline scalar determinant() const;
+        inline scalar determinant();
 
         //- return inverse matrix
-        inline matrix3D inverse() const;
+        inline matrix3D inverse();
 
         //- find the solution of the system with the given rhs
         inline FixedList<scalar, 3> solve
         (
             const FixedList<scalar, 3>& source
-        ) const;
+        );
 
         //- return the first component of the solution vector
-        inline scalar solveFirst(const FixedList<scalar, 3>& source) const;
-        
+        inline scalar solveFirst(const FixedList<scalar, 3>& source);
+
         //- return the second component of the solution vector
-        inline scalar solveSecond(const FixedList<scalar, 3>& source) const;
-        
+        inline scalar solveSecond(const FixedList<scalar, 3>& source);
+
         //- return the third component of the solution vector
-        inline scalar solveThird(const FixedList<scalar, 3>& source) const;
+        inline scalar solveThird(const FixedList<scalar, 3>& source);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

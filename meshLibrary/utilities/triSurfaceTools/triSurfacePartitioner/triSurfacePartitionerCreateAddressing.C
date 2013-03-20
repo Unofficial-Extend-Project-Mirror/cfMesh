@@ -29,6 +29,9 @@ Description
 #include "triSurfacePartitioner.H"
 #include "demandDrivenData.H"
 #include "labelListPMG.H"
+#include "boolList.H"
+
+#include <omp.h>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -40,33 +43,32 @@ namespace Foam
 void triSurfacePartitioner::calculatePartitionAddressing()
 {
     calculateCornersAndAddressing();
-    
-    calculatePartitionPartitions();
-    
-    calculateEdgePartitions();
-        
-    calculatePartitionsToEdgePartitions();
-    
-    calculateEdgePartitionsToCorners();
 
+    calculatePartitionPartitions();
+
+    calculateEdgePartitions();
+
+    calculatePartitionsToEdgePartitions();
+
+    calculateEdgePartitionsToCorners();
 }
-    
+
 void triSurfacePartitioner::calculateCornersAndAddressing()
 {
-    const labelListList& pointFaces = surface_.pointFaces();
-    const edgeList& edges = surface_.edges();
-    const labelListList& edgeFaces = surface_.edgeFaces();
-    
+    const VRWGraph& pointFaces = surface_.pointFacets();
+    const edgeListPMG& edges = surface_.edges();
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
+
     //- find the number of feature edges connected to each surface node
     List<direction> nEdgesAtNode(surface_.points().size(), direction(0));
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces[eI].size() != 2 )
+        if( edgeFaces.sizeOfRow(eI) != 2 )
             continue;
-        
-        const label sPatch = surface_[edgeFaces[eI][0]].region();
-        const label ePatch = surface_[edgeFaces[eI][1]].region();
-        
+
+        const label sPatch = surface_[edgeFaces(eI, 0)].region();
+        const label ePatch = surface_[edgeFaces(eI, 1)].region();
+
         if( sPatch != ePatch )
         {
             const edge& e = edges[eI];
@@ -74,7 +76,7 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
             ++nEdgesAtNode[e.end()];
         }
     }
-    
+
     //- count the number of feature edges connected to each surface point
     //- corners must have 3 or more edges attached to them
     label nCorners(0);
@@ -82,48 +84,46 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
     {
         if( nEdgesAtNode[pI] < direction(3) )
             continue;
-        
+
         ++nCorners;
     }
-    
+
     corners_.setSize(nCorners);
     cornerPatches_.setSize(nCorners);
     nCorners = 0;
-    
+
     //- store corner data
     DynList<label> patches(10);
     forAll(pointFaces, pointI)
     {
         if( nEdgesAtNode[pointI] < direction(3) )
             continue;
-        
-        const labelList& pf = pointFaces[pointI];
-        
+
         patches.clear();
-        forAll(pf, pfI)
-            patches.appendIfNotIn(surface_[pf[pfI]].region());
-        
+        forAllRow(pointFaces, pointI, pfI)
+            patches.appendIfNotIn(surface_[pointFaces(pointI, pfI)].region());
+
         corners_[nCorners] = pointI;
         cornerPatches_[nCorners] = patches;
         ++nCorners;
     }
 }
-    
+
 void triSurfacePartitioner::calculatePartitionPartitions()
 {
-    const labelListList& edgeFaces = surface_.edgeFaces();
-    
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
+
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces[eI].size() != 2 )
+        if( edgeFaces.sizeOfRow(eI) != 2 )
         {
             Warning << "Surface is not a manifold!!" << endl;
             continue;
         }
-        
-        const label sPatch = surface_[edgeFaces[eI][0]].region();
-        const label ePatch = surface_[edgeFaces[eI][1]].region();
-        
+
+        const label sPatch = surface_[edgeFaces(eI, 0)].region();
+        const label ePatch = surface_[edgeFaces(eI, 1)].region();
+
         if( sPatch != ePatch )
         {
             partitionPartitions_[sPatch].insert(ePatch);
@@ -134,60 +134,59 @@ void triSurfacePartitioner::calculatePartitionPartitions()
 
 void triSurfacePartitioner::calculateEdgePartitions()
 {
-    const edgeList& edges = surface_.edges();
-    const labelListList& pointEdges = surface_.pointEdges();
-    const labelListList& edgeFaces = surface_.edgeFaces();
-    
+    const edgeListPMG& edges = surface_.edges();
+    const VRWGraph& pointEdges = surface_.pointEdges();
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
+
     //- make all feature edges
     boolList featureEdge(edgeFaces.size(), false);
-    DynList<label> parts(10);
+
+    # pragma omp parallel for schedule(dynamic, 40)
     forAll(edgeFaces, eI)
     {
-        const labelList& eFaces = edgeFaces[eI];
-        
-        parts.clear();
-        forAll(eFaces, efI)
-            parts.appendIfNotIn(surface_[eFaces[efI]].region());
-        
+        DynList<label> parts;
+        forAllRow(edgeFaces, eI, efI)
+            parts.appendIfNotIn(surface_[edgeFaces(eI, efI)].region());
+
         if( parts.size() > 1 )
             featureEdge[eI] = true;
     }
-    
+
     //- create a set containing corners for fast searching
     labelHashSet corners;
     forAll(corners_, i)
         corners.insert(corners_[i]);
-    
+
     edgePartitions_.setSize(edgeFaces. size());
     edgePartitions_ = -1;
-    
+
     label nPartitions(0);
     forAll(featureEdge, eI)
     {
         if( !featureEdge[eI] )
             continue;
-        
+
         labelListPMG front;
         front.append(eI);
         edgePartitions_[eI] = nPartitions;
         featureEdge[eI] = false;
-        
+
         while( front.size() )
         {
             const label eLabel = front.removeLastElement();
             const edge& e = edges[eLabel];
-            
+
             for(label pI=0;pI<2;++pI)
             {
                 const label pointI = e[pI];
-                
+
                 if( corners.found(pointI) )
                     continue;
-                
-                const labelList& pEdges = pointEdges[pointI];
-                forAll(pEdges, peI)
+
+                forAllRow(pointEdges, pointI, peI)
                 {
-                    const label eJ = pEdges[peI];
+                    const label eJ = pointEdges(pointI, peI);
+
                     if( featureEdge[eJ] )
                     {
                         edgePartitions_[eJ] = nPartitions;
@@ -197,45 +196,42 @@ void triSurfacePartitioner::calculateEdgePartitions()
                 }
             }
         }
-        
+
         ++nPartitions;
     }
-    
+
     Info << nPartitions << " edge partitions found!" << endl;
-    
+
     edgePartitionEdgePartitions_.clear();
     edgePartitionEdgePartitions_.setSize(nPartitions);
 }
 
 void triSurfacePartitioner::calculatePartitionsToEdgePartitions()
 {
-    const labelListList& edgeFaces = surface_.edgeFaces();
-    
-    DynList<label> partitions(10);
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
+
     forAll(edgeFaces, eI)
     {
         if( edgePartitions_[eI] < 0 )
             continue;
-        
-        const labelList& eFaces = edgeFaces[eI];
-        
-        partitions.clear();
-        forAll(eFaces, efI)
-            partitions.appendIfNotIn(surface_[eFaces[efI]].region());
-        
+
+        DynList<label> partitions;
+        forAllRow(edgeFaces, eI, efI)
+            partitions.appendIfNotIn(surface_[edgeFaces(eI, efI)].region());
+
         forAll(partitions, i)
         {
             const label partI = partitions[i];
             for(label j=i+1;j<partitions.size();++j)
             {
                 const label partJ = partitions[j];
-                
+
                 const std::pair<label, label> pp
                 (
                     Foam::min(partI, partJ),
                     Foam::max(partI, partJ)
                 );
-                
+
                 partitionsEdgeParts_[pp].insert(edgePartitions_[eI]);
             }
         }
@@ -244,16 +240,19 @@ void triSurfacePartitioner::calculatePartitionsToEdgePartitions()
 
 void triSurfacePartitioner::calculateEdgePartitionsToCorners()
 {
-    const labelListList& pointEdges = surface_.pointEdges();
-    
+    const VRWGraph& pointEdges = surface_.pointEdges();
+
     forAll(corners_, cornerI)
     {
-        DynList<label> edgePartitionsAtCorner(10);
-        const labelList& pEdges = pointEdges[corners_[cornerI]];
-        
-        forAll(pEdges, peI)
-            edgePartitionsAtCorner.appendIfNotIn(edgePartitions_[pEdges[peI]]);
-        
+        DynList<label> edgePartitionsAtCorner;
+        const label pointI = corners_[cornerI];
+
+        forAllRow(pointEdges, pointI, peI)
+            edgePartitionsAtCorner.appendIfNotIn
+            (
+                edgePartitions_[pointEdges(pointI, peI)]
+            );
+
         forAll(edgePartitionsAtCorner, i)
         {
             const label epI = edgePartitionsAtCorner[i];
@@ -264,17 +263,17 @@ void triSurfacePartitioner::calculateEdgePartitionsToCorners()
                 const label epJ = edgePartitionsAtCorner[j];
                 if( epJ < 0 )
                     continue;
-                
+
                 std::pair<label, label> ep
                 (
                     Foam::min(epI, epJ),
                     Foam::max(epI, epJ)
                 );
-                
+
                 //- create edgepartition - edge partitions addressing
                 edgePartitionEdgePartitions_[ep.first].insert(ep.second);
                 edgePartitionEdgePartitions_[ep.second].insert(ep.first);
-                
+
                 edgePartitionsCorners_[ep].insert(cornerI);
             }
         }

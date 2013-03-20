@@ -30,11 +30,13 @@ Description
 #include "matrix3D.H"
 #include "quadricFitting.H"
 #include "HashSet.H"
-
+#include "boolList.H"
+#include "Map.H"
 #include "DynList.H"
 
 #include "OFstream.H"
 
+#include <map>
 #include <omp.h>
 
 //#define DEBUGCurvatureEstimator
@@ -49,7 +51,7 @@ namespace Foam
 void writeSurfaceToVTK
 (
     OFstream& file,
-    const triSurface& surf
+    const triSurf& surf
 )
 {
     //- write the header
@@ -59,7 +61,7 @@ void writeSurfaceToVTK
     file << "DATASET POLYDATA\n";
 
     //- write points
-    const pointField& points = surf.localPoints();
+    const pointField& points = surf.points();
     file << "POINTS " << points.size() << " float\n";
     forAll(points, pI)
     {
@@ -84,7 +86,7 @@ void writeSurfaceToVTK
 void writeSurfaceToVTK
 (
     const word& name,
-    const triSurface& surf,
+    const triSurf& surf,
     const List<DynList<scalar, 1> >& data
 )
 {
@@ -93,7 +95,7 @@ void writeSurfaceToVTK
     writeSurfaceToVTK(file, surf);
 
     //- write curvature fields
-    const pointField& points = surf.localPoints();
+    const pointField& points = surf.points();
     file << "\n";
     file << "\nPOINT_DATA " << points.size() << "\n";
 
@@ -111,7 +113,7 @@ void writeSurfaceToVTK
 void writeSurfaceToVTK
 (
     const word& name,
-    const triSurface& surf,
+    const triSurf& surf,
     const List<DynList<vector, 1> >& data
 )
 {
@@ -120,7 +122,7 @@ void writeSurfaceToVTK
     writeSurfaceToVTK(file, surf);
 
     //- write curvature fields
-    const pointField& points = surf.localPoints();
+    const pointField& points = surf.points();
     file << "\n";
     file << "\nPOINT_DATA " << points.size() << "\n";
 
@@ -139,10 +141,10 @@ void writeSurfaceToVTK
 
 void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 {
-    const pointField& points = surface_.localPoints();
-    const edgeList& edges = surface_.edges();
-    const labelListList& pointEdges = surface_.pointEdges();
-    const labelListList& edgeFaces = surface_.edgeFaces();
+    const pointField& points = surface_.points();
+    const edgeListPMG& edges = surface_.edges();
+    const VRWGraph& pointEdges = surface_.pointEdges();
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
 
     edgePointCurvature_.setSize(points.size());
     boolList featureEdge(edges.size());
@@ -157,14 +159,16 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
         # pragma omp for schedule(static, 1)
         forAll(edgeFaces, eI)
         {
-            const labelList& eFaces = edgeFaces[eI];
-            if( eFaces.size() != 2 )
+            if( edgeFaces.sizeOfRow(eI) != 2 )
             {
                 featureEdge[eI] = false;
                 continue;
             }
 
-            if( surface_[eFaces[0]].region() == surface_[eFaces[1]].region() )
+            if(
+                 surface_[edgeFaces(eI, 0)].region() ==
+                 surface_[edgeFaces(eI, 1)].region()
+            )
             {
                 featureEdge[eI] = false;
             }
@@ -181,13 +185,12 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
         # pragma omp for schedule(dynamic, 20)
         forAll(pointEdges, pI)
         {
-            const labelList& pEdges = pointEdges[pI];
-
             DynList<label> features;
-            forAll(pEdges, peI)
+            forAllRow(pointEdges, pI, peI)
             {
-                if( featureEdge[pEdges[peI]] )
-                    features.append(pEdges[peI]);
+                const label edgeI = pointEdges(pI, peI);
+                if( featureEdge[edgeI] )
+                    features.append(edgeI);
             }
 
             if( features.size() == 2 )
@@ -215,10 +218,11 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 
 void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 {
-    const labelListList& pointTriangles = surface_.pointFaces();
-    const pointField& points = surface_.localPoints();
-    const labelListList& pointEdges = surface_.pointEdges();
-    const edgeList& edges = surface_.edges();
+    const VRWGraph& pointTriangles = surface_.pointFacets();
+
+    const pointField& points = surface_.points();
+    const VRWGraph& pointEdges = surface_.pointEdges();
+    const edgeListPMG& edges = surface_.edges();
 
     patchPositions_.setSize(surface_.size());
     gaussianCurvature_.setSize(points.size());
@@ -233,21 +237,26 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
     # pragma omp parallel for schedule(dynamic, 40)
     forAll(pointTriangles, pointI)
     {
-        const labelList& pTriangles = pointTriangles[pointI];
-
-        Map<DynList<label> > regionTriangles;
+        std::map<label, DynList<label> > regionTriangles;
         Map<labelHashSet> otherLabels;
         Map<vector> normals;
 
-        forAll(pTriangles, ptI)
+        forAllRow(pointTriangles, pointI, ptI)
         {
-            const label triI = pTriangles[ptI];
+            const label triI = pointTriangles(pointI, ptI);
             const label regionI = surface_[triI].region();
 
             if( !normals.found(regionI) )
                 normals.insert(regionI, vector::zero);
-            if( !regionTriangles.found(regionI) )
-                regionTriangles.insert(regionI, DynList<label>());
+            if( regionTriangles.find(regionI) != regionTriangles.end() )
+                regionTriangles.insert
+                (
+                    std::make_pair
+                    (
+                        regionI,
+                        DynList<label>()
+                    )
+                );
             if( !otherLabels.found(regionI) )
                 otherLabels.insert(regionI, labelHashSet());
 
@@ -273,7 +282,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             forAllConstIter(labelHashSet, currLabels, lit)
             {
                 const label neiPointI = lit.key();
-                const labelList& pEdges = pointEdges[neiPointI];
+                const constRow pEdges = pointEdges[neiPointI];
 
                 forAll(pEdges, peI)
                 {
@@ -317,6 +326,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             forAll(rTriangles, i)
             {
                 const label tI = rTriangles[i];
+
                 label pos(-1);
                 forAll(surface_[tI], j)
                     if( surface_[tI][j] == pointI )
@@ -364,7 +374,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             # pragma omp for schedule(static, 1)
             forAll(pointEdges, pointI)
             {
-                const labelList& pEdges = pointEdges[pointI];
+                const constRow pEdges = pointEdges[pointI];
 
                 //- find neighbouring points for each patch
                 Map<DynList<label> > patchNeiPoints;
@@ -493,7 +503,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
         }
     }
 
-    const pointField& points = surface_.localPoints();
+    const pointField& points = surface_.points();
     const labelListList& pointTriangles = surface_.pointFaces();
 
     forAll(surface_, triI)
@@ -597,7 +607,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 
 void triSurfaceCurvatureEstimator::calculateMeanCurvature()
 {
-    const pointField& points = surface_.localPoints();
+    const pointField& points = surface_.points();
 
     meanCurvature_.setSize(surface_.patches().size());
 

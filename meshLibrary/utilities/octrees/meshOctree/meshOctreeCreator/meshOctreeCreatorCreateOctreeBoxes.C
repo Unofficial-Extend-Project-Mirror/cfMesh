@@ -212,7 +212,8 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             const word subsetName = refPatches[patchI].patchName();
 
-            if( !surface.doesFaceSubsetExist(subsetName) )
+            const label subsetID = surface.facetSubsetIndex(subsetName);
+            if( subsetID < 0 )
             {
                 Warning << "Surface subset " << subsetName
                     << " does not exist" << endl;
@@ -242,8 +243,8 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             if( Pstream::parRun() )
                 reduce(addLevel, maxOp<label>());
 
-            const labelListPMG& subsetFaces =
-                surface.facesInSubset(subsetName);
+            labelListPMG subsetFaces;
+            surface.facetsInSubset(subsetID, subsetFaces);
             const direction level = globalRefLevel_ + addLevel;
             forAll(subsetFaces, tI)
                 if( surfRefLevel_[subsetFaces[tI]] < level )
@@ -262,14 +263,17 @@ void meshOctreeCreator::refineInsideAndUnknownBoxes()
 void meshOctreeCreator::createOctreeBoxes()
 {
     //- set root cube size in order to achieve desired maxCellSize
+    Info << "Setting cubes size and oher parameters" << endl;
     setRootCubeSizeAndRefParameters();
 
     //- refine to required boundary resolution
+    Info << "Refining boundary" << endl;
     refineBoundary();
 
     //- perform automatic octree refinement
     if( !Pstream::parRun() )
     {
+        Info << "Performing automatic refinement" << endl;
         meshOctreeAutomaticRefinement autoRef(octree_, *meshDictPtr_, false);
 
         if( hexRefinement_ )
@@ -312,7 +316,9 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
     const label nTrianglesInLeaf
 )
 {
-    const triSurface& surface = octree_.surface();
+    const triSurf& surface = octree_.surface();
+    surface.facetEdges();
+    surface.edgeFacets();
     const boundBox& rootBox = octree_.rootBox();
     meshOctreeModifier octreeModifier(octree_);
     List<meshOctreeSlot>& slots = octreeModifier.dataSlotsAccess();

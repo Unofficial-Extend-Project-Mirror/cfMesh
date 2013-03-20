@@ -45,7 +45,7 @@ namespace Foam
 
 triSurfacePartitioner::triSurfacePartitioner
 (
-    const triSurface& surface
+    const triSurf& surface
 )
 :
     surface_(surface),
@@ -99,20 +99,20 @@ void triSurfacePartitioner::edgePartitionsBetweenPartitions
 ) const
 {
     edgePartitions.clear();
-    
+
     std::pair<label, label> pp
     (
         Foam::min(partition1, partition2),
         Foam::max(partition1, partition2)
     );
-    
+
     std::map<std::pair<label, label>, labelHashSet>::const_iterator it =
         partitionsEdgeParts_.find(pp);
-    
+
     if( it != partitionsEdgeParts_.end() )
     {
         const labelList edgeParts = it->second.toc();
-        
+
         forAll(edgeParts, partI)
             edgePartitions.append(edgeParts[partI]);
     }
@@ -126,25 +126,25 @@ void triSurfacePartitioner::cornersBetweenEdgePartitions
 ) const
 {
     corners.clear();
-    
+
     std::pair<label, label> ep
     (
         Foam::min(edgePartition1, edgePartition2),
         Foam::max(edgePartition1, edgePartition2)
     );
-    
+
     std::map<std::pair<label, label>, labelHashSet>::const_iterator it =
         edgePartitionsCorners_.find(ep);
-    
+
     if( it != edgePartitionsCorners_.end() )
     {
         const labelList corn = it->second.toc();
-        
+
         forAll(corn, cornerI)
             corners.append(corn[cornerI]);
     }
 }
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

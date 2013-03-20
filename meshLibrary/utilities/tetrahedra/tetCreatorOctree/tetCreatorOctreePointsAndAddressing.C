@@ -227,8 +227,10 @@ void tetCreatorOctree::createFaceCentreLabels()
                 )
                     continue;
                 
-                const FixedList<label, 4> faceNodes =
-                    meshOctreeCubeCoordinates::faceNodes_[i];
+                FixedList<label, 4> faceNodes;
+                forAll(faceNodes, fnI)
+                    faceNodes[fnI] =
+                        meshOctreeCubeCoordinates::faceNodes_[i][fnI];
                 
                 label highLevelNode(-1);
                 for(label j=0;j<4;++j)

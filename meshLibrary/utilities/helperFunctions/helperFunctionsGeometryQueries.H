@@ -47,7 +47,7 @@ SourceFiles
 class boolList;
 class labelHashSet;
 class boundBox;
-class triSurface;
+class triSurf;
 
 namespace Foam
 {
@@ -149,7 +149,7 @@ namespace help
     //- check if a line intersects the triangle and return the intersection
     inline bool triLineIntersection
     (
-        const triSurface&,
+        const triSurf&,
         const label,
         const point&,
         const point&,
@@ -167,7 +167,7 @@ namespace help
     //- check if the surface triangle and the face intersect
     inline bool doFaceAndTriangleIntersect
     (
-        const triSurface& surface,
+        const triSurf& surface,
         const label triI,
         const face& f,
         const pointField& facePoints
@@ -177,7 +177,7 @@ namespace help
     inline point nearestPointOnTheTriangle
     (
         const label,
-        const triSurface&,
+        const triSurf&,
         const point&
     );
 
@@ -207,7 +207,7 @@ namespace help
         const labelHashSet& containedElements,
         const point& centre,
         const scalar range,
-        const triSurface& surface
+        const triSurf& surface
     );
 
     //- find the number of edge groups within the given range
@@ -216,7 +216,7 @@ namespace help
         const labelHashSet& containedEdges,
         const point& centre,
         const scalar range,
-        const triSurface& surface
+        const triSurf& surface
     );
 
 } // End namespace help

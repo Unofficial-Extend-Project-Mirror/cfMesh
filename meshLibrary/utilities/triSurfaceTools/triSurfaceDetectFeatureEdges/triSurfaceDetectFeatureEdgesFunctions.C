@@ -44,16 +44,16 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 {
     const scalar tol = Foam::cos(angleTolerance_*M_PI/180.0);
 
-    const vectorField& normals = surf_.faceNormals();
+    const vectorField& normals = surf_.facetNormals();
 
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     # pragma omp parallel for schedule(dynamic, 40)
     forAll(edgeFaces, edgeI)
     {
-        const labelList& eFaces = edgeFaces[edgeI];
+        const constRow eFaces = edgeFaces[edgeI];
 
-        if( eFaces.size() != 2 )
+        if( edgeFaces.sizeOfRow(edgeI) != 2 )
         {
             featureEdges_[edgeI] |= 8;
             continue;
@@ -86,12 +86,12 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
         forAllRow(planarRegions, regionI, rfI)
             facetInPlanarRegion[planarRegions(regionI, rfI)] = regionI;
 
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     # pragma omp parallel for schedule(dynamic, 40)
     forAll(edgeFaces, edgeI)
     {
-        const labelList& eFaces = edgeFaces[edgeI];
+        const constRow eFaces = edgeFaces[edgeI];
 
         if( eFaces.size() != 2 )
             continue;
@@ -107,8 +107,8 @@ void triSurfaceDetectFeatureEdges::createPatches()
     facetInPatch_.setSize(surf_.size());
     facetInPatch_ = -1;
 
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& faceEdges = surf_.facetEdges();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     forAll(facetInPatch_, triI)
     {
@@ -123,7 +123,7 @@ void triSurfaceDetectFeatureEdges::createPatches()
         {
             const label fLabel = front.removeLastElement();
 
-            const labelList& fEdges = faceEdges[fLabel];
+            const constRow fEdges = faceEdges[fLabel];
 
             forAll(fEdges, feI)
             {
@@ -133,7 +133,7 @@ void triSurfaceDetectFeatureEdges::createPatches()
                 if( featureEdges_[edgeI] )
                     continue;
 
-                const labelList& eFaces = edgeFaces[edgeI];
+                const constRow eFaces = edgeFaces[edgeI];
 
                 //- stop at non-manifold edges
                 if( eFaces.size() != 2 )

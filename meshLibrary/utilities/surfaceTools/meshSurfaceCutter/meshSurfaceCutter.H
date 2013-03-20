@@ -37,7 +37,7 @@ SourceFiles
 #define meshSurfaceCutter_H
 
 #include "polyMeshGenModifier.H"
-#include "triSurface.H"
+#include "triSurf.H"
 #include "boolList.H"
 #include "DynList.H"
 
@@ -52,18 +52,18 @@ class meshSurfaceCutter
 {
     // private data
         //- triangulated surface
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- mesh data
         polyMeshGen& mesh_;
-    
+
         //- helpers
         label nIntFaces_;
         label nPoints_;
         List<direction> nFacesInCell_;
         boolList problematicTopology_;
         boolList boundaryCell_;
-    
+
         edgeList* edgePointPtr_;
         DynList<point>* newPointsPtr_;
         labelList* newPointLabelPtr_;
@@ -73,7 +73,7 @@ class meshSurfaceCutter
     // private member functions
         //- return patches for the given point
         labelList patchesForPoint(const label) const;
-        
+
         //- find internal points and intersections with the surface
         void findInternalPointsAndIntersections();
 
@@ -91,9 +91,9 @@ class meshSurfaceCutter
         (
             const label
         );
-        
+
         void createInternalMeshPointsAndFaces();
-        
+
         void createBoundaryFaces();
         //void checkCellTopology();
         //void checkFaceDirections();
@@ -112,7 +112,7 @@ public:
         meshSurfaceCutter
         (
             polyMeshGen& mesh,
-            const triSurface& surface
+            const triSurf& surface
         );
 
         //- Destructor

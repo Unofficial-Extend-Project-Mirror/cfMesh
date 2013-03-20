@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "boundBox.H"
 #include "surfaceIntersectionsOctreeCube.H"
 
@@ -93,7 +93,7 @@ List< List<point> > surfaceIntersectionsOctreeCube::edges() const
     helper[0] = cP[0];
     helper[1] = cP[4];
     edg[8] = helper;
-    
+
     helper[0] = cP[1];
     helper[1] = cP[5];
     edg[9] = helper;
@@ -115,7 +115,7 @@ List< List<point> > surfaceIntersectionsOctreeCube::edges() const
 // Construct from surface. Holds reference!
 surfaceIntersectionsOctreeCube::surfaceIntersectionsOctreeCube
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& bb,
     const direction& l
 )

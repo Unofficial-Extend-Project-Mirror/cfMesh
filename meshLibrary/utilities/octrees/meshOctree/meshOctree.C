@@ -188,7 +188,7 @@ void meshOctree::setOctantVectorsAndPositions()
 void meshOctree::createInitialOctreeBox()
 {
     //- create initial octree box
-    boundBox bb(surface_.localPoints());
+    boundBox bb(surface_.points());
     const point& min_ = bb.min();
     const point& max_ = bb.max();
 

@@ -59,7 +59,7 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     const pointFieldPMG& points = mse.points();
 
     //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
-    const triSurface& surface = meshOctree_.surface();
+    const triSurf& surface = meshOctree_.surface();
     const label nPatches = surface.patches().size();
 
     wordList patchNames(nPatches);

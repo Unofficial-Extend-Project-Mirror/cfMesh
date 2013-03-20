@@ -39,8 +39,8 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
         if( data && (data != staticData_) )
             delete [] data;
         
-        UList<T>::reset(newData, s);
-        //this->UList<T>::operator=(UList<T>(newData, s));
+        //UList<T>::reset(newData, s);
+        this->UList<T>::operator=(UList<T>(newData, s));
     }
     else if( (s > staticSize) && (s < UList<T>::size()) )
     {
@@ -52,8 +52,8 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
         T* data = UList<T>::begin();
         delete [] data;
         
-        UList<T>::reset(newData, s);
-        //this->UList<T>::operator=(UList<T>(newData, s));
+        //UList<T>::reset(newData, s);
+        this->UList<T>::operator=(UList<T>(newData, s));
     }
     else if( (s <= staticSize) && (UList<T>::size() > staticSize) )
     {
@@ -64,8 +64,8 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
         if( data && (data != staticData_) )
             delete [] data;
         
-        UList<T>::reset(staticData_, staticSize);
-        //this->UList<T>::operator=(UList<T>(staticData_, staticSize));
+        //UList<T>::reset(staticData_, staticSize);
+        this->UList<T>::operator=(UList<T>(staticData_, staticSize));
     }
 }
 

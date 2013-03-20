@@ -70,14 +70,14 @@ int main(int argc, char *argv[])
 
     triSurf surf(runTime.path()/surfaceFile);
 
-    if( meshDict.found("subsetFileName") )
+/*    if( meshDict.found("subsetFileName") )
     {
         fileName subsetFileName = meshDict.lookup("subsetFileName");
         if( Pstream::parRun() )
             subsetFileName = ".."/subsetFileName;
         surf.readFaceSubsets(runTime.path()/subsetFileName);
     }
-
+*/
     // construct the octree
     meshOctree mo(surf);
     meshOctreeCreator(mo, meshDict).createOctreeBoxes();

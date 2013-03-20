@@ -336,11 +336,11 @@ voronoiMeshGenerator::voronoiMeshGenerator
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
 
-    if( meshDict_.found("subsetFileName") )
-    {
-        const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-        surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
-    }
+//     if( meshDict_.found("subsetFileName") )
+//     {
+//         const fileName subsetFileName = meshDict_.lookup("subsetFileName");
+//         surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
+//     }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
 

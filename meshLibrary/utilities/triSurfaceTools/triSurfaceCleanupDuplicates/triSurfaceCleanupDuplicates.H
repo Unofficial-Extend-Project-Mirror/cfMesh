@@ -59,7 +59,7 @@ class triSurfaceCleanupDuplicates
         const scalar tolerance_;
 
         //- reference to triSurf
-        const triSurf& surf_;
+        triSurf& surf_;
 
         //- reference to octree
         const meshOctree& octree_;

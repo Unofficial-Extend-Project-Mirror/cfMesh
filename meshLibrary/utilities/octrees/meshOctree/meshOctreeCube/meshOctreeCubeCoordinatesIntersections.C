@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "meshOctreeCubeCoordinates.H"
 #include "helperFunctions.H"
 
@@ -152,13 +152,13 @@ void meshOctreeCubeCoordinates::edgeVertices
 
 bool meshOctreeCubeCoordinates::intersectsTriangle
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& rootBox,
     const label tI
 ) const
 {
     const pointField& points = surface.points();
-    const labelledTri& ltri = surface.localFaces()[tI];
+    const labelledTri& ltri = surface[tI];
 
     const vector tol = SMALL * (rootBox.max() - rootBox.min());
 
@@ -186,7 +186,7 @@ bool meshOctreeCubeCoordinates::intersectsTriangle
 
 bool meshOctreeCubeCoordinates::intersectsTriangleExact
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& rootBox,
     const label tI
 ) const

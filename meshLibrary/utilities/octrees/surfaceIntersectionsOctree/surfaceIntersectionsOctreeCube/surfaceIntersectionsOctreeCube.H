@@ -26,7 +26,7 @@ Class
     surfaceIntersectionsOctreeCube
 
 Description
-    A cube for octree needed for evaluating surface intersections 
+    A cube for octree needed for evaluating surface intersections
 
 SourceFiles
 
@@ -46,10 +46,10 @@ namespace Foam
 {
 
 // Class forward declarations
-class triSurface;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
-                           Class surfaceIntersectionsOctreeCube Declaration
+                Class surfaceIntersectionsOctreeCube Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceIntersectionsOctreeCube
@@ -57,7 +57,7 @@ class surfaceIntersectionsOctreeCube
     // Private data
 
         //- Reference to surface to work on
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- cube level in the octree structure
         direction level_;
@@ -89,7 +89,7 @@ public:
     // Constructors
 
         //- Construct from surface. Holds reference to surface!
-        surfaceIntersectionsOctreeCube(const triSurface&, const boundBox&, const direction&);
+        surfaceIntersectionsOctreeCube(const triSurf&, const boundBox&, const direction&);
 
     // Destructor
 
@@ -109,7 +109,7 @@ public:
 
         //- is cube a leaf
         inline bool isLeaf() const;
-        
+
         //- return and set cube type
         direction cubeType() const
         {
@@ -122,7 +122,7 @@ public:
 
         //- vertices
         FixedList<point, 8> vertices() const;
-    
+
         //- sub cubes
         inline FixedList<surfaceIntersectionsOctreeCube*, 8>* subCubes() const;
 

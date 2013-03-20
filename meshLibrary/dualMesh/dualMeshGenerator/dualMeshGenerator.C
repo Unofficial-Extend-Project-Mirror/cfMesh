@@ -64,7 +64,7 @@ void dualMeshGenerator::generateDualMesh()
     //- create polyMesh from octree boxes
     dualMeshExtractor dme(*octreePtr_, meshDict_, mesh_);
     dme.createMesh();
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGfpma
@@ -87,7 +87,7 @@ void dualMeshGenerator::surfacePreparation()
         cmPtr->morphMesh();
         deleteDemandDrivenData(cmPtr);
     } while( topologicalCleaner(mesh_).cleanTopology() );
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGfpma
@@ -98,7 +98,7 @@ void dualMeshGenerator::surfacePreparation()
     //::exit(EXIT_FAILURE);
     # endif
 }
-        
+
 void dualMeshGenerator::mapMeshToSurface()
 {
     //- calculate mesh surface
@@ -106,7 +106,7 @@ void dualMeshGenerator::mapMeshToSurface()
 
     //- map mesh surface on the geometry surface
     meshSurfaceMapper(*msePtr, *octreePtr_).mapVerticesOntoSurface();
- 
+
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "afterMapping");
@@ -116,10 +116,10 @@ void dualMeshGenerator::mapMeshToSurface()
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
-    
+
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
-    
+
     # ifdef DEBUG
     //meshOptimizer(*octreePtr_, mesh_).preOptimize();
     # ifdef DEBUGfpma
@@ -130,12 +130,12 @@ void dualMeshGenerator::mapMeshToSurface()
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
-    
+
     deleteDemandDrivenData(msePtr);
 
     //- extract edges and corners
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGfpma
@@ -151,7 +151,7 @@ void dualMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-    
+
     # ifdef DEBUG
     mesh_.write();
     # ifdef DEBUGfpma
@@ -169,10 +169,10 @@ void dualMeshGenerator::checkConcaveEdges()
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
     meshSurfaceOptimizer(*msePtr, *octreePtr_).optimizeSurface();
     deleteDemandDrivenData(msePtr);
-    
+
     //- repair mesh near concave edges
     dualUnfoldConcaveCells(mesh_, *octreePtr_).unfoldInvalidCells();
-    
+
     # ifdef DEBUG
     mesh_.write();
     //meshOptimizer(*octreePtr_, mesh_).preOptimize();
@@ -184,15 +184,15 @@ void dualMeshGenerator::checkConcaveEdges()
     //::exit(EXIT_FAILURE);
     # endif
 }
-        
+
 void dualMeshGenerator::generateBoudaryLayers()
 {
     boundaryLayers bl(mesh_);
-    
+
     if( meshDict_.found("boundaryLayers") )
     {
         wordList createLayers(meshDict_.lookup("boundaryLayers"));
-        
+
         forAll(createLayers, patchI)
             bl.addLayerForPatch(createLayers[patchI]);
     }
@@ -201,7 +201,7 @@ void dualMeshGenerator::generateBoudaryLayers()
         //bl.createOTopologyLayers();
         bl.addLayerForAllPatches();
     }
-    
+
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "meshWithBndLayer");
@@ -212,18 +212,18 @@ void dualMeshGenerator::generateBoudaryLayers()
     //::exit(EXIT_FAILURE);
     # endif
 }
-        
+
 void dualMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
     meshOptimizer optimizer(mesh_);
-    
+
     optimizer.optimizeSurface(*octreePtr_);
-    
+
     deleteDemandDrivenData(octreePtr_);
-    
+
     optimizer.optimizeMeshFV();
-    
+
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"optimisedMesh");
@@ -236,7 +236,7 @@ void dualMeshGenerator::optimiseFinalMesh()
 void dualMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-    
+
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"renamedPatchesMesh");
@@ -249,7 +249,7 @@ void dualMeshGenerator::replaceBoundaries()
 void dualMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-    
+
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"renumberedMesh");
@@ -262,21 +262,21 @@ void dualMeshGenerator::renumberMesh()
 void dualMeshGenerator::generateMesh()
 {
     generateDualMesh();
-    
+
     surfacePreparation();
-    
+
     mapMeshToSurface();
-    
+
     optimiseMeshSurface();
-    
+
     checkConcaveEdges();
-    
+
     generateBoudaryLayers();
-    
+
     optimiseFinalMesh();
-    
+
     renumberMesh();
-    
+
     replaceBoundaries();
 }
 
@@ -306,19 +306,19 @@ dualMeshGenerator::dualMeshGenerator
 {
     if( true )
         checkMeshDict cmd(meshDict_);
-    
+
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
-    
-    if( meshDict_.found("subsetFileName") )
-    {
-        const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-        surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
-    }
+
+//     if( meshDict_.found("subsetFileName") )
+//     {
+//         const fileName subsetFileName = meshDict_.lookup("subsetFileName");
+//         surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
+//     }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
-    
+
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
@@ -352,7 +352,7 @@ dualMeshGenerator::dualMeshGenerator
     surfacePtr_ = new triSurface(db_.path()/surfaceFile);
 
     octreePtr_ = new meshOctree(*surfacePtr_);
-    
+
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
@@ -375,7 +375,7 @@ void dualMeshGenerator::writeMesh() const
     mesh_.addressingData().checkCellsZipUp(true);
     mesh_.addressingData().checkCellVolumes(true);
     # endif
-    
+
     mesh_.write();
 }
 

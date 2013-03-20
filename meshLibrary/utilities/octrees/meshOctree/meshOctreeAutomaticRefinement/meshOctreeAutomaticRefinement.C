@@ -40,7 +40,7 @@ Description
 
 namespace Foam
 {
-    
+
 void meshOctreeAutomaticRefinement::createOctreeAddressing() const
 {
     octreeAddressingPtr_ =
@@ -51,11 +51,20 @@ const meshOctreeAddressing& meshOctreeAutomaticRefinement::octreeAddressing()
 const
 {
     if( !octreeAddressingPtr_ )
+    {
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const meshOctreeAddressing& meshOctreeAutomaticRefinement"
+                "::octreeAddressing() const"
+            ) << "Cannot calculate addressing!" << abort(FatalError);
+
         createOctreeAddressing();
+    }
 
     return *octreeAddressingPtr_;
 }
-    
+
 void meshOctreeAutomaticRefinement::createSurfacePartitioner() const
 {
     partitionerPtr_ = new triSurfacePartitioner(octree_.surface());
@@ -64,11 +73,20 @@ void meshOctreeAutomaticRefinement::createSurfacePartitioner() const
 const triSurfacePartitioner& meshOctreeAutomaticRefinement::partitioner() const
 {
     if( !partitionerPtr_ )
+    {
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const triSurfacePartitioner& meshOctreeAutomaticRefinement"
+                "::partitioner() const"
+            ) << "Cannot calculate addressing!" << abort(FatalError);
+
         createSurfacePartitioner();
+    }
 
     return *partitionerPtr_;
 }
-    
+
 void meshOctreeAutomaticRefinement::createCurvatureEstimator() const
 {
     curvaturePtr_ = new triSurfaceCurvatureEstimator(octree_.surface());
@@ -78,7 +96,16 @@ const triSurfaceCurvatureEstimator& meshOctreeAutomaticRefinement::curvature()
 const
 {
     if( !curvaturePtr_ )
+    {
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const triSurfaceCurvatureEstimator& "
+                "meshOctreeAutomaticRefinement::curvature() const"
+            ) << "Cannot calculate addressing!" << abort(FatalError);
+
         createCurvatureEstimator();
+    }
 
     return *curvaturePtr_;
 }
@@ -102,7 +129,7 @@ void meshOctreeAutomaticRefinement::setMaxRefLevel()
         do
         {
             finished = false;
-    
+
             const scalar lSize = size / pow(2, maxRefLevel_);
 
             if( lSize < cs )

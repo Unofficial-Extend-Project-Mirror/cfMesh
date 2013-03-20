@@ -46,7 +46,7 @@ namespace Foam
 {
 
 // Forward declarations
-class triSurface;
+class triSurf;
 class Istream;
 class Ostream;
 
@@ -82,10 +82,10 @@ public:
     // Member Functions
         word patchName() const;
 
-        label patchInSurface(const triSurface&) const;
+        label patchInSurface(const triSurf&) const;
 
         scalar cellSize() const;
-  
+
     // Operators
 
         void operator=(const patchRefinement&);

@@ -47,7 +47,7 @@ namespace Foam
 {
 
 class Ostream;
-class triSurface;
+class triSurf;
 class VRWGraph;
 class meshOctreeSlot;
 
@@ -90,7 +90,7 @@ class meshOctreeCube
         //- find edges contained in the cube
         void findContainedEdges
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&
         );
 
@@ -131,7 +131,7 @@ public:
         //- subdivide the octree cube
         void refineCube
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&,
             meshOctreeSlot* slotPtr = NULL
         );
@@ -140,7 +140,7 @@ public:
         //- cube is reached (this function is used for parallel octree creation)
         void refineMissingCube
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&,
             const label scI,
             meshOctreeSlot* slotPtr = NULL
@@ -175,7 +175,7 @@ public:
         //- check if this box has some contained triangles
         bool hasContainedTriangles
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&,
             const VRWGraph& containedElements
         ) const;

@@ -43,12 +43,11 @@ labelList meshSurfaceCutter::patchesForPoint(const label vI) const
     if( pointTriIndex_[vI].size() )
     {
         labelList pcs(pointTriIndex_[vI].size());
-        const List<labelledTri>& fcs = surface_.localFaces();
 
         const DynList<label>& tria = pointTriIndex_[vI];
         short i(0);
         forAll(tria, tI)
-            pcs[i++] = fcs[tria[tI]].region();
+            pcs[i++] = surface_[tria[tI]].region();
 
         return pcs;
     }

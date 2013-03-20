@@ -66,6 +66,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
     intersectedCells_.setSize(cells.size());
+    facetsIntersectingCell_.setSize(cells.size());
 
     const triSurf& surf = octreePtr_->surface();
 
@@ -110,6 +111,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         //- check if any triangle in the surface mesh
         //- intersects any of the cell's faces
+        labelHashSet facetsInCell;
         forAllConstIter(labelHashSet, triangles, tIter)
         {
             forAll(c, fI)
@@ -128,26 +130,27 @@ void findCellsIntersectingSurface::findIntersectedCells()
                 if( intersect )
                 {
                     intersected = true;
+                    facetsInCell.insert(tIter.key());
                     break;
                 }
             }
-
-            if( intersected )
-                break;
         }
 
         //- check if any of the surface vertices is contained within the cell
-        if( !intersected )
+        labelHashSet nodes;
+        forAllConstIter(labelHashSet, triangles, tIter)
         {
-            labelHashSet nodes;
-            forAllConstIter(labelHashSet, triangles, tIter)
-            {
-                const labelledTri& tri = surf[tIter.key()];
+            const labelledTri& tri = surf[tIter.key()];
 
-                for(label i=0;i<3;++i)
-                    nodes.insert(tri[i]);
-            }
+            for(label i=0;i<3;++i)
+                nodes.insert(tri[i]);
+        }
 
+        forAllConstIter(labelHashSet, nodes, nIter)
+        {
+            const point& p = surf.points()[nIter.key()];
+
+            bool foundIntersection(false);
             forAll(c, fI)
             {
                 const face& f = faces[c[fI]];
@@ -164,21 +167,21 @@ void findCellsIntersectingSurface::findIntersectedCells()
                             cellCentres[cellI]
                         );
 
-                        forAllConstIter(labelHashSet, nodes, nIter)
+                        if( help::pointInTetrahedron(p, tet) )
                         {
-                            const point& p = surf.points()[nIter.key()];
-
-                            if( help::pointInTetrahedron(p, tet) )
-                            {
-                                intersected = true;
-                                break;
-                            }
-
-                        }
-
-                        if( intersected )
+                            intersected = true;
+                            forAllRow(surf.pointFacets(), nIter.key(), ptI)
+                                facetsInCell.insert
+                                (
+                                    surf.pointFacets()(nIter.key(), ptI)
+                                );
+                            foundIntersection = true;
                             break;
+                        }
                     }
+
+                    if( foundIntersection )
+                        break;
                 }
                 else
                 {
@@ -192,29 +195,28 @@ void findCellsIntersectingSurface::findIntersectedCells()
                             cellCentres[cellI]
                         );
 
-                        forAllConstIter(labelHashSet, nodes, nIter)
+                        if( help::pointInTetrahedron(p, tet) )
                         {
-                            const point& p = surf.points()[nIter.key()];
-
-                            if( help::pointInTetrahedron(p, tet) )
-                            {
-                                intersected = true;
-                                break;
-                            }
-
-                        }
-
-                        if( intersected )
+                            intersected = true;
+                            forAllRow(surf.pointFacets(), nIter.key(), ptI)
+                                facetsInCell.insert
+                                (
+                                    surf.pointFacets()(nIter.key(), ptI)
+                                );
+                            foundIntersection = true;
                             break;
+                        }
                     }
-                }
 
-                if( intersected )
-                    break;
+                    if( foundIntersection )
+                        break;
+                }
             }
         }
 
         intersectedCells_[cellI] = intersected;
+        # pragma omp critical
+        facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
     }
 }
 
@@ -228,7 +230,9 @@ findCellsIntersectingSurface::findCellsIntersectingSurface
 :
     mesh_(mesh),
     octreePtr_(const_cast<meshOctree*>(&octree)),
-    octreeGenerated_(false)
+    octreeGenerated_(false),
+    intersectedCells_(),
+    facetsIntersectingCell_()
 {
     findIntersectedCells();
 }
@@ -241,7 +245,9 @@ findCellsIntersectingSurface::findCellsIntersectingSurface
 :
     mesh_(mesh),
     octreePtr_(NULL),
-    octreeGenerated_(true)
+    octreeGenerated_(true),
+    intersectedCells_(),
+    facetsIntersectingCell_()
 {
     generateOctree(surface);
 
@@ -261,6 +267,11 @@ findCellsIntersectingSurface::~findCellsIntersectingSurface()
 const boolList& findCellsIntersectingSurface::intersectedCells() const
 {
     return intersectedCells_;
+}
+
+const VRWGraph& findCellsIntersectingSurface::facetsIntersectingCells() const
+{
+    return facetsIntersectingCell_;
 }
 
 void findCellsIntersectingSurface::addIntersectedCellsToSubset

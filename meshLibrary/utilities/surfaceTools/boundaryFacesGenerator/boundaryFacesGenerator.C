@@ -35,9 +35,9 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * Private member functions * * * * * * * * * * * //
-    
+
 void boundaryFacesGenerator::createBoundaryFaces()
 {
     //- set sizes of boundary cells
@@ -46,7 +46,7 @@ void boundaryFacesGenerator::createBoundaryFaces()
     forAll(boundaryCell_, cellI)
         if( boundaryCell_[cellI] )
             cells[cellI].setSize(nFacesInCell_[cellI]);
-            
+
     //- create boundary faces
     forAll(boundaryCell_, cellI)
         if( boundaryCell_[cellI] )
@@ -65,10 +65,10 @@ void boundaryFacesGenerator::storeBoundaryFaces()
     {
         patchNames.setSize(surface_.patches().size());
     }
-    
+
     forAll(surface_.patches(), patchI)
         patchNames[patchI] = surface_.patches()[patchI].name();
-    
+
     polyMeshGenModifier(mesh_).replaceBoundary
     (
         patchNames,
@@ -81,15 +81,13 @@ void boundaryFacesGenerator::storeBoundaryFaces()
 
 void boundaryFacesGenerator::createSurfaceCornersAndPatches()
 {
-    const labelListList& pointFaces = surface_.pointFaces();
+    const VRWGraph& pointFaces = surface_.pointFacets();
     forAll(pointFaces, pI)
     {
-        const labelList& pFaces = pointFaces[pI];
-        
-        DynList<label> patches(5);
-        forAll(pFaces, pfI)
-            patches.appendIfNotIn(surface_[pFaces[pfI]].region());
-        
+        DynList<label> patches;
+        forAllRow(pointFaces, pI, pfI)
+            patches.appendIfNotIn(surface_[pointFaces(pI, pfI)].region());
+
         //- corners are points in at least three regions
         if( patches.size() > 2 )
         {
@@ -97,12 +95,12 @@ void boundaryFacesGenerator::createSurfaceCornersAndPatches()
             cornersPatches_.append(patches);
         }
     }
-    
+
     Info << "The surface has " << surfaceCorners_.size() << " corners" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 boundaryFacesGenerator::boundaryFacesGenerator
 (
     polyMeshGen& mesh,
@@ -111,7 +109,7 @@ boundaryFacesGenerator::boundaryFacesGenerator
     const label nIntFaces,
     const boolList& boundaryCell,
     VRWGraph& pointPatches,
-    const triSurface& surface
+    const triSurf& surface
 )
 :
     surface_(surface),
@@ -130,9 +128,9 @@ boundaryFacesGenerator::boundaryFacesGenerator
     cornersPatches_(surface.patches().size())
 {
     createSurfaceCornersAndPatches();
-    
+
     createBoundaryFaces();
-    
+
     storeBoundaryFaces();
 
     boundaryOutwardOrientation boo(mesh);
@@ -140,9 +138,7 @@ boundaryFacesGenerator::boundaryFacesGenerator
 
 // Destructor
 boundaryFacesGenerator::~boundaryFacesGenerator()
-{
-}
-        
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 

@@ -176,14 +176,14 @@ void meshOctreeModifier::refineSelectedBoxes
     Info << "Time for ensuring regularity " << (regTime-startTime) << endl;
     # endif
 
-    const triSurface& surface = octree_.surface();
+    const triSurf& surface = octree_.surface();
     const boundBox& rootBox = octree_.rootBox();
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
     //- this is needed for thread safety
     //- such solutions make me a sad bunny :(
-    surface.faceEdges();
-    surface.edgeFaces();
+    surface.facetEdges();
+    surface.edgeFacets();
     surface.edges();
 
     # pragma omp parallel num_threads(octree_.dataSlots_.size())

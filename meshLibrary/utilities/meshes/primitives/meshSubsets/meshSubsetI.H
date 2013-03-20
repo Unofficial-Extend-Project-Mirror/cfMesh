@@ -36,6 +36,13 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
+inline meshSubset::meshSubset()
+:
+    name_(),
+    type_(UNKNOWN),
+    data_()
+{}
+
 inline meshSubset::meshSubset
 (
     const word& name,
@@ -62,10 +69,18 @@ inline meshSubset::meshSubset
     forAll(elements, i)
         data_.insert(elements[i]);
 }
-    
-inline meshSubset::~meshSubset()
+
+inline meshSubset::meshSubset(Istream& is)
+:
+    name_(),
+    type_(UNKNOWN),
+    data_()
 {
+    is >> *this;
 }
+
+inline meshSubset::~meshSubset()
+{}
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -83,7 +98,7 @@ template<class ListType>
 inline void meshSubset::containedElements(ListType& l) const
 {
     l.setSize(data_.size());
-    
+
     label counter(0);
     forAllConstIter(HashSet<label>, data_, it)
         l[counter++] = it.key();
@@ -103,15 +118,15 @@ template<class ListType>
 inline void meshSubset::updateSubset(const ListType& newLabels)
 {
     HashSet<label> newData;
-    
+
     forAllConstIter(HashSet<label>, data_, it)
     {
         if( newLabels[it.key()] < 0 )
             continue;
-        
+
         newData.insert(newLabels[it.key()]);
     }
-    
+
     data_.clear();
     data_ = newData;
 }
@@ -119,13 +134,13 @@ inline void meshSubset::updateSubset(const ListType& newLabels)
 inline void meshSubset::updateSubset(const VRWGraph& newLabels)
 {
     HashSet<label> newData;
-    
+
     forAllConstIter(HashSet<label>, data_, it)
     {
         forAllRow(newLabels, it.key(), i)
             newData.insert(newLabels(it.key(), i));
     }
-    
+
     data_.clear();
     data_ = newData;
 }
@@ -139,9 +154,22 @@ inline bool meshSubset::contains(const label elmt) const
 
 inline Ostream& operator<<(Ostream& os, const meshSubset& sel)
 {
+    os.check("inline Ostream& operator<<(Ostream&, const meshSubset&)");
+
     os << sel.name_ << nl << sel.type_ << nl << sel.data_;
 
     return os;
+}
+
+inline Istream& operator>>(Istream& is, meshSubset& sel)
+{
+    is.check("friend Istream& operator>>(Istream&, meshSubset&)");
+
+    is >> sel.name_ >> sel.type_ >> sel.data_;
+
+    is.check("friend Istream& operator>>(Istream&, meshSubset&)");
+
+    return is;
 }
 
 

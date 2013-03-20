@@ -38,6 +38,7 @@ SourceFiles
 
 #include "IOdictionary.H"
 #include "boolList.H"
+#include "VRWGraph.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -66,6 +67,9 @@ class findCellsIntersectingSurface
 
         //- stores information about intersected cells
         boolList intersectedCells_;
+
+        //- stores information which surface facets intersect each cell
+        VRWGraph facetsIntersectingCell_;
 
     // Private member functions
         //- generate the octree
@@ -98,6 +102,9 @@ public:
     // Public member functions
         //- return the list of intersected cells;
         const boolList& intersectedCells() const;
+
+        //- return the graph of facets intersecting each cell
+        const VRWGraph& facetsIntersectingCells() const;
 
         //- create a cell subset containing intersected cells
         void addIntersectedCellsToSubset

@@ -32,11 +32,12 @@ Description
 #include "edgeList.H"
 #include "pointField.H"
 #include "boolList.H"
-#include "triSurface.H"
+#include "triSurf.H"
 #include "matrix3D.H"
 #include "HashSet.H"
 #include "tetrahedron.H"
 #include "boundBox.H"
+#include "Map.H"
 
 //#define DEBUG_pMesh
 
@@ -335,14 +336,14 @@ inline bool triLineIntersection
 
 inline bool triLineIntersection
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const label tI,
     const point& s,
     const point& e,
     point& intersection
 )
 {
-    const pointField& pts = surface.localPoints();
+    const pointField& pts = surface.points();
     const labelledTri& tri = surface[tI];
 
     triangle<point, point> tria
@@ -412,13 +413,13 @@ inline bool boundBoxLineIntersection
 
 inline bool doFaceAndTriangleIntersect
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const label triI,
     const face& f,
     const pointField& facePoints
 )
 {
-    const pointField& triPoints = surface.localPoints();
+    const pointField& triPoints = surface.points();
 
     vector n = f.normal(facePoints);
     n /= mag(n);
@@ -480,12 +481,12 @@ inline bool doFaceAndTriangleIntersect
 inline point nearestPointOnTheTriangle
 (
     const label tI,
-    const triSurface& surface,
+    const triSurf& surface,
     const point& p
 )
 {
     const labelledTri& ltri = surface[tI];
-    const pointField& points = surface.localPoints();
+    const pointField& points = surface.points();
 
     const vector v0 = points[ltri[1]] - points[ltri[0]];
     const vector v1 = points[ltri[2]] - points[ltri[0]];
@@ -777,13 +778,13 @@ inline label numberOfFaceGroups
     const labelHashSet& containedElements,
     const point& centre,
     const scalar range,
-    const triSurface& surface
+    const triSurf& surface
 )
 {
     const pointField& points = surface.points();
-    const edgeList& edges = surface.edges();
-    const labelListList& faceEdges = surface.faceEdges();
-    const labelListList& edgeFaces = surface.edgeFaces();
+    const edgeListPMG& edges = surface.edges();
+    const VRWGraph& faceEdges = surface.facetEdges();
+    const VRWGraph& edgeFaces = surface.edgeFacets();
 
     labelHashSet triaInRange(containedElements.size());
     const scalar rangeSq = range * range;
@@ -811,11 +812,10 @@ inline label numberOfFaceGroups
             while( front.size() )
             {
                 const label fLabel = front.removeLastElement();
-                const labelList& fEdges = faceEdges[fLabel];
 
-                forAll(fEdges, feI)
+                forAllRow(faceEdges, fLabel, feI)
                 {
-                    const label edgeI = fEdges[feI];
+                    const label edgeI = faceEdges(fLabel, feI);
 
                     //- check if the edge intersects the bounding box
                     if( testEdge.found(edgeI) )
@@ -839,10 +839,9 @@ inline label numberOfFaceGroups
                         }
                     }
 
-                    const labelList& eFaces = edgeFaces[edgeI];
-                    forAll(eFaces, efI)
+                    forAllRow(edgeFaces, edgeI, efI)
                     {
-                        const label nei = eFaces[efI];
+                        const label nei = edgeFaces(edgeI, efI);
                         if
                         (
                             triaInRange.found(nei) &&
@@ -867,12 +866,12 @@ inline label numberOfEdgeGroups
     const labelHashSet& containedEdges,
     const point& centre,
     const scalar range,
-    const triSurface& surface
+    const triSurf& surface
 )
 {
     const pointField& points = surface.points();
-    const edgeList& edges = surface.edges();
-    const labelListList& pointEdges = surface.pointEdges();
+    const edgeListPMG& edges = surface.edges();
+    const VRWGraph& pointEdges = surface.pointEdges();
 
     const scalar rangeSq = range * range;
     labelHashSet edgesInRange(containedEdges.size());
@@ -926,11 +925,9 @@ inline label numberOfEdgeGroups
                         }
                     }
 
-                    const labelList& pEdges = pointEdges[e[i]];
-
-                    forAll(pEdges, peI)
+                    forAllRow(pointEdges, e[i], peI)
                     {
-                        const label nei = pEdges[peI];
+                        const label nei = pointEdges(e[i], peI);
 
                         if( edgesInRange.found(nei) && !elGroup.found(nei) )
                         {

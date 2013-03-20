@@ -37,7 +37,7 @@ SourceFiles
 #ifndef triSurfacePartitioner_H
 #define triSurfacePartitioner_H
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "DynList.H"
 #include "HashSet.H"
 
@@ -55,45 +55,45 @@ namespace Foam
 class triSurfacePartitioner
 {
     // Private data
-        //- reference to triSurface
-        const triSurface& surface_;
-    
+        //- reference to triSurf
+        const triSurf& surface_;
+
         //- corner nodes
         labelList corners_;
         List<DynList<label> > cornerPatches_;
-    
+
         //- information which partitions share an edge with a given partition
         List<labelHashSet> partitionPartitions_;
-    
+
         //- edge partitions
         labelList edgePartitions_;
-    
+
         //- information which edge partitions share a corner
         //- with a given partition
         List<labelHashSet> edgePartitionEdgePartitions_;
-    
+
         //- partition of the edge between the surface partitions
         std::map<std::pair<label, label>, labelHashSet> partitionsEdgeParts_;
-    
+
         //- corners shared by edge partitions
         std::map<std::pair<label, label>, labelHashSet> edgePartitionsCorners_;
 
     // Private member functions
         //- calculate partitions
         void calculatePartitionAddressing();
-    
+
         //- find surface corners
         void calculateCornersAndAddressing();
-    
+
         //- calculate partitionPartitions_ addressing
         void calculatePartitionPartitions();
-        
+
         //- calculate edge partitions
         void calculateEdgePartitions();
-        
+
         //- calculate surface partition to edge partitions addressing
         void calculatePartitionsToEdgePartitions();
-        
+
         //- calculate edge partitions to corner addressing
         void calculateEdgePartitionsToCorners();
 
@@ -107,8 +107,8 @@ public:
 
     // Constructors
 
-        //- Construct from triSurface
-        triSurfacePartitioner(const triSurface& surface);
+        //- Construct from triSurf
+        triSurfacePartitioner(const triSurf& surface);
 
     // Destructor
 
@@ -118,20 +118,20 @@ public:
     // Member Functions
         //- return corner nodes
         const labelList& corners() const;
-        
+
         //- return corner patches
         const List<DynList<label> >& cornerPatches() const;
-        
+
         //- return partition-partitions addressing
         const List<labelHashSet>& partitionPartitions() const;
 
         //- return edge partitions. Partitions of edges which are not
         //- the feature edges is set to -1
         const labelList& edgePartitions() const;
-        
+
         //- Edge partition - edge partitions addressing
         const List<labelHashSet>& edgePartitionEdgePartitions() const;
-        
+
         //- Return partitions of feature edges between the given partitions
         void edgePartitionsBetweenPartitions
         (
@@ -139,7 +139,7 @@ public:
             const label partition2,
             DynList<label>& edgePartitions
         ) const;
-        
+
         //- return corners shared between the given edge partitions
         void cornersBetweenEdgePartitions
         (

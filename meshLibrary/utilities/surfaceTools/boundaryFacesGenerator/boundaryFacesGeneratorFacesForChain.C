@@ -143,7 +143,7 @@ void boundaryFacesGenerator::createFacesForChain
                     if(
                         mag
                         (
-                            surface_.localPoints()[cornersCandidates[cornerI]] -
+                            surface_.points()[cornersCandidates[cornerI]] -
                             c
                         ) < dist
                     )
@@ -151,7 +151,7 @@ void boundaryFacesGenerator::createFacesForChain
                         dist =
                         mag
                         (
-                            surface_.localPoints()[cornersCandidates[cornerI]] -
+                            surface_.points()[cornersCandidates[cornerI]] -
                             c
                         );
                         cornerLabel = cornersCandidates[cornerI];
@@ -165,7 +165,7 @@ void boundaryFacesGenerator::createFacesForChain
             //- add new mesh vertex
             polyMeshGenModifier modifier(mesh_);
             modifier.pointsAccess().newElmt(nPoints_++) =
-                surface_.localPoints()[cornerLabel];
+                surface_.points()[cornerLabel];
             
             const DynList<face>& createdFaces = cffc.createdFaces();
             const DynList<label>& faceRegion = cffc.faceRegion();

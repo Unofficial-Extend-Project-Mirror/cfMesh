@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "meshOctreeCube.H"
 #include "VRWGraph.H"
 #include "helperFunctions.H"
@@ -42,7 +42,7 @@ namespace Foam
 
 bool meshOctreeCube::hasContainedTriangles
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const boundBox& rootBox,
     const VRWGraph& containedElements
 ) const

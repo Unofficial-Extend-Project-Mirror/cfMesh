@@ -27,7 +27,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "surfaceIntersectionsOctree.H"
-#include "triSurface.H"
+#include "triSurf.H"
 #include "boundBox.H"
 
 // #define DEBUGSearch
@@ -42,7 +42,7 @@ namespace Foam
 // Construct from surface. Holds reference!
 surfaceIntersectionsOctree::surfaceIntersectionsOctree
 (
-    const triSurface& surface,
+    const triSurf& surface,
     const short maxN,
     const direction maxL
 )
@@ -61,12 +61,12 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
 {
     Info << "Constructing octree" << endl;
     //- all triangles are within the initial cube
-    forAll(surface_.localFaces(), faceI)
+    forAll(surface_, faceI)
         initialCube_.append(faceI);
 
     //- find the smallest edge. Size of the smallest surfaceIntersectionsOctreeCube should not be
     //- smaller than the smallest edge
-    const edgeList& edges = surface_.edges();
+    const edgeListPMG& edges = surface_.edges();
     const pointField& points = surface_.points();
 
     scalar dist(GREAT);
@@ -74,7 +74,7 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
         if( edges[eI].mag(points) < dist )
             dist = edges[eI].mag(points);
 
-    (const_cast<triSurface&>(surface_)).clearTopology();
+    (const_cast<triSurf&>(surface_)).clearAddressing();
 
     label n = label(initialCube_.bb().mag() / dist);
 

@@ -64,7 +64,7 @@ void meshOctree::findEdgesInBox(const boundBox& bb, DynList<label>& edges) const
     findLeavesContainedInBox(bb, neighbours);
 
     const pointField& points = surface_.points();
-    const edgeList& sEdges = surface_.edges();
+    const edgeListPMG& sEdges = surface_.edges();
     const point c = (bb.min() + bb.max()) / 2.0;
     const scalar dSq = Foam::sqr(0.5 * (bb.max().x() - bb.min().x()));
 

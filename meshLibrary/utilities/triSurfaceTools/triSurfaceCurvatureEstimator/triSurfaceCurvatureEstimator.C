@@ -45,7 +45,7 @@ namespace Foam
 
 triSurfaceCurvatureEstimator::triSurfaceCurvatureEstimator
 (
-    const triSurface& surface
+    const triSurf& surface
 )
 :
     surface_(surface),

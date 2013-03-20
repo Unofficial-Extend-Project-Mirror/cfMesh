@@ -57,25 +57,28 @@ class meshSubset
     // Private data
         //- name of the given subset
         word name_;
-    
+
         //- type of subset
         label type_;
-    
+
         //- labels of elements
         HashSet<label> data_;
 
 public:
-    
+
     // Enumerators
 
         enum subsetType_
         {
+            UNKNOWN = 0,
             CELLSUBSET = 1,
             FACESUBSET = 2,
             POINTSUBSET = 4
         };
 
     // Constructors
+        //- Null constructor
+        inline meshSubset();
 
         //- Construct from name. Creates an empty subset
         inline meshSubset(const word& name, const subsetType_&);
@@ -89,6 +92,9 @@ public:
             const ListType& elements
         );
 
+        //- Construct from Istream
+        inline meshSubset(Istream&);
+
     // Destructor
         ~meshSubset();
 
@@ -99,7 +105,7 @@ public:
 
             //- Return name
             inline const word& name() const;
-        
+
             //- Type of subset
             inline label type() const;
 
@@ -108,30 +114,31 @@ public:
             inline void containedElements(ListType&) const;
 
         // Edit
-        
+
             //- add element label to subset
             inline void addElement(const label);
-            
+
             //- remove element from subset
             inline void removeElement(const label);
-            
+
             //- update subset after mesh modification
             //- the list contains new labels of mesh elements
             //- removed elements have a negative label
             template<class ListType>
             inline void updateSubset(const ListType&);
-            
+
             //- update subset after modification
             //- this modifier is used in case when elements are decomposed
             inline void updateSubset(const VRWGraph&);
-            
+
         // Searches
             //- find if the element exists in the subset
             inline bool contains(const label) const;
 
     // IOstream operators
 
-            friend Ostream& operator<<(Ostream&, const meshSubset&);
+            friend inline Ostream& operator<<(Ostream&, const meshSubset&);
+            friend inline Istream& operator>>(Istream&, meshSubset&);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -30,12 +30,13 @@ Description
 #include "argList.H"
 #include "Time.H"
 #include "triSurf.H"
+#include "demandDrivenData.H"
 
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurf* makePatchFromSubset
+void makePatchFromSubset
 (
     triSurf& origSurf,
     const DynList<word>& subsetNames
@@ -46,37 +47,39 @@ triSurf* makePatchFromSubset
     (
         origSurf.patches().size() + subsetNames.size()
     );
-    
+
     //- set names of the new patches
     forAll(origSurf.patches(), patchI)
         newPatches[patchI].name() = origSurf.patches()[patchI].name();
-    
+
     forAll(subsetNames, subsetI)
         newPatches[origSurf.patches().size()+subsetI].name() =
             subsetNames[subsetI];
-    
+
     //- create new triangles
-    List<labelledTri> newTriangles(origSurf.localFaces());
-    
+    LongList<labelledTri> newTriangles(origSurf.facets());
+
     //- set patches for all triangles
     forAll(subsetNames, subsetI)
     {
-        const labelListPMG& subsetFaces =
-            origSurf.facesInSubset(subsetNames[subsetI]);
-        
+        const label subsetID = origSurf.facetSubsetIndex(subsetNames[subsetI]);
+
+        labelListPMG subsetFaces;
+        origSurf.facetsInSubset(subsetID, subsetFaces);
+
         const label regionI = origSurf.patches().size() + subsetI;
-    
+
         forAll(subsetFaces, fI)
         {
             newTriangles[subsetFaces[fI]].region() = regionI;
         }
     }
-    
+
     //- remove patches with no elements
     labelList nTrianglesInPatch(newPatches.size(), 0);
     forAll(newTriangles, triI)
         ++nTrianglesInPatch[newTriangles[triI].region()];
-    
+
     Map<label> newPatchLabel;
     label counter(0);
     forAll(nTrianglesInPatch, patchI)
@@ -84,7 +87,7 @@ triSurf* makePatchFromSubset
         if( nTrianglesInPatch[patchI] )
             newPatchLabel.insert(patchI, counter++);
     }
-    
+
     geometricSurfacePatchList copyPatches(counter);
     counter = 0;
     forAll(newPatches, patchI)
@@ -95,39 +98,25 @@ triSurf* makePatchFromSubset
                 newPatches[patchI].name();
         }
     }
-    
+
     newPatches = copyPatches;
-    
+
     //- renumber the patches in the list of triangles
     forAll(newTriangles, triI)
         newTriangles[triI].region() =
             newPatchLabel[newTriangles[triI].region()];
-    
-    //- copy subsets for the new surface
-    DynList<word> existingSubsets;
-    origSurf.existingFaceSubsets(existingSubsets);
-    
-    std::map<word, labelListPMG> newSubsets;
-    forAll(existingSubsets, sI)
-        newSubsets.insert
-        (
-            std::pair<word, labelListPMG>
-            (
-                existingSubsets[sI],
-                origSurf.facesInSubset(existingSubsets[sI])
-            )
-        );
-    
+
     //- delete subsets converted to patches
     forAll(subsetNames, subsetI)
-        newSubsets.erase(subsetNames[subsetI]);
-    
-    triSurf* newSurfPtr =
-        new triSurf(newTriangles, newPatches, origSurf.points(), newSubsets);
-    
-    return newSurfPtr;
+    {
+        const label subsetID = origSurf.facetSubsetIndex(subsetNames[subsetI]);
+        origSurf.removeFacetSubset(subsetID);
+    }
+
+    //- update subsets
+    origSurf.updateFacetsSubsets(newPatchLabel);
 }
-    
+
 
 int main(int argc, char *argv[])
 {
@@ -135,50 +124,46 @@ int main(int argc, char *argv[])
     argList::validArgs.clear();
 
     argList::validArgs.append("input surface file");
-    argList::validArgs.append("subset file name");
     argList::validArgs.append("subset");
     argList args(argc, argv);
 
     fileName inFileName(args.args()[1]);
-    fileName subsetFileName(args.args()[2]);
-    word subsetName(args.args()[3]);
-    
+    word subsetName(args.args()[2]);
+
     triSurf* origSurfPtr = new triSurf(inFileName);
-    origSurfPtr->readFaceSubsets(subsetFileName);
-    
+
     DynList<word> subsetNames;
-    if( !origSurfPtr->doesFaceSubsetExist(subsetName) )
+    const label subsetID = origSurfPtr->facetSubsetIndex(subsetName);
+    if( subsetID >= 0 )
     {
         Warning << "Subset " << subsetName
         << " checking subsets containing this string!" << endl;
-        DynList<word> existingSubsets;
-        origSurfPtr->existingFaceSubsets(existingSubsets);
-        
+
+        DynList<label> existingSubsets;
+        origSurfPtr->facetSubsetIndices(existingSubsets);
+
         forAll(existingSubsets, subsetI)
         {
-            if(
-                existingSubsets[subsetI].substr(0, subsetName.size()) ==
-                subsetName
-            )
+            const word sName =
+                origSurfPtr->facetSubsetName(existingSubsets[subsetI]);
+
+            if( sName.substr(0, subsetName.size()) == subsetName )
             {
-                subsetNames.append(existingSubsets[subsetI]);
+                subsetNames.append(sName);
             }
         }
-        
+
         Info << "Converting " << subsetNames.size() << " subsets" << endl;
     }
     else
     {
         subsetNames.append(subsetName);
     }
-    
-    triSurf* newSurfPtr = makePatchFromSubset(*origSurfPtr, subsetNames);
+
+    makePatchFromSubset(*origSurfPtr, subsetNames);
+    origSurfPtr->writeSurface(inFileName);
     deleteDemandDrivenData(origSurfPtr);
-        
-    newSurfPtr->write(inFileName, false);
-    newSurfPtr->writeFaceSubsets(subsetFileName);
-    deleteDemandDrivenData(newSurfPtr);
-    
+
     Info << "End\n" << endl;
     return 0;
 }

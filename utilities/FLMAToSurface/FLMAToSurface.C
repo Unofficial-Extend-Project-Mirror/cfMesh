@@ -47,25 +47,23 @@ int main(int argc, char *argv[])
 
     argList::validArgs.append("input surface file");
     argList::validArgs.append("output surface file");
-    argList::validArgs.append("subset file name");
     argList args(argc, argv);
 
     fileName inFileName(args.args()[1]);
     fileName outFileName(args.args()[2]);
-    fileName subsetFileName(args.args()[3]);
-    
+
     if( inFileName.ext() != "flma" )
     {
         Info << "Cannot convert this mesh" << endl;
         return 0;
     }
-    
+
     label counter;
-    
+
     IFstream inFile(inFileName);
-    
+
     inFile >> counter;
-    
+
     //- read vertices
     pointField points(counter);
     for(label pointI=0;pointI<counter;++pointI)
@@ -74,97 +72,74 @@ int main(int argc, char *argv[])
         inFile >> p.x();
         inFile >> p.y();
         inFile >> p.z();
-        
+
         points[pointI] = p;
     }
-    
+
     //- read facets
     inFile >> counter;
-    triFaceList triangles(counter);
+    geometricSurfacePatchList patches(1);
+    patches[0].name() = "patch";
+    LongList<labelledTri> triangles(counter);
     forAll(triangles, triI)
     {
         inFile >> counter;
-        
+
         if( counter != 3 )
         {
             Info << "Facet " << triI << " is not a triangle!!" << endl;
             Warning << "Cannot convert this surface!" << endl;
             return 0;
         }
-        
+
         for(label j=0;j<3;++j)
             inFile >> triangles[triI][2-j];
+
+        triangles[triI].region() = 0;
     }
-    
-    triSurface ts(triangles, points);
-    ts.write(outFileName);
-    
+
     //- read cell types
     inFile >> counter;
     forAll(triangles, triI)
         inFile >> counter;
-    
+
+    //- create the surface mesh
+    triSurf ts(triangles, patches, points);
+
     //- start reading selections
-    std::map<word, labelListPMG> subsets;
     inFile >> counter;
     for(label selI=0;selI<counter;++selI)
     {
         //- read selection name
         word selName;
         inFile >> selName;
-        
+
         //- read selection type
         label selType;
         inFile >> selType;
-        
+
         //- read selection entries
         label size;
         inFile >> size;
         labelListPMG entries(size);
         for(label i=0;i<size;++i)
             inFile >> entries[i];
-        
+
         //- store cell selections
         if( selType == 2 )
         {
             Info << "Adding subset " << selName << endl;
-            subsets.insert(std::pair<word, labelListPMG>(selName, entries));
+            const label setID = ts.addFacetSubset(selName);
+
+            forAll(entries, i)
+                ts.addFacetToSubset(setID, entries[i]);
         }
     }
-    
-    OFstream outFile(subsetFileName);
-    
-    std::map<word, labelListPMG>::const_iterator iter;
-    counter = 0;
-    for(iter=subsets.begin();iter!=subsets.end();++iter)
-        ++counter;
-    
-    outFile << counter << nl;
-    for(iter=subsets.begin();iter!=subsets.end();++iter)
-    {
-        outFile << iter->first << nl;
-        outFile << iter->second << nl;
-    }
-    
-/*    for(iter=subsets.begin();iter!=subsets.end();++iter)
-    {
-        labelList faceMap, pointMap;
-        boolList useTri(triangles.size(), false);
-        
-        const word& sName = iter->first;
-        const labelListPMG& elmts = iter->second;
-        
-        forAll(elmts, elI)
-            useTri[elmts[elI]] = true;
-        
-        faceMap.setSize(elmts.size());
-        pointMap.setSize(elmts.size());
-        
-        triSurface subSurface = ts.subsetMesh(useTri, pointMap, faceMap);
-        
-        subSurface.write(sName+".stl");
-    }
-*/    
+
+    //- write the surface
+
+    ts.writeSurface(outFileName);
+
     Info << "End\n" << endl;
     return 0;
 }

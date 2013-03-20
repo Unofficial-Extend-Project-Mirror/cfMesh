@@ -47,7 +47,7 @@ SourceFiles
 namespace Foam
 {
 
-class triSurface;
+class triSurf;
 class boundBox;
 
 /*---------------------------------------------------------------------------*\
@@ -166,14 +166,14 @@ public:
         //- check if the surface triangle intersects the cube
         bool intersectsTriangle
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&,
             const label
         ) const;
 
         bool intersectsTriangleExact
         (
-            const triSurface&,
+            const triSurf&,
             const boundBox&,
             const label
         ) const;

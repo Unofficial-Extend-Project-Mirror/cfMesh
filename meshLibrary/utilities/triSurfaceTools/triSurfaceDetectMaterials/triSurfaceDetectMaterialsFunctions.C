@@ -52,8 +52,8 @@ void triSurfaceDetectMaterials::createPartitions()
     facePartition_ = -1;
     nPartitions_ = 0;
 
-    const labelListList& faceEdges = surf_.faceEdges();
-    const labelListList& edgeFaces = surf_.edgeFaces();
+    const VRWGraph& faceEdges = surf_.facetEdges();
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
 
     forAll(surf_, triI)
     {
@@ -68,17 +68,16 @@ void triSurfaceDetectMaterials::createPartitions()
         {
             const label fLabel = front.removeLastElement();
 
-            const labelList& fEdges = faceEdges[fLabel];
-            forAll(fEdges, feI)
+            forAllRow(faceEdges, fLabel, feI)
             {
-                const label edgeI = fEdges[feI];
+                const label edgeI = faceEdges(fLabel, feI);
 
-                if( edgeFaces[edgeI].size() != 2 )
+                if( edgeFaces.sizeOfRow(edgeI) != 2 )
                     continue;
 
-                label nei = edgeFaces[edgeI][0];
+                label nei = edgeFaces(edgeI, 0);
                 if( nei == fLabel )
-                    nei = edgeFaces[edgeI][1];
+                    nei = edgeFaces(edgeI, 1);
 
                 if( facePartition_[nei] == -1 )
                 {
@@ -115,12 +114,12 @@ void triSurfaceDetectMaterials::createOctree()
     if( !octreePtr_ )
         octreePtr_ = new meshOctree(surf_);
 
-    const edgeList& edges = surf_.edges();
+    const edgeListPMG& edges = surf_.edges();
 
     if( edges.size() == 0 )
         FatalError << "Surface mesh has no edges!!" << exit(FatalError);
 
-    const pointField& points = surf_.localPoints();
+    const pointField& points = surf_.points();
 
     scalar averageLength(0.0), minLength(VGREAT);
     forAll(edges, eI)
@@ -181,7 +180,7 @@ void triSurfaceDetectMaterials::createOctree()
     //- refine coarse boxes. This is performed by refinining octree boxes
     //- containing more than one partition in its vicinity
     const boundBox& rootBox = octreePtr_->rootBox();
-    const labelListList& pointTriangles = surf_.pointFaces();
+    const VRWGraph& pointTriangles = surf_.pointFacets();
 
     DynList<const meshOctreeCube*, 256> neis;
     do
@@ -230,7 +229,7 @@ void triSurfaceDetectMaterials::createOctree()
             //- check if there exist any corners or edges in the boundBox
             forAllConstIter(labelHashSet, containedPts, pIter)
             {
-                const labelList& pTriangles = pointTriangles[pIter.key()];
+                const constRow pTriangles = pointTriangles[pIter.key()];
 
                 labelHashSet partitions;
                 forAll(pTriangles, i)

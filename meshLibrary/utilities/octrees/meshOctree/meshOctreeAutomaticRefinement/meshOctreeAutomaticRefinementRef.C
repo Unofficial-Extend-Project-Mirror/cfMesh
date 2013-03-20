@@ -132,8 +132,8 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
     const boundBox& rootBox = octree_.rootBox();
-    const triSurface& surface = octree_.surface();
-    const pointField& points = surface.localPoints();
+    const triSurf& surface = octree_.surface();
+    const pointField& points = surface.points();
     const triSurfacePartitioner& sPart = this->partitioner();
 
     //- find leaves which contains corner nodes
@@ -236,7 +236,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     label nMarked(0);
 
     meshOctreeModifier octreeModifier(octree_);
-    const triSurface& surf = octree_.surface();
+    const triSurf& surf = octree_.surface();
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
     DynList<label> patches, ePartitions, helper(100);

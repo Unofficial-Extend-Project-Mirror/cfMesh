@@ -187,8 +187,8 @@ tetTessellation::tetTessellation
     elmts_(),
     pointOk_(true),
     nElmts_(),
-    max_(Foam::max(surf.localPoints())),
-    min_(Foam::min(surf.localPoints()))
+    max_(Foam::max(surf.points())),
+    min_(Foam::min(surf.points()))
 {
     createInitialTets();
 

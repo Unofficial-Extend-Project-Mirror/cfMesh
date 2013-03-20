@@ -35,75 +35,17 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline void triSurf::existingFaceSubsets(DynList<word>& names) const
+inline LongList<labelledTri>& triSurf::accessToFacets()
 {
-    names.clear();
-
-    std::map<word, labelListPMG>::const_iterator iter;
-    for(iter=triSubsets_.begin();iter!=triSubsets_.end();++iter)
-        names.append(iter->first);
+    return triSurfFacets::triangles_;
 }
 
-inline bool triSurf::doesFaceSubsetExist(const word& name) const
+inline geometricSurfacePatchList& triSurf::accessToPatches()
 {
-    if( triSubsets_.find(name) != triSubsets_.end() )
-        return true;
-
-    return false;
+    return triSurfFacets::patches_;
 }
 
-inline const labelListPMG& triSurf::facesInSubset(const word& name) const
-{
-    if( !doesFaceSubsetExist(name) )
-        FatalErrorIn
-        (
-            "inline const labelListPMG& triSurf::"
-            "facesInSubset(const word& name) const"
-        ) << "Subset " << name << " does not exist!" << exit(FatalError);
-
-    std::map<word, labelListPMG>::const_iterator iter = triSubsets_.find(name);
-
-    return iter->second;
-}
-
-inline void triSurf::addFacetsToSubset
-(
-    const word& name,
-    const labelListPMG& newElements
-)
-{
-    if( doesFaceSubsetExist(name) )
-    {
-        std::map<word, labelListPMG>::iterator iter = triSubsets_.find(name);
-
-        labelListPMG& elmts = iter->second;
-        boolList alreadyInside(this->size(), false);
-        forAll(elmts, elI)
-            alreadyInside[elmts[elI]] = true;
-
-        forAll(newElements, elI)
-            if(
-                (newElements[elI] >= 0) &&
-                (newElements[elI] < this->size()) &&
-                !alreadyInside[newElements[elI]]
-            )
-            {
-                elmts.append(newElements[elI]);
-                alreadyInside[newElements[elI]] = true;
-            }
-    }
-    else
-    {
-        triSubsets_.insert(std::pair<word, labelListPMG>(name, newElements));
-    }
-}
-
-inline void triSurf::removeFaceSubset(const word& name)
-{
-    if( doesFaceSubsetExist(name) )
-        triSubsets_.erase(name);
-}
-
+/*
 inline label triSurf::numberOfFaceGroups() const
 {
     if( !faceGroupPtr_ )
@@ -119,6 +61,7 @@ inline const labelListPMG& triSurf::faceGroups() const
 
     return *faceGroupPtr_;
 }
+*/
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

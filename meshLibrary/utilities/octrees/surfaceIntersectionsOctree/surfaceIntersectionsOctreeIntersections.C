@@ -64,7 +64,7 @@ bool surfaceIntersectionsOctree::checkPointIntersections
 
             //- check visibility of other triangles sharing the intersected
             //- vertex
-            const labelList& pp = surface_.pointFaces()[ltri[pI]];
+            const constRow pp = surface_.pointFacets()[ltri[pI]];
 
             forAll(pp, nI)
             {
@@ -107,9 +107,9 @@ bool surfaceIntersectionsOctree::checkEdgeIntersections
 
         if( (d > -SMALL) && (d < SMALL) )
         {
-            const label edgeI = surface_.faceEdges()[ph.index()][eI];
+            const label edgeI = surface_.facetEdges()(ph.index(), eI);
 
-            const labelList& ef = surface_.edgeFaces()[edgeI];
+            const constRow ef = surface_.edgeFacets()[edgeI];
 
             if( ef.size() != 2 )
                 FatalErrorIn
@@ -197,7 +197,7 @@ void surfaceIntersectionsOctree::checkIntersections
             (
                 "bool surfaceIntersectionsOctree::isPointInside(const point& p) const"
             ) << "Intersection " << pIter() << " was not found by the octree!"
-                << abort(FatalError);     
+                << abort(FatalError);
     }
 }
 
@@ -254,7 +254,7 @@ bool surfaceIntersectionsOctree::isPointInside(const point& p) const
     else
     {
         pointIndexHit nearest(false, p, -1);
-    
+
         scalar dist(GREAT);
 
         for(SLList<pointIndexHit>::const_iterator iIter = intersections.begin();
@@ -338,7 +338,7 @@ pointIndexHit surfaceIntersectionsOctree::intersection(const point& s, const poi
             << exit(FatalError);
 
     pointIndexHit nearest(false, s, -1);
-    
+
     scalar dist(GREAT);
 
     for(SLList<pointIndexHit>::const_iterator iIter = intersections.begin();
@@ -348,7 +348,7 @@ pointIndexHit surfaceIntersectionsOctree::intersection(const point& s, const poi
         if(
             (mag(iIter().rawPoint() - s) < dist) &&
             checkPointIntersections(s, iIter()) &&
-            checkEdgeIntersections(s, iIter())                
+            checkEdgeIntersections(s, iIter())
         )
         {
             dist = mag(iIter().rawPoint() - s);
@@ -362,7 +362,7 @@ pointIndexHit surfaceIntersectionsOctree::intersection(const point& s, const poi
     if(
         !nearest.hit() ||
         nearest.index() < 0 ||
-        nearest.index() >= surface_.localFaces().size()
+        nearest.index() >= surface_.size()
     )
     {
         Info << "intersections " << intersections << endl;
@@ -437,7 +437,7 @@ void surfaceIntersectionsOctree::intersection
         iIter != intersections.end();
         ++iIter
     )
-        if( 
+        if(
             checkPointIntersections(s, iIter()) &&
             checkEdgeIntersections(s, iIter())
         )
@@ -460,7 +460,7 @@ void surfaceIntersectionsOctree::intersection
         if(
             !hs.hit() ||
             hs.index() < 0 ||
-            hs.index() >= surface_.localFaces().size()
+            hs.index() >= surface_.size()
         )
         {
             Info << "intersections " << intersections << endl;
@@ -475,11 +475,11 @@ void surfaceIntersectionsOctree::intersection
             ) << "Intersection is invalid!!"
                 << exit(FatalError);
         }
-        
+
         if(
             !he.hit() ||
             he.index() < 0 ||
-            he.index() >= surface_.localFaces().size()
+            he.index() >= surface_.size()
         )
         {
             Info << "intersections " << intersections << endl;
@@ -544,7 +544,7 @@ bool surfaceIntersectionsOctree::normalOk(const label faceI, bool& sure) const
         {
             e = i;
             set = true;
-        }         
+        }
     }
     if( !set )
     {
@@ -633,7 +633,7 @@ bool surfaceIntersectionsOctree::normalOk(const label faceI, bool& sure) const
                 (mag(hits[hitI].rawPoint() - hits[hitJ].rawPoint()) < SMALL)
             )
                 found = true;
-            
+
         if(
             !checkEdgeIntersections(s, hits[hitI]) ||
             !checkPointIntersections(s, hits[hitI])
@@ -646,8 +646,8 @@ bool surfaceIntersectionsOctree::normalOk(const label faceI, bool& sure) const
         {
             sure = true;
         }
-            
-        
+
+
         if( !found ) intersections.append(hits[hitI]);
     }
 
@@ -694,7 +694,7 @@ bool surfaceIntersectionsOctree::validIntersection
 
         if( store ) hits.append(pIter());
     }
-    
+
     intersections.clear();
     forAll(hits, hI)
         intersections.append(hits[hI]);
@@ -715,7 +715,7 @@ bool surfaceIntersectionsOctree::validIntersection
         {
             vector lv = n ^ edges[eI].vec(points);
             lv /= mag(lv);
-            
+
             vector pv = pIter().hitPoint() - points[ltri[eI]];
             if( mag(pv) < SMALL )
             {
@@ -723,13 +723,13 @@ bool surfaceIntersectionsOctree::validIntersection
                 return false;
             }
             pv /= mag(pv);
-            
+
             const scalar d = pv & lv;
-            
+
             if( (d > -SMALL) && (d < SMALL) )
             {
-                const labelList& fe = surface_.faceEdges()[pIter().index()];
-                const labelList& ef = surface_.edgeFaces()[fe[eI]];
+                const constRow fe = surface_.facetEdges()[pIter().index()];
+                const constRow ef = surface_.edgeFacets()[fe[eI]];
                 label neighbourTri(-1);
                 if( ef[0] == pIter().index() )
                 {

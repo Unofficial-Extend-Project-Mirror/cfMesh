@@ -27,7 +27,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "patchRefinement.H"
-#include "triSurface.H"
+#include "triSurf.H"
 #include "Istream.H"
 #include "demandDrivenData.H"
 
@@ -73,7 +73,7 @@ word patchRefinement::patchName() const
     return patchName_;
 }
 
-label patchRefinement::patchInSurface(const triSurface& ts) const
+label patchRefinement::patchInSurface(const triSurf& ts) const
 {
     forAll(ts.patches(), patchI)
         if( ts.patches()[patchI].name() == patchName_ )
@@ -81,7 +81,7 @@ label patchRefinement::patchInSurface(const triSurface& ts) const
 
     FatalErrorIn
     (
-        "label patchRefinement::patchInSurface(const triSurface& ts) const"
+        "label patchRefinement::patchInSurface(const triSurf& ts) const"
     ) << "Patch " << patchName_
         << " does not exist in surface " << ts.patches()
         << exit(FatalError);

@@ -103,7 +103,7 @@ trianglePlaneIntersections::trianglePlaneIntersections
 (
     const vector& n,
     const point& pp,
-    const triSurface& ts,
+    const triSurf& ts,
     const label lI
 )
     :
@@ -163,7 +163,7 @@ label trianglePlaneIntersections::determineRotation
     bool in1 = help::pointInsideFace(intersectionPoints[1], f, n, polyPoints);
 
 //     Info << "in0 " << in0 << " in1 " << in1 << endl;
-    
+
     if( in0 && !in1 )
     {
         return intersectedNeighbours[0];
@@ -172,7 +172,7 @@ label trianglePlaneIntersections::determineRotation
     {
         return intersectedNeighbours[1];
     }
-    
+
     vector ev(intersectionPoints[1] - intersectionPoints[0]);
     ev /= mag(ev);
 
@@ -205,8 +205,8 @@ label trianglePlaneIntersections::determineRotation
     direction& pointI
 ) const
 {
-    const labelList& fe = ts_.faceEdges()[ltri_];
-    const labelListList& ef = ts_.edgeFaces();
+    const constRow fe = ts_.facetEdges()[ltri_];
+    const VRWGraph& ef = ts_.edgeFacets();
 
     labelList neis(2);
     pointField eP(2);
@@ -223,37 +223,37 @@ label trianglePlaneIntersections::determineRotation
                 pointI = pI;
                 return -1;
             }
-            
+
             neis[counter] = -1;
             interPoint[counter] = pI;
             eP[counter++] =
                 points[ts_[ltri_][pI]];
         }
-    
+
     forAll(intersectedEdges_, eJ)
         if( intersectedEdges_[eJ] )
         {
-            label neighbour = ef[fe[eJ]][0];
+            label neighbour = ef(fe[eJ], 0);
             if( neighbour == ltri_ )
-                neighbour = ef[fe[eJ]][1];
-            
+                neighbour = ef(fe[eJ], 1);
+
             if( edgePointInsideFace(f, n, fp, eJ) )
                 return neighbour;
-            
+
             neis[counter] = neighbour;
             eP[counter++] = edgePoints_[eJ];
         }
-    
+
     //- rotation is still not determined
     if( counter == 2 )
     {
         vector v(eP[1] - eP[0]);
         v /= mag(v);
-        
+
         const direction prev = ((npI-1)>=0?(npI-1):(newF.size()-1));
         vector e(newPoints[newF[npI]] - newPoints[newF[prev]]);
         e /= mag(e);
-        
+
         if( ((e ^ v) & n) >= 0.0 )
         {
             if( interPoint[1] != -1 )

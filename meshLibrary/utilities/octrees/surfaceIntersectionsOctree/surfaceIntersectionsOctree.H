@@ -26,7 +26,7 @@ Class
     surfaceIntersectionsOctree
 
 Description
-    Helper class to search on triSurface.
+    Helper class to search on triSurf.
 
 SourceFiles
     surfaceIntersectionsOctree.C
@@ -47,10 +47,10 @@ namespace Foam
 {
 
 // Class forward declarations
-class triSurface;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
-                           Class surfaceIntersectionsOctree Declaration
+                Class surfaceIntersectionsOctree Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceIntersectionsOctree
@@ -58,7 +58,7 @@ class surfaceIntersectionsOctree
     // Private data
 
         //- Reference to surface to work on
-        const triSurface& surface_;
+        const triSurf& surface_;
 
         //- Root cube of the octree structure
         surfaceIntersectionsOctreeCube initialCube_;
@@ -87,7 +87,11 @@ class surfaceIntersectionsOctree
         ) const;
 
         //- find leaves for cubes
-        void findLeavesForCube(surfaceIntersectionsOctreeCube*, SLList<surfaceIntersectionsOctreeCube*>&) const;
+        void findLeavesForCube
+        (
+            surfaceIntersectionsOctreeCube*,
+            SLList<surfaceIntersectionsOctreeCube*>&
+        ) const;
 
         //- Disallow default bitwise copy construct
         surfaceIntersectionsOctree(const surfaceIntersectionsOctree&);
@@ -100,7 +104,7 @@ public:
     // Constructors
 
         //- Construct from surface. Holds reference to surface!
-        surfaceIntersectionsOctree(const triSurface&, const short, const direction);
+        surfaceIntersectionsOctree(const triSurf&, const short, const direction);
 
     // Destructor
 
@@ -125,7 +129,7 @@ public:
         ) const;
 
         //- helper function which checks if all normal vectors
-        //- of the triSurface point outside
+        //- of the triSurf point outside
         bool normalOk(const label, bool&) const;
 
         //- check if the edge intersects the surface in a manner

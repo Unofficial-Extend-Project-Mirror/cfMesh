@@ -135,7 +135,7 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
-    const pointField& sPoints = meshOctree_.surface().localPoints();
+    const pointField& sPoints = meshOctree_.surface().points();
     const List<DynList<label> >& cornerPatches = sPartitioner.cornerPatches();
     
     const meshSurfacePartitioner& mPart = meshPartitioner();

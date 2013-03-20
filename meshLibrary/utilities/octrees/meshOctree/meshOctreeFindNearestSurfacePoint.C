@@ -205,9 +205,9 @@ bool meshOctree::findNearestEdgePoint
 
     DynList<const meshOctreeCube*, 256> neighbours;
 
-    const pointField& sp = surface_.localPoints();
-    const edgeList& edges = surface_.edges();
-    const labelListList& edgeFaces = surface_.edgeFaces();
+    const pointField& sp = surface_.points();
+    const edgeListPMG& edges = surface_.edges();
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
 
     edgePoint = p;
     bool foundAnEdge(false);
@@ -235,10 +235,12 @@ bool meshOctree::findNearestEdgePoint
             {
                 //- find if the edge is in correct patches
                 bool correctPatches(true);
-                const labelList& ef = edgeFaces[ce[eI]];
-                forAll(ef, efI)
+
+                forAllRow(edgeFaces, ce[eI], efI)
                 {
-                    if( !regions.contains(surface_[ef[efI]].region()) )
+                    const label facetI = edgeFaces(ce[eI], efI);
+
+                    if( !regions.contains(surface_[facetI].region()) )
                     {
                         correctPatches = false;
                         break;
@@ -286,9 +288,9 @@ bool meshOctree::findNearestVertexToTheEdge
     DynList<const meshOctreeCube*, 256> leavesInBox;
     findLeavesContainedInBox(bb, leavesInBox);
 
-    const labelListList& edgeFaces = surface_.edgeFaces();
-    const pointField& points = surface_.localPoints();
-    const edgeList& surfaceEdges = surface_.edges();
+    const VRWGraph& edgeFaces = surface_.edgeFacets();
+    const pointField& points = surface_.points();
+    const edgeListPMG& surfaceEdges = surface_.edges();
 
     distSq = VGREAT;
 
@@ -306,7 +308,7 @@ bool meshOctree::findNearestVertexToTheEdge
 
         forAll(edges, eI)
         {
-            const labelList& ef = edgeFaces[edges[eI]];
+            const constRow ef = edgeFaces[edges[eI]];
             if( ef.size() != 2 )
                 continue;
 

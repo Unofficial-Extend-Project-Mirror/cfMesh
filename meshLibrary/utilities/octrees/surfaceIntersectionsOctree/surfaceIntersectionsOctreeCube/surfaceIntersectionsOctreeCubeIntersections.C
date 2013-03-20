@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "surfaceIntersectionsOctreeCube.H"
 #include "helperFunctions.H"
 
@@ -42,7 +42,7 @@ namespace Foam
 bool surfaceIntersectionsOctreeCube::intersectsTriangle(const label tI) const
 {
     const pointField& points = surface_.points();
-    const labelledTri& ltri = surface_.localFaces()[tI];
+    const labelledTri& ltri = surface_[tI];
 
     point max_(-GREAT, -GREAT, -GREAT);
     point min_(GREAT, GREAT, GREAT);
@@ -51,7 +51,7 @@ bool surfaceIntersectionsOctreeCube::intersectsTriangle(const label tI) const
         max_ = Foam::max(points[ltri[pI]], max_);
         min_ = Foam::min(points[ltri[pI]], min_);
     }
-    
+
     min_ -= point(SMALL, SMALL, SMALL);
     max_ += point(SMALL, SMALL, SMALL);
 
@@ -217,7 +217,7 @@ void surfaceIntersectionsOctreeCube::intersectionCandidates
             )
                 cp.append(pointIndexHit(true,intersection, eIter()));
         }
-        
+
         //- check subCubes if there are any
         if( subCubesPtr_ )
         {

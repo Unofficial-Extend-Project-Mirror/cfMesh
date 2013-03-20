@@ -36,8 +36,9 @@ SourceFiles
 #ifndef trianglePlaneIntersections_H
 #define trianglePlaneIntersections_H
 
-#include "triSurface.H"
+#include "triSurf.H"
 #include "DynList.H"
+#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,7 +51,7 @@ class trianglePlaneIntersections
         const vector& n_;
         const point& pp_;
 
-        const triSurface& ts_;
+        const triSurf& ts_;
         const label ltri_;
 
         boolList intersectedPoints_;
@@ -70,7 +71,7 @@ public:
     (
         const vector&,
         const point&,
-        const triSurface&,
+        const triSurf&,
         const label
     );
 
