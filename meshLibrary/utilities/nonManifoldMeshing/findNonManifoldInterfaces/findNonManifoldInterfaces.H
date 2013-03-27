@@ -62,11 +62,15 @@ class findNonManifoldInterfaces
         const meshOctree& octree_;
 
         //- graph of mesh cells intesected by surface facets
-        VRWGraph intersectedCells_;
+        VRWGraph patchesIntersectingCells_;
 
         //- cell groups assigned to neighbouring cells
         //- of the intersected cells
         VRWGraph neiGroups_;
+
+        //- store information about face candidates
+        //- and the patches they may be mapped to
+        VRWGraph internalFacePatches_;
 
     // Private member functions
         //- find intersected cells
@@ -74,6 +78,10 @@ class findNonManifoldInterfaces
 
         //- find neighbouring groups
         void findNeighbouringGroups();
+
+        //- find faces which are candidates to be constrained
+        //- to the internal interfaces
+        bool findFaceCandidates();
 
         //- extract non-manifold interfaces
         bool extractInterfaces();
