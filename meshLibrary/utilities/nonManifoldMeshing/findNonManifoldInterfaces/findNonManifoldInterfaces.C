@@ -196,6 +196,36 @@ bool findNonManifoldInterfaces::findFaceCandidates()
         }
     }
 
+    # ifdef DEBUGNonManifoldInterfaces
+    Map<label> regionToID;
+    forAll(internalFacePatches_, faceI)
+    {
+        forAllRow(internalFacePatches_, faceI, i)
+        {
+            const label regionI = internalFacePatches_(faceI, i);
+            Map<label>::iterator iter = regionToID.find(regionI);
+            if( iter == regionToID.end() )
+            {
+                const word sName =
+                    "interfaceFaceToPatch_" +
+                    mesh_.boundaries()[regionI].patchName();
+
+                regionToID.insert
+                (
+                    regionI,
+                    mesh_.addFaceSubset(sName)
+                );
+
+                iter = regionToID.find(regionI);
+            }
+
+            mesh_.addFaceToSubset(iter(), faceI);
+        }
+    }
+
+    const label problemFacesID = mesh_.addFaceSubset("problematicFaces");
+    # endif
+
     //- check if there exist any proximity problems
     forAll(internalFacePatches_, faceI)
     {
@@ -203,6 +233,12 @@ bool findNonManifoldInterfaces::findFaceCandidates()
             continue;
 
         //- check if it is a proximity problem
+        Info << "More than one internal interface assigned to face "
+            << faceI << endl;
+
+        # ifdef DEBUGNonManifoldInterfaces
+        mesh_.addFaceToSubset(problemFacesID, faceI);
+        # endif
     }
 
     return false;

@@ -109,6 +109,30 @@ void findCellsIntersectingSurface::findIntersectedCells()
             }
         }
 
+        //- remove triangles which do not intersect the bounding box
+        labelHashSet reasonableCandidates;
+        const pointField& sp = surf.points();
+        forAllConstIter(labelHashSet, triangles, tIter)
+        {
+            const labelledTri& tri = surf[tIter.key()];
+
+            boundBox obb(sp[tri[0]], sp[tri[0]]);
+            for(label i=1;i<3;++i)
+            {
+                const point& v = sp[tri[i]];
+                obb.min() = Foam::min(obb.min(), v);
+                obb.max() = Foam::max(obb.max(), v);
+            }
+
+            obb.min() -= vector(VSMALL, VSMALL, VSMALL);
+            obb.max() += vector(VSMALL, VSMALL, VSMALL);
+
+            if( obb.overlaps(bb) )
+                reasonableCandidates.insert(tIter.key());
+        }
+
+        triangles.transfer(reasonableCandidates);
+
         //- check if any triangle in the surface mesh
         //- intersects any of the cell's faces
         labelHashSet facetsInCell;
@@ -140,6 +164,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
         labelHashSet nodes;
         forAllConstIter(labelHashSet, triangles, tIter)
         {
+            if( facetsInCell.found(tIter.key()) )
+                continue;
+
             const labelledTri& tri = surf[tIter.key()];
 
             for(label i=0;i<3;++i)
@@ -216,7 +243,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         intersectedCells_[cellI] = intersected;
         # pragma omp critical
-        facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
+        {
+            facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
+        }
     }
 }
 
