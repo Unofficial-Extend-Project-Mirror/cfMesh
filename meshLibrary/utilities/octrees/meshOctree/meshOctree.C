@@ -28,7 +28,6 @@ Description
 
 #include "meshOctree.H"
 #include "triSurf.H"
-#include "IOdictionary.H"
 #include "boundBox.H"
 #include "demandDrivenData.H"
 
@@ -43,7 +42,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from surface and IOdictionary
+// Construct from surface
 meshOctree::meshOctree(const triSurf& ts)
 :
     surface_(ts),

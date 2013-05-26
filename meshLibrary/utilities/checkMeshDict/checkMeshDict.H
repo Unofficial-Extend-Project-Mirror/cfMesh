@@ -51,39 +51,42 @@ class checkMeshDict
 {
         //- Reference to the mesh
         const IOdictionary& meshDict_;
-    
+
     // Private member functions
         //- check patchCellSize entry
         void checkPatchCellSize();
-    
+
+        //- check subsetCellSize entry
+        void checkSubsetCellSize();
+
         //- check keepCellsIntersectingPatches entry
         void checkKeepCellsIntersectingPatches();
-    
+
         //- check removeCellsIntersectingPatches entry
         void checkRemoveCellsIntersectingPatches();
-    
+
         //- check objectRefinements entry
         void checkObjectRefinements();
-    
+
         //- check entry for boundary layers
         void checkBoundaryLayers();
-    
+
         //- check renameBoundary entry
         void checkRenameBoundary();
-    
+
         //- perform all checks
         void checkEntries();
-    
+
     public:
-        
+
     // Constructors
-    
+
         //- Construct from IOdictionary
         checkMeshDict(const IOdictionary& meshDict);
-    
+
     // Destructor
         ~checkMeshDict();
-    
+
     // Public member functions
 };
 

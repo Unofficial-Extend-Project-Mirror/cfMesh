@@ -28,7 +28,6 @@ Description
 
 #include "meshOctreeCreator.H"
 #include "triSurf.H"
-#include "IOdictionary.H"
 #include "boundBox.H"
 #include "demandDrivenData.H"
 

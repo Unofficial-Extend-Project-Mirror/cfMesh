@@ -32,10 +32,11 @@ Description
 #include "demandDrivenData.H"
 #include "meshOctree.H"
 #include "labelListPMG.H"
-#include "IOdictionary.H"
 #include "triSurf.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGVrt
 
@@ -347,10 +348,24 @@ void meshOctreeAddressing::findUsedBoxes() const
         //- do not use boxes intersecting given patches
         if( meshDict_.found("removeCellsIntersectingPatches") )
         {
-            wordHashSet patchesToRemove
-            (
-                meshDict_.lookup("removeCellsIntersectingPatches")
-            );
+            wordHashSet patchesToRemove;
+
+            if( meshDict_.isDict("removeCellsIntersectingPatches") )
+            {
+                const dictionary& dict =
+                    meshDict_.subDict("removeCellsIntersectingPatches");
+                const wordList patchNames = dict.toc();
+                forAll(patchNames, patchI)
+                    patchesToRemove.insert(patchNames[patchI]);
+            }
+            else
+            {
+                wordHashSet patchesToRemoveCopy
+                (
+                    meshDict_.lookup("removeCellsIntersectingPatches")
+                );
+                patchesToRemove.transfer(patchesToRemoveCopy);
+            }
 
             const triSurf& ts = octree_.surface();
             boolList removeFacets(ts.size(), false);
@@ -400,10 +415,25 @@ void meshOctreeAddressing::findUsedBoxes() const
     }
     else if( meshDict_.found("keepCellsIntersectingPatches") )
     {
-        const wordHashSet patchesToKeep
-        (
-            meshDict_.lookup("keepCellsIntersectingPatches")
-        );
+        wordHashSet patchesToKeep;
+
+        if( meshDict_.isDict("keepCellsIntersectingPatches") )
+        {
+            const dictionary& dict =
+                meshDict_.subDict("keepCellsIntersectingPatches");
+            const wordList patchNames = dict.toc();
+
+            forAll(patchNames, patchI)
+                patchesToKeep.insert(patchNames[patchI]);
+        }
+        else
+        {
+            wordHashSet patchesToKeepCopy
+            (
+                meshDict_.lookup("keepCellsIntersectingPatches")
+            );
+            patchesToKeep.transfer(patchesToKeepCopy);
+        }
 
         const triSurf& ts = octree_.surface();
         boolList keepFacets(ts.size(), false);

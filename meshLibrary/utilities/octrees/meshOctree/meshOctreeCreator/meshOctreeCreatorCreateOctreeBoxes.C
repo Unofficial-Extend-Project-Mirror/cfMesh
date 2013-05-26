@@ -162,7 +162,35 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
     //- set patch-wise ref levels
     if( meshDictPtr_->found("patchCellSize") )
     {
-        patchRefinementList refPatches(meshDictPtr_->lookup("patchCellSize"));
+        patchRefinementList refPatches;
+
+        if( meshDictPtr_->isDict("patchCellSize") )
+        {
+            const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
+            const wordList patchNames = dict.toc();
+
+            refPatches.setSize(patchNames.size());
+            label counter(0);
+
+            forAll(patchNames, patchI)
+            {
+                if( !dict.isDict(patchNames[patchI]) )
+                    continue;
+
+                const dictionary& patchDict = dict.subDict(patchNames[patchI]);
+                const scalar cs = readScalar(patchDict.lookup("cellSize"));
+
+                refPatches[counter] = patchRefinement(patchNames[patchI], cs);
+                ++counter;
+            }
+
+            refPatches.setSize(counter);
+        }
+        else
+        {
+            patchRefinementList prl(meshDictPtr_->lookup("patchCellSize"));
+            refPatches.transfer(prl);
+        }
 
         forAll(refPatches, patchI)
         {
@@ -208,7 +236,35 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
     if( meshDictPtr_->found("subsetCellSize") )
     {
-        patchRefinementList refPatches(meshDictPtr_->lookup("subsetCellSize"));
+        patchRefinementList refPatches;
+
+        if( meshDictPtr_->isDict("subsetCellSize") )
+        {
+            const dictionary& dict = meshDictPtr_->subDict("subsetCellSize");
+            const wordList patchNames = dict.toc();
+
+            refPatches.setSize(patchNames.size());
+            label counter(0);
+
+            forAll(patchNames, patchI)
+            {
+                if( !dict.isDict(patchNames[patchI]) )
+                    continue;
+
+                const dictionary& patchDict = dict.subDict(patchNames[patchI]);
+                const scalar cs = readScalar(patchDict.lookup("cellSize"));
+
+                refPatches[counter] = patchRefinement(patchNames[patchI], cs);
+                ++counter;
+            }
+
+            refPatches.setSize(counter);
+        }
+        else
+        {
+            patchRefinementList srl(meshDictPtr_->lookup("subsetCellSize"));
+            refPatches.transfer(srl);
+        }
 
         forAll(refPatches, patchI)
         {

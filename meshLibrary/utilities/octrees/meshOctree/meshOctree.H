@@ -49,7 +49,6 @@ namespace Foam
 
 // Forward declarations
 class triSurf;
-class IOdictionary;
 
 /*---------------------------------------------------------------------------*\
                            Class meshOctree Declaration

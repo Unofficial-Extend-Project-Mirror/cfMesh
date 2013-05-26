@@ -31,12 +31,13 @@ Description
 #include "boundBox.H"
 #include "demandDrivenData.H"
 #include "objectRefinementList.H"
-#include "IOdictionary.H"
 #include "VRWGraph.H"
 #include "meshOctreeModifier.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define OCTREETiming
 //#define DEBUGSearch
@@ -152,25 +153,51 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     objectRefinementList refObjects;
 
     // Read polyPatchList
-    Istream& is = meshDictPtr_->lookup("objectRefinements");
-
-    PtrList<entry> objectEntries(is);
-    refObjects.setSize(objectEntries.size());
-
-    forAll(refObjects, objectI)
+    if( meshDictPtr_->isDict("objectRefinements") )
     {
-        refObjects.set
-        (
-            objectI,
-            objectRefinement::New
-            (
-                objectEntries[objectI].keyword(),
-                objectEntries[objectI].dict()
-            )
-        );
-    }
+        const dictionary& dict = meshDictPtr_->subDict("objectRefinements");
+        const wordList objectNames = dict.toc();
 
-    objectEntries.clear();
+        refObjects.setSize(objectNames.size());
+
+        forAll(refObjects, objectI)
+        {
+            const entry& objectEntry =
+                dict.lookupEntry(objectNames[objectI], false, false);
+
+            refObjects.set
+            (
+                objectI,
+                objectRefinement::New
+                (
+                    objectEntry.keyword(),
+                    objectEntry.dict()
+                )
+            );
+        }
+    }
+    else
+    {
+        Istream& is = meshDictPtr_->lookup("objectRefinements");
+
+        PtrList<entry> objectEntries(is);
+        refObjects.setSize(objectEntries.size());
+
+        forAll(refObjects, objectI)
+        {
+            refObjects.set
+            (
+                objectI,
+                objectRefinement::New
+                (
+                    objectEntries[objectI].keyword(),
+                    objectEntries[objectI].dict()
+                )
+            );
+        }
+
+        objectEntries.clear();
+    }
 
     scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
 

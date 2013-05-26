@@ -191,7 +191,18 @@ void dualMeshGenerator::generateBoudaryLayers()
 
     if( meshDict_.found("boundaryLayers") )
     {
-        wordList createLayers(meshDict_.lookup("boundaryLayers"));
+        wordList createLayers;
+
+        if( meshDict_.isDict("boundaryLayers") )
+        {
+            const dictionary& dict = meshDict_.subDict("boundaryLayers");
+            createLayers = dict.toc();
+        }
+        else
+        {
+            wordList bndLayers(meshDict_.lookup("boundaryLayers"));
+            createLayers.transfer(bndLayers);
+        }
 
         forAll(createLayers, patchI)
             bl.addLayerForPatch(createLayers[patchI]);

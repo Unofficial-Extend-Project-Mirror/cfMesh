@@ -36,7 +36,6 @@ SourceFiles
 #ifndef findCellsIntersectingSurface_H
 #define findCellsIntersectingSurface_H
 
-#include "IOdictionary.H"
 #include "boolList.H"
 #include "VRWGraph.H"
 

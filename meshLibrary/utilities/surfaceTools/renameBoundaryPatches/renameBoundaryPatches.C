@@ -38,15 +38,15 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void renameBoundaryPatches::calculateNewBoundary()
 {
     Info << "Renaming boundary patches" << endl;
-    
+
     const dictionary& dict = meshDict_.subDict("renameBoundary");
-    
+
     std::map<word, label> patchToLabel;
     forAll(mesh_.boundaries(), patchI)
     {
@@ -59,29 +59,54 @@ void renameBoundaryPatches::calculateNewBoundary()
             )
         );
     }
-    
+
     labelList patchToNew(mesh_.boundaries().size(), -1);
-    
+
     wordList newPatchNames(patchToNew.size());
     wordList newPatchTypes(patchToNew.size());
     std::map<word, label> newNameToPos;
     label newPatchI(0);
-    
+
     //- read new patch names and types
     if( dict.found("newPatchNames") )
     {
-        PtrList<entry> patchesToRename(dict.lookup("newPatchNames"));
-        
+        PtrList<entry> patchesToRename;
+
+        if( dict.isDict("newPatchNames") )
+        {
+            const dictionary& newPatchNames = dict.subDict("newPatchNames");
+            const wordList keys = newPatchNames.toc();
+
+            patchesToRename.setSize(keys.size());
+
+            forAll(keys, patchI)
+                patchesToRename.set
+                (
+                    patchI,
+                    newPatchNames.lookupEntry
+                    (
+                        keys[patchI],
+                        false,
+                        false
+                    ).clone()
+                );
+        }
+        else
+        {
+            PtrList<entry> copyPatchesToRename(dict.lookup("newPatchNames"));
+            patchesToRename.transfer(copyPatchesToRename);
+        }
+
         forAll(patchesToRename, patchI)
         {
             const word patchName = patchesToRename[patchI].keyword();
-            
+
             if( patchToLabel.find(patchName) == patchToLabel.end() )
             {
                 Info<< "Patch " << patchName << " does not exist!!" << endl;
                 continue;
             }
-            
+
             if( !patchesToRename[patchI].isDict() )
             {
                 Warning << "Cannot rename patch " << patchName << endl;
@@ -89,20 +114,20 @@ void renameBoundaryPatches::calculateNewBoundary()
                     << endl;
                 return;
             }
-            
+
             const dictionary& pDict = patchesToRename[patchI].dict();
-            
+
             word newName(patchName);
             if( pDict.found("newName") )
                 newName = word(pDict.lookup("newName"));
-            
+
             if( newNameToPos.find(newName) != newNameToPos.end() )
             {
                 //- patch with the same name already exists
                 patchToNew[patchToLabel[patchName]] = newNameToPos[newName];
                 continue;
             }
-            
+
             //- add a new patch
             newNameToPos.insert(std::pair<word, label>(newName, newPatchI));
             newPatchNames[newPatchI] = newName;
@@ -115,19 +140,19 @@ void renameBoundaryPatches::calculateNewBoundary()
             {
                 newPatchTypes[newPatchI] = "patch";
             }
-            
+
             patchToNew[patchToLabel[patchName]] = newPatchI;
             ++newPatchI;
         }
     }
-    
+
     word defaultName("");
     if( dict.found("defaultName") )
         defaultName = word(dict.lookup("defaultName"));
     word defaultType("patch");
     if( dict.found("defaultType") )
         defaultType = word(dict.lookup("defaultType"));
-    
+
     if( dict.found("defaultName") )
     {
         newNameToPos.insert(std::pair<word, label>(defaultName, newPatchI));
@@ -141,25 +166,25 @@ void renameBoundaryPatches::calculateNewBoundary()
         {
             if( patchToNew[patchI] != -1 )
                 continue;
-            
+
             patchToNew[patchI] = newPatchI;
             newPatchNames[newPatchI] = mesh_.boundaries()[patchI].patchName();
             newPatchTypes[newPatchI] = mesh_.boundaries()[patchI].patchType();
             ++newPatchI;
         }
     }
-    
+
     if( newPatchI == 0 )
         return;
-    
+
     newPatchNames.setSize(newPatchI);
     newPatchTypes.setSize(newPatchI);
-    
+
     //- start creating new boundary
     VRWGraph newBoundaryFaces;
     labelListPMG newBoundaryOwners;
     labelListPMG newBoundaryPatches;
-    
+
     const PtrList<writePatch>& boundaries = mesh_.boundaries();
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
@@ -168,7 +193,7 @@ void renameBoundaryPatches::calculateNewBoundary()
         const writePatch& wp = boundaries[patchI];
         const label start = wp.patchStart();
         const label end = start + wp.patchSize();
-        
+
         if( patchToNew[patchI] == -1 )
         {
             //- this patch is moved to the default patch
@@ -190,7 +215,7 @@ void renameBoundaryPatches::calculateNewBoundary()
             }
         }
     }
-    
+
     //- execute the modifier
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.replaceBoundary
@@ -203,7 +228,7 @@ void renameBoundaryPatches::calculateNewBoundary()
     forAll(meshModifier.boundariesAccess(), patchI)
         meshModifier.boundariesAccess()[patchI].patchType() =
             newPatchTypes[patchI];
-    
+
     Info << "Finished renaming boundary patches" << endl;
 }
 
@@ -225,8 +250,7 @@ renameBoundaryPatches::renameBoundaryPatches
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 renameBoundaryPatches::~renameBoundaryPatches()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

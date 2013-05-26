@@ -38,7 +38,9 @@ Description
 
 #include "Map.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGAutoRef
 

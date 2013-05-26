@@ -35,22 +35,62 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void checkMeshDict::checkPatchCellSize()
 {
     if( meshDict_.found("patchCellSize") )
     {
-        patchRefinementList prl(meshDict_.lookup("patchCellSize"));
+        if( meshDict_.isDict("patchCellSize") )
+        {
+            const dictionary& dict = meshDict_.subDict("patchCellSize");
+
+            const wordList patchNames = dict.toc();
+            patchNames.size();
+        }
+        else
+        {
+            patchRefinementList prl(meshDict_.lookup("patchCellSize"));
+            prl.size();
+        }
     }
 }
-    
+
+void checkMeshDict::checkSubsetCellSize()
+{
+    if( meshDict_.found("subsetCellSize") )
+    {
+        if( meshDict_.isDict("subsetCellSize") )
+        {
+            const dictionary& dict = meshDict_.subDict("subsetCellSize");
+
+            const wordList subsetNames = dict.toc();
+            subsetNames.size();
+        }
+        else
+        {
+            patchRefinementList prl(meshDict_.lookup("patchCellSize"));
+        }
+    }
+}
+
 void checkMeshDict::checkKeepCellsIntersectingPatches()
 {
     if( meshDict_.found("keepCellsIntersectingPatches") )
     {
-        wordList kcip(meshDict_.lookup("keepCellsIntersectingPatches"));
+        if( meshDict_.isDict("keepCellsIntersectingPatches") )
+        {
+            const dictionary& dict =
+                meshDict_.subDict("keepCellsIntersectingPatches");
+
+            const wordList patchNames = dict.toc();
+            patchNames.size();
+        }
+        else
+        {
+            wordList kcip(meshDict_.lookup("keepCellsIntersectingPatches"));
+        }
     }
 }
 
@@ -58,31 +98,69 @@ void checkMeshDict::checkRemoveCellsIntersectingPatches()
 {
     if( meshDict_.found("removeCellsIntersectingPatches") )
     {
-        wordList kcip(meshDict_.lookup("removeCellsIntersectingPatches"));
+        if( meshDict_.isDict("removeCellsIntersectingPatches") )
+        {
+            const dictionary& dict =
+                meshDict_.subDict("removeCellsIntersectingPatches");
+
+            const wordList patchNames = dict.toc();
+            patchNames.size();
+        }
+        else
+        {
+            wordList kcip(meshDict_.lookup("removeCellsIntersectingPatches"));
+        }
     }
 }
-    
+
 void checkMeshDict::checkObjectRefinements()
 {
     if( meshDict_.found("objectRefinements") )
     {
         PtrList<objectRefinement> refObjects;
-        Istream& is = meshDict_.lookup("objectRefinements");
 
-        PtrList<entry> objectEntries(is);
-        refObjects.setSize(objectEntries.size());
-    
-        forAll(refObjects, objectI)
+        if( meshDict_.isDict("objectRefinements") )
         {
-            refObjects.set
-            (
-                objectI,
-                objectRefinement::New
+            const dictionary& dict = meshDict_.subDict("objectRefinements");
+            const wordList objectNames = dict.toc();
+
+            refObjects.setSize(objectNames.size());
+
+            forAll(refObjects, objectI)
+            {
+                const entry& objectEntry =
+                    dict.lookupEntry(objectNames[objectI], false, false);
+
+                refObjects.set
                 (
-                    objectEntries[objectI].keyword(),
-                    objectEntries[objectI].dict()
-                )
-            );
+                    objectI,
+                    objectRefinement::New
+                    (
+                        objectEntry.keyword(),
+                        objectEntry.dict()
+                    )
+                );
+            }
+        }
+        else
+        {
+            Istream& is = meshDict_.lookup("objectRefinements");
+
+            PtrList<entry> objectEntries(is);
+            refObjects.setSize(objectEntries.size());
+
+            forAll(refObjects, objectI)
+            {
+                refObjects.set
+                (
+                    objectI,
+                    objectRefinement::New
+                    (
+                        objectEntries[objectI].keyword(),
+                        objectEntries[objectI].dict()
+                    )
+                );
+            }
         }
     }
 }
@@ -91,7 +169,17 @@ void checkMeshDict::checkBoundaryLayers()
 {
     if( meshDict_.found("boundaryLayers") )
     {
-        wordList bl(meshDict_.lookup("boundaryLayers"));
+        if( meshDict_.isDict("boundaryLayers") )
+        {
+            const dictionary& dict = meshDict_.subDict("boundaryLayers");
+
+            const wordList layerNames = dict.toc();
+            layerNames.size();
+        }
+        else
+        {
+            wordList bl(meshDict_.lookup("boundaryLayers"));
+        }
     }
 }
 
@@ -102,7 +190,21 @@ void checkMeshDict::checkRenameBoundary()
         const dictionary& dict = meshDict_.subDict("renameBoundary");
         if( dict.found("newPatchNames") )
         {
-            PtrList<entry> patchesToRename(dict.lookup("newPatchNames"));
+            if( dict.isDict("newPatchNames") )
+            {
+                const dictionary& patchDicts = dict.subDict("newPatchNames");
+
+                patchDicts.toc();
+            }
+            else
+            {
+                const PtrList<entry> patchesToRename
+                (
+                    dict.lookup("newPatchNames")
+                );
+
+                patchesToRename.size();
+            }
         }
     }
 }
@@ -110,15 +212,17 @@ void checkMeshDict::checkRenameBoundary()
 void checkMeshDict::checkEntries()
 {
     checkPatchCellSize();
-    
+
+    checkSubsetCellSize();
+
     checkKeepCellsIntersectingPatches();
-    
+
     checkRemoveCellsIntersectingPatches();
-    
+
     checkObjectRefinements();
-    
+
     checkBoundaryLayers();
-    
+
     checkRenameBoundary();
 }
 
