@@ -71,7 +71,9 @@ void createFundamentalSheetsJFS::createInitialSheet()
 
     LongList<labelPair> extrudeFaces(end-start);
 
+    # ifdef USE_OMP
     # pragma omp parallel for
+    # endif
     for(label faceI=start;faceI<end;++faceI)
         extrudeFaces[faceI-start] = labelPair(faceI, owner[faceI]);
 
@@ -98,23 +100,31 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 
     LongList<labelPair> front;
 
+    # ifdef USE_OMP
     const label nThreads = 2 * omp_get_num_procs();
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for
+        # endif
         forAll(patchCell, cellI)
             patchCell[cellI] = -1;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for
+        # endif
         for(label faceI=start;faceI<end;++faceI)
             patchCell[owner[faceI]] = mesh_.faceIsInPatch(faceI);
 
         //- create the front faces
         LongList<labelPair> localFront;
 
+        # ifdef USE_OMP
         # pragma omp for
+        # endif
         for(label faceI=start;faceI<end;++faceI)
         {
             const cell& c = cells[owner[faceI]];
@@ -135,7 +145,9 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
         }
 
         label frontStart(-1);
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             frontStart = front.size();
             front.setSize(front.size()+localFront.size());
@@ -168,8 +180,7 @@ createFundamentalSheetsJFS::createFundamentalSheetsJFS
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 createFundamentalSheetsJFS::~createFundamentalSheetsJFS()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

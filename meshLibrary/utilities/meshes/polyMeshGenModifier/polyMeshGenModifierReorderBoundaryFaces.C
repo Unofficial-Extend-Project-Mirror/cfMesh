@@ -63,13 +63,23 @@ void polyMeshGenModifier::reorderBoundaryFaces()
     labelList internalToChange;
     labelList boundaryToChange;
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
+    # else
+    const label nThreads(1);
+    # endif
     labelList nInternalToChangeThread(nThreads);
     labelList nBoundaryToChangeThread(nThreads);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI = 0;
+        # endif
 
         label& nItc = nInternalToChangeThread[threadI];
         label& nBtc = nBoundaryToChangeThread[threadI];
@@ -77,7 +87,9 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         labelListPMG internalToChangeLocal, boundaryToChangeLocal;
 
         //- find the boundary faces within the range of internal faces
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
             if( neighbour[faceI] == -1 )
@@ -87,7 +99,9 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         nItc = internalToChangeLocal.size();
 
         //- find the internal faces within the range of boundary faces
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         for(label faceI=nInternalFaces;faceI<faces.size();++faceI)
         {
             if( neighbour[faceI] != -1 )
@@ -98,18 +112,24 @@ void polyMeshGenModifier::reorderBoundaryFaces()
 
         //- perform reduction such that all threads know how many faces
         //- need to be swapped
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         nReplaced += nBtc;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         {
             internalToChange.setSize(nReplaced);
             boundaryToChange.setSize(nReplaced);
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         label localStart(0);
         for(label i=0;i<threadI;++i)
@@ -125,10 +145,12 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         forAll(boundaryToChangeLocal, i)
             boundaryToChange[localStart++] = boundaryToChangeLocal[i];
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- start moving positions of faces
         # pragma omp for schedule(static)
+        # endif
         forAll(internalToChange, fI)
         {
             //- swap with the face at the location the face should be
@@ -140,10 +162,12 @@ void polyMeshGenModifier::reorderBoundaryFaces()
             newFaceLabel[boundaryToChange[fI]] = internalToChange[fI];
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- renumber cells
         # pragma omp for schedule(dynamic, 40)
+        # endif
         forAll(cells, cellI)
         {
             cell& c = cells[cellI];
@@ -289,7 +313,9 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
     }
 
     //- renumber cells
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];

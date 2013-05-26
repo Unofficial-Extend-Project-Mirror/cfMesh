@@ -122,7 +122,9 @@ bool checkClosedCells
 
     label nErrorClosed = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nErrorClosed)
+    # endif
     forAll(cells, cI)
     {
         const cell& curCell = cells[cI];
@@ -138,7 +140,9 @@ bool checkClosedCells
 
             if( setPtr )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 setPtr->insert(cI);
             }
 
@@ -370,11 +374,15 @@ bool checkFaceAreas
     scalar minArea = VGREAT;
     scalar maxArea = -VGREAT;
 
+    # ifdef USE_OMP
     # pragma omp parallel if( own.size() > 100 )
+    # endif
     {
         scalar localMaxArea(-VGREAT), localMinArea(VGREAT);
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(magFaceAreas, faceI)
         {
             if( changedFacePtr && !changedFacePtr->operator[](faceI) )
@@ -403,7 +411,9 @@ bool checkFaceAreas
 
                 if( setPtr )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     setPtr->insert(faceI);
                 }
             }
@@ -412,7 +422,9 @@ bool checkFaceAreas
             localMaxArea = Foam::max(localMaxArea, magFaceAreas[faceI]);
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             minArea = Foam::min(minArea, localMinArea);
             maxArea = Foam::max(maxArea, localMaxArea);
@@ -467,8 +479,10 @@ bool checkCellPartTetrahedra
 
     label nNegVolCells = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( owner.size() > 100 ) \
     schedule(guided) reduction(+ : nNegVolCells)
+    # endif
     forAll(owner, faceI)
     {
         if( changedFacePtr && !(*changedFacePtr)[faceI] )
@@ -492,7 +506,9 @@ bool checkCellPartTetrahedra
             {
                 if( report )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     Pout<< "Zero or negative cell volume detected for cell "
                         << owner[faceI] << "." << endl;
                 }
@@ -515,7 +531,9 @@ bool checkCellPartTetrahedra
             {
                 if( report )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     Pout<< "Zero or negative cell volume detected for cell "
                         << neighbour[faceI] << "." << endl;
                 }
@@ -528,7 +546,9 @@ bool checkCellPartTetrahedra
         {
             if( setPtr )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 setPtr->insert(faceI);
             }
 
@@ -631,11 +651,15 @@ bool checkFaceDotProduct
     label errorNonOrth = 0;
     label counter = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel if( nInternalFaces > 1000 ) \
     reduction(+ : severeNonOrth, errorNonOrth, sumDDotS)
+    # endif
     {
         scalar localMinDDotS(VGREAT);
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
             const vector d = centres[nei[faceI]] - centres[own[faceI]];
@@ -650,7 +674,9 @@ bool checkFaceDotProduct
                     if( report )
                     {
                         // Severe non-orthogonality but mesh still OK
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         Pout<< "Severe non-orthogonality for face " << faceI
                             << " between cells " << own[faceI]
                             << " and " << nei[faceI]
@@ -661,7 +687,9 @@ bool checkFaceDotProduct
 
                     if( setPtr )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         setPtr->insert(faceI);
                     }
 
@@ -673,7 +701,9 @@ bool checkFaceDotProduct
 
                     if( setPtr )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         setPtr->insert(faceI);
                     }
                 }
@@ -683,7 +713,9 @@ bool checkFaceDotProduct
             sumDDotS += dDotS;
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         minDDotS = Foam::min(minDDotS, localMinDDotS);
     }
 
@@ -725,11 +757,15 @@ bool checkFaceDotProduct
 
             //- calculate skewness at processor faces
             const label start = procBoundaries[patchI].patchStart();
+            # ifdef USE_OMP
             # pragma omp parallel \
             reduction(+ : severeNonOrth, errorNonOrth, sumDDotS)
+            # endif
             {
                 scalar localMinDDotS(VGREAT);
+                # ifdef USE_OMP
                 # pragma omp for schedule(guided)
+                # endif
                 forAll(otherCentres, faceI)
                 {
                     const point& cOwn = centres[own[start+faceI]];
@@ -746,7 +782,9 @@ bool checkFaceDotProduct
                             if( report )
                             {
                                 // Severe non-orthogonality but mesh still OK
+                                # ifdef USE_OMP
                                 # pragma omp critical
+                                # endif
                                 {
                                     const scalar angle
                                     (
@@ -763,7 +801,9 @@ bool checkFaceDotProduct
 
                             if( setPtr )
                             {
+                                # ifdef USE_OMP
                                 # pragma omp critical
+                                # endif
                                 setPtr->insert(start+faceI);
                             }
 
@@ -775,7 +815,9 @@ bool checkFaceDotProduct
 
                             if( setPtr )
                             {
+                                # ifdef USE_OMP
                                 # pragma omp critical
+                                # endif
                                 setPtr->insert(start+faceI);
                             }
                         }
@@ -785,7 +827,9 @@ bool checkFaceDotProduct
                     sumDDotS += 0.5 * dDotS;
                 }
 
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 minDDotS = Foam::min(sumDDotS, localMinDDotS);
             }
 
@@ -864,7 +908,9 @@ bool checkFacePyramids
 
     label nErrorPyrs = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nErrorPyrs)
+    # endif
     forAll(faces, faceI)
     {
         if( changedFacePtr && !(*changedFacePtr)[faceI] )
@@ -883,7 +929,9 @@ bool checkFacePyramids
         {
             if( report )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 Pout<< "bool checkFacePyramids("
                     << "const bool, const scalar, labelHashSet*) : "
                     << "face " << faceI << " points the wrong way. " << endl
@@ -913,7 +961,9 @@ bool checkFacePyramids
             {
                 if( report )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     Pout<< "bool checkFacePyramids("
                         << "const bool, const scalar, labelHashSet*) : "
                         << "face " << faceI << " points the wrong way. " << endl
@@ -934,7 +984,9 @@ bool checkFacePyramids
         {
             if( setPtr )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 setPtr->insert(faceI);
             }
 
@@ -1036,12 +1088,16 @@ bool checkFaceSkewness
     label nWarnSkew = 0;
 
     //- check internal faces
+    # ifdef USE_OMP
     # pragma omp parallel \
     reduction(+ : sumSkew, counter, nWarnSkew)
+    # endif
     {
         scalar localMaxSkew(0.0);
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
             if( changedFacePtr && !changedFacePtr->operator[](faceI) )
@@ -1063,14 +1119,18 @@ bool checkFaceSkewness
             {
                 if( report )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     Pout<< " Severe skewness for face " << faceI
                         << " skewness = " << skewness << endl;
                 }
 
                 if( setPtr )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     setPtr->insert(faceI);
                 }
 
@@ -1082,7 +1142,9 @@ bool checkFaceSkewness
             ++counter;
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         maxSkew = Foam::max(maxSkew, localMaxSkew);
     }
 
@@ -1124,11 +1186,15 @@ bool checkFaceSkewness
             fromOtheProc >> otherCentres;
 
             //- calculate skewness at processor faces
+            # ifdef USE_OMP
             # pragma omp parallel reduction(+ : nWarnSkew, sumSkew)
+            # endif
             {
                 scalar localMaxSkew(0.0);
 
+                # ifdef USE_OMP
                 # pragma omp for schedule(guided)
+                # endif
                 forAll(otherCentres, faceI)
                 {
                     if(
@@ -1156,14 +1222,18 @@ bool checkFaceSkewness
                     {
                         if( report )
                         {
+                            # ifdef USE_OMP
                             # pragma omp critical
+                            # endif
                             Pout<< " Severe skewness for face " << start+faceI
                                 << " skewness = " << skewness << endl;
                         }
 
                         if( setPtr )
                         {
+                            # ifdef USE_OMP
                             # pragma omp critical
+                            # endif
                             setPtr->insert(start+faceI);
                         }
 
@@ -1174,7 +1244,9 @@ bool checkFaceSkewness
                     sumSkew += 0.5 * skewness;
                 }
 
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 maxSkew = Foam::max(maxSkew, localMaxSkew);
             }
 
@@ -1272,13 +1344,17 @@ bool checkFaceUniformity
 
     label severeNonUniform = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel \
     reduction(+ : sumUniformity, severeNonUniform)
+    # endif
     {
         scalar localMinUniformity(VGREAT);
         scalar localMaxUniformity(0.0);
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
             if( changedFacePtr && !changedFacePtr->operator[](faceI) )
@@ -1299,7 +1375,9 @@ bool checkFaceUniformity
             {
                 if( setPtr )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     setPtr->insert(faceI);
                 }
 
@@ -1311,7 +1389,9 @@ bool checkFaceUniformity
             sumUniformity += uniformity;
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             maxUniformity = Foam::max(maxUniformity, localMaxUniformity);
             minUniformity = Foam::min(minUniformity, localMinUniformity);
@@ -1443,12 +1523,16 @@ bool checkFaceAngles
 
     label nConcave = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel reduction(+ : nConcave)
+    # endif
     {
         scalar localMaxEdgeSin(0.0);
         label errorFaceI(-1);
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(faces, faceI)
         {
             if( changedFacePtr && !changedFacePtr->operator[](faceI) )
@@ -1487,7 +1571,9 @@ bool checkFaceAngles
 
                         if( (edgeNormal & faceNormals[faceI]) < SMALL )
                         {
+                            # ifdef USE_OMP
                             # pragma omp critical
+                            # endif
                             {
                                 if( faceI != errorFaceI )
                                 {
@@ -1511,7 +1597,9 @@ bool checkFaceAngles
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         maxEdgeSin = Foam::max(maxEdgeSin, localMaxEdgeSin);
     }
 
@@ -1595,12 +1683,16 @@ bool checkFaceFlatness
     scalar sumFlatness = 0;
     label nSummed = 0;
 
+    # ifdef USE_OMP
     # pragma omp parallel if( faces.size() > 1000 ) \
     reduction(+ : nSummed, nWarped) reduction(+ : sumFlatness)
+    # endif
     {
         scalar minFlatnessProc = VGREAT;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(faces, faceI)
         {
             if( changedFacePtr && !(*changedFacePtr)[faceI] )
@@ -1640,14 +1732,18 @@ bool checkFaceFlatness
 
                     if( setPtr )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         setPtr->insert(faceI);
                     }
                 }
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             minFlatness = Foam::min(minFlatness, minFlatnessProc);
         }

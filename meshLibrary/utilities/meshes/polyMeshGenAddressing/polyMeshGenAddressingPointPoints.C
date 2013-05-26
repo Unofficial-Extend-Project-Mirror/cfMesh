@@ -51,22 +51,27 @@ void polyMeshGenAddressing::calcPointPoints() const
 
         const faceListPMG& faces = mesh_.faces();
         const VRWGraph& pointFaces = this->pointFaces();
-        
-        labelList nPoints(pointFaces.size());
-        
-        const label nThreads = 3 * omp_get_num_procs();
 
+        labelList nPoints(pointFaces.size());
+
+        # ifdef USE_OMP
+        const label nThreads = 3 * omp_get_num_procs();
         # pragma omp parallel num_threads(nThreads) if( nPoints.size() > 10000 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(nPoints, i)
                 nPoints[i] = 0;
-            
+
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(pointFaces, pointI)
             {
                 DynList<label, 32> helper;
-                
+
                 forAllRow(pointFaces, pointI, pfI)
                 {
                     const face& f = faces[pointFaces(pointI, pfI)];
@@ -75,34 +80,38 @@ void polyMeshGenAddressing::calcPointPoints() const
                     helper.appendIfNotIn(f.prevLabel(pos));
                     helper.appendIfNotIn(f.nextLabel(pos));
                 }
-                
+
                 nPoints[pointI] = helper.size();
             }
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp master
+            # endif
             VRWGraphSMPModifier(pp).setSizeAndRowSize(nPoints);
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp for schedule(static)
+            # endif
             forAll(pointFaces, pointI)
             {
                 DynList<label, 32> helper;
-                
+
                 forAllRow(pointFaces, pointI, pfI)
                 {
                     const face& f = faces[pointFaces(pointI, pfI)];
-                
+
                     const label pos = f.which(pointI);
                     const label pLabel = f.prevLabel(pos);
                     const label nLabel = f.nextLabel(pos);
-                    
+
                     helper.appendIfNotIn(nLabel);
                     helper.appendIfNotIn(pLabel);
                 }
-                
+
                 pp.setRow(pointI, helper);
             }
         }

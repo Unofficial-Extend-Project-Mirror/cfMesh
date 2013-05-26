@@ -50,7 +50,7 @@ void polyMeshGenAddressing::calcCellCentresAndVols() const
             << "Cell centres or cell volumes already calculated"
             << abort(FatalError);
     }
-    
+
     const cellListPMG& cells = mesh_.cells();
 
     // set the accumulated cell centre to zero vector
@@ -76,31 +76,33 @@ void polyMeshGenAddressing::makeCellCentresAndVols
     const labelList& own = mesh_.owner();
     const cellListPMG& cells = mesh_.cells();
     const label nCells = cells.size();
-    
+
+    # ifdef USE_OMP
     # pragma omp parallel for if( nCells > 1000 )
+    # endif
     for(label cellI=0;cellI<nCells;++cellI)
     {
         const cell& c = cells[cellI];
-        
+
         //- approximate the centre first
         vector cEst(vector::zero);
         forAll(c, fI)
             cEst += fCtrs[c[fI]];
-        
+
         cEst /= c.size();
-        
+
         //- start evaluating the volume and the cell centre
         vector cellCentre(vector::zero);
         scalar cellVol(0.0);
-        
+
         forAll(c, fI)
         {
             // Calculate 3*face-pyramid volume
             scalar pyr3Vol = (fAreas[c[fI]] & (fCtrs[c[fI]] - cEst));
-            
+
             if( own[c[fI]] != cellI )
                 pyr3Vol *= -1.0;
-            
+
             pyr3Vol = Foam::max(pyr3Vol, VSMALL);
 
             // Calculate face-pyramid centre
@@ -112,7 +114,7 @@ void polyMeshGenAddressing::makeCellCentresAndVols
             // Accumulate face-pyramid volume
             cellVol += pyr3Vol;
         }
-        
+
         cellCtrs[cellI] = cellCentre / cellVol;
         cellVols[cellI] = cellVol / 3.0;
     }

@@ -72,8 +72,10 @@ void meshOctreeCreator::refineBoundary()
         List<direction> refineCubes(leaves.size(), direction(0));
 
         //- select boxes which need to be refined
+        # ifdef USE_OMP
         # pragma omp parallel for reduction(+ : nMarked) \
         schedule(dynamic, Foam::min(20, leaves.size()/omp_get_num_threads()+1))
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];
@@ -216,8 +218,10 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
         List<direction> refineCubes(leaves.size(), direction(0));
 
         //- select boxes which need to be refined
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         reduction( + : nMarked) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];
@@ -310,8 +314,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
     labelHashSet transferCoordinates;
     LongList<meshOctreeCubeCoordinates> checkCoordinates;
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( leaves.size() > 1000 ) \
     schedule(dynamic, 20)
+    # endif
     forAll(leaves, leafI)
     {
         if( leaves[leafI]->hasContainedElements() )
@@ -333,7 +339,9 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                 if( neiLabel == meshOctreeCube::OTHERPROC )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     {
                         if( !transferCoordinates.found(leafI) )
                         {
@@ -344,6 +352,7 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                     continue;
                 }
+
                 if( neiLabel == -1 )
                     continue;
 
@@ -372,8 +381,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
             receivedCoordinates
         );
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedCoordinates.size() > 1000 ) \
         schedule(dynamic, 20)
+        # endif
         forAll(receivedCoordinates, ccI)
         {
             const meshOctreeCubeCoordinates& cc = receivedCoordinates[ccI];
@@ -409,8 +420,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
             transferCoordinates.clear();
         }
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             if( refineBox[leafI] == i )
@@ -432,7 +445,9 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
 
                     if( neiLabel == meshOctreeCube::OTHERPROC )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         {
                             if( !transferCoordinates.found(leafI) )
                             {
@@ -473,8 +488,10 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
                 receivedCoordinates
             );
 
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoordinates.size() > 1000 ) \
             schedule(dynamic, 20)
+            # endif
             forAll(receivedCoordinates, ccI)
             {
                 const meshOctreeCubeCoordinates& cc = receivedCoordinates[ccI];
@@ -555,8 +572,10 @@ void meshOctreeCreator::refineBoxes
 
         List<direction> refineCubes(leaves.size(), direction(0));
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         reduction(+ : nRefined) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             const meshOctreeCube& oc = *leaves[leafI];

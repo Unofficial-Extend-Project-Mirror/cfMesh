@@ -47,31 +47,33 @@ namespace Foam
 void meshSurfaceMapper::preMapVertices(const label nIterations)
 {
     Info << "Smoothing mesh surface before mapping. Iteration:" << flush;
-    
+
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const VRWGraph& pointFaces = surfaceEngine_.pointFaces();
-    
+
     List<labelledPoint> preMapPositions(boundaryPoints.size());
-    
+
     for(label iterI=0;iterI<nIterations;++iterI)
     {
         //- use the shrinking laplace first
+        # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40)
+        # endif
         forAll(pointFaces, bpI)
         {
             labelledPoint lp(0, vector::zero);
-            
+
             forAllRow(pointFaces, bpI, bfI)
             {
                 ++lp.pointLabel();
                 lp.coordinates() += faceCentres[pointFaces(bpI, bfI)];
             }
-            
+
             preMapPositions[bpI] = lp;
         }
-        
+
         if( Pstream::parRun() )
         {
             const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
@@ -79,7 +81,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 surfaceEngine_.globalBoundaryPointLabel();
             const Map<label>& globalToLocal =
                 surfaceEngine_.globalToLocalBndPointAddressing();
-            
+
             //- collect data to be sent to other processors
             std::map<label, LongList<refLabelledPoint> > exchangeData;
             forAll(surfaceEngine_.bpNeiProcs(), i)
@@ -91,18 +93,18 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                         LongList<refLabelledPoint>()
                     )
                 );
-            
+
             forAllConstIter(Map<label>, globalToLocal, it)
             {
                 const label bpI = it();
-                
+
                 forAllRow(bpAtProcs, bpI, procI)
                 {
                     const label neiProc = bpAtProcs(bpI, procI);
-                    
+
                     if( neiProc == Pstream::myProcNo() )
                         continue;
-                    
+
                     exchangeData[neiProc].append
                     (
                         refLabelledPoint
@@ -113,52 +115,54 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                     );
                 }
             }
-            
+
             //- exchange data with other processors
             LongList<refLabelledPoint> receivedData;
             help::exchangeMap(exchangeData, receivedData);
-            
+
             //- combine collected data with the available data
             forAll(receivedData, i)
             {
                 const refLabelledPoint& rlp = receivedData[i];
                 const labelledPoint& lps = rlp.lPoint();
-                
+
                 const label bpI = globalToLocal[rlp.objectLabel()];
-                
+
                 labelledPoint& lp = preMapPositions[bpI];
                 lp.pointLabel() += lps.pointLabel();
                 lp.coordinates() += lps.coordinates();
             }
         }
-        
+
         //- calculate coordinates of points for searching
-        label size = preMapPositions.size();
+        # ifdef USE_OMP
         # pragma omp parallel for shared(size)
-        for(label bpI=0;bpI<size;++bpI)
+        # endif
+        forAll(preMapPositions, bpI)
         {
             labelledPoint& lp = preMapPositions[bpI];
-            
+
             if( lp.pointLabel() == 0 )
             {
                 Warning << "Surface point " << bpI
                     << " has no supporting faces" << endl;
                 continue;
             }
-            
+
             lp.coordinates() /= lp.pointLabel();
         }
-        
+
         //- create the surface modifier and move the surface points
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-        
-        size = boundaryPoints.size();
+
+        # ifdef USE_OMP
         # pragma omp parallel for if( size > 1000 ) shared(size) \
         schedule(dynamic, Foam::max(100, size / (3 * omp_get_max_threads())))
-        for(label bpI=0;bpI<size;++bpI)
+        # endif
+        forAll(boundaryPoints, bpI)
         {
             const point& p = points[boundaryPoints[bpI]];
-            
+
             label patch;
             point pMap = p;
             scalar dSq;
@@ -170,18 +174,18 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 patch,
                 preMapPositions[bpI].coordinates()
             );
-            
+
             const point newP = 0.5 * (pMap + p);
-            
+
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
         }
-        
+
         surfaceModifier.updateGeometry();
         surfaceModifier.syncVerticesAtParallelBoundaries();
-        
+
         Info << "." << flush;
     }
-    
+
     Info << endl;
 }
 

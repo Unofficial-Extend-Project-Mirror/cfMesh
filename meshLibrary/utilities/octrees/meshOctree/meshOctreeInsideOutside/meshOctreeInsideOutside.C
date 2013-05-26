@@ -115,7 +115,9 @@ void meshOctreeInsideOutside::initialiseBoxes()
 {
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( leaves.size() > 1000 )
+    # endif
     forAll(leaves, leafI)
     {
         if( leaves[leafI]->hasContainedElements() )
@@ -144,23 +146,33 @@ void meshOctreeInsideOutside::frontalMarking()
 
     boolList commCubes(leaves.size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel if( leaves.size() > 1000 ) \
     private(frontCubes, neighbours)
+    # endif
     {
         LongList<std::pair<label, label> > threadCommPairs;
 
+        # ifdef USE_OMP
         # pragma omp master
+
         {
             nChunks = 3 * omp_get_num_threads();
             chunkSize = leaves.size() / nChunks + 1;
         }
 
         # pragma omp barrier
+        # else
+        nChunks = 1;
+        chunkSize = leaves.size();
+        # endif
 
         while( chunkI < nChunks )
         {
             label minLeaf, maxLeaf;
+            # ifdef USE_OMP
             # pragma omp critical
+            # endif
             minLeaf = chunkI++ * chunkSize;
 
             if( minLeaf >= leaves.size() )
@@ -176,7 +188,9 @@ void meshOctreeInsideOutside::frontalMarking()
                     continue;
 
                 label groupI;
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 groupI = nGroup++;
 
                 direction cType(meshOctreeCubeBasic::UNKNOWN);
@@ -234,7 +248,9 @@ void meshOctreeInsideOutside::frontalMarking()
                     }
                 }
 
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 {
                     if( groupI >= boundaryDATACubes_.size() )
                         boundaryDATACubes_.setSize(groupI+1);
@@ -245,12 +261,16 @@ void meshOctreeInsideOutside::frontalMarking()
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         neighbouringGroups_.setSize(nGroup);
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         forAll(threadCommPairs, pairI)
         {
@@ -267,7 +287,9 @@ void meshOctreeInsideOutside::frontalMarking()
                 !neighbouringGroups_.contains(groupI, neiGroup)
             )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 neighbouringGroups_.append(groupI, neiGroup);
             }
         }
@@ -385,8 +407,10 @@ void meshOctreeInsideOutside::markOutsideCubes()
             //- local boxes are their neighbours. If a local neighbour is
             //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
             //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findNeighboursForLeaf(receivedCoords[i], neighbours);
@@ -471,8 +495,10 @@ void meshOctreeInsideOutside::reviseDataBoxes()
         LongList<meshOctreeCubeCoordinates> checkCoordinates;
         labelHashSet transferCoordinates;
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
+        # endif
         forAll(leaves, leafI)
             if( Pstream::parRun() && hasOutsideNeighbour_[leafI] )
             {
@@ -480,7 +506,9 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 forAll(neighbours, neiI)
                     if( neighbours[neiI] == meshOctreeCubeBasic::OTHERPROC )
                     {
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         {
                             if( !transferCoordinates.found(leafI) )
                             {
@@ -549,8 +577,10 @@ void meshOctreeInsideOutside::reviseDataBoxes()
 
             //- check if any of the local neighbours is a data box with
             //- no OUTSIDE neighbours
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findAllLeafNeighbours(receivedCoords[i], neighbours);
@@ -707,8 +737,10 @@ void meshOctreeInsideOutside::markInsideCubes()
             receivedCoords
         );
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedCoords.size() > 100 ) \
         private(neighbours) schedule(dynamic, 20)
+        # endif
         forAll(receivedCoords, i)
         {
             octree.findNeighboursForLeaf(receivedCoords[i], neighbours);
@@ -760,8 +792,10 @@ void meshOctreeInsideOutside::markInsideCubes()
             //- local boxes are their neighbours. If a local neighbour is
             //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
             //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nChanged)
+            # endif
             forAll(receivedCoords, i)
             {
                 octree.findNeighboursForLeaf(receivedCoords[i], neighbours);

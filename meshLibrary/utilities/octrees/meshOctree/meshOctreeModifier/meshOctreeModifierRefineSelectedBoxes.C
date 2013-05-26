@@ -62,8 +62,10 @@ void meshOctreeModifier::markAdditionalLayers
     {
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \
         private(neighbours) schedule(dynamic, 20)
+        # endif
         forAll(leaves, leafI)
         {
             if( refineBox[leafI] != i )
@@ -92,7 +94,9 @@ void meshOctreeModifier::markAdditionalLayers
                 {
                     neighbours[posI] = NULL;
 
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     {
                         if( !transferCoordinates.found(leafI) )
                         {
@@ -127,8 +131,10 @@ void meshOctreeModifier::markAdditionalLayers
             );
 
             //- check consistency with received cube coordinates
+            # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 1000 ) \
             schedule(dynamic, 20)
+            # endif
             forAll(receivedCoords, ccI)
             {
                 forAll(rp, posI)
@@ -186,12 +192,20 @@ void meshOctreeModifier::refineSelectedBoxes
     surface.edgeFacets();
     surface.edges();
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(octree_.dataSlots_.size())
+    # endif
     {
+        # ifdef USE_OMP
         meshOctreeSlot* slotPtr = &octree_.dataSlots_[omp_get_thread_num()];
+        # else
+        meshOctreeSlot* slotPtr = &octree_.dataSlots_[0];
+        # endif
 
+        # ifdef USE_OMP
         # pragma omp for \
-        schedule(dynamic, Foam::min(20, leaves.size() / omp_get_num_threads() + 1))
+        schedule(dynamic,Foam::min(20, leaves.size()/omp_get_num_threads() + 1))
+        # endif
         forAll(leaves, leafI)
         {
             if( refineBox[leafI] )

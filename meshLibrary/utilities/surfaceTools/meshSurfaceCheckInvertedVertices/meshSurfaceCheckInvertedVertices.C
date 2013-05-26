@@ -41,7 +41,7 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void meshSurfaceCheckInvertedVertices::checkVertices()
 {
     const meshSurfaceEngine& mse = *surfaceEnginePtr_;
@@ -52,23 +52,25 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     const faceList::subList& bFaces = mse.boundaryFaces();
     const vectorField& pNormals = mse.pointNormals();
     const vectorField& fCentres = mse.faceCentres();
-    
+
     invertedVertices_.clear();
-    
+
+    # ifdef USE_OMP
     # pragma omp parallel for if( pointFaces.size() > 100 ) \
     schedule(dynamic, 20)
+    # endif
     forAll(pointFaces, bpI)
     {
         if( activePointsPtr_ && !activePointsPtr_->operator[](bpI) )
             continue;
-        
+
         forAllRow(pointFaces, bpI, pfI)
         {
             const label pI = pointInFaces(bpI, pfI);
             const label bfI = pointFaces(bpI, pfI);
-            
+
             const face& bf = bFaces[bfI];
-            
+
             //- chech the first triangle (with the next node)
             triangle<point, point> triNext
             (
@@ -76,44 +78,52 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 points[bf.nextLabel(pI)],
                 fCentres[bfI]
             );
-            
+
             vector n = triNext.normal();
             scalar m = mag(n);
             if( m < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
             else
             {
                 n /= m;
             }
-            
+
             if( magSqr(triNext.a() - triNext.b()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
             if( magSqr(triNext.c() - triNext.a()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
-            
+
             if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
-            
+
             //- check the second triangle (with previous node)
             triangle<point, point> triPrev
             (
@@ -121,54 +131,64 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 fCentres[bfI],
                 points[bf.prevLabel(pI)]
             );
-            
+
             n = triPrev.normal();
             m = mag(n);
             if( m < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
             else
             {
                 n /= m;
             }
-            
+
             if( magSqr(triPrev.a() - triPrev.b()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
             if( magSqr(triPrev.c() - triPrev.a()) < VSMALL )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
-            
+
             if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
-                
+
                 continue;
             }
-            
+
             //- check whether the normals of both triangles
             //- point in the same direction
             if( (triNext.normal() & triPrev.normal()) < 0.0 )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 invertedVertices_.insert(bf[pI]);
             }
         }
     }
-    
+
     if( Pstream::parRun() )
     {
         //- exchange global labels of inverted points
@@ -177,33 +197,33 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
-        
+
         std::map<label, labelListPMG> shareData;
         forAll(neiProcs, i)
             shareData.insert(std::make_pair(neiProcs[i], labelListPMG()));
-        
+
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
             const label bpI = iter();
-            
+
             if( !invertedVertices_.found(bPoints[bpI]) )
                 continue;
-            
+
             forAllRow(bpAtProcs, bpI, procI)
             {
                 const label neiProc = bpAtProcs(bpI, procI);
-                
+
                 if( neiProc == Pstream::myProcNo() )
                     continue;
-                
+
                 shareData[neiProc].append(globalPointLabel[bpI]);
             }
         }
-        
+
         //- exchange data with other processors
         labelListPMG receivedData;
         help::exchangeMap(shareData, receivedData);
-            
+
         forAll(receivedData, i)
         {
             const label bpI = globalToLocal[receivedData[i]];

@@ -81,16 +81,28 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
     //- start calculating owners and neighbours
     nIntFaces_ = 0;
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
     const label chunkSize = faces_.size() / nThreads + 1;
+    # else
+    const label nThreads = 1;
+    const label chunkSize = faces_.size();
+    # endif
 
     label nInternalFaces(0);
 
     List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads) reduction(+ : nInternalFaces)
+    # endif
     {
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
+
         const label startingFace = threadI * chunkSize;
         const label endFace =
             Foam::min(startingFace + chunkSize, faces_.size());
@@ -104,7 +116,9 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
             nei[faceI] = -1;
         }
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(cells_, cellI)
         {
             const cell& c = cells_[cellI];
@@ -148,10 +162,11 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp critical
-
+        # endif
         for(label i=0;i<nThreads;++i)
         {
             const LongList<labelPair>& data =

@@ -47,69 +47,81 @@ void polyMeshGenAddressing::calcCellCells() const
     else
     {
         const cellListPMG& cells = mesh_.cells();
-        
+
         const labelList& own = mesh_.owner();
         const labelList& nei = mesh_.neighbour();
-        
+
         //- create the storage
         ccPtr_ = new VRWGraph();
         VRWGraph& cellCellAddr = *ccPtr_;
-        
+
         labelList nNei(cells.size());
-        
+
+        # ifdef USE_OMP
         const label nThreads = 3 * omp_get_num_procs();
-        
+        # endif
+
+        # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads)
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(nNei, i)
                 nNei[i] = 0;
-            
+
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label> neiCells;
-                
+
                 forAll(c, fI)
                 {
                     label neiCell = own[c[fI]];
-                    if( (neiCell == cellI) && (nei[c[fI]] != -1) ) 
+                    if( (neiCell == cellI) && (nei[c[fI]] != -1) )
                         neiCell = nei[c[fI]];
-    
+
                     if( neiCell != cellI )
                         neiCells.appendIfNotIn(neiCell);
                 }
-                
+
                 nNei[cellI] = neiCells.size();
             }
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp master
+            # endif
             VRWGraphSMPModifier(cellCellAddr).setSizeAndRowSize(nNei);
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             //- fill the graph with data
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label> neiCells;
-                
+
                 forAll(c, fI)
                 {
                     label neiCell = own[c[fI]];
-                    if( (neiCell == cellI) && (nei[c[fI]] != -1) ) 
+                    if( (neiCell == cellI) && (nei[c[fI]] != -1) )
                         neiCell = nei[c[fI]];
-    
+
                     if( neiCell != cellI )
                         neiCells.appendIfNotIn(neiCell);
                 }
-                
+
                 cellCellAddr.setRow(cellI, neiCells);
             }
         }

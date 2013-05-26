@@ -116,7 +116,9 @@ void polyMeshGenModifier::addProcessorFaces
 
     //- renumber cells
     cellListPMG& cells = mesh_.cells_;
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];

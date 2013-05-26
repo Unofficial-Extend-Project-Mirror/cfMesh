@@ -218,7 +218,9 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
     mesh_.updateFaceSubsets(newFaceLabel);
 
     //- change cells
+    # ifdef USE_OMP
     # pragma omp parallel for if( cells.size() > 1000 ) schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];
@@ -323,7 +325,9 @@ void polyMeshGenModifier::removeDuplicateFaces()
 
     //- change cells
     cellListPMG& cells = mesh_.cells_;
+    # ifdef USE_OMP
     # pragma omp parallel for if( cells.size() > 1000 ) schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];

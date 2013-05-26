@@ -74,8 +74,10 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
 
     //- try getting rid of negative volume using the Patrik Knupp's metric
     //- which gets non-negative contributions from invertex tets, only
+    # ifdef USE_OMP
     # pragma omp parallel for if( tets.size() > 100 ) \
     schedule(dynamic, 10)
+    # endif
     forAll(tets, tetI)
     {
         invertedTets[tetI] = false;
@@ -91,8 +93,10 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
         //- find the number of inverted tets
         nNegative = 0;
         negativeNode = false;
+        # ifdef USE_OMP
         # pragma omp parallel for if( tets.size() > 100 ) \
         schedule(dynamic, 10) reduction(+ : nNegative)
+        # endif
         forAll(invertedTets, tetI)
         {
             if( invertedTets[tetI] )
@@ -116,8 +120,11 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
 
         //- smooth the mesh
         List<LongList<labelledPoint> > newPositions;
+        # ifdef USE_OMP
         # pragma omp parallel if( smoothVertex.size() > 100 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp master
             {
                 newPositions.setSize(omp_get_num_threads());
@@ -126,8 +133,14 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
             # pragma omp barrier
 
             LongList<labelledPoint>& np = newPositions[omp_get_thread_num()];
+            # else
+            newPositions.setSize(1);
+            LongList<labelledPoint>& np = newPositions[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 10)
+            # endif
             forAll(smoothVertex, nodeI)
             {
                 if( !negativeNode[nodeI] )
@@ -156,8 +169,11 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
         boolList helper(invertedTets.size());
         nNegativeBefore = nNegative;
         nNegative = 0;
+
+        # ifdef USE_OMP
         # pragma omp parallel for if( tets.size() > 100 ) \
         schedule(dynamic, 10) reduction(+ : nNegative)
+        # endif
         forAll(tets, tetI)
         {
             helper[tetI] = false;
@@ -190,8 +206,10 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
     boolList negativeNode(smoothVertex.size()), invertedTets(tets.size());
 
     //- try getting rid of negative volume using the untangler
+    # ifdef USE_OMP
     # pragma omp parallel for if( tets.size() > 100 ) \
     schedule(dynamic, 10)
+    # endif
     forAll(tets, tetI)
     {
         invertedTets[tetI] = false;
@@ -207,8 +225,10 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
         //- find the number of inverted tets
         nNegative = 0;
         negativeNode = false;
+        # ifdef USE_OMP
         # pragma omp parallel for if( tets.size() > 100 ) \
         schedule(dynamic, 10) reduction(+ : nNegative)
+        # endif
         forAll(invertedTets, tetI)
         {
             if( invertedTets[tetI] )
@@ -232,8 +252,11 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
 
         //- smooth the mesh
         List<LongList<labelledPoint> > newPositions;
+        # ifdef USE_OMP
         # pragma omp parallel if( smoothVertex.size() > 100 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp master
             {
                 newPositions.setSize(omp_get_num_threads());
@@ -242,8 +265,14 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
             # pragma omp barrier
 
             LongList<labelledPoint>& np = newPositions[omp_get_thread_num()];
+            # else
+            newPositions.setSize(1);
+            LongList<labelledPoint>& np = newPositions[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 10)
+            # endif
             forAll(smoothVertex, nodeI)
             {
                 if( !negativeNode[nodeI] )
@@ -272,8 +301,10 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
         boolList helper(invertedTets.size());
         nNegativeBefore = nNegative;
         nNegative = 0;
+        # ifdef USE_OMP
         # pragma omp parallel for if( tets.size() > 100 ) \
         schedule(dynamic, 10) reduction(+ : nNegative)
+        # endif
         forAll(tets, tetI)
         {
             helper[tetI] = false;
@@ -305,8 +336,11 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
     {
         List<LongList<labelledPoint> > newPositions;
 
+        # ifdef USE_OMP
         # pragma omp parallel if( smoothVertex.size() > 100 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp master
             {
                 newPositions.setSize(omp_get_num_threads());
@@ -315,8 +349,14 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
             # pragma omp barrier
 
             LongList<labelledPoint>& np = newPositions[omp_get_thread_num()];
+            # else
+            newPositions.setSize(1);
+            LongList<labelledPoint>& np = newPositions[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 10)
+            # endif
             forAll(smoothVertex, nodeI)
                 if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
                 {
@@ -349,19 +389,31 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
     const LongList<point>& points = tetMesh_.points();
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
+    # ifdef USE_OMP
     label nThreads = omp_get_num_procs();
     if( smoothVertex.size() < 100 )
       nThreads = 1;
+    # else
+    const label nThreads(1);
+    # endif
 
     for(label i=0;i<3;++i)
     {
         List<LongList<labelledPoint> > newPositions(nThreads);
 
+        # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads)
+        # endif
         {
+            # ifdef USE_OMP
             LongList<labelledPoint>& np = newPositions[omp_get_thread_num()];
+            # else
+            LongList<labelledPoint>& np = newPositions[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 5)
+            # endif
             forAll(smoothVertex, nodeI)
                 if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )
                 {
@@ -479,20 +531,32 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace()
 {
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
+    # ifdef USE_OMP
     label nThreads = omp_get_num_procs();
     if( smoothVertex.size() < 1000 )
       nThreads = 1;
+    # else
+    const label nThreads(1);
+    # endif
 
     for(label i=0;i<3;++i)
     {
         List<LongList<labelledPoint> > newPositions(nThreads);
 
+        # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads)
+        # endif
         {
+            # ifdef USE_OMP
             LongList<labelledPoint>& np =
                 newPositions[omp_get_thread_num()];
+            # else
+            LongList<labelledPoint>& np = newPositions[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 5)
+            # endif
             forAll(smoothVertex, nodeI)
             {
                 if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )

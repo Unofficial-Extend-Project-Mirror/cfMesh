@@ -61,23 +61,33 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     boolList problematicPoint(pointFaces.size());
     edgeTypes_.setSize(edges.size());
 
+    # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
     if( bFaces.size() < 1000 )
         nThreads = 1;
+    # endif
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgeTypes_, edgeI)
             edgeTypes_[edgeI] = NONE;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(problematicPoint, pointI)
             problematicPoint[pointI] = false;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -116,10 +126,12 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- start checking feature edges
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgeFaces, edgeI)
         {
             if( edgeFaces.sizeOfRow(edgeI) == 2 )
@@ -365,8 +377,7 @@ meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceCheckEdgeTypes::~meshSurfaceCheckEdgeTypes()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

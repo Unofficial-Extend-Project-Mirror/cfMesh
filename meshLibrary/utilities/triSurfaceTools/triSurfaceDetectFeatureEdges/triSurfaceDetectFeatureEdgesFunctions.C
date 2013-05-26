@@ -48,7 +48,9 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 
     const VRWGraph& edgeFaces = surf_.edgeFacets();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(edgeFaces, edgeI)
     {
         const constRow eFaces = edgeFaces[edgeI];
@@ -88,7 +90,9 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
 
     const VRWGraph& edgeFaces = surf_.edgeFacets();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(edgeFaces, edgeI)
     {
         const constRow eFaces = edgeFaces[edgeI];

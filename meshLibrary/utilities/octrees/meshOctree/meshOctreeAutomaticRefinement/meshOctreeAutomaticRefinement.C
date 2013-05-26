@@ -52,12 +52,14 @@ const
 {
     if( !octreeAddressingPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "const meshOctreeAddressing& meshOctreeAutomaticRefinement"
                 "::octreeAddressing() const"
             ) << "Cannot calculate addressing!" << abort(FatalError);
+        # endif
 
         createOctreeAddressing();
     }
@@ -74,12 +76,14 @@ const triSurfacePartitioner& meshOctreeAutomaticRefinement::partitioner() const
 {
     if( !partitionerPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "const triSurfacePartitioner& meshOctreeAutomaticRefinement"
                 "::partitioner() const"
             ) << "Cannot calculate addressing!" << abort(FatalError);
+        # endif
 
         createSurfacePartitioner();
     }
@@ -97,12 +101,14 @@ const
 {
     if( !curvaturePtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "const triSurfaceCurvatureEstimator& "
                 "meshOctreeAutomaticRefinement::curvature() const"
             ) << "Cannot calculate addressing!" << abort(FatalError);
+        # endif
 
         createCurvatureEstimator();
     }

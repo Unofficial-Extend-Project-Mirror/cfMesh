@@ -261,7 +261,9 @@ bool checkCellsZipUp
     const faceListPMG& faces = mesh.faces();
     const cellListPMG& cells = mesh.cells();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nOpenCells)
+    # endif
     forAll(cells, cellI)
     {
         const labelList& c = cells[cellI];
@@ -278,7 +280,7 @@ bool checkCellsZipUp
                 const edge e = f.faceEdge(eI);
 
                 const label pos = cellEdges.containsAtPosition(e);
-                
+
                 if( pos < 0 )
                 {
                     cellEdges.append(e);
@@ -312,7 +314,9 @@ bool checkCellsZipUp
 
                 if( setPtr )
                 {
+                    # ifdef USE_OMP
                     # pragma omp critical
+                    # endif
                     setPtr->insert(cellI);
                 }
             }
@@ -330,7 +334,9 @@ bool checkCellsZipUp
 
             if( setPtr )
             {
+                # ifdef USE_OMP
                 # pragma omp critical
+                # endif
                 setPtr->insert(cellI);
             }
 

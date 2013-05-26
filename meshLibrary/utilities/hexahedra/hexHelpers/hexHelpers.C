@@ -59,7 +59,9 @@ bool allHexMesh(const polyMeshGen& mesh)
 
     bool allHex(true);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(cells, cellI)
     {
         const cell& c = cells[cellI];
@@ -147,7 +149,9 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const boolList& columnCells
     const cellListPMG& cells = mesh.cells();
 
     bool selfIntersecting(false);
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
+    # endif
     forAll(cells, cellI)
     {
         if( !columnCells[cellI] || selfIntersecting )
@@ -189,7 +193,9 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const labelListPMG& columnC
 {
     boolList cellsInColumn(mesh.cells().size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(columnCells, i)
         cellsInColumn[columnCells[i]] = true;
 
@@ -339,8 +345,10 @@ bool hasSheetDigons(const polyMeshGen& mesh, const boolList& sheetCells)
 
     bool hasDigons(false);
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
     # pragma omp parallel for num_threads(nThreads) schedule(static)
+    # endif
     forAll(sheetCells, cellI)
     {
         if( !sheetCells[cellI] )
@@ -383,15 +391,21 @@ bool hasSheetDigons
 {
     boolList sCells(mesh.cells().size());
 
+    # ifdef USE_OMP
     # pragma omp parallel if( mesh.cells().size() > 1000 )
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(sCells, i)
             sCells[i] = false;
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(sheetCells, i)
             sCells[sheetCells[i]] = true;
     }
@@ -1134,7 +1148,9 @@ bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet)
 {
     boolList sheetCells(mesh.cells().size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for
+    # endif
     forAll(cellsInSheet, i)
         sheetCells[cellsInSheet[i]] = true;
 

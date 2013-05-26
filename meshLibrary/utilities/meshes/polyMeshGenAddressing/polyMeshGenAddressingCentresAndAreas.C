@@ -48,7 +48,7 @@ void polyMeshGenAddressing::calcFaceCentresAndAreas() const
             << "Face centres or face areas already calculated"
             << abort(FatalError);
     }
-    
+
     const pointFieldPMG& points = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
 
@@ -71,7 +71,9 @@ void polyMeshGenAddressing::makeFaceCentresAndAreas
     const faceListPMG& fs = mesh_.faces();
     const label nFaces = fs.size();
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( nFaces > 1000 )
+    # endif
     for(label faceI=0;faceI<nFaces;++faceI)
     {
         const face& f = fs[faceI];

@@ -287,7 +287,9 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
     //- change the mesh
     cellListPMG& cells = meshModifier.cellsAccess();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];
@@ -460,7 +462,9 @@ void decomposeFaces::decomposeConcaveInternalFaces
     //- update cells
     cellListPMG& cells = meshModifier.cellsAccess();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];

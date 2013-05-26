@@ -52,57 +52,69 @@ void polyMeshGenAddressing::calcCellEdges() const
 
         cePtr_ = new VRWGraph();
         VRWGraph& cellEdgeAddr = *cePtr_;
-        
-        labelList nEdges(cells.size());
-        
-        const label nThreads = 3 * omp_get_num_procs();
 
+        labelList nEdges(cells.size());
+
+        # ifdef USE_OMP
+        const label nThreads = 3 * omp_get_num_procs();
+        # endif
+
+        # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads) if( cells.size() > 10000 )
+        # endif
         {
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(nEdges, i)
                 nEdges[i] = 0;
-            
+
+            # ifdef USE_OMP
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label, 32> cEdges;
-                
+
                 forAll(c, fI)
                 {
                     const label faceI = c[fI];
-                    
+
                     forAllRow(fe, faceI, eI)
                         cEdges.appendIfNotIn(fe(faceI, eI));
                 }
-                
+
                 nEdges[cellI] = cEdges.size();
             }
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp master
+            # endif
             VRWGraphSMPModifier(cellEdgeAddr).setSizeAndRowSize(nEdges);
-            
+
+            # ifdef USE_OMP
             # pragma omp barrier
-            
+
             # pragma omp for schedule(static)
+            # endif
             forAll(cells, cellI)
             {
                 const cell& c = cells[cellI];
-                
+
                 DynList<label, 32> cEdges;
-                
+
                 forAll(c, fI)
                 {
                     const label faceI = c[fI];
-                    
+
                     forAllRow(fe, faceI, eI)
                         cEdges.appendIfNotIn(fe(faceI, eI));
                 }
-                
+
                 cellEdgeAddr.setRow(cellI, cEdges);
             }
         }

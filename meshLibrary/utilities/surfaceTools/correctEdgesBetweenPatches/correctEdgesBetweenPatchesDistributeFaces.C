@@ -117,7 +117,9 @@ void correctEdgesBetweenPatches::checkFacePatches()
 
         //- go through the list of faces and check if they shall remain
         //- in the current patch
+        # ifdef USE_OMP
         # pragma omp parallel for schedule(guided) reduction(+ : nCorrected)
+        # endif
         forAll(faceEdges, bfI)
         {
             DynList<label> allNeiPatches;
@@ -298,7 +300,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
     //- decompose internal faces with more than one feature edge
     const label nIntFaces = mesh.nInternalFaces();
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
+    # endif
     for(label faceI=0;faceI<nIntFaces;++faceI)
     {
         const face& f = faces[faceI];
@@ -335,7 +339,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
     //- decompose boundary faces in case the feature edges are not connected
     //- into a single open chain of edges
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
+    # endif
     forAll(faceEdges, bfI)
     {
         boolList featureEdge(faceEdges.sizeOfRow(bfI), false);
@@ -363,8 +369,10 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
 
+            # ifdef USE_OMP
             # pragma omp parallel for schedule(guided) \
             reduction(+ : nDecomposedFaces)
+            # endif
             for(label faceI=start;faceI<end;++faceI)
             {
                 const face& f = faces[faceI];
@@ -449,7 +457,9 @@ void correctEdgesBetweenPatches::patchCorrection()
     //- set flags for feature edges
     boolList featureEdge(edgeFaces.size(), false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided)
+    # endif
     forAll(edgeFaces, eI)
     {
         if( edgeFaces.sizeOfRow(eI) != 2 )

@@ -33,7 +33,9 @@ Description
 #include "triSurf.H"
 #include "meshOctreeAutomaticRefinement.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGOctree
 
@@ -330,11 +332,19 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
 
         label nMarked(0);
 
+        # ifdef USE_OMP
         # pragma omp parallel reduction(+ : nMarked)
+        # endif
         {
+            # ifdef USE_OMP
             meshOctreeSlot* slotPtr = &slots[omp_get_thread_num()];
+            # else
+            meshOctreeSlot* slotPtr = &slots[0];
+            # endif
 
+            # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 20)
+            # endif
             forAll(leaves, leafI)
             {
                 meshOctreeCube& oc = *leaves[leafI];

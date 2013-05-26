@@ -87,31 +87,31 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     pointFieldPMG& points = surfaceEngine_.mesh_.points();
     points[bPoints[bpI]] = newP;
-    
+
     if( surfaceEngine_.faceCentresPtr_ )
     {
         vectorField& faceCentres = *surfaceEngine_.faceCentresPtr_;
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
         const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
-        
+
         forAllRow(pFaces, bpI, pfI)
         {
             const label bfI = pFaces(bpI, pfI);
-            
+
             faceCentres[bfI] = bFaces[bfI].centre(points);
         }
     }
-    
+
     if( surfaceEngine_.faceNormalsPtr_ )
     {
         vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
         const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
-        
+
         forAllRow(pFaces, bpI, pfI)
         {
             const label bfI = pFaces(bpI, pfI);
-            
+
             faceNormals[bfI] = bFaces[bfI].normal(points);
         }
     }
@@ -121,12 +121,12 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
         const vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
         const VRWGraph& pPoints = surfaceEngine_.pointPoints();
-        
+
         vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
         vector n(vector::zero);
         forAllRow(pFaces, bpI, pfI)
             n += faceNormals[pFaces(bpI, pfI)];
-        
+
         const scalar l = mag(n);
         if( l > VSMALL )
         {
@@ -136,9 +136,9 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
         {
             n = vector::zero;
         }
-        
+
         pn[bpI] = n;
-        
+
         //- change normal of vertices connected to bpI
         forAllRow(pPoints, bpI, ppI)
         {
@@ -146,7 +146,7 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
             n = vector::zero;
             forAllRow(pFaces, bpJ, pfI)
                 n += faceNormals[pFaces(bpJ, pfI)];
-            
+
             const scalar d = mag(n);
             if( d > VSMALL )
             {
@@ -156,7 +156,7 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
             {
                 n = vector::zero;
             }
-            
+
             pn[bpJ] = n;
         }
     }
@@ -166,13 +166,13 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
 {
     if( !Pstream::parRun() )
         return;
-    
+
     const Map<label>& globalToLocal =
         surfaceEngine_.globalToLocalBndPointAddressing();
     labelListPMG syncNodes;
     forAllConstIter(Map<label>, globalToLocal, it)
         syncNodes.append(it());
-    
+
     syncVerticesAtParallelBoundaries(syncNodes);
 }
 
@@ -183,7 +183,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
 {
     if( !Pstream::parRun() )
         return;
-    
+
     const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
     const labelList& globalLabel =
         surfaceEngine_.globalBoundaryPointLabel();
@@ -192,35 +192,35 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.mesh().points();
-    
+
     std::map<label, LongList<labelledPoint> > exchangeData;
     forAll(neiProcs, i)
         exchangeData.insert
         (
             std::make_pair(neiProcs[i], LongList<labelledPoint>())
         );
-    
+
     //- construct the map
     forAll(syncNodes, snI)
     {
         const label bpI = syncNodes[snI];
         point p = points[bPoints[bpI]] / bpAtProcs.sizeOfRow(bpI);
         moveBoundaryVertex(bpI, p);
-        
+
         forAllRow(bpAtProcs, bpI, i)
         {
             const label neiProc = bpAtProcs(bpI, i);
             if( neiProc == Pstream::myProcNo() )
                 continue;
-            
+
             exchangeData[neiProc].append(labelledPoint(globalLabel[bpI], p));
         }
     }
-    
+
     //- exchange the data with other processors
     LongList<labelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
-    
+
     //- adjust the coordinates
     forAll(receivedData, i)
     {
@@ -239,37 +239,40 @@ void meshSurfaceEngineModifier::updateGeometry
     const pointFieldPMG& points = surfaceEngine_.points();
     const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
     const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-    
+
     boolList updateFaces(bFaces.size(), false);
-    label size = updateBndNodes.size();
+    # ifdef USE_OMP
     # pragma omp parallel for if( size > 1000 )
-    for(label i=0;i<size;++i)
+    # endif
+    forAll(updateBndNodes, i)
     {
         const label bpI = updateBndNodes[i];
         forAllRow(pFaces, bpI, j)
             updateFaces[pFaces(bpI, j)] = true;
     }
-    
+
     if( surfaceEngine_.faceCentresPtr_ )
     {
         vectorField& faceCentres = *surfaceEngine_.faceCentresPtr_;
-        
-        size = updateFaces.size();
+
+        # ifdef USE_OMP
         # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
-        for(label bfI=0;bfI<size;++bfI)
+        # endif
+        forAll(updateFaces, bfI)
         {
             if( updateFaces[bfI] )
                 faceCentres[bfI] = bFaces[bfI].centre(points);
         }
     }
-    
+
     if( surfaceEngine_.faceNormalsPtr_ )
     {
         vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
-        
-        size = updateFaces.size();
+
+        # ifdef USE_OMP
         # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
-        for(label bfI=0;bfI<size;++bfI)
+        # endif
+        forAll(updateFaces, bfI)
         {
             if( updateFaces[bfI] )
                 faceNormals[bfI] = bFaces[bfI].normal(points);
@@ -280,18 +283,19 @@ void meshSurfaceEngineModifier::updateGeometry
     {
         const vectorField& faceNormals = surfaceEngine_.faceNormals();
         const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-        
+
         vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
-        size = updateBndNodes.size();
+        # ifdef USE_OMP
         # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
-        for(label i=0;i<size;++i)
+        # endif
+        forAll(updateBndNodes, i)
         {
             const label bpI = updateBndNodes[i];
-            
+
             vector n(vector::zero);
             forAllRow(pFaces, bpI, pfI)
                 n += faceNormals[pFaces(bpI, pfI)];
-        
+
             const scalar l = mag(n);
             if( l > VSMALL )
             {
@@ -301,7 +305,7 @@ void meshSurfaceEngineModifier::updateGeometry
             {
                 n = vector::zero;
             }
-        
+
             pn[bpI] = n;
         }
     }
@@ -310,11 +314,13 @@ void meshSurfaceEngineModifier::updateGeometry
 void meshSurfaceEngineModifier::updateGeometry()
 {
     labelListPMG updateBndNodes(surfaceEngine_.boundaryPoints().size());
-    
+
+    # ifdef USE_OMP
     # pragma omp parallel for if( updateBndNodes.size() > 10000 )
+    # endif
     forAll(updateBndNodes, bpI)
         updateBndNodes[bpI] = bpI;
-    
+
     updateGeometry(updateBndNodes);
 }
 

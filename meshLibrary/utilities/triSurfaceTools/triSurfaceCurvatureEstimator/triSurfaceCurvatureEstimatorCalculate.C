@@ -149,14 +149,20 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
     edgePointCurvature_.setSize(points.size());
     boolList featureEdge(edges.size());
 
+    # ifdef USE_OMP
     # pragma omp parallel
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgePointCurvature_, i)
             edgePointCurvature_[i] = 0.0;
 
         //- mark feature edges
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(edgeFaces, eI)
         {
             if( edgeFaces.sizeOfRow(eI) != 2 )
@@ -178,11 +184,15 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- loop through the points and calculate the curvature for points
         //- attached to two feature edges
+        # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
+        # endif
         forAll(pointEdges, pI)
         {
             DynList<label> features;
@@ -234,7 +244,9 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
     List<DynList<label, 4> > pointPatches(points.size());
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(pointTriangles, pointI)
     {
         std::map<label, DynList<label> > regionTriangles;
@@ -367,11 +379,15 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
     List<DynList<scalar, 1> > smoothMinCurv(points.size());
     List<DynList<scalar, 1> > smoothMaxCurv(points.size());
 
+    # ifdef USE_OMP
     # pragma omp parallel
+    # endif
     {
         for(label iteration=0;iteration<2;++iteration)
         {
+            # ifdef USE_OMP
             # pragma omp for schedule(static, 1)
+            # endif
             forAll(pointEdges, pointI)
             {
                 const constRow pEdges = pointEdges[pointI];
@@ -444,9 +460,11 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 }
             }
 
+            # ifdef USE_OMP
             # pragma omp barrier
 
             # pragma omp for schedule(static, 1)
+            # endif
             forAll(minCurvature_, pointI)
             {
                 forAll(minCurvature_[pointI], i)
@@ -457,10 +475,14 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- update Gaussian and mean curvatures
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
+        # endif
         forAll(minCurvature_, pointI)
         {
             const DynList<scalar, 1>& minCurv = minCurvature_[pointI];

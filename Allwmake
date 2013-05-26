@@ -1,15 +1,9 @@
 #!/bin/sh
 # Compile mesh library
-cd meshLibrary
-wmake libso
-cd ..
+wmake libso meshLibrary
 
-# Compile cartesianMesh
-#cd executables/cartesianMesh
-#wmake
-#cd ../..
+# Compile executables
+wmake all executables
 
-# Compile dualMesh
-#cd executables/dualMesh
-#wmake
-#cd ../..
+# Compile utilities
+wmake all utilities

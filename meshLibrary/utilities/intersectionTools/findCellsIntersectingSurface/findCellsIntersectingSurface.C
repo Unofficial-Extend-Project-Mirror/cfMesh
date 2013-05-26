@@ -70,7 +70,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
     const triSurf& surf = octreePtr_->surface();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(cells, cellI)
     {
         bool intersected(false);
@@ -242,7 +244,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
         }
 
         intersectedCells_[cellI] = intersected;
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
         }

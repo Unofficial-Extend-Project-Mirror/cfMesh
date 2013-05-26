@@ -61,7 +61,7 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
     pointNormalsPtr_(NULL),
     faceNormalsPtr_(NULL),
     faceCentresPtr_(NULL),
-    
+
     globalBoundaryPointLabelPtr_(NULL),
     globalBoundaryPointToLocalPtr_(NULL),
     bpProcsPtr_(NULL),
@@ -111,7 +111,7 @@ const labelList& meshSurfaceEngine::bp() const
 {
     if( !bppPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -119,7 +119,7 @@ const labelList& meshSurfaceEngine::bp() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateBoundaryFaces();
         calculateBoundaryNodes();
     }
@@ -131,7 +131,7 @@ const labelList& meshSurfaceEngine::boundaryPoints() const
 {
     if( !boundaryPointsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -139,7 +139,7 @@ const labelList& meshSurfaceEngine::boundaryPoints() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateBoundaryNodes();
     }
 
@@ -150,7 +150,7 @@ const faceList::subList& meshSurfaceEngine::boundaryFaces() const
 {
     if( !boundaryFacesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -159,7 +159,7 @@ const faceList::subList& meshSurfaceEngine::boundaryFaces() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateBoundaryFaces();
     }
 
@@ -170,7 +170,7 @@ const labelList& meshSurfaceEngine::boundaryFacePatches() const
 {
     if( !boundaryFacePatchPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -179,10 +179,10 @@ const labelList& meshSurfaceEngine::boundaryFacePatches() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateBoundaryFacePatches();
     }
-    
+
     return *boundaryFacePatchPtr_;
 }
 
@@ -190,7 +190,7 @@ const labelList& meshSurfaceEngine::faceOwners() const
 {
     if( !boundaryFaceOwnersPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -198,7 +198,7 @@ const labelList& meshSurfaceEngine::faceOwners() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateBoundaryOwners();
     }
 
@@ -209,7 +209,7 @@ const VRWGraph& meshSurfaceEngine::pointFaces() const
 {
     if( !pointFacesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -217,7 +217,7 @@ const VRWGraph& meshSurfaceEngine::pointFaces() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculatePointFaces();
     }
 
@@ -228,7 +228,7 @@ const VRWGraph& meshSurfaceEngine::pointInFaces() const
 {
     if( !pointInFacePtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -236,7 +236,7 @@ const VRWGraph& meshSurfaceEngine::pointInFaces() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculatePointFaces();
     }
 
@@ -247,7 +247,7 @@ const VRWGraph& meshSurfaceEngine::pointPatches() const
 {
     if( !pointPatchesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -255,10 +255,10 @@ const VRWGraph& meshSurfaceEngine::pointPatches() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculatePointPatches();
     }
-    
+
     return *pointPatchesPtr_;
 }
 
@@ -266,7 +266,7 @@ const VRWGraph& meshSurfaceEngine::pointPoints() const
 {
     if( !pointPointsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -274,7 +274,7 @@ const VRWGraph& meshSurfaceEngine::pointPoints() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculatePointPoints();
     }
 
@@ -285,7 +285,7 @@ const vectorField& meshSurfaceEngine::pointNormals() const
 {
     if( !pointNormalsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -293,7 +293,7 @@ const vectorField& meshSurfaceEngine::pointNormals() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculatePointNormals();
     }
 
@@ -304,7 +304,7 @@ const vectorField& meshSurfaceEngine::faceNormals() const
 {
     if( !faceNormalsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -312,10 +312,10 @@ const vectorField& meshSurfaceEngine::faceNormals() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateFaceNormals();
     }
-    
+
     return *faceNormalsPtr_;
 }
 
@@ -323,7 +323,7 @@ const vectorField& meshSurfaceEngine::faceCentres() const
 {
     if( !faceCentresPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -331,10 +331,10 @@ const vectorField& meshSurfaceEngine::faceCentres() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateFaceCentres();
     }
-    
+
     return *faceCentresPtr_;
 }
 
@@ -342,7 +342,7 @@ const edgeList& meshSurfaceEngine::edges() const
 {
     if( !edgesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -350,7 +350,7 @@ const edgeList& meshSurfaceEngine::edges() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateEdgesAndAddressing();
     }
 
@@ -361,7 +361,7 @@ const VRWGraph& meshSurfaceEngine::boundaryPointEdges() const
 {
     if( !bpEdgesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -369,10 +369,10 @@ const VRWGraph& meshSurfaceEngine::boundaryPointEdges() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateEdgesAndAddressing();
     }
-    
+
     return *bpEdgesPtr_;
 }
 
@@ -380,7 +380,7 @@ const VRWGraph& meshSurfaceEngine::edgeFaces() const
 {
     if( !edgeFacesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -388,7 +388,7 @@ const VRWGraph& meshSurfaceEngine::edgeFaces() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateEdgeFacesAddressing();
     }
 
@@ -399,7 +399,7 @@ const VRWGraph& meshSurfaceEngine::faceEdges() const
 {
     if( !faceEdgesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -407,7 +407,7 @@ const VRWGraph& meshSurfaceEngine::faceEdges() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateFaceEdgesAddressing();
     }
 
@@ -418,7 +418,7 @@ const VRWGraph& meshSurfaceEngine::faceFaces() const
 {
     if( !faceFacesPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -426,7 +426,7 @@ const VRWGraph& meshSurfaceEngine::faceFaces() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calculateFaceFacesAddressing();
     }
 
@@ -437,7 +437,7 @@ const labelList& meshSurfaceEngine::globalBoundaryPointLabel() const
 {
     if( !globalBoundaryPointLabelPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -446,10 +446,10 @@ const labelList& meshSurfaceEngine::globalBoundaryPointLabel() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryPointLabels();
     }
-    
+
     return *globalBoundaryPointLabelPtr_;
 }
 
@@ -457,7 +457,7 @@ const Map<label>& meshSurfaceEngine::globalToLocalBndPointAddressing() const
 {
     if( !globalBoundaryPointToLocalPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -466,10 +466,10 @@ const Map<label>& meshSurfaceEngine::globalToLocalBndPointAddressing() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryPointLabels();
     }
-    
+
     return *globalBoundaryPointToLocalPtr_;
 }
 
@@ -477,7 +477,7 @@ const VRWGraph& meshSurfaceEngine::bpAtProcs() const
 {
     if( !globalBoundaryPointLabelPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -485,10 +485,10 @@ const VRWGraph& meshSurfaceEngine::bpAtProcs() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryPointLabels();
     }
-    
+
     return *bpProcsPtr_;
 }
 
@@ -496,7 +496,7 @@ const DynList<label>& meshSurfaceEngine::bpNeiProcs() const
 {
     if( !bpNeiProcsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -504,10 +504,10 @@ const DynList<label>& meshSurfaceEngine::bpNeiProcs() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryPointLabels();
     }
-    
+
     return *bpNeiProcsPtr_;
 }
 
@@ -515,7 +515,7 @@ const labelList& meshSurfaceEngine::globalBoundaryEdgeLabel() const
 {
     if( !globalBoundaryEdgeLabelPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -524,10 +524,10 @@ const labelList& meshSurfaceEngine::globalBoundaryEdgeLabel() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryEdgeLabels();
     }
-    
+
     return *globalBoundaryEdgeLabelPtr_;
 }
 
@@ -535,7 +535,7 @@ const Map<label>& meshSurfaceEngine::globalToLocalBndEdgeAddressing() const
 {
     if( !globalBoundaryEdgeToLocalPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -544,10 +544,10 @@ const Map<label>& meshSurfaceEngine::globalToLocalBndEdgeAddressing() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryEdgeLabels();
     }
-        
+
     return *globalBoundaryEdgeToLocalPtr_;
 }
 
@@ -555,7 +555,7 @@ const VRWGraph& meshSurfaceEngine::beAtProcs() const
 {
     if( !globalBoundaryEdgeLabelPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -563,10 +563,10 @@ const VRWGraph& meshSurfaceEngine::beAtProcs() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryEdgeLabels();
     }
-    
+
     return *beProcsPtr_;
 }
 
@@ -574,7 +574,7 @@ const DynList<label>& meshSurfaceEngine::beNeiProcs() const
 {
     if( !beNeiProcsPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -582,10 +582,10 @@ const DynList<label>& meshSurfaceEngine::beNeiProcs() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryEdgeLabels();
     }
-    
+
     return *beNeiProcsPtr_;
 }
 
@@ -593,7 +593,7 @@ const Map<label>& meshSurfaceEngine::otherEdgeFaceAtProc() const
 {
     if( !otherEdgeFaceAtProcPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -602,10 +602,10 @@ const Map<label>& meshSurfaceEngine::otherEdgeFaceAtProc() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcAddressingForProcEdges();
     }
-    
+
     return *otherEdgeFaceAtProcPtr_;
 }
 
@@ -613,7 +613,7 @@ const Map<label>& meshSurfaceEngine::otherEdgeFacePatch() const
 {
     if( !otherEdgeFacePatchPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -622,10 +622,10 @@ const Map<label>& meshSurfaceEngine::otherEdgeFacePatch() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcAddressingForProcEdges();
     }
-    
+
     return *otherEdgeFacePatchPtr_;
 }
 
@@ -633,7 +633,7 @@ const labelList& meshSurfaceEngine::globalBoundaryFaceLabel() const
 {
     if( !globalBoundaryFaceLabelPtr_ )
     {
-        # ifdef FULLDEBUG
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
@@ -642,10 +642,10 @@ const labelList& meshSurfaceEngine::globalBoundaryFaceLabel() const
             ) << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
         # endif
-        
+
         calcGlobalBoundaryFaceLabels();
     }
-    
+
     return *globalBoundaryFaceLabelPtr_;
 }
 
@@ -668,7 +668,7 @@ void meshSurfaceEngine::clearOut()
     deleteDemandDrivenData(edgeFacesPtr_);
     deleteDemandDrivenData(faceEdgesPtr_);
     deleteDemandDrivenData(faceFacesPtr_);
-    
+
     deleteDemandDrivenData(globalBoundaryPointLabelPtr_);
     deleteDemandDrivenData(globalBoundaryPointToLocalPtr_);
     deleteDemandDrivenData(bpProcsPtr_);

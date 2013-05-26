@@ -43,11 +43,13 @@ inline const VRWGraph& triSurfAddressing::pointFacets() const
 {
     if( !pointFacetsPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const VRWGraph& triSurfAddressing::pointFacets() const"
             ) << "Cannot calculate pointFacets" << abort(FatalError);
+        # endif
 
         calculatePointFacets();
     }
@@ -59,11 +61,13 @@ inline const edgeListPMG& triSurfAddressing::edges() const
 {
     if( !edgesPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const edgeListPMG& triSurfAddressing::edges() const"
             ) << "Cannot calculate edges" << abort(FatalError);
+        # endif
 
         calculateEdges();
     }
@@ -75,11 +79,13 @@ inline const VRWGraph& triSurfAddressing::facetEdges() const
 {
     if( !facetEdgesPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const VRWGraph& triSurfAddressing::facetEdges() const"
             ) << "Cannot calculate facetEdges" << abort(FatalError);
+        # endif
 
         calculateFacetEdges();
     }
@@ -91,11 +97,13 @@ inline const VRWGraph& triSurfAddressing::edgeFacets() const
 {
     if( !edgeFacetsPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const VRWGraph& triSurfAddressing::edgeFacets() const"
             ) << "Cannot calculate edgeFacets" << abort(FatalError);
+        # endif
 
         calculateEdgeFacets();
     }
@@ -107,11 +115,13 @@ inline const VRWGraph& triSurfAddressing::pointEdges() const
 {
     if( !pointEdgesPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const VRWGraph& triSurfAddressing::pointEdges() const"
             ) << "Cannot calculate pointEdges" << abort(FatalError);
+        # endif
 
         calculatePointEdges();
     }
@@ -123,11 +133,13 @@ inline const VRWGraph& triSurfAddressing::facetFacets() const
 {
     if( !facetFacetsEdgesPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const VRWGraph& triSurfAddressing::facetFacets() const"
             ) << "Cannot calculate facetFacets" << abort(FatalError);
+        # endif
 
         calculateFacetFacetsEdges();
     }
@@ -139,12 +151,14 @@ inline const vectorField& triSurfAddressing::pointNormals() const
 {
     if( !pointNormalsPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const vectorField&"
                 " triSurfAddressing::pointNormals() const"
             ) << "Cannot calculate pointNormals" << abort(FatalError);
+        # endif
 
         calculatePointNormals();
     }
@@ -156,12 +170,14 @@ inline const vectorField& triSurfAddressing::facetNormals() const
 {
     if( !facetNormalsPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const vectorField&"
                 " triSurfAddressing::facetNormals() const"
             ) << "Cannot calculate facetNormals" << abort(FatalError);
+        # endif
 
         calculateFacetNormals();
     }
@@ -173,12 +189,14 @@ inline const vectorField& triSurfAddressing::facetCentres() const
 {
     if( !facetCentresPtr_ )
     {
+        # ifdef USE_OMP
         if( omp_in_parallel() )
             FatalErrorIn
             (
                 "inline const vectorField&"
                 " triSurfAddressing::facetCentres() const"
             ) << "Cannot calculate facetCentres" << abort(FatalError);
+        # endif
 
         calculateFacetCentres();
     }

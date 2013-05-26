@@ -43,12 +43,14 @@ namespace Foam
 
 meshSurfaceEngine& meshSurfaceEdgeExtractorFUN::surfaceEngine()
 {
+    # ifdef USE_OMP
     if( omp_in_parallel() )
         FatalErrorIn
         (
             "meshSurfaceEngine& meshSurfaceEdgeExtractorFUN::surfaceEngine()"
         ) << "Cannot create surface engine with a parallel region"
             << exit(FatalError);
+    # endif
 
     if( !surfaceEnginePtr_ )
         surfaceEnginePtr_ = new meshSurfaceEngine(mesh_);

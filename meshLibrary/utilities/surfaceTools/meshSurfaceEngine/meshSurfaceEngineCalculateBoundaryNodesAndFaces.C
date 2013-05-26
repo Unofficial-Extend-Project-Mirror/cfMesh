@@ -91,7 +91,9 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
 
     const label start = mesh_.boundaries()[0].patchStart();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(boundaryFaces, fI)
     owners[fI] = owner[start+fI];
 }
@@ -108,8 +110,10 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
 
     boolList isBndPoint(bp.size(), false);
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
     # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
+    # endif
     forAll(boundaryFaces, bfI)
     {
         const face& bf = boundaryFaces[bfI];
@@ -208,7 +212,9 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
     boundaryPoints.setSize(pointI);
 
     //- fill the boundaryPoints list
+    # ifdef USE_OMP
     # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
+    # endif
     forAll(bp, bpI)
     {
         if( bp[bpI] != -1 )
@@ -254,16 +260,26 @@ void meshSurfaceEngine::calculatePointFaces() const
 
     labelListPMG npf;
 
+    # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
     if( bPoints.size() < 1000 )
         nThreads = 1;
+    # else
+    const label nThreads(1);
+    # endif
 
     label minRow(INT_MAX), maxRow(0);
     List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
 
         List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
@@ -271,7 +287,9 @@ void meshSurfaceEngine::calculatePointFaces() const
         //- find min and max entry in the graph
         //- they are used for assigning ranges of values local for each process
         label localMinRow(minRow), localMaxRow(0);
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -285,7 +303,9 @@ void meshSurfaceEngine::calculatePointFaces() const
 
         ++localMaxRow;
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             minRow = Foam::min(minRow, localMinRow);
             minRow = Foam::max(minRow, 0);
@@ -294,21 +314,29 @@ void meshSurfaceEngine::calculatePointFaces() const
             npf.setSize(maxRow);
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- initialise appearances
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         for(label i=0;i<maxRow;++i)
             npf[i] = 0;
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
         const label localMin = minRow + threadI * range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
         //- find the number of appearances of each element in the original graph
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -330,7 +358,9 @@ void meshSurfaceEngine::calculatePointFaces() const
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- count the appearances which are not local to the processor
         for(label i=0;i<nThreads;++i)
@@ -342,16 +372,22 @@ void meshSurfaceEngine::calculatePointFaces() const
                 ++npf[data[j].first()];
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- allocate graph
+        # ifdef USE_OMP
         # pragma omp master
+        # endif
         {
             VRWGraphSMPModifier(pointFacesAddr).setSizeAndRowSize(npf);
             VRWGraphSMPModifier(pointInFaceAddr).setSizeAndRowSize(npf);
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         for(label i=localMin;i<localMax;++i)
             npf[i] = 0;
@@ -377,7 +413,9 @@ void meshSurfaceEngine::calculatePointFaces() const
         }
 
         //- update data local to the processor
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -427,17 +465,25 @@ void meshSurfaceEngine::calculatePointPatches() const
     const labelList& facePatch = boundaryFacePatches();
     const VRWGraph& pFaces = pointFaces();
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
+    # endif
 
     labelList npPatches(pFaces.size());
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(npPatches, i)
             npPatches[i] = 0;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(pFaces, bpI)
         {
             DynList<label> pf;
@@ -447,14 +493,18 @@ void meshSurfaceEngine::calculatePointPatches() const
             npPatches[bpI] = pf.size();
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         VRWGraphSMPModifier(pPatches).setSizeAndRowSize(npPatches);
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static)
+        # endif
         forAll(pFaces, bpI)
         {
             DynList<label> pf;
@@ -532,16 +582,25 @@ void meshSurfaceEngine::calculatePointPoints() const
     const VRWGraph& pFaces = this->pointFaces();
     const labelList& bp = this->bp();
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
+    # endif
+
     labelList npp(boundaryPoints.size());
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(npp, i)
             npp[i] = 0;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(pFaces, bpI)
         {
             DynList<label> pPoints;
@@ -559,13 +618,18 @@ void meshSurfaceEngine::calculatePointPoints() const
             npp[bpI] = pPoints.size();
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         VRWGraphSMPModifier(pointPoints).setSizeAndRowSize(npp);
 
+        # ifdef USE_OMP
         # pragma omp barrier
+
         # pragma omp for schedule(static)
+        # endif
         forAll(pFaces, bpI)
         {
             DynList<label> pPoints;
@@ -653,9 +717,10 @@ void meshSurfaceEngine::calculatePointNormals() const
 
     pointNormalsPtr_ = new vectorField(pFaces.size());
 
-    const label size = pFaces.size();
+    # ifdef USE_OMP
     # pragma omp parallel for if( size > 1000 )
-    for(label pI=0;pI<size;++pI)
+    # endif
+    forAll(pFaces, pI)
     {
         vector normal(vector::zero);
 
@@ -685,9 +750,10 @@ void meshSurfaceEngine::calculateFaceNormals() const
 
     faceNormalsPtr_ = new vectorField(bFaces.size());
 
-    const label size = bFaces.size();
+    # ifdef USE_OMP
     # pragma omp parallel for if( size > 1000 )
-    for(label bfI=0;bfI<size;++bfI)
+    # endif
+    forAll(bFaces, bfI)
     {
         const face& bf = bFaces[bfI];
 
@@ -702,9 +768,10 @@ void meshSurfaceEngine::calculateFaceCentres() const
 
     faceCentresPtr_ = new vectorField(bFaces.size());
 
-    const label size = bFaces.size();
+    # ifdef USE_OMP
     # pragma omp parallel for if( size > 1000 )
-    for(label bfI=0;bfI<size;++bfI)
+    # endif
+    forAll(bFaces, bfI)
         faceCentresPtr_->operator[](bfI) = bFaces[bfI].centre(points);
 }
 
@@ -766,8 +833,10 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
     }
 
     //- normalize vectors
+    # ifdef USE_OMP
     # pragma omp parallel for if( bpAtProcs.size() > 1000 ) \
     schedule(guided)
+    # endif
     forAll(bpAtProcs, bpI)
     {
         if( bpAtProcs.sizeOfRow(bpI) == 0 )
@@ -800,19 +869,27 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
     bpEdgesPtr_ = new VRWGraph();
     VRWGraph& bpEdges = *bpEdgesPtr_;
 
+    # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
     if( pFaces.size() < 1000 )
         nThreads = 1;
+    # else
+    const label nThreads(1);
+    # endif
 
     labelList nEdgesForThread(nThreads);
 
     label edgeI(0);
 
+    # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
         LongList<edge> edgesHelper;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
@@ -853,22 +930,33 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 
         //- this enables other threads to see the number of edges
         //- generated by each thread
-        nEdgesForThread[omp_get_thread_num()] = edgesHelper.size();
+        # ifdef USE_OMP
+        const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
+        nEdgesForThread[threadI] = edgesHelper.size();
 
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         edgeI += edgesHelper.size();
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         edgesPtr_->setSize(edgeI);
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- find the starting position of the edges generated by this thread
         //- in the global list of edges
         label localStart(0);
-        for(label i=0;i<omp_get_thread_num();++i)
+        for(label i=0;i<threadI;++i)
             localStart += nEdgesForThread[i];
 
         //- store edges into the global list
@@ -992,22 +1080,30 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
 
     labelList nfe(bFaces.size());
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
 
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(bFaces, bfI)
             nfe[bfI] = bFaces[bfI].size();
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         VRWGraphSMPModifier(faceEdges).setSizeAndRowSize(nfe);
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static)
+        # endif
         forAll(edges, edgeI)
         {
             const edge ee = edges[edgeI];
@@ -1043,15 +1139,21 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 
     labelList nef(edges.size());
 
+    # ifdef USE_OMP
     const label nThreads = 3 * omp_get_num_procs();
 
     # pragma omp parallel num_threads(nThreads)
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(nef, edgeI)
             nef[edgeI] = 0;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static)
+        # endif
         forAll(edges, edgeI)
         {
             const edge& ee = edges[edgeI];
@@ -1074,14 +1176,18 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         VRWGraphSMPModifier(edgeFaces).setSizeAndRowSize(nef);
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp for schedule(static)
+        # endif
         forAll(edges, edgeI)
         {
             const edge& ee = edges[edgeI];

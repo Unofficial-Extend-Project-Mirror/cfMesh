@@ -109,7 +109,9 @@ void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
     extrudedFaces_.setSize(counter);
     pairOrientation_.setSize(counter);
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( faceInFront.size() > 100 ) schedule(guided)
+    # endif
     forAll(faceInFront, faceI)
     {
         if( faceInFront[faceI] < 0 )
@@ -173,7 +175,9 @@ void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
     }
 
     //- renumber the cells
+    # ifdef USE_OMP
     # pragma omp parallel for if( faceInFront.size() > 100 ) schedule(guided)
+    # endif
     forAll(faceInFront, faceI)
     {
         if( faceInFront[faceI] < 0 )
@@ -215,7 +219,9 @@ void extrudeLayer::createNewVertices()
     //- find the points in the marked front
     List<direction> frontPoints(points.size(), NONE);
 
+    # ifdef USE_OMP
     # pragma omp parallel for if( points.size() > 1000 ) schedule(guided)
+    # endif
     forAll(extrudedFaces_, efI)
     {
         const face& f = faces[extrudedFaces_[efI].first()];
@@ -258,8 +264,10 @@ void extrudeLayer::createNewVertices()
         LongList<label> receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
+        # ifdef USE_OMP
         # pragma omp parallel for if( receivedData.size() > 1000 ) \
         schedule(guided)
+        # endif
         forAll(receivedData, i)
         {
             frontPoints[globalToLocal[receivedData[i]]] =
@@ -836,10 +844,14 @@ void extrudeLayer::movePoints()
         }
     }
 
+    # ifdef USE_OMP
     # pragma omp parallel if( displacements.size() > 100 )
+    # endif
     {
         //- find displacement vectors
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(displacements, pI)
         {
             if( pointAtProcBnd[pI] )
@@ -889,9 +901,13 @@ void extrudeLayer::movePoints()
             displacements[pI] = normal * thickness;
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
+        # ifdef USE_OMP
         # pragma omp for schedule(guided)
+        # endif
         forAll(displacements, pI)
             points[nOrigPoints_+pI] += displacements[pI];
     }

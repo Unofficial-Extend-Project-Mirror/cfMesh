@@ -106,17 +106,24 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
     labelListPMG newPointLabel(surf_.nPoints());
     bool foundDuplicates(false);
 
+    # ifdef USE_OMP
     # pragma omp parallel
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for
+        # endif
         forAll(newPointLabel, pI)
             newPointLabel[pI] = pI;
 
+        # ifdef USE_OMP
         # pragma omp barrier
-
+        # endif
         //- check if there exist any vertices closer
         //- than the prescribed tolerance
+        # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
+        # endif
         for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
         {
             DynList<label> ct;
@@ -154,7 +161,9 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
                     if( magSqr(pts[pointI] - pts[*nIt]) < sqr(tolerance_) )
                     {
                         foundDuplicates = true;
+                        # ifdef USE_OMP
                         # pragma omp critical
+                        # endif
                         newPointLabel[*nIt] = pointI;
                     }
             }

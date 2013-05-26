@@ -55,7 +55,9 @@ void meshOctreeAddressing::createOctreePoints() const
     pointField& octreePoints = *octreePointsPtr_;
 
     const label nLeaves = nodeLabels.size();
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(guided)
+    # endif
     for(label cubeI=0;cubeI<nLeaves;++cubeI)
     {
         if( nodeLabels.sizeOfRow(cubeI) == 0 )
@@ -94,18 +96,34 @@ void meshOctreeAddressing::createNodeLabels() const
     //- start creating node labels
     nNodes_ = 0;
     DynList<label> numLocalNodes;
+    # ifdef USE_OMP
     # pragma omp parallel //num_threads(Foam::max(nodeLabels.size() / 1000, 1))
+    # endif
     {
-        # pragma omp master
-        numLocalNodes.setSize(omp_get_num_threads());
+        # ifdef USE_OMP
+        const label nThreads = omp_get_num_threads();
+        const label threadI = omp_get_thread_num();
+        # else
+        const label nThreads = 1;
+        const label threadI = 0;
+        # endif
 
+        # ifdef USE_OMP
+        # pragma omp master
+        # endif
+        numLocalNodes.setSize(nThreads);
+
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- count the number of nodes local to each process
-        label& nLocalNodes = numLocalNodes[omp_get_thread_num()];
+        label& nLocalNodes = numLocalNodes[threadI];
         nLocalNodes = 0;
 
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 100)
+        # endif
         forAll(nodeLabels, leafI)
         {
             forAllRow(nodeLabels, leafI, nI)
@@ -159,14 +177,18 @@ void meshOctreeAddressing::createNodeLabels() const
         }
 
         //- set start node for each process
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         label startNode(0);
-        for(label i=0;i<omp_get_thread_num();++i)
+        for(label i=0;i<threadI;++i)
             startNode += numLocalNodes[i];
 
         //- start creating node labels
+        # ifdef USE_OMP
         # pragma omp for schedule(static, 100)
+        # endif
         forAll(nodeLabels, leafI)
         {
             forAllRow(nodeLabels, leafI, nI)
@@ -222,7 +244,9 @@ void meshOctreeAddressing::createNodeLabels() const
         }
 
         //- set the number of nodes
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         {
             nNodes_ = Foam::max(nNodes_, startNode);
         }
@@ -239,7 +263,9 @@ void meshOctreeAddressing::createNodeLeaves() const
     FRWGraph<label, 8>& nodeLeaves = *nodeLeavesPtr_;
 
     boolList storedNode(nNodes_, false);
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100)
+    # endif
     forAll(nodeLabels, leafI)
     {
         forAllRow(nodeLabels, leafI, nI)
@@ -273,7 +299,9 @@ void meshOctreeAddressing::findUsedBoxes() const
     boxTypePtr_ = new List<direction>(octree_.numberOfLeaves(), NONE);
     List<direction>& boxType = *boxTypePtr_;
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(boxType, leafI)
     {
         const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
@@ -294,7 +322,9 @@ void meshOctreeAddressing::findUsedBoxes() const
 
         if( nonManifoldMesh )
         {
+            # ifdef USE_OMP
             # pragma omp parallel for schedule(dynamic, 40)
+            # endif
             forAll(boxType, leafI)
             {
                 const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
@@ -424,8 +454,10 @@ void meshOctreeAddressing::findUsedBoxes() const
 
     //- set BOUNDARY flag to boxes which do not have a MESHCELL flag
     DynList<label> neighs;
+    # ifdef USE_OMP
     # pragma omp parallel for if( boxType.size() > 1000 ) \
     private(neighs) schedule(dynamic, 20)
+    # endif
     forAll(boxType, leafI)
     {
         if( boxType[leafI] & MESHCELL )
@@ -502,7 +534,9 @@ void meshOctreeAddressing::calculateNodeType() const
     nodeTypePtr_ = new List<direction>(nNodes_, NONE);
     List<direction>& nodeType = *nodeTypePtr_;
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(nodeLeaves, nodeI)
     {
         forAllRow(nodeLeaves, nodeI, nlI)
@@ -547,7 +581,9 @@ void meshOctreeAddressing::createOctreeFaces() const
     label nFaces(0);
     labelList rowSizes, chunkSizes;
 
+    # ifdef USE_OMP
     # pragma omp parallel
+    # endif
     {
         //- faces are created and stored into helper arrays, and each thread
         //- allocates its own graph for storing faces. The faces are generated
@@ -559,22 +595,35 @@ void meshOctreeAddressing::createOctreeFaces() const
         VRWGraph helperFaces;
         labelListPMG helperOwner, helperNeighbour;
 
+        # ifdef USE_OMP
+        const label nThreads = omp_get_num_threads();
+        const label threadI = omp_get_thread_num();
         const label nChunks = 4 * omp_get_num_threads();
         const label chunkSize = boxType.size() / nChunks + 1;
+        # else
+        const label nThreads(1);
+        const label threadI(0);
+        const label nChunks(1);
+        const label chunkSize = boxType.size();
+        # endif
 
+        # ifdef USE_OMP
         # pragma omp master
+        # endif
         {
             chunkSizes.setSize(nChunks);
             chunkSizes = 0;
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         for
         (
-            label chunkI=omp_get_thread_num();
+            label chunkI=threadI;
             chunkI<nChunks;
-            chunkI+=omp_get_num_threads()
+            chunkI+=nThreads
         )
         {
             const label start = chunkSize * chunkI;
@@ -715,12 +764,16 @@ void meshOctreeAddressing::createOctreeFaces() const
         }
 
         //- set the sizes of faces graph
+        # ifdef USE_OMP
         # pragma omp critical
+        # endif
         nFaces += helperFaces.size();
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         # pragma omp master
+        # endif
         {
             rowSizes.setSize(nFaces);
             octreeFacesPtr_->setSize(nFaces);
@@ -728,20 +781,22 @@ void meshOctreeAddressing::createOctreeFaces() const
             octreeFacesNeighboursPtr_->setSize(nFaces);
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- set the size of face graph rows and copy owners and neighbours
         for
         (
-            label chunkI=omp_get_thread_num();
+            label chunkI=threadI;
             chunkI<nChunks;
-            chunkI+=omp_get_num_threads()
+            chunkI+=nThreads
         )
         {
             label start(0), localStart(0);
             for(label i=0;i<chunkI;++i)
                 start += chunkSizes[i];
-            for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
+            for(label i=threadI;i<chunkI;i+=nThreads)
                 localStart += chunkSizes[i];
 
             for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)
@@ -754,27 +809,31 @@ void meshOctreeAddressing::createOctreeFaces() const
             }
         }
 
+        # ifdef USE_OMP
         # pragma omp barrier
 
         //- set the size of octree faces
         # pragma omp master
+        # endif
         VRWGraphSMPModifier(*octreeFacesPtr_).setSizeAndRowSize(rowSizes);
 
+        # ifdef USE_OMP
         # pragma omp barrier
+        # endif
 
         //- copy the data into octree faces
         for
         (
-            label chunkI=omp_get_thread_num();
+            label chunkI=threadI;
             chunkI<nChunks;
-            chunkI+=omp_get_num_threads()
+            chunkI+=nThreads
         )
         {
             label start(0), localStart(0);
 
             for(label i=0;i<chunkI;++i)
                 start += chunkSizes[i];
-            for(label i=omp_get_thread_num();i<chunkI;i+=omp_get_num_threads())
+            for(label i=threadI;i<chunkI;i+=nThreads)
                 localStart += chunkSizes[i];
 
             for(label faceI=0;faceI<chunkSizes[chunkI];++faceI)

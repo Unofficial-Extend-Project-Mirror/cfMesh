@@ -52,11 +52,13 @@ void tetMeshExtractorOctree::createPoints()
 
     const LongList<point>& tetPoints = tetCreator_.tetPoints();
 
-    points.setSize ( tetPoints.size() );
+    points.setSize(tetPoints.size());
 
-# pragma omp parallel for
-    forAll ( tetPoints, pointI )
-    points[pointI] = tetPoints[pointI];
+    # ifdef USE_OMP
+    # pragma omp parallel for
+    # endif
+    forAll(tetPoints, pointI)
+        points[pointI] = tetPoints[pointI];
 }
 
 void tetMeshExtractorOctree::createPolyMesh()
@@ -71,41 +73,47 @@ void tetMeshExtractorOctree::createPolyMesh()
     const LongList<partTet>& tets = tetCreator_.tets();
 
     VRWGraph pTets;
-    pTets.reverseAddressing ( mesh_.points().size(), tets );
+    pTets.reverseAddressing(mesh_.points().size(), tets);
 
     //- set the number of cells
-    cells.setSize ( tets.size() );
+    cells.setSize(tets.size());
 
     //- all faces of tetrahedral cells
-    faces.setSize ( 4*tets.size() );
-    boolList removeFace ( faces.size() );
+    faces.setSize(4*tets.size());
+    boolList removeFace(faces.size());
 
-# pragma omp parallel if( tets.size() > 1000 )
+    # ifdef USE_OMP
+    # pragma omp parallel if( tets.size() > 1000 )
+    # endif
     {
         //- set face labels
-# pragma omp for
-        forAll ( removeFace, faceI )
-        removeFace[faceI] = false;
+        # ifdef USE_OMP
+        # pragma omp for
+        # endif
+        forAll(removeFace, faceI)
+            removeFace[faceI] = false;
 
         //- set sizes of cells and create all faces
-# pragma omp for schedule(dynamic, 20)
-        forAll ( tets, elmtI )
+        # ifdef USE_OMP
+        # pragma omp for schedule(dynamic, 20)
+        # endif
+        forAll(tets, elmtI)
         {
-            cells[elmtI].setSize ( 4 );
+            cells[elmtI].setSize(4);
 
             const partTet& elmt = tets[elmtI];
 
-            tessellationElement telmt ( elmt[0], elmt[1], elmt[2], elmt[3] );
+            tessellationElement telmt(elmt[0], elmt[1], elmt[2], elmt[3]);
 
             label faceI = 4 * elmtI;
-            for ( label i=0;i<4;++i )
+            for(label i=0;i<4;++i)
             {
                 cells[elmtI][i] = faceI;
 
                 face& f = faces[faceI];
                 f.setSize ( 3 );
 
-                const triFace tf = telmt.face ( i );
+                const triFace tf = telmt.face(i);
                 f[0] = tf[0];
                 f[1] = tf[2];
                 f[2] = tf[1];
@@ -114,38 +122,42 @@ void tetMeshExtractorOctree::createPolyMesh()
             }
         }
 
-# pragma omp barrier
+        # ifdef USE_OMP
+        # pragma omp barrier
+        # endif
 
         //- find duplicate faces
-# pragma omp for schedule(dynamic, 20)
-        forAll ( cells, cellI )
+        # ifdef USE_OMP
+        # pragma omp for schedule(dynamic, 20)
+        # endif
+        forAll(cells, cellI)
         {
             cell& c = cells[cellI];
 
-            forAll ( c, fI )
+            forAll(c, fI)
             {
                 const face& f = faces[c[fI]];
                 const label pointI = f[0];
 
-                forAllRow ( pTets, pointI, ptI )
+                forAllRow(pTets, pointI, ptI)
                 {
                     //- do not check cells with greater labels
                     //- they cannot be face owners
-                    if ( pTets ( pointI, ptI ) >= cellI )
+                    if( pTets(pointI, ptI) >= cellI )
                         continue;
 
-                    const cell& otherTet = cells[pTets ( pointI, ptI ) ];
+                    const cell& otherTet = cells[pTets(pointI, ptI)];
 
                     //- check faces created from a tet
-                    forAll ( otherTet, ofI )
+                    forAll(otherTet, ofI)
                     {
                         //- do not compare faces with greater labels
                         //- they shall not be removed here
-                        if ( otherTet[ofI] >= c[fI] )
+                        if( otherTet[ofI] >= c[fI] )
                             continue;
 
                         //- check if the faces are equal
-                        if ( f == faces[otherTet[ofI]] )
+                        if( f == faces[otherTet[ofI]] )
                         {
                             removeFace[c[fI]] = true;
                             c[fI] = otherTet[ofI];
@@ -157,15 +169,15 @@ void tetMeshExtractorOctree::createPolyMesh()
     }
 
     //- remove duplicate faces
-    label nFaces ( 0 );
-    labelListPMG newFaceLabel ( faces.size(), -1 );
+    label nFaces(0);
+    labelListPMG newFaceLabel(faces.size(), -1);
 
-    forAll ( faces, faceI )
+    forAll(faces, faceI)
     {
-        if ( !removeFace[faceI] )
+        if( !removeFace[faceI] )
         {
-            if ( nFaces < faceI )
-                faces[nFaces].transfer ( faces[faceI] );
+            if( nFaces < faceI )
+                faces[nFaces].transfer(faces[faceI]);
 
             newFaceLabel[faceI] = nFaces;
             ++nFaces;
@@ -173,24 +185,26 @@ void tetMeshExtractorOctree::createPolyMesh()
     }
 
     //- set the size of faces
-    faces.setSize ( nFaces );
+    faces.setSize(nFaces);
 
     //- change cells
-# pragma omp for schedule(dynamic, 40)
-    forAll ( cells, cellI )
+    # ifdef USE_OMP
+    # pragma omp for schedule(dynamic, 40)
+    # endif
+    forAll(cells, cellI)
     {
         cell& c = cells[cellI];
 
         DynList<label> newC;
 
-        forAll ( c, fI )
+        forAll(c, fI)
         {
-            if ( newFaceLabel[c[fI]] != -1 )
-                newC.append ( newFaceLabel[c[fI]] );
+            if( newFaceLabel[c[fI]] != -1 )
+                newC.append(newFaceLabel[c[fI]]);
         }
 
-        c.setSize ( newC.size() );
-        forAll ( c, fI )
+        c.setSize(newC.size());
+        forAll(c, fI)
         c[fI] = newC[fI];
     }
 }
@@ -204,17 +218,15 @@ tetMeshExtractorOctree::tetMeshExtractorOctree
     const IOdictionary& meshDict,
     polyMeshGen& mesh
 )
-        :
-        tetCreator_ ( octree, meshDict ),
-        mesh_ ( mesh )
-{
-}
+:
+    tetCreator_(octree, meshDict),
+    mesh_(mesh)
+{}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshExtractorOctree::~tetMeshExtractorOctree()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -228,8 +240,8 @@ void tetMeshExtractorOctree::createMesh()
     //- create the mesh
     createPolyMesh();
 
-    polyMeshGenModifier ( mesh_ ).reorderBoundaryFaces();
-    polyMeshGenModifier ( mesh_ ).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).reorderBoundaryFaces();
+    polyMeshGenModifier(mesh_).removeUnusedVertices();
 
     Info << "Mesh has :" << nl
     << mesh_.points().size() << " vertices " << nl

@@ -75,7 +75,9 @@ void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
 
     //- find the region for face by finding the patch nearest
     //- to the face centre
-    # pragma omp parallel for if( bFaces.size() > 100 ) schedule(guided)
+    # ifdef USE_OMP
+    # pragma omp parallel for if( bFaces.size() > 100 ) schedule(dynamic, 40)
+    # endif
     forAll(bFaces, bfI)
     {
         const point c = bFaces[bfI].centre(points);

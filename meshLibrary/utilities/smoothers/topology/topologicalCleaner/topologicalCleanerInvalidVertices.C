@@ -190,7 +190,9 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
     boolList removeCell(mesh_.cells().size(), false);
     bool changed(false);
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
+    # endif
     forAll(edgeFaces, edgeI)
         if( edgeFaces.sizeOfRow(edgeI) > 2 )
         {

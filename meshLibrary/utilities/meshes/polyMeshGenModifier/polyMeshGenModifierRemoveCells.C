@@ -64,7 +64,9 @@ void polyMeshGenModifier::removeCells
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
 
+    # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
+    # endif
     forAll(faces, faceI)
     {
         if( neighbour[faceI] == -1 )
@@ -108,9 +110,13 @@ void polyMeshGenModifier::removeCells
     //- remove unused faces
     boolList removeFace(faces.size(), true);
 
+    # ifdef USE_OMP
     # pragma omp parallel if( cells.size() > 1000 )
+    # endif
     {
+        # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 40)
+        # endif
         forAll(cells, cellI)
         {
             const cell& c = cells[cellI];
@@ -124,7 +130,9 @@ void polyMeshGenModifier::removeCells
             const PtrList<writeProcessorPatch>& procBoundaries =
                 mesh_.procBoundaries_;
 
+            # ifdef USE_OMP
             # pragma omp for
+            # endif
             for(label fI=procBoundaries[0].patchStart();fI<faces.size();++fI)
                 removeFace[fI] = false;
         }

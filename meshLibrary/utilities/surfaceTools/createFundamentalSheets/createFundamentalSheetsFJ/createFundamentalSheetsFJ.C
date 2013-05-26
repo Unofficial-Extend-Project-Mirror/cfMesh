@@ -71,7 +71,9 @@ void createFundamentalSheetsFJ::createInitialSheet()
 
     LongList<labelPair> extrudeFaces(end-start);
 
+    # ifdef USE_OMP
     # pragma omp parallel for
+    # endif
     for(label faceI=start;faceI<end;++faceI)
         extrudeFaces[faceI-start] = labelPair(faceI, owner[faceI]);
 
@@ -207,8 +209,7 @@ createFundamentalSheetsFJ::createFundamentalSheetsFJ
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 createFundamentalSheetsFJ::~createFundamentalSheetsFJ()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
