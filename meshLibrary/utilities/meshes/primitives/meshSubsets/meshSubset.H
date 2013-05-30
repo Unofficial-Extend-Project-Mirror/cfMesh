@@ -135,6 +135,10 @@ public:
             //- find if the element exists in the subset
             inline bool contains(const label) const;
 
+    // operators
+
+            inline void operator=(const meshSubset&);
+
     // IOstream operators
 
             friend inline Ostream& operator<<(Ostream&, const meshSubset&);

@@ -150,6 +150,13 @@ inline bool meshSubset::contains(const label elmt) const
     return data_.found(elmt);
 }
 
+inline void meshSubset::operator=(const meshSubset& ms)
+{
+    name_ = ms.name_;
+    type_ = ms.type_;
+    data_ = ms.data_;
+}
+
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
 inline Ostream& operator<<(Ostream& os, const meshSubset& sel)

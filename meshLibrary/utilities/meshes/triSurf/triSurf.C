@@ -418,8 +418,9 @@ void triSurf::readFromFTR(const fileName& fName)
 
     fStream >> triSurfFacets::triangles_;
 
-    char c;
-    if( !(fStream >> c) )
+    token c;
+    fStream >> c;
+    if( fStream.eof() )
     {
         return;
     }
@@ -428,9 +429,19 @@ void triSurf::readFromFTR(const fileName& fName)
         fStream.putBack(c);
     }
 
-    fStream >> triSurfPoints::pointSubsets_;
+    List<meshSubset> subsets;
 
-    fStream >> triSurfFacets::facetSubsets_;
+    //- read point subsets
+    fStream >> subsets;
+    forAll(subsets, subsetI)
+        triSurfPoints::pointSubsets_.insert(subsetI, subsets[subsetI]);
+
+    subsets.clear();
+
+    //- read facet subsets
+    fStream >> subsets;
+    forAll(subsets, subsetI)
+        triSurfFacets::facetSubsets_.insert(subsetI, subsets[subsetI]);
 }
 
 void triSurf::writeToFTR(const fileName& fName) const
