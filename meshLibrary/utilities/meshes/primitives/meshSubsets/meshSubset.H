@@ -73,7 +73,8 @@ public:
             UNKNOWN = 0,
             CELLSUBSET = 1,
             FACESUBSET = 2,
-            POINTSUBSET = 4
+            POINTSUBSET = 4,
+            FEATUREEDGESUBSET = 8
         };
 
     // Constructors

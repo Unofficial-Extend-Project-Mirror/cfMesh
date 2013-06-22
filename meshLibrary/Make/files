@@ -187,6 +187,7 @@ $(partTetMesh)/partTetMeshSimplex.C
 $(triSurf)/triSurf.C
 $(triSurf)/triSurfPoints.C
 $(triSurf)/triSurfFacets.C
+$(triSurf)/triSurfFeatureEdges.C
 $(triSurf)/triSurfAddressing.C
 $(triSurf)/triSurfModifier.C
 

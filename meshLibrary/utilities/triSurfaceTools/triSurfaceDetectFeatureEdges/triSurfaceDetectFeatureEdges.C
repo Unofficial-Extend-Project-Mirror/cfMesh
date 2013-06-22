@@ -153,6 +153,7 @@ const triSurf* triSurfaceDetectFeatureEdges::surfaceWithPatches
         (
             newTriangles,
             newPatches,
+            edgeListPMG(),
             surf_.points()
         );
 

@@ -31,7 +31,6 @@ Description
 #include "boundBox.H"
 #include "DynList.H"
 #include "helperFunctions.H"
-//#include "DimSpace.H"
 
 // #define DEBUGSearch
 
@@ -152,7 +151,7 @@ void surfaceIntersectionsOctree::checkIntersections
     Info << "Intersection candidates are " << intersections << endl;
 
     short nIntersections(0);
-    point intersection;
+    point intersection(vector::zero);
     SLList<label> ints;
 
     forAll(surface_, faceI)
@@ -170,7 +169,7 @@ void surfaceIntersectionsOctree::checkIntersections
             ints.append(faceI);
             Info << "Intersection " << nIntersections << " is "
                 << intersection << endl;
-            nIntersections++;
+            ++nIntersections;
         }
 
     Info << "nIntersections " << nIntersections << endl;
@@ -195,7 +194,8 @@ void surfaceIntersectionsOctree::checkIntersections
         if( !found )
             FatalErrorIn
             (
-                "bool surfaceIntersectionsOctree::isPointInside(const point& p) const"
+                "bool surfaceIntersectionsOctree::isPointInside"
+                "(const point&) const"
             ) << "Intersection " << pIter() << " was not found by the octree!"
                 << abort(FatalError);
     }
@@ -298,7 +298,11 @@ bool surfaceIntersectionsOctree::isPointInside(const point& p) const
     }
 }
 
-pointIndexHit surfaceIntersectionsOctree::intersection(const point& s, const point& e) const
+pointIndexHit surfaceIntersectionsOctree::intersection
+(
+    const point& s,
+    const point& e
+) const
 {
     SLList<pointIndexHit> intersections;
     initialCube_.intersectionCandidates(intersections, s, e);

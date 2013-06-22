@@ -40,6 +40,7 @@ SourceFiles
 
 #include "triSurfPoints.H"
 #include "triSurfFacets.H"
+#include "triSurfFeatureEdges.H"
 #include "triSurfAddressing.H"
 #include <map>
 #include "DynList.H"
@@ -61,27 +62,15 @@ class triSurf
 :
     public triSurfPoints,
     public triSurfFacets,
+    public triSurfFeatureEdges,
     public triSurfAddressing
 {
-    // Private data
-
-        //- groups of facets
-        //- which can be visited over manifold edges
-        //mutable label nFaceGroups_;
-        //mutable labelListPMG* faceGroupPtr_;
-
     // Private member functions
-        //- calculate groups of facets
-        //void calculateFaceGroups() const;
-
-        void readFromSTL(const fileName&);
-        void writeToSTL(const fileName&) const;
-
-        void readFromSTLB(const fileName&);
-        void writeToSTLB(const fileName&) const;
-
         void readFromFTR(const fileName&);
         void writeToFTR(const fileName&) const;
+
+        void readFromFMT(const fileName&);
+        void writeToFMT(const fileName&) const;
 
         inline LongList<labelledTri>& accessToFacets();
         inline geometricSurfacePatchList& accessToPatches();
@@ -104,6 +93,7 @@ public:
         (
             const LongList<labelledTri>& triangles,
             const geometricSurfacePatchList& patches,
+            const edgeListPMG& featureEdges_,
             const pointField& points
         );
 
@@ -119,27 +109,6 @@ public:
         //- read and write the surface
         void readSurface(const fileName&);
         void writeSurface(const fileName&) const;
-
-/*        //- returns the names of the existing subsets
-        inline void existingFaceSubsets(DynList<word>&) const;
-
-        //- return facets in subset
-        inline bool doesFaceSubsetExist(const word&) const;
-        inline const labelListPMG& facesInSubset(const word&) const;
-
-        //- creates a new subset if it does not yet exist
-        //- adds elements which are not yet in the subset
-        inline void addFacetsToSubset(const word&, const labelListPMG&);
-
-        //- remove subset of facets
-        inline void removeFaceSubset(const word&);
-
-        //- number of groups of facets that are connected over manifold edges
-        inline label numberOfFaceGroups() const;
-
-        //- groups assigned to the surface facets
-        inline const labelListPMG& faceGroups() const;
-        */
 };
 
 
