@@ -38,56 +38,97 @@ SourceFiles
 
 #include "IOdictionary.H"
 
+#include <map>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class checkMeshDict Declaration
+                        Class checkMeshDict Declaration
 \*---------------------------------------------------------------------------*/
 
 class checkMeshDict
 {
         //- Reference to the mesh
-        const IOdictionary& meshDict_;
+        IOdictionary& meshDict_;
 
     // Private member functions
         //- check patchCellSize entry
-        void checkPatchCellSize();
+        void checkPatchCellSize() const;
 
         //- check subsetCellSize entry
-        void checkSubsetCellSize();
+        void checkSubsetCellSize() const;
 
         //- check keepCellsIntersectingPatches entry
-        void checkKeepCellsIntersectingPatches();
+        void checkKeepCellsIntersectingPatches() const;
 
         //- check removeCellsIntersectingPatches entry
-        void checkRemoveCellsIntersectingPatches();
+        void checkRemoveCellsIntersectingPatches() const;
 
         //- check objectRefinements entry
-        void checkObjectRefinements();
+        void checkObjectRefinements() const;
 
         //- check entry for boundary layers
-        void checkBoundaryLayers();
+        void checkBoundaryLayers() const;
 
         //- check renameBoundary entry
-        void checkRenameBoundary();
+        void checkRenameBoundary() const;
 
         //- perform all checks
-        void checkEntries();
+        void checkEntries() const;
+
+        //- update patchCellSize entry
+        void updatePatchCellSize(const std::map<word, wordList>&);
+
+        //- update subsetCellSize entry
+        void updateSubsetCellSize(const std::map<word, wordList>&);
+
+        //- check keepCellsIntersectingPatches entry
+        void updateKeepCellsIntersectingPatches
+        (
+            const std::map<word, wordList>&
+        );
+
+        //- check removeCellsIntersectingPatches entry
+        void updateRemoveCellsIntersectingPatches
+        (
+            const std::map<word, wordList>&
+        );
+
+        //- check objectRefinements entry
+        void updateObjectRefinements(const std::map<word, wordList>&);
+
+        //- check entry for boundary layers
+        void updateBoundaryLayers(const std::map<word, wordList>&);
+
+        //- check renameBoundary entry
+        void updateRenameBoundary
+        (
+            const std::map<word, wordList>&,
+            const std::map<word, word>&
+        );
 
     public:
 
     // Constructors
 
         //- Construct from IOdictionary
-        checkMeshDict(const IOdictionary& meshDict);
+        checkMeshDict(IOdictionary& meshDict);
 
     // Destructor
         ~checkMeshDict();
 
     // Public member functions
+
+        //- update meshDict based on modification of patches in the surface
+        void updateDictionaries
+        (
+            const std::map<word, wordList>& patchesForPatch,
+            const std::map<word, word>& patchTypes,
+            const bool renamePatches = true
+        );
 };
 
 

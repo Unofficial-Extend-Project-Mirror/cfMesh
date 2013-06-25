@@ -28,6 +28,7 @@ Description
 
 #include "cartesianMeshGenerator.H"
 #include "triSurf.H"
+#include "triSurfacePatchManipulator.H"
 #include "demandDrivenData.H"
 #include "objectRegistry.H"
 #include "Time.H"
@@ -347,13 +348,19 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
     surfacePtr_ = new triSurf(db_.path()/surfaceFile);
 
-//     if( meshDict_.found("subsetFileName") )
-//     {
-//         fileName subsetFileName = meshDict_.lookup("subsetFileName");
-//         if( Pstream::parRun() )
-//             subsetFileName = ".."/subsetFileName;
-//         surfacePtr_->readFaceSubsets(db_.path()/subsetFileName);
-//     }
+    if( surfacePtr_->featureEdges().size() != 0 )
+    {
+        //- create surface patches based on the feature edges
+        //- and update the meshDict based on the given data
+        triSurfacePatchManipulator manipulator(*surfacePtr_);
+
+        const triSurf* surfaceWithPatches =
+            manipulator.surfaceWithPatches(&meshDict_);
+
+        //- delete the old surface and assign the new one
+        deleteDemandDrivenData(surfacePtr_);
+        surfacePtr_ = surfaceWithPatches;
+    }
 
     octreePtr_ = new meshOctree(*surfacePtr_);
 

@@ -61,45 +61,45 @@ class hexMeshGenerator
         const Time& runTime_;
 
         //- pointer to the surface
-        triSurf* surfacePtr_;
+        const triSurf* surfacePtr_;
 
         //- IOdictionary containing information about cell sizes, etc..
         IOdictionary meshDict_;
 
         //- pointer to the octree
         meshOctree* octreePtr_;
-    
+
         //- mesh
         polyMeshGen mesh_;
 
     // Private member functions
         //- generate octree based on user's refinement settings
         void generateOctree();
-    
+
         //- generate dual mesh
         void generateDualMesh();
-    
+
         //- prepare mesh surface
         void surfacePreparation();
-        
+
         //- map mesh to the surface and untangle surface
         void mapMeshToSurface();
-        
+
         //- optimise surface of the mesh
         void optimiseMeshSurface();
 
         //- add boundary layers
         void generateBoundaryLayers();
-        
+
         //- mesh optimisation
         void optimiseFinalMesh();
-        
+
         //- replace boundaries
         void replaceBoundaries();
-        
+
         //- renumber the mesh
         void renumberMesh();
-        
+
         //- generate mesh
         void generateMesh();
 

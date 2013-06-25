@@ -103,7 +103,7 @@ void renameBoundaryPatches::calculateNewBoundary()
 
             if( patchToLabel.find(patchName) == patchToLabel.end() )
             {
-                Info<< "Patch " << patchName << " does not exist!!" << endl;
+                Info << "Patch " << patchName << " does not exist!!" << endl;
                 continue;
             }
 
@@ -115,7 +115,7 @@ void renameBoundaryPatches::calculateNewBoundary()
                 return;
             }
 
-            const dictionary& pDict = patchesToRename[patchI].dict();
+            const dictionary pDict = patchesToRename[patchI].dict();
 
             word newName(patchName);
             if( pDict.found("newName") )
@@ -138,7 +138,7 @@ void renameBoundaryPatches::calculateNewBoundary()
             }
             else
             {
-                newPatchTypes[newPatchI] = "patch";
+                newPatchTypes[newPatchI] = "wall";
             }
 
             patchToNew[patchToLabel[patchName]] = newPatchI;
@@ -146,19 +146,30 @@ void renameBoundaryPatches::calculateNewBoundary()
         }
     }
 
-    word defaultName("");
+    word defaultName("walls");
     if( dict.found("defaultName") )
         defaultName = word(dict.lookup("defaultName"));
-    word defaultType("patch");
+    word defaultType("wall");
     if( dict.found("defaultType") )
         defaultType = word(dict.lookup("defaultType"));
 
-    if( dict.found("defaultName") )
+    if( dict.found("defaultName") && (newPatchI < patchToNew.size()) )
     {
-        newNameToPos.insert(std::pair<word, label>(defaultName, newPatchI));
-        newPatchNames[newPatchI] = defaultName;
-        newPatchTypes[newPatchI] = defaultType;
-        ++newPatchI;
+        bool addPatch(false);
+        forAll(patchToNew, patchI)
+            if( patchToNew[patchI] == -1 )
+            {
+                addPatch = true;
+                break;
+            }
+
+        if( addPatch )
+        {
+            newNameToPos.insert(std::pair<word, label>(defaultName, newPatchI));
+            newPatchNames[newPatchI] = defaultName;
+            newPatchTypes[newPatchI] = defaultType;
+            ++newPatchI;
+        }
     }
     else
     {

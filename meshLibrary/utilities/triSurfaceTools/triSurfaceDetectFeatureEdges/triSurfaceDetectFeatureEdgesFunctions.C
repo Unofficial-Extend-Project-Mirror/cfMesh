@@ -30,6 +30,7 @@ Description
 #include "helperFunctions.H"
 #include "triSurfaceDetectPlanarRegions.H"
 #include "demandDrivenData.H"
+#include "labelPair.H"
 
 #include <omp.h>
 
@@ -61,9 +62,39 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
             continue;
         }
 
-        const scalar cosAngle =
+        scalar cosAngle =
             (normals[eFaces[0]] & normals[eFaces[1]]) /
             (mag(normals[eFaces[0]]) * mag(normals[eFaces[1]]) + VSMALL);
+
+        //- check the orientation of triangles at this edge
+        //- check the sign of the angle if the orientation  is not consistent
+        const labelledTri& tri0 = surf_[edgeFaces(edgeI, 0)];
+        const labelledTri& tri1 = surf_[edgeFaces(edgeI, 1)];
+        DynList<labelPair> sharedIndices;
+        forAll(tri0, i)
+        {
+            forAll(tri1, j)
+            {
+                if( tri0[i] == tri1[j] )
+                    sharedIndices.append(labelPair(i, j));
+            }
+        }
+
+        if( sharedIndices.size() == 2 )
+        {
+            const labelPair& pair0 = sharedIndices[0];
+            const labelPair& pair1 = sharedIndices[1];
+            if( ((pair0.first() + 1) % 3) == pair1.first() )
+            {
+                if( (pair0.second() + 1) % 3 == pair1.second() )
+                    cosAngle *= -1.0;
+            }
+            else
+            {
+                if( (pair1.second() + 1) % 3 == pair0.second() )
+                    cosAngle *= -1.0;
+            }
+        }
 
         if( cosAngle < tol )
             featureEdges_[edgeI] |= 1;
@@ -103,65 +134,6 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
         if( facetInPlanarRegion[eFaces[0]] != facetInPlanarRegion[eFaces[1]] )
             featureEdges_[edgeI] |= 4;
     }
-}
-
-void triSurfaceDetectFeatureEdges::createPatches()
-{
-    nPatches_ = 0;
-    facetInPatch_.setSize(surf_.size());
-    facetInPatch_ = -1;
-
-    const VRWGraph& faceEdges = surf_.facetEdges();
-    const VRWGraph& edgeFaces = surf_.edgeFacets();
-
-    forAll(facetInPatch_, triI)
-    {
-        if( facetInPatch_[triI] != -1 )
-            continue;
-
-        labelListPMG front;
-        front.append(triI);
-        facetInPatch_[triI] = nPatches_;
-
-        while( front.size() )
-        {
-            const label fLabel = front.removeLastElement();
-
-            const constRow fEdges = faceEdges[fLabel];
-
-            forAll(fEdges, feI)
-            {
-                const label edgeI = fEdges[feI];
-
-                //- check if th edges is marked as a feature edge
-                if( featureEdges_[edgeI] )
-                    continue;
-
-                const constRow eFaces = edgeFaces[edgeI];
-
-                //- stop at non-manifold edges
-                if( eFaces.size() != 2 )
-                    continue;
-
-                label neiTri = eFaces[0];
-                if( neiTri == fLabel )
-                    neiTri = eFaces[1];
-
-                //- do not overwrite existing patch information
-                if( surf_[fLabel].region() != surf_[neiTri].region() )
-                    continue;
-                if( facetInPatch_[neiTri] != -1 )
-                    continue;
-
-                facetInPatch_[neiTri] = nPatches_;
-                front.append(neiTri);
-            }
-        }
-
-        ++nPatches_;
-    }
-
-    Info << "Created " << nPatches_ << " surface patches" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

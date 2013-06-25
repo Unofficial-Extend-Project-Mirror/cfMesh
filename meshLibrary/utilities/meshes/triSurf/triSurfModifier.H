@@ -79,6 +79,9 @@ public:
         //- access to facets
         inline LongList<labelledTri>& facetsAccess();
 
+        //- non-const access to feature edges
+        inline edgeListPMG& featureEdgesAccess();
+
         //- access to patches
         inline geometricSurfacePatchList& patchesAccess();
 };

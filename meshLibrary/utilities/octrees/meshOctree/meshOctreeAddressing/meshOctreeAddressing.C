@@ -292,7 +292,7 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
             //- check for geometric intersection
             const LongList<edge>& edges = this->octreeEdges();
             const pointField& points = this->octreePoints();
-            point intersection;
+            point intersection(vector::zero);
 
             if(
                 help::triLineIntersection

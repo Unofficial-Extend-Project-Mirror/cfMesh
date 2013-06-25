@@ -75,6 +75,7 @@ triSurfacePartitioner = utilities/triSurfaceTools/triSurfacePartitioner
 triSurfaceDetectMaterials = utilities/triSurfaceTools/triSurfaceDetectMaterials
 triSurfaceDetectPlanarRegions = utilities/triSurfaceTools/triSurfaceDetectPlanarRegions
 triSurfaceDetectFeatureEdges = utilities/triSurfaceTools/triSurfaceDetectFeatureEdges
+triSurfacePatchManipulator = utilities/triSurfaceTools/triSurfacePatchManipulator
 
 polyMeshGen = utilities/meshes/polyMeshGen
 writePatch  = utilities/meshes/polyMeshGen/writePatch
@@ -412,6 +413,9 @@ $(triSurfaceDetectPlanarRegions)/triSurfaceDetectPlanarRegions.C
 
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdges.C
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdgesFunctions.C
+
+$(triSurfacePatchManipulator)/triSurfacePatchManipulator.C
+$(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C
 
 $(cartesianMeshExtractor)/cartesianMeshExtractor.C
 $(cartesianMeshExtractor)/cartesianMeshExtractorPointsAndAddressing.C

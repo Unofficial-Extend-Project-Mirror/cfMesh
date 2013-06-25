@@ -186,11 +186,11 @@ triSurf::~triSurf()
 
 void triSurf::readSurface(const fileName& fName)
 {
-    if( fName.ext() == "fmt" || fName.ext() == "FMT")
+    if( fName.ext() == "fmt" || fName.ext() == "FMT" )
     {
         readFromFMT(fName);
     }
-    else if( fName.ext() == "ftr" || fName.ext() == "FTR")
+    else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
     {
         readFromFTR(fName);
     }
@@ -217,7 +217,7 @@ void triSurf::writeSurface(const fileName& fName) const
 {
     if( fName.ext() == "fmt" || fName.ext() == "FMT" )
     {
-        writeToFTR(fName);
+        writeToFMT(fName);
     }
     else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
     {

@@ -61,7 +61,7 @@ class voronoiMeshGenerator
         const Time& runTime_;
 
         //- pointer to the surface
-        triSurf* surfacePtr_;
+        const triSurf* surfacePtr_;
 
         //- pointer to the octree
         meshOctree* octreePtr_;

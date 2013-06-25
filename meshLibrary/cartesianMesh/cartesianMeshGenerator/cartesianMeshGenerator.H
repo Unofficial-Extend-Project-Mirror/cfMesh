@@ -61,45 +61,45 @@ class cartesianMeshGenerator
         const Time& db_;
 
         //- pointer to the surface
-        triSurf* surfacePtr_;
+        const triSurf* surfacePtr_;
 
         //- IOdictionary containing information about cell sizes, etc..
         IOdictionary meshDict_;
 
         //- pointer to the octree
         meshOctree* octreePtr_;
-    
+
         //- mesh
         polyMeshGen mesh_;
 
     // Private member functions
         //- create cartesian mesh
         void createCartesianMesh();
-    
+
         //- prepare mesh surface
         void surfacePreparation();
-        
+
         //- map mesh to the surface and untangle surface
         void mapMeshToSurface();
-        
+
         //- capture edges and corners
         void mapEdgesAndCorners();
-        
+
         //- optimise surface mesh
         void optimiseMeshSurface();
-        
+
         //- add boundary layers
         void generateBoudaryLayers();
-        
+
         //- mesh optimisation
         void optimiseFinalMesh();
-        
+
         //- replace boundaries
         void replaceBoundaries();
-        
+
         //- renumber the mesh
         void renumberMesh();
-        
+
         //- generate mesh
         void generateMesh();
 

@@ -53,25 +53,13 @@ class triSurfaceDetectFeatureEdges
 {
     // Private data
         //- reference to triSurf
-        const triSurf& surf_;
+        triSurf& surf_;
 
         //- detected feature edges
         List<direction> featureEdges_;
 
         //- angle tolerance
         scalar angleTolerance_;
-
-        //- surface patches
-        labelList facetInPatch_;
-
-        //- number of patches
-        label nPatches_;
-
-        //- patch names
-        wordList newPatchNames_;
-
-        //- patch types
-        wordList newPatchTypes_;
 
     // Private member functions
         //- detect feature edges by check angle between the normals
@@ -84,9 +72,6 @@ class triSurfaceDetectFeatureEdges
 
         //- detect feature edges at the boundaries of planar regions
         void detectOuterBoundariesOfPlanarRegions();
-
-        //- create patches bounded by a set of feature edges
-        void createPatches();
 
         //- Disallow default bitwise copy construct
         triSurfaceDetectFeatureEdges(const triSurfaceDetectFeatureEdges&);
@@ -101,7 +86,7 @@ public:
         //- Construct from triSurface and tolerance
         triSurfaceDetectFeatureEdges
         (
-            const triSurf& surface,
+            triSurf& surface,
             const scalar angleDeviation = 45.0
         );
 
@@ -113,14 +98,7 @@ public:
     // Member Functions
 
         //- store regions in a graph
-        void detectedSurfaceRegions(VRWGraph&) const;
-
-        //- store regions into subsets with a given prefix
-        const triSurf* surfaceWithPatches
-        (
-            const word prefix = "patch_",
-            const bool forceOverwrite = false
-        ) const;
+        void detectFeatureEdges();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

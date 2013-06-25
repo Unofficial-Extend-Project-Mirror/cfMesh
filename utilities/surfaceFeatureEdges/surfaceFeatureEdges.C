@@ -38,6 +38,7 @@ Description
 #include <sstream>
 
 #include "triSurfaceDetectFeatureEdges.H"
+#include "triSurfacePatchManipulator.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -77,13 +78,23 @@ int main(int argc, char *argv[])
     triSurf originalSurface(inFileName);
 
     triSurfaceDetectFeatureEdges edgeDetector(originalSurface, tol);
+    edgeDetector.detectFeatureEdges();
 
-    const triSurf* newSurfPtr = edgeDetector.surfaceWithPatches();
+    if( outFileName.ext() == "fmt" || outFileName.ext() == "FMT" )
+    {
+        Info << "Writing : " << outFileName << endl;
+        originalSurface.writeSurface(outFileName);
+    }
+    else
+    {
+        triSurfacePatchManipulator manipulator(originalSurface);
+        const triSurf* newSurfPtr = manipulator.surfaceWithPatches();
 
-    Info << "Writing : " << outFileName << endl;
-    newSurfPtr->writeSurface(outFileName);
+        Info << "Writing : " << outFileName << endl;
+        newSurfPtr->writeSurface(outFileName);
 
-    deleteDemandDrivenData(newSurfPtr);
+        deleteDemandDrivenData(newSurfPtr);
+    }
 
     Info << "End\n" << endl;
 

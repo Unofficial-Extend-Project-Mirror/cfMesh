@@ -44,6 +44,7 @@ Description
 #include "boundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
+#include "triSurfacePatchManipulator.H"
 
 //#define DEBUG
 //#define DEBUGflma
@@ -323,11 +324,19 @@ hexMeshGenerator::hexMeshGenerator
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
 
-//     if( meshDict_.found("subsetFileName") )
-//     {
-//         const fileName subsetFileName = meshDict_.lookup("subsetFileName");
-//         surfacePtr_->readFaceSubsets(runTime_.path()/subsetFileName);
-//     }
+    if( surfacePtr_->featureEdges().size() != 0 )
+    {
+        //- create surface patches based on the feature edges
+        //- and update the meshDict based on the given data
+        triSurfacePatchManipulator manipulator(*surfacePtr_);
+
+        const triSurf* surfaceWithPatches =
+            manipulator.surfaceWithPatches(&meshDict_);
+
+        //- delete the old surface and assign the new one
+        deleteDemandDrivenData(surfacePtr_);
+        surfacePtr_ = surfaceWithPatches;
+    }
 
     generateOctree();
 

@@ -29,6 +29,7 @@ Description
 #include "checkMeshDict.H"
 #include "patchRefinementList.H"
 #include "PtrList.H"
+#include "LongList.H"
 #include "objectRefinement.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -38,7 +39,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkMeshDict::checkPatchCellSize()
+void checkMeshDict::checkPatchCellSize() const
 {
     if( meshDict_.found("patchCellSize") )
     {
@@ -57,7 +58,7 @@ void checkMeshDict::checkPatchCellSize()
     }
 }
 
-void checkMeshDict::checkSubsetCellSize()
+void checkMeshDict::checkSubsetCellSize() const
 {
     if( meshDict_.found("subsetCellSize") )
     {
@@ -75,7 +76,7 @@ void checkMeshDict::checkSubsetCellSize()
     }
 }
 
-void checkMeshDict::checkKeepCellsIntersectingPatches()
+void checkMeshDict::checkKeepCellsIntersectingPatches() const
 {
     if( meshDict_.found("keepCellsIntersectingPatches") )
     {
@@ -94,7 +95,7 @@ void checkMeshDict::checkKeepCellsIntersectingPatches()
     }
 }
 
-void checkMeshDict::checkRemoveCellsIntersectingPatches()
+void checkMeshDict::checkRemoveCellsIntersectingPatches() const
 {
     if( meshDict_.found("removeCellsIntersectingPatches") )
     {
@@ -113,7 +114,7 @@ void checkMeshDict::checkRemoveCellsIntersectingPatches()
     }
 }
 
-void checkMeshDict::checkObjectRefinements()
+void checkMeshDict::checkObjectRefinements() const
 {
     if( meshDict_.found("objectRefinements") )
     {
@@ -165,7 +166,7 @@ void checkMeshDict::checkObjectRefinements()
     }
 }
 
-void checkMeshDict::checkBoundaryLayers()
+void checkMeshDict::checkBoundaryLayers() const
 {
     if( meshDict_.found("boundaryLayers") )
     {
@@ -183,7 +184,7 @@ void checkMeshDict::checkBoundaryLayers()
     }
 }
 
-void checkMeshDict::checkRenameBoundary()
+void checkMeshDict::checkRenameBoundary() const
 {
     if( meshDict_.found("renameBoundary") )
     {
@@ -194,7 +195,29 @@ void checkMeshDict::checkRenameBoundary()
             {
                 const dictionary& patchDicts = dict.subDict("newPatchNames");
 
-                patchDicts.toc();
+                const wordList patchNames = patchDicts.toc();
+
+                forAll(patchNames, patchI)
+                {
+                    const word& pName = patchNames[patchI];
+
+                    if( !patchDicts.isDict(pName) )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::checkRenameBoundary() const"
+                        ) << "Entry " << pName
+                          << " is not a dictionary" << exit(FatalError);
+
+                    const dictionary dict = patchDicts.subDict(pName);
+
+                    if( !dict.found("newName") )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::checkRenameBoundary() const"
+                        ) << "Dictionary " << pName
+                          << " does not contain a newName keyword"
+                          << exit(FatalError);
+                }
             }
             else
             {
@@ -203,13 +226,26 @@ void checkMeshDict::checkRenameBoundary()
                     dict.lookup("newPatchNames")
                 );
 
-                patchesToRename.size();
+                forAll(patchesToRename, patchI)
+                {
+                    const word& pName = patchesToRename[patchI].keyword();
+
+                    const dictionary dict = patchesToRename[patchI].dict();
+
+                    if( !dict.found("newName") )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::checkRenameBoundary() const"
+                        ) << "Dictionary " << pName
+                          << " does not contain a newName keyword"
+                          << exit(FatalError);
+                }
             }
         }
     }
 }
 
-void checkMeshDict::checkEntries()
+void checkMeshDict::checkEntries() const
 {
     checkPatchCellSize();
 
@@ -226,11 +262,417 @@ void checkMeshDict::checkEntries()
     checkRenameBoundary();
 }
 
+void checkMeshDict::updatePatchCellSize
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+    if( meshDict_.found("patchCellSize") )
+    {
+        LongList<patchRefinement> updatedPatchRefinement;
+
+        if( meshDict_.isDict("patchCellSize") )
+        {
+            const dictionary dict = meshDict_.subDict("patchCellSize");
+
+            const wordList patchNames = dict.toc();
+
+            forAll(patchNames, patchI)
+            {
+                const word& pName = patchNames[patchI];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+                if( it == patchesFromPatch.end() )
+                    continue;
+
+                const wordList& updatedPatchNames = it->second;
+
+                const dictionary& pDict = dict.subDict(pName);
+                const scalar cellSize = readScalar(pDict.lookup("cellSize"));
+
+                forAll(updatedPatchNames, nameI)
+                    updatedPatchRefinement.append
+                    (
+                        patchRefinement
+                        (
+                            updatedPatchNames[nameI],
+                            cellSize
+                        )
+                    );
+            }
+        }
+        else
+        {
+            patchRefinementList prl(meshDict_.lookup("patchCellSize"));
+            forAll(prl, prlI)
+            {
+                const word& pName = prl[prlI].patchName();
+                const scalar cellSize = prl[prlI].cellSize();
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+
+                if( it == patchesFromPatch.end() )
+                    continue;
+
+                const wordList& updatedPatchNames = it->second;
+                forAll(updatedPatchNames, nameI)
+                    updatedPatchRefinement.append
+                    (
+                        patchRefinement
+                        (
+                            updatedPatchNames[nameI],
+                            cellSize
+                        )
+                    );
+            }
+        }
+
+        meshDict_.add("patchCellSize", updatedPatchRefinement, true);
+    }
+}
+
+void checkMeshDict::updateSubsetCellSize
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+
+}
+
+void checkMeshDict::updateKeepCellsIntersectingPatches
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+    if( meshDict_.found("keepCellsIntersectingPatches") )
+    {
+        LongList<word> updatedPatchNames;
+        if( meshDict_.isDict("keepCellsIntersectingPatches") )
+        {
+            const dictionary& dict =
+                meshDict_.subDict("keepCellsIntersectingPatches");
+
+            const wordList patchNames = dict.toc();
+            forAll(patchNames, patchI)
+            {
+                const word& pName = patchNames[patchI];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+
+                if( it == patchesFromPatch.end() )
+                    updatedPatchNames.append(pName);
+
+                const wordList& newPatchNames = it->second;
+
+                forAll(newPatchNames, nameI)
+                    updatedPatchNames.append(newPatchNames[nameI]);
+            }
+        }
+        else
+        {
+            wordList kcip(meshDict_.lookup("keepCellsIntersectingPatches"));
+
+            forAll(kcip, i)
+            {
+                const word& pName = kcip[i];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+
+                if( it == patchesFromPatch.end() )
+                    updatedPatchNames.append(pName);
+
+                const wordList& newPatchNames = it->second;
+
+                forAll(newPatchNames, nameI)
+                    updatedPatchNames.append(newPatchNames[nameI]);
+            }
+        }
+
+        meshDict_.add("keepCellsIntersectingPatches", updatedPatchNames, true);
+    }
+}
+
+
+void checkMeshDict::updateRemoveCellsIntersectingPatches
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+    if( meshDict_.found("removeCellsIntersectingPatches") )
+    {
+        LongList<word> updatedPatchNames;
+        if( meshDict_.isDict("removeCellsIntersectingPatches") )
+        {
+            const dictionary& dict =
+                meshDict_.subDict("removeCellsIntersectingPatches");
+
+            const wordList patchNames = dict.toc();
+            forAll(patchNames, patchI)
+            {
+                const word& pName = patchNames[patchI];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+
+                if( it == patchesFromPatch.end() )
+                    updatedPatchNames.append(pName);
+
+                const wordList& newPatchNames = it->second;
+
+                forAll(newPatchNames, nameI)
+                    updatedPatchNames.append(newPatchNames[nameI]);
+            }
+        }
+        else
+        {
+            wordList kcip(meshDict_.lookup("removeCellsIntersectingPatches"));
+
+            forAll(kcip, i)
+            {
+                const word& pName = kcip[i];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+
+                if( it == patchesFromPatch.end() )
+                    updatedPatchNames.append(pName);
+
+                const wordList& newPatchNames = it->second;
+
+                forAll(newPatchNames, nameI)
+                    updatedPatchNames.append(newPatchNames[nameI]);
+            }
+        }
+
+        meshDict_.add
+        (
+            "removeCellsIntersectingPatches",
+            updatedPatchNames,
+            true
+        );
+    }
+}
+
+void checkMeshDict::updateObjectRefinements
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+
+}
+
+void checkMeshDict::updateBoundaryLayers
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+
+}
+
+void checkMeshDict::updateRenameBoundary
+(
+    const std::map<word, wordList>& patchesFromPatch,
+    const std::map<word, word>& patchTypes
+)
+{
+    dictionary newDict;
+
+    newDict.add("newPatchNames", dictionary());
+
+    if( meshDict_.found("renameBoundary") )
+    {
+        const dictionary& dict = meshDict_.subDict("renameBoundary");
+
+        //- transfer or generate the default name entry
+        if( dict.found("defaultName") )
+        {
+            const word name(dict.lookup("defaultName"));
+            newDict.add("defaultName", name);
+        }
+        else
+        {
+            newDict.add("defaultName", "walls");
+        }
+
+        //- transfer or generate the defaultType entry
+        if( dict.found("defaultType") )
+        {
+            const word type(dict.lookup("defaultType"));
+            newDict.add("defaultType", type);
+        }
+        else
+        {
+            newDict.add("defaultType", "wall");
+        }
+
+        if( dict.found("newPatchNames") )
+        {
+            //- stores the updated dictionary
+            dictionary& newPatchesDict = newDict.subDict("newPatchNames");
+
+            if( dict.isDict("newPatchNames") )
+            {
+                //- current state of the dictionary
+                const dictionary& patchDicts = dict.subDict("newPatchNames");
+
+                std::map<word, wordList>::const_iterator it;
+                for(it=patchesFromPatch.begin();it!=patchesFromPatch.end();++it)
+                {
+                    const word& pName = it->first;
+                    const wordList& newNames = it->second;
+
+                    if( patchDicts.found(pName) )
+                    {
+                        //- patch renaming is already requested by the user
+                        //- use the new name for all newly created patches
+                        const dictionary& patchDict = patchDicts.subDict(pName);
+                        if( !patchDict.found("newName") )
+                            continue;
+                        if( !patchDict.found("type") )
+                            continue;
+
+                        const word newName(patchDict.lookup("newName"));
+                        const word newType(patchDict.lookup("type"));
+
+                        forAll(newNames, i)
+                        {
+                            dictionary newPatchDict;
+                            newPatchDict.add("newName", newName);
+                            newPatchDict.add("type", newType);
+
+                            newPatchesDict.add(newNames[i], newPatchDict);
+                        }
+                    }
+                    else
+                    {
+                        //- rename all newly create patches
+                        //- with the original name
+                        forAll(newNames, i)
+                        {
+                            dictionary newPatchDict;
+
+                            newPatchDict.add("newName", it->first);
+                            std::map<word, word>::const_iterator tIter =
+                                patchTypes.find(it->first);
+                            newPatchDict.add("type", tIter->second);
+
+                            newPatchesDict.add(newNames[i], newPatchDict);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                const PtrList<entry> patchEntries(dict.lookup("newPatchNames"));
+
+                forAll(patchEntries, entryI)
+                {
+                    const word& pName = patchEntries[entryI].keyword();
+                    dictionary patchDict(patchEntries[entryI].dict());
+
+                    std::map<word, wordList>::const_iterator it =
+                        patchesFromPatch.find(pName);
+
+                    if( it == patchesFromPatch.end() )
+                        continue;
+
+                    const wordList& newNames = it->second;
+
+                    forAll(newNames, i)
+                        newPatchesDict.add(newNames[i], patchDict, true);
+                }
+
+                std::map<word, wordList>::const_iterator it;
+                for(it=patchesFromPatch.begin();it!=patchesFromPatch.end();++it)
+                {
+                    const word& pName = it->first;
+                    const wordList& newNames = it->second;
+
+                    if( newPatchesDict.found(pName) )
+                        continue;
+
+                    //- rename all newly created patches
+                    //- with the original name
+                    forAll(newNames, i)
+                    {
+                        dictionary newPatchDict;
+
+                        newPatchDict.add("newName", it->first);
+                        std::map<word, word>::const_iterator tIter =
+                            patchTypes.find(it->first);
+                        newPatchDict.add("type", tIter->second);
+
+                        newPatchesDict.add(newNames[i], newPatchDict);
+                    }
+                }
+            }
+        }
+        else
+        {
+            //- newPatchNames is not used
+            dictionary& newPatchesDict = newDict.subDict("newPatchNames");
+
+            std::map<word, wordList>::const_iterator it;
+            for(it=patchesFromPatch.begin();it!=patchesFromPatch.end();++it)
+            {
+                const wordList& newPatchNames = it->second;
+
+                forAll(newPatchNames, i)
+                {
+                    const word& pName = newPatchNames[i];
+                    dictionary newPatchDict;
+                    newPatchDict.add("newName", it->first);
+                    std::map<word, word>::const_iterator tIter =
+                        patchTypes.find(it->first);
+                    newPatchDict.add("type", tIter->second);
+
+                    newPatchesDict.add(pName, newPatchDict);
+                }
+            }
+        }
+
+        //- delete all previus entries from the dictionary
+        meshDict_.subDict("renameBoundary").clear();
+    }
+    else
+    {
+        //- create the dictionary if it has not existed before
+        newDict.add("defaultName", "walls");
+        newDict.add("defaultType", "wall");
+
+        dictionary& newPatchesDict = newDict.subDict("newPatchNames");
+
+        std::map<word, wordList>::const_iterator it;
+        for(it=patchesFromPatch.begin();it!=patchesFromPatch.end();++it)
+        {
+            const wordList& newPatchNames = it->second;
+
+            forAll(newPatchNames, i)
+            {
+                const word& pName = newPatchNames[i];
+                dictionary newPatchDict;
+                newPatchDict.add("newName", it->first);
+                std::map<word, word>::const_iterator tIter =
+                    patchTypes.find(it->first);
+                newPatchDict.add("type", tIter->second);
+
+                newPatchesDict.add(pName, newPatchDict);
+            }
+        }
+    }
+
+    meshDict_.add("renameBoundary", newDict, true);
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 checkMeshDict::checkMeshDict
 (
-    const IOdictionary& meshDict
+    IOdictionary& meshDict
 )
 :
     meshDict_(meshDict)
@@ -241,7 +683,31 @@ checkMeshDict::checkMeshDict
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 checkMeshDict::~checkMeshDict()
+{}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void checkMeshDict::updateDictionaries
+(
+    const std::map<word, wordList>& patchesFromPatch,
+    const std::map<word, word>& patchTypes,
+    const bool renamePatches
+)
 {
+    updatePatchCellSize(patchesFromPatch);
+
+    updateSubsetCellSize(patchesFromPatch);
+
+    updateKeepCellsIntersectingPatches(patchesFromPatch);
+
+    updateRemoveCellsIntersectingPatches(patchesFromPatch);
+
+    updateObjectRefinements(patchesFromPatch);
+
+    updateBoundaryLayers(patchesFromPatch);
+
+    if( renamePatches )
+        updateRenameBoundary(patchesFromPatch, patchTypes);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

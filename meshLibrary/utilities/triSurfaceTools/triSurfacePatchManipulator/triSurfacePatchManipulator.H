@@ -23,113 +23,91 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Class
-    tetMeshGenerator
+    triSurfacePatchManipulator
 
 Description
-    Creates cartesian mesh from the octree
+    Generates patches in the surface mesh based
+    on the user-selected feature edges
 
 SourceFiles
-    tetMeshGenerator.C
+    triSurfacePatchManipulator.C
+    triSurfacePatchManipulatorFunctions.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef tetMeshGenerator_H
-#define tetMeshGenerator_H
+#ifndef triSurfacePatchManipulator_H
+#define triSurfacePatchManipulator_H
 
-#include "polyMeshGen.H"
-#include "IOdictionary.H"
-//#include "volFields.H"
+#include "triSurf.H"
+#include "VRWGraph.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-// Forward declarations
-class triSurf;
-class meshOctree;
-class Time;
-
 /*---------------------------------------------------------------------------*\
-                           Class tetMeshGenerator Declaration
+                Class triSurfacePatchManipulator Declaration
 \*---------------------------------------------------------------------------*/
 
-class tetMeshGenerator
+class triSurfacePatchManipulator
 {
     // Private data
-    //- reference to Time
-    const Time& runTime_;
+        //- const reference to triSurf
+        const triSurf& surf_;
 
-    //- pointer to the surface
-    const triSurf* surfacePtr_;
+        //- detected feature edges
+        List<direction> featureEdges_;
 
-    //- IOdictionary containing information about cell sizes, etc..
-    IOdictionary meshDict_;
+        //- surface patches
+        labelList facetInPatch_;
 
-    //- pointer to the octree
-    meshOctree* octreePtr_;
+        //- number of patches
+        label nPatches_;
 
-    //- mesh
-    polyMeshGen mesh_;
+        //- patch names
+        wordList newPatchNames_;
+
+        //- patch types
+        wordList newPatchTypes_;
 
     // Private member functions
-    //- create cartesian mesh
-    void createTetMesh();
+        //- allocate and fill the feature edges list
+        void allocateFeatureEdges();
 
-    //- prepare mesh surface
-    void surfacePreparation();
+        //- create patches bounded by a set of feature edges
+        void createPatches();
 
-    //- map mesh to the surface and untangle surface
-    void mapMeshToSurface();
+        //- Disallow default bitwise copy construct
+        triSurfacePatchManipulator(const triSurfacePatchManipulator&);
 
-    //- capture edges and corners
-    void mapEdgesAndCorners();
-
-    //- optimise surface mesh
-    void optimiseMeshSurface();
-
-    //- add boundary layers
-    void generateBoudaryLayers();
-
-    //- mesh optimisation
-    void optimiseFinalMesh();
-
-    //- replace boundaries
-    void replaceBoundaries();
-
-    //- renumber the mesh
-    void renumberMesh();
-
-    //- generate mesh
-    void generateMesh();
-
-    //- Disallow default bitwise copy construct
-    tetMeshGenerator ( const tetMeshGenerator& );
-
-    //- Disallow default bitwise assignment
-    void operator= ( const tetMeshGenerator& );
+        //- Disallow default bitwise assignment
+        void operator=(const triSurfacePatchManipulator&);
 
 public:
 
     // Constructors
 
-    //- Construct from time
-    tetMeshGenerator ( const Time& );
-
-    //- Construct from time and desired cell size
-    //tetMeshGenerator(const Time&, const volScalarField&);
+        //- Construct from triSurface
+        triSurfacePatchManipulator(const triSurf& surface);
 
     // Destructor
 
-    ~tetMeshGenerator();
+        ~triSurfacePatchManipulator();
 
 
     // Member Functions
 
-    //- write the mesh
-    void writeMesh() const;
-};
+        void detectedSurfaceRegions(VRWGraph&) const;
 
+        //- store regions into subsets with a given prefix
+        const triSurf* surfaceWithPatches
+        (
+            IOdictionary* meshDictPtr = NULL,
+            const word prefix = "patch_",
+            const bool forceOverwrite = false
+        ) const;
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
