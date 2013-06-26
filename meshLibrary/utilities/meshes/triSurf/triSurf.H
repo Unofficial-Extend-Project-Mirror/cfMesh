@@ -69,8 +69,8 @@ class triSurf
         void readFromFTR(const fileName&);
         void writeToFTR(const fileName&) const;
 
-        void readFromFMT(const fileName&);
-        void writeToFMT(const fileName&) const;
+        void readFromFMS(const fileName&);
+        void writeToFMS(const fileName&) const;
 
         inline LongList<labelledTri>& accessToFacets();
         inline geometricSurfacePatchList& accessToPatches();

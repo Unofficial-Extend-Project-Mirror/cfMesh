@@ -70,7 +70,7 @@ void triSurf::writeToFTR(const fileName& fName) const
     fStream << triSurfFacets::triangles_;
 }
 
-void triSurf::readFromFMT(const fileName& fName)
+void triSurf::readFromFMS(const fileName& fName)
 {
     IFstream fStream(fName);
 
@@ -110,7 +110,7 @@ void triSurf::readFromFMT(const fileName& fName)
         );
 }
 
-void triSurf::writeToFMT(const fileName& fName) const
+void triSurf::writeToFMS(const fileName& fName) const
 {
     OFstream fStream(fName);
 
@@ -186,9 +186,9 @@ triSurf::~triSurf()
 
 void triSurf::readSurface(const fileName& fName)
 {
-    if( fName.ext() == "fmt" || fName.ext() == "FMT" )
+    if( fName.ext() == "fms" || fName.ext() == "FMS" )
     {
-        readFromFMT(fName);
+        readFromFMS(fName);
     }
     else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
     {
@@ -215,9 +215,9 @@ void triSurf::readSurface(const fileName& fName)
 
 void triSurf::writeSurface(const fileName& fName) const
 {
-    if( fName.ext() == "fmt" || fName.ext() == "FMT" )
+    if( fName.ext() == "fms" || fName.ext() == "FMS" )
     {
-        writeToFMT(fName);
+        writeToFMS(fName);
     }
     else if( fName.ext() == "ftr" || fName.ext() == "FTR" )
     {
