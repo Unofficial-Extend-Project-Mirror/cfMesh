@@ -1,5 +1,12 @@
+#if defined(__GNUC__) && (defined(linux) || defined(linux64))
+   // Use SMP parallelisation with gcc on Linux machines
+   OMP_FLAGS = -DUSE_OMP -fopenmp
+#else
+   OMP_FLAGS =
+#endif
 
 EXE_INC = \
+    $(OMP_FLAGS) \
     -I$(LIB_SRC)/triSurface/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 

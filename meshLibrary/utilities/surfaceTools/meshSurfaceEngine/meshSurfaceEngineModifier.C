@@ -242,7 +242,7 @@ void meshSurfaceEngineModifier::updateGeometry
 
     boolList updateFaces(bFaces.size(), false);
     # ifdef USE_OMP
-    # pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( updateBndNodes.size() > 1000 )
     # endif
     forAll(updateBndNodes, i)
     {
@@ -256,7 +256,8 @@ void meshSurfaceEngineModifier::updateGeometry
         vectorField& faceCentres = *surfaceEngine_.faceCentresPtr_;
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
+        # pragma omp parallel for if( updateFaces.size() > 1000 ) \
+        schedule(dynamic, 100)
         # endif
         forAll(updateFaces, bfI)
         {
@@ -270,7 +271,8 @@ void meshSurfaceEngineModifier::updateGeometry
         vectorField& faceNormals = *surfaceEngine_.faceNormalsPtr_;
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
+        # pragma omp parallel for if( updateFaces.size() > 1000 ) \
+        schedule(dynamic, 100)
         # endif
         forAll(updateFaces, bfI)
         {
@@ -286,7 +288,8 @@ void meshSurfaceEngineModifier::updateGeometry
 
         vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
         # ifdef USE_OMP
-        # pragma omp parallel for if( size > 1000 ) schedule(dynamic, 100)
+        # pragma omp parallel for if( updateBndNodes.size() > 1000 ) \
+        schedule(dynamic, 100)
         # endif
         forAll(updateBndNodes, i)
         {

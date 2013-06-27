@@ -137,7 +137,7 @@ void polyMeshGenAddressing::calcEdges() const
             //- in the global list of edges
             label localStart(0);
             # ifdef USE_OMP
-            const label threadI = ompo_get_thread_num();
+            const label threadI = omp_get_thread_num();
             # else
             const label threadI = 0;
             # endif

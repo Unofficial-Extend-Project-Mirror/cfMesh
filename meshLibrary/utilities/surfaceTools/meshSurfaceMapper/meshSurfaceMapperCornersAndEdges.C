@@ -153,7 +153,7 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
     meshSurfaceEngineModifier sMod(surfaceEngine_);
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( size > 10 )
+    # pragma omp parallel for if( nodesToMap.size() > 10 )
     # endif
     forAll(nodesToMap, cornerI)
     {
@@ -258,7 +258,8 @@ void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
 
     //- map point to the nearest vertex on the triSurface
     # ifdef USE_OMP
-    # pragma omp parallel for shared(parallelBndNodes) if( size > 100 )
+    # pragma omp parallel for shared(parallelBndNodes) \
+    if( nodesToMap.size() > 100 )
     # endif
     forAll(nodesToMap, i)
     {

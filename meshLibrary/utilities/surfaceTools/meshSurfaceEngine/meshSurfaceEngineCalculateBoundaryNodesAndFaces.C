@@ -718,7 +718,7 @@ void meshSurfaceEngine::calculatePointNormals() const
     pointNormalsPtr_ = new vectorField(pFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( pFaces.size() > 1000 )
     # endif
     forAll(pFaces, pI)
     {
@@ -751,7 +751,7 @@ void meshSurfaceEngine::calculateFaceNormals() const
     faceNormalsPtr_ = new vectorField(bFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( bFaces.size() > 1000 )
     # endif
     forAll(bFaces, bfI)
     {
@@ -769,7 +769,7 @@ void meshSurfaceEngine::calculateFaceCentres() const
     faceCentresPtr_ = new vectorField(bFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( size > 1000 )
+    # pragma omp parallel for if( bFaces.size() > 1000 )
     # endif
     forAll(bFaces, bfI)
         faceCentresPtr_->operator[](bfI) = bFaces[bfI].centre(points);

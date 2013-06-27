@@ -219,6 +219,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
     LongList<parMapperHelper> parallelBndNodes;
 
     # ifdef USE_OMP
+    const label size = nodesToMap.size();
     # pragma omp parallel for if( size > 1000 ) shared(parallelBndNodes) \
     schedule(dynamic, Foam::max(1, size / (3 * omp_get_max_threads())))
     # endif
@@ -325,6 +326,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     LongList<parMapperHelper> parallelBndNodes;
 
     # ifdef USE_OMP
+    const label size = nodesToMap.size();
     # pragma omp parallel for if( size > 1000 ) shared(parallelBndNodes) \
     schedule(dynamic, Foam::max(1, size / (3 * omp_get_max_threads())))
     # endif

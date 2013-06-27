@@ -136,7 +136,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
 
         //- calculate coordinates of points for searching
         # ifdef USE_OMP
-        # pragma omp parallel for shared(size)
+        # pragma omp parallel for
         # endif
         forAll(preMapPositions, bpI)
         {
@@ -156,7 +156,8 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( size > 1000 ) shared(size) \
+        const label size = boundaryPoints.size();
+        # pragma omp parallel for if( size > 1000 ) \
         schedule(dynamic, Foam::max(100, size / (3 * omp_get_max_threads())))
         # endif
         forAll(boundaryPoints, bpI)
