@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     triSurfaceDetectFeatureEdges edgeDetector(originalSurface, tol);
     edgeDetector.detectFeatureEdges();
 
-    if( outFileName.ext() == "fmt" || outFileName.ext() == "FMT" )
+    if( outFileName.ext() == "fms" || outFileName.ext() == "FMS" )
     {
         Info << "Writing : " << outFileName << endl;
         originalSurface.writeSurface(outFileName);
