@@ -22,57 +22,47 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-Namespace
-    Foam::edgeExtraction
-
 Description
-    Helper functions used for capturing feature edges
-    and transferring of surface patches on the volume mesh
-
-SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef edgeExtraction_H
-#define edgeExtraction_H
+#include "triSurfaceClassifyEdges.H"
+#include "helperFunctions.H"
+#include "demandDrivenData.H"
+#include "triSurfModifier.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
 
 namespace Foam
 {
 
-/*---------------------------------------------------------------------------*\
-                Namespace EdgeExtraction functions Declaration
-\*---------------------------------------------------------------------------*/
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace EdgeExtraction
+triSurfaceClassifyEdges::triSurfaceClassifyEdges
+(
+    const meshOctree& octree
+)
+:
+    octree_(octree),
+    edgeTypes_(),
+    facetOrientation_()
 {
-    //- project face centres on the nearest location at the surface mesh
-    //- and assign the patch to the patch of the surface element
-    void distributeBoundaryFaces
-    (
-        const meshSurfaceEngine&,
-        const meshOctree&,
-        labelListPMG&
-    );
+    checkOrientation();
 
-    //- find the nearest points on the surface of the volume mesh
-    //- to the corners on the surface mesh
-    void findCornerCandidates
-    (
-        const meshSurfaceEngine&,
-        const meshOctree&
-        LongList<labelPair>&
-    );
+    classifyEdgesTypes();
+}
 
-} // End namespace EdgeExtraction
+triSurfaceClassifyEdges::~triSurfaceClassifyEdges()
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-} // End namespace Foam
+const List<direction>& triSurfaceClassifyEdges::edgeTypes() const
+{
+    return edgeTypes_;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#endif
+} // End namespace Foam
 
 // ************************************************************************* //

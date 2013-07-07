@@ -139,6 +139,8 @@ public:
     // operators
 
             inline void operator=(const meshSubset&);
+            inline bool operator==(const meshSubset&) const;
+            inline bool operator!=(const meshSubset&) const;
 
     // IOstream operators
 

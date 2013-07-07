@@ -49,8 +49,9 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 
-//#define DEBUG
+#define DEBUG
 //#define DEBUGfpma
+//#define DEBUGEnsight
 
 # ifdef DEBUG
 #include "writeMeshEnsight.H"
@@ -81,7 +82,7 @@ void cartesianMeshGenerator::createCartesianMesh()
     mesh_.write();
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "cartesianMesh");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "cartesianMesh");
     # endif
     //::exit(EXIT_FAILURE);
@@ -123,7 +124,7 @@ void cartesianMeshGenerator::surfacePreparation()
     mesh_.write();
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "afterTopoCleaning");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "afterTopoCleaning");
     # endif
     //::exit(EXIT_FAILURE);
@@ -142,7 +143,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "preMappedMesh");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "preMappedMesh");
     # endif
     mesh_.write();
@@ -155,7 +156,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "afterMapping");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "afterMapping");
     # endif
     mesh_.write();
@@ -168,7 +169,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
     # endif
     mesh_.write();
@@ -183,11 +184,13 @@ void cartesianMeshGenerator::mapEdgesAndCorners()
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 
     # ifdef DEBUG
+    //mesh_.write();
+    meshOptimizer(mesh_).optimizeSurface(*octreePtr_);
     mesh_.write();
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
+    ::exit(EXIT_FAILURE);
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "withEdges");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "withEdges");
     #endif
     //::exit(EXIT_FAILURE);
@@ -203,7 +206,7 @@ void cartesianMeshGenerator::optimiseMeshSurface()
     mesh_.write();
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "optSurfaceWithEdges");
     #endif
     //::exit(EXIT_FAILURE);
@@ -241,7 +244,7 @@ void cartesianMeshGenerator::generateBoudaryLayers()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_, "meshWithBndLayer");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "meshWithBndLayer");
     # endif
     mesh_.write();
@@ -263,7 +266,7 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"optimisedMesh");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "optimisedMesh");
     #endif
     # endif
@@ -276,7 +279,7 @@ void cartesianMeshGenerator::replaceBoundaries()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"renamedPatchesMesh");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "renamedPatchesMesh");
     #endif
     # endif
@@ -289,7 +292,7 @@ void cartesianMeshGenerator::renumberMesh()
     # ifdef DEBUG
     # ifdef DEBUGfpma
     writeMeshFPMA(mesh_,"renumberedMesh");
-    # else
+    # elif DEBUGEnsight
     writeMeshEnsight(mesh_, "renumberedMesh");
     #endif
     # endif

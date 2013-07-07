@@ -49,11 +49,15 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 :
     mesh_(mesh),
     meshOctree_(octree)
-{            
+{
     distributeBoundaryFaces();
-    
+
+    Info << "Writting mesh with boundary faces distributed into patches" << endl;
+    mesh_.write();
+    ::exit(1);
+
     correctEdgesBetweenPatches featureEdges(mesh);
-    
+
     remapBoundaryPoints();
 }
 

@@ -27,6 +27,9 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "error.H"
+#include "meshSurfaceEngine.H"
+#include "meshOctree.H"
+#include "triSurf.H"
 #include "helperFunctionsPar.H"
 #include "DynList.H"
 #include "labelPair.H"
@@ -53,7 +56,45 @@ void distributeBoundaryFaces
     labelListPMG& facePatch
 )
 {
+    const faceList::subList& bFaces = surfaceEngine.boundaryFaces();
+    const pointFieldPMG& points = surfaceEngine.points();
 
+    //- set the size of the facePatch list
+    facePatch.setSize(bFaces.size());
+
+    //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
+    const triSurf& surface = octree.surface();
+    const label nPatches = surface.patches().size();
+
+    //- find the region for face by finding the patch nearest
+    //- to the face centre
+    # ifdef USE_OMP
+    # pragma omp parallel for if( bFaces.size() > 100 ) schedule(dynamic, 40)
+    # endif
+    forAll(bFaces, bfI)
+    {
+        const point c = bFaces[bfI].centre(points);
+
+        label fPatch;
+        point p;
+        scalar distSq;
+
+        octree.findNearestSurfacePoint(p, distSq, fPatch, c);
+
+        if( (fPatch > -1) && (fPatch < nPatches) )
+        {
+            facePatch[bfI] = fPatch;
+        }
+        else
+        {
+            FatalErrorIn
+            (
+                "void meshSurfaceEdgeExtractorNonTopo::"
+                "distributeBoundaryFaces()"
+            ) << "Cannot distribute a face " << bFaces[bfI] << " into any "
+                << "surface patch!. Exiting.." << exit(FatalError);
+        }
+    }
 }
 
 void findCornerCandidates

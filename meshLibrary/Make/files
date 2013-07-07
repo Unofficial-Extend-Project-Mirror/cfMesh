@@ -9,6 +9,8 @@ meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvert
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
 meshSurfaceMapper  =  utilities/surfaceTools/meshSurfaceMapper
+edgeExtraction = utilities/surfaceTools/edgeExtraction
+edgeExtractionFunctions = $(edgeExtraction)/edgeExtractionFunctions
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
 meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtractorNonTopo
 meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
@@ -75,6 +77,7 @@ triSurfacePartitioner = utilities/triSurfaceTools/triSurfacePartitioner
 triSurfaceDetectMaterials = utilities/triSurfaceTools/triSurfaceDetectMaterials
 triSurfaceDetectPlanarRegions = utilities/triSurfaceTools/triSurfaceDetectPlanarRegions
 triSurfaceDetectFeatureEdges = utilities/triSurfaceTools/triSurfaceDetectFeatureEdges
+triSurfaceClassifyEdges = utilities/triSurfaceTools/triSurfaceClassifyEdges
 triSurfacePatchManipulator = utilities/triSurfaceTools/triSurfacePatchManipulator
 
 polyMeshGen = utilities/meshes/polyMeshGen
@@ -287,6 +290,8 @@ $(meshSurfaceMapper)/meshSurfaceMapperMapVertices.C
 $(meshSurfaceMapper)/meshSurfaceMapperCornersAndEdges.C
 $(meshSurfaceMapper)/meshSurfaceMapperPremapVertices.C
 
+$(edgeExtractionFunctions)/edgeExtractionFunctions.C
+
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeExtractor.C
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateEdgeVertices.C
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateBoundaryFaces.C
@@ -413,6 +418,9 @@ $(triSurfaceDetectPlanarRegions)/triSurfaceDetectPlanarRegions.C
 
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdges.C
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdgesFunctions.C
+
+$(triSurfaceClassifyEdges)/triSurfaceClassifyEdges.C
+$(triSurfaceClassifyEdges)/triSurfaceClassifyEdgesFunctions.C
 
 $(triSurfacePatchManipulator)/triSurfacePatchManipulator.C
 $(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C

@@ -157,6 +157,25 @@ inline void meshSubset::operator=(const meshSubset& ms)
     data_ = ms.data_;
 }
 
+inline bool meshSubset::operator==(const meshSubset& ms) const
+{
+    if( ms.name_ != name_ )
+        return false;
+    if( ms.type_ != ms.type_ )
+        return false;
+
+    forAllConstIter(HashSet<label>, data_, it)
+        if( !ms.data_.found(it.key()) )
+            return false;
+
+    return true;
+}
+
+inline bool meshSubset::operator!=(const meshSubset& ms) const
+{
+    return !operator==(ms);
+}
+
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
 inline Ostream& operator<<(Ostream& os, const meshSubset& sel)

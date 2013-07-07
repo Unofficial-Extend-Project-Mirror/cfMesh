@@ -114,31 +114,56 @@ void triSurf::writeToFMS(const fileName& fName) const
 {
     OFstream fStream(fName);
 
+    //- write patches
     fStream << triSurfFacets::patches_;
 
     fStream << nl;
 
+    //- write points
     fStream << triSurfPoints::points_;
 
     fStream << nl;
 
+    //- write triangles
     fStream << triSurfFacets::triangles_;
 
     fStream << nl;
 
+    //- write feature edges
     fStream << triSurfFeatureEdges::featureEdges_;
 
     fStream << nl;
 
-    fStream << triSurfPoints::pointSubsets_;
+    //- write point subsets
+    List<meshSubset> subsets;
+    label i(0);
+    subsets.setSize(pointSubsets_.size());
+    forAllConstIter(Map<meshSubset>, pointSubsets_, it)
+        subsets[i++] = it();
+    fStream << subsets;
 
     fStream << nl;
 
-    fStream << triSurfFacets::facetSubsets_;
+    //- write subsets of facets
+    subsets.setSize(triSurfFacets::facetSubsets_.size());
+    i = 0;
+    forAllConstIter(Map<meshSubset>, triSurfFacets::facetSubsets_, it)
+        subsets[i++] = it();
+    fStream << subsets;
 
     fStream << nl;
 
-    fStream << triSurfFeatureEdges::featureEdgeSubsets_;
+    //- write subets of feature edges
+    subsets.setSize(triSurfFeatureEdges::featureEdgeSubsets_.size());
+    i = 0;
+    forAllConstIter
+    (
+        Map<meshSubset>,
+        triSurfFeatureEdges::featureEdgeSubsets_,
+        it
+    )
+        subsets[i++] = it();
+    fStream << subsets;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
