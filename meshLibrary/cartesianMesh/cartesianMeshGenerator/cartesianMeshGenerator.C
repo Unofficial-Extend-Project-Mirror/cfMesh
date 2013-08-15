@@ -49,7 +49,7 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 
-#define DEBUG
+//#define DEBUG
 //#define DEBUGfpma
 //#define DEBUGEnsight
 
@@ -173,7 +173,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
     writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
     # endif
     mesh_.write();
-    //::exit(EXIT_FAILURE);
+    ::exit(EXIT_FAILURE);
     # endif
 
     deleteDemandDrivenData(msePtr);
