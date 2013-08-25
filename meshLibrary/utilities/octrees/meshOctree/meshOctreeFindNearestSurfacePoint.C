@@ -30,6 +30,7 @@ Description
 #include "triSurf.H"
 #include "demandDrivenData.H"
 #include "helperFunctions.H"
+#include "HashSet.H"
 
 // #define DEBUGSearch
 
@@ -350,6 +351,178 @@ bool meshOctree::findNearestVertexToTheEdge
     }
 
     return found;
+}
+
+bool meshOctree::findNearestCorner
+(
+    point& nearest,
+    scalar& distSq,
+    const point& p,
+    const DynList<label>& patches
+) const
+{
+
+
+    const label cLabel = findLeafContainingVertex(p);
+    vector sizeVec;
+    if( cLabel < 0 )
+    {
+        sizeVec.x() = sizeVec.y() = sizeVec.z() = searchRange_;
+    }
+    else
+    {
+        const scalar s = 1.5 * leaves_[cLabel]->size(rootBox_);
+        sizeVec.x() = sizeVec.y() = sizeVec.z() = s;
+    }
+
+    //- find nearest surface vertex to the point p
+    bool found;
+    label iterationI(0);
+    DynList<const meshOctreeCube*, 256> neighbours;
+
+    const pointField& points = surface_.points();
+    const VRWGraph& pEdges = surface_.pointEdges();
+    const VRWGraph& eFacets = surface_.edgeFacets();
+
+    do
+    {
+        found = false;
+        boundBox bb(p - sizeVec, p + sizeVec);
+        distSq = Foam::sqr(sizeVec.x());
+
+        neighbours.clear();
+        findLeavesContainedInBox(bb, neighbours);
+        labelHashSet checkedPoint;
+
+        //- find nearest projection
+        forAll(neighbours, neiI)
+        {
+            if( !neighbours[neiI]->hasContainedElements() )
+                continue;
+
+            const VRWGraph& ct =
+                neighbours[neiI]->slotPtr()->containedTriangles_;
+            const constRow el = ct[neighbours[neiI]->containedElements()];
+            forAll(el, tI)
+            {
+                const labelledTri& tri = surface_[el[tI]];
+
+                forAll(tri, pI)
+                {
+                    const label spI = tri[pI];
+
+                    if( checkedPoint.found(spI) )
+                        continue;
+
+                    checkedPoint.insert(spI);
+
+                    DynList<label> nodePatches;
+                    label nEdges(0);
+
+                    forAllRow(pEdges, spI, i)
+                    {
+                        const label eI = pEdges(spI, i);
+
+                        if( pEdges.sizeOfRow(eI) < 2 )
+                            break;
+
+                        if(
+                            surface_[eFacets(eI, 0)].region() !=
+                            surface_[eFacets(eI, 1)].region()
+                        )
+                        {
+                            //- found an edge attached to this vertex
+                            ++nEdges;
+                            nodePatches.appendIfNotIn
+                            (
+                                surface_[eFacets(eI, 0)].region()
+                            );
+                            nodePatches.appendIfNotIn
+                            (
+                                surface_[eFacets(eI, 1)].region()
+                            );
+                        }
+                    }
+
+                    if( nEdges > 2 )
+                    {
+                        //- check if all required patches
+                        //- are present at this corner
+                        nEdges = 0;
+                        forAll(patches, i)
+                        {
+                            if( nodePatches.contains(patches[i]) )
+                                ++nEdges;
+                        }
+
+                        if( nEdges >= patches.size() )
+                        {
+                            //- all patches are present, check the distance
+                            const scalar dSq = magSqr(points[spI] - p);
+
+                            if( dSq < distSq )
+                            {
+                                distSq = dSq;
+                                found = true;
+                                nearest = points[spI];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if( !found )
+            sizeVec *= 2.0;
+
+    } while( !found && (iterationI++ < 5) );
+
+    return found;
+}
+
+bool meshOctree::findNearestVertexToPatches
+(
+    point& nearest,
+    scalar& distSq,
+    const point& p,
+    const DynList<label>& patches,
+    const scalar tol
+) const
+{
+    if( patches.size() == 0 )
+        return false;
+
+    point mapPointApprox(p);
+    scalar distSqApprox;
+    label iter(0);
+    while( iter++ < 20 )
+    {
+        point newP(vector::zero);
+        forAll(patches, patchI)
+        {
+            point np;
+            this->findNearestSurfacePointInRegion
+            (
+                np,
+                distSqApprox,
+                patches[patchI],
+                mapPointApprox
+            );
+
+            newP += np;
+        }
+
+        newP /= patches.size();
+        if( magSqr(newP - mapPointApprox) < tol * searchRange_ )
+            break;
+
+        mapPointApprox = newP;
+    }
+
+    distSq = magSqr(mapPointApprox - p);
+    nearest = mapPointApprox;
+
+    return true;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

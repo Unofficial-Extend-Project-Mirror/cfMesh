@@ -22,56 +22,81 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-Namespace
-    Foam::edgeExtraction
+Class
+    triSurfaceRemoveFacets
 
 Description
-    Helper functions used for capturing feature edges
-    and transferring of surface patches on the volume mesh
+    Divides the surface mesh into regions bounded by feature edges
 
 SourceFiles
+    triSurfaceRemoveFacets.C
+    triSurfaceRemoveFacetsFunctions.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef edgeExtraction_H
-#define edgeExtraction_H
+#ifndef triSurfaceRemoveFacets_H
+#define triSurfaceRemoveFacets_H
+
+#include "triSurf.H"
+#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
 
 namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                Namespace EdgeExtraction functions Declaration
+                Class triSurfaceRemoveFacets Declaration
 \*---------------------------------------------------------------------------*/
 
-namespace EdgeExtraction
+class triSurfaceRemoveFacets
 {
-    //- project face centres on the nearest location at the surface mesh
-    //- and assign the patch to the patch of the surface element
-    void distributeBoundaryFaces
-    (
-        const meshSurfaceEngine&,
-        const meshOctree&,
-        labelListPMG&
-    );
+    // Private data
+        //- reference to triSurf
+        triSurf& surf_;
 
-    //- find the nearest points on the surface of the volume mesh
-    //- to the corners on the surface mesh
-    void findCornerCandidates
-    (
-        const meshSurfaceEngine&,
-        const meshOctree&
-        LongList<labelPair>&
-    );
+        //- patches/subsets for removal
+        DynList<word> selectedEntities_;
 
-} // End namespace EdgeExtraction
+    // Private member functions
+        //- remove facets in selected patches/subsets
+        void markFacetsForRemoval(boolList&) const;
+
+        //- Disallow default bitwise copy construct
+        triSurfaceRemoveFacets(const triSurfaceRemoveFacets&);
+
+        //- Disallow default bitwise assignment
+        void operator=(const triSurfaceRemoveFacets&);
+
+public:
+
+    // Constructors
+
+        //- Construct from octree
+        triSurfaceRemoveFacets(triSurf& surface);
+
+    // Destructor
+
+        ~triSurfaceRemoveFacets();
+
+
+    // Member Functions
+
+        //- add patch for removal
+        void selectFacetsInPatch(const word&);
+
+        //- add subsets for removal
+        void selectFacetsInSubset(const word&);
+
+        //- perform removal of selected facets
+        void removeFacets();
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif
 

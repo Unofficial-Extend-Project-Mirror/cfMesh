@@ -37,14 +37,14 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 const meshSurfaceEngine& correctEdgesBetweenPatches::meshSurface() const
 {
     if( !msePtr_ )
         msePtr_ = new meshSurfaceEngine(mesh_);
-    
+
     return *msePtr_;
 }
 
@@ -53,11 +53,11 @@ void correctEdgesBetweenPatches::clearMeshSurface()
 {
     deleteDemandDrivenData(msePtr_);
 }
-    
+
 void correctEdgesBetweenPatches::replaceBoundary()
 {
     clearMeshSurface();
-    
+
     polyMeshGenModifier(mesh_).replaceBoundary
     (
         patchNames_,
@@ -72,7 +72,7 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
     if( decompose_ )
     {
         clearMeshSurface();
- 
+
         decomposeCells dc(mesh_);
         dc.decomposeMesh(decomposeCell_);
     }
@@ -98,8 +98,6 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches
     const PtrList<writePatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
         patchNames_[patchI] = boundaries[patchI].patchName();
-    
-    checkFacePatches();
 
     decomposeProblematicFaces();
 

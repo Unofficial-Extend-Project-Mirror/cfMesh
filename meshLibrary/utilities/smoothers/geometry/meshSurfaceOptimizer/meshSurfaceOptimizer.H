@@ -64,13 +64,13 @@ class meshSurfaceOptimizer
     // Private data
         //- reference to the mesh surface
         meshSurfaceEngine& surfaceEngine_;
-    
+
         //- reference to the octree
         const meshOctree& meshOctree_;
-    
+
         //- type of surface vertex
         List<direction> vertexType_;
-    
+
         //- form trihedra
         mutable LongList<triFace>* trianglesPtr_;
         mutable VRWGraph* pointTrianglesPtr_;
@@ -78,15 +78,15 @@ class meshSurfaceOptimizer
     // Private member functions
         //- classify surface vertices as PARTITION, EDGE, CORNER
         void classifySurfaceVertices();
-    
+
         //- calculate surface triangulation
         void calculateTrianglesAndAddressing() const;
         inline const LongList<triFace>& triangles() const;
         inline const VRWGraph& pointTriangles() const;
-        
+
         //- find vertices which are inverted
         label findInvertedVertices(boolList& smoothVertex) const;
-    
+
         //- transform into a 2D space in plane
         inline bool transformIntoPlane
         (
@@ -97,7 +97,7 @@ class meshSurfaceOptimizer
             DynList<point>& pts,
             DynList<triFace>& trias
         ) const;
-        
+
         //- transform into a 2D space in plane for parallel boundaries
         inline bool transformIntoPlaneParallel
         (
@@ -109,7 +109,7 @@ class meshSurfaceOptimizer
             DynList<point>& pts,
             DynList<triFace>& trias
         ) const;
-        
+
         //- new position of a node after laplacian smoothing
         //- the position is the average of neighbouring vertex positions
         inline point newPositionLaplacian
@@ -117,7 +117,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- new position of a node after laplacian smoothing
         //- the position is the average of neighbouring face centres
         inline point newPositionLaplacianFC
@@ -125,7 +125,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- new position of a node after laplacian smoothing
         //- the position is the weighted average of neighbouring face centres
         //- the weights are the magnitudes of neighbouring face area vectors
@@ -134,7 +134,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- new position of a node after using surfaceOptimizer
         inline point newPositionSurfaceOptimizer
         (
@@ -142,7 +142,7 @@ class meshSurfaceOptimizer
             const scalar tol = 0.001,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- new position of edge vertex
         //- the position is the average of neighbouring edge vertices
         inline point newEdgePositionLaplacian
@@ -150,7 +150,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-    
+
         //- smooth the node using the laplacian smoother
         //- new position is the average of the neighbouring vertices
         void nodeDisplacementLaplacian
@@ -158,7 +158,7 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- smooth the node using the laplacian smoother
         //- new position is the average of the centres of faces attached
         //- to the vertex
@@ -167,26 +167,26 @@ class meshSurfaceOptimizer
             const label bpI,
             const bool transformIntoPlane = true
         ) const;
-        
+
         //- smooth the node using surface optimizer
         void nodeDisplacementSurfaceOptimizer
         (
             const label bpI,
             const scalar tol = 1.0
         );
-        
+
         //- smooth edge node
         void edgeNodeDisplacement(const label bpI) const;
-        
+
     // Functions needed for parallel runs
-    
+
         //- transfer data between processors
         void exchangeData
         (
             const labelListPMG& nodesToSmooth,
             std::map<label, DynList<parTriFace> >& m
         ) const;
-    
+
         //- laplacian smoothing of points at processor boundaries
         //- new position is the average of the neighbouring vertices
         void nodeDisplacementLaplacianParallel
@@ -194,20 +194,20 @@ class meshSurfaceOptimizer
             const labelListPMG& nodesToSmooth,
             const bool transformIntoPlane = true
         );
-        
+
         //- laplacian smoothing of points at processor boundaries
         void nodeDisplacementLaplacianFCParallel
         (
             const labelListPMG& nodesToSmooth,
             const bool transformIntoPlane = true
         );
-        
+
         //- smooth nodes at processor boundaries using surface optimizer
         void nodeDisplacementSurfaceOptimizerParallel
         (
             const labelListPMG& nodesToSmooth
         );
-        
+
         //- smooth edge nodes at processor boundaries
         void edgeNodeDisplacementParallel
         (
@@ -219,7 +219,7 @@ class meshSurfaceOptimizer
 
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceOptimizer&);
-        
+
     // Enumerators
         enum vertexTypes
         {
@@ -247,7 +247,7 @@ public:
 
     // Member Functions
         //- optimisation before the edges and corners are created
-        void preOptimizeSurface();
+        bool preOptimizeSurface();
 
         //- optimize boundary nodes after boundary regions are created
         void optimizeSurface(const label nIterations = 5);

@@ -30,6 +30,7 @@ Description
 #include "demandDrivenData.H"
 
 #include "correctEdgesBetweenPatches.H"
+#include "meshSurfaceOptimizer.H"
 
 // #define DEBUGSearch
 
@@ -52,10 +53,6 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 {
     distributeBoundaryFaces();
 
-    Info << "Writting mesh with boundary faces distributed into patches" << endl;
-    mesh_.write();
-    ::exit(1);
-
     correctEdgesBetweenPatches featureEdges(mesh);
 
     remapBoundaryPoints();
@@ -64,8 +61,7 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceEdgeExtractorNonTopo::~meshSurfaceEdgeExtractorNonTopo()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

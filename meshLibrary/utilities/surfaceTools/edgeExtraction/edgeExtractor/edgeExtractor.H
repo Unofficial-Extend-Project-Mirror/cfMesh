@@ -1,0 +1,215 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+Namespace
+    edgeExtractor
+
+Description
+    A class with a functions used to detect feature edges in the surface
+    of the volume mesh and to detect the patches to which the boundary
+    faces belong to
+
+SourceFiles
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef edgeExtractor_H
+#define edgeExtractor_H
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "labelList.H"
+#include "labelListPMG.H"
+#include "boolList.H"
+#include "Map.H"
+
+namespace Foam
+{
+
+// Forward declarations
+class polyMeshGen;
+class meshSurfaceEngine;
+class meshOctree;
+class triSurf;
+class triSurfaceClassifyEdges;
+class triSurfacePartitioner;
+
+/*---------------------------------------------------------------------------*\
+                    Class edgeExtractor Declaration
+\*---------------------------------------------------------------------------*/
+
+class edgeExtractor
+{
+    // Private data
+        //- reference to the mesh
+        polyMeshGen& mesh_;
+
+        //- surface engine
+        mutable const meshSurfaceEngine* surfaceEnginePtr_;
+
+        //- reference to the octree
+        const meshOctree& meshOctree_;
+
+        //- surface mesh partitioner
+        mutable const triSurfacePartitioner* surfPartitionerPtr_;
+
+        //- classification of edges in the surface mesh
+        mutable const triSurfaceClassifyEdges* surfEdgeClassificationPtr_;
+
+        //- valence of surface points
+        labelList pointValence_;
+
+        //- boundary face patch
+        labelListPMG facePatch_;
+
+        //- edge classification
+        List<direction> edgeType_;
+
+    // Private member functions
+        //- calculate point valence
+        void calculateValence();
+
+        //- calculate the number of boundary faces for each cell
+        void calculateSingleCellEdge();
+
+        //- calculate a list of booleans with the following properties:
+        //- true if all faces at a surface vertex are in the same patch
+        //- false otherwise
+        void markPatchPoints(boolList&);
+
+        //- get th surface engine
+        const meshSurfaceEngine& surfaceEngine() const;
+
+        //- get the surface partitioner
+        const triSurfacePartitioner& partitioner() const;
+
+        //- get the edge classifier
+        const triSurfaceClassifyEdges& edgeClassifier() const;
+
+        //- find faces which have faces assigned to other patches
+        //- as their neighbours
+        void findFaceCandidates
+        (
+            labelListPMG& faceCandidates,
+            const labelListPMG* facePatchPtr = NULL,
+            const Map<label>* otherFacePatchPtr = NULL
+        ) const;
+
+        //- find patches over edges
+        void findOtherFacePatchesParallel
+        (
+            Map<label>& otherFacePatch,
+            const labelListPMG* facePatchPtr = NULL
+        ) const;
+
+        //- project face centres on the nearest location at the surface mesh
+        //- and assign the patch to the patch of the surface element
+        void distributeBoundaryFaces();
+
+        //- go through the boundary faces which have at least one neighour
+        //- assigned to a different patch and check which of its edges
+        //- are best candidates to be used as feature edges
+        void findEdgeCandidates();
+
+        //- Disallow default bitwise copy construct
+        edgeExtractor(const edgeExtractor&);
+
+        //- Disallow default bitwise assignment
+        void operator=(const edgeExtractor&);
+
+    // Private enumerators
+
+        enum edgeClassifier_
+        {
+            NONE = 0,
+            SINGLECELLEDGE = 1,
+            FITSATCONVEXEDGE = 2,
+            FITSATCONCAVEEDGE = 4,
+            ATTACHEDTOCORNER = 8,
+            CANDIDATE = 16
+        };
+
+public:
+
+    // Constructors
+
+        //- Construct from mesh surface and octree
+        edgeExtractor
+        (
+            polyMeshGen& mesh,
+            const meshOctree& octree
+        );
+
+
+    // Destructor
+
+        ~edgeExtractor();
+
+    // Member Functions
+
+
+        //- move vertices in the vicinity of discontinuities towards the
+        //- the surface mesh by reducing the deviation of the mesh from the
+        //- input geometry
+        void moveVerticesTowardsDiscontinuities(const label nIterations = 2);
+
+
+
+        //- check if there exist cells at concave feature edges which have more
+        //- than one face at the boundary and the faces are
+        //- distributed into patches at the concave edge
+        bool checkConcaveEdgeCells();
+
+        //- check and improve the distribution of mesh faces into patches
+        //- in order to minimize the number of decomposed faces and to optimize
+        bool checkFacePatches();
+
+        //- find the nearest points on the surface of the volume mesh
+        //- to the corners on the surface mesh
+        bool findCornerCandidates();
+
+        //- project the estimated corners and edges onto the surface mesh
+        void projectDeterminedFeatureVertices();
+
+        //- check and untangle the surface of the volume mesh
+        bool untangleSurface();
+
+        //- assemble the above functionality into a workflow
+        void extractEdges();
+
+        //- generate a surface mesh based and store the created patches
+        //- this is mainly intended for debugging purposes
+        const triSurf* surfaceWithPatches() const;
+
+        //- update mesh with selected patches
+        void updateMeshPatches();
+};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+#endif
+
+// ************************************************************************* //

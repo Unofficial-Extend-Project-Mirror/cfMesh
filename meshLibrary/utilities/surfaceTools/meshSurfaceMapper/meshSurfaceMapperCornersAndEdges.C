@@ -166,12 +166,21 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
                 << abort(FatalError);
 
         const point& p = points[bPoints[bpI]];
-        const scalar maxDist = mappingDistance[bpI];
+        //const scalar maxDist = mappingDistance[bpI];
 
         //- find the nearest position to the given point patches
         point mapPointApprox(p);
         scalar distSqApprox;
-        label iter(0);
+        DynList<label> patches;
+        patches = pPatches[bpI];
+        meshOctree_.findNearestVertexToPatches
+        (
+            mapPointApprox,
+            distSqApprox,
+            p,
+            patches
+        );
+/*        label iter(0);
         while( iter++ < 20 )
         {
             point newP(vector::zero);
@@ -196,7 +205,7 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
             mapPointApprox = newP;
         }
         distSqApprox = magSqr(mapPointApprox - p);
-
+*/
         //- find the nearest triSurface corner for the given corner
         scalar distSq(mappingDistance[bpI]);
         point mapPoint(p);

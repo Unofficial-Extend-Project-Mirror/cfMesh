@@ -26,20 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "demandDrivenData.H"
-#include "meshSurfaceEdgeExtractorNonTopo.H"
-#include "meshOctree.H"
-#include "triSurf.H"
-#include "meshSurfaceEngine.H"
-#include "meshSurfaceMapper.H"
-#include "helperFunctions.H"
-#include "edgeExtractor.H"
-
-# ifdef USE_OMP
-#include <omp.h>
-# endif
-
-//#define DEBUGMapping
+#include "triSurfaceRemoveFacets.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -48,21 +35,26 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
+triSurfaceRemoveFacets::triSurfaceRemoveFacets(triSurf& surface)
+:
+    surf_(surface),
+    selectedEntities_()
+{}
+
+triSurfaceRemoveFacets::~triSurfaceRemoveFacets()
+{}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void triSurfaceRemoveFacets::selectFacetsInPatch(const word& patchName)
 {
-    edgeExtractor extractor(mesh_, meshOctree_);
-
-    extractor.extractEdges();
-
-    extractor.updateMeshPatches();
+    selectedEntities_.append(patchName);
 }
 
-void meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()
+//- add subsets for removal
+void triSurfaceRemoveFacets::selectFacetsInSubset(const word& subsetName)
 {
-    meshSurfaceEngine mse(mesh_);
-    meshSurfaceMapper mapper(mse, meshOctree_);
-
-    mapper.mapVerticesOntoSurfacePatches();
+    selectedEntities_.append(subsetName);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

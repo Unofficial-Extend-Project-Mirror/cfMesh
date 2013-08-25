@@ -146,9 +146,11 @@ label meshSurfaceOptimizer::findInvertedVertices
     return nInvertedTria;
 }
 
-void meshSurfaceOptimizer::preOptimizeSurface()
+bool meshSurfaceOptimizer::preOptimizeSurface()
 {
     Info << "Optimizing positions of surface nodes" << endl;
+
+    bool changed(false);
 
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     surfaceEngine_.pointFaces();
@@ -179,6 +181,8 @@ void meshSurfaceOptimizer::preOptimizeSurface()
             nInvertedTria = findInvertedVertices(smoothVertex);
 
             if( nInvertedTria == 0 ) break;
+
+            changed = true;
 
             procBndNodes.clear();
             movedPoints.clear();
@@ -308,6 +312,8 @@ void meshSurfaceOptimizer::preOptimizeSurface()
     } while( nInvertedTria && (++nGlobalIter < 10) );
 
     Info << "Finished optimizing positions of surface nodes" << endl;
+
+    return changed;
 }
 
 void meshSurfaceOptimizer::optimizeSurface(const label nIterations)

@@ -33,7 +33,9 @@ Description
 #include "refLabelledPoint.H"
 #include "helperFunctionsPar.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 

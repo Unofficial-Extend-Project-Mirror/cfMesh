@@ -10,7 +10,7 @@ meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
 meshSurfaceMapper  =  utilities/surfaceTools/meshSurfaceMapper
 edgeExtraction = utilities/surfaceTools/edgeExtraction
-edgeExtractionFunctions = $(edgeExtraction)/edgeExtractionFunctions
+edgeExtractor = $(edgeExtraction)/edgeExtractor
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
 meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtractorNonTopo
 meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
@@ -79,6 +79,7 @@ triSurfaceDetectPlanarRegions = utilities/triSurfaceTools/triSurfaceDetectPlanar
 triSurfaceDetectFeatureEdges = utilities/triSurfaceTools/triSurfaceDetectFeatureEdges
 triSurfaceClassifyEdges = utilities/triSurfaceTools/triSurfaceClassifyEdges
 triSurfacePatchManipulator = utilities/triSurfaceTools/triSurfacePatchManipulator
+triSurfaceRemoveFacets = utilities/triSurfaceTools/triSurfaceRemoveFacets
 
 polyMeshGen = utilities/meshes/polyMeshGen
 writePatch  = utilities/meshes/polyMeshGen/writePatch
@@ -290,7 +291,7 @@ $(meshSurfaceMapper)/meshSurfaceMapperMapVertices.C
 $(meshSurfaceMapper)/meshSurfaceMapperCornersAndEdges.C
 $(meshSurfaceMapper)/meshSurfaceMapperPremapVertices.C
 
-$(edgeExtractionFunctions)/edgeExtractionFunctions.C
+$(edgeExtractor)/edgeExtractor.C
 
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeExtractor.C
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateEdgeVertices.C
@@ -424,6 +425,9 @@ $(triSurfaceClassifyEdges)/triSurfaceClassifyEdgesFunctions.C
 
 $(triSurfacePatchManipulator)/triSurfacePatchManipulator.C
 $(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C
+
+$(triSurfaceRemoveFacets)/triSurfaceRemoveFacets.C
+$(triSurfaceRemoveFacets)/triSurfaceRemoveFacetsFunctions.C
 
 $(cartesianMeshExtractor)/cartesianMeshExtractor.C
 $(cartesianMeshExtractor)/cartesianMeshExtractorPointsAndAddressing.C

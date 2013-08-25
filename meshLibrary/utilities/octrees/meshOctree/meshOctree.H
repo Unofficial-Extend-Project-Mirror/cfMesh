@@ -171,7 +171,7 @@ public:
             const point& p
         ) const;
 
-        //- find nearest surface edges vertex to the given vertex
+        //- find nearest feature-edges vertex to a given vertex
         bool findNearestEdgePoint
         (
             const point& p,
@@ -186,6 +186,25 @@ public:
             const FixedList<label, 2>& edgePointRegions,
             point& nearest,
             scalar& distSq
+        ) const;
+
+        //- find nearest corner point
+        bool findNearestCorner
+        (
+            point& nearest,
+            scalar& distSq,
+            const point& p,
+            const DynList<label>& patches
+        ) const;
+
+        //- find the nearest vertex to the given patches
+        bool findNearestVertexToPatches
+        (
+            point& nearest,
+            scalar& distSq,
+            const point& p,
+            const DynList<label>& patches,
+            const scalar tol = 1e-4
         ) const;
 
         //- return a reference to the surface

@@ -62,40 +62,36 @@ class correctEdgesBetweenPatches
 
         //- pointer to surface engine
         mutable const meshSurfaceEngine* msePtr_;
-    
+
         //- boundary data
         wordList patchNames_;
         VRWGraph newBoundaryFaces_;
         labelListPMG newBoundaryOwners_;
         labelListPMG newBoundaryPatches_;
-    
+
         //- holds data which cells have to be decomposed
         boolList decomposeCell_;
         bool decompose_;
 
     // Private member functions
-    
+
         //- construct and return mesh surface
         const meshSurfaceEngine& meshSurface() const;
-        
+
         //- delete mesh surface
         void clearMeshSurface();
- 
+
          //- replace boundary
         void replaceBoundary();
-        
+
         //- decompose corrected cells
         void decomposeCorrectedCells();
-        
-        //- minimise the number of edges which should be constrained
-        //- to the feature edges
-        void checkFacePatches();
-        
+
         //- decompose bnd faces for which the feature edges are not connected
         //- over vertices and internal faces which have more than one feature
         //- edge at the boundary
         void decomposeProblematicFaces();
-        
+
         //- perform decompose remaining faces having more than one feature edge
         void patchCorrection();
 
