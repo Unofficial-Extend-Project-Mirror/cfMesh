@@ -29,6 +29,7 @@ findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
 
 nonManifoldMeshing = utilities/nonManifoldMeshing
 findNonManifoldInterfaces = $(nonManifoldMeshing)/findNonManifoldInterfaces
+removeCellsInSelectedDomains = $(nonManifoldMeshing)/removeCellsInSelectedDomains
 
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
@@ -201,6 +202,8 @@ $(hexHelpers)/hexHelpers.C
 $(findCellsIntersectingSurface)/findCellsIntersectingSurface.C
 
 $(findNonManifoldInterfaces)/findNonManifoldInterfaces.C
+
+$(removeCellsInSelectedDomains)/removeCellsInSelectedDomains.C
 
 $(tetrahedra)/tessellationElement.C
 $(tetrahedra)/tetTessellation.C
