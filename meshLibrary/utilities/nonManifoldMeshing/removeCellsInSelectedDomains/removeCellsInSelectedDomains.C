@@ -32,6 +32,8 @@ Description
 #include "triSurf.H"
 #include "demandDrivenData.H"
 
+#include "helperFunctions.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -42,12 +44,7 @@ namespace Foam
 const VRWGraph& removeCellsInSelectedDomains::cellsIntersectedBySurfaceFacets()
 {
     if( !surfIntersectionPtr_ )
-    {
-        Info << "Calculating intersections" << endl;
         surfIntersectionPtr_ = new findCellsIntersectingSurface(mesh_, octree_);
-    }
-
-    Info << "Intersection pointer " << surfIntersectionPtr_ << endl;
 
     return surfIntersectionPtr_->facetsIntersectingCells();
 }
@@ -57,10 +54,11 @@ void removeCellsInSelectedDomains::markSelectedFacets()
     const triSurf& surf = octree_.surface();
     const geometricSurfacePatchList& patches = surf.patches();
 
-    boolList usedPatch(patches.size(), false);
+    VRWGraph usedPatch(patches.size(), 0);
 
     selectedFacets_.setSize(surf.size());
-    selectedFacets_ = false;
+    forAll(selectedFacets_, rowI)
+        selectedFacets_.setRowSize(rowI, 0);
 
     forAll(domains_, domainI)
     {
@@ -79,7 +77,7 @@ void removeCellsInSelectedDomains::markSelectedFacets()
                 surf.facetsInSubset(index, facetsInSubset);
 
                 forAll(facetsInSubset, i)
-                    selectedFacets_[facetsInSubset[i]] = true;
+                    selectedFacets_[facetsInSubset[i]].append(domainI);
             }
             else
             {
@@ -88,8 +86,7 @@ void removeCellsInSelectedDomains::markSelectedFacets()
                 {
                     if( patches[i].name() == sName )
                     {
-                        usedPatch[i] = true;
-                        break;
+                        usedPatch.append(i, domainI);
                     }
                 }
             }
@@ -101,8 +98,8 @@ void removeCellsInSelectedDomains::markSelectedFacets()
     {
         const labelledTri& tri = surf[triI];
 
-        if( usedPatch[tri.region()] )
-            selectedFacets_[triI] = true;
+        forAllRow(usedPatch, tri.region(), i)
+            selectedFacets_[triI].append(usedPatch(tri.region(), i));
     }
 }
 
@@ -124,7 +121,7 @@ void removeCellsInSelectedDomains::findLeavesInsideRegions()
 
         forAll(trianglesInLeaf, i)
         {
-            if( selectedFacets_[trianglesInLeaf[i]] )
+            if( selectedFacets_[trianglesInLeaf[i]].size() )
             {
                 intersectedLeaves[leafI] = true;
                 break;
@@ -141,7 +138,7 @@ void removeCellsInSelectedDomains::findLeavesInsideRegions()
 void removeCellsInSelectedDomains::findAndRemoveCells()
 {
     //- find the cells which are intersected by the selected domains
-    boolList intersectedCells(mesh_.cells().size(), false);
+    LongList<DynList<label, 2> > intersectedCells(mesh_.cells().size());
 
     const VRWGraph& facetsIntersectingCell = cellsIntersectedBySurfaceFacets();
 
@@ -154,19 +151,39 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
     {
         forAllRow(facetsIntersectingCell, cellI, triI)
         {
-            if( selectedFacets_[facetsIntersectingCell(cellI, triI)] )
-            {
-                intersectedCells[cellI] = true;
-                break;
-            }
+            const label fI = facetsIntersectingCell(cellI, triI);
+
+            forAllRow(selectedFacets_, fI, domainI)
+                intersectedCells[cellI].append(selectedFacets_(fI, domainI));
         }
     }
+
+    labelList domainIds(domains_.size());
+    forAll(domainIds, i)
+    {
+        domainIds[i] =
+            mesh_.addCellSubset("intersectingDomain_"+help::scalarToText(i));
+    }
+
+    forAll(intersectedCells, i)
+    {
+        const DynList<label, 2>& doms = intersectedCells[i];
+
+        forAll(doms, j)
+            mesh_.addCellToSubset(domainIds[doms[j]], i);
+    }
+
+//    const label cId = mesh_.addCellSubset("domainIntersected");
+//    forAll(intersectedCells, cI)
+//        if( intersectedCells[cI].size() )
+//            mesh_.addCellToSubset(cId, cI);
 
     //- TODO: implement the group marking algorithm properly using templates
     //- find islands of cells which are not intersected by the selected domains
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
+
     labelListPMG findCellGroups(intersectedCells.size(), -1);
     label nGroups(0);
 
@@ -176,7 +193,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
     {
         if( findCellGroups[cellI] != -1 )
             continue;
-        if( intersectedCells[cellI] )
+        if( intersectedCells[cellI].size() )
             continue;
 
         findCellGroups[cellI] = nGroups;
@@ -196,11 +213,11 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
             {
                 const label faceI = c[fI];
 
-                if( owner[faceI] == cellI && neighbour[faceI] >= 0 )
+                if( owner[faceI] == cLabel && neighbour[faceI] >= 0 )
                 {
                     neis.append(neighbour[faceI]);
                 }
-                else
+                else if( neighbour[faceI] == cLabel )
                 {
                     neis.append(owner[faceI]);
                 }
@@ -213,33 +230,77 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
                 if( findCellGroups[nei] != -1 )
                     continue;
-                if( intersectedCells[nei] )
+                if( intersectedCells[nei].size() )
                     continue;
+
+                findCellGroups[nei] = nGroups;
+                front.append(nei);
             }
         }
 
         ++nGroups;
     }
 
-    //- check which groups have cells at the outer boundary
-    //- which are not intersected by the selected domains
-    Info << "3. Here" << endl;
+    Info << "Number of groups " << nGroups << endl;
+    Info << "2.1 Here" << endl;
+    labelList groupToId(nGroups);
+    for(label i=0;i<nGroups;++i)
+        groupToId[i] = mesh_.addCellSubset("group_"+help::scalarToText(i));
 
-    boolList outerGroup(nGroups, false);
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
-    forAll(boundaries, patchI)
+    forAll(findCellGroups, i)
     {
-        const label start = boundaries[patchI].patchStart();
-        const label end = start + boundaries[patchI].patchSize();
+        if( findCellGroups[i] != -1 )
+            mesh_.addCellToSubset(groupToId[findCellGroups[i]], i);
+    }
 
-        for(label faceI=start;faceI<end;++faceI)
+    //- collect which domains are assigned to facets neighbouring
+    //- groups
+    Info << "3.Here" << endl;
+    List<DynList<label> > neiDomains(nGroups);
+    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    {
+        const label own = owner[faceI];
+        const label nei = neighbour[faceI];
+
+        if( intersectedCells[own].size() && (findCellGroups[nei] != -1) )
         {
-            if( intersectedCells[owner[faceI]] )
-                continue;
-
-            outerGroup[findCellGroups[owner[faceI]]] = true;
+            forAll(intersectedCells[own], domainI)
+                neiDomains[findCellGroups[nei]].appendIfNotIn
+                (
+                    intersectedCells[own][domainI]
+                );
+        }
+        else if( intersectedCells[nei].size() && (findCellGroups[own] != -1) )
+        {
+            forAll(intersectedCells[nei], domainI)
+                neiDomains[findCellGroups[own]].appendIfNotIn
+                (
+                    intersectedCells[nei][domainI]
+                );
         }
     }
+
+    Info << "1. Nei domains " << neiDomains << endl;
+
+    //- find a common group for all cell neighbours of a group
+    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    {
+        const label own = owner[faceI];
+        const label nei = neighbour[faceI];
+
+        if( intersectedCells[own].size() && (findCellGroups[nei] != -1) )
+        {
+            const label groupI = findCellGroups[nei];
+            forAllReverse(neiDomains[groupI], domainI)
+            {
+                const label neiDomain = neiDomains[groupI][domainI];
+                if( !intersectedCells[own].contains(neiDomain) )
+                    neiDomains[groupI].removeElement(domainI);
+            }
+        }
+    }
+
+    Info << "2. Nei domains " << neiDomains << endl;
 
     //- check which islands of cells correspond to octree boxes
     //- marked as internal boxes
@@ -250,9 +311,15 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
     {
         const label groupI = findCellGroups[cellI];
 
-        if( outerGroup[groupI] )
+        //- do not remove cells which are not assigned to a domain
+        if( groupI < 0 )
             continue;
 
+        //- remove domains surrounded by facets in a single user-selected domain
+        if( neiDomains[groupI].size() != 1 )
+            continue;
+
+        //- mark cell for removal
         internalCells[cellI] = true;
     }
 

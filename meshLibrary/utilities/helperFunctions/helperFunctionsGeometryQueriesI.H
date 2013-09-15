@@ -286,196 +286,62 @@ inline bool pointInTetrahedron
     return true;
 }
 
-inline bool triLineIntersection
+inline bool nearestEdgePointToTheLine
 (
-    const triangle<point, point>& tria,
-    const point& lineStart,
-    const point& lineEnd,
-    point& intersection
+    const point& edgePoint0,
+    const point& edgePoint1,
+    const point& lp0,
+    const point& lp1,
+    point& nearestOnEdge,
+    point& nearestOnLine
 )
 {
-    const point& p0 = tria.a();
-    const vector v(lineStart - lineEnd);
-    const vector v0 = tria.b() - p0;
-    const vector v1 = tria.c() - p0;
-    const vector sp = lineStart - p0;
+    const vector v = lp1 - lp0;
+    const vector d = lp0 - edgePoint0;
+    const vector e = edgePoint1 - edgePoint0;
 
-    matrix3D mat;
-    FixedList<scalar, 3> source;
-    for(label i=0;i<3;++i)
+    const scalar vMag = mag(v);
+    if( vMag < VSMALL )
+        return false;
+
+    const scalar eMag = mag(e);
+    if( eMag < VSMALL )
     {
-        mat[i][0] = v0[i];
-        mat[i][1] = v1[i];
-        mat[i][2] = v[i];
-        source[i] = sp[i];
-    }
-
-    const scalar det = mat.determinant();
-
-    if( mag(det) < VSMALL )
-        return false;
-
-    const scalar t = mat.solveThird(source);
-
-    if( (t < -SMALL) || (t > (1.0+SMALL)) )
-        return false;
-
-    const scalar u0 = mat.solveFirst(source);
-
-    if( u0 < -SMALL )
-        return false;
-
-    const scalar u1 = mat.solveSecond(source);
-
-    if( (u1 < -SMALL) || ((u0+u1) > (1.0+SMALL)) )
-        return false;
-
-    intersection = lineStart - t * v;
-    return true;
-}
-
-inline bool triLineIntersection
-(
-    const triSurf& surface,
-    const label tI,
-    const point& s,
-    const point& e,
-    point& intersection
-)
-{
-    const pointField& pts = surface.points();
-    const labelledTri& tri = surface[tI];
-
-    triangle<point, point> tria
-    (
-        pts[tri[0]],
-        pts[tri[1]],
-        pts[tri[2]]
-    );
-
-    return triLineIntersection(tria, s, e, intersection);
-}
-
-inline bool boundBoxLineIntersection
-(
-    const point& s,
-    const point& e,
-    const boundBox& bb
-)
-{
-    scalar tMax(1.0+SMALL), tMin(-SMALL);
-
-    const vector v = e - s;
-    const scalar d = mag(v);
-
-    //- check if the vector has length
-    if( d < VSMALL )
-    {
-        if( bb.contains(s) )
-            return true;
-
-        return false;
-    }
-
-    const point& pMin = bb.min();
-    const point& pMax = bb.max();
-
-    //- check coordinates
-    for(label dir=0;dir<3;++dir)
-    {
-        const scalar vd = v[dir];
-        const scalar sd = s[dir];
-
-        if( mag(vd) > (SMALL * d) )
-        {
-            if( vd >= 0.0 )
-            {
-                tMin = Foam::max(tMin, (pMin[dir] - sd) / vd);
-                tMax = Foam::min(tMax, (pMax[dir] - sd) / vd);
-            }
-            else
-            {
-                tMin = Foam::max(tMin, (pMax[dir] - sd) / vd);
-                tMax = Foam::min(tMax, (pMin[dir] - sd) / vd);
-            }
-        }
-        else if( (sd < pMin[dir]) || (sd > pMax[dir]) )
-        {
-            return false;
-        }
-    }
-
-    if( (tMax - tMin) > -SMALL )
+        nearestOnEdge = edgePoint0;
+        nearestOnLine = nearestPointOnTheEdge(lp0, lp1, nearestOnEdge);
         return true;
-
-    return false;
-}
-
-inline bool doFaceAndTriangleIntersect
-(
-    const triSurf& surface,
-    const label triI,
-    const face& f,
-    const pointField& facePoints
-)
-{
-    const pointField& triPoints = surface.points();
-
-    vector n = f.normal(facePoints);
-    n /= mag(n);
-    const point centre = f.centre(facePoints);
-    plane pl(centre, n);
-    point intersection(vector::zero);
-
-    //- check if any triangle edge intersects the face
-    const edgeList triEdges = surface[triI].edges();
-    forAll(triEdges, eI)
-    {
-        const edge& e = triEdges[eI];
-
-        forAll(f, pI)
-        {
-            triangle<point, point> tria
-            (
-                facePoints[f[pI]],
-                facePoints[f.nextLabel(pI)],
-                centre
-            );
-
-            const bool currIntersection =
-                help::triLineIntersection
-                (
-                    tria,
-                    triPoints[e.start()],
-                    triPoints[e.end()],
-                    intersection
-                );
-
-            if( currIntersection )
-                return true;
-        }
     }
 
-    //- check if any face edges intersect the triangle
-    const edgeList fEdges = f.edges();
-    forAll(fEdges, feI)
-    {
-        const edge& e = fEdges[feI];
+    if( mag((v/vMag) & (e/eMag)) > (1.0 - SMALL) )
+        return false;
 
-        if(
-            help::triLineIntersection
-            (
-                surface,
-                triI,
-                facePoints[e.start()],
-                facePoints[e.end()],
-                intersection
-            )
-        )
-            return true;
+    tensor mat(tensor::zero);
+    mat.xx() = (v&v);
+    mat.xy() = mat.yx() = -1.0 * (v&e);
+    mat.yy() = (e&e);
+    mat.zz() = SMALL;
+
+    vector source(vector::zero);
+    source[0] = -1.0 * (d&v);
+    source[1] = (d&e);
+
+    const vector sol = (inv(mat) & source);
+
+    nearestOnLine = lp0 + v * sol[0];
+    if( sol[1] > 1.0 )
+    {
+        nearestOnEdge = edgePoint1;
+    }
+    else if( sol[1] < 0.0 )
+    {
+        nearestOnEdge = edgePoint0;
+    }
+    else
+    {
+        nearestOnEdge = edgePoint0 + e * sol[1];
     }
 
-    return false;
+    return true;
 }
 
 inline point nearestPointOnTheTriangle
@@ -599,6 +465,229 @@ inline point nearestPointOnTheTriangle
     return pProj;
 }
 
+inline bool triLineIntersection
+(
+    const triangle<point, point>& tria,
+    const point& lineStart,
+    const point& lineEnd,
+    point& intersection
+)
+{
+    const point& p0 = tria.a();
+    const vector v(lineStart - lineEnd);
+    const vector v0 = tria.b() - p0;
+    const vector v1 = tria.c() - p0;
+    const vector sp = lineStart - p0;
+
+    matrix3D mat;
+    FixedList<scalar, 3> source;
+    for(label i=0;i<3;++i)
+    {
+        mat[i][0] = v0[i];
+        mat[i][1] = v1[i];
+        mat[i][2] = v[i];
+        source[i] = sp[i];
+    }
+
+    const scalar det = mat.determinant();
+
+    if( mag(det) < SMALL )
+        return false;
+
+    const scalar t = mat.solveThird(source);
+
+    if( (t < -SMALL) || (t > (1.0+SMALL)) )
+        return false;
+
+    const scalar u0 = mat.solveFirst(source);
+
+    if( u0 < -SMALL )
+        return false;
+
+    const scalar u1 = mat.solveSecond(source);
+
+    if( (u1 < -SMALL) || ((u0+u1) > (1.0+SMALL)) )
+        return false;
+
+    intersection = lineStart - t * v;
+    return true;
+}
+
+inline bool triLineIntersection
+(
+    const triSurf& surface,
+    const label tI,
+    const point& s,
+    const point& e,
+    point& intersection
+)
+{
+    const pointField& pts = surface.points();
+    const labelledTri& tri = surface[tI];
+
+    scalar tolSq = SMALL * tri.mag(pts);
+
+    point nearest = nearestPointOnTheTriangle(tI, surface, s);
+    if( magSqr(nearest - s) < tolSq )
+    {
+        intersection = nearest;
+        return true;
+    }
+
+    nearest = nearestPointOnTheTriangle(tI, surface, e);
+    if( magSqr(nearest - e) < tolSq )
+    {
+        intersection = nearest;
+        return true;
+    }
+
+    forAll(tri, eI)
+    {
+        const point& ep = pts[tri[eI]];
+        const point& ee = pts[tri[(eI+1)%3]];
+        point inter1, inter2;
+
+        nearestEdgePointToTheLine(s, e, ep, ee, inter1, inter2);
+
+        if( magSqr(inter1 - inter2) < tolSq )
+        {
+            intersection = inter1;
+            return true;
+        }
+    }
+
+    const triangle<point, point> tria
+    (
+        pts[tri[0]],
+        pts[tri[1]],
+        pts[tri[2]]
+    );
+
+    return triLineIntersection(tria, s, e, intersection);
+}
+
+inline bool boundBoxLineIntersection
+(
+    const point& s,
+    const point& e,
+    const boundBox& bb
+)
+{
+    scalar tMax(1.0+SMALL), tMin(-SMALL);
+
+    const vector v = e - s;
+    const scalar d = mag(v);
+
+    //- check if the vector has length
+    if( d < VSMALL )
+    {
+        if( bb.contains(s) )
+            return true;
+
+        return false;
+    }
+
+    const point& pMin = bb.min();
+    const point& pMax = bb.max();
+
+    //- check coordinates
+    for(label dir=0;dir<3;++dir)
+    {
+        const scalar vd = v[dir];
+        const scalar sd = s[dir];
+
+        if( mag(vd) > (SMALL * d) )
+        {
+            if( vd >= 0.0 )
+            {
+                tMin = Foam::max(tMin, (pMin[dir] - sd) / vd);
+                tMax = Foam::min(tMax, (pMax[dir] - sd) / vd);
+            }
+            else
+            {
+                tMin = Foam::max(tMin, (pMax[dir] - sd) / vd);
+                tMax = Foam::min(tMax, (pMin[dir] - sd) / vd);
+            }
+        }
+        else if( (sd < pMin[dir]) || (sd > pMax[dir]) )
+        {
+            return false;
+        }
+    }
+
+    if( (tMax - tMin) > -SMALL )
+        return true;
+
+    return false;
+}
+
+inline bool doFaceAndTriangleIntersect
+(
+    const triSurf& surface,
+    const label triI,
+    const face& f,
+    const pointField& facePoints
+)
+{
+    const pointField& triPoints = surface.points();
+
+    const point centre = f.centre(facePoints);
+    point intersection;
+
+    //- check if any triangle edge intersects the face
+    const labelledTri& tri = surface[triI];
+
+    forAll(tri, eI)
+    {
+        const point& s = triPoints[tri[eI]];
+        const point& e = triPoints[tri[(eI+1)%3]];
+
+        forAll(f, pI)
+        {
+            const triangle<point, point> tria
+            (
+                facePoints[f[pI]],
+                facePoints[f.nextLabel(pI)],
+                centre
+            );
+
+            const bool currIntersection =
+                help::triLineIntersection
+                (
+                    tria,
+                    s,
+                    e,
+                    intersection
+                );
+
+            if( currIntersection )
+                return true;
+        }
+    }
+
+    //- check if any face edges intersect the triangle
+    forAll(f, pI)
+    {
+        const point& s = facePoints[f[pI]];
+        const point& e = facePoints[f.nextLabel(pI)];
+
+        const bool intersected =
+            help::triLineIntersection
+            (
+                surface,
+                triI,
+                s,
+                e,
+                intersection
+            );
+
+        if( intersected )
+            return true;
+    }
+
+    return false;
+}
+
 inline bool pointInsideFace
 (
     const point& p,
@@ -713,64 +802,6 @@ inline scalar distanceOfPointFromTheEdge
 )
 {
     return mag(nearestPointOnTheEdge(edgePoint0, edgePoint1, p) - p);
-}
-
-inline bool nearestEdgePointToTheLine
-(
-    const point& edgePoint0,
-    const point& edgePoint1,
-    const point& lp0,
-    const point& lp1,
-    point& nearestOnEdge,
-    point& nearestOnLine
-)
-{
-    const vector v = lp1 - lp0;
-    const vector d = lp0 - edgePoint0;
-    const vector e = edgePoint1 - edgePoint0;
-
-    const scalar vMag = mag(v);
-    if( vMag < VSMALL )
-        return false;
-
-    const scalar eMag = mag(e);
-    if( eMag < VSMALL )
-    {
-        nearestOnEdge = edgePoint0;
-        nearestOnLine = nearestPointOnTheEdge(lp0, lp1, nearestOnEdge);
-        return true;
-    }
-
-    if( mag((v/vMag) & (e/eMag)) > (1.0 - SMALL) )
-        return false;
-
-    tensor mat(tensor::zero);
-    mat.xx() = (v&v);
-    mat.xy() = mat.yx() = -1.0 * (v&e);
-    mat.yy() = (e&e);
-    mat.zz() = SMALL;
-
-    vector source(vector::zero);
-    source[0] = -1.0 * (d&v);
-    source[1] = (d&e);
-
-    const vector sol = (inv(mat) & source);
-
-    nearestOnLine = lp0 + v * sol[0];
-    if( sol[1] > 1.0 )
-    {
-        nearestOnEdge = edgePoint1;
-    }
-    else if( sol[1] < 0.0 )
-    {
-        nearestOnEdge = edgePoint0;
-    }
-    else
-    {
-        nearestOnEdge = edgePoint0 + e * sol[1];
-    }
-
-    return true;
 }
 
 inline label numberOfFaceGroups

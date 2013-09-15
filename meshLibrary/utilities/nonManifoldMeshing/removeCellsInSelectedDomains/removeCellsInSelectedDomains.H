@@ -65,8 +65,8 @@ class removeCellsInSelectedDomains
         //- regions which shall not be meshed
         DynList<DynList<word, 4> > domains_;
 
-        //- selected facets
-        boolList selectedFacets_;
+        //- facets which are part of the selected domains
+        VRWGraph selectedFacets_;
 
         //- intersect cells with the surface mesh
         findCellsIntersectingSurface* surfIntersectionPtr_;

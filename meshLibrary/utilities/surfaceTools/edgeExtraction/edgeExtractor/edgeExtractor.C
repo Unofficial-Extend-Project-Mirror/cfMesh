@@ -351,8 +351,7 @@ void edgeExtractor::findFaceCandidates
     const VRWGraph& edgeFaces = mse.edgeFaces();
 
     # ifdef USE_OMP
-    # pragma omp parallel \
-    if( faceEdges.size() > 1000 ) reduction(+ : nCorrected)
+    # pragma omp parallel if( faceEdges.size() > 1000 )
     # endif
     {
         # ifdef USE_OMP
@@ -393,7 +392,10 @@ void edgeExtractor::findFaceCandidates
 
         # ifdef USE_OMP
         # pragma omp critical
-        faceCandidates.appendList(procCandidates);
+        {
+            forAll(procCandidates, i)
+                faceCandidates.append(procCandidates[i]);
+        }
         # endif
     }
 }
@@ -829,7 +831,7 @@ void edgeExtractor::findEdgeCandidates()
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40) \
-    if( edgeWeights.size() > 1000 )
+    if( edges.size() > 1000 )
     # endif
     forAll(edgeType_, edgeI)
     {

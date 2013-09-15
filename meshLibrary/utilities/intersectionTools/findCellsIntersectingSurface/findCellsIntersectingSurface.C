@@ -69,6 +69,8 @@ void findCellsIntersectingSurface::findIntersectedCells()
     facetsIntersectingCell_.setSize(cells.size());
 
     const triSurf& surf = octreePtr_->surface();
+    const VRWGraph& pointFacets = surf.pointFacets();
+    const pointField& sp = surf.points();
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
@@ -93,6 +95,10 @@ void findCellsIntersectingSurface::findIntersectedCells()
             }
         }
 
+        const vector spanCorr = 0.01 * bb.span();
+        bb.max() += spanCorr;
+        bb.min() -= spanCorr;
+
         //- find surface triangles within the bounding box
         DynList<label> leavesInBox;
         octreePtr_->findLeavesContainedInBox(bb, leavesInBox);
@@ -113,7 +119,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         //- remove triangles which do not intersect the bounding box
         labelHashSet reasonableCandidates;
-        const pointField& sp = surf.points();
+
         forAllConstIter(labelHashSet, triangles, tIter)
         {
             const labelledTri& tri = surf[tIter.key()];
@@ -126,8 +132,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
                 obb.max() = Foam::max(obb.max(), v);
             }
 
-            obb.min() -= vector(VSMALL, VSMALL, VSMALL);
-            obb.max() += vector(VSMALL, VSMALL, VSMALL);
+            const vector spanTriCorr = SMALL * obb.span();
+            obb.min() -= spanTriCorr;
+            obb.max() += spanTriCorr;
 
             if( obb.overlaps(bb) )
                 reasonableCandidates.insert(tIter.key());
@@ -135,49 +142,23 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         triangles.transfer(reasonableCandidates);
 
-        //- check if any triangle in the surface mesh
-        //- intersects any of the cell's faces
-        labelHashSet facetsInCell;
-        forAllConstIter(labelHashSet, triangles, tIter)
-        {
-            forAll(c, fI)
-            {
-                const face& f = faces[c[fI]];
-
-                const bool intersect =
-                    help::doFaceAndTriangleIntersect
-                    (
-                        surf,
-                        tIter.key(),
-                        f,
-                        points
-                    );
-
-                if( intersect )
-                {
-                    intersected = true;
-                    facetsInCell.insert(tIter.key());
-                    break;
-                }
-            }
-        }
-
         //- check if any of the surface vertices is contained within the cell
-        labelHashSet nodes;
+        labelHashSet nodes, facetsInCell;
         forAllConstIter(labelHashSet, triangles, tIter)
         {
-            if( facetsInCell.found(tIter.key()) )
-                continue;
-
             const labelledTri& tri = surf[tIter.key()];
 
-            for(label i=0;i<3;++i)
+            forAll(tri, i)
                 nodes.insert(tri[i]);
         }
 
+        //- check which surface nodes are within the cell
         forAllConstIter(labelHashSet, nodes, nIter)
         {
-            const point& p = surf.points()[nIter.key()];
+            const point& p = sp[nIter.key()];
+
+            if( !bb.contains(p) )
+                continue;
 
             bool foundIntersection(false);
             forAll(c, fI)
@@ -199,11 +180,14 @@ void findCellsIntersectingSurface::findIntersectedCells()
                         if( help::pointInTetrahedron(p, tet) )
                         {
                             intersected = true;
-                            forAllRow(surf.pointFacets(), nIter.key(), ptI)
+                            forAllRow(pointFacets, nIter.key(), ptI)
+                            {
                                 facetsInCell.insert
                                 (
-                                    surf.pointFacets()(nIter.key(), ptI)
+                                    pointFacets(nIter.key(), ptI)
                                 );
+                            }
+
                             foundIntersection = true;
                             break;
                         }
@@ -227,11 +211,14 @@ void findCellsIntersectingSurface::findIntersectedCells()
                         if( help::pointInTetrahedron(p, tet) )
                         {
                             intersected = true;
-                            forAllRow(surf.pointFacets(), nIter.key(), ptI)
+                            forAllRow(pointFacets, nIter.key(), ptI)
+                            {
                                 facetsInCell.insert
                                 (
-                                    surf.pointFacets()(nIter.key(), ptI)
+                                    pointFacets(nIter.key(), ptI)
                                 );
+                            }
+
                             foundIntersection = true;
                             break;
                         }
@@ -243,12 +230,45 @@ void findCellsIntersectingSurface::findIntersectedCells()
             }
         }
 
-        intersectedCells_[cellI] = intersected;
-        # ifdef USE_OMP
-        # pragma omp critical
-        # endif
+        //- check if any triangle in the surface mesh
+        //- intersects any of the cell's faces
+        forAllConstIter(labelHashSet, triangles, tIter)
         {
-            facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
+            if( facetsInCell.found(tIter.key()) )
+                continue;
+
+            forAll(c, fI)
+            {
+                const face& f = faces[c[fI]];
+
+                const bool intersect =
+                    help::doFaceAndTriangleIntersect
+                    (
+                        surf,
+                        tIter.key(),
+                        f,
+                        points
+                    );
+
+                if( intersect )
+                {
+                    intersected = true;
+                    facetsInCell.insert(tIter.key());
+                    break;
+                }
+            }
+        }
+
+        //- store the results for this cell
+        intersectedCells_[cellI] = intersected;
+        if( intersected )
+        {
+            # ifdef USE_OMP
+            # pragma omp critical
+            # endif
+            {
+                facetsIntersectingCell_.setRow(cellI, facetsInCell.toc());
+            }
         }
     }
 }
