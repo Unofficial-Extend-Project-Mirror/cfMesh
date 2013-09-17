@@ -34,6 +34,10 @@ Description
 
 #include "helperFunctions.H"
 
+# ifdef USE_OMP
+#include <omp.h>
+# endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -142,8 +146,6 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
     const VRWGraph& facetsIntersectingCell = cellsIntersectedBySurfaceFacets();
 
-    Info << "1.Here" << endl;
-
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
@@ -158,6 +160,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
         }
     }
 
+    # ifdef DEBUGRemoveDomains
     labelList domainIds(domains_.size());
     forAll(domainIds, i)
     {
@@ -171,12 +174,8 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
         forAll(doms, j)
             mesh_.addCellToSubset(domainIds[doms[j]], i);
-    }
-
-//    const label cId = mesh_.addCellSubset("domainIntersected");
-//    forAll(intersectedCells, cI)
-//        if( intersectedCells[cI].size() )
-//            mesh_.addCellToSubset(cId, cI);
+    };
+    # endif
 
     //- TODO: implement the group marking algorithm properly using templates
     //- find islands of cells which are not intersected by the selected domains
@@ -186,8 +185,6 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
     labelListPMG findCellGroups(intersectedCells.size(), -1);
     label nGroups(0);
-
-    Info << "2. Here" << endl;
 
     forAll(findCellGroups, cellI)
     {
@@ -241,6 +238,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
         ++nGroups;
     }
 
+    # ifdef DEBUGRemoveDomains
     Info << "Number of groups " << nGroups << endl;
     Info << "2.1 Here" << endl;
     labelList groupToId(nGroups);
@@ -252,10 +250,10 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
         if( findCellGroups[i] != -1 )
             mesh_.addCellToSubset(groupToId[findCellGroups[i]], i);
     }
+    # endif
 
     //- collect which domains are assigned to facets neighbouring
     //- groups
-    Info << "3.Here" << endl;
     List<DynList<label> > neiDomains(nGroups);
     for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
     {
@@ -280,7 +278,9 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
         }
     }
 
+    # ifdef DEBUGRemoveDomains
     Info << "1. Nei domains " << neiDomains << endl;
+    # endif
 
     //- find a common group for all cell neighbours of a group
     for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
@@ -298,13 +298,24 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
                     neiDomains[groupI].removeElement(domainI);
             }
         }
+        else if( intersectedCells[nei].size() && (findCellGroups[own] != -1) )
+        {
+            const label groupI = findCellGroups[own];
+            forAllReverse(neiDomains[groupI], domainI)
+            {
+                const label neiDomain = neiDomains[groupI][domainI];
+                if( !intersectedCells[nei].contains(neiDomain) )
+                    neiDomains[groupI].removeElement(domainI);
+            }
+        }
     }
 
+    # ifdef DEBUGRemoveDomains
     Info << "2. Nei domains " << neiDomains << endl;
+    # endif
 
     //- check which islands of cells correspond to octree boxes
     //- marked as internal boxes
-    Info << "4. Here" << endl;
     boolList internalCells(intersectedCells.size(), false);
 
     forAll(findCellGroups, cellI)
@@ -313,6 +324,10 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
         //- do not remove cells which are not assigned to a domain
         if( groupI < 0 )
+            continue;
+
+        //- do not remove cells intersected by the selected surface elements
+        if( intersectedCells[cellI].size() )
             continue;
 
         //- remove domains surrounded by facets in a single user-selected domain
@@ -324,7 +339,6 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
     }
 
     //- remove cells inside the selected domains
-    Info << "5. Here" << endl;
     polyMeshGenModifier(mesh_).removeCells(internalCells);
 }
 
@@ -369,8 +383,6 @@ void removeCellsInSelectedDomains::removeCells()
     markSelectedFacets();
 
     //findLeavesInsideRegions();
-
-    Info << "Finding and removing cells" << endl;
 
     findAndRemoveCells();
 

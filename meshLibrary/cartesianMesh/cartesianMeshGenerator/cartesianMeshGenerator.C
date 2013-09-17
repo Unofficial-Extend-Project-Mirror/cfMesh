@@ -121,23 +121,16 @@ void cartesianMeshGenerator::surfacePreparation()
 
         rCells.removeCells();
 
-        mesh_.write();
-        ::exit(1);
+        //mesh_.write();
+        //::exit(1);
     }
 
 
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
-/*    do
-    {
-        surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
-        cmPtr->morphMesh();
-        deleteDemandDrivenData(cmPtr);
-    } while( topologicalCleaner(mesh_).cleanTopology() );
-    */
-
     bool changed;
+
     do
     {
         changed = false;

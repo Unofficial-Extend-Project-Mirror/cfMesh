@@ -525,37 +525,6 @@ inline bool triLineIntersection
     const pointField& pts = surface.points();
     const labelledTri& tri = surface[tI];
 
-    scalar tolSq = SMALL * tri.mag(pts);
-
-    point nearest = nearestPointOnTheTriangle(tI, surface, s);
-    if( magSqr(nearest - s) < tolSq )
-    {
-        intersection = nearest;
-        return true;
-    }
-
-    nearest = nearestPointOnTheTriangle(tI, surface, e);
-    if( magSqr(nearest - e) < tolSq )
-    {
-        intersection = nearest;
-        return true;
-    }
-
-    forAll(tri, eI)
-    {
-        const point& ep = pts[tri[eI]];
-        const point& ee = pts[tri[(eI+1)%3]];
-        point inter1, inter2;
-
-        nearestEdgePointToTheLine(s, e, ep, ee, inter1, inter2);
-
-        if( magSqr(inter1 - inter2) < tolSq )
-        {
-            intersection = inter1;
-            return true;
-        }
-    }
-
     const triangle<point, point> tria
     (
         pts[tri[0]],
