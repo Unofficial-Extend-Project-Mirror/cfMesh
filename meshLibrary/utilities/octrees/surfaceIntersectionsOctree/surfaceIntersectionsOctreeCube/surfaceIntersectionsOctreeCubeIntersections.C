@@ -198,13 +198,15 @@ void surfaceIntersectionsOctreeCube::intersectionCandidates
         Info << "Cube " << cubeBox_ << " contains elements "
             << containedElements_ << endl;
         # endif
-        point intersection;
+
         //- add elements within the cube
         for(SLList<label>::const_iterator eIter = containedElements_.begin();
             eIter != containedElements_.end();
             ++eIter
         )
         {
+            point intersection;
+
             if(
                 help::triLineIntersection
                 (
@@ -215,13 +217,15 @@ void surfaceIntersectionsOctreeCube::intersectionCandidates
                     intersection
                 )
             )
-                cp.append(pointIndexHit(true,intersection, eIter()));
+                cp.append(pointIndexHit(true, intersection, eIter()));
         }
 
         //- check subCubes if there are any
         if( subCubesPtr_ )
         {
-            const FixedList<surfaceIntersectionsOctreeCube*, 8>& subCubes_ = *subCubesPtr_;
+            const FixedList<surfaceIntersectionsOctreeCube*, 8>& subCubes_ =
+                *subCubesPtr_;
+
             forAll(subCubes_, cubeI)
                 subCubes_[cubeI]->intersectionCandidates(cp, s, e);
         }

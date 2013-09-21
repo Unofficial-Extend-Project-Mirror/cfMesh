@@ -41,6 +41,7 @@ SourceFiles
 #include "helperFunctionsTopologyManipulation.H"
 #include "helperFunctionsStringConversion.H"
 #include "helperFunctionsPar.H"
+#include "helperFunctionsFrontalMarking.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -356,7 +356,7 @@ void meshOctreeAddressing::edgeIntersections
             //- check for geometric intersection
             point intersection;
 
-            if(
+            const bool intersectionExists =
                 help::triLineIntersection
                 (
                     octree_.surface(),
@@ -364,8 +364,9 @@ void meshOctreeAddressing::edgeIntersections
                     points[edges[eI].start()],
                     points[edges[eI].end()],
                     intersection
-                )
-            )
+                );
+
+            if( intersectionExists )
             {
                 bool store(true);
                 forAll(intersections, i)

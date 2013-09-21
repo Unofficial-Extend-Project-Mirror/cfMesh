@@ -39,6 +39,7 @@ SourceFiles
 #include "plane.H"
 #include "face.H"
 
+#include "triSurf.H"
 #include "triangle.H"
 #include "tetrahedron.H"
 
@@ -47,7 +48,6 @@ SourceFiles
 class boolList;
 class labelHashSet;
 class boundBox;
-class triSurf;
 
 namespace Foam
 {
