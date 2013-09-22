@@ -126,6 +126,83 @@ public:
                 neighbourCells.append(nei);
         }
     }
+
+    template<class labelListType>
+    void collectGroups
+    (
+        std::map<label, DynList<label> >& neiGroups,
+        const labelListType& elementInGroup,
+        const DynList<label>& localGroupLabel,
+        const label startGroupAtProc
+    ) const
+    {
+        const PtrList<writeProcessorPatch>& procBoundaries =
+            mesh_.procBoundaries();
+        const labelList& owner = mesh_.owner();
+
+        //- send the data to other processors
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+            const label size = procBoundaries[patchI].patchSize();
+
+            labelList groupOwner(procBoundaries[patchI].patchSize());
+            for(label faceI=0;faceI<size;++faceI)
+            {
+                const label groupI = elementInGroup[owner[start+faceI]];
+
+                if( groupI < 0 )
+                {
+                    groupOwner[faceI] = groupI;
+                    continue;
+                }
+
+                groupOwner[faceI] = startGroupAtProc + localGroupLabel[groupI];
+            }
+
+            OPstream toOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                groupOwner.byteSize()
+            );
+
+            toOtherProc << groupOwner;
+        }
+
+        //- receive data from other processors
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+
+            labelList receivedData;
+
+            IPstream fromOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+
+            fromOtherProc >> receivedData;
+
+            forAll(receivedData, faceI)
+            {
+                if( receivedData[faceI] < 0 )
+                    continue;
+
+                const label groupI = elementInGroup[owner[start+faceI]];
+
+                if( groupI < 0 )
+                    continue;
+
+                DynList<label>& ng =
+                    neiGroups[startGroupAtProc + localGroupLabel[groupI]];
+
+                //- store the connection fo the inter-processor boundary
+                ng.appendIfNotIn(receivedData[faceI]);
+            }
+        }
+    }
 };
 
 class meshSelectorOperator
@@ -187,7 +264,8 @@ int main(int argc, char *argv[])
 
     help::frontalMarking(result, start, on, oso);
 
-    Info << "Number of octree elements meeting the criteria " << result << endl;
+    Info << "Number of octree elements meeting the criteria "
+         << result.size() << endl;
 
     Info<< "Execution time for octree creation = "
         << runTime.elapsedCpuTime()
