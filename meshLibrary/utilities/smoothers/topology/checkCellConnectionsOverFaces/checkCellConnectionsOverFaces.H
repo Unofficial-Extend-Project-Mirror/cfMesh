@@ -52,15 +52,12 @@ class checkCellConnectionsOverFaces
     // Private data
         //- Reference to polyMeshGen
         polyMeshGen& mesh_;
-    
+
         //- each cell is assigned a group
         //- cells which can be visited over face neighbours are assigned
         //- to the same group
         labelList cellGroup_;
-    
-        //- global group label (needed for parallel execution)
-        labelList globalGroupLabel_;
-    
+
         //- number of groups
         label nGroups_;
 

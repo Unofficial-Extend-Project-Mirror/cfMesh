@@ -132,8 +132,7 @@ public:
     (
         std::map<label, DynList<label> >& neiGroups,
         const labelListType& elementInGroup,
-        const DynList<label>& localGroupLabel,
-        const label startGroupAtProc
+        const DynList<label>& localGroupLabel
     ) const
     {
         const PtrList<writeProcessorPatch>& procBoundaries =
@@ -153,11 +152,11 @@ public:
 
                 if( groupI < 0 )
                 {
-                    groupOwner[faceI] = groupI;
+                    groupOwner[faceI] = -1;
                     continue;
                 }
 
-                groupOwner[faceI] = startGroupAtProc + localGroupLabel[groupI];
+                groupOwner[faceI] = localGroupLabel[groupI];
             }
 
             OPstream toOtherProc
@@ -195,10 +194,9 @@ public:
                 if( groupI < 0 )
                     continue;
 
-                DynList<label>& ng =
-                    neiGroups[startGroupAtProc + localGroupLabel[groupI]];
+                DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
 
-                //- store the connection fo the inter-processor boundary
+                //- store the connection over the inter-processor boundary
                 ng.appendIfNotIn(receivedData[faceI]);
             }
         }
@@ -253,35 +251,19 @@ int main(int argc, char *argv[])
 
     // construct the octree
     meshOctree mo(surf);
-    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    meshOctreeCreator(mo).createOctreeWithRefinedBoundary(10, 30);
 
-    meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
-
-    octreeNeighbours on(mo);
-    octreeSelectOperator oso(mo);
-    labelListPMG result;
-    label start(0);
-
-    help::frontalMarking(result, start, on, oso);
-
-    Info << "Number of octree elements meeting the criteria "
-         << result.size() << endl;
-
-    Info<< "Execution time for octree creation = "
-        << runTime.elapsedCpuTime()
-        << " s\n" << endl << endl;
-
+    //- create and read the mesh
     polyMeshGen pmg(runTime);
-    cartesianMeshExtractor cmg(mo, meshDict, pmg);
+    pmg.read();
 
-    //cmg.decomposeSplitHexes();
-    cmg.createMesh();
-
+    //- find cells intersecting surface
     findCellsIntersectingSurface fis(pmg, mo);
 
     meshNeighbourOperator mnop(pmg);
     meshSelectorOperator msop(fis.facetsIntersectingCells());
 
+    labelListPMG result;
     help::frontalMarking(result, 0, mnop, msop);
     Info << "Cells in the group " << result.size() << endl;
 

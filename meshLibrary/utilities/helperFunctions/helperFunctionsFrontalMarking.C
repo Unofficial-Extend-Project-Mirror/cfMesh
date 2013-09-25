@@ -36,8 +36,6 @@ Description
 #include <omp.h>
 # endif
 
-#define DEBUGFrontalMarking
-
 namespace Foam
 {
 
@@ -95,6 +93,61 @@ void frontalMarking
         }
     }
 }
+
+class graphNeiOp
+{
+    // Private data
+        //- const reference to VRWGraph
+        const VRWGraph& neiGroups_;
+
+public:
+
+    // Constructors
+        //- Construct from VRWGraph
+        inline graphNeiOp(const VRWGraph& neiGroups)
+        :
+            neiGroups_(neiGroups)
+        {}
+
+    // Public member functions
+        //- return the size of the graph
+        inline label size() const
+        {
+            return neiGroups_.size();
+        }
+
+        //- operator for finding neighbours
+        inline void operator()(const label groupI, DynList<label>& ng) const
+        {
+            ng = neiGroups_[groupI];
+        }
+};
+
+class graphSelectorOp
+{
+    // Private data
+        //- const reference to VRWGraph
+        const VRWGraph& neiGroups_;
+
+public:
+
+    // Constructors
+        //- Construct from VRWGraph
+        inline graphSelectorOp(const VRWGraph& neiGroups)
+        :
+            neiGroups_(neiGroups)
+        {}
+
+    // Public member functions
+        //- operator for selecting elements
+        inline bool operator()(const label groupI) const
+        {
+            if( (groupI < 0) || (groupI >= neiGroups_.size()) )
+                return false;
+
+            return true;
+        }
+};
 
 template<class labelListType, class neiOp, class filterOp>
 label groupMarking
@@ -226,89 +279,177 @@ label groupMarking
         }
     }
 
+    //- start processing connections between the group and merge the connected
+    //- ones into a new group
     DynList<label> globalGroupLabel;
     globalGroupLabel.setSize(nGroups);
+    globalGroupLabel = -1;
 
-    bool changed;
+    //- reduce the information about the groups
+    label counter(0);
 
-    do
+    forAll(neighbouringGroups, groupI)
     {
-        changed = false;
+        if( globalGroupLabel[groupI] != -1 )
+            continue;
 
-        DynList<label> newGroupLabel;
-        newGroupLabel.setSize(globalGroupLabel.size());
-        newGroupLabel = -1;
+        DynList<label> connectedGroups;
+        frontalMarking
+        (
+            connectedGroups,
+            groupI,
+            graphNeiOp(neighbouringGroups),
+            graphSelectorOp(neighbouringGroups)
+        );
 
-        //- reduce the information about the groups
-        forAllReverse(neighbouringGroups, groupI)
+        forAll(connectedGroups, gI)
+            globalGroupLabel[connectedGroups[gI]] = counter;
+
+        ++counter;
+    }
+
+    nGroups = counter;
+
+    forAll(neighbouringGroups, groupI)
+    {
+        if( globalGroupLabel[groupI] != -1 )
+            continue;
+
+        forAllRow(neighbouringGroups, groupI, ngI)
+            globalGroupLabel[neighbouringGroups(groupI, ngI)] = counter;
+
+        ++counter;
+    }
+
+    if( Pstream::parRun() )
+    {
+        //- reduce the groups over processors of an MPI run
+        //- count the total number of groups over all processors
+        labelList nGroupsAtProc(Pstream::nProcs());
+        nGroupsAtProc[Pstream::myProcNo()] = nGroups;
+
+        Pstream::gatherList(nGroupsAtProc);
+        Pstream::scatterList(nGroupsAtProc);
+
+        label startGroup(0), totalNumGroups(0);
+        for(label procI=0;procI<Pstream::nProcs();++procI)
         {
-            forAllRow(neighbouringGroups, groupI, ngI)
+            totalNumGroups += nGroupsAtProc[procI];
+
+            if( procI < Pstream::myProcNo() )
+                startGroup += nGroupsAtProc[procI];
+        }
+
+        //- translate group labels
+        forAll(globalGroupLabel, groupI)
+            globalGroupLabel[groupI] += startGroup;
+
+        //- find the neighbouring groups
+        //- collect groups on other processors
+        //- this operator implements the algorithm for exchanging data
+        //- over processors and collects information which groups
+        //- are connected over inter-processor boundaries
+        std::map<label, DynList<label> > neiGroups;
+
+        neighbourCalculator.collectGroups
+        (
+            neiGroups,
+            elementInGroup,
+            globalGroupLabel
+        );
+
+        //- create a graph of connections
+        List<List<labelPair> > globalNeiGroups(Pstream::nProcs());
+
+        DynList<labelPair> connsAtProc;
+        for
+        (
+            std::map<label, DynList<label> >::const_iterator it =
+            neiGroups.begin();
+            it!=neiGroups.end();
+            ++it
+        )
+        {
+            const DynList<label>& ng = it->second;
+
+            forAll(ng, i)
+                connsAtProc.append(labelPair(it->first, ng[i]));
+        }
+
+        //- copy the connections into the global neighbour list
+        globalNeiGroups[Pstream::myProcNo()].setSize(connsAtProc.size());
+
+        forAll(connsAtProc, i)
+            globalNeiGroups[Pstream::myProcNo()][i] = connsAtProc[i];
+
+        //- communicate partial graphs to the master processor
+        Pstream::gatherList(globalNeiGroups);
+
+        labelList allGroupsNewLabel;
+        if( Pstream::master() )
+        {
+            //- collect the graph of connections for the whole system
+            VRWGraph allGroups(totalNumGroups);
+            forAll(allGroups, i)
+                allGroups[i].append(i);
+
+            forAll(globalNeiGroups, procI)
             {
-                const label neiGroup = neighbouringGroups(groupI, ngI);
+                const List<labelPair>& connections = globalNeiGroups[procI];
 
-                if( neiGroup >= groupI )
-                    continue;
-
-                forAllRow(neighbouringGroups, groupI, i)
+                forAll(connections, i)
                 {
-                    const label grI = neighbouringGroups(groupI, i);
-                    neighbouringGroups.appendIfNotIn(neiGroup, grI);
+                    const labelPair& lp = connections[i];
+
+                    allGroups.appendIfNotIn(lp.first(), lp.second());
+                    allGroups.appendIfNotIn(lp.second(), lp.first());
                 }
             }
-        }
 
-        label counter(0);
-        forAll(neighbouringGroups, groupI)
-        {
-            if( newGroupLabel[groupI] != -1 )
-                continue;
+            //- assign a global label to each group
+            allGroupsNewLabel.setSize(totalNumGroups);
+            allGroupsNewLabel = -1;
+            counter = 0;
 
-            forAllRow(neighbouringGroups, groupI, ngI)
-                newGroupLabel[neighbouringGroups(groupI, ngI)] = counter;
+            forAll(allGroups, groupI)
+            {
+                if( allGroupsNewLabel[groupI] != -1 )
+                    continue;
 
-            ++counter;
-        }
+                DynList<label> connectedGroups;
+                frontalMarking
+                (
+                    connectedGroups,
+                    groupI,
+                    graphNeiOp(allGroups),
+                    graphSelectorOp(allGroups)
+                );
 
-        if( counter < nGroups )
-        {
-            changed = true;
+                forAll(connectedGroups, gI)
+                    allGroupsNewLabel[connectedGroups[gI]] = counter;
+
+                ++counter;
+            }
+
             nGroups = counter;
         }
 
-        globalGroupLabel = newGroupLabel;
+        //- broadcast group labels from the master to other processors
+        Pstream::scatter(nGroups);
+        Pstream::scatter(allGroupsNewLabel);
 
-        if( Pstream::parRun() )
+        //- assign correct group labels
+        forAll(globalGroupLabel, groupI)
         {
-            //- reduce the groups over processors
-            labelList nGroupsAtProc(Pstream::nProcs());
-            nGroupsAtProc[Pstream::myProcNo()] = nGroups;
-
-            Pstream::gatherList(nGroupsAtProc);
-            Pstream::scatterList(nGroupsAtProc);
-
-            label startGroup(0);
-            for(label procI=0;procI<Pstream::myProcNo();++procI)
-                startGroup += nGroupsAtProc[procI];
-
-            //- find the neighbouring groups
-            std::map<label, DynList<label> > neiGroups;
-
-            //- collect groups on other processors
-            //- this operator implements the algorithm for exchanging data
-            //- over processors and collects information which groups
-            //- are connected ovr inter-processor boundaries
-            neighbourCalculator.collectGroups
-            (
-                neiGroups,
-                elementInGroup,
-                newGroupLabel,
-                startGroup
-            );
+            const label ngI = globalGroupLabel[groupI];
+            globalGroupLabel[groupI] = allGroupsNewLabel[ngI];
         }
-
-    } while( changed );
+    }
 
     //- set the global group label
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
     forAll(elementInGroup, elI)
     {
         if( elementInGroup[elI] < 0 )
