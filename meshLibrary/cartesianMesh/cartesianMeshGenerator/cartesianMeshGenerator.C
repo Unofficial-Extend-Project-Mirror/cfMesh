@@ -379,8 +379,6 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
     surfacePtr_ = new triSurf(db_.path()/surfaceFile);
 
-    surfacePtr_->writeSurface("geom.fms");
-
     if( surfacePtr_->featureEdges().size() != 0 )
     {
         //- create surface patches based on the feature edges

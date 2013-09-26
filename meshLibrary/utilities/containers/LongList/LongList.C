@@ -160,48 +160,47 @@ Foam::Istream& Foam::operator>>
         // Set list length to that read
         DL.setSize(size);
 
-        if( size == 0 )
-        {
-            char listDelimiter = is.readBeginList("List");
-            if( listDelimiter != token::BEGIN_LIST )
-            {
-                WarningIn
-                (
-                    "template<class T, Foam::label Offset>"
-
-                    "Foam::Istream& Foam::operator>>"
-                    "("
-                        "Foam::Istream& ,"
-                        "Foam::LongList<T, Offset>& DL"
-                    ")"
-                ) << "Missing ( after 0" << endl;
-
-                return is;
-            }
-
-            listDelimiter = is.readEndList("List");
-            if( listDelimiter != token::END_LIST )
-            {
-                WarningIn
-                (
-                    "template<class T, Foam::label Offset>"
-
-                    "Foam::Istream& Foam::operator>>"
-                    "("
-                        "Foam::Istream& ,"
-                        "Foam::LongList<T, Offset>& DL"
-                    ")"
-                ) << "Missing ) after 0(" << endl;
-            }
-
-            return is;
-        }
-
         // Read list contents depending on data format
         if( (is.format() == IOstream::ASCII) || !contiguous<T>() )
         {
             // Read beginning of contents
             char listDelimiter = is.readBeginList("List");
+
+            if( size == 0 )
+            {
+                if( listDelimiter != token::BEGIN_LIST )
+                {
+                    WarningIn
+                    (
+                        "template<class T, Foam::label Offset>"
+
+                        "Foam::Istream& Foam::operator>>"
+                        "("
+                            "Foam::Istream& ,"
+                            "Foam::LongList<T, Offset>& DL"
+                        ")"
+                    ) << "Missing ( after 0" << endl;
+
+                    return is;
+                }
+
+                listDelimiter = is.readEndList("List");
+                if( listDelimiter != token::END_LIST )
+                {
+                    WarningIn
+                    (
+                        "template<class T, Foam::label Offset>"
+
+                        "Foam::Istream& Foam::operator>>"
+                        "("
+                            "Foam::Istream& ,"
+                            "Foam::LongList<T, Offset>& DL"
+                        ")"
+                    ) << "Missing ) after 0(" << endl;
+                }
+
+                return is;
+            }
 
             if( listDelimiter == token::BEGIN_LIST )
             {
