@@ -177,7 +177,11 @@ label groupMarking
     {
         const label chunkSize = neighbourCalculator.size() / nThreads + 1;
 
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
 
         LongList<std::pair<label, label> > threadCommPairs;
 

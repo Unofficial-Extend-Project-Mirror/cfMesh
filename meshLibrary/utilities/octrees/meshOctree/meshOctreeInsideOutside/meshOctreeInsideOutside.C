@@ -31,7 +31,9 @@ Description
 #include "boundBox.H"
 #include "labelListPMG.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -156,7 +158,11 @@ void meshOctreeInsideOutside::frontalMarking()
     {
         LongList<std::pair<label, label> > threadCommPairs;
 
+        # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
 
         const label chunkSize = leaves.size() / nThreads + 1;
 
