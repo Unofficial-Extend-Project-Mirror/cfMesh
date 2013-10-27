@@ -265,6 +265,10 @@ $(boundaryLayers)/boundaryLayerCells.C
 $(boundaryLayers)/boundaryLayersCheckTopologyOfBndFaces.C
 $(boundaryLayers)/boundaryLayersWrapperLayer.C
 $(boundaryLayers)/extrudeLayer.C
+$(boundaryLayers)/refineBoundaryLayers.C
+$(boundaryLayers)/refineBoundaryLayersFunctions.C
+$(boundaryLayers)/refineBoundaryLayersFaces.C
+$(boundaryLayers)/refineBoundaryLayersCells.C
 
 $(boundaryOutwardOrientation)/boundaryOutwardOrientation.C
 

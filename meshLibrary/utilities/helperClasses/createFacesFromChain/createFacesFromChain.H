@@ -43,23 +43,23 @@ SourceFiles
 
 namespace Foam
 {
-    
+
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
-                           Class createFacesFromChain Declaration
+                Class createFacesFromChain Declaration
 \*---------------------------------------------------------------------------*/
 
 class createFacesFromChain
 {
     // Members
         labelList chainPoints_;
-    
+
         List<DynList<label> > regionsForPointAtPosition_;
-    
+
         DynList<face> createdFaces_;
         DynList<label> faceRegions_;
-    
+
     // Private member functions
         void findPointsBelongingToTheFace
         (
@@ -67,41 +67,48 @@ class createFacesFromChain
             boolList& includePoints,
             boolList& endPoints
         ) const;
-    
+
         void shrinkTheChain
         (
             const label currPos,
             const boolList& includePoints,
             const boolList& endPoints
         );
-    
+
     public:
-        
+
+    // Constructors
+        //- construct from chain points and a graph of regions
+        //- to which each point belongs to
         createFacesFromChain
         (
             const labelList& chPoints,
             const VRWGraph& pointRegions
         );
-    
+
+        //- construct from chain points and regions
+        //- to which each point belongs to
         createFacesFromChain
         (
             const labelList& chPoints,
             const List<DynList<label> >& pointRegions
         );
-    
+
+    // Destructor
+
         ~createFacesFromChain();
-    
+
     // Member functions
         //- create faces which do not require an additional corner
         void createFacesWithoutACorner();
-    
+
         //- create faces with a corner
         void createFacesWithACorner(const label);
-    
+
         //- return created faces and the corresponding patches
         const DynList<face>& createdFaces() const;
         const DynList<label>& faceRegion() const;
-    
+
         //- a list of points which have not yet been resolved
         const labelList& unresolvedPoints() const;
 };

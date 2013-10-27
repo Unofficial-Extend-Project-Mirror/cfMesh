@@ -43,6 +43,78 @@ namespace help
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
+template<class labelListType1, class labelListType2>
+bool areFacesEqual(const labelListType1& f1, const labelListType2& f2)
+{
+    //- their size mut be equal
+    if( f1.size() != f2.size() )
+        return false;
+
+    //- find the starting point the the second face
+    label start(-1);
+    const label s = f2.size();
+    bool equalOrientation(false);
+
+    forAll(f2, pI)
+    {
+        if( f1[0] == f2[pI] )
+        {
+            start = pI;
+
+            if( f1[1] == f2[(pI+1)%s] )
+            {
+                //- faces have the same orientation
+                equalOrientation = true;
+            }
+            else if( f1[1] != f2[(s-1+pI)%s] )
+            {
+                //- faces shall have opposite orientation, but do not match
+                return false;
+            }
+        }
+    }
+
+    if( start < 0 )
+        return false;
+
+    if( equalOrientation )
+    {
+        //- same orientation, check if all points match
+        for(label pI=1;pI<s;++pI)
+        {
+            if( f1[pI] != f2[(pI+start)%s] )
+                return false;
+        }
+    }
+    else
+    {
+        //- faces with opposite orientation, check if all points match
+        for(label pI=1;pI<s;++pI)
+        {
+            if( f1[pI] != f2[(start+s-pI)%s] )
+                return false;
+        }
+    }
+
+    //- faces are equal
+    return true;
+}
+
+template<class labelListType>
+labelListType reverseFace(const labelListType& f)
+{
+    labelListType rf;
+    rf.setSize(f.size());
+
+    rf[0] = f[0];
+
+    const label size = f.size();
+    for(label i=1;i<size;++i)
+        rf[f.size()-i] = f[i];
+
+    return rf;
+}
+
 inline face mergeTwoFaces(const face& f1, const face& f2)
 {
     const edgeList e1 = f1.edges();
@@ -64,7 +136,7 @@ inline face mergeTwoFaces(const face& f1, const face& f2)
         if( !ce1[eI] ) fEdges.append(e1[eI]);
     forAll(ce2, eI)
         if( !ce2[eI] ) fEdges.append(e2[eI]);
-    
+
     return face(sortEdgeChain(fEdges));
 }
 
@@ -72,39 +144,39 @@ inline edgeList modifyFacesToShareOneEdge(face& f1, face& f2)
 {
     const edgeList edg1 = f1.edges();
     const edgeList edg2 = f2.edges();
-    
+
     boolList she1(f1.size(), false);
     boolList she2(f2.size(), false);
-    
+
     edgeList sharedEdges(edg1);
     label nSharedEdges(0);
-    
+
     forAll(edg1, eI)
         forAll(edg2, eJ)
             if( edg1[eI] == edg2[eJ] )
             {
                 sharedEdges.newElmt(nSharedEdges++) = edg1[eI];
-                
+
                 she1[eI] = true;
                 she2[eJ] = true;
                 break;
             }
-    
+
     face newF(f1);
     label i(0);
     forAll(f1, pI)
         if( !(she1[pI] && she1[(pI-1+f1.size())%f1.size()]) )
             newF[i++] = f1[pI];
-        
+
     newF.setSize(i);
     f1 = newF;
-        
+
     newF = f2;
     i = 0;
     forAll(f2, pI)
         if( !(she2[pI] && she2[(pI-1+f2.size())%f2.size()]) )
             newF[i++] = f2[pI];
-    
+
     newF.setSize(i);
     f2 = newF;
 
@@ -116,12 +188,12 @@ inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut)
 {
     if( fCut.size() == 0 )
         return fOrig;
-    
+
     const edgeList eOrig = fOrig.edges();
     const edgeList eCut = fCut.edges();
-    
+
     boolList usedEdge(eOrig.size(), false);
-    
+
     forAll(eOrig, eI)
         forAll(eCut, eJ)
             if( eOrig[eI] == eCut[eJ] )
@@ -129,7 +201,7 @@ inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut)
                 usedEdge[eI] = true;
                 break;
             }
-            
+
     face f(fOrig);
     direction i(0);
 
@@ -138,7 +210,7 @@ inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut)
         {
             f[i++] = fOrig[pI];
         }
-        
+
     f.setSize(i);
 
     return f;
@@ -151,7 +223,7 @@ inline face removeEdgesFromFace
 )
 {
     boolList foundEdge(fOrig.size(), false);
-    
+
     forAll(removeEdges, reI)
         forAll(fOrig, eI)
             if( removeEdges[reI] == fOrig.faceEdge(eI) )
@@ -166,7 +238,7 @@ inline face removeEdgesFromFace
     forAll(fOrig, pI)
         if( !(foundEdge[pI] && foundEdge[fOrig.rcIndex(pI)]) )
             newF[i++] = fOrig[pI];
-        
+
     newF.setSize(i);
 
     return newF;
@@ -176,15 +248,15 @@ inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
 {
     DynList<edge> cellEdges(12);
     DynList<label> nAppearances(12);
-    
+
     forAll(cellFaces, fI)
     {
         const edgeList edges = cellFaces[fI].edges();
-        
+
         forAll(edges, eI)
         {
             const label pos = cellEdges.containsAtPosition(edges[eI]);
-            
+
             if( pos == -1 )
             {
                 cellEdges.append(edges[eI]);
@@ -196,10 +268,10 @@ inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
             }
         }
     }
-    
+
     openEdges.setSize(12);
     openEdges.clear();
-    
+
     forAll(nAppearances, eI)
         if( nAppearances[eI] == 1 )
         {
@@ -245,11 +317,11 @@ inline edge sharedEdge(const face& f1, const face& f2)
 inline label positionOfEdgeInFace(const edge& e, const face& f)
 {
     const edgeList edges = f.edges();
-    
+
     forAll(edges, eI)
         if( edges[eI] == e )
             return eI;
-        
+
     return -1;
 }
 
@@ -301,11 +373,11 @@ inline label sharedVertex(const faceList& fcs)
 
     return -1;
 }
-    
+
 inline bool areElementsInChain(const boolList& sel)
 {
     boolList selInChain(sel.size(), false);
-                    
+
     forAll(sel, eI)
     {
         if( sel[eI] )
@@ -328,17 +400,17 @@ inline bool areElementsInChain(const boolList& sel)
                         selInChain[eJ] = true;
                     }
             } while( found );
-            
+
             break;
         }
     }
-        
+
     forAll(sel, eI)
     {
         if( sel[eI] && !selInChain[eI] )
             return false;
     }
-        
+
     return true;
 }
 
@@ -353,7 +425,7 @@ inline void zipOpenChain(DynList<edge>& bEdges)
         forAll(e, pI)
         {
             const label pos = chainVertices.containsAtPosition(e[pI]);
-        
+
             if( pos == -1 )
             {
                 nAppearances[chainVertices.size()] = 1;
@@ -365,7 +437,7 @@ inline void zipOpenChain(DynList<edge>& bEdges)
             }
         }
     }
-    
+
     bool closed(true);
     DynList<label> openVertices(2);
     forAll(chainVertices, pI)
@@ -374,7 +446,7 @@ inline void zipOpenChain(DynList<edge>& bEdges)
             closed = false;
             openVertices.append(chainVertices[pI]);
         }
-        
+
     if( !closed && (openVertices.size() == 2) )
     {
         forAll(bEdges, eI)
@@ -403,17 +475,17 @@ inline void zipOpenChain(DynList<edge>& bEdges)
 inline labelList sortEdgeChain(const DynList<edge>& bEdges)
 {
     boolList sorted(bEdges.size(), false);
-    
+
     DynList<edge> sortedEdges;
     sortedEdges.append(bEdges[0]);
     sorted[0] = true;
     direction i(0);
-    
+
     bool finished;
     do
     {
         finished = true;
-        
+
         forAll(bEdges, eI)
             if( !sorted[eI] )
             {
@@ -435,11 +507,11 @@ inline labelList sortEdgeChain(const DynList<edge>& bEdges)
                 }
             }
     } while( !finished );
-    
+
     labelList sortPoints(bEdges.size());
     forAll(sortedEdges, eI)
         sortPoints[eI] = sortedEdges[eI].start();
-    
+
     return sortPoints;
 }
 

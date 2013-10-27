@@ -30,7 +30,9 @@ Description
 #include "decomposeFaces.H"
 #include "boolList.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGDec
 
@@ -49,13 +51,11 @@ decomposeFaces::decomposeFaces(polyMeshGen& mesh)
 :
     mesh_(mesh),
     newFacesForFace_(mesh_.faces().size())
-{
-}
+{}
 
 //- Destructor
 decomposeFaces::~decomposeFaces()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

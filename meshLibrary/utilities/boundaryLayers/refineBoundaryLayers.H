@@ -1,0 +1,251 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 2 of the License, or (at your
+    option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM; if not, write to the Free Software Foundation,
+    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+Class
+    refineBoundaryLayers
+
+Description
+    Refine existing boundary layers
+
+SourceFiles
+    refineBoundaryLayers.C
+    refineBoundaryLayersFunctions.C
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef refineBoundaryLayers_H
+#define refineBoundaryLayers_H
+
+#include "polyMeshGenModifier.H"
+#include "meshSurfaceEngine.H"
+#include "DynList.H"
+#include "labelListPMG.H"
+#include "labelPair.H"
+
+#include <map>
+#include <set>
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+// Forward declarations
+class meshSurfaceEngine;
+
+/*---------------------------------------------------------------------------*\
+                Class refineBoundaryLayers Declaration
+\*---------------------------------------------------------------------------*/
+
+class refineBoundaryLayers
+{
+        //- Reference to the mesh
+        polyMeshGen& mesh_;
+
+        //- pointer to mesh surface engine
+        mutable meshSurfaceEngine* msePtr_;
+
+        //- global number of boundary layers
+        label globalNumLayers_;
+
+        //- global thickness ratio
+        scalar globalThicknessRatio_;
+
+        //- global maximum thickness of the first layer
+        scalar globalMaxThicknessFirstLayer_;
+
+        //- number of boundary layers for user-selected patches
+        std::map<word, label> numLayersForPatch_;
+
+        //- local thickness ratio for selected patches
+        std::map<word, scalar> thicknessRatioForPatch_;
+
+        //- local maximum layer thickness for selected patches
+        std::map<word, scalar> maxThicknessForPatch_;
+
+        //- allow discontinuous layers for patch
+        std::set<word> discontinuousLayersForPatch_;
+
+        //- check whether the refinement is already executed
+        bool done_;
+
+        //- information about existing boundary layers at patches
+        //- only available layers
+        labelList layerAtPatch_;
+
+        //- which patches are part of a single layer
+        List<DynList<word> > patchesInLayer_;
+
+        //- a containing the number of layers which shall be generated above
+        //- a boundary face
+        labelList nLayersAtBndFace_;
+
+        //- a list of edges which shall be refined
+        LongList<edge> splitEdges_;
+
+        //- split edges at point
+        VRWGraph splitEdgesAtPoint_;
+
+        //- new vertices for on edges which shall be refined
+        VRWGraph newVerticesForSplitEdge_;
+
+        //- a graph containing information which new faces were generated
+        //- from an existing face
+        VRWGraph facesFromFace_;
+
+        //- a graph containing faces after layer refinement
+        VRWGraph newFaces_;
+
+    // Private member functions
+        //- Return reference to meshSurfaceEngine
+        const meshSurfaceEngine& surfaceEngine() const;
+
+        //- analyse layers to check their topology
+        void analyseLayers();
+
+        //- calculate addressing for a boundary cell
+        void calculateAddressing
+        (
+            const label bfI,
+            label& baseFace,
+            DynList<edge, 48>& edges,
+            DynList<DynList<label, 2>, 48>& edgeFaces,
+            DynList<DynList<label, 10>, 24>& faceEdges
+        ) const;
+
+        //- find bnd layer hairs for a boundary face
+        bool findHairsForFace(const label, DynList<edge>&) const;
+
+        //- find edges which shall be split due to refinement
+        bool findSplitEdges();
+
+        //- generate new vertices on edges, faces and in cells
+        void generateNewVertices();
+
+        //- refine a given face and return the new faces
+        //- generates new vertices at cross-split faces
+        void refineFace
+        (
+            const face& f,
+            const FixedList<label, 2>& nLayersInDirection,
+            DynList<DynList<label, 4> >& newFaces
+        );
+
+        //- map split edges onto a cell
+        void generateNewFaces();
+
+        //- generate new cells for a prism with one boundary face
+        void generateNewCellsPrism
+        (
+            const label cellI,
+            DynList<DynList<DynList<label, 8>, 10> >& cellsFromCell
+        );
+
+        //- generate new cells from a hex at a feature edge
+        void generateNewCellsEdgeHex
+        (
+            const label cellI,
+            DynList<DynList<DynList<label, 4>, 6>, 64>& cellsFromCell
+        );
+
+        //- generate new cells from a hex at a corner
+        void generateNewCellsCornerHex
+        (
+            const label cellI,
+            DynList<DynList<DynList<label, 4>, 6>, 256>& cellsFromCell
+        );
+
+        //- generate new cells and add them to the mesh
+        void generateNewCells();
+
+        //- Disallow bitwise copy construct
+        refineBoundaryLayers(const refineBoundaryLayers&);
+
+        //- Disallow bitwise assignment
+        void operator=(const refineBoundaryLayers&);
+
+public:
+
+    // Constructors
+
+        //- Construct from mesh reference
+        refineBoundaryLayers(polyMeshGen& mesh);
+
+    // Destructor
+        ~refineBoundaryLayers();
+
+    // Public member functions
+        //- set the global number of boundary layers
+        void setGlobalNumberOfLayers(const label nLayers);
+
+        //- set the global thickness ratio (default is 1)
+        void setGlobalThicknessRatio(const scalar thicknessRatio);
+
+        //- set the maximum thickness of the first boundary layer
+        void setGlobalMaxThicknessOfFirstLayer(const scalar maxThickness);
+
+        //- set the number of layers for a patch
+        //- the settings override the global settings
+        void setNumberOfLayersForPatch
+        (
+            const word& patchName,
+            const label nLayers
+        );
+
+        //- set the thickness ratio for a patch
+        //- it overrides the global settings
+        void setThicknessRatioForPatch
+        (
+            const word& patchName,
+            const scalar thicknessRatio
+        );
+
+        //- set the maximum thickness of the first layer for a patch
+        void setMaxThicknessOfFirstLayerForPatch
+        (
+            const word& patchName,
+            const scalar maxThickness
+        );
+
+        //- set whether the settings for a given patch are valid for the
+        //- patch only, or whether they extend over th whole sheet
+        //- the selected patch belongs to
+        //- the default behaviour is to apply the patch settings to the whole
+        //- sheet
+        void setInteruptForPatch(const word& patchName);
+
+        //- performs refinement based on the given settings
+        void refineLayers();
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
+
+// ************************************************************************* //

@@ -1499,7 +1499,7 @@ void edgeExtractor::extractEdges()
 //        changed = false;
 
         Info << "Checking cells near concave edges" << endl;
-/*        if( checkConcaveEdgeCells() )
+        if( checkConcaveEdgeCells() )
         {
             # ifdef DEBUGEdgeExtractor
             Info << "Changes due to concave edge cells" << endl;
@@ -1511,7 +1511,7 @@ void edgeExtractor::extractEdges()
 
             //changed = true;
         }
-*/
+
         Info << "Checking patch in the neighbourhood of each face" << endl;
         if( checkFacePatches() )
         {
