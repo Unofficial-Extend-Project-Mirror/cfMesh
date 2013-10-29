@@ -234,10 +234,12 @@ void refineBoundaryLayers::refineFace
                     (1.0 - u) * points[facePoints[0][j]] +
                     u * points[facePoints[nLayersDir0][j]] -
                     (1.0 - u) * (1.0 - v) * points[facePoints[0][0]] -
-                    u * v * points[facePoints[nLayersDir0][nLayersDir1]] -
-                    u * (1.0 - v) * points[facePoints[nLayersDir0][0]] -
+                    u * v * points[facePoints[nLayersDir0][0]] -
+                    u * (1.0 - v) * points[facePoints[nLayersDir0][nLayersDir1]] -
                     (1.0 - u) * v * points[facePoints[0][nLayersDir1]]
                 );
+
+                Info << "Point coordinate " << newP << endl;
 
                 //- add the vertex to the mesh
                 facePoints[i][j] = points.size();
@@ -310,6 +312,7 @@ void refineBoundaryLayers::refineFace
 
     newFaces.append(newF);
 
+    //Info << "Input face " << f << endl;
     //Info << "Decomposed faces are " << newFaces << endl;
     //if( (nLayersInDirection[0] > 1) && (nLayersInDirection[1] > 1) )
     //::exit(1);
@@ -336,7 +339,6 @@ void refineBoundaryLayers::generateNewFaces()
     newFaces_.clear();
 
     //- split internal faces
-    Info << "Splitting internal faces " << endl;
     for(label faceI=0;faceI<nInternalFaces;++faceI)
     {
         const face& f = faces[faceI];
@@ -400,7 +402,6 @@ void refineBoundaryLayers::generateNewFaces()
     //- refine boundary faces where needed
     //- it is required in locations where two or three layers intersect
     const label startingBoundaryFace = mesh_.boundaries()[0].patchStart();
-    Info << "Splitting boundary faces" << endl;
     forAll(bFaces, bfI)
     {
         const face& bf = bFaces[bfI];
@@ -456,7 +457,6 @@ void refineBoundaryLayers::generateNewFaces()
 
     if( Pstream::parRun() )
     {
-        Info << "Refine faces at inter-processor boundaries" << endl;
         //- refine faces at interprocessor boundaries
         const PtrList<writeProcessorPatch>& procBoundaries =
             mesh_.procBoundaries();
@@ -610,10 +610,6 @@ void refineBoundaryLayers::generateNewFaces()
                     {
                         const DynList<label, 4>& df = facesFromFace[i];
                         DynList<label, 4> rFace = help::reverseFace(df);
-//                        rFace.setSize(df.size());
-//                        rFace[0] = df[0];
-//                        for(label pI=1;df.size();++pI)
-//                            rFace[df.size()-pI] = df[pI];
 
                         facesFromFace_.append(faceI, newFaces_.size());
                         newFaces_.appendList(rFace);
@@ -622,6 +618,9 @@ void refineBoundaryLayers::generateNewFaces()
             }
         }
     }
+
+    Info << "facesFromFace_ " << facesFromFace_ << endl;
+    Info << "newFaces_ " << newFaces_ << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -26,7 +26,7 @@ Application
     Test for boundary layers
 
 Description
-    - 
+    -
 
 \*---------------------------------------------------------------------------*/
 
@@ -36,6 +36,7 @@ Description
 #include "polyMeshGen.H"
 #include "boundaryLayers.H"
 #include "refineBoundaryLayers.H"
+#include "polyMeshGenChecks.H"
 
 using namespace Foam;
 
@@ -47,10 +48,10 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-    
+
     polyMeshGen pmg(runTime);
     pmg.read();
-    
+
     //boundaryLayers bndLayers(pmg);
     //bndLayers.addLayerForPatch("inlet");
     //bndLayers.addLayerForPatch("symmetryplane");
@@ -63,14 +64,16 @@ int main(int argc, char *argv[])
     refLayers.setGlobalThicknessRatio(1.5);
 
     refLayers.refineLayers();
-    
-    //pmg.write();
+
+    //polyMeshGenChecks::checkMesh(pmg, true);
+
+    pmg.write();
     //meshOctree* octreePtr = NULL;
     //meshOptimizer(*octreePtr, pmg).preOptimize();
-    
+
     //writeMeshEnsight(pmg, "meshWithBndLayers");
     //pmg.addressingData().checkMesh(true);
-    
+
     Info << "End\n" << endl;
     return 0;
 }

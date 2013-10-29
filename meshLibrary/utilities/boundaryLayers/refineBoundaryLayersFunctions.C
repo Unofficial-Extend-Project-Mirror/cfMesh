@@ -375,9 +375,6 @@ void refineBoundaryLayers::analyseLayers()
         if( !found )
             maxNumLayers = globalNumLayers_;
 
-        Info << "Checking patch " << patchI << endl;
-        Info << "Max num layers " << maxNumLayers << endl;
-
         //- set the number of layer to all patches which are not protected
         forAll(patchesInLayer_[layerI], lpI)
         {
@@ -388,9 +385,12 @@ void refineBoundaryLayers::analyseLayers()
         }
     }
 
+    Info << "nLayersAtPatch " << nLayersAtPatch << endl;
+
     //- set the number of boundary layers which shall be generated above
     //- each boundary face
     nLayersAtBndFace_.setSize(facePatch.size());
+    nLayersAtBndFace_ = 0;
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
@@ -412,8 +412,7 @@ void refineBoundaryLayers::analyseLayers()
         }
     }
 
-    Info << "nLayersAtPatch " << nLayersAtPatch << endl;
-    Info << "nLayersAtBndFace " << nLayersAtBndFace_ << endl;
+    Info << "nLayersAtBndFace_ " << nLayersAtBndFace_ << endl;
 }
 
 void refineBoundaryLayers::calculateAddressing
