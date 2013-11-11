@@ -31,27 +31,27 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
     if( s > UList<T>::size()  )
     {
         T* newData = new T[s];
-        
+
         forAll(*this, i)
             newData[i] = this->operator[](i);
-        
+
         T* data = UList<T>::begin();
         if( data && (data != staticData_) )
             delete [] data;
-        
+
         //UList<T>::reset(newData, s);
         this->UList<T>::operator=(UList<T>(newData, s));
     }
     else if( (s > staticSize) && (s < UList<T>::size()) )
     {
         T* newData = new T[s];
-        
+
         for(label i=0;i<s;++i)
             newData[i] = this->operator[](i);
-        
+
         T* data = UList<T>::begin();
         delete [] data;
-        
+
         //UList<T>::reset(newData, s);
         this->UList<T>::operator=(UList<T>(newData, s));
     }
@@ -59,11 +59,11 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
     {
         for(label i=0;i<s;++i)
             staticData_[i] = UList<T>::operator[](i);
-        
+
         T* data = UList<T>::begin();
         if( data && (data != staticData_) )
             delete [] data;
-        
+
         //UList<T>::reset(staticData_, staticSize);
         this->UList<T>::operator=(UList<T>(staticData_, staticSize));
     }
@@ -79,8 +79,8 @@ inline void Foam::DynList<T, staticSize>::checkIndex(const label i) const
             "void Foam::DynList<T, label, Offset>::"
             "checkIndex(const label i) const"
         ) << "Index " << i << " is not in range " << 0
-            << " and " << nextFree_ << abort(FatalError);  
-    }        
+            << " and " << nextFree_ << abort(FatalError);
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -113,7 +113,7 @@ inline Foam::DynList<T, staticSize>::DynList(const UList<T>& ul)
     nextFree_(ul.size())
 {
     allocateSize(ul.size());
-    
+
     forAll(ul, i)
         this->operator[](i) = ul[i];
 }
@@ -193,7 +193,7 @@ inline void Foam::DynList<T, staticSize>::append(const T& e)
         const label newSize = 2*UList<T>::size()+2;
         allocateSize(newSize);
     }
-    
+
     UList<T>::operator[](nextFree_++) = e;
 }
 
@@ -212,7 +212,7 @@ inline bool Foam::DynList<T, staticSize>::contains(const T& e) const
         if( UList<T>::operator[](i) == e )
             return true;
     }
-        
+
     return false;
 }
 
@@ -224,7 +224,7 @@ inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition(const T& e) 
         if( UList<T>::operator[](i) == e )
             return i;
     }
-        
+
     return -1;
 }
 
@@ -253,11 +253,11 @@ inline T Foam::DynList<T, staticSize>::removeElement(const label i)
             "void Foam::DynList<T, staticSize>::remove()"
         )   << "List is empty" << abort(FatalError);
     }
-    
+
     T el = this->operator[](i);
     this->operator[](i) = this->operator[](nextFree_-1);
     --nextFree_;
-    
+
     return el;
 }
 
@@ -288,7 +288,7 @@ inline const T& Foam::DynList<T, staticSize>::operator[](const label i) const
     # ifdef FULLDEBUG
     checkIndex(i);
     # endif
-    
+
     return UList<T>::operator[](i);
 }
 
@@ -298,10 +298,49 @@ inline T& Foam::DynList<T, staticSize>::operator[](const label i)
     # ifdef FULLDEBUG
     checkIndex(i);
     # endif
-    
+
     return UList<T>::operator[](i);
 }
 
+template<class T, Foam::label staticSize>
+inline Foam::label Foam::DynList<T, staticSize>::fcIndex
+(
+    const label index,
+    const label offset
+) const
+{
+    return (index + offset) % nextFree_;
+}
+
+template<class T, Foam::label staticSize>
+inline Foam::label Foam::DynList<T, staticSize>::rcIndex
+(
+    const label index,
+    const label offset
+) const
+{
+    return (index + nextFree_ - offset) % nextFree_;
+}
+
+template<class T, Foam::label staticSize>
+inline const T& Foam::DynList<T, staticSize>::fcElement
+(
+    const label index,
+    const label offset
+) const
+{
+    return operator[](fcIndex(index, offset));
+}
+
+template<class T, Foam::label staticSize>
+inline const T& Foam::DynList<T, staticSize>::rcElement
+(
+    const label index,
+    const label offset
+) const
+{
+    return operator[](rcIndex(index, offset));
+}
 
 template<class T, Foam::label staticSize>
 inline void Foam::DynList<T, staticSize>::operator=(const T& t)

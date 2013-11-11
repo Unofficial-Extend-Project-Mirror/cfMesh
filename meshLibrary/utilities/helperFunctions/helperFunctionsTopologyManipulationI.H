@@ -43,8 +43,8 @@ namespace help
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-template<class labelListType1, class labelListType2>
-bool areFacesEqual(const labelListType1& f1, const labelListType2& f2)
+template<class faceType1, class faceType2>
+bool areFacesEqual(const faceType1& f1, const faceType2& f2)
 {
     //- their size mut be equal
     if( f1.size() != f2.size() )
@@ -100,10 +100,10 @@ bool areFacesEqual(const labelListType1& f1, const labelListType2& f2)
     return true;
 }
 
-template<class labelListType>
-labelListType reverseFace(const labelListType& f)
+template<class faceType>
+faceType reverseFace(const faceType& f)
 {
-    labelListType rf;
+    faceType rf;
     rf.setSize(f.size());
 
     rf[0] = f[0];
@@ -115,27 +115,50 @@ labelListType reverseFace(const labelListType& f)
     return rf;
 }
 
-inline face mergeTwoFaces(const face& f1, const face& f2)
+template<class faceType1, class faceType2>
+inline face mergeTwoFaces(const faceType1& f1, const faceType2& f2)
 {
-    const edgeList e1 = f1.edges();
-    const edgeList e2 = f2.edges();
+    DynList<bool> ce1, ce2;
+    ce1.setSize(f1.size());
+    ce1 = false;
+    ce2.setSize(f2.size());
+    ce2 = false;
 
-    boolList ce1(e1.size(), false), ce2(e2.size(), false);
+    forAll(f1, eI)
+    {
+        const edge e1(f1[eI], f1[f1.fcIndex(eI)]);
 
-    forAll(e1, eI)
-        forAll(e2, eJ)
-        if( e1[eI] == e2[eJ] )
+        forAll(f2, eJ)
         {
-            ce1[eI] = true;
-            ce2[eJ] = true;
-            break;
+            const edge e2(f2[eJ], f2[f2.fcIndex(eJ)]);
+
+            if( e1 == e2 )
+            {
+                ce1[eI] = true;
+                ce2[eJ] = true;
+                break;
+            }
         }
+    }
 
     DynList<edge> fEdges;
     forAll(ce1, eI)
-        if( !ce1[eI] ) fEdges.append(e1[eI]);
+    {
+        if( !ce1[eI] )
+        {
+            const edge e1(f1[eI], f1[f1.fcIndex(eI)]);
+            fEdges.append(e1);
+        }
+    }
+
     forAll(ce2, eI)
-        if( !ce2[eI] ) fEdges.append(e2[eI]);
+    {
+        if( !ce2[eI] )
+        {
+            const edge e2(f2[eI], f2[f2.fcIndex(eI)]);
+            fEdges.append(e2);
+        }
+    }
 
     return face(sortEdgeChain(fEdges));
 }
@@ -288,44 +311,60 @@ inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
         }
 }
 
-inline bool shareAnEdge(const face& f1, const face& f2)
+template<class faceType1, class faceType2>
+inline bool shareAnEdge(const faceType1& f1, const faceType2& f2)
 {
-    const edgeList edges1 = f1.edges();
-    const edgeList edges2 = f2.edges();
+    forAll(f1, eI)
+    {
+        const edge e1(f1[eI], f1[f1.fcIndex(eI)]);
 
-    forAll(edges1, eI)
-        forAll(edges2, eJ)
-        if( edges1[eI] == edges2[eJ] )
-            return true;
+        forAll(f2, eJ)
+        {
+            const edge e2(f2[eJ], f2[f2.fcIndex(eJ)]);
+
+            if( e1 == e2 )
+                return true;
+        }
+    }
 
     return false;
 }
 
-inline edge sharedEdge(const face& f1, const face& f2)
+template<class faceType1, class faceType2>
+inline edge sharedEdge(const faceType1& f1, const faceType2& f2)
 {
-    const edgeList edges1 = f1.edges();
-    const edgeList edges2 = f2.edges();
+    forAll(f1, eI)
+    {
+        const edge e1(f1[eI], f1[f1.fcIndex(eI)]);
 
-    forAll(edges1, eI)
-        forAll(edges2, eJ)
-        if( edges1[eI] == edges2[eJ] )
-            return edges1[eI];
+        forAll(f2, eJ)
+        {
+            const edge e2(f2[eJ], f2[f2.fcIndex(eJ)]);
+
+            if( e1 == e2 )
+                return e1;
+        }
+    }
 
     return edge(-1, -1);
 }
 
-inline label positionOfEdgeInFace(const edge& e, const face& f)
+template<class faceType>
+inline label positionOfEdgeInFace(const edge& e, const faceType& f)
 {
-    const edgeList edges = f.edges();
+    forAll(f, eI)
+    {
+        const edge fe(f[eI], f[f.fcIndex(eI)]);
 
-    forAll(edges, eI)
-        if( edges[eI] == e )
+        if( fe == e )
             return eI;
+    }
 
     return -1;
 }
 
-inline label sharedVertex(const face& f1, const face& f2)
+template<class faceType1, class faceType2>
+inline label sharedVertex(const faceType1& f1, const faceType2& f2)
 {
     forAll(f1, pI)
         forAll(f2, pJ)
@@ -335,29 +374,29 @@ inline label sharedVertex(const face& f1, const face& f2)
     return -1;
 }
 
-inline bool shareAVertex(const face& f1, const face& f2)
+template<class faceType1, class faceType2>
+inline bool shareAVertex(const faceType1& f1, const faceType2& f2)
 {
     forAll(f1, pI)
         forAll(f2, pJ)
-        if( f1[pI] == f2[pJ] )
-            return true;
+            if( f1[pI] == f2[pJ] )
+                return true;
 
     return false;
 }
 
-inline label sharedVertex(const faceList& fcs)
+template<class faceListType>
+inline label sharedVertex(const faceListType& fcs)
 {
-    const face& f = fcs[0];
-
-    forAll(f, pI)
+    forAll(fcs[0], pI)
     {
         bool allFound(true);
 
-        for(label i=1;i<fcs.size();i++)
+        for(label i=1;i<fcs.size();++i)
         {
             bool found(false);
             forAll(fcs[i], pJ)
-                if( f[pI] == fcs[i][pJ] )
+                if( fcs[0][pI] == fcs[i][pJ] )
                     found = true;
 
             if( !found )
@@ -368,7 +407,7 @@ inline label sharedVertex(const faceList& fcs)
         }
 
         if( allFound )
-            return f[pI];
+            return fcs[0][pI];
     }
 
     return -1;

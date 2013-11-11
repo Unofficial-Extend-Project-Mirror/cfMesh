@@ -31,6 +31,8 @@ Description
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
 
+#define DEBUGLayer
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -45,25 +47,177 @@ void refineBoundaryLayers::generateNewCellsPrism
 )
 {
     const cell& c = mesh_.cells()[cellI];
+    const labelList& owner = mesh_.owner();
 
-    cellsFromCell.setSize(1);
+    # ifdef DEBUGLayer
+    Info << "New cells from cell " << cellI << endl;
+    # endif
 
-    DynList<DynList<label, 8>, 10>& cellFaces = cellsFromCell[0];
+    const label startBoundary = mesh_.boundaries()[0].patchStart();
 
+    //- find the number of lyers for this cell
+    label nLayers(1), baseFace(-1);
     forAll(c, fI)
     {
-        forAllRow(facesFromFace_, c[fI], cfI)
+        const label bfI = c[fI] - startBoundary;
+
+        if( (bfI < 0) || (bfI >= nLayersAtBndFace_.size()) )
+            continue;
+
+        if( nLayersAtBndFace_[bfI] < 2 )
+            continue;
+
+        # ifdef DEBUGLayer
+        Info << "Boundary face " << bfI << endl;
+        # endif
+
+        nLayers = nLayersAtBndFace_[bfI];
+        baseFace = fI;
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Number of layers " << nLayers << endl;
+    Info << "Base face " << baseFace << " has points "
+         << mesh_.faces()[c[baseFace]] << endl;
+    forAll(c, fI)
+    {
+        Info << "Faces from face " << fI << " are "
+             << facesFromFace_[c[fI]] << endl;
+
+        forAllRow(facesFromFace_, c[fI], i)
+            Info << "Face " << facesFromFace_(c[fI], i)
+                 << " is " << newFaces_[facesFromFace_(c[fI], i)] << endl;
+    }
+    # endif
+
+    //- set the number of layers
+    cellsFromCell.setSize(nLayers);
+
+    //- distribute existing faces into new cells
+    label otherBaseFace(-1);
+    forAll(c, fI)
+    {
+        if( fI == baseFace )
         {
-            const label nfI = facesFromFace_(c[fI], cfI);
-
-            DynList<label, 8> cf;
-            cf.setSize(newFaces_.sizeOfRow(nfI));
-
-            forAllRow(newFaces_, nfI, pI)
-                cf[pI] = newFaces_(nfI, pI);
-
-            cellFaces.append(cf);
+            const label faceI = facesFromFace_(c[fI], 0);
+            DynList<label, 8> f;
+            f = newFaces_[faceI];
+            cellsFromCell[nLayers-1].append(f);
         }
+        else if( facesFromFace_.sizeOfRow(c[fI]) == 1 )
+        {
+            const label faceI = facesFromFace_(c[fI], 0);
+            otherBaseFace = fI;
+            DynList<label, 8> f;
+            f = newFaces_[faceI];
+            cellsFromCell[0].append(f);
+        }
+        else
+        {
+            forAllRow(facesFromFace_, c[fI], cfI)
+            {
+                const label nfI = facesFromFace_(c[fI], cfI);
+
+                DynList<label, 8> cf;
+                cf = newFaces_[nfI];
+
+                if( owner[c[fI]] != cellI )
+                    cf = help::reverseFace(cf);
+
+                cellsFromCell[Foam::max(nLayers-1-cfI, 0)].append(cf);
+            }
+        }
+    }
+
+    //- generate missing faces
+    const faceListPMG& faces = mesh_.faces();
+    const face& bf = faces[c[baseFace]];
+    const face& obf = faces[c[otherBaseFace]];
+    for(label layerI=1;layerI<nLayers;++layerI)
+    {
+        //- create new face from points at the same height
+        DynList<label, 8> cf;
+        forAll(bf, pI)
+        {
+            const label pointI = bf[pI];
+
+            # ifdef DEBUGLayer
+            Info << "Split edges at point " << pointI << " are "
+                 << splitEdgesAtPoint_[pointI] << endl;
+            # endif
+
+            label seI(-1);
+            if( splitEdgesAtPoint_.sizeOfRow(pointI) == 1 )
+            {
+                seI = splitEdgesAtPoint_(pointI, 0);
+            }
+            else
+            {
+                forAllRow(splitEdgesAtPoint_, pointI, sepI)
+                {
+                    const label seJ = splitEdgesAtPoint_(pointI, sepI);
+                    const edge& se = splitEdges_[seJ];
+
+                    if( obf.which(se.end()) >= 0 || obf.which(se.start()) >= 0 )
+                    {
+                        seI = seJ;
+                        break;
+                    }
+                }
+            }
+
+            cf.append(newVerticesForSplitEdge_(seI, layerI));
+        }
+
+        //- add faces to cells
+        cellsFromCell[nLayers-layerI].append(cf);
+        cellsFromCell[nLayers-1-layerI].append(cf);
+    }
+
+    # ifdef DEBUGLayer
+    Info << "New cells from cell " << cellI << " are " << cellsFromCell << endl;
+    //::exit(1);
+    # endif
+
+    Info << "1. Newly generated cells " << cellsFromCell << endl;
+
+    //- check if all generated cells are topologically closed
+    forAll(cellsFromCell, cI)
+    {
+        const DynList<DynList<label, 8>, 10>& cellFaces = cellsFromCell[cI];
+
+        DynList<edge, 12> edges;
+        DynList<label, 12> nAppearances;
+
+        forAll(cellFaces, fI)
+        {
+            const DynList<label, 8>& f = cellFaces[fI];
+
+            forAll(f, eI)
+            {
+                const edge e(f[eI], f.fcElement(eI));
+
+                const label pos = edges.containsAtPosition(e);
+
+                if( pos < 0 )
+                {
+                    edges.append(e);
+                    nAppearances.append(1);
+                }
+                else
+                {
+                    ++nAppearances[pos];
+                }
+            }
+        }
+
+        forAll(nAppearances, eI)
+            if( nAppearances[eI] != 2 )
+            {
+                Info << "Prism cell " << cI << " edge " << edges[eI]
+                    << " is present " << nAppearances[eI] << " times!" << endl;
+                abort(FatalError);
+            }
     }
 }
 
@@ -75,26 +229,395 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
 )
 {
     const cell& c = mesh_.cells()[cellI];
+    const faceListPMG& faces = mesh_.faces();
 
-    cellsFromCell.setSize(1);
+    # ifdef DEBUGLayer
+    Info << "Generating new cells from edge cell " << cellI << endl;
+    # endif
 
-    DynList<DynList<label, 4>, 6>& cellFaces = cellsFromCell[0];
+    const label startBoundary = mesh_.boundaries()[0].patchStart();
+
+    //- find the number of layers for this cell
+    FixedList<label, 2> layersInDirection(-1), dirFace;
+    label currDir(0);
 
     forAll(c, fI)
     {
-        forAllRow(facesFromFace_, c[fI], cfI)
+        const label bfI = c[fI] - startBoundary;
+
+        if( (bfI < 0) || (bfI >= nLayersAtBndFace_.size()) )
+            continue;
+
+        # ifdef DEBUGLayer
+        Info << "Boundary face " << bfI << endl;
+        # endif
+
+        if( nLayersAtBndFace_[bfI] < 2 )
+            continue;
+
+        layersInDirection[currDir] = nLayersAtBndFace_[bfI];
+        dirFace[currDir] = fI;
+        ++currDir;
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Directions " << dirFace << endl;
+    Info << "Number of layers in direction " << layersInDirection << endl;
+    # endif
+
+    if( layersInDirection[0] < 0 || layersInDirection[1] < 0 )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::generateNewCellsEdgeHex("
+            "const label, DynList<DynList<DynList<label, 4>, 6>, 64>&)"
+        ) << "Cannot refine edge hex " << cellI << abort(FatalError);
+    }
+
+    //- set the number of layers
+    cellsFromCell.setSize(layersInDirection[0] * layersInDirection[1]);
+
+    //- find the shared edge between the boundary faces
+    const edge commonEdge =
+        help::sharedEdge(faces[c[dirFace[0]]], faces[c[dirFace[1]]]);
+
+    # ifdef DEBUGLayer
+    Info << "Common edge " << commonEdge << endl;
+    # endif
+
+    //- find a donor face of the common edge
+    label donorFace(-1);
+    const label pos0 =
+        help::positionOfEdgeInFace(commonEdge, faces[c[dirFace[0]]]);
+    if( faces[c[dirFace[0]]][pos0] == commonEdge.start() )
+        donorFace = dirFace[0];
+
+    if( donorFace == -1 )
+    {
+        const label pos1 =
+            help::positionOfEdgeInFace(commonEdge, faces[c[dirFace[1]]]);
+
+        if( faces[c[dirFace[1]]][pos1] == commonEdge.start() )
+            donorFace = dirFace[1];
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Donor face " << donorFace << endl;
+    Info << "Donor face points " << faces[c[donorFace]] << endl;
+    # endif
+
+    //- find the face attached to the starting point of the edge and
+    //- the face attached to the end point of the edge
+    label faceAtStart(-1), faceAtEnd(-1);
+
+    forAll(c, fI)
+    {
+        if(
+            (faces[c[fI]].which(commonEdge.start()) >= 0) &&
+            (help::positionOfEdgeInFace(commonEdge, faces[c[fI]]) < 0)
+        )
+            faceAtStart = fI;
+
+        if(
+            (faces[c[fI]].which(commonEdge.end()) >= 0) &&
+            (help::positionOfEdgeInFace(commonEdge, faces[c[fI]]) < 0)
+        )
+            faceAtEnd = fI;
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Face at start " << faces[c[faceAtStart]] << endl;
+    Info << "Face at end " << faces[c[faceAtEnd]] << endl;
+    # endif
+
+    //- check the orientation of cross-split faces
+    //- checking face at starting point
+    edge e = help::sharedEdge(faces[c[donorFace]], faces[c[faceAtStart]]);
+    label pos = help::positionOfEdgeInFace(e, faces[c[faceAtStart]]);
+    bool startFaceOrientation(true);
+    if( e.start() != faces[c[faceAtStart]][pos] )
+        startFaceOrientation = false;
+
+    # ifdef DEBUGLayer
+    Info << "Start face shared edge " << e << " is at position " << pos << endl;
+    Info << "Starting face orientation " << startFaceOrientation << endl;
+    # endif
+
+    //- checking edge at end point
+    e = help::sharedEdge(faces[c[donorFace]], faces[c[faceAtEnd]]);
+    pos = help::positionOfEdgeInFace(e, faces[c[faceAtEnd]]);
+    bool endFaceOrientation(true);
+    if( e.start() == faces[c[faceAtEnd]][pos] )
+        endFaceOrientation = false;
+
+    # ifdef DEBUGLayer
+    Info << "End face shared edge " << e << " is at position " << pos << endl;
+    Info << "End face orientation " << endFaceOrientation << endl;
+    # endif
+
+    //- fill up the matrix of points for this cell
+    //- the matrix is used for generation of new cells
+    FixedList<DynList<DynList<label> >, 2> facePoints;
+
+    //- fill in the data for a face at the starting point
+    if( startFaceOrientation )
+    {
+        DynList<DynList<label> >& fp = facePoints[0];
+        fp.setSize(layersInDirection[0]+1);
+        forAll(fp, i)
+            fp[i].setSize(layersInDirection[1]+1);
+
+        const label fLabel = c[faceAtStart];
+        forAllRow(facesFromFace_, fLabel, fI)
         {
-            const label nfI = facesFromFace_(c[fI], cfI);
+            const label nfI = facesFromFace_(fLabel, fI);
+            const label i = (fI % layersInDirection[0]);
+            const label j = (fI / layersInDirection[0]);
 
-            DynList<label, 4> cf;
-            cf.setSize(newFaces_.sizeOfRow(nfI));
+            # ifdef DEBUGLayer
+            Info << "1. i = " << i << " j = " << j << endl;
+            Info << "New face " << newFaces_[nfI] << endl;
+            # endif
 
-            forAllRow(newFaces_, nfI, pI)
-                cf[pI] = newFaces_(nfI, pI);
-
-            cellFaces.append(cf);
+            facePoints[0][i][j] = newFaces_(nfI, 0);
+            facePoints[0][i+1][j] = newFaces_(nfI, 1);
+            facePoints[0][i+1][j+1] = newFaces_(nfI, 2);
+            facePoints[0][i][j+1] = newFaces_(nfI, 3);
         }
     }
+    else
+    {
+        DynList<DynList<label> >& fp = facePoints[0];
+        fp.setSize(layersInDirection[0]+1);
+        forAll(fp, i)
+            fp[i].setSize(layersInDirection[1]+1);
+
+        const label fLabel = c[faceAtStart];
+        forAllRow(facesFromFace_, fLabel, fI)
+        {
+            const label nfI = facesFromFace_(fLabel, fI);
+            const label i = (fI / layersInDirection[1]);
+            const label j = (fI % layersInDirection[1]);
+
+            # ifdef DEBUGLayer
+            Info << "2. i = " << i << " j = " << j << endl;
+            Info << "New face " << newFaces_[nfI] << endl;
+            # endif
+
+            facePoints[0][i][j] = newFaces_(nfI, 0);
+            facePoints[0][i+1][j] = newFaces_(nfI, 3);
+            facePoints[0][i+1][j+1] = newFaces_(nfI, 2);
+            facePoints[0][i][j+1] = newFaces_(nfI, 1);
+        }
+    }
+
+    //- fill in the data for a face at the end point
+    if( endFaceOrientation )
+    {
+        DynList<DynList<label> >& fp = facePoints[1];
+        fp.setSize(layersInDirection[0]+1);
+        forAll(fp, i)
+            fp[i].setSize(layersInDirection[1]+1);
+
+        const label fLabel = c[faceAtEnd];
+        forAllRow(facesFromFace_, fLabel, fI)
+        {
+            const label nfI = facesFromFace_(fLabel, fI);
+            const label i = (fI % layersInDirection[0]);
+            const label j = (fI / layersInDirection[0]);
+
+            # ifdef DEBUGLayer
+            Info << "3. i = " << i << " j = " << j << endl;
+            Info << "New face " << newFaces_[nfI] << endl;
+            # endif
+
+            facePoints[1][i][j] = newFaces_(nfI, 0);
+            facePoints[1][i+1][j] = newFaces_(nfI, 1);
+            facePoints[1][i+1][j+1] = newFaces_(nfI, 2);
+            facePoints[1][i][j+1] = newFaces_(nfI, 3);
+        }
+    }
+    else
+    {
+        DynList<DynList<label> >& fp = facePoints[1];
+        fp.setSize(layersInDirection[0]+1);
+        forAll(fp, i)
+            fp[i].setSize(layersInDirection[1]+1);
+
+        const label fLabel = c[faceAtEnd];
+        forAllRow(facesFromFace_, fLabel, fI)
+        {
+            const label nfI = facesFromFace_(fLabel, fI);
+            const label i = (fI / layersInDirection[1]);
+            const label j = (fI % layersInDirection[1]);
+
+            # ifdef DEBUGLayer
+            Info << "4. i = " << i << " j = " << j << endl;
+            Info << "New face " << newFaces_[nfI] << endl;
+            # endif
+
+            facePoints[1][i][j] = newFaces_(nfI, 0);
+            facePoints[1][i+1][j] = newFaces_(nfI, 3);
+            facePoints[1][i+1][j+1] = newFaces_(nfI, 2);
+            facePoints[1][i][j+1] = newFaces_(nfI, 1);
+        }
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Face points " << facePoints << endl;
+    # endif
+
+    //- generate new cells from the current cells
+    label counter(0);
+    for(label i=layersInDirection[0]-1;i>=0;--i)
+    {
+        for(label j=layersInDirection[1]-1;j>=0;--j)
+        {
+            DynList<DynList<label, 4>, 6>& cellFaces = cellsFromCell[counter];
+            cellFaces.clear();
+
+            if(
+                (i == layersInDirection[0] - 1) &&
+                (j == layersInDirection[1] - 1)
+            )
+            {
+                # ifdef DEBUGLayer
+                Info << "1. Generating cell i = " << i << " j = " << j << endl;
+                # endif
+
+                //- this cell might not be a quad and
+                //- it therefore requires special treatment
+                forAll(c, fI)
+                {
+                    if( (fI == dirFace[0]) || (fI == dirFace[1]) )
+                        continue;
+
+                    const label cfI = facesFromFace_.sizeOfRow(c[fI]) - 1;
+
+                    const label nfI = facesFromFace_(c[fI], cfI);
+
+                    DynList<label, 4> cf;
+                    cf.setSize(newFaces_.sizeOfRow(nfI));
+
+                    forAllRow(newFaces_, nfI, pI)
+                        cf[pI] = newFaces_(nfI, pI);
+
+                    cellFaces.append(cf);
+                }
+
+                //- generate two missing faces
+                DynList<label, 4> mf;
+                mf.setSize(4);
+
+                //- first missing face
+                mf[0] = facePoints[0][i][j];
+                mf[1] = facePoints[1][i][j];
+                mf[2] = facePoints[1][i][j+1];
+                mf[3] = facePoints[0][i][j+1];
+                cellFaces.append(mf);
+
+                //- second missing face
+                mf[1] = facePoints[0][i+1][j];
+                mf[2] = facePoints[1][i+1][j];
+                mf[3] = facePoints[1][i][j];
+                cellFaces.append(mf);
+            }
+            else
+            {
+                # ifdef DEBUGLayer
+                Info << "2. Generating cell i = " << i << " j = " << j << endl;
+                # endif
+
+                //- generate a hex cell from the matrix of cell points
+                cellFaces.setSize(6);
+                forAll(cellFaces, cfI)
+                    cellFaces[cfI].setSize(4);
+
+                //- first face
+                cellFaces[0][0] = facePoints[0][i][j];
+                cellFaces[0][1] = facePoints[0][i][j+1];
+                cellFaces[0][2] = facePoints[0][i+1][j+1];
+                cellFaces[0][3] = facePoints[0][i+1][j];
+
+                //- second face
+                cellFaces[1][0] = facePoints[1][i][j];
+                cellFaces[1][1] = facePoints[1][i+1][j];
+                cellFaces[1][2] = facePoints[1][i+1][j+1];
+                cellFaces[1][3] = facePoints[1][i][j+1];
+
+                //- third face
+                cellFaces[2][0] = facePoints[0][i][j];
+                cellFaces[2][1] = facePoints[0][i+1][j];
+                cellFaces[2][2] = facePoints[1][i+1][j];
+                cellFaces[2][3] = facePoints[1][i][j];
+
+                //- fourth face
+                cellFaces[3][0] = facePoints[0][i][j+1];
+                cellFaces[3][1] = facePoints[1][i][j+1];
+                cellFaces[3][2] = facePoints[1][i+1][j+1];
+                cellFaces[3][3] = facePoints[0][i+1][j+1];
+
+                //- fifth face
+                cellFaces[4][0] = facePoints[0][i][j];
+                cellFaces[4][1] = facePoints[1][i][j];
+                cellFaces[4][2] = facePoints[1][i][j+1];
+                cellFaces[4][3] = facePoints[0][i][j+1];
+
+                //- sixth face
+                cellFaces[5][0] = facePoints[0][i+1][j];
+                cellFaces[5][1] = facePoints[0][i+1][j+1];
+                cellFaces[5][2] = facePoints[1][i+1][j+1];
+                cellFaces[5][3] = facePoints[1][i+1][j];
+            }
+
+            ++counter;
+        }
+    }
+
+    # ifdef DEBUGLayer
+    Info << "Newly generated cells " << cellsFromCell << endl;
+
+    //- check if all generated cells are topologically closed
+    forAll(cellsFromCell, cI)
+    {
+        const DynList<DynList<label, 4>, 6>& cellFaces = cellsFromCell[cI];
+
+        DynList<edge, 12> edges;
+        DynList<label, 12> nAppearances;
+
+        forAll(cellFaces, fI)
+        {
+            const DynList<label, 4>& f = cellFaces[fI];
+
+            forAll(f, eI)
+            {
+                const edge e(f[eI], f.fcElement(eI));
+
+                const label pos = edges.containsAtPosition(e);
+
+                if( pos < 0 )
+                {
+                    edges.append(e);
+                    nAppearances.append(1);
+                }
+                else
+                {
+                    ++nAppearances[pos];
+                }
+            }
+        }
+
+        forAll(nAppearances, eI)
+            if( nAppearances[eI] != 2 )
+            {
+                Info << "Edge hex cell " << cI << " edge " << edges[eI]
+                    << " is present " << nAppearances[eI] << " times!" << endl;
+                abort(FatalError);
+            }
+    }
+
+    //::exit(1);
+    # endif
 }
 
 //- generate new cells from a hex at a corner
@@ -105,26 +628,577 @@ void refineBoundaryLayers::generateNewCellsCornerHex
 )
 {
     const cell& c = mesh_.cells()[cellI];
+    const faceListPMG& faces = mesh_.faces();
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
 
-    cellsFromCell.setSize(1);
+    # ifdef DEBUGLayer
+    Info << "New cells from cell " << cellI << endl;
+    # endif
 
-    DynList<DynList<label, 4>, 6>& cellFaces = cellsFromCell[0];
+    const label startBoundary = mesh_.boundaries()[0].patchStart();
+
+    //- find the number of layers for this cell
+    FixedList<label, 3> layersInDirection(-1), dirFace;
+    FixedList<bool, 6> usedDirection(false);
+    label currDir(0);
 
     forAll(c, fI)
     {
-        forAllRow(facesFromFace_, c[fI], cfI)
+        const label bfI = c[fI] - startBoundary;
+
+        if( (bfI < 0) || (bfI >= nLayersAtBndFace_.size()) )
+            continue;
+
+        # ifdef DEBUGLayer
+        Info << "Boundary face " << bfI << endl;
+        # endif
+
+        if( nLayersAtBndFace_[bfI] < 2 )
+            continue;
+
+        usedDirection[fI] = true;
+        layersInDirection[currDir] = nLayersAtBndFace_[bfI];
+        dirFace[currDir] = fI;
+        ++currDir;
+    }
+
+    //- find a common point for all three boundary faces
+    FixedList<DynList<label, 4>, 3> bndFaces;
+    forAll(dirFace, i)
+    {
+        bndFaces[i].setSize(4);
+        forAll(faces[c[dirFace[i]]], pI)
+            bndFaces[i][pI] = faces[c[dirFace[i]]][pI];
+    }
+
+    const label commonPoint = help::sharedVertex(bndFaces);
+
+    # ifdef DEBUGLayer
+    Info << "Layers in direction " << layersInDirection << endl;
+    Info << "dirFace " << dirFace << endl;
+    Info << "Common point " << commonPoint << endl;
+
+    forAll(dirFace, i)
+        Info << "bnd face " << i << " is " << faces[c[dirFace[i]]] << endl;
+    # endif
+
+    //- find the position of the common point in each boundary face
+    const face& baseFace = faces[c[dirFace[0]]];
+    const label posInBndFace = baseFace.which(commonPoint);
+
+    FixedList<label, 3> splitEdgeDirection;
+
+    forAllRow(splitEdgesAtPoint_, commonPoint, i)
+    {
+        const edge& se = splitEdges_[splitEdgesAtPoint_(commonPoint, i)];
+
+        if( se == baseFace.faceEdge(posInBndFace) )
         {
-            const label nfI = facesFromFace_(c[fI], cfI);
-
-            DynList<label, 4> cf;
-            cf.setSize(newFaces_.sizeOfRow(nfI));
-
-            forAllRow(newFaces_, nfI, pI)
-                cf[pI] = newFaces_(nfI, pI);
-
-            cellFaces.append(cf);
+            //- this edge is in j direction
+            splitEdgeDirection[1] = splitEdgesAtPoint_(commonPoint, i);
+        }
+        else if( se == baseFace.faceEdge(baseFace.rcIndex(posInBndFace)) )
+        {
+            //- this edge is in i diretion
+            splitEdgeDirection[0] = splitEdgesAtPoint_(commonPoint, i);
+        }
+        else if( splitEdgesAtPoint_.sizeOfRow(commonPoint) == 3 )
+        {
+            //- this point is in k direction
+            splitEdgeDirection[2] = splitEdgesAtPoint_(commonPoint, i);
+        }
+        else
+        {
+            //- this situation is not allowed
+            FatalErrorIn
+            (
+                "void refineBoundaryLayers::generateNewCellsCornerHex("
+                "const label, DynList<DynList<DynList<label, 4>, 6>, 256>&)"
+            ) << "Cannot refine layer for cell " << cellI << abort(FatalError);
         }
     }
+
+    # ifdef DEBUGLayer
+    forAll(splitEdgeDirection, i)
+        Info << "Split edge in direction " << i << " has nodes "
+             << splitEdges_[splitEdgeDirection[i]]
+             << " number of points on split edge "
+             << newVerticesForSplitEdge_.sizeOfRow(splitEdgeDirection[i])
+             << endl;
+    # endif
+
+    //- create a matrix of points forming new cells
+    DynList<DynList<DynList<label> > > cellPoints;
+    cellPoints.setSize
+    (
+        newVerticesForSplitEdge_.sizeOfRow(splitEdgeDirection[0])
+    );
+
+    forAll(cellPoints, i)
+    {
+        const label nJ =
+            newVerticesForSplitEdge_.sizeOfRow(splitEdgeDirection[1]);
+
+        cellPoints[i].setSize(nJ);
+
+        forAll(cellPoints[i], j)
+        {
+            const label nK =
+                newVerticesForSplitEdge_.sizeOfRow(splitEdgeDirection[2]);
+
+            cellPoints[i][j].setSize(nK);
+            cellPoints[i][j] = -1;
+        }
+    }
+
+    //- find the direction od other boundary faces
+    //- in the local coordinate system
+    FixedList<label, 3> permutation;
+    permutation[0] = 0;
+
+    label helper = help::positionOfEdgeInFace
+    (
+        baseFace.faceEdge(baseFace.rcIndex(posInBndFace)),
+        faces[c[dirFace[1]]]
+    );
+
+    if( helper >= 0 )
+    {
+        permutation[1] = 1;
+        permutation[2] = 2;
+    }
+    else
+    {
+        permutation[1] = 2;
+        permutation[2] = 1;
+    }
+
+    const edge seDir0 = splitEdges_[splitEdgeDirection[0]];
+    const label nLayersI = layersInDirection[permutation[2]];
+    const edge seDir1 = splitEdges_[splitEdgeDirection[1]];
+    const label nLayersJ = layersInDirection[permutation[1]];
+    const edge seDir2 = splitEdges_[splitEdgeDirection[2]];
+    const label nLayersK = layersInDirection[permutation[0]];
+
+    //- start filling in the data
+    //- base face is located at k = 0 and has the opposite rotation
+    forAllRow(facesFromFace_, c[dirFace[0]], fI)
+    {
+        const label nfI = facesFromFace_(c[dirFace[0]], fI);
+
+        const label i = (fI / nLayersJ);
+        const label j = (fI % nLayersJ);
+
+        # ifdef DEBUGLayer
+        Info << "1. i = " << i << " j = " << j << endl;
+        Info << "New face " << newFaces_[nfI] << endl;
+        # endif
+
+        cellPoints[i][j][0] = newFaces_(nfI, 0);
+        cellPoints[i+1][j][0] = newFaces_(nfI, 3);
+        cellPoints[i+1][j+1][0] = newFaces_(nfI, 2);
+        cellPoints[i][j+1][0] = newFaces_(nfI, 1);
+    }
+
+    //- permutation[1] is at j = 0
+    forAllRow(facesFromFace_, c[dirFace[permutation[1]]], fI)
+    {
+        const label nfI = facesFromFace_(c[dirFace[permutation[1]]], fI);
+        const label i = (fI % nLayersI);
+        const label k = (fI / nLayersI);
+
+        # ifdef DEBUGLayer
+        Info << "2. i = " << i << " k = " << k << endl;
+        Info << "New face " << newFaces_[nfI] << endl;
+        # endif
+
+        cellPoints[i][0][k] = newFaces_(nfI, 0);
+        cellPoints[i+1][0][k] = newFaces_(nfI, 1);
+        cellPoints[i+1][0][k+1] = newFaces_(nfI, 2);
+        cellPoints[i][0][k+1] = newFaces_(nfI, 3);
+    }
+
+    //- permutation[2] is at i = 0
+    forAllRow(facesFromFace_, c[dirFace[permutation[2]]], fI)
+    {
+        const label nfI = facesFromFace_(c[dirFace[permutation[2]]], fI);
+        const label j = (fI / nLayersK);
+        const label k = (fI % nLayersK);
+
+        # ifdef DEBUGLayer
+        Info << "3. j = " << j << " k = " << k << endl;
+        Info << "New face " << newFaces_[nfI] << endl;
+        # endif
+
+        cellPoints[0][j][k] = newFaces_(nfI, 0);
+        cellPoints[0][j][k+1] = newFaces_(nfI, 1);
+        cellPoints[0][j+1][k+1] = newFaces_(nfI, 2);
+        cellPoints[0][j+1][k] = newFaces_(nfI, 3);
+    }
+
+    //- find the face attached to the end of each split edge
+    forAll(usedDirection, dirI)
+    {
+        if( usedDirection[dirI] )
+            continue;
+
+        if( faces[c[dirI]].which(seDir0.end()) >= 0 )
+        {
+            //- this face is attached to the end of the edge in direction 0
+            //- it has its i coordinate equal to nLayersI
+            if( cellI == neighbour[c[dirI]] )
+            {
+                //- desired orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+                    const label j = (fI / nLayersK);
+                    const label k = (fI % nLayersK);
+
+                    # ifdef DEBUGLayer
+                    Info << "4. j = " << j << " k = " << k << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[nLayersI][j][k] = newFaces_(nfI, 0);
+                    cellPoints[nLayersI][j][k+1] = newFaces_(nfI, 1);
+                    cellPoints[nLayersI][j+1][k+1] = newFaces_(nfI, 2);
+                    cellPoints[nLayersI][j+1][k] = newFaces_(nfI, 3);
+                }
+            }
+            else
+            {
+                //- opposite orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+                    const label j = (fI % nLayersJ);
+                    const label k = (fI / nLayersJ);
+
+                    # ifdef DEBUGLayer
+                    Info << "5. j = " << j << " k = " << k << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[nLayersI][j][k] = newFaces_(nfI, 0);
+                    cellPoints[nLayersI][j][k+1] = newFaces_(nfI, 3);
+                    cellPoints[nLayersI][j+1][k+1] = newFaces_(nfI, 2);
+                    cellPoints[nLayersI][j+1][k] = newFaces_(nfI, 1);
+                }
+            }
+        }
+        else if( faces[c[dirI]].which(seDir1.end()) >= 0 )
+        {
+            if( cellI == owner[c[dirI]] )
+            {
+                //- desired orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+                    const label i = (fI / nLayersK);
+                    const label k = (fI % nLayersK);
+
+                    # ifdef DEBUGLayer
+                    Info << "6. i = " << i << " k = " << k << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[i][nLayersJ][k] = newFaces_(nfI, 0);
+                    cellPoints[i][nLayersJ][k+1] = newFaces_(nfI, 1);
+                    cellPoints[i+1][nLayersJ][k+1] = newFaces_(nfI, 2);
+                    cellPoints[i+1][nLayersJ][k] = newFaces_(nfI, 3);
+                }
+            }
+            else
+            {
+                //- opposite orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+                    const label i = (fI % nLayersI);
+                    const label k = (fI / nLayersI);
+
+                    # ifdef DEBUGLayer
+                    Info << "7. i = " << i << " k = " << k << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[i][nLayersJ][k] = newFaces_(nfI, 0);
+                    cellPoints[i+1][nLayersJ][k] = newFaces_(nfI, 1);
+                    cellPoints[i+1][nLayersJ][k+1] = newFaces_(nfI, 2);
+                    cellPoints[i][nLayersJ][k+1] = newFaces_(nfI, 3);
+                }
+            }
+        }
+        else if( faces[c[dirI]].which(seDir2.end()) >= 0 )
+        {
+            if( cellI == owner[c[dirI]] )
+            {
+                //- desired orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+
+                    const label i = (fI % nLayersI);
+                    const label j = (fI / nLayersI);
+
+                    # ifdef DEBUGLayer
+                    Info << "8. i = " << i << " j = " << j << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[i][j][nLayersK] = newFaces_(nfI, 0);
+                    cellPoints[i+1][j][nLayersK] = newFaces_(nfI, 1);
+                    cellPoints[i+1][j+1][nLayersK] = newFaces_(nfI, 2);
+                    cellPoints[i][j+1][nLayersK] = newFaces_(nfI, 3);
+                }
+            }
+            else
+            {
+                //- opposite orientation
+                forAllRow(facesFromFace_, c[dirI], fI)
+                {
+                    const label nfI = facesFromFace_(c[dirI], fI);
+
+                    const label i = (fI / nLayersJ);
+                    const label j = (fI % nLayersJ);
+
+                    # ifdef DEBUGLayer
+                    Info << "9. i = " << i << " j = " << j << endl;
+                    Info << "New face " << newFaces_[nfI] << endl;
+                    # endif
+
+                    cellPoints[i][j][nLayersK] = newFaces_(nfI, 0);
+                    cellPoints[i][j+1][nLayersK] = newFaces_(nfI, 1);
+                    cellPoints[i+1][j+1][nLayersK] = newFaces_(nfI, 2);
+                    cellPoints[i+1][j][nLayersK] = newFaces_(nfI, 3);
+                }
+            }
+        }
+        else
+        {
+            FatalErrorIn
+            (
+                "void refineBoundaryLayers::generateNewCellsCornerHex("
+                "const label, DynList<DynList<DynList<label, 4>, 6>, 256>&)"
+            ) << "Corner cell " << cellI << " may not be a hex"
+              << abort(FatalError);
+        }
+    }
+
+    # ifdef DEBUGLayer
+    Info << "cellPoints before inner points " << cellPoints << endl;
+    # endif
+
+    //- generate points inside the cell via transfinite interpolation
+    const pointFieldPMG& points = mesh_.points();
+    forAll(cellPoints, i)
+    {
+        forAll(cellPoints[i], j)
+        {
+            forAll(cellPoints[i][j], k)
+            {
+                if( cellPoints[i][j][k] < 0 )
+                {
+                    //- generate a vertex via transfinite interpolation of
+                    //- vertices at faces
+                    const scalar u
+                    (
+                        Foam::mag
+                        (
+                            points[cellPoints[i][0][0]] -
+                            points[cellPoints[0][0][0]]
+                        ) /
+                        seDir0.mag(points)
+                    );
+
+                    const scalar v
+                    (
+                        Foam::mag
+                        (
+                            points[cellPoints[0][j][0]] -
+                            points[cellPoints[0][0][0]]
+                        ) /
+                        seDir1.mag(points)
+                    );
+
+                    const scalar w
+                    (
+                        Foam::mag
+                        (
+                            points[cellPoints[0][0][k]] -
+                            points[cellPoints[0][0][0]]
+                        ) /
+                        seDir2.mag(points)
+                    );
+
+                    //- corner points
+                    const point& v000 = points[cellPoints[0][0][0]];
+                    const point& v100 = points[cellPoints[nLayersI][0][0]];
+                    const point& v110 =
+                        points[cellPoints[nLayersI][nLayersJ][0]];
+                    const point& v010 = points[cellPoints[0][nLayersJ][0]];
+                    const point& v001 = points[cellPoints[0][0][nLayersK]];
+                    const point& v101 =
+                        points[cellPoints[nLayersI][0][nLayersK]];
+                    const point& v111 =
+                        points[cellPoints[nLayersI][nLayersJ][nLayersK]];
+                    const point& v011 =
+                        points[cellPoints[0][nLayersJ][nLayersK]];
+
+                    //- calculate the coordinates for the new vertex
+                    const point newP =
+                        (1.0 - u) * (1.0 - v) * (1.0 - w) * v000 +
+                        u * (1.0 - v) * (1.0 - w) * v100 +
+                        u * v * (1.0 - w) * v110 +
+                        (1.0 - u) * v * (1.0 - w) * v010 +
+                        (1.0 - u) * (1.0 - v) * w * v001 +
+                        u * (1.0 - v) * w * v101 +
+                        u * v * w * v111 +
+                        (1.0 - u) * v * w * v011;
+
+                    //- add the point to the mesh
+                    cellPoints[i][j][k] = points.size();
+                    mesh_.appendVertex(newP);
+                }
+            }
+        }
+    }
+
+    # ifdef DEBUGLayer
+    Info << "cellPoints " << cellPoints << endl;
+    # endif
+
+    //- create new cells from
+    cellsFromCell.setSize(nLayersI * nLayersJ * nLayersK);
+
+    # ifdef DEBUGLayer
+    Info << "Number of new cells " << cellsFromCell.size() << endl;
+    # endif
+
+    label counter(0);
+    for(label i=nLayersI-1;i>=0;--i)
+    {
+        for(label j=nLayersJ-1;j>=0;--j)
+        {
+            for(label k=nLayersK-1;k>=0;--k)
+            {
+                DynList<DynList<label, 4>, 6>& cellFaces =
+                    cellsFromCell[counter++];
+
+                if( (i == nLayersI-1) && (j == nLayersJ-1) && (k == nLayersK-1) )
+                {
+                    cellFaces.clear();
+
+                    //- this cell may not be a hex
+                    # ifdef DEBUGLayer
+                    Info << "1. Generating cell i = " << i
+                         << " j = " << j
+                         << " k = " << k << endl;
+                    # endif
+
+                    //- add the faces originating from internal faces
+                    //- these faces may not be quads
+                    forAll(c, fI)
+                    {
+                        if( usedDirection[fI] )
+                            continue;
+
+                        const label cfI = facesFromFace_.sizeOfRow(c[fI]) - 1;
+
+                        const label nfI = facesFromFace_(c[fI], cfI);
+
+                        DynList<label, 4> cf;
+                        cf.setSize(newFaces_.sizeOfRow(nfI));
+
+                        forAllRow(newFaces_, nfI, pI)
+                            cf[pI] = newFaces_(nfI, pI);
+
+                        cellFaces.append(cf);
+                    }
+
+                    //- generate two missing faces
+                    DynList<label, 4> mf;
+                    mf.setSize(4);
+
+                    //- first missing face
+                    mf[0] = cellPoints[i][j][k];
+                    mf[1] = cellPoints[i][j][k+1];
+                    mf[2] = cellPoints[i][j+1][k+1];
+                    mf[3] = cellPoints[i][j+1][k];
+                    cellFaces.append(mf);
+
+                    //- second missing face
+                    mf[1] = cellPoints[i+1][j][k];
+                    mf[2] = cellPoints[i+1][j][k+1];
+                    mf[3] = cellPoints[i][j][k+1];
+                    cellFaces.append(mf);
+
+                    //- third missing face
+                    mf[1] = cellPoints[i][j+1][k];
+                    mf[2] = cellPoints[i+1][j+1][k];
+                    mf[3] = cellPoints[i+1][j][k];
+                    cellFaces.append(mf);
+                }
+                else
+                {
+                    //- generate a hex cell
+                    # ifdef DEBUGLayer
+                    Info << "2. Generating cell i = " << i
+                         << " j = " << j << " k = " << k << endl;
+                    # endif
+
+                    //- generate a hex cell from the matrix of cell points
+                    cellFaces.setSize(6);
+                    forAll(cellFaces, cfI)
+                        cellFaces[cfI].setSize(4);
+
+                    //- first face
+                    cellFaces[0][0] = cellPoints[i][j][k];
+                    cellFaces[0][1] = cellPoints[i][j][k+1];
+                    cellFaces[0][2] = cellPoints[i][j+1][k+1];
+                    cellFaces[0][3] = cellPoints[i][j+1][k];
+
+                    //- second face
+                    cellFaces[1][0] = cellPoints[i+1][j][k];
+                    cellFaces[1][1] = cellPoints[i+1][j+1][k];
+                    cellFaces[1][2] = cellPoints[i+1][j+1][k+1];
+                    cellFaces[1][3] = cellPoints[i+1][j][k+1];
+
+                    //- third face
+                    cellFaces[2][0] = cellPoints[i][j][k];
+                    cellFaces[2][1] = cellPoints[i][j+1][k];
+                    cellFaces[2][2] = cellPoints[i+1][j+1][k];
+                    cellFaces[2][3] = cellPoints[i+1][j][k];
+
+                    //- fourth face
+                    cellFaces[3][0] = cellPoints[i][j][k+1];
+                    cellFaces[3][1] = cellPoints[i+1][j][k+1];
+                    cellFaces[3][2] = cellPoints[i+1][j+1][k+1];
+                    cellFaces[3][3] = cellPoints[i][j+1][k+1];
+
+                    //- fifth face
+                    cellFaces[4][0] = cellPoints[i][j][k];
+                    cellFaces[4][1] = cellPoints[i+1][j][k];
+                    cellFaces[4][2] = cellPoints[i+1][j][k+1];
+                    cellFaces[4][3] = cellPoints[i][j][k+1];
+
+                    //- sixth face
+                    cellFaces[5][0] = cellPoints[i][j+1][k];
+                    cellFaces[5][1] = cellPoints[i][j+1][k+1];
+                    cellFaces[5][2] = cellPoints[i+1][j+1][k+1];
+                    cellFaces[5][3] = cellPoints[i+1][j+1][k];
+                }
+            }
+        }
+    }
+
+    # ifdef DEBUGLayer
+    Info << "New cells from corner cell " << cellI
+         << " are " << cellsFromCell << endl;
+    //::exit(1);
+    # endif
 }
 
 void refineBoundaryLayers::generateNewCells()
@@ -136,19 +1210,21 @@ void refineBoundaryLayers::generateNewCells()
     const labelList& faceOwners = mse.faceOwners();
 
     //- calculate the number new cells generated from a cell
+    Info << "Num layer at bnd face " << nLayersAtBndFace_ << endl;
     forAll(faceOwners, bfI)
     {
         const label cellI = faceOwners[bfI];
 
         nCellsFromCell[cellI] *= nLayersAtBndFace_[bfI];
 
-        ++refType[cellI];
+        if( nLayersAtBndFace_[bfI] > 1 )
+            ++refType[cellI];
     }
 
     label nNewCells(0);
     forAll(nCellsFromCell, cellI)
         nNewCells += (nCellsFromCell[cellI] - 1);
-    /*
+
     forAll(nCellsFromCell, cellI)
     {
         Info << "\nCell " << cellI << endl;
@@ -156,7 +1232,7 @@ void refineBoundaryLayers::generateNewCells()
         Info << "Ref type " << refType[cellI] << endl;
     }
     Info << "Number of newly generated cells " << nNewCells << endl;
-*/
+
     //- create mesh modifier
     polyMeshGenModifier meshModifier(mesh_);
     faceListPMG& faces = meshModifier.facesAccess();
@@ -224,7 +1300,6 @@ void refineBoundaryLayers::generateNewCells()
 
                     if( faceLabel < 0 )
                     {
-                        FatalError << "1.Sranje" << abort(FatalError);
                         forAll(nf, pI)
                             pointNewFaces.append(nf[pI], newFaces_.size());
                         c[fI] = newFaces_.size();
@@ -243,6 +1318,9 @@ void refineBoundaryLayers::generateNewCells()
             forAll(cellsFromCell, cI)
             {
                 const DynList<DynList<label, 4>, 6>& nc = cellsFromCell[cI];
+
+                Info << "Adding cell " << (cI==0?cellI:nCells)
+                     << " originating from cell " << cellI << endl;
 
                 cell& c = cells[cI==0?cellI:nCells++];
                 c.setSize(nc.size());
@@ -267,7 +1345,6 @@ void refineBoundaryLayers::generateNewCells()
 
                     if( faceLabel < 0 )
                     {
-                        FatalError << "2.Sranje" << abort(FatalError);
                         forAll(nf, pI)
                             pointNewFaces.append(nf[pI], newFaces_.size());
                         c[fI] = newFaces_.size();
@@ -315,7 +1392,6 @@ void refineBoundaryLayers::generateNewCells()
 
                     if( faceLabel < 0 )
                     {
-                        FatalError << "3.Sranje" << abort(FatalError);
                         forAll(nf, pI)
                             pointNewFaces.append(nf[pI], newFaces_.size());
                         c[fI] = newFaces_.size();
@@ -343,8 +1419,6 @@ void refineBoundaryLayers::generateNewCells()
 
     //- copy the newFaces to the mesh
     const label nOrigInternalFaces = mesh_.nInternalFaces();
-    const label nNewInternalFaces =
-        facesFromFace_(mesh_.boundaries()[0].patchStart(), 0);
 
     //- store internal faces originating from existing faces
     Info << "Copying internal faces " << endl;
@@ -492,6 +1566,54 @@ void refineBoundaryLayers::generateNewCells()
 
     Info << "Cleaning mesh " << endl;
     meshModifier.clearAll();
+
+    forAll(cells, cellI)
+    {
+        const cell& c = cells[cellI];
+
+        DynList<edge> edges;
+        DynList<label> nAppearances;
+        forAll(c, fI)
+        {
+            const face& f = faces[c[fI]];
+
+            forAll(f, eI)
+            {
+                const edge e = f.faceEdge(eI);
+
+                const label pos = edges.containsAtPosition(e);
+
+                if( pos < 0 )
+                {
+                    edges.append(e);
+                    nAppearances.append(1);
+                }
+                else
+                {
+                    ++nAppearances[pos];
+                }
+            }
+        }
+
+        bool badCell(false);
+        forAll(nAppearances, i)
+            if( nAppearances[i] != 2 )
+            {
+                badCell = true;
+                break;
+
+            }
+
+        if( badCell )
+        {
+            Info << "Cell " << cellI
+                 << " is not topologically closed" << endl;
+
+            forAll(c, fI)
+                Info << "Face " << c[fI] << " with points "
+                     << faces[c[fI]] << endl;
+        }
+    }
 
     Info << "Finished generating new cells " << endl;
     //::exit(1);

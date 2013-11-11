@@ -308,16 +308,8 @@ const triSurfaceClassifyEdges& edgeExtractor::edgeClassifier() const
 {
     if( !surfEdgeClassificationPtr_ )
     {
-        # ifdef USE_OMP
-        # pragma omp critical
-        # endif
-        {
-            if( !surfEdgeClassificationPtr_ )
-            {
-                surfEdgeClassificationPtr_ =
-                    new triSurfaceClassifyEdges(meshOctree_);
-            }
-        }
+        surfEdgeClassificationPtr_ =
+            new triSurfaceClassifyEdges(meshOctree_);
     }
 
     return *surfEdgeClassificationPtr_;

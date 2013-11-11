@@ -171,8 +171,7 @@ label groupMarking
     # endif
 
     # ifdef USE_OMP
-    # pragma omp parallel if( neighbourCalculator.size() > 1000 ) \
-    num_threads(nThreads)
+    # pragma omp parallel num_threads(nThreads)
     # endif
     {
         const label chunkSize = neighbourCalculator.size() / nThreads + 1;

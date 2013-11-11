@@ -55,15 +55,20 @@ namespace Foam
 namespace help
 {
     //- check if the faces are equal
-    template<class labelListType1, class labelListType2>
-    bool areFacesEqual(const labelListType1& f1, const labelListType2& f2);
+    template<class faceType1, class faceType2>
+    bool areFacesEqual(const faceType1& f1, const faceType2& f2);
 
     //- reverse the face
-    template<class labelListType>
-    labelListType reverseFace(const labelListType& f);
+    template<class faceType>
+    faceType reverseFace(const faceType& f);
 
     //- returns a merged face
-    inline face mergeTwoFaces(const face& f1, const face& f2);
+    template<class faceType1, class faceType2>
+    inline face mergeTwoFaces
+    (
+        const faceType1& f1,
+        const faceType2& f2
+    );
 
     //- remove edges until faces share only one edge
     inline edgeList modifyFacesToShareOneEdge(face& f1, face& f2);
@@ -79,25 +84,35 @@ namespace help
     );
 
     //- find open edges for a set of faces forming a cell
-    inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges);
+    inline void findOpenEdges
+    (
+        const faceList& cellFaces,
+        DynList<edge>& openEdges
+    );
 
     //- check if two faces share an edge
-    inline bool shareAnEdge(const face& f1, const face& f2);
+    template<class faceType1, class faceType2>
+    inline bool shareAnEdge(const faceType1& f1, const faceType2& f2);
 
     //- return the edge shared by the faces
-    inline edge sharedEdge(const face& f1, const face& f2);
+    template<class faceType1, class faceType2>
+    inline edge sharedEdge(const faceType1& f1, const faceType2& f2);
 
     //- return the position of edge in the face, -1 otherwise
-    inline label positionOfEdgeInFace(const edge& e, const face& f);
+    template<class faceType>
+    inline label positionOfEdgeInFace(const edge& e, const faceType& f);
 
     //- check if two faces share a vertex
-    inline bool shareAVertex(const face& f1, const face& f2);
+    template<class faceType1, class faceType2>
+    inline bool shareAVertex(const faceType1& f1, const faceType2& f2);
 
     //- shared vertex of two faces
-    inline label sharedVertex(const face& f1, const face& f2);
+    template<class faceType1, class faceType2>
+    inline label sharedVertex(const faceType1& f1, const faceType2& f2);
 
     //- find a vertex label common to all faces in the list
-    inline label sharedVertex(const faceList& fcs);
+    template<class faceListType>
+    inline label sharedVertex(const faceListType& fcs);
 
     //- check if selected elements are in one singly-connected chain
     inline bool areElementsInChain(const boolList& sel);

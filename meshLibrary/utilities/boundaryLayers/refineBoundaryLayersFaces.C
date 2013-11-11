@@ -32,6 +32,8 @@ Description
 #include "FixedList.H"
 #include "helperFunctions.H"
 
+#define DEBUGLayer
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -123,7 +125,7 @@ void refineBoundaryLayers::refineFace
         }
     }
 
-    /*
+    # ifdef DEBUGLayer
     Info << "Refining face " << f << endl;
     Info << "Splits in direction " << nLayersInDirection << endl;
     Info << "Here " << endl;
@@ -131,7 +133,7 @@ void refineBoundaryLayers::refineFace
     Info << "dir0Edges " << dir0Edges << endl;
     Info << "Dir1 " << dir1 << endl;
     Info << "dir1Edges " << dir1Edges << endl;
-    */
+    # endif
 
     //- in case of only one refinement direction, it must direction 0
     if( (dir1 != -1) && (dir0 == -1) )
@@ -140,7 +142,7 @@ void refineBoundaryLayers::refineFace
         dir0Edges = dir1Edges;
         dir1 = -1;
     }
-    else if( (dir0 != -1) && (dir1 != -1) && (dir1 != f.rcIndex(dir0)) )
+    else if( (dir0 != -1) && (dir1 != -1) && (dir1 != f.fcIndex(dir0)) )
     {
         //- alternate value to preserve correct face orientation
         const label add = dir0;
@@ -156,27 +158,31 @@ void refineBoundaryLayers::refineFace
     const label nLayersDir0 = dir0>=0?nLayersInDirection[dir0%2]:1;
     const label nLayersDir1 = dir1>=0?nLayersInDirection[dir1%2]:1;
 
-    /*
+    # ifdef DEBUGLayer
     Info << "Face has points " << f << endl;
     Info << "dirEdges0 " << dir0Edges << endl;
     Info << "dir1Edges " << dir1Edges << endl;
     if( dir0 >= 0 )
     {
-        Info << "Points on edge " << dir0Edges.first()
+        Info << "Points on edge " << dir0Edges.first() << " with nodes "
+             << splitEdges_[dir0Edges.first()]
              << " are " << newVerticesForSplitEdge_[dir0Edges.first()] << endl;
-        Info << "Points on edge " << dir0Edges.second()
+        Info << "Points on edge " << dir0Edges.second() << " with nodes "
+             << splitEdges_[dir0Edges.second()]
              << " are " << newVerticesForSplitEdge_[dir0Edges.second()] << endl;
     }
     if( dir1 >= 0 )
     {
-        Info << "Points on edge " << dir1Edges.first()
+        Info << "Points on edge " << dir1Edges.first() << " with nodes "
+             << splitEdges_[dir1Edges.first()]
              << " are " << newVerticesForSplitEdge_[dir1Edges.first()] << endl;
-        Info << "Points on edge " << dir1Edges.second()
+        Info << "Points on edge " << dir1Edges.second() << " with nodes "
+             << splitEdges_[dir1Edges.second()]
              << " are " << newVerticesForSplitEdge_[dir1Edges.second()] << endl;
     }
     Info << "nLayersDir0 " << nLayersDir0 << endl;
     Info << "nLayersDir1 " << nLayersDir1 << endl;
-    */
+    # endif
 
     //- map the face onto a matrix for easier orientation
     DynList<DynList<label> > facePoints;
@@ -213,33 +219,51 @@ void refineBoundaryLayers::refineFace
         {
             if( facePoints[i][j] < 0 )
             {
+                # ifdef DEBUGLayer
+                Info << "Determining u " << facePoints[0][0] << endl;
+                Info << "Other point " << facePoints[i][0] << endl;
+                Info << "Points at aplit edge "
+                     << newVerticesForSplitEdge_[dir0Edges.second()] << endl;
+                # endif
+
                 const scalar u
                 (
                     mag(points[facePoints[i][0]] - points[facePoints[0][0]]) /
                     splitEdges_[dir0Edges.second()].mag(points)
                 );
 
+                # ifdef DEBUGLayer
+                Info << "Determining v " << facePoints[0][0] << endl;
+                Info << "Other point " << facePoints[0][j] << endl;
+                Info << "Points at aplit edge "
+                     << newVerticesForSplitEdge_[dir1Edges.first()] << endl;
+                # endif
+
                 const scalar v
                 (
-                    mag(points[facePoints[0][i]] - points[facePoints[0][0]]) /
+                    mag(points[facePoints[0][j]] - points[facePoints[0][0]]) /
                     splitEdges_[dir1Edges.first()].mag(points)
                 );
+
+                # ifdef DEBUGLayer
+                Info << "Generating point of face " << endl;
+                Info << "u = " << u << endl;
+                Info << "v = " << v << endl;
+                # endif
 
                 //- calculate the coordinates of the missing point via
                 //- transfinite interpolation
                 const point newP
                 (
-                    (1.0 - v) * points[facePoints[i][0]] +
-                    v * points[facePoints[i][nLayersDir1]] +
-                    (1.0 - u) * points[facePoints[0][j]] +
-                    u * points[facePoints[nLayersDir0][j]] -
-                    (1.0 - u) * (1.0 - v) * points[facePoints[0][0]] -
-                    u * v * points[facePoints[nLayersDir0][0]] -
-                    u * (1.0 - v) * points[facePoints[nLayersDir0][nLayersDir1]] -
+                    (1.0 - u) * (1.0 - v) * points[facePoints[0][0]] +
+                    u * (1.0 - v) * points[facePoints[nLayersDir0][0]] +
+                    u * v * points[facePoints[nLayersDir0][nLayersDir1]] +
                     (1.0 - u) * v * points[facePoints[0][nLayersDir1]]
                 );
 
+                # ifdef DEBUGLayer
                 Info << "Point coordinate " << newP << endl;
+                # endif
 
                 //- add the vertex to the mesh
                 facePoints[i][j] = points.size();
@@ -248,12 +272,14 @@ void refineBoundaryLayers::refineFace
         }
     }
 
-    //Info << "Face points after creating vertices " << facePoints << endl;
+    # ifdef DEBUGLayer
+    Info << "Face points after creating vertices " << facePoints << endl;
+    # endif
 
     //- Finally, create the faces
-    for(label i=0;i<nLayersDir0;++i)
+    for(label j=0;j<nLayersDir1;++j)
     {
-        for(label j=0;j<nLayersDir1;++j)
+        for(label i=0;i<nLayersDir0;++i)
         {
             if( !((i == (nLayersDir0 - 1)) && (j == (nLayersDir1 - 1))) )
             {
@@ -274,7 +300,7 @@ void refineBoundaryLayers::refineFace
     //- create the last face which may not be a quad
     DynList<label, 4> newF;
 
-    if( dir0 != -1 && dir1 == -1 )
+    if( (dir0 != -1) && (dir1 == -1) )
     {
         //- face is split in one direction, only
         label eLabel = dir0Edges.second();
@@ -312,10 +338,12 @@ void refineBoundaryLayers::refineFace
 
     newFaces.append(newF);
 
-    //Info << "Input face " << f << endl;
-    //Info << "Decomposed faces are " << newFaces << endl;
+    # ifdef DEBUGLayer
+    Info << "Input face " << f << endl;
+    Info << "Decomposed faces are " << newFaces << endl;
     //if( (nLayersInDirection[0] > 1) && (nLayersInDirection[1] > 1) )
     //::exit(1);
+    # endif
 }
 
 void refineBoundaryLayers::generateNewFaces()
@@ -397,6 +425,12 @@ void refineBoundaryLayers::generateNewFaces()
             facesFromFace_.append(faceI, newFaces_.size());
             newFaces_.appendList(newFacesForFace[fI]);
         }
+
+        Info << "Internal face " << faceI << " with points " << f
+             << " is refined " << endl;
+        forAllRow(facesFromFace_, faceI, i)
+            Info << "New face " << i << " is "
+                 << newFaces_[facesFromFace_(faceI, i)] << endl;
     }
 
     //- refine boundary faces where needed
@@ -453,6 +487,14 @@ void refineBoundaryLayers::generateNewFaces()
             facesFromFace_.append(faceI, newFaces_.size());
             newFaces_.appendList(newFacesForFace[fI]);
         }
+
+        # ifdef DEBUGLayer
+        Info << "Boundary face " << faceI << " with points " << bf
+             << " owner cell " << mesh_.owner()[faceI] << " is refined " << endl;
+        forAllRow(facesFromFace_, faceI, i)
+            Info << "New face " << i << " is "
+                 << newFaces_[facesFromFace_(faceI, i)] << endl;
+        # endif
     }
 
     if( Pstream::parRun() )
@@ -497,7 +539,7 @@ void refineBoundaryLayers::generateNewFaces()
                                 nLayersAtBndFace_[beFaces(beI, 0)];
 
                             //- add the data to the list for sending
-                            const label dir = !(eI % 2);
+                            const label dir = ((eI + 1) % 2);
 
                             //- add face label, direction
                             //- and the number of splits
@@ -553,6 +595,11 @@ void refineBoundaryLayers::generateNewFaces()
             }
         }
 
+        # ifdef DEBUGLayer
+        returnReduce(1, sumOp<label>());
+        Info << "Starting splitting processor boundaries" << endl;
+        # endif
+
         //- perform splitting
         forAll(procBoundaries, patchI)
         {
@@ -578,7 +625,7 @@ void refineBoundaryLayers::generateNewFaces()
                 DynList<DynList<label, 4> > facesFromFace;
                 if( procBoundaries[patchI].owner() )
                 {
-                    //- this processor own this patch
+                    //- this processor owns this patch
                     FixedList<label, 2> nLayersInDirection;
                     const DynList<labelPair, 2>& dirSplits = it->second;
                     forAll(dirSplits, i)
@@ -604,6 +651,7 @@ void refineBoundaryLayers::generateNewFaces()
                             dirSplits[i].second();
 
                     const face rFace = faces[faceI].reverseFace();
+                    Pout << "Refining face " << rFace << endl;
                     refineFace(rFace, nLayersInDirection, facesFromFace);
 
                     forAll(facesFromFace, i)
@@ -619,8 +667,10 @@ void refineBoundaryLayers::generateNewFaces()
         }
     }
 
+    # ifdef DEBUGLayer
     Info << "facesFromFace_ " << facesFromFace_ << endl;
     Info << "newFaces_ " << newFaces_ << endl;
+    # endif
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

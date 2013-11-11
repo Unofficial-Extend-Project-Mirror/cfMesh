@@ -87,7 +87,7 @@ class DynList
     // Private member functions
         //- allocate list size
         inline void allocateSize(const label);
-    
+
         //- check if index is inside the scope (used for debugging only)
         inline void checkIndex(const label) const;
 
@@ -122,7 +122,7 @@ public:
             //- Size of the active part of the list.
             //- Direct over-ride of list size member function
             inline label size() const;
-            
+
             //- Number of bytes used by the active part of the list
             //- Direct over-ride of list byteSize member function
             inline label byteSize() const;
@@ -145,11 +145,11 @@ public:
 
         //- Append an element at the end of the list
         inline void append(const T& e);
-        
+
         //- Append an element at the end of the list if it is not yet
         //- present in the list (takes linear time)
         inline void appendIfNotIn(const T& e);
-        
+
         //- check if the element is in the list (takes linear time)
         inline bool contains(const T& e) const;
         inline label containsAtPosition(const T& e) const;
@@ -157,24 +157,41 @@ public:
         //- Return and remove the top element
         inline T removeLastElement();
         inline T removeElement(const label i);
-        
+
         //- return a refence to the element. Resize the list if necessary
         inline T& newElmt(const label);
 
         //- Return non-const access to an element,
         //-  resizing the list if necessary
         inline T& operator()(const label);
-        
+
         //- return access to an element
         inline const T& operator[](const label) const;
         inline T& operator[](const label);
 
+        //- return forward and reverse circular indices
+        inline label fcIndex(const label index, const label offset = 1) const;
+        inline label rcIndex(const label index, const label offset = 1) const;
+
+        //- return forward and reverse circular elements
+        inline const T& fcElement
+        (
+            const label index,
+            const label offset = 1
+        ) const;
+
+        inline const T& rcElement
+        (
+            const label index,
+            const label offset = 1
+        ) const;
+
         //- Assignment of all entries to the given value
         inline void operator=(const T&);
-        
+
         //- Copy of another list
         inline void operator=(const DynList<T, staticSize>&);
-        
+
         //- Copy of another list type
         template<class ListType>
         inline void operator=(const ListType&);

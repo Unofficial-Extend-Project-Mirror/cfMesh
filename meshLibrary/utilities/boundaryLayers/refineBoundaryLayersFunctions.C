@@ -39,6 +39,8 @@ Description
 #include <omp.h>
 # endif
 
+#define DEBUGLayer
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -46,79 +48,76 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace bndLayerOps
+{
+
 class meshBndLayerNeighbourOperator
 {
-    const polyMeshGen& mesh_;
     const meshSurfaceEngine& mse_;
+    const label size_;
 
 public:
 
-    meshBndLayerNeighbourOperator
-    (
-        const polyMeshGen& mesh,
-        const meshSurfaceEngine& mse
-    )
+    meshBndLayerNeighbourOperator(const meshSurfaceEngine& mse)
     :
-        mesh_(mesh),
-        mse_(mse)
+        mse_(mse),
+        size_(mse.boundaryFaces().size())
     {}
 
     label size() const
     {
-        return mesh_.cells().size();
+        return size_;
     }
 
-    void operator()(const label cellI, DynList<label>& neighbourCells) const
+    void operator()(const label bfI, DynList<label>& neighbourFaces) const
     {
-        neighbourCells.clear();
+        neighbourFaces.clear();
 
-        const edgeList& edges = mse_.edges();
-        const VRWGraph& bpEdges = mse_.boundaryPointEdges();
-        const labelList& bp = mse_.bp();
+        const cellListPMG& cells = mse_.cells();
 
-        const labelList& owner = mesh_.owner();
-        const labelList& neighbour = mesh_.neighbour();
+        const labelList& faceOwner = mse_.faceOwners();
+        const label cellI = faceOwner[bfI];
+        const cell& c = cells[cellI];
 
-        const faceListPMG& faces = mesh_.faces();
-        const cell& c = mesh_.cells()[cellI];
+        const VRWGraph& faceEdges = mse_.faceEdges();
+        const VRWGraph& edgeFaces = mse_.edgeFaces();
 
-        forAll(c, fI)
+        forAllRow(faceEdges, bfI, feI)
         {
-            //- find the neighbour cell over this face
-            label nei = owner[c[fI]];
+            const label edgeI = faceEdges(bfI, feI);
 
-            if( nei == cellI )
-                nei = neighbour[c[fI]];
-
-            if( nei < 0 )
-                continue;
-
-            //- face must be a quad
-            const face& f = faces[c[fI]];
-
-            if( f.size() != 4 )
-                continue;
-
-            forAll(f, eI)
+            if( edgeFaces.sizeOfRow(edgeI) == 2 )
             {
-                const edge e = f.faceEdge(eI);
+                label nei = edgeFaces(edgeI, 0);
 
-                const label bpI = bp[e.start()];
-                const label bpJ = bp[e.end()];
+                if( nei == bfI )
+                    nei = edgeFaces(edgeI, 1);
 
-                if( (bpI < 0) || (bpJ < 0) )
+                //- faces must not be part of the same cell
+                if( faceOwner[nei] == cellI )
                     continue;
 
-                forAllRow(bpEdges, bpI, peI)
+                //- owner cell of the other face must
+                //- have cellI as its neighbour
+                const cell& neiC = cells[faceOwner[nei]];
+                bool sharedFace(false);
+                forAll(c, fI)
                 {
-                    const label beI = bpEdges(bpI, peI);
-
-                    if( edges[beI] == e )
+                    forAll(neiC, fJ)
                     {
-                        neighbourCells.append(nei);
-                        break;
+                        if( c[fI] == neiC[fJ] )
+                        {
+                            sharedFace = true;
+                            break;
+                        }
                     }
+
+                    if( sharedFace )
+                        break;
                 }
+
+                if( sharedFace )
+                    neighbourFaces.append(nei);
             }
         }
     }
@@ -131,91 +130,130 @@ public:
         const DynList<label>& localGroupLabel
     ) const
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
-            mesh_.procBoundaries();
-        const labelList& owner = mesh_.owner();
+        const polyMeshGen& mesh = mse_.mesh();
+        const faceListPMG& faces = mesh.faces();
+        const cellListPMG& cells = mesh.cells();
 
-        //- send the data to other processors
-        forAll(procBoundaries, patchI)
+        const edgeList& edges = mse_.edges();
+        const labelList& faceOwner = mse_.faceOwners();
+        const VRWGraph& edgeFaces = mse_.edgeFaces();
+        const Map<label>& otherProc = mse_.otherEdgeFaceAtProc();
+        const Map<label>& globalToLocal = mse_.globalToLocalBndEdgeAddressing();
+
+        std::map<label, LongList<labelPair> > exchangeData;
+        forAll(mse_.beNeiProcs(), procI)
+            exchangeData[mse_.beNeiProcs()[procI]].clear();
+
+        forAllConstIter(Map<label>, globalToLocal, it)
         {
-            const label start = procBoundaries[patchI].patchStart();
-            const label size = procBoundaries[patchI].patchSize();
+            const label beI = it();
 
-            labelList groupOwner(procBoundaries[patchI].patchSize());
-            for(label faceI=0;faceI<size;++faceI)
+            //- combine data if the cell attached to this face has a face
+            //- attached to the inter-processor boundary
+            //- this must hold for boundary layer cells
+            const cell& c = cells[faceOwner[edgeFaces(beI, 0)]];
+
+            bool validCell(false);
+            forAll(c, fI)
             {
-                const label groupI = elementInGroup[owner[start+faceI]];
+                const face& f = faces[c[fI]];
 
-                if( groupI < 0 )
+                forAll(f, eI)
                 {
-                    groupOwner[faceI] = -1;
-                    continue;
+                    const edge fe = f.faceEdge(eI);
+
+                    if( fe == edges[beI] && mesh.faceIsInProcPatch(c[fI]) >= 0 )
+                    {
+                        validCell = true;
+                        break;
+                    }
                 }
 
-                groupOwner[faceI] = localGroupLabel[groupI];
+                if( validCell )
+                    break;
             }
 
-            OPstream toOtherProc
-            (
-                Pstream::blocking,
-                procBoundaries[patchI].neiProcNo(),
-                groupOwner.byteSize()
-            );
+            if( !validCell )
+                continue;
 
-            toOtherProc << groupOwner;
+            const label groupI = elementInGroup[edgeFaces(beI, 0)];
+
+            if( groupI < 0 )
+                continue;
+
+            const label lgI = localGroupLabel[groupI];
+            exchangeData[otherProc[beI]].append(labelPair(it.key(), lgI));
         }
 
-        //- receive data from other processors
-        forAll(procBoundaries, patchI)
+        LongList<labelPair> receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
         {
-            const label start = procBoundaries[patchI].patchStart();
+            const labelPair& lp = receivedData[i];
 
-            labelList receivedData;
+            const label beI = globalToLocal[lp.first()];
 
-            IPstream fromOtherProc
-            (
-                Pstream::blocking,
-                procBoundaries[patchI].neiProcNo()
-            );
+            const cell& c = cells[faceOwner[edgeFaces(beI, 0)]];
 
-            fromOtherProc >> receivedData;
-
-            forAll(receivedData, faceI)
+            //- combine data if the cell attached to this face has a face
+            //- attached to the inter-processor boundary
+            //- this must hold for boundary layer cells
+            bool validCell(false);
+            forAll(c, fI)
             {
-                if( receivedData[faceI] < 0 )
-                    continue;
+                const face& f = faces[c[fI]];
 
-                const label groupI = elementInGroup[owner[start+faceI]];
+                forAll(f, eI)
+                {
+                    const edge fe = f.faceEdge(eI);
 
-                if( groupI < 0 )
-                    continue;
+                    if( fe == edges[beI] && mesh.faceIsInProcPatch(c[fI]) >= 0 )
+                    {
+                        validCell = true;
+                        break;
+                    }
+                }
 
-                DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
-
-                //- store the connection over the inter-processor boundary
-                ng.appendIfNotIn(receivedData[faceI]);
+                if( validCell )
+                    break;
             }
+
+            if( !validCell )
+                continue;
+
+            const label groupI = elementInGroup[edgeFaces(beI, 0)];
+
+            if( groupI < 0 )
+                continue;
+
+            DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
+
+            //- store the connection over the inter-processor boundary
+            ng.appendIfNotIn(lp.second());
         }
     }
 };
 
 class meshBndLayerSelectorOperator
 {
-    const polyMeshGen& mesh_;
+    const meshSurfaceEngine& mse_;
 
 public:
 
-    meshBndLayerSelectorOperator(const polyMeshGen& mesh)
+    meshBndLayerSelectorOperator(const meshSurfaceEngine& mse)
     :
-        mesh_(mesh)
+        mse_(mse)
     {}
 
-    bool operator()(const label cellI) const
+    bool operator()(const label bfI) const
     {
-        const faceListPMG& faces = mesh_.faces();
+        const labelList& faceOwner = mse_.faceOwners();
+        const polyMeshGen& mesh = mse_.mesh();
+        const faceListPMG& faces = mesh.faces();
 
-        const cell& c = mesh_.cells()[cellI];
-        const PtrList<writePatch>& boundaries = mesh_.boundaries();
+        const cell& c = mesh.cells()[faceOwner[bfI]];
+        const PtrList<writePatch>& boundaries = mesh.boundaries();
         const label start = boundaries[0].patchStart();
 
         label nBndFaces(0), baseFace(-1), otherBase(-1), nQuads(0);
@@ -224,39 +262,59 @@ public:
             if( faces[c[fI]].size() == 4 )
                 ++nQuads;
 
-            if( (c[fI] - start) >= 0 )
+            if( (c[fI] - start) == bfI )
             {
                 baseFace = fI;
                 ++nBndFaces;
             }
-            else if( faces[c[fI]].size() != 4 )
-            {
-                otherBase = fI;
-            }
+        }
+
+        if( nQuads == 6 )
+        {
+            //- cell is a hex
+            return true;
         }
 
         if( nBndFaces != 1 )
             return false;
 
-        bool isPrism(false);
+        label nQuadsAttachedToBaseFace(0);
+        forAll(c, fI)
+        {
+            if( fI == baseFace )
+                continue;
+
+            const bool sEdge =
+                help::shareAnEdge(faces[c[baseFace]], faces[c[fI]]);
+
+            if( faces[c[fI]].size() == 4 && sEdge )
+            {
+                ++nQuadsAttachedToBaseFace;
+            }
+            else if( !sEdge )
+            {
+                if( otherBase != -1 )
+                    return false;
+
+                otherBase = fI;
+            }
+        }
 
         if(
-            (nQuads == c.size()) ||
+            (nQuads == 6) ||
             (
-                (c.size() - nQuads) == 2 &&
-                (baseFace != -1) && (otherBase != -1) &&
-                (faces[c[baseFace]].size() == faces[c[otherBase]].size()) &&
+                ((nQuadsAttachedToBaseFace + 2) == c.size()) &&
+                otherBase != -1 &&
                 !help::shareAnEdge(faces[c[baseFace]], faces[c[otherBase]])
             )
         )
-            isPrism = true;
-
-        if( isPrism )
             return true;
 
         return false;
     }
 };
+
+} // End namespace bndLayerOps
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -264,19 +322,25 @@ void refineBoundaryLayers::analyseLayers()
 {
     Info << "Analysing mesh for bnd layer existence" << endl;
 
+    const meshSurfaceEngine& mse = surfaceEngine();
+    const labelList& facePatch = mse.boundaryFacePatches();
+    mse.faceOwners();
+    mse.faceEdges();
+    mse.edgeFaces();
+
     //- find layers in patch
-    labelListPMG cellInLayer;
+    labelListPMG bndFaceInLayer;
     const label nGroups =
         help::groupMarking
         (
-            cellInLayer,
-            meshBndLayerNeighbourOperator(mesh_, surfaceEngine()),
-            meshBndLayerSelectorOperator(mesh_)
+            bndFaceInLayer,
+            bndLayerOps::meshBndLayerNeighbourOperator(mse),
+            bndLayerOps::meshBndLayerSelectorOperator(mse)
         );
 
-    const meshSurfaceEngine& mse = surfaceEngine();
-    const labelList& facePatch = mse.boundaryFacePatches();
-    const labelList& faceOwner = mse.faceOwners();
+    # ifdef DEBUGLayer
+    Info << "Number of independent layers in the mesh is " << nGroups << endl;
+    # endif
 
     const PtrList<writePatch>& boundaries = mesh_.boundaries();
 
@@ -289,12 +353,10 @@ void refineBoundaryLayers::analyseLayers()
     List<DynList<label> > groupsAtPatch(boundaries.size());
     forAll(facePatch, bfI)
     {
-        const label cellI = faceOwner[bfI];
-
-        if( cellInLayer[cellI] < 0 )
+        if( bndFaceInLayer[bfI] < 0 )
             continue;
 
-        groupsAtPatch[facePatch[bfI]].appendIfNotIn(cellInLayer[cellI]);
+        groupsAtPatch[facePatch[bfI]].appendIfNotIn(bndFaceInLayer[bfI]);
     }
 
     //- set the information which patches have an extruded layer
@@ -385,12 +447,14 @@ void refineBoundaryLayers::analyseLayers()
         }
     }
 
+    # ifdef DEBUGLayer
     Info << "nLayersAtPatch " << nLayersAtPatch << endl;
+    # endif
 
     //- set the number of boundary layers which shall be generated above
     //- each boundary face
     nLayersAtBndFace_.setSize(facePatch.size());
-    nLayersAtBndFace_ = 0;
+    nLayersAtBndFace_ = globalNumLayers_;
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
@@ -399,12 +463,9 @@ void refineBoundaryLayers::analyseLayers()
     {
         const label patchI = facePatch[bfI];
 
-        if( layerAtPatch_[patchI] < 0 )
-            continue;
-
         if( nLayersAtPatch[patchI] < 0 )
         {
-            nLayersAtBndFace_[bfI] = globalNumLayers_;
+            nLayersAtBndFace_[bfI] = 1;
         }
         else
         {
@@ -412,7 +473,10 @@ void refineBoundaryLayers::analyseLayers()
         }
     }
 
+    # ifdef DEBUGLayer
     Info << "nLayersAtBndFace_ " << nLayersAtBndFace_ << endl;
+    //::exit(1);
+    # endif
 }
 
 void refineBoundaryLayers::calculateAddressing
@@ -637,7 +701,7 @@ bool refineBoundaryLayers::findSplitEdges()
         {
             startEl = splitEdges_.size();
 
-            splitEdges_.setSize(startEl+localEdges);
+            splitEdges_.setSize(startEl+localEdges.size());
         }
 
         //- copy the local data to splitEdges_
@@ -654,6 +718,10 @@ bool refineBoundaryLayers::findSplitEdges()
 
     reduce(validLayer, minOp<bool>());
 
+    # ifdef DEBUGLayer
+    Info << "Generated split edges " << splitEdges_ << endl;
+    # endif
+
     return validLayer;
 }
 
@@ -663,7 +731,9 @@ void refineBoundaryLayers::generateNewVertices()
     pointFieldPMG& points = mesh_.points();
 
     const meshSurfaceEngine& mse = surfaceEngine();
-    const VRWGraph& pointPatches = mse.pointPatches();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const VRWGraph& pointFaces = mse.pointFaces();
+    const labelList& facePatch = mse.boundaryFacePatches();
     const labelList& bp = mse.bp();
 
     //- allocate the data from storing parameters applying to a split edge
@@ -702,35 +772,50 @@ void refineBoundaryLayers::generateNewVertices()
             const edge& e = splitEdges_[seI];
 
             //- get the requested number of boundary layers
-            label nLayers(globalNumLayers_);
+            label nLayers(1);
             scalar ratio(globalThicknessRatio_);
             scalar thickness(globalMaxThicknessFirstLayer_);
+            bool overridenThickness(false);
 
             const label bpI = bp[e.start()];
 
-            forAllRow(pointPatches, bpI, ppI)
+            forAllRow(pointFaces, bpI, pfI)
             {
+                const label bfI = pointFaces(bpI, pfI);
+                const label pos = help::positionOfEdgeInFace(e, bFaces[bfI]);
+                if( pos >= 0 )
+                    continue;
+
                 const word& patchName =
-                    boundaries[pointPatches(bpI, ppI)].patchName();
+                    boundaries[facePatch[bfI]].patchName();
 
                 //- overrride the global value with the maximum number of layers
                 //- at this edge
-                const std::map<word, label>::const_iterator it =
-                    numLayersForPatch_.find(patchName);
-                if( it != numLayersForPatch_.end() )
-                    nLayers = Foam::max(nLayers, it->second);
+                nLayers = Foam::max(nLayers, nLayersAtBndFace_[bfI]);
 
                 //- override with the maximum ratio
                 const std::map<word, scalar>::const_iterator rIt =
                     thicknessRatioForPatch_.find(patchName);
                 if( rIt != thicknessRatioForPatch_.end() )
+                {
                     ratio = rIt->second;
+                }
 
                 //- override with the minimum thickness set for this edge
                 const std::map<word, scalar>::const_iterator tIt =
                     maxThicknessForPatch_.find(patchName);
                 if( tIt != maxThicknessForPatch_.end() )
-                    thickness = Foam::min(thickness, tIt->second);
+                {
+                    if( overridenThickness )
+                    {
+                        thickness = Foam::min(thickness, tIt->second);
+                    }
+                    else
+                    {
+                        thickness = tIt->second;
+                        overridenThickness = true;
+                    }
+                }
             }
 
             //- store the information
@@ -867,7 +952,9 @@ void refineBoundaryLayers::generateNewVertices()
 
     points.setSize(numPoints);
 
+    # ifdef DEBUGLayer
     Info << "Generating split vertices" << endl;
+    # endif
 
     //- generate vertices at split edges
     # ifdef USE_OMP
@@ -903,20 +990,37 @@ void refineBoundaryLayers::generateNewVertices()
                         (1 - Foam::pow(thicknessRatio[seI], nLayers)) /
                         (1.0 - thicknessRatio[seI])
                     );
+
+                # ifdef DEBUGLayer
+                Info << "Edge length " << magv << endl;
+                Info << "Thickness of the first layer "
+                     << firstThickness << endl;
+                # endif
             }
 
-            firstThickness = std::min(firstLayerThickness[seI], firstThickness);
-            firstThickness /= (magv + VSMALL);
+            firstThickness =
+                Foam::min
+                (
+                    Foam::max(firstLayerThickness[seI], SMALL),
+                    firstThickness
+                );
 
             //- generate vertices for this edge
             newVerticesForSplitEdge_(seI, 0) = e.start();
 
             scalar param = firstThickness;
+            const vector vec = v / (magv + VSMALL);
 
             for(label pI=1;pI<nLayers;++pI)
             {
                 //- generate the new vertex
-                const point newP = points[e.start()] + param * v;
+                const point newP = points[e.start()] + param * vec;
+
+                # ifdef DEBUGLayer
+                Info << "Split edge " << seI << " points " << e
+                    << " param " << param
+                    << " first thickness " << firstThickness << endl;
+                # endif
 
                 param += firstThickness * Foam::pow(thicknessRatio[seI], pI);
 
@@ -928,7 +1032,10 @@ void refineBoundaryLayers::generateNewVertices()
         }
     }
 
+    # ifdef DEBUGLayer
     Info << "Finished generating vertices at split edges" << endl;
+    //::exit(1);
+    # endif
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

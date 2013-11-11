@@ -53,7 +53,7 @@ refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
     msePtr_(NULL),
     globalNumLayers_(1),
     globalThicknessRatio_(1.0),
-    globalMaxThicknessFirstLayer_(-1.0),
+    globalMaxThicknessFirstLayer_(VGREAT),
     numLayersForPatch_(),
     thicknessRatioForPatch_(),
     maxThicknessForPatch_(),

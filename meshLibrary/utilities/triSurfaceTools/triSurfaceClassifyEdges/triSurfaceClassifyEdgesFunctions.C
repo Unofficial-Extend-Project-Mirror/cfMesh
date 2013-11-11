@@ -173,9 +173,9 @@ void triSurfaceClassifyEdges::checkOrientation()
     groupVotes = labelPair(0, 0);
 
     # ifdef USE_OMP
-    # pragma omp parallel
-    {
+    # pragma omp parallel if( surf.size() > 1000 )
     # endif
+    {
         DynList<labelPair> localVotes;
         localVotes.setSize(nGroups);
         localVotes = labelPair(0, 0);
@@ -230,7 +230,7 @@ void triSurfaceClassifyEdges::checkOrientation()
                         }
                         else if( help::boundBoxLineIntersection(c, endNeg, bb) )
                         {
-                            //- foubnd an intersection in the negative direction
+                            //- found an intersection in the negative direction
                             ++localVotes[orientationGroup[triI]].second();
                         }
                     }
@@ -239,7 +239,7 @@ void triSurfaceClassifyEdges::checkOrientation()
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(grouping)
         # endif
         {
             forAll(localVotes, groupI)
@@ -248,10 +248,7 @@ void triSurfaceClassifyEdges::checkOrientation()
                 groupVotes[groupI].second() += localVotes[groupI].second();
             }
         }
-
-    # ifdef USE_OMP
     }
-    # endif
 
     //- determine whether a group is oriented outward or inward
     List<direction> outwardGroup(nGroups, direction(0));

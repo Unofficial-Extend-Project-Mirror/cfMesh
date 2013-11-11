@@ -52,6 +52,18 @@ int main(int argc, char *argv[])
     polyMeshGen pmg(runTime);
     pmg.read();
 
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+
     //boundaryLayers bndLayers(pmg);
     //bndLayers.addLayerForPatch("inlet");
     //bndLayers.addLayerForPatch("symmetryplane");
@@ -60,8 +72,86 @@ int main(int argc, char *argv[])
 
     refineBoundaryLayers refLayers(pmg);
 
-    refLayers.setGlobalNumberOfLayers(3);
-    refLayers.setGlobalThicknessRatio(1.5);
+    if( meshDict.isDict("boundaryLayers") )
+    {
+        const dictionary& bndLayers = meshDict.subDict("boundaryLayers");
+
+        //- read global properties
+        if( bndLayers.found("nLayers") )
+        {
+            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
+            refLayers.setGlobalNumberOfLayers(nLayers);
+        }
+        if( bndLayers.found("thicknessRatio") )
+        {
+            const scalar ratio = readScalar(bndLayers.lookup("thicknessRatio"));
+            refLayers.setGlobalThicknessRatio(ratio);
+        }
+        if( bndLayers.found("maxFirstLayerThickness") )
+        {
+            const scalar maxFirstThickness =
+                readScalar(bndLayers.lookup("maxFirstLayerThickness"));
+            refLayers.setGlobalMaxThicknessOfFirstLayer(maxFirstThickness);
+        }
+
+        //- patch-based properties
+        if( bndLayers.isDict("patchBoundaryLayers") )
+        {
+            const dictionary& patchBndLayers =
+                bndLayers.subDict("patchBoundaryLayers");
+            const wordList patchNames = patchBndLayers.toc();
+
+            forAll(patchNames, patchI)
+            {
+                const word pName = patchNames[patchI];
+
+                if( patchBndLayers.isDict(pName) )
+                {
+                    const dictionary& patchDict =
+                        patchBndLayers.subDict(pName);
+
+                    if( patchDict.found("nLayers") )
+                    {
+                        const label nLayers =
+                            readLabel(patchDict.lookup("nLayers"));
+                        refLayers.setNumberOfLayersForPatch(pName, nLayers);
+                    }
+                    if( patchDict.found("thicknessRatio") )
+                    {
+                        const scalar ratio =
+                            readScalar(patchDict.lookup("thicknessRatio"));
+                        refLayers.setThicknessRatioForPatch(pName, ratio);
+                    }
+                    if( patchDict.found("maxFirstLayerThickness") )
+                    {
+                        const scalar maxFirstThickness =
+                            readScalar
+                            (
+                                patchDict.lookup("maxFirstLayerThickness")
+                            );
+                        refLayers.setMaxThicknessOfFirstLayerForPatch
+                        (
+                            pName,
+                            maxFirstThickness
+                        );
+                    }
+                    if( patchDict.found("allowDiscontinuity") )
+                    {
+                        const bool allowDiscontinuity =
+                            readBool(patchDict.lookup("allowDiscontinuity"));
+
+                        if( allowDiscontinuity )
+                            refLayers.setInteruptForPatch(pName);
+                    }
+                }
+                else
+                {
+                    Warning << "Cannot refine layer for patch "
+                        << patchNames[patchI] << endl;
+                }
+            }
+        }
+    }
 
     refLayers.refineLayers();
 
