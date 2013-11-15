@@ -42,6 +42,7 @@ Description
 #include "meshSurfaceOptimizer.H"
 #include "topologicalCleaner.H"
 #include "boundaryLayers.H"
+#include "refineBoundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "checkCellConnectionsOverFaces.H"
@@ -241,12 +242,13 @@ void cartesianMeshGenerator::optimiseMeshSurface()
     # endif
 }
 
-void cartesianMeshGenerator::generateBoudaryLayers()
+void cartesianMeshGenerator::generateBoundaryLayers()
 {
     boundaryLayers bl(mesh_);
 
-    if( meshDict_.found("boundaryLayers") )
+/*    if( meshDict_.found("boundaryLayers") )
     {
+        if( )
         wordList createLayers;
 
         if( meshDict_.isDict("boundaryLayers") )
@@ -268,6 +270,9 @@ void cartesianMeshGenerator::generateBoudaryLayers()
         //bl.createOTopologyLayers();
         bl.addLayerForAllPatches();
     }
+    */
+
+    bl.addLayerForAllPatches();
 
     # ifdef DEBUG
     # ifdef DEBUGfpma
@@ -278,6 +283,15 @@ void cartesianMeshGenerator::generateBoudaryLayers()
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
+}
+
+void cartesianMeshGenerator::refBoundaryLayers()
+{
+    refineBoundaryLayers refLayers(mesh_);
+
+    refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+    refLayers.refineLayers();
 }
 
 void cartesianMeshGenerator::optimiseFinalMesh()
@@ -338,9 +352,11 @@ void cartesianMeshGenerator::generateMesh()
 
     optimiseMeshSurface();
 
-    generateBoudaryLayers();
+    generateBoundaryLayers();
 
     optimiseFinalMesh();
+
+    refBoundaryLayers();
 
     renumberMesh();
 

@@ -170,12 +170,61 @@ void checkMeshDict::checkBoundaryLayers() const
 {
     if( meshDict_.found("boundaryLayers") )
     {
-        if( meshDict_.isDict("boundaryLayers") )
-        {
-            const dictionary& dict = meshDict_.subDict("boundaryLayers");
+        const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
 
-            const wordList layerNames = dict.toc();
-            layerNames.size();
+        //- read global properties
+        if( bndLayers.found("nLayers") )
+        {
+            readLabel(bndLayers.lookup("nLayers"));
+        }
+        if( bndLayers.found("thicknessRatio") )
+        {
+            readScalar(bndLayers.lookup("thicknessRatio"));
+        }
+        if( bndLayers.found("maxFirstLayerThickness") )
+        {
+            readScalar(bndLayers.lookup("maxFirstLayerThickness"));
+        }
+
+        //- patch-based properties
+        if( bndLayers.isDict("patchBoundaryLayers") )
+        {
+            const dictionary& patchBndLayers =
+                bndLayers.subDict("patchBoundaryLayers");
+            const wordList patchNames = patchBndLayers.toc();
+
+            forAll(patchNames, patchI)
+            {
+                const word pName = patchNames[patchI];
+
+                if( patchBndLayers.isDict(pName) )
+                {
+                    const dictionary& patchDict =
+                        patchBndLayers.subDict(pName);
+
+                    if( patchDict.found("nLayers") )
+                    {
+                        readLabel(patchDict.lookup("nLayers"));
+                    }
+                    if( patchDict.found("thicknessRatio") )
+                    {
+                        readScalar(patchDict.lookup("thicknessRatio"));
+                    }
+                    if( patchDict.found("maxFirstLayerThickness") )
+                    {
+                        readScalar(patchDict.lookup("maxFirstLayerThickness"));
+                    }
+                    if( patchDict.found("allowDiscontinuity") )
+                    {
+                        readBool(patchDict.lookup("allowDiscontinuity"));
+                    }
+                }
+                else
+                {
+                    Warning << "Cannot refine layer for patch "
+                        << patchNames[patchI] << endl;
+                }
+            }
         }
         else
         {
@@ -470,7 +519,35 @@ void checkMeshDict::updateBoundaryLayers
     const std::map<word, wordList>& patchesFromPatch
 )
 {
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        dictionary& bndLayersDict = meshDict_.subDict("boundaryLayers");
+        if( bndLayersDict.isDict("patchBoundaryLayers") )
+        {
+            dictionary& patchBndLayers =
+                bndLayersDict.subDict("patchBoundaryLayers");
 
+            const wordList patchLayers = patchBndLayers.toc();
+
+            forAll(patchLayers, patchI)
+            {
+                const word& pName = patchLayers[patchI];
+
+                dictionary dict = patchBndLayers.subDict(pName);
+
+                const std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+                const wordList& newNames = it->second;
+
+                forAll(newNames, i)
+                {
+                    patchBndLayers.add(newNames[i], dict);
+                }
+
+                patchBndLayers.remove(pName);
+            }
+        }
+    }
 }
 
 void checkMeshDict::updateRenameBoundary

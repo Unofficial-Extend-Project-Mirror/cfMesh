@@ -173,7 +173,7 @@ void triSurfaceClassifyEdges::checkOrientation()
     groupVotes = labelPair(0, 0);
 
     # ifdef USE_OMP
-    # pragma omp parallel if( surf.size() > 1000 )
+    # pragma omp parallel if( surf.size() > 1000 ) private(helper)
     # endif
     {
         DynList<labelPair> localVotes;
@@ -250,6 +250,8 @@ void triSurfaceClassifyEdges::checkOrientation()
         }
     }
 
+    Info << "Before determining of orientation" << endl;
+
     //- determine whether a group is oriented outward or inward
     List<direction> outwardGroup(nGroups, direction(0));
 
@@ -265,6 +267,7 @@ void triSurfaceClassifyEdges::checkOrientation()
         }
     }
 
+    Info << "Here setting orientation" << endl;
     //- Finally, set the orientation of the normal
     facetOrientation_.setSize(surf.size());
     forAll(facetOrientation_, triI)

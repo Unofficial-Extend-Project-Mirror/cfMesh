@@ -32,7 +32,7 @@ Description
 #include "FixedList.H"
 #include "helperFunctions.H"
 
-#define DEBUGLayer
+//#define DEBUGLayer
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,7 +45,7 @@ void refineBoundaryLayers::refineFace
 (
     const face& f,
     const FixedList<label, 2>& nLayersInDirection,
-    DynList<DynList<label, 4> >& newFaces
+    DynList<DynList<label, 4>, 128>& newFaces
 )
 {
     //- this face must be a quad
@@ -415,8 +415,7 @@ void refineBoundaryLayers::generateNewFaces()
         }
 
         //- refine the face
-        DynList<DynList<label, 4> > newFacesForFace;
-
+        DynList<DynList<label, 4>, 128> newFacesForFace;
         refineFace(f, nRefinementInDirection, newFacesForFace);
 
         //- store decomposed faces
@@ -426,11 +425,13 @@ void refineBoundaryLayers::generateNewFaces()
             newFaces_.appendList(newFacesForFace[fI]);
         }
 
+        # ifdef DEBUGLayer
         Info << "Internal face " << faceI << " with points " << f
              << " is refined " << endl;
         forAllRow(facesFromFace_, faceI, i)
             Info << "New face " << i << " is "
                  << newFaces_[facesFromFace_(faceI, i)] << endl;
+        # endif
     }
 
     //- refine boundary faces where needed
@@ -477,8 +478,7 @@ void refineBoundaryLayers::generateNewFaces()
         }
 
         //- refine the face
-        DynList<DynList<label, 4> > newFacesForFace;
-
+        DynList<DynList<label, 4>, 128> newFacesForFace;
         refineFace(bf, nRefinementInDirection, newFacesForFace);
 
         //- store the refined faces
@@ -539,7 +539,18 @@ void refineBoundaryLayers::generateNewFaces()
                                 nLayersAtBndFace_[beFaces(beI, 0)];
 
                             //- add the data to the list for sending
-                            const label dir = ((eI + 1) % 2);
+                            const label dir = (eI % 2);
+
+                            # ifdef DEBUGLayer
+                            Pout << "Face " << fI << " owner of proc patch "
+                                 << procBoundaries[patchI].myProcNo()
+                                 << " nei proc "
+                                 << procBoundaries[patchI].neiProcNo()
+                                 << " bnd face patch "
+                                 << facePatches[beFaces(beI, 0)]
+                                 << " direction " << dir
+                                 << " nSplits " << nSplits0 << endl;
+                            # endif
 
                             //- add face label, direction
                             //- and the number of splits
@@ -582,7 +593,7 @@ void refineBoundaryLayers::generateNewFaces()
             while( counter < receivedData.size() )
             {
                 const label fI = receivedData[counter++];
-                const label dir = receivedData[counter++];
+                const label dir = ((receivedData[counter++] + 1) % 2);
                 const label nSplits = receivedData[counter++];
 
                 DynList<labelPair, 2>& currentSplits = localSplits[start+fI];
@@ -622,7 +633,6 @@ void refineBoundaryLayers::generateNewFaces()
                 }
 
                 //- split the face and add the faces to the list
-                DynList<DynList<label, 4> > facesFromFace;
                 if( procBoundaries[patchI].owner() )
                 {
                     //- this processor owns this patch
@@ -632,6 +642,16 @@ void refineBoundaryLayers::generateNewFaces()
                         nLayersInDirection[dirSplits[i].first()] =
                             dirSplits[i].second();
 
+                    # ifdef DEBUGLayer
+                    Pout << "Face " << fI << " at owner processor "
+                        << procBoundaries[patchI].myProcNo()
+                        << " neighbour processor "
+                        << procBoundaries[patchI].neiProcNo()
+                        << " face " << faces[faceI] << " refinement direction "
+                        << nLayersInDirection << endl;
+                    # endif
+
+                    DynList<DynList<label, 4>, 128> facesFromFace;
                     refineFace(faces[faceI], nLayersInDirection, facesFromFace);
 
                     //- add faces
@@ -651,7 +671,17 @@ void refineBoundaryLayers::generateNewFaces()
                             dirSplits[i].second();
 
                     const face rFace = faces[faceI].reverseFace();
-                    Pout << "Refining face " << rFace << endl;
+
+                    # ifdef DEBUGLayer
+                    Pout << "Face " << fI << " at owner processor "
+                        << procBoundaries[patchI].myProcNo()
+                        << " neighbour processor "
+                        << procBoundaries[patchI].neiProcNo()
+                        << " face " << rFace << " refinement direction "
+                        << nLayersInDirection << endl;
+                    # endif
+
+                    DynList<DynList<label, 4>, 128> facesFromFace;
                     refineFace(rFace, nLayersInDirection, facesFromFace);
 
                     forAll(facesFromFace, i)
@@ -665,12 +695,72 @@ void refineBoundaryLayers::generateNewFaces()
                 }
             }
         }
+
+        # ifdef DEBUGLayer
+        returnReduce(1, sumOp<label>());
+        for(label procI=0;procI<Pstream::nProcs();++procI)
+        {
+            if( procI == Pstream::myProcNo() )
+            {
+                forAll(procBoundaries, patchI)
+                {
+                    const label start = procBoundaries[patchI].patchStart();
+                    const label size = procBoundaries[patchI].patchSize();
+
+                    for(label fI=0;fI<size;++fI)
+                    {
+                        const label faceI = start + fI;
+                        const face& f = faces[faceI];
+                        Pout << "Face " << fI << " in patch "
+                             << procBoundaries[patchI].patchName()
+                             << " has nodes " << f
+                             << " local splits " << localSplits[faceI]
+                             << " new faces from face " << facesFromFace_[faceI]
+                             << endl;
+
+                        Pout << " Face points ";
+                        forAll(f, pI)
+                            Pout << mesh_.points()[f[pI]] << " ";
+                        Pout << endl;
+
+                        forAllRow(facesFromFace_, faceI, ffI)
+                        {
+                            const label nfI = facesFromFace_(faceI, ffI);
+                            Pout << "New face " << ffI << " with label " << nfI
+                                 << " consists of points ";
+                            forAllRow(newFaces_, nfI, pI)
+                                Pout << mesh_.points()[newFaces_(nfI, pI)]
+                                     << " ";
+                            Pout << endl;
+                        }
+                    }
+                }
+            }
+
+            returnReduce(1, sumOp<label>());
+        }
+
+        returnReduce(1, sumOp<label>());
+        //::exit(1);
+        # endif
     }
 
     # ifdef DEBUGLayer
-    Info << "facesFromFace_ " << facesFromFace_ << endl;
-    Info << "newFaces_ " << newFaces_ << endl;
+    returnReduce(1, sumOp<label>());
+
+    for(label procI=0;procI<Pstream::nProcs();++procI)
+    {
+        if( procI == Pstream::myProcNo() )
+        {
+            Pout << "facesFromFace_ " << facesFromFace_ << endl;
+            Pout << "newFaces_ " << newFaces_ << endl;
+        }
+
+        returnReduce(1, sumOp<label>());
+    }
     # endif
+
+    Info << "Finished refining boundary-layer faces " << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

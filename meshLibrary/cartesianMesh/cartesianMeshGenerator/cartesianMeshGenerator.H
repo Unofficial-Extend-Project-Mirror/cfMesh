@@ -89,7 +89,10 @@ class cartesianMeshGenerator
         void optimiseMeshSurface();
 
         //- add boundary layers
-        void generateBoudaryLayers();
+        void generateBoundaryLayers();
+
+        //- refine boundary layers
+        void refBoundaryLayers();
 
         //- mesh optimisation
         void optimiseFinalMesh();

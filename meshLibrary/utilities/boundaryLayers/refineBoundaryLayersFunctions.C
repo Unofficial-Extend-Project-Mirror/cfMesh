@@ -39,7 +39,7 @@ Description
 #include <omp.h>
 # endif
 
-#define DEBUGLayer
+//#define DEBUGLayer
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -448,7 +448,7 @@ void refineBoundaryLayers::analyseLayers()
     }
 
     # ifdef DEBUGLayer
-    Info << "nLayersAtPatch " << nLayersAtPatch << endl;
+    Pout << "nLayersAtPatch " << nLayersAtPatch << endl;
     # endif
 
     //- set the number of boundary layers which shall be generated above
@@ -474,7 +474,9 @@ void refineBoundaryLayers::analyseLayers()
     }
 
     # ifdef DEBUGLayer
-    Info << "nLayersAtBndFace_ " << nLayersAtBndFace_ << endl;
+    forAll(nLayersAtBndFace_, bfI)
+    Pout << "Boundary face " << bfI << " in patch "
+        << facePatch[bfI] << " num layers " << nLayersAtBndFace_[bfI] << endl;
     //::exit(1);
     # endif
 }
@@ -638,6 +640,7 @@ bool refineBoundaryLayers::findSplitEdges()
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const labelList& facePatch = mse.boundaryFacePatches();
+    mse.faceOwners();
     const VRWGraph& pFaces = mse.pointFaces();
     const labelList& bp = mse.bp();
 
@@ -719,7 +722,15 @@ bool refineBoundaryLayers::findSplitEdges()
     reduce(validLayer, minOp<bool>());
 
     # ifdef DEBUGLayer
-    Info << "Generated split edges " << splitEdges_ << endl;
+    for(label procI=0;procI<Pstream::nProcs();++procI)
+    {
+        if( procI == Pstream::myProcNo() )
+        {
+            Pout << "Generated split edges " << splitEdges_ << endl;
+        }
+
+        returnReduce(1, sumOp<label>());
+    }
     # endif
 
     return validLayer;
@@ -912,7 +923,18 @@ void refineBoundaryLayers::generateNewVertices()
         {
             const labelPair& lp = receivedNumLayers[i];
             const label eI = globalToLocal[lp.first()];
-            nNodesAtEdge[eI] = std::max(nNodesAtEdge[eI], lp.second());
+            const edge& e = edges[eI];
+            label seI(-1);
+            forAllRow(splitEdgesAtPoint_, e.start(), i)
+            {
+                const label seJ = splitEdgesAtPoint_(e.start(), i);
+                if( splitEdges_[seJ] == e )
+                {
+                    seI = seJ;
+                    break;
+                }
+            }
+            nNodesAtEdge[seI] = std::max(nNodesAtEdge[seI], lp.second());
         }
 
         //- exchange thickness ratio
@@ -923,10 +945,21 @@ void refineBoundaryLayers::generateNewVertices()
         {
             const labelledScalar& ls = receivedScalar[i];
             const label eI = globalToLocal[ls.scalarLabel()];
-            thicknessRatio[eI] = std::max(thicknessRatio[eI], ls.value());
+            const edge& e = edges[eI];
+            label seI(-1);
+            forAllRow(splitEdgesAtPoint_, e.start(), i)
+            {
+                const label seJ = splitEdgesAtPoint_(e.start(), i);
+                if( splitEdges_[seJ] == e )
+                {
+                    seI = seJ;
+                    break;
+                }
+            }
+            thicknessRatio[seI] = std::max(thicknessRatio[seI], ls.value());
         }
 
-        //- exchange ,aximum thickness of the first layer
+        //- exchange maximum thickness of the first layer
         receivedScalar.clear();
         help::exchangeMap(exchangeThickness, receivedScalar);
 
@@ -934,8 +967,19 @@ void refineBoundaryLayers::generateNewVertices()
         {
             const labelledScalar& ls = receivedScalar[i];
             const label eI = globalToLocal[ls.scalarLabel()];
-            firstLayerThickness[eI] =
-                std::min(firstLayerThickness[eI], ls.value());
+            const edge& e = edges[eI];
+            label seI(-1);
+            forAllRow(splitEdgesAtPoint_, e.start(), i)
+            {
+                const label seJ = splitEdgesAtPoint_(e.start(), i);
+                if( splitEdges_[seJ] == e )
+                {
+                    seI = seJ;
+                    break;
+                }
+            }
+            firstLayerThickness[seI] =
+                std::min(firstLayerThickness[seI], ls.value());
         }
     }
 
@@ -1033,6 +1077,27 @@ void refineBoundaryLayers::generateNewVertices()
     }
 
     # ifdef DEBUGLayer
+    for(label procI=0;procI<Pstream::nProcs();++procI)
+    {
+        if( procI == Pstream::myProcNo() )
+        {
+            forAll(splitEdges_, seI)
+            {
+                Pout << "\nSplit edge " << seI << " nodes " << splitEdges_[seI]
+                    << " coordinates " << points[splitEdges_[seI][0]]
+                    << " " << points[splitEdges_[seI][1]]
+                    << " has new points "
+                    << newVerticesForSplitEdge_[seI] << endl;
+
+                forAllRow(newVerticesForSplitEdge_, seI, i)
+                    Pout << "Point " << i << " on edge ha coordinates "
+                         << points[newVerticesForSplitEdge_(seI, i)] << endl;
+            }
+        }
+
+        returnReduce(1, sumOp<label>());
+    }
+
     Info << "Finished generating vertices at split edges" << endl;
     //::exit(1);
     # endif

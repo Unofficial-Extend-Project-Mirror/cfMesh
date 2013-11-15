@@ -149,7 +149,7 @@ class refineBoundaryLayers
         (
             const face& f,
             const FixedList<label, 2>& nLayersInDirection,
-            DynList<DynList<label, 4> >& newFaces
+            DynList<DynList<label, 4>, 128>& newFaces
         );
 
         //- map split edges onto a cell
@@ -196,6 +196,9 @@ public:
         ~refineBoundaryLayers();
 
     // Public member functions
+        //- set no refinement flag
+        void avoidRefinement();
+
         //- set the global number of boundary layers
         void setGlobalNumberOfLayers(const label nLayers);
 
@@ -237,8 +240,10 @@ public:
 
         //- performs refinement based on the given settings
         void refineLayers();
-};
 
+        //- read the settings from dictionary
+        static void readSettings(const dictionary&, refineBoundaryLayers&);
+};
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

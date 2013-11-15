@@ -31,7 +31,7 @@ Description
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
 
-#define DEBUGLayer
+//#define DEBUGLayer
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,7 +50,7 @@ void refineBoundaryLayers::generateNewCellsPrism
     const labelList& owner = mesh_.owner();
 
     # ifdef DEBUGLayer
-    Info << "New cells from cell " << cellI << endl;
+    Pout << "New cells from cell " << cellI << endl;
     # endif
 
     const label startBoundary = mesh_.boundaries()[0].patchStart();
@@ -68,7 +68,7 @@ void refineBoundaryLayers::generateNewCellsPrism
             continue;
 
         # ifdef DEBUGLayer
-        Info << "Boundary face " << bfI << endl;
+        Pout << "Boundary face " << bfI << endl;
         # endif
 
         nLayers = nLayersAtBndFace_[bfI];
@@ -76,16 +76,16 @@ void refineBoundaryLayers::generateNewCellsPrism
     }
 
     # ifdef DEBUGLayer
-    Info << "Number of layers " << nLayers << endl;
-    Info << "Base face " << baseFace << " has points "
+    Pout << "Number of layers " << nLayers << endl;
+    Pout << "Base face " << baseFace << " has points "
          << mesh_.faces()[c[baseFace]] << endl;
     forAll(c, fI)
     {
-        Info << "Faces from face " << fI << " are "
+        Pout << "Faces from face " << fI << " are "
              << facesFromFace_[c[fI]] << endl;
 
         forAllRow(facesFromFace_, c[fI], i)
-            Info << "Face " << facesFromFace_(c[fI], i)
+            Pout << "Face " << facesFromFace_(c[fI], i)
                  << " is " << newFaces_[facesFromFace_(c[fI], i)] << endl;
     }
     # endif
@@ -142,7 +142,7 @@ void refineBoundaryLayers::generateNewCellsPrism
             const label pointI = bf[pI];
 
             # ifdef DEBUGLayer
-            Info << "Split edges at point " << pointI << " are "
+            Pout << "Split edges at point " << pointI << " are "
                  << splitEdgesAtPoint_[pointI] << endl;
             # endif
 
@@ -175,11 +175,10 @@ void refineBoundaryLayers::generateNewCellsPrism
     }
 
     # ifdef DEBUGLayer
-    Info << "New cells from cell " << cellI << " are " << cellsFromCell << endl;
+    Pout << "New cells from cell " << cellI << " are " << cellsFromCell << endl;
     //::exit(1);
-    # endif
 
-    Info << "1. Newly generated cells " << cellsFromCell << endl;
+    Pout << "1. Newly generated cells " << cellsFromCell << endl;
 
     //- check if all generated cells are topologically closed
     forAll(cellsFromCell, cI)
@@ -214,11 +213,12 @@ void refineBoundaryLayers::generateNewCellsPrism
         forAll(nAppearances, eI)
             if( nAppearances[eI] != 2 )
             {
-                Info << "Prism cell " << cI << " edge " << edges[eI]
+                Pout << "Prism cell " << cI << " edge " << edges[eI]
                     << " is present " << nAppearances[eI] << " times!" << endl;
                 abort(FatalError);
             }
     }
+    # endif
 }
 
 //- generate new cells from a hex at a feature edge
@@ -228,14 +228,15 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     DynList<DynList<DynList<label, 4>, 6>, 64>& cellsFromCell
 )
 {
-    const cell& c = mesh_.cells()[cellI];
     const faceListPMG& faces = mesh_.faces();
+    const cell& c = mesh_.cells()[cellI];
 
     # ifdef DEBUGLayer
-    Info << "Generating new cells from edge cell " << cellI << endl;
+    Pout << "Generating new cells from edge cell " << cellI << endl;
     # endif
 
     const label startBoundary = mesh_.boundaries()[0].patchStart();
+    const PtrList<writeProcessorPatch>& procBnd = mesh_.procBoundaries();
 
     //- find the number of layers for this cell
     FixedList<label, 2> layersInDirection(-1), dirFace;
@@ -249,7 +250,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
             continue;
 
         # ifdef DEBUGLayer
-        Info << "Boundary face " << bfI << endl;
+        Pout << "Boundary face " << bfI << endl;
         # endif
 
         if( nLayersAtBndFace_[bfI] < 2 )
@@ -261,8 +262,8 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     }
 
     # ifdef DEBUGLayer
-    Info << "Directions " << dirFace << endl;
-    Info << "Number of layers in direction " << layersInDirection << endl;
+    Pout << "Directions " << dirFace << endl;
+    Pout << "Number of layers in direction " << layersInDirection << endl;
     # endif
 
     if( layersInDirection[0] < 0 || layersInDirection[1] < 0 )
@@ -280,30 +281,12 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     //- find the shared edge between the boundary faces
     const edge commonEdge =
         help::sharedEdge(faces[c[dirFace[0]]], faces[c[dirFace[1]]]);
+    const label donorFace = dirFace[0];
 
     # ifdef DEBUGLayer
-    Info << "Common edge " << commonEdge << endl;
-    # endif
-
-    //- find a donor face of the common edge
-    label donorFace(-1);
-    const label pos0 =
-        help::positionOfEdgeInFace(commonEdge, faces[c[dirFace[0]]]);
-    if( faces[c[dirFace[0]]][pos0] == commonEdge.start() )
-        donorFace = dirFace[0];
-
-    if( donorFace == -1 )
-    {
-        const label pos1 =
-            help::positionOfEdgeInFace(commonEdge, faces[c[dirFace[1]]]);
-
-        if( faces[c[dirFace[1]]][pos1] == commonEdge.start() )
-            donorFace = dirFace[1];
-    }
-
-    # ifdef DEBUGLayer
-    Info << "Donor face " << donorFace << endl;
-    Info << "Donor face points " << faces[c[donorFace]] << endl;
+    Pout << "Common edge " << commonEdge << endl;
+    Pout << "Donor face " << donorFace << endl;
+    Pout << "Donor face points " << faces[c[donorFace]] << endl;
     # endif
 
     //- find the face attached to the starting point of the edge and
@@ -326,8 +309,8 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     }
 
     # ifdef DEBUGLayer
-    Info << "Face at start " << faces[c[faceAtStart]] << endl;
-    Info << "Face at end " << faces[c[faceAtEnd]] << endl;
+    Pout << "Face at start " << faces[c[faceAtStart]] << endl;
+    Pout << "Face at end " << faces[c[faceAtEnd]] << endl;
     # endif
 
     //- check the orientation of cross-split faces
@@ -338,9 +321,14 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     if( e.start() != faces[c[faceAtStart]][pos] )
         startFaceOrientation = false;
 
+    pos = mesh_.faceIsInProcPatch(c[faceAtStart]);
+    bool neiProcFaceStart(false);
+    if( (pos >= 0) && !procBnd[pos].owner() )
+        neiProcFaceStart = true;
+
     # ifdef DEBUGLayer
-    Info << "Start face shared edge " << e << " is at position " << pos << endl;
-    Info << "Starting face orientation " << startFaceOrientation << endl;
+    Pout << "Start face shared edge " << e << " is at position " << pos << endl;
+    Pout << "Starting face orientation " << startFaceOrientation << endl;
     # endif
 
     //- checking edge at end point
@@ -350,9 +338,14 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     if( e.start() == faces[c[faceAtEnd]][pos] )
         endFaceOrientation = false;
 
+    pos = mesh_.faceIsInProcPatch(c[faceAtEnd]);
+    bool neiProcFaceEnd(false);
+    if( (pos >= 0) && !procBnd[pos].owner() )
+        neiProcFaceEnd = true;
+
     # ifdef DEBUGLayer
-    Info << "End face shared edge " << e << " is at position " << pos << endl;
-    Info << "End face orientation " << endFaceOrientation << endl;
+    Pout << "End face shared edge " << e << " is at position " << pos << endl;
+    Pout << "End face orientation " << endFaceOrientation << endl;
     # endif
 
     //- fill up the matrix of points for this cell
@@ -371,12 +364,19 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
         forAllRow(facesFromFace_, fLabel, fI)
         {
             const label nfI = facesFromFace_(fLabel, fI);
-            const label i = (fI % layersInDirection[0]);
-            const label j = (fI / layersInDirection[0]);
+
+            label i = (fI % layersInDirection[0]);
+            label j = (fI / layersInDirection[0]);
+
+            if( neiProcFaceStart )
+            {
+                i = (fI / layersInDirection[1]);
+                j = (fI % layersInDirection[1]);
+            }
 
             # ifdef DEBUGLayer
-            Info << "1. i = " << i << " j = " << j << endl;
-            Info << "New face " << newFaces_[nfI] << endl;
+            Pout << "1. i = " << i << " j = " << j << endl;
+            Pout << "New face " << newFaces_[nfI] << endl;
             # endif
 
             facePoints[0][i][j] = newFaces_(nfI, 0);
@@ -396,12 +396,19 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
         forAllRow(facesFromFace_, fLabel, fI)
         {
             const label nfI = facesFromFace_(fLabel, fI);
-            const label i = (fI / layersInDirection[1]);
-            const label j = (fI % layersInDirection[1]);
+
+            label i = (fI / layersInDirection[1]);
+            label j = (fI % layersInDirection[1]);
+
+            if( neiProcFaceStart )
+            {
+                i = (fI % layersInDirection[0]);
+                j = (fI / layersInDirection[0]);
+            }
 
             # ifdef DEBUGLayer
-            Info << "2. i = " << i << " j = " << j << endl;
-            Info << "New face " << newFaces_[nfI] << endl;
+            Pout << "2. i = " << i << " j = " << j << endl;
+            Pout << "New face " << newFaces_[nfI] << endl;
             # endif
 
             facePoints[0][i][j] = newFaces_(nfI, 0);
@@ -423,12 +430,19 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
         forAllRow(facesFromFace_, fLabel, fI)
         {
             const label nfI = facesFromFace_(fLabel, fI);
-            const label i = (fI % layersInDirection[0]);
-            const label j = (fI / layersInDirection[0]);
+
+            label i = (fI % layersInDirection[0]);
+            label j = (fI / layersInDirection[0]);
+
+            if( neiProcFaceEnd )
+            {
+                i = (fI / layersInDirection[1]);
+                j = (fI % layersInDirection[1]);
+            }
 
             # ifdef DEBUGLayer
-            Info << "3. i = " << i << " j = " << j << endl;
-            Info << "New face " << newFaces_[nfI] << endl;
+            Pout << "3. i = " << i << " j = " << j << endl;
+            Pout << "New face " << newFaces_[nfI] << endl;
             # endif
 
             facePoints[1][i][j] = newFaces_(nfI, 0);
@@ -448,12 +462,19 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
         forAllRow(facesFromFace_, fLabel, fI)
         {
             const label nfI = facesFromFace_(fLabel, fI);
-            const label i = (fI / layersInDirection[1]);
-            const label j = (fI % layersInDirection[1]);
+
+            label i = (fI / layersInDirection[1]);
+            label j = (fI % layersInDirection[1]);
+
+            if( neiProcFaceEnd )
+            {
+                i = (fI % layersInDirection[0]);
+                j = (fI / layersInDirection[0]);
+            }
 
             # ifdef DEBUGLayer
-            Info << "4. i = " << i << " j = " << j << endl;
-            Info << "New face " << newFaces_[nfI] << endl;
+            Pout << "4. i = " << i << " j = " << j << endl;
+            Pout << "New face " << newFaces_[nfI] << endl;
             # endif
 
             facePoints[1][i][j] = newFaces_(nfI, 0);
@@ -464,7 +485,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     }
 
     # ifdef DEBUGLayer
-    Info << "Face points " << facePoints << endl;
+    Pout << "Face points " << facePoints << endl;
     # endif
 
     //- generate new cells from the current cells
@@ -482,7 +503,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
             )
             {
                 # ifdef DEBUGLayer
-                Info << "1. Generating cell i = " << i << " j = " << j << endl;
+                Pout << "1. Generating cell i = " << i << " j = " << j << endl;
                 # endif
 
                 //- this cell might not be a quad and
@@ -525,7 +546,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
             else
             {
                 # ifdef DEBUGLayer
-                Info << "2. Generating cell i = " << i << " j = " << j << endl;
+                Pout << "2. Generating cell i = " << i << " j = " << j << endl;
                 # endif
 
                 //- generate a hex cell from the matrix of cell points
@@ -575,7 +596,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
     }
 
     # ifdef DEBUGLayer
-    Info << "Newly generated cells " << cellsFromCell << endl;
+    Pout << "Newly generated cells " << cellsFromCell << endl;
 
     //- check if all generated cells are topologically closed
     forAll(cellsFromCell, cI)
@@ -610,7 +631,7 @@ void refineBoundaryLayers::generateNewCellsEdgeHex
         forAll(nAppearances, eI)
             if( nAppearances[eI] != 2 )
             {
-                Info << "Edge hex cell " << cI << " edge " << edges[eI]
+                Pout << "Edge hex cell " << cI << " edge " << edges[eI]
                     << " is present " << nAppearances[eI] << " times!" << endl;
                 abort(FatalError);
             }
@@ -629,11 +650,10 @@ void refineBoundaryLayers::generateNewCellsCornerHex
 {
     const cell& c = mesh_.cells()[cellI];
     const faceListPMG& faces = mesh_.faces();
-    const labelList& owner = mesh_.owner();
-    const labelList& neighbour = mesh_.neighbour();
 
     # ifdef DEBUGLayer
-    Info << "New cells from cell " << cellI << endl;
+    Pout << "Generating new cells from cell " << cellI << endl;
+    Pout << "Cell faces " << c << endl;
     # endif
 
     const label startBoundary = mesh_.boundaries()[0].patchStart();
@@ -651,7 +671,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
             continue;
 
         # ifdef DEBUGLayer
-        Info << "Boundary face " << bfI << endl;
+        Pout << "Boundary face " << bfI << endl;
         # endif
 
         if( nLayersAtBndFace_[bfI] < 2 )
@@ -675,12 +695,13 @@ void refineBoundaryLayers::generateNewCellsCornerHex
     const label commonPoint = help::sharedVertex(bndFaces);
 
     # ifdef DEBUGLayer
-    Info << "Layers in direction " << layersInDirection << endl;
-    Info << "dirFace " << dirFace << endl;
-    Info << "Common point " << commonPoint << endl;
+    Pout << "Used directions " << usedDirection << endl;
+    Pout << "Layers in direction " << layersInDirection << endl;
+    Pout << "dirFace " << dirFace << endl;
+    Pout << "Common point " << commonPoint << endl;
 
     forAll(dirFace, i)
-        Info << "bnd face " << i << " is " << faces[c[dirFace[i]]] << endl;
+        Pout << "bnd face " << i << " is " << faces[c[dirFace[i]]] << endl;
     # endif
 
     //- find the position of the common point in each boundary face
@@ -721,7 +742,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
 
     # ifdef DEBUGLayer
     forAll(splitEdgeDirection, i)
-        Info << "Split edge in direction " << i << " has nodes "
+        Pout << "Split edge in direction " << i << " has nodes "
              << splitEdges_[splitEdgeDirection[i]]
              << " number of points on split edge "
              << newVerticesForSplitEdge_.sizeOfRow(splitEdgeDirection[i])
@@ -791,8 +812,8 @@ void refineBoundaryLayers::generateNewCellsCornerHex
         const label j = (fI % nLayersJ);
 
         # ifdef DEBUGLayer
-        Info << "1. i = " << i << " j = " << j << endl;
-        Info << "New face " << newFaces_[nfI] << endl;
+        Pout << "1. i = " << i << " j = " << j << endl;
+        Pout << "New face " << newFaces_[nfI] << endl;
         # endif
 
         cellPoints[i][j][0] = newFaces_(nfI, 0);
@@ -809,8 +830,8 @@ void refineBoundaryLayers::generateNewCellsCornerHex
         const label k = (fI / nLayersI);
 
         # ifdef DEBUGLayer
-        Info << "2. i = " << i << " k = " << k << endl;
-        Info << "New face " << newFaces_[nfI] << endl;
+        Pout << "2. i = " << i << " k = " << k << endl;
+        Pout << "New face " << newFaces_[nfI] << endl;
         # endif
 
         cellPoints[i][0][k] = newFaces_(nfI, 0);
@@ -827,8 +848,8 @@ void refineBoundaryLayers::generateNewCellsCornerHex
         const label k = (fI % nLayersK);
 
         # ifdef DEBUGLayer
-        Info << "3. j = " << j << " k = " << k << endl;
-        Info << "New face " << newFaces_[nfI] << endl;
+        Pout << "3. j = " << j << " k = " << k << endl;
+        Pout << "New face " << newFaces_[nfI] << endl;
         # endif
 
         cellPoints[0][j][k] = newFaces_(nfI, 0);
@@ -838,27 +859,50 @@ void refineBoundaryLayers::generateNewCellsCornerHex
     }
 
     //- find the face attached to the end of each split edge
+    const PtrList<writeProcessorPatch>& procBnd = mesh_.procBoundaries();
     forAll(usedDirection, dirI)
     {
         if( usedDirection[dirI] )
             continue;
 
+        label procPatch = mesh_.faceIsInProcPatch(c[dirI]);
+        bool neiProcFace(false);
+        if(
+            procPatch >= 0 &&
+            !procBnd[procPatch].owner()
+        )
+            neiProcFace = true;
+
         if( faces[c[dirI]].which(seDir0.end()) >= 0 )
         {
+            const edge shEdge =
+                help::sharedEdge
+                (
+                    faces[c[dirI]],
+                    faces[c[dirFace[permutation[0]]]]
+                );
+
             //- this face is attached to the end of the edge in direction 0
             //- it has its i coordinate equal to nLayersI
-            if( cellI == neighbour[c[dirI]] )
+            if( shEdge.end() == seDir0.end() )
             {
                 //- desired orientation
                 forAllRow(facesFromFace_, c[dirI], fI)
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
-                    const label j = (fI / nLayersK);
-                    const label k = (fI % nLayersK);
+
+                    label j = (fI / nLayersK);
+                    label k = (fI % nLayersK);
+
+                    if( neiProcFace )
+                    {
+                        j = (fI % nLayersJ);
+                        k = (fI / nLayersJ);
+                    }
 
                     # ifdef DEBUGLayer
-                    Info << "4. j = " << j << " k = " << k << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "4. j = " << j << " k = " << k << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[nLayersI][j][k] = newFaces_(nfI, 0);
@@ -873,12 +917,19 @@ void refineBoundaryLayers::generateNewCellsCornerHex
                 forAllRow(facesFromFace_, c[dirI], fI)
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
-                    const label j = (fI % nLayersJ);
-                    const label k = (fI / nLayersJ);
+
+                    label j = (fI % nLayersJ);
+                    label k = (fI / nLayersJ);
+
+                    if( neiProcFace )
+                    {
+                        j = (fI / nLayersK);
+                        k = (fI % nLayersK);
+                    }
 
                     # ifdef DEBUGLayer
-                    Info << "5. j = " << j << " k = " << k << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "5. j = " << j << " k = " << k << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[nLayersI][j][k] = newFaces_(nfI, 0);
@@ -890,18 +941,31 @@ void refineBoundaryLayers::generateNewCellsCornerHex
         }
         else if( faces[c[dirI]].which(seDir1.end()) >= 0 )
         {
-            if( cellI == owner[c[dirI]] )
+            const edge shEdge =
+                help::sharedEdge
+                (
+                    faces[c[dirI]],
+                    faces[c[dirFace[permutation[0]]]]
+                );
+
+            if( shEdge.end() == seDir1.end() )
             {
                 //- desired orientation
                 forAllRow(facesFromFace_, c[dirI], fI)
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
-                    const label i = (fI / nLayersK);
-                    const label k = (fI % nLayersK);
 
+                    label i = (fI / nLayersK);
+                    label k = (fI % nLayersK);
+
+                    if( neiProcFace )
+                    {
+                        i = (fI % nLayersI);
+                        k = (fI / nLayersI);
+                    }
                     # ifdef DEBUGLayer
-                    Info << "6. i = " << i << " k = " << k << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "6. i = " << i << " k = " << k << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[i][nLayersJ][k] = newFaces_(nfI, 0);
@@ -916,12 +980,19 @@ void refineBoundaryLayers::generateNewCellsCornerHex
                 forAllRow(facesFromFace_, c[dirI], fI)
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
-                    const label i = (fI % nLayersI);
-                    const label k = (fI / nLayersI);
+
+                    label i = (fI % nLayersI);
+                    label k = (fI / nLayersI);
+
+                    if( neiProcFace )
+                    {
+                        i = (fI / nLayersK);
+                        k = (fI % nLayersK);
+                    }
 
                     # ifdef DEBUGLayer
-                    Info << "7. i = " << i << " k = " << k << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "7. i = " << i << " k = " << k << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[i][nLayersJ][k] = newFaces_(nfI, 0);
@@ -933,19 +1004,32 @@ void refineBoundaryLayers::generateNewCellsCornerHex
         }
         else if( faces[c[dirI]].which(seDir2.end()) >= 0 )
         {
-            if( cellI == owner[c[dirI]] )
+            const edge shEdge =
+                help::sharedEdge
+                (
+                    faces[c[dirI]],
+                    faces[c[dirFace[permutation[2]]]]
+                );
+
+            if( shEdge.end() == seDir2.end() )
             {
                 //- desired orientation
                 forAllRow(facesFromFace_, c[dirI], fI)
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
 
-                    const label i = (fI % nLayersI);
-                    const label j = (fI / nLayersI);
+                    label i = (fI % nLayersI);
+                    label j = (fI / nLayersI);
+
+                    if( neiProcFace )
+                    {
+                        i = (fI / nLayersJ);
+                        j = (fI % nLayersJ);
+                    }
 
                     # ifdef DEBUGLayer
-                    Info << "8. i = " << i << " j = " << j << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "8. i = " << i << " j = " << j << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[i][j][nLayersK] = newFaces_(nfI, 0);
@@ -961,12 +1045,18 @@ void refineBoundaryLayers::generateNewCellsCornerHex
                 {
                     const label nfI = facesFromFace_(c[dirI], fI);
 
-                    const label i = (fI / nLayersJ);
-                    const label j = (fI % nLayersJ);
+                    label i = (fI / nLayersJ);
+                    label j = (fI % nLayersJ);
+
+                    if( neiProcFace )
+                    {
+                        i = (fI % nLayersI);
+                        j = (fI / nLayersI);
+                    }
 
                     # ifdef DEBUGLayer
-                    Info << "9. i = " << i << " j = " << j << endl;
-                    Info << "New face " << newFaces_[nfI] << endl;
+                    Pout << "9. i = " << i << " j = " << j << endl;
+                    Pout << "New face " << newFaces_[nfI] << endl;
                     # endif
 
                     cellPoints[i][j][nLayersK] = newFaces_(nfI, 0);
@@ -988,7 +1078,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
     }
 
     # ifdef DEBUGLayer
-    Info << "cellPoints before inner points " << cellPoints << endl;
+    Pout << "cellPoints before inner points " << cellPoints << endl;
     # endif
 
     //- generate points inside the cell via transfinite interpolation
@@ -1047,7 +1137,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
                     const point& v011 =
                         points[cellPoints[0][nLayersJ][nLayersK]];
 
-                    //- calculate the coordinates for the new vertex
+                    //- calculate coordinates of the new vertex
                     const point newP =
                         (1.0 - u) * (1.0 - v) * (1.0 - w) * v000 +
                         u * (1.0 - v) * (1.0 - w) * v100 +
@@ -1067,14 +1157,14 @@ void refineBoundaryLayers::generateNewCellsCornerHex
     }
 
     # ifdef DEBUGLayer
-    Info << "cellPoints " << cellPoints << endl;
+    Pout << "cellPoints " << cellPoints << endl;
     # endif
 
     //- create new cells from
     cellsFromCell.setSize(nLayersI * nLayersJ * nLayersK);
 
     # ifdef DEBUGLayer
-    Info << "Number of new cells " << cellsFromCell.size() << endl;
+    Pout << "Number of new cells " << cellsFromCell.size() << endl;
     # endif
 
     label counter(0);
@@ -1093,7 +1183,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
 
                     //- this cell may not be a hex
                     # ifdef DEBUGLayer
-                    Info << "1. Generating cell i = " << i
+                    Pout << "1. Generating cell i = " << i
                          << " j = " << j
                          << " k = " << k << endl;
                     # endif
@@ -1145,7 +1235,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
                 {
                     //- generate a hex cell
                     # ifdef DEBUGLayer
-                    Info << "2. Generating cell i = " << i
+                    Pout << "2. Generating cell i = " << i
                          << " j = " << j << " k = " << k << endl;
                     # endif
 
@@ -1195,7 +1285,7 @@ void refineBoundaryLayers::generateNewCellsCornerHex
     }
 
     # ifdef DEBUGLayer
-    Info << "New cells from corner cell " << cellI
+    Pout << "New cells from corner cell " << cellI
          << " are " << cellsFromCell << endl;
     //::exit(1);
     # endif
@@ -1210,7 +1300,6 @@ void refineBoundaryLayers::generateNewCells()
     const labelList& faceOwners = mse.faceOwners();
 
     //- calculate the number new cells generated from a cell
-    Info << "Num layer at bnd face " << nLayersAtBndFace_ << endl;
     forAll(faceOwners, bfI)
     {
         const label cellI = faceOwners[bfI];
@@ -1225,13 +1314,17 @@ void refineBoundaryLayers::generateNewCells()
     forAll(nCellsFromCell, cellI)
         nNewCells += (nCellsFromCell[cellI] - 1);
 
+    # ifdef DEBUGLayer
     forAll(nCellsFromCell, cellI)
     {
         Info << "\nCell " << cellI << endl;
         Info << "nCellsFromCell " << nCellsFromCell[cellI] << endl;
         Info << "Ref type " << refType[cellI] << endl;
     }
-    Info << "Number of newly generated cells " << nNewCells << endl;
+    #  endif
+
+    const label totalNumNewCells = returnReduce(nNewCells, sumOp<label>());
+    Info << "Number of newly generated cells " << totalNumNewCells << endl;
 
     //- create mesh modifier
     polyMeshGenModifier meshModifier(mesh_);
@@ -1256,20 +1349,18 @@ void refineBoundaryLayers::generateNewCells()
     {
         if( refType[cellI] == 0 )
         {
+            //- this cell is not refined
+            //- update face labels
             newCellsFromCell.append(cellI, cellI);
 
             cell& c = cells[cellI];
 
             forAll(c, fI)
-            {
-                if( facesFromFace_.sizeOfRow(c[fI]) != 1 )
-                    FatalError << "Crap!" << abort(FatalError);
                 c[fI] = facesFromFace_(c[fI], 0);
-            }
         }
         else if( refType[cellI] == 1 )
         {
-            //- generate new cells from this prism
+            //- generate new cells from this prism refined in one direction
             DynList<DynList<DynList<label, 8>, 10> > cellsFromCell;
             generateNewCellsPrism(cellI, cellsFromCell);
 
@@ -1319,8 +1410,10 @@ void refineBoundaryLayers::generateNewCells()
             {
                 const DynList<DynList<label, 4>, 6>& nc = cellsFromCell[cI];
 
+                # ifdef DEBUGLayer
                 Info << "Adding cell " << (cI==0?cellI:nCells)
                      << " originating from cell " << cellI << endl;
+                # endif
 
                 cell& c = cells[cI==0?cellI:nCells++];
                 c.setSize(nc.size());
@@ -1420,9 +1513,12 @@ void refineBoundaryLayers::generateNewCells()
     //- copy the newFaces to the mesh
     const label nOrigInternalFaces = mesh_.nInternalFaces();
 
-    //- store internal faces originating from existing faces
+    # ifdef DEBUGLayer
     Info << "Copying internal faces " << endl;
     Info << "Original number of internal faces " << nOrigInternalFaces << endl;
+    # endif
+
+    //- store internal faces originating from existing faces
     labelListPMG newFaceLabel(newFaces_.size());
     faces.setSize(newFaces_.size());
 
@@ -1445,10 +1541,12 @@ void refineBoundaryLayers::generateNewCells()
     }
 
     //- store newly-generated internal faces
+    # ifdef DEBUGLayer
     Info << "Copying newly generated internal faces" << endl;
     Info << "nNewInternalFaces " << currFace << endl;
     Info << "numFacesBefore " << numFacesBefore << endl;
     Info << "Total number of faces " << newFaces_.size() << endl;
+    # endif
 
     for(label faceI=numFacesBefore;faceI<newFaces_.size();++faceI)
     {
@@ -1463,10 +1561,13 @@ void refineBoundaryLayers::generateNewCells()
     }
 
     //- store new boundary faces
+    # ifdef DEBUGLayer
     Info << "Copying boundary faces " << endl;
     Info << "currFace " << currFace << endl;
     Info << "Faces size " << faces.size() << endl;
     Info << "Initial number of faces " << facesFromFace_.size() << endl;
+    # endif
+
     PtrList<writePatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
     {
@@ -1505,7 +1606,10 @@ void refineBoundaryLayers::generateNewCells()
 
     if( Pstream::parRun() )
     {
+        # ifdef DEBUGLayer
         Info << "Copying processor faces" << endl;
+        # endif
+
         //- copy faces at inter-processor boundaries
         PtrList<writeProcessorPatch>& procBoundaries =
             meshModifier.procBoundariesAccess();
@@ -1523,10 +1627,10 @@ void refineBoundaryLayers::generateNewCells()
                 forAllRow(facesFromFace_, faceI, nfI)
                 {
                     face& f = faces[currFace];
-                    newFaceLabel[faceI] = currFace;
 
                     //- update the new label
                     const label origFaceI = facesFromFace_(faceI, nfI);
+                    newFaceLabel[origFaceI] = currFace;
                     facesFromFace_(faceI, nfI) = currFace;
                     ++currFace;
 
@@ -1545,8 +1649,10 @@ void refineBoundaryLayers::generateNewCells()
         }
     }
 
+    # ifdef DEBUGLayer
     Info << "Faces after refinement " << faces << endl;
     Info << "newFaceLabel " << newFaceLabel << endl;
+    # endif
 
     //- update face subsets
     Info << "Updating subsets" << endl;
@@ -1555,7 +1661,10 @@ void refineBoundaryLayers::generateNewCells()
     newFaces_.setSize(0);
 
     //- update cells to match the faces
+    # ifdef DEBUGLayer
     Info << "Updating cells to match new faces" << endl;
+    # endif
+
     forAll(cells, cellI)
     {
         cell& c = cells[cellI];
@@ -1564,59 +1673,95 @@ void refineBoundaryLayers::generateNewCells()
             c[fI] = newFaceLabel[c[fI]];
     }
 
+    # ifdef DEBUGLayer
     Info << "Cleaning mesh " << endl;
+    # endif
+    //- delete all adressing which is no longer up-to-date
     meshModifier.clearAll();
 
-    forAll(cells, cellI)
+    # ifdef DEBUGLayer
+    for(label procI=0;procI<Pstream::nProcs();++procI)
     {
-        const cell& c = cells[cellI];
-
-        DynList<edge> edges;
-        DynList<label> nAppearances;
-        forAll(c, fI)
+        if( procI == Pstream::myProcNo() )
         {
-            const face& f = faces[c[fI]];
-
-            forAll(f, eI)
+            forAll(cells, cellI)
             {
-                const edge e = f.faceEdge(eI);
+                const cell& c = cells[cellI];
 
-                const label pos = edges.containsAtPosition(e);
-
-                if( pos < 0 )
+                DynList<edge> edges;
+                DynList<label> nAppearances;
+                forAll(c, fI)
                 {
-                    edges.append(e);
-                    nAppearances.append(1);
+                    const face& f = faces[c[fI]];
+
+                    forAll(f, eI)
+                    {
+                        const edge e = f.faceEdge(eI);
+
+                        const label pos = edges.containsAtPosition(e);
+
+                        if( pos < 0 )
+                        {
+                            edges.append(e);
+                            nAppearances.append(1);
+                        }
+                        else
+                        {
+                            ++nAppearances[pos];
+                        }
+                    }
                 }
-                else
+
+                bool badCell(false);
+                forAll(nAppearances, i)
+                    if( nAppearances[i] != 2 )
+                    {
+                        badCell = true;
+                        break;
+
+                    }
+
+                if( badCell )
                 {
-                    ++nAppearances[pos];
+                    Pout << "Cell " << cellI
+                         << " is not topologically closed" << endl;
+
+                    forAll(c, fI)
+                        Pout << "Face " << c[fI] << " with points "
+                             << faces[c[fI]] << endl;
+                    Pout << "Cell edges " << edges << endl;
+                    Pout << "nAppearances " << nAppearances << endl;
                 }
             }
         }
 
-        bool badCell(false);
-        forAll(nAppearances, i)
-            if( nAppearances[i] != 2 )
-            {
-                badCell = true;
-                break;
-
-            }
-
-        if( badCell )
-        {
-            Info << "Cell " << cellI
-                 << " is not topologically closed" << endl;
-
-            forAll(c, fI)
-                Info << "Face " << c[fI] << " with points "
-                     << faces[c[fI]] << endl;
-        }
+        returnReduce(1, sumOp<label>());
     }
 
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
+
+    for(label procI=0;procI<Pstream::nProcs();++procI)
+    {
+        if( procI == Pstream::myProcNo() )
+        {
+            forAll(faces, faceI)
+            {
+                Pout << "Face " << faceI << " owner " << owner[faceI]
+                     << " neighbour " << neighbour[faceI]
+                     << " face points " << faces[faceI] << endl;
+            }
+
+            forAll(cells, cellI)
+                Pout << "Cell " << cellI << " has faces "
+                     << cells[cellI] << endl;
+        }
+
+        returnReduce(procI, maxOp<label>());
+    }
+    # endif
+
     Info << "Finished generating new cells " << endl;
-    //::exit(1);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
