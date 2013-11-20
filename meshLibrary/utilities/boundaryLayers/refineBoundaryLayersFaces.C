@@ -281,62 +281,80 @@ void refineBoundaryLayers::refineFace
     {
         for(label i=0;i<nLayersDir0;++i)
         {
-            if( !((i == (nLayersDir0 - 1)) && (j == (nLayersDir1 - 1))) )
+            //- create quad face
+            DynList<label, 4> f;
+
+            f.append(facePoints[i][j]);
+
+            if( (i == (nLayersDir0 - 1)) && (j == 0) )
             {
-                //- create quad face
-                DynList<label, 4> f;
-                f.setSize(4);
+                # ifdef DEBUGLayer
+                Info << "1. Adding additional points on edge " << endl;
+                # endif
 
-                f[0] = facePoints[i][j];
-                f[1] = facePoints[i+1][j];
-                f[2] = facePoints[i+1][j+1];
-                f[3] = facePoints[i][j+1];
+                //- add additional points on edge
+                const label eLabel = dir0Edges.second();
+                const label size =
+                    newVerticesForSplitEdge_.sizeOfRow(eLabel) - 1;
 
-                newFaces.append(f);
+                for(label index=i+1;index<size;++index)
+                    f.append(newVerticesForSplitEdge_(eLabel, index));
             }
+
+            f.append(facePoints[i+1][j]);
+
+            if(
+                (dir1 != -1) &&
+                (i == (nLayersDir0 - 1)) &&
+                (j == (nLayersDir1 - 1))
+            )
+            {
+                # ifdef DEBUGLayer
+                Info << "2. Adding additional points on edge " << endl;
+                # endif
+
+                //- add additional points on edge
+                const label eLabel = dir1Edges.second();
+                const label size =
+                    newVerticesForSplitEdge_.sizeOfRow(eLabel) - 1;
+
+                for(label index=j+1;index<size;++index)
+                    f.append(newVerticesForSplitEdge_(eLabel, index));
+            }
+
+            f.append(facePoints[i+1][j+1]);
+
+            if( (i == (nLayersDir0 - 1)) && (j == (nLayersDir1 - 1)) )
+            {
+                # ifdef DEBUGLayer
+                Info << "3. Adding additional points on edge " << endl;
+                # endif
+
+                const label eLabel = dir0Edges.first();
+                const label size =
+                    newVerticesForSplitEdge_.sizeOfRow(eLabel) - 2;
+                for(label index=size;index>i;--index)
+                    f.append(newVerticesForSplitEdge_(eLabel, index));
+            }
+
+            f.append(facePoints[i][j+1]);
+
+            if( (dir1 != -1) && (i == 0) && (j == (nLayersDir1 - 1)) )
+            {
+                # ifdef DEBUGLayer
+                Info << "4. Adding additional points on edge " << endl;
+                # endif
+
+                const label eLabel = dir1Edges.first();
+                const label size =
+                    newVerticesForSplitEdge_.sizeOfRow(eLabel) - 2;
+                for(label index=size;index>j;--index)
+                    f.append(newVerticesForSplitEdge_(eLabel, index));
+            }
+
+            newFaces.append(f);
         }
     }
-
-    //- create the last face which may not be a quad
-    DynList<label, 4> newF;
-
-    if( (dir0 != -1) && (dir1 == -1) )
-    {
-        //- face is split in one direction, only
-        label eLabel = dir0Edges.second();
-        label size = newVerticesForSplitEdge_.sizeOfRow(eLabel);
-
-        for(label i=nLayersDir0-1;i<size;++i)
-            newF.append(newVerticesForSplitEdge_(eLabel, i));
-
-        eLabel = dir0Edges.first();
-        size = newVerticesForSplitEdge_.sizeOfRow(eLabel);
-        for(label i=size;i>=nLayersDir0;--i)
-            newF.append(newVerticesForSplitEdge_(eLabel, i-1));
-    }
-    else if( dir0 != -1 && dir1 != -1 )
-    {
-        //- face is split in both directions
-        newF.append(facePoints[nLayersDir0-1][nLayersDir1-1]);
-
-        //- add additional points on edge
-        label eLabel = dir1Edges.second();
-        label size = newVerticesForSplitEdge_.sizeOfRow(eLabel) - 1;
-
-        for(label i=nLayersDir1-1;i<size;++i)
-            newF.append(newVerticesForSplitEdge_(eLabel, i));
-
-        //- add other corner
-        newF.append(facePoints[nLayersDir0][nLayersDir1]);
-
-        //- add additional points on edge
-        eLabel = dir0Edges.first();
-        size = newVerticesForSplitEdge_.sizeOfRow(eLabel) - 1;
-        for(label i=size;i>=nLayersDir0;--i)
-            newF.append(newVerticesForSplitEdge_(eLabel, i-1));
-    }
-
-    newFaces.append(newF);
 
     # ifdef DEBUGLayer
     Info << "Input face " << f << endl;
@@ -344,6 +362,376 @@ void refineBoundaryLayers::refineFace
     //if( (nLayersInDirection[0] > 1) && (nLayersInDirection[1] > 1) )
     //::exit(1);
     # endif
+}
+
+void refineBoundaryLayers::sortFacePoints
+(
+    const label faceI,
+    DynList<DynList<label> >& facePoints,
+    const label transpose
+) const
+{
+    const faceListPMG& faces = mesh_.faces();
+    const face& f = faces[faceI];
+
+    # ifdef DEBUGLayer
+    Info << "Creating matrix of points on a split face " << faceI << endl;
+    Info << "Face comprises of points " << f << endl;
+    Info << "New faces from face " << facesFromFace_.sizeOfRow(faceI) << endl;
+    # endif
+
+    label procStart = mesh_.faces().size();
+    const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
+    if( Pstream::parRun() )
+        procStart = procBoundaries[0].patchStart();
+
+    if(
+        (faceI < procStart) ||
+        procBoundaries[mesh_.faceIsInProcPatch(faceI)].owner()
+    )
+    {
+        //- orientation of new faces is the same as the face itself
+        //- start the procedure by finding the number of splits in
+        //- both i and j direction
+        label numSplitsI(1);
+
+        const label pos = f.which(newFaces_(facesFromFace_(faceI, 0), 0));
+
+        forAllRow(facesFromFace_, faceI, i)
+        {
+            const label nfI = facesFromFace_(faceI, i);
+
+            if( (numSplitsI == 1) && newFaces_.contains(nfI, f.nextLabel(pos)) )
+            {
+                numSplitsI = i + 1;
+                break;
+            }
+        }
+
+        const label numSplitsJ = (facesFromFace_.sizeOfRow(faceI) / numSplitsI);
+
+        # ifdef DEBUGLayer
+        Pout << "Pos " << pos << endl;
+        Pout << "Num splits in direction 0 " << numSplitsI << endl;
+        Pout << "Num splits in direction 1 " << numSplitsJ << endl;
+        # endif
+
+        facePoints.setSize(numSplitsI+1);
+        forAll(facePoints, i)
+            facePoints[i].setSize(numSplitsJ+1);
+
+        //- start filling in the matrix
+        forAllRow(facesFromFace_, faceI, fI)
+        {
+            const label nfI = facesFromFace_(faceI, fI);
+
+            const label i = fI % numSplitsI;
+            const label j = fI / numSplitsI;
+
+            # ifdef DEBUGLayer
+            Pout << "New face " << fI << " is " << newFaces_[nfI] << endl;
+            Pout << " i = " << i << endl;
+            Pout << " j = " << j << endl;
+            # endif
+
+            if( newFaces_.sizeOfRow(nfI) == 4 )
+            {
+                facePoints[i][j] = newFaces_(nfI, 0);
+                facePoints[i+1][j] = newFaces_(nfI, 1);
+                facePoints[i+1][j+1] = newFaces_(nfI, 2);
+                facePoints[i][j+1] = newFaces_(nfI, 3);
+            }
+            else
+            {
+                if( j == 0 )
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[i+1][0] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+                else if( i == 0 )
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[0][j+1] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+                else
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[i+1][j+1] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+            }
+        }
+
+        # ifdef DEBUGLayer
+        Pout << "Generated matrix of points on face " << faceI
+             << " is " << facePoints << endl;
+        # endif
+    }
+    else
+    {
+        //- this situation exists on inter-processor boundaries
+        //- on neighbour processor. i and j coordinates are reversed
+        label numSplitsJ(1);
+
+        const label pos = f.which(newFaces_(facesFromFace_(faceI, 0), 0));
+
+        forAllRow(facesFromFace_, faceI, j)
+        {
+            const label nfI = facesFromFace_(faceI, j);
+
+            if( (numSplitsJ == 1) && newFaces_.contains(nfI, f.prevLabel(pos)) )
+            {
+                numSplitsJ = j + 1;
+                break;
+            }
+        }
+
+        const label numSplitsI = (facesFromFace_.sizeOfRow(faceI) / numSplitsJ);
+
+        # ifdef DEBUGLayer
+        Pout << "2. Num splits in direction 0 " << numSplitsI << endl;
+        Pout << "2. Num splits in direction 1 " << numSplitsJ << endl;
+        # endif
+
+        facePoints.setSize(numSplitsI+1);
+        forAll(facePoints, i)
+            facePoints[i].setSize(numSplitsJ+1);
+
+        //- start filling in the matrix
+        forAllRow(facesFromFace_, faceI, fI)
+        {
+            const label nfI = facesFromFace_(faceI, fI);
+
+            const label i = fI / numSplitsJ;
+            const label j = fI % numSplitsJ;
+
+            # ifdef DEBUGLayer
+            Pout << "2. New face " << fI << " is " << newFaces_[nfI] << endl;
+            Pout << "2. i = " << i << endl;
+            Pout << "2. j = " << j << endl;
+            # endif
+
+            if( newFaces_.sizeOfRow(nfI) == 4 )
+            {
+                facePoints[i][j] = newFaces_(nfI, 0);
+                facePoints[i][j+1] = newFaces_(nfI, 1);
+                facePoints[i+1][j+1] = newFaces_(nfI, 2);
+                facePoints[i+1][j] = newFaces_(nfI, 3);
+            }
+            else
+            {
+                if( i == 0 )
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[0][j+1] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+                else if( j == 0 )
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[i+1][0] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+                else
+                {
+                    forAllRow(newFaces_, nfI, pI)
+                        if( f.which(newFaces_(nfI, pI)) >= 0 )
+                        {
+                            facePoints[i+1][j+1] = newFaces_(nfI, pI);
+                            break;
+                        }
+                }
+            }
+        }
+
+        # ifdef DEBUGLayer
+        Pout << "Generated matrix of points on processor face " << faceI
+             << " is " << facePoints << endl;
+        # endif
+    }
+
+    if( transpose )
+    {
+        DynList<DynList<label> > transposedFacePoints;
+        transposedFacePoints.setSize(facePoints[0].size());
+        forAll(transposedFacePoints, j)
+            transposedFacePoints[j].setSize(facePoints.size());
+
+        forAll(facePoints, i)
+            forAll(facePoints[i], j)
+                transposedFacePoints[j][i] = facePoints[i][j];
+
+        facePoints = transposedFacePoints;
+
+        # ifdef DEBUGLayer
+        Pout << "Transposed face points " << facePoints << endl;
+        # endif
+    }
+}
+
+void refineBoundaryLayers::sortFaceFaces
+(
+    const label faceI,
+    DynList<DynList<label> >& faceFaces,
+    const label transpose
+) const
+{
+    const faceListPMG& faces = mesh_.faces();
+    const face& f = faces[faceI];
+
+    # ifdef DEBUGLayer
+    Info << "Creating matrix of faces on a split face " << faceI << endl;
+    Info << "Face comprises of points " << f << endl;
+    # endif
+
+    label procStart = mesh_.faces().size();
+    const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
+    if( Pstream::parRun() )
+        procStart = procBoundaries[0].patchStart();
+
+    if(
+        (faceI < procStart) ||
+        procBoundaries[mesh_.faceIsInProcPatch(faceI)].owner()
+    )
+    {
+        //- orientation of new faces is the same as the face itself
+        //- start the procedure by finding the number of splits in
+        //- both i and j direction
+        label numSplitsI(1);
+
+        const label pos = f.which(newFaces_(facesFromFace_(faceI, 0), 0));
+
+        forAllRow(facesFromFace_, faceI, i)
+        {
+            const label nfI = facesFromFace_(faceI, i);
+
+            if( (numSplitsI == 1) && newFaces_.contains(nfI, f.nextLabel(pos)) )
+            {
+                numSplitsI = i + 1;
+                break;
+            }
+        }
+
+        label numSplitsJ = (facesFromFace_.sizeOfRow(faceI) / numSplitsI);
+
+        # ifdef DEBUGLayer
+        Pout << "3. Num splits in direction 0 " << numSplitsI << endl;
+        Pout << "3. Num splits in direction 1 " << numSplitsJ << endl;
+        # endif
+
+        faceFaces.setSize(numSplitsI);
+        forAll(faceFaces, i)
+            faceFaces[i].setSize(numSplitsJ);
+
+        //- start filling in the matrix
+        forAllRow(facesFromFace_, faceI, fI)
+        {
+            const label nfI = facesFromFace_(faceI, fI);
+
+            const label i = fI % numSplitsI;
+            const label j = fI / numSplitsI;
+
+            # ifdef DEBUGLayer
+            Pout << "3. New face " << fI << " is " << newFaces_[nfI] << endl;
+            Pout << "3. i = " << i << endl;
+            Pout << "3. j = " << j << endl;
+            # endif
+
+            faceFaces[i][j] = nfI;
+        }
+
+        # ifdef DEBUGLayer
+        Pout << "3. Generated matrix of points on face " << faceI
+             << " is " << faceFaces << endl;
+        # endif
+    }
+    else
+    {
+        //- this situation exists on inter-processor boundaries
+        //- on neighbour processor. i and j coordinates are reversed
+        label numSplitsJ(1);
+
+        const label pos = f.which(newFaces_(facesFromFace_(faceI, 0), 0));
+
+        forAllRow(facesFromFace_, faceI, j)
+        {
+            const label nfI = facesFromFace_(faceI, j);
+
+            if( (numSplitsJ == 1) && newFaces_.contains(nfI, f.prevLabel(pos)) )
+            {
+                numSplitsJ = j + 1;
+                break;
+            }
+        }
+
+        const label numSplitsI = (facesFromFace_.sizeOfRow(faceI) / numSplitsJ);
+
+        # ifdef DEBUGLayer
+        Pout << "4. Num splits in direction 0 " << numSplitsI << endl;
+        Pout << "4. Num splits in direction 1 " << numSplitsJ << endl;
+        # endif
+
+        faceFaces.setSize(numSplitsI);
+        forAll(faceFaces, i)
+            faceFaces[i].setSize(numSplitsJ);
+
+        //- start filling in the matrix
+        forAllRow(facesFromFace_, faceI, fI)
+        {
+            const label nfI = facesFromFace_(faceI, fI);
+
+            const label i = fI / numSplitsJ;
+            const label j = fI % numSplitsJ;
+
+            # ifdef DEBUGLayer
+            Pout << "4. New face " << fI << " is " << newFaces_[nfI] << endl;
+            Pout << "4. i = " << i << endl;
+            Pout << "4. j = " << j << endl;
+            # endif
+
+            faceFaces[i][j] = nfI;
+        }
+
+        # ifdef DEBUGLayer
+        Pout << "4. Generated matrix of faces on processor face " << faceI
+             << " is " << faceFaces << endl;
+        # endif
+    }
+
+    if( transpose )
+    {
+        DynList<DynList<label> > transposedFaceFaces;
+        transposedFaceFaces.setSize(faceFaces[0].size());
+        forAll(transposedFaceFaces, j)
+            transposedFaceFaces[j].setSize(faceFaces.size());
+
+        forAll(faceFaces, i)
+            forAll(faceFaces[i], j)
+                transposedFaceFaces[j][i] = faceFaces[i][j];
+
+        faceFaces = transposedFaceFaces;
+
+        # ifdef DEBUGLayer
+        Pout << "Transposed face faces " << faceFaces << endl;
+        # endif
+    }
 }
 
 void refineBoundaryLayers::generateNewFaces()
@@ -431,6 +819,8 @@ void refineBoundaryLayers::generateNewFaces()
         forAllRow(facesFromFace_, faceI, i)
             Info << "New face " << i << " is "
                  << newFaces_[facesFromFace_(faceI, i)] << endl;
+        DynList<DynList<label> > tralala;
+        sortFacePoints(faceI, tralala);
         # endif
     }
 

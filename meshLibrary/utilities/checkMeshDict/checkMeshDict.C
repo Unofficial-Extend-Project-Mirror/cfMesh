@@ -226,10 +226,6 @@ void checkMeshDict::checkBoundaryLayers() const
                 }
             }
         }
-        else
-        {
-            wordList bl(meshDict_.lookup("boundaryLayers"));
-        }
     }
 }
 

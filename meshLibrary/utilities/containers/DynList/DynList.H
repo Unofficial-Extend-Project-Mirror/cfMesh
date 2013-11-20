@@ -104,6 +104,10 @@ public:
         //- Construct from UList. nextFree_ set to size().
         explicit inline DynList(const UList<T>&);
 
+        //- Construct from other ListType
+        template<class ListType>
+        inline DynList(const ListType&);
+
         //- Copy constructor
         inline DynList(const DynList<T, staticSize>&);
 
@@ -154,7 +158,10 @@ public:
         inline bool contains(const T& e) const;
         inline label containsAtPosition(const T& e) const;
 
-        //- Return and remove the top element
+        //- return a const reference to the last element
+        inline const T& lastElement() const;
+
+        //- Return and remove the last element
         inline T removeLastElement();
         inline T removeElement(const label i);
 

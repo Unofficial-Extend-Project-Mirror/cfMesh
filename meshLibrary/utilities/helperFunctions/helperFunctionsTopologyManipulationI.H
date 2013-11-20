@@ -100,6 +100,16 @@ bool areFacesEqual(const faceType1& f1, const faceType2& f2)
     return true;
 }
 
+template<class T, class ListType >
+label positionInList(const T& elmt, const ListType& l)
+{
+    for(label i=0;i<l.size();++i)
+        if( l[i] == elmt )
+            return i;
+
+    return -1;
+}
+
 template<class faceType>
 faceType reverseFace(const faceType& f)
 {

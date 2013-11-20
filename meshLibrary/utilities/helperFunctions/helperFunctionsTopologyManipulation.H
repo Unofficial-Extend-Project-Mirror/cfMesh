@@ -58,6 +58,10 @@ namespace help
     template<class faceType1, class faceType2>
     bool areFacesEqual(const faceType1& f1, const faceType2& f2);
 
+    //- local position of element in a list
+    template<class T, class ListType>
+    label positionInList(const T& elmt, const ListType& l);
+
     //- reverse the face
     template<class faceType>
     faceType reverseFace(const faceType& f);

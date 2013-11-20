@@ -32,7 +32,7 @@ inline void Foam::DynList<T, staticSize>::allocateSize(const label s)
     {
         T* newData = new T[s];
 
-        forAll(*this, i)
+        for(label i=0;i<nextFree_;++i)
             newData[i] = this->operator[](i);
 
         T* data = UList<T>::begin();
@@ -104,18 +104,29 @@ inline Foam::DynList<T, staticSize>::DynList(const label s)
     allocateSize(s);
 }
 
-
 //- Construct given size
 template<class T, Foam::label staticSize>
 inline Foam::DynList<T, staticSize>::DynList(const UList<T>& ul)
 :
     UList<T>(staticData_, staticSize),
-    nextFree_(ul.size())
+    nextFree_(0)
 {
-    allocateSize(ul.size());
+    setSize(ul.size());
 
     forAll(ul, i)
         this->operator[](i) = ul[i];
+}
+
+template<class T, Foam::label staticSize>
+template<class ListType>
+inline Foam::DynList<T, staticSize>::DynList(const ListType& l)
+:
+    UList<T>(staticData_, staticSize),
+    nextFree_(0)
+{
+    setSize(l.size());
+    for(label i=0;i<nextFree_;++i)
+        this->operator[](i) = l[i];
 }
 
 //- Copy construct
@@ -126,9 +137,9 @@ inline Foam::DynList<T, staticSize>::DynList
 )
 :
     UList<T>(staticData_, staticSize),
-    nextFree_(dl.size())
+    nextFree_(0)
 {
-    allocateSize(nextFree_);
+    setSize(dl.size());
     for(label i=0;i<nextFree_;++i)
         this->operator[](i) = dl[i];
 }
@@ -217,7 +228,10 @@ inline bool Foam::DynList<T, staticSize>::contains(const T& e) const
 }
 
 template<class T, Foam::label staticSize>
-inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition(const T& e) const
+inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition
+(
+    const T& e
+) const
 {
     for(label i=0;i<nextFree_;++i)
     {
@@ -226,6 +240,12 @@ inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition(const T& e) 
     }
 
     return -1;
+}
+
+template<class T, Foam::label staticSize>
+inline const T& Foam::DynList<T, staticSize>::lastElement() const
+{
+    return this->operator[](nextFree_-1);
 }
 
 template<class T, Foam::label staticSize>

@@ -70,6 +70,9 @@ int main(int argc, char *argv[])
     //bndLayers.createOTopologyLayers();
     //bndLayers.addLayerForAllPatches();
 
+    Info << "Starting bnd layer refinement "
+         << runTime.elapsedClockTime() << endl;
+
     refineBoundaryLayers refLayers(pmg);
 
     if( meshDict.isDict("boundaryLayers") )
@@ -154,6 +157,9 @@ int main(int argc, char *argv[])
     }
 
     refLayers.refineLayers();
+
+    Info << "Finished with bnd layer refinement "
+         << runTime.elapsedClockTime() << endl;
 
     //polyMeshGenChecks::checkMesh(pmg, true);
 
