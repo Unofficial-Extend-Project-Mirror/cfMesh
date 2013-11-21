@@ -414,22 +414,22 @@ void refineBoundaryLayers::refineEdgeHexCell::determineFacesInDirections()
     //- check the orientation of faces
     const labelList& owner = mesh.owner();
 
-    //- checking face at direction 0
+    //- checking face at direction k = 0
     faceOrientation_[0] = owner[c[faceInDirection_[0]]] == cellI_?true:false;
 
-    //- checking face in direction 1
+    //- checking face in direction k = 1
     faceOrientation_[1] = owner[c[faceInDirection_[1]]] == cellI_?false:true;
 
-    //- set orientation flag for face in direction 2
+    //- set orientation flag for face in direction j = 0
     faceOrientation_[2] = true;
 
-    //- checking face in direction 3
+    //- checking face in direction j = nLayersJ_
     faceOrientation_[3] = owner[c[faceInDirection_[3]]] == cellI_?false:true;
 
-    //- set orientation flag for face in direction 4
+    //- set orientation flag for face in direction i = 0
     faceOrientation_[4] = true;
 
-    //- checking face in direction 5
+    //- checking face in direction i = nLayersI_
     faceOrientation_[5] = owner[c[faceInDirection_[5]]] == cellI_?false:true;
 
     # ifdef DEBUGLayer
@@ -790,10 +790,13 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
 
     //- determine the directions of cell faces
     //- store boundary faces first. Their normals point in the wrong direction
+    //- face at k = 0
     faceInDirection_[0] = dirFace[permutation[0]];
     faceOrientation_[0] = true;
+    //- face at j = 0
     faceInDirection_[2] = dirFace[permutation[1]];
     faceOrientation_[2] = true;
+    //- face at i = 0
     faceInDirection_[4] = dirFace[permutation[2]];
     faceOrientation_[4] = true;
 
@@ -808,6 +811,7 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
 
         if( !help::shareAnEdge(faces[c[fI]], faces[c[faceInDirection_[0]]]) )
         {
+            //- face at k = nLayersK_
             faceInDirection_[1] = fI;
             faceOrientation_[1] = orientation;
         }
@@ -816,6 +820,7 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
             !help::shareAnEdge(faces[c[fI]], faces[c[faceInDirection_[2]]])
         )
         {
+            //- face at j = nLayersJ_
             faceInDirection_[3] = fI;
             faceOrientation_[3] = orientation;
         }
@@ -824,6 +829,7 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
             !help::shareAnEdge(faces[c[fI]], faces[c[faceInDirection_[4]]])
         )
         {
+            //- face at i = nLayersI_
             faceInDirection_[5] = fI;
             faceOrientation_[5] = orientation;
         }
@@ -1343,9 +1349,9 @@ void refineBoundaryLayers::generateNewCells()
     # ifdef DEBUGLayer
     forAll(nCellsFromCell, cellI)
     {
-        Info << "\nCell " << cellI << endl;
-        Info << "nCellsFromCell " << nCellsFromCell[cellI] << endl;
-        Info << "Ref type " << refType[cellI] << endl;
+        Pout << "\nCell " << cellI << endl;
+        Pout << "nCellsFromCell " << nCellsFromCell[cellI] << endl;
+        Pout << "Ref type " << refType[cellI] << endl;
     }
     #  endif
 
@@ -1444,7 +1450,7 @@ void refineBoundaryLayers::generateNewCells()
                 const DynList<DynList<label, 4>, 6>& nc = cellsFromCell[cI];
 
                 # ifdef DEBUGLayer
-                Info << "Adding cell " << (cI==0?cellI:nCells)
+                Pout << "Adding cell " << (cI==0?cellI:nCells)
                      << " originating from cell " << cellI << endl;
                 # endif
 
@@ -1627,8 +1633,8 @@ void refineBoundaryLayers::generateNewCells()
 
 
     # ifdef DEBUGLayer
-    Info << "Copying internal faces " << endl;
-    Info << "Original number of internal faces " << nOrigInternalFaces << endl;
+    Pout << "Copying internal faces " << endl;
+    Pout << "Original number of internal faces " << nOrigInternalFaces << endl;
     # endif
 
     //- store internal faces originating from existing faces
@@ -1655,10 +1661,10 @@ void refineBoundaryLayers::generateNewCells()
 
     //- store newly-generated internal faces
     # ifdef DEBUGLayer
-    Info << "Copying newly generated internal faces" << endl;
-    Info << "nNewInternalFaces " << currFace << endl;
-    Info << "numFacesBefore " << numFacesBefore << endl;
-    Info << "Total number of faces " << newFaces_.size() << endl;
+    Pout << "Copying newly generated internal faces" << endl;
+    Pout << "nNewInternalFaces " << currFace << endl;
+    Pout << "numFacesBefore " << numFacesBefore << endl;
+    Pout << "Total number of faces " << newFaces_.size() << endl;
     # endif
 
     for(label faceI=numFacesBefore;faceI<newFaces_.size();++faceI)
@@ -1675,10 +1681,10 @@ void refineBoundaryLayers::generateNewCells()
 
     //- store new boundary faces
     # ifdef DEBUGLayer
-    Info << "Copying boundary faces " << endl;
-    Info << "currFace " << currFace << endl;
-    Info << "Faces size " << faces.size() << endl;
-    Info << "Initial number of faces " << facesFromFace_.size() << endl;
+    Pout << "Copying boundary faces " << endl;
+    Pout << "currFace " << currFace << endl;
+    Pout << "Faces size " << faces.size() << endl;
+    Pout << "Initial number of faces " << facesFromFace_.size() << endl;
     # endif
 
     PtrList<writePatch>& boundaries = meshModifier.boundariesAccess();
@@ -1720,7 +1726,7 @@ void refineBoundaryLayers::generateNewCells()
     if( Pstream::parRun() )
     {
         # ifdef DEBUGLayer
-        Info << "Copying processor faces" << endl;
+        Pout << "Copying processor faces" << endl;
         # endif
 
         //- copy faces at inter-processor boundaries
@@ -1763,8 +1769,8 @@ void refineBoundaryLayers::generateNewCells()
     }
 
     # ifdef DEBUGLayer
-    Info << "Faces after refinement " << faces << endl;
-    Info << "newFaceLabel " << newFaceLabel << endl;
+    Pout << "Faces after refinement " << faces << endl;
+    Pout << "newFaceLabel " << newFaceLabel << endl;
     # endif
 
     //- update face subsets
@@ -1774,7 +1780,7 @@ void refineBoundaryLayers::generateNewCells()
 
     //- update cells to match the faces
     # ifdef DEBUGLayer
-    Info << "Updating cells to match new faces" << endl;
+    Pout << "Updating cells to match new faces" << endl;
     # endif
 
     forAll(cells, cellI)
@@ -1786,7 +1792,7 @@ void refineBoundaryLayers::generateNewCells()
     }
 
     # ifdef DEBUGLayer
-    Info << "Cleaning mesh " << endl;
+    Pout << "Cleaning mesh " << endl;
     # endif
 
     //- delete all adressing which is no longer up-to-date

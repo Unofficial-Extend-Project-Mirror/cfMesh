@@ -759,24 +759,19 @@ void refineBoundaryLayers::generateNewVertices()
     const label nThreads = 1;
     # endif
 
-    DynList<label> numPointsAtThread;
-    numPointsAtThread.setSize(nThreads);
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        # ifdef USE_OMP
-        const label threadI = omp_get_thread_num();
-        # else
-        const label threadI(0);
-        # endif
-
-        label& nPoints = numPointsAtThread[threadI];
-        nPoints = 0;
+//        # ifdef USE_OMP
+//        const label threadI = omp_get_thread_num();
+//        # else
+//        const label threadI(0);
+//        # endif
 
         //- start counting vertices at each thread
         # ifdef USE_OMP
-        # pragma omp for schedule(static)
+        # pragma omp for schedule(static, 1)
         # endif
         forAll(splitEdges_, seI)
         {
@@ -833,7 +828,6 @@ void refineBoundaryLayers::generateNewVertices()
             firstLayerThickness[seI] = thickness;
             thicknessRatio[seI] = ratio;
             nNodesAtEdge[seI] = nLayers + 1;
-            nPoints += nLayers - 1;
         }
     }
 
@@ -983,9 +977,31 @@ void refineBoundaryLayers::generateNewVertices()
         }
     }
 
-    //- allocate the memory
+    //- calculate the number of additional vertices which will be generated
+    //- on edges of the mesh
+    DynList<label> numPointsAtThread;
+    numPointsAtThread.setSize(nThreads);
+    numPointsAtThread = 0;
+
+    # ifdef USE_OMP
+    # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
+    # endif
+    forAll(nNodesAtEdge, seI)
+    {
+        # ifdef USE_OMP
+        const label threadI = omp_get_thread_num();
+        # else
+        const label threadI(0);
+        # endif
+
+        numPointsAtThread[threadI] += nNodesAtEdge[seI] - 2;
+    }
+
+    //- allocate the space in a graph storing ids of points on a split edge
     newVerticesForSplitEdge_.setSizeAndRowSize(nNodesAtEdge);
 
+    //- calculate the number of points which will be generated
+    //- on split edges
     label numPoints = points.size();
     forAll(numPointsAtThread, threadI)
     {
@@ -1000,7 +1016,7 @@ void refineBoundaryLayers::generateNewVertices()
     Info << "Generating split vertices" << endl;
     # endif
 
-    //- generate vertices at split edges
+    //- generate vertices on split edges
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
     # endif
@@ -1014,7 +1030,7 @@ void refineBoundaryLayers::generateNewVertices()
         label& nPoints = numPointsAtThread[threadI];
 
         # ifdef USE_OMP
-        # pragma omp for schedule(static)
+        # pragma omp for schedule(static, 1)
         # endif
         forAll(splitEdges_, seI)
         {
@@ -1036,8 +1052,12 @@ void refineBoundaryLayers::generateNewVertices()
                     );
 
                 # ifdef DEBUGLayer
-                Info << "Edge length " << magv << endl;
-                Info << "Thickness of the first layer "
+                Pout << "Thread " << threadI << endl;
+                Pout << "Generating vertices at split edge "
+                     << " start point " << points[e.start()]
+                     << " end point " << points[e.end()] << endl;
+                Pout << "Edge length " << magv << endl;
+                Pout << "Thickness of the first layer "
                      << firstThickness << endl;
                 # endif
             }
@@ -1061,9 +1081,13 @@ void refineBoundaryLayers::generateNewVertices()
                 const point newP = points[e.start()] + param * vec;
 
                 # ifdef DEBUGLayer
-                Info << "Split edge " << seI << " points " << e
+                Pout << "Split edge " << seI << " edge points " << e
+                    << " start point " << points[e.start()]
+                    << " end point " << points[e.end()]
                     << " param " << param
-                    << " first thickness " << firstThickness << endl;
+                    << " new point " << nPoints
+                    << " has coordinates " << newP << endl;
+                    }
                 # endif
 
                 param += firstThickness * Foam::pow(thicknessRatio[seI], pI);

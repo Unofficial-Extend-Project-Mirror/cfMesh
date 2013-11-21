@@ -37,7 +37,10 @@ Description
 
 #include <map>
 #include <set>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
