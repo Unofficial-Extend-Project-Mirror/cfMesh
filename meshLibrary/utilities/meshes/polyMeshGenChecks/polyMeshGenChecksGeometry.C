@@ -29,7 +29,9 @@ License
 #include "pyramidPointFaceRef.H"
 #include "tetrahedron.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -662,6 +664,9 @@ bool checkFaceDotProduct
         # endif
         for(label faceI=0;faceI<nInternalFaces;++faceI)
         {
+            if( changedFacePtr && !(*changedFacePtr)[faceI] )
+                continue;
+
             const vector d = centres[nei[faceI]] - centres[own[faceI]];
             const vector& s = areas[faceI];
 
@@ -768,6 +773,8 @@ bool checkFaceDotProduct
                 # endif
                 forAll(otherCentres, faceI)
                 {
+                    if( changedFacePtr && !(*changedFacePtr)[start+faceI] )
+                        continue;
                     const point& cOwn = centres[own[start+faceI]];
                     const point& cNei = otherCentres[faceI];
                     const vector d = cNei - cOwn;

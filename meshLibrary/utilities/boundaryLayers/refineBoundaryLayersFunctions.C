@@ -404,7 +404,7 @@ void refineBoundaryLayers::analyseLayers()
             continue;
 
         label maxNumLayers(1);
-        bool found(false);
+
         forAll(patchesInLayer_[layerI], lpI)
         {
             const word pName = patchesInLayer_[layerI][lpI];
@@ -414,8 +414,6 @@ void refineBoundaryLayers::analyseLayers()
 
             if( it != numLayersForPatch_.end() )
             {
-                found = true;
-
                 //- check if the layer is interrupted at this patch
                 if(
                     discontinuousLayersForPatch_.find(pName) !=
@@ -434,8 +432,11 @@ void refineBoundaryLayers::analyseLayers()
             }
         }
 
-        if( !found )
+        if( maxNumLayers == 1 )
+        {
+            //- apply global settings to the patches which are not overriden
             maxNumLayers = globalNumLayers_;
+        }
 
         //- set the number of layer to all patches which are not protected
         forAll(patchesInLayer_[layerI], lpI)

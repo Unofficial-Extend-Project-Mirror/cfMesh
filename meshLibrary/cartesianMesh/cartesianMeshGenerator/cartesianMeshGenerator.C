@@ -287,11 +287,19 @@ void cartesianMeshGenerator::generateBoundaryLayers()
 
 void cartesianMeshGenerator::refBoundaryLayers()
 {
-    refineBoundaryLayers refLayers(mesh_);
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
 
-    refineBoundaryLayers::readSettings(meshDict_, refLayers);
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
 
-    refLayers.refineLayers();
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.optimizeLowQualityFaces();
+        optimizer.untangleMeshFV();
+    }
 }
 
 void cartesianMeshGenerator::optimiseFinalMesh()

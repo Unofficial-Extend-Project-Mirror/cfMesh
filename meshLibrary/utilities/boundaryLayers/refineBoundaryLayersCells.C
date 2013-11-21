@@ -1387,8 +1387,18 @@ void refineBoundaryLayers::generateNewCells()
 
             cell& c = cells[cellI];
 
+            //- copy the new faces of this cell
+            DynList<label, 64> newC;
             forAll(c, fI)
-                c[fI] = facesFromFace_(c[fI], 0);
+            {
+                forAllRow(facesFromFace_, c[fI], cfI)
+                    newC.append(facesFromFace_(c[fI], cfI));
+            }
+
+            //- update the cell
+            c.setSize(newC.size());
+            forAll(c, fI)
+                c[fI] = newC[fI];
         }
         else if( refType[cellI] == 1 )
         {
@@ -1438,9 +1448,7 @@ void refineBoundaryLayers::generateNewCells()
         else if( refType[cellI] == 2 )
         {
             //- generate new cell from a hex cell where two layers intersect
-            //- generate mostly hex cells
-            //DynList<DynList<DynList<label, 4>, 6>, 256> cellsFromCell;
-            //generateNewCellsEdgeHex(cellI, cellsFromCell);
+            //- generate mostly hex cells;
             refineEdgeHexCell refEdgeHex(cellI, *this);
             const DynList<DynList<DynList<label, 4>, 6>, 256>& cellsFromCell =
                 refEdgeHex.newCells();
@@ -1497,7 +1505,6 @@ void refineBoundaryLayers::generateNewCells()
             refineCornerHexCell refCell(cellI, *this);
             const DynList<DynList<DynList<label, 4>, 6>, 256>& cellsFromCell =
                 refCell.newCells();
-            //generateNewCellsCornerHex(cellI, cellsFromCell);
 
             //- new points have been generated
             pointNewFaces.setSize(mesh_.points().size());
@@ -1629,9 +1636,7 @@ void refineBoundaryLayers::generateNewCells()
     //- point-faces addressing is not needed any more
     pointNewFaces.setSize(0);
 
-    //- copy the newFaces to the mesh
-
-
+    //- copy newFaces to the mesh
     # ifdef DEBUGLayer
     Pout << "Copying internal faces " << endl;
     Pout << "Original number of internal faces " << nOrigInternalFaces << endl;
@@ -1851,6 +1856,7 @@ void refineBoundaryLayers::generateNewCells()
                              << faces[c[fI]] << endl;
                     Pout << "Cell edges " << edges << endl;
                     Pout << "nAppearances " << nAppearances << endl;
+                    ::exit(1);
                 }
             }
         }
@@ -1860,6 +1866,7 @@ void refineBoundaryLayers::generateNewCells()
 
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
+    const label nInternalFaces = mesh_.nInternalFaces();
 
     for(label procI=0;procI<Pstream::nProcs();++procI)
     {
@@ -1867,6 +1874,13 @@ void refineBoundaryLayers::generateNewCells()
         {
             forAll(faces, faceI)
             {
+                if( faceI < nInternalFaces && neighbour[faceI] < 0 )
+                {
+                    Pout << "Num interface faces " << nInternalFaces
+                         << " current face " << faceI
+                         << " face points " << faces[faceI] << endl;
+                    ::exit(1);
+                }
                 Pout << "Face " << faceI << " owner " << owner[faceI]
                      << " neighbour " << neighbour[faceI]
                      << " face points " << faces[faceI] << endl;

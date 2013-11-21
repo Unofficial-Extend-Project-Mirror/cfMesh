@@ -63,8 +63,42 @@ void refineBoundaryLayers::refineFace
     //- direction 1 represents edges 1 and 3
     if( (nLayersInDirection[0] <= 1) && (nLayersInDirection[1] <= 1) )
     {
+        //- this face may comprise of some split edges
+        DynList<label, 64> newF;
+        forAll(f, eI)
+        {
+            const edge e = f.faceEdge(eI);
+
+            //- add the current point label
+            newF.append(f[eI]);
+
+            //- check if a split edge matches this face edge
+            forAllRow(splitEdgesAtPoint_, f[eI], peI)
+            {
+                const label seI = splitEdgesAtPoint_(f[eI], peI);
+                const edge& se = splitEdges_[seI];
+
+                if( e == se )
+                {
+                    //- check the orientation and add new vertices created
+                    //- on this edge
+                    const label s = newVerticesForSplitEdge_.sizeOfRow(seI) - 1;
+                    if( e.start() == se.start() )
+                    {
+                        for(label pI=1;pI<s;++pI)
+                            newF.append(newVerticesForSplitEdge_(seI, pI));
+                    }
+                    else
+                    {
+                        for(label pI=s-1;pI>0;--pI)
+                            newF.append(newVerticesForSplitEdge_(seI, pI));
+                    }
+                }
+            }
+        }
+
         newFaces.setSize(1);
-        newFaces[0] = f;
+        newFaces[0] = newF;
         return;
     }
 
