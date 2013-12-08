@@ -93,6 +93,9 @@ public:
             const ListType& elements
         );
 
+        //- Copy construct
+        inline meshSubset(const meshSubset&);
+
         //- Construct from Istream
         inline meshSubset(Istream&);
 

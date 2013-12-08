@@ -70,6 +70,16 @@ inline meshSubset::meshSubset
         data_.insert(elements[i]);
 }
 
+inline meshSubset::meshSubset(const meshSubset& ms)
+:
+    name_(ms.name_),
+    type_(ms.type_),
+    data_()
+{
+    forAllConstIter(HashSet<label>, ms.data_, it)
+        data_.insert(it.key());
+}
+
 inline meshSubset::meshSubset(Istream& is)
 :
     name_(),
@@ -128,7 +138,8 @@ inline void meshSubset::updateSubset(const ListType& newLabels)
     }
 
     data_.clear();
-    data_ = newData;
+    forAllConstIter(HashSet<label>, newData, it)
+        data_.insert(it.key());
 }
 
 inline void meshSubset::updateSubset(const VRWGraph& newLabels)
@@ -142,7 +153,8 @@ inline void meshSubset::updateSubset(const VRWGraph& newLabels)
     }
 
     data_.clear();
-    data_ = newData;
+    forAllConstIter(HashSet<label>, newData, it)
+        data_.insert(it.key());
 }
 
 inline bool meshSubset::contains(const label elmt) const
@@ -154,7 +166,10 @@ inline void meshSubset::operator=(const meshSubset& ms)
 {
     name_ = ms.name_;
     type_ = ms.type_;
-    data_ = ms.data_;
+
+    data_.clear();
+    forAllConstIter(HashSet<label>, ms.data_, it)
+        data_.insert(it.key());
 }
 
 inline bool meshSubset::operator==(const meshSubset& ms) const

@@ -309,6 +309,69 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     surfRefLevel_[subsetFaces[tI]] = level;
         }
     }
+
+    if( meshDictPtr_->found("localRefinement") )
+    {
+        if( meshDictPtr_->isDict("localRefinement") )
+        {
+            const dictionary& dict = meshDictPtr_->subDict("localRefinement");
+            const wordList entries = dict.toc();
+
+            //- map patch name to its index
+            std::map<word, label> patchToIndex;
+            forAll(surface.patches(), patchI)
+                patchToIndex[surface.patches()[patchI].name()] = patchI;
+
+            //- map a facet subset name to its index
+            std::map<word, label> setToIndex;
+            DynList<label> setIDs;
+            surface.facetSubsetIndices(setIDs);
+            forAll(setIDs, i)
+                setToIndex[surface.facetSubsetName(setIDs[i])] = setIDs[i];
+
+            //- set refinement for these entries
+            forAll(entries, dictI)
+            {
+                if( !dict.isDict(entries[dictI]) )
+                    continue;
+
+                const word& pName = entries[dictI];
+                const dictionary& patchDict = dict.subDict(pName);
+
+                const direction nLevel =
+                    readLabel(patchDict.lookup("additionalRefinementLevels"));
+                const direction level = globalRefLevel_ + nLevel;
+
+                if( patchToIndex.find(pName) != patchToIndex.end() )
+                {
+                    //- patch-based refinement
+                    const label patchI = patchToIndex[pName];
+
+                    forAll(surface, triI)
+                    {
+                        if( surface[triI].region() == patchI )
+                            surfRefLevel_[triI] =
+                                Foam::max(surfRefLevel_[triI], level);
+                    }
+                }
+                if( setToIndex.find(pName) != setToIndex.end() )
+                {
+                    //- this is a facet subset
+                    const label subsetId = setToIndex[pName];
+
+                    labelListPMG facetsInSubset;
+                    surface.facetsInSubset(subsetId, facetsInSubset);
+
+                    forAll(facetsInSubset, i)
+                    {
+                        const label triI = facetsInSubset[i];
+                        surfRefLevel_[triI] =
+                            Foam::max(surfRefLevel_[triI], level);
+                    }
+                }
+            }
+        }
+    }
 }
 
 void meshOctreeCreator::refineInsideAndUnknownBoxes()

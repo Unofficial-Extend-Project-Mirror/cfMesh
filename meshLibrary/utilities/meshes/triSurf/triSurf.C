@@ -100,6 +100,8 @@ void triSurf::readFromFMS(const fileName& fName)
     forAll(subsets, subsetI)
         triSurfFacets::facetSubsets_.insert(subsetI, subsets[subsetI]);
 
+    subsets.clear();
+
     //- read subsets on feature edges
     fStream >> subsets;
     forAll(subsets, subsetI)

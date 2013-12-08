@@ -76,6 +76,47 @@ void checkMeshDict::checkSubsetCellSize() const
     }
 }
 
+void checkMeshDict::checkLocalRefinementLevel() const
+{
+    if( meshDict_.found("localRefinement") )
+    {
+        if( meshDict_.isDict("localRefinement") )
+        {
+            const dictionary& refDict = meshDict_.subDict("localRefinement");
+            const wordList entries = refDict.toc();
+
+            forAll(entries, dictI)
+            {
+                const dictionary& dict = refDict.subDict(entries[dictI]);
+
+                if( !dict.found("additionalRefinementLevels") )
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkLocalRefinementLevel() const"
+                    ) << "Cannot read keyword additionalRefinementLevels "
+                      << "for " << entries[dictI] << exit(FatalError);
+
+                const label nLevels =
+                    readLabel(dict.lookup("additionalRefinementLevels"));
+
+                if( nLevels < 0 )
+                    WarningIn
+                    (
+                        "void checkMeshDict::checkLocalRefinementLevel() const"
+                    ) << "Refinement level for " << entries[dictI]
+                         << " is negative" << endl;
+            }
+        }
+        else
+        {
+            FatalErrorIn
+            (
+                "void checkMeshDict::checkLocalRefinementLevel() const"
+            ) << "Cannot read localRefinement" << exit(FatalError);
+        }
+    }
+}
+
 void checkMeshDict::checkKeepCellsIntersectingPatches() const
 {
     if( meshDict_.found("keepCellsIntersectingPatches") )
@@ -384,6 +425,48 @@ void checkMeshDict::updateSubsetCellSize
 )
 {
 
+}
+
+void checkMeshDict::updateLocalRefinementLevel
+(
+    const std::map<word, wordList>& patchesFromPatch
+)
+{
+    if( meshDict_.found("localRefinement") )
+    {
+        if( meshDict_.isDict("localRefinement") )
+        {
+            dictionary& dict = meshDict_.subDict("localRefinement");
+
+            const wordList entries = dict.toc();
+
+            forAll(entries, dictI)
+            {
+                const word& pName = entries[dictI];
+
+                std::map<word, wordList>::const_iterator it =
+                    patchesFromPatch.find(pName);
+                if( it == patchesFromPatch.end() )
+                    continue;
+
+                const wordList& updatedPatchNames = it->second;
+
+                const dictionary& pDict = dict.subDict(pName);
+                const label nLevels =
+                    readLabel(pDict.lookup("additionalRefinementLevels"));
+
+                dictionary copy;
+                copy.add("additionalRefinementLevels", nLevels);
+
+                //- add new patches
+                forAll(updatedPatchNames, nameI)
+                    dict.add(updatedPatchNames[nameI], copy);
+
+                //- remove the current patch
+                dict.remove(pName);
+            }
+        }
+    }
 }
 
 void checkMeshDict::updateKeepCellsIntersectingPatches
@@ -770,6 +853,8 @@ void checkMeshDict::updateDictionaries
     updatePatchCellSize(patchesFromPatch);
 
     updateSubsetCellSize(patchesFromPatch);
+
+    updateLocalRefinementLevel(patchesFromPatch);
 
     updateKeepCellsIntersectingPatches(patchesFromPatch);
 
