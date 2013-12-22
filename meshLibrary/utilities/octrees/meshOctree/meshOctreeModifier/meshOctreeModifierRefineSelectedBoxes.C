@@ -164,6 +164,7 @@ void meshOctreeModifier::markAdditionalLayers
 void meshOctreeModifier::refineSelectedBoxes
 (
     List<direction>& refineBox,
+    const bool quadtreeRefinement,
     const bool hexRefinement
 )
 {
@@ -202,14 +203,27 @@ void meshOctreeModifier::refineSelectedBoxes
         meshOctreeSlot* slotPtr = &octree_.dataSlots_[0];
         # endif
 
-        # ifdef USE_OMP
-        # pragma omp for \
-        schedule(dynamic,Foam::min(20, leaves.size()/omp_get_num_threads() + 1))
-        # endif
-        forAll(leaves, leafI)
+        if( !octree_.isQuadtree() )
         {
-            if( refineBox[leafI] )
-                leaves[leafI]->refineCube(surface, rootBox, slotPtr);
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 100)
+            # endif
+            forAll(leaves, leafI)
+            {
+                if( refineBox[leafI] )
+                    leaves[leafI]->refineCube(surface, rootBox, slotPtr);
+            }
+        }
+        else
+        {
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 100)
+            # endif
+            forAll(leaves, leafI)
+            {
+                if( refineBox[leafI] )
+                    leaves[leafI]->refineCube2D(surface, rootBox, slotPtr);
+            }
         }
     }
 

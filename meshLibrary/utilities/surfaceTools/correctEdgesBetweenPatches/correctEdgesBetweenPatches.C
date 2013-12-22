@@ -80,11 +80,8 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
-correctEdgesBetweenPatches::correctEdgesBetweenPatches
-(
-    polyMeshGen& mesh
-)
+// Construct from mesh
+correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
 :
     mesh_(mesh),
     msePtr_(NULL),

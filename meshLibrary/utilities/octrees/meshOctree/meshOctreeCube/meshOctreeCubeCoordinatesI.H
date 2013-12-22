@@ -110,7 +110,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::refineForPosition
     (
         2*posX_+addPos[0],
         2*posY_+addPos[1],
-        2*posZ_+addPos[2],
+        posZ_<0?posZ_:2*posZ_+addPos[2],
         level_+1
     );
 }
@@ -126,7 +126,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::reduceLevelBy
     (
         posX_ / divider,
         posY_ / divider,
-        posZ_ / divider,
+        posZ_<0?posZ_:posZ_ / divider,
         level_ - diff
     );
 }
@@ -151,7 +151,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMin
     (
         posX_ << diff,
         posY_ << diff,
-        posZ_ << diff,
+        posZ_<0?posZ_:posZ_ << diff,
         l
     );
 }
@@ -166,7 +166,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMax
     (
         ((posX_ + 1) << diff) - 1,
         ((posY_ + 1) << diff) - 1,
-        ((posZ_ + 1) << diff) - 1,
+        posZ_<0?posZ_:((posZ_ + 1) << diff) - 1,
         l
     );
 }
@@ -178,11 +178,24 @@ inline void meshOctreeCubeCoordinates::cubeBox
     point& max
 ) const
 {
-    const vector dc = (rootBox.max() - rootBox.min()) / (1 << level_);
+    vector dc = (rootBox.max() - rootBox.min());
+    const label shift = 1 << level_;
+
+    dc.x() /= shift;
+    dc.y() /= shift;
+    if( posZ_>=0 )
+        dc.z() /= shift;
 
     min.x() = rootBox.min().x() + dc.x() * this->posX();
     min.y() = rootBox.min().y() + dc.y() * this->posY();
-    min.z() = rootBox.min().z() + dc.z() * this->posZ();
+    if( posZ_ >= 0 )
+    {
+        min.z() = rootBox.min().z() + dc.z() * this->posZ();
+    }
+    else
+    {
+        min.z() = rootBox.min().z();
+    }
 
     max = min + dc;
 }

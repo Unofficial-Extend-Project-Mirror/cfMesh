@@ -309,6 +309,7 @@ void meshOctreeAddressing::findUsedBoxes() const
 
         if(
             !octree_.hasContainedTriangles(leafI) &&
+            !octree_.hasContainedEdges(leafI) &&
             (leaf.cubeType() & meshOctreeCubeBasic::INSIDE)
         )
             boxType[leafI] |= MESHCELL;
@@ -341,7 +342,10 @@ void meshOctreeAddressing::findUsedBoxes() const
 
         forAll(boxType, leafI)
         {
-            if( octree_.hasContainedTriangles(leafI) )
+            if(
+                octree_.hasContainedTriangles(leafI) ||
+                octree_.hasContainedEdges(leafI)
+            )
                 boxType[leafI] |= MESHCELL;
         }
 

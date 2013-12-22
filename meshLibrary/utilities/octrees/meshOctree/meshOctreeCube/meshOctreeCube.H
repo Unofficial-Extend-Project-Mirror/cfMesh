@@ -128,6 +128,15 @@ public:
         ~meshOctreeCube();
 
     // Member Functions
+
+        //- refine cube in two directions, it is used for generating quadtrees
+        void refineCube2D
+        (
+            const triSurf&,
+            const boundBox&,
+            meshOctreeSlot* slotPtr = NULL
+        );
+
         //- subdivide the octree cube
         void refineCube
         (

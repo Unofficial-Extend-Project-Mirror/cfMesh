@@ -97,6 +97,127 @@ void meshOctreeCube::findContainedEdges
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+void meshOctreeCube::refineCube2D
+(
+    const triSurf& surface,
+    const boundBox& rootBox,
+    meshOctreeSlot* slotPtr
+)
+{
+    if( !slotPtr )
+        slotPtr = activeSlotPtr_;
+
+    # ifdef DEBUGSearch
+    Info << "Refining the cube " << *this << endl;
+    # endif
+
+    //- set the cube label to -1
+    cubeLabel_ = -1;
+
+    //- create subCubes
+    FixedList<meshOctreeCube*, 8> subCubes;
+    forAll(subCubes, scI)
+        subCubes[scI] = NULL;
+
+    //- create new cubes in the Z-order fashion
+    for(label scI=0;scI<4;++scI)
+    {
+        const label cubeI = slotPtr->cubes_.size();
+        const meshOctreeCubeCoordinates cc = this->refineForPosition(scI);
+
+        slotPtr->cubes_.append(cc);
+
+        subCubes[scI] = &slotPtr->cubes_[cubeI];
+        subCubes[scI]->activeSlotPtr_ = slotPtr;
+        subCubes[scI]->setCubeType(this->cubeType());
+        subCubes[scI]->setProcNo(this->procNo());
+    }
+
+    const label subCubesLabel = slotPtr->childCubes_.size();
+    slotPtr->childCubes_.appendFixedList(subCubes);
+    subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
+
+    if( hasContainedElements() )
+    {
+        const VRWGraph& containedElements =
+            activeSlotPtr_->containedTriangles_;
+
+        # ifdef DEBUGSearch
+        Info << "Distributing contained elements "
+            << containedElements[containedElementsLabel_] << endl;
+        # endif
+
+        //- check if the subCube contain the element
+        FixedList<DynList<label, 512>, 4> elementsInSubCubes;
+
+        forAllRow(containedElements, containedElementsLabel_, tI)
+        {
+            const label elI = containedElements(containedElementsLabel_, tI);
+
+            bool used(false);
+            for(label scI=0;scI<4;++scI)
+                if(
+                    subCubes[scI]->intersectsTriangleExact
+                    (
+                        surface,
+                        rootBox,
+                        elI
+                    )
+                )
+                {
+                    used = true;
+                    elementsInSubCubes[scI].append(elI);
+                }
+
+            if( !used )
+            {
+                Warning << "Triangle " << elI
+                    << " is not transferred to the child cubes!" << endl;
+            }
+        }
+
+        forAll(elementsInSubCubes, scI)
+        {
+            const DynList<label, 512>& elmts = elementsInSubCubes[scI];
+
+            if( elmts.size() != 0 )
+            {
+                VRWGraph& ct = slotPtr->containedTriangles_;
+                subCubes[scI]->containedElementsLabel_ = ct.size();
+                ct.appendList(elmts);
+
+
+                # ifdef DEBUGSearch
+                Info << "Elements in leaf " << scI << " are "
+                << ct[subCubes[scI]->containedElements()]
+                    << endl;
+                # endif
+            }
+        }
+
+        //- find surface edges within the cube
+        for(label scI=0;scI<4;++scI)
+            if( subCubes[scI]->hasContainedElements() )
+            {
+                subCubes[scI]->findContainedEdges
+                (
+                    surface,
+                    rootBox
+                );
+            }
+            else if( subCubes[scI]->cubeType() & DATA )
+            {
+                subCubes[scI]->setCubeType(UNKNOWN);
+            }
+    }
+
+    # ifdef DEBUGSearch
+    for(label scI=0;scI<4;++scI)
+        Info << "Refined cube " << scI << " is "
+            << *subCubes[scI] << endl;
+    # endif
+}
+
 void meshOctreeCube::refineCube
 (
     const triSurf& surface,

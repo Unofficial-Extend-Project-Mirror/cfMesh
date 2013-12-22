@@ -73,7 +73,7 @@ label meshOctree::findLeafContainingVertex
                 scI |= 1;
             if( p.y() >= c.y() )
                 scI |= 2;
-            if( p.z() >= c.z() )
+            if( !isQuadtree_ && p.z() >= c.z() )
                 scI |= 4;
 
             oc = oc->subCube(scI);
@@ -98,17 +98,18 @@ label meshOctree::findNeighbourOverNode
     const label nodeI
 ) const
 {
-    const meshOctreeCubeCoordinates coords(cc + regularityPositions_[18+nodeI]);
+    const meshOctreeCubeCoordinates nc(cc + regularityPositions_[18+nodeI]);
 
-    const meshOctreeCube* nei = findCubeForPosition(coords);
+    const meshOctreeCube* nei = findCubeForPosition(nc);
 
     if( !nei )
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (coords.posX() >= levelLimiter) || (coords.posX() < 0) ||
-            (coords.posY() >= levelLimiter) || (coords.posY() < 0) ||
-            (coords.posZ() >= levelLimiter) || (coords.posZ() < 0)
+            (nc.posX() >= levelLimiter) || (nc.posX() < 0) ||
+            (nc.posY() >= levelLimiter) || (nc.posY() < 0) ||
+            (!isQuadtree_ && (nc.posZ() >= levelLimiter || nc.posZ() < 0)) ||
+            (isQuadtree_ && (nc.posZ() != initialCubePtr_->posZ()))
         )
         {
             return -1;
@@ -163,17 +164,18 @@ void meshOctree::findNeighboursOverEdge
     DynList<label>& neighbourLeaves
 ) const
 {
-    const meshOctreeCubeCoordinates coords(cc + regularityPositions_[6+eI]);
+    const meshOctreeCubeCoordinates nc(cc + regularityPositions_[6+eI]);
 
-    const meshOctreeCube* nei = findCubeForPosition(coords);
+    const meshOctreeCube* nei = findCubeForPosition(nc);
 
     if( !nei )
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (coords.posX() >= levelLimiter) || (coords.posX() < 0) ||
-            (coords.posY() >= levelLimiter) || (coords.posY() < 0) ||
-            (coords.posZ() >= levelLimiter) || (coords.posZ() < 0)
+            (nc.posX() >= levelLimiter) || (nc.posX() < 0) ||
+            (nc.posY() >= levelLimiter) || (nc.posY() < 0) ||
+            (!isQuadtree_ && (nc.posZ() >= levelLimiter || nc.posZ() < 0)) ||
+            (isQuadtree_ && (nc.posZ() != initialCubePtr_->posZ()))
         )
         {
             neighbourLeaves.append(-1);
@@ -271,7 +273,8 @@ void meshOctree::findNeighboursInDirection
         if(
             (cpx >= levelLimiter) || (cpx < 0) ||
             (cpy >= levelLimiter) || (cpy < 0) ||
-            (cpz >= levelLimiter) || (cpz < 0)
+            (!isQuadtree_ && (cpz >= levelLimiter || cpz < 0)) ||
+            (isQuadtree_ && (cpz != initialCubePtr_->posZ()))
         )
         {
             neighbourLeaves.append(-1);
@@ -403,7 +406,8 @@ meshOctreeCube* meshOctree::findCubeForPosition
     if(
         (cpx >= levelLimiter) || (cpx < 0) ||
         (cpy >= levelLimiter) || (cpy < 0) ||
-        (cpz >= levelLimiter) || (cpz < 0)
+        (!isQuadtree_ && (cpz >= levelLimiter || cpz < 0)) ||
+        (isQuadtree_ && (cpz != initialCubePtr_->posZ()))
     )
     {
         return NULL;
@@ -423,7 +427,7 @@ meshOctreeCube* meshOctree::findCubeForPosition
                 scI |= 1;
             if( cpy & levelLimiter )
                 scI |= 2;
-            if( cpz & levelLimiter )
+            if( !isQuadtree_ && (cpz & levelLimiter) )
                 scI |= 4;
 
             nei = nei->subCube(scI);
@@ -456,9 +460,10 @@ label meshOctree::findLeafLabelForPosition
     {
         const label levelLimiter = (1 << cc.level());
         if(
-            (cc.posX() < levelLimiter) || (cc.posX() >= 0) ||
-            (cc.posY() < levelLimiter) || (cc.posY() >= 0) ||
-            (cc.posZ() < levelLimiter) || (cc.posZ() >= 0)
+            (cc.posX() < levelLimiter) && (cc.posX() >= 0) &&
+            (cc.posY() < levelLimiter) && (cc.posY() >= 0) &&
+            ((!isQuadtree_ && (cc.posZ() < levelLimiter && cc.posZ() >= 0)) ||
+            (isQuadtree_ && (cc.posZ() == initialCubePtr_->posZ())))
         )
         {
             return meshOctreeCubeBasic::OTHERPROC;

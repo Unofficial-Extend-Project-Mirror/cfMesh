@@ -43,7 +43,7 @@ namespace Foam
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from surface
-meshOctree::meshOctree(const triSurf& ts)
+meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
 :
     surface_(ts),
     neiProcs_(),
@@ -57,7 +57,8 @@ meshOctree::meshOctree(const triSurf& ts)
     vrtLeavesPos_(),
     regularityPositions_(),
     dataSlots_(),
-    leaves_()
+    leaves_(),
+    isQuadtree_(isQuadtree)
 {
     Info << "Constructing octree" << endl;
 
@@ -227,15 +228,30 @@ void meshOctree::createInitialOctreeBox()
 
     meshOctreeSlot* slotPtr = &dataSlots_[0];
 
-    slotPtr->cubes_.append
-    (
-        meshOctreeCube
+    if( !isQuadtree_ )
+    {
+        slotPtr->cubes_.append
         (
-            meshOctreeCubeCoordinates(0, 0, 0, 0),
-            surface_.size(),
-            slotPtr
-        )
-    );
+            meshOctreeCube
+            (
+                meshOctreeCubeCoordinates(0, 0, 0, 0),
+                surface_.size(),
+                slotPtr
+            )
+        );
+    }
+    else
+    {
+        slotPtr->cubes_.append
+        (
+            meshOctreeCube
+            (
+                meshOctreeCubeCoordinates(0, 0, -10, 0),
+                surface_.size(),
+                slotPtr
+            )
+        );
+    }
 
     initialCubePtr_ = &slotPtr->cubes_[0];
 

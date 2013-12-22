@@ -90,6 +90,9 @@ class meshOctree
         //- list of cubes which are leaves of the octree
         LongList<meshOctreeCube*> leaves_;
 
+        //- a flag whether is true if is it a quadtree
+        bool isQuadtree_;
+
     // Private member functions
         //- set data needed for finding neighbours
         void setOctantVectorsAndPositions();
@@ -124,7 +127,7 @@ public:
     // Constructors
 
         //- Construct from surface
-        meshOctree(const triSurf&);
+        meshOctree(const triSurf&, const bool isQuadtree = false);
 
     // Destructor
 
@@ -135,6 +138,9 @@ public:
 
         //- find a cube containing the vertex
         label findLeafContainingVertex(const point&) const;
+
+        //- is octree a quadtree or an octree
+        inline bool isQuadtree() const;
 
         //- return octant vectors
         inline const FixedList<Vector<label>, 8>& octantVectors() const;

@@ -137,6 +137,7 @@ public:
         void refineSelectedBoxes
         (
             List<direction>& refineBox,
+            const bool quadtreeRefinement = false,
             const bool hexRefinement = false
         );
 

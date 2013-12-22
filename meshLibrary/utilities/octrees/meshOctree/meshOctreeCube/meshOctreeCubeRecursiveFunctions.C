@@ -29,7 +29,7 @@ Description
 #include "meshOctreeCube.H"
 #include "demandDrivenData.H"
 #include "Ostream.H"
-#include "../meshOctree.H"
+#include "meshOctree.H"
 
 //#define DEBUGSearch
 

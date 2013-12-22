@@ -34,6 +34,11 @@ Description
 namespace Foam
 {
 
+inline bool meshOctree::isQuadtree() const
+{
+    return isQuadtree_;
+}
+
 //- return octant vectors
 inline const FixedList<Vector<label>, 8>& meshOctree::octantVectors() const
 {
