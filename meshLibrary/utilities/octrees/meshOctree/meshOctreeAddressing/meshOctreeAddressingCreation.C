@@ -671,7 +671,7 @@ void meshOctreeAddressing::createOctreeFaces() const
 
                 if( boxType[leafI] & MESHCELL )
                 {
-                    FixedList<label, 12> edgeCentreLabel;
+                    FixedList<label, 12> edgeCentreLabel(-1);
                     for(label i=0;i<12;++i)
                         edgeCentreLabel[i] = findEdgeCentre(leafI, i);
 

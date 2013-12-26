@@ -91,7 +91,7 @@ class meshOctree
         LongList<meshOctreeCube*> leaves_;
 
         //- a flag whether is true if is it a quadtree
-        bool isQuadtree_;
+        const bool isQuadtree_;
 
     // Private member functions
         //- set data needed for finding neighbours

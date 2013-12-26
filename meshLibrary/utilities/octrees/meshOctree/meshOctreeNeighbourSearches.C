@@ -98,6 +98,9 @@ label meshOctree::findNeighbourOverNode
     const label nodeI
 ) const
 {
+    if( isQuadtree_ )
+        return -1;
+
     const meshOctreeCubeCoordinates nc(cc + regularityPositions_[18+nodeI]);
 
     const meshOctreeCube* nei = findCubeForPosition(nc);
@@ -114,10 +117,12 @@ label meshOctree::findNeighbourOverNode
         {
             return -1;
         }
-        else
+        else if( Pstream::parRun() )
         {
             return meshOctreeCubeBasic::OTHERPROC;
         }
+
+        return -1;
     }
     else if( nei->isLeaf() )
     {
@@ -130,7 +135,7 @@ label meshOctree::findNeighbourOverNode
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
             meshOctreeCube* scPtr = nei->subCube(scI);
@@ -138,7 +143,7 @@ label meshOctree::findNeighbourOverNode
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
@@ -152,7 +157,7 @@ label meshOctree::findNeighbourOverNode
         "label meshOctree::findNeighbourOverNode("
         "const meshOctreeCubeCoordinates& cc,"
         "const label nodeI) const"
-    ) << "Should not come here!" << abort(FatalError);
+    ) << "Should not be here!" << abort(FatalError);
 
     return -1;
 }
@@ -164,6 +169,12 @@ void meshOctree::findNeighboursOverEdge
     DynList<label>& neighbourLeaves
 ) const
 {
+    if( isQuadtree_ && (eI >= 8) )
+    {
+        neighbourLeaves.append(-1);
+        return;
+    }
+
     const meshOctreeCubeCoordinates nc(cc + regularityPositions_[6+eI]);
 
     const meshOctreeCube* nei = findCubeForPosition(nc);
@@ -180,7 +191,7 @@ void meshOctree::findNeighboursOverEdge
         {
             neighbourLeaves.append(-1);
         }
-        else
+        else if( Pstream::parRun() )
         {
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
@@ -196,7 +207,7 @@ void meshOctree::findNeighboursOverEdge
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
             meshOctreeCube* scPtr = nei->subCube(scI);
@@ -205,15 +216,26 @@ void meshOctree::findNeighboursOverEdge
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
         }
 
         const label* eNodes = meshOctreeCubeCoordinates::edgeNodes_[eI];
-        neighbourLeaves.append(sc[7-eNodes[1]]);
-        neighbourLeaves.append(sc[7-eNodes[0]]);
+
+        if( !isQuadtree_)
+        {
+            neighbourLeaves.append(sc[7-eNodes[1]]);
+            neighbourLeaves.append(sc[7-eNodes[0]]);
+        }
+        else
+        {
+            if( sc[7-eNodes[1]] >= 0 )
+                neighbourLeaves.append(sc[7-eNodes[1]]);
+            if( (sc[7-eNodes[0]] >= 0) && (sc[7-eNodes[0]] != sc[7-eNodes[1]]) )
+                neighbourLeaves.append(sc[7-eNodes[0]]);
+        }
     }
 }
 
@@ -224,6 +246,12 @@ void meshOctree::findNeighboursInDirection
     DynList<label>& neighbourLeaves
 ) const
 {
+    if( isQuadtree_ && dir >= 4 )
+    {
+        neighbourLeaves.append(-1);
+        return;
+    }
+
     label cpx = cc.posX();
     label cpy = cc.posY();
     label cpz = cc.posZ();
@@ -279,7 +307,7 @@ void meshOctree::findNeighboursInDirection
         {
             neighbourLeaves.append(-1);
         }
-        else
+        else if( Pstream::parRun() )
         {
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
@@ -295,7 +323,7 @@ void meshOctree::findNeighboursInDirection
     }
     else
     {
-        FixedList<label, 8> sc;
+        FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
             meshOctreeCube* scPtr = nei->subCube(scI);
@@ -304,7 +332,7 @@ void meshOctree::findNeighboursInDirection
             {
                 sc[scI] = scPtr->cubeLabel();
             }
-            else
+            else if( Pstream::parRun() )
             {
                 sc[scI] = meshOctreeCubeBasic::OTHERPROC;
             }
@@ -312,7 +340,12 @@ void meshOctree::findNeighboursInDirection
 
         const label* fNodes = meshOctreeCubeCoordinates::faceNodes_[dir];
         for(label i=0;i<4;++i)
+        {
+            if( isQuadtree_ && sc[7-fNodes[i]] < 0 )
+                continue;
+
             neighbourLeaves.append(sc[7-fNodes[i]]);
+        }
     }
 }
 
@@ -324,7 +357,8 @@ void meshOctree::findNeighboursForLeaf
 {
     neighbourLeaves.clear();
 
-    for(label i=0;i<6;++i)
+    const label nCubeFaces = isQuadtree_?4:6;
+    for(label i=0;i<nCubeFaces;++i)
     {
         findNeighboursInDirection(cc, i, neighbourLeaves);
     }
@@ -339,15 +373,20 @@ void meshOctree::findAllLeafNeighbours
     neighbourLeaves.clear();
 
     //- neighbours over nodes
-    for(label i=0;i<8;++i)
-        neighbourLeaves.append(findNeighbourOverNode(cc, i));
+    if( !isQuadtree_ )
+    {
+        for(label i=0;i<8;++i)
+            neighbourLeaves.append(findNeighbourOverNode(cc, i));
+    }
 
     //- neighbours over edges
-    for(label i=0;i<12;++i)
+    const label nCubeEdges = isQuadtree_?8:12;
+    for(label i=0;i<nCubeEdges;++i)
         findNeighboursOverEdge(cc, i, neighbourLeaves);
 
     //- neighbours over faces
-    for(label i=0;i<6;++i)
+    const label nCubeFaces = isQuadtree_?4:6;
+    for(label i=0;i<nCubeFaces;++i)
         findNeighboursInDirection(cc, i, neighbourLeaves);
 }
 

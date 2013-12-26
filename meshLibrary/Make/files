@@ -9,6 +9,7 @@ meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvert
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
 meshSurfaceMapper  =  utilities/surfaceTools/meshSurfaceMapper
+meshSurfaceMapper2D = utilities/surfaceTools/meshSurfaceMapper2D
 edgeExtraction = utilities/surfaceTools/edgeExtraction
 edgeExtractor = $(edgeExtraction)/edgeExtractor
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
@@ -82,9 +83,11 @@ triSurfaceDetectFeatureEdges = utilities/triSurfaceTools/triSurfaceDetectFeature
 triSurfaceClassifyEdges = utilities/triSurfaceTools/triSurfaceClassifyEdges
 triSurfacePatchManipulator = utilities/triSurfaceTools/triSurfacePatchManipulator
 triSurfaceRemoveFacets = utilities/triSurfaceTools/triSurfaceRemoveFacets
+triSurfaceExtrude2DEdges = utilities/triSurfaceTools/triSurfaceExtrude2DEdges
 
 polyMeshGen = utilities/meshes/polyMeshGen
 writePatch  = utilities/meshes/polyMeshGen/writePatch
+polyMeshGen2DEngine = utilities/meshes/polyMeshGen2DEngine
 polyMeshGenModifier = utilities/meshes/polyMeshGenModifier
 polyMeshGenAddressing = utilities/meshes/polyMeshGenAddressing
 polyMeshGenChecks = utilities/meshes/polyMeshGenChecks
@@ -147,6 +150,8 @@ $(polyMeshGen)/polyMeshGen.C
 $(polyMeshGen)/polyMeshGenPoints.C
 $(polyMeshGen)/polyMeshGenFaces.C
 $(polyMeshGen)/polyMeshGenCells.C
+
+$(polyMeshGen2DEngine)/polyMeshGen2DEngine.C
 
 $(writePatch)/writePatchBase.C
 $(writePatch)/writePatch.C
@@ -299,6 +304,10 @@ $(meshSurfaceMapper)/meshSurfaceMapperMapVertices.C
 $(meshSurfaceMapper)/meshSurfaceMapperCornersAndEdges.C
 $(meshSurfaceMapper)/meshSurfaceMapperPremapVertices.C
 
+$(meshSurfaceMapper2D)/meshSurfaceMapper2D.C
+$(meshSurfaceMapper2D)/meshSurfaceMapper2DMapVertices.C
+$(meshSurfaceMapper2D)/meshSurfaceMapper2DPremapVertices.C
+
 $(edgeExtractor)/edgeExtractor.C
 
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeExtractor.C
@@ -438,6 +447,8 @@ $(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C
 
 $(triSurfaceRemoveFacets)/triSurfaceRemoveFacets.C
 $(triSurfaceRemoveFacets)/triSurfaceRemoveFacetsFunctions.C
+
+$(triSurfaceExtrude2DEdges)/triSurfaceExtrude2DEdges.C
 
 $(cartesianMeshExtractor)/cartesianMeshExtractor.C
 $(cartesianMeshExtractor)/cartesianMeshExtractorPointsAndAddressing.C

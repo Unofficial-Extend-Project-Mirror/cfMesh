@@ -349,13 +349,13 @@ void meshOctreeAddressing::edgeIntersections
         }
     }
 
+    point intersection(vector::zero);
+
     forAllConstIter(Map<label>, nAppearances, iter)
     {
         if( iter() == edgeCubes.sizeOfRow(eI) )
         {
             //- check for geometric intersection
-            point intersection;
-
             const bool intersectionExists =
                 help::triLineIntersection
                 (
@@ -431,6 +431,9 @@ label meshOctreeAddressing::findEdgeCentre
     const direction eI
 ) const
 {
+    if( octree_.isQuadtree() && eI >= 8 )
+        return -1;
+
     const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
     const VRWGraph& nl = this->nodeLabels();
     const label nodeI = nl(leafI, meshOctreeCubeCoordinates::edgeNodes_[eI][0]);
