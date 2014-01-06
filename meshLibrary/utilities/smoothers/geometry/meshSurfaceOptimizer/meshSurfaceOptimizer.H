@@ -43,6 +43,7 @@ SourceFiles
 #include "triFace.H"
 #include "meshSurfaceEngine.H"
 #include "parTriFace.H"
+#include "meshSurfacePartitioner.H"
 
 #include <map>
 
@@ -74,6 +75,9 @@ class meshSurfaceOptimizer
         //- form trihedra
         mutable LongList<triFace>* trianglesPtr_;
         mutable VRWGraph* pointTrianglesPtr_;
+
+        //- surface partitioner
+        meshSurfacePartitioner partitioner_;
 
     // Private member functions
         //- classify surface vertices as PARTITION, EDGE, CORNER
@@ -214,6 +218,9 @@ class meshSurfaceOptimizer
             const labelListPMG& nodesToSmooth
         );
 
+        //- find invalid faces in the mesh
+        label findBadFaces(labelHashSet&, boolList&) const;
+
         //- Disallow default bitwise copy construct
         meshSurfaceOptimizer(const meshSurfaceOptimizer&);
 
@@ -251,6 +258,12 @@ public:
 
         //- optimize boundary nodes after boundary regions are created
         void optimizeSurface(const label nIterations = 5);
+
+        //- optimize the surface of a 2D mesh
+        void optimizeSurface2D(const label nIterations = 5);
+
+        //- untangle the surface of a 2D mesh
+        void untangleSurface2D();
 };
 
 

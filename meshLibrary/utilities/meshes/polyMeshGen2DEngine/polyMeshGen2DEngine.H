@@ -59,24 +59,54 @@ class polyMeshGen2DEngine
         //- bounding box
         boundBox bb_;
 
-        //- which faces are in the x-y plane and at smaller z
-        boolList activeFace_;
+        //- which faces are not in the x-y plane
+        mutable boolList* activeFacePtr_;
 
         //- labels of active faces
-        labelList activeFaces_;
+        mutable labelList* activeFaceLabelsPtr_;
 
-        //- which points are in the x-y plane and at smaller z
-        boolList activePoint_;
+        //- which points are in the x-y plane and at smallest z
+        mutable boolList* zMinPointPtr_;
 
-        //- labels of active points
-        labelList activePoints_;
+        //- labels of points at minimum z
+        mutable labelList* zMinPointLabelsPtr_;
 
-        //- labels of offset points of the active points
-        labelList offsetPoints_;
+        //- labels of offset points of zMin points
+        mutable labelList* zMinToZMaxPtr_;
+
+        //- which points are in the x-y plane and at largest z
+        mutable boolList* zMaxPointPtr_;
+
+        //- labels of points at maximum z
+        mutable labelList* zMaxPointLabelsPtr_;
+
+        //- labels of zMin points of zMax points
+        mutable labelList* zMaxToZMinPtr_;
 
     // Private member functions
         //- find active faces
-        void findActiveFacesAndPoints();
+        void findActiveFaces() const;
+
+        //- find active face labels
+        void findActiveFaceLabels() const;
+
+        //- find points at minimum z
+        void findZMinPoints() const;
+
+        //- find labels of points at minimum z
+        void findZMinPointLabels() const;
+
+        //- find offset point to each zMin point
+        void findZMinOffsetPoints() const;
+
+        //- find points at maximum z
+        void findZMaxPoints() const;
+
+        //- find labels of points at minimum z
+        void findZMaxPointLabels() const;
+
+        //- find offset point to each zMin point
+        void findZMaxOffsetPoints() const;
 
         //- disallow bitwise assignment
         void operator=(const polyMeshGen2DEngine&);
@@ -95,43 +125,46 @@ public:
 
     // Member functions
         //- const access to active faces
-        inline const boolList& activeFace() const
-        {
-            return activeFace_;
-        }
+        inline const boolList& activeFace() const;
 
         //- labels of active faces
-        inline const labelList& activeFaceLabels() const
-        {
-            return activeFaces_;
-        }
+        inline const labelList& activeFaceLabels() const;
 
-        //- const access to active points
-        inline const boolList& activePoint() const
-        {
-            return activePoint_;
-        }
+        //- const access to an array of booleans which is true for points
+        //- in the x-y plane with the smallest z coordinate
+        inline const boolList& zMinPoints() const;
 
-        //- labels of active points
-        inline const labelList& activePointLabels() const
-        {
-            return activePoints_;
-        }
+        //- labels of points in the x-y with the smallest z coordinate
+        inline const labelList& zMinPointLabels() const;
 
-        //- labels of offset points
-        inline const labelList& offsetPointLabels() const
-        {
-            return offsetPoints_;
-        }
+        //- offset points of points at minimum z
+        inline const labelList& zMinToZMax() const;
+
+        //- const access to an array of booleans which is true for points
+        //- in the x-y plane with the largest z coordinate
+        inline const boolList& zMaxPoints() const;
+
+        //- labels of points in the x-y with the largest z coordinate
+        inline const labelList& zMaxPointLabels() const;
+
+        //- offset points of points at maximum z
+        inline const labelList& zMaxToZMin() const;
 
         //- correct x and y coordinates of offset points
         //- and unify the z coordinate
         void correctPoints();
+
+        //- delete all dynamically allocated data
+        void clearOut();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "polyMeshGen2DEngineI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -95,6 +95,9 @@ class boundaryLayers
         //- number of vertices in the mesh
         label nPoints_;
 
+        //- has the geometry been analysed
+        bool geometryAnalysed_;
+
     // Private member functions
         //- Return reference to meshSurfaceEngine
         const meshSurfaceEngine& surfaceEngine() const;
@@ -247,6 +250,10 @@ public:
 
         //- terminate boundary layers at concave edges (used as a flag)
         void terminateLayersAtConcaveEdges();
+
+        //- avoid generating layers for empty patches in case of a 2D mesh
+        //- used as a flag prior to addLayerForAllPatches
+        void activate2DMode();
 
         //- add layers for all patches
         void addLayerForAllPatches();

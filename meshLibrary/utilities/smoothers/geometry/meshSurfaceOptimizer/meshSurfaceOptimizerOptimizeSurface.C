@@ -34,10 +34,16 @@ Description
 #include "triangle.H"
 #include "helperFunctionsPar.H"
 #include "meshSurfaceMapper.H"
+#include "meshSurfaceMapper2D.H"
+#include "polyMeshGen2DEngine.H"
+#include "polyMeshGenAddressing.H"
 #include "labelledPoint.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGSmooth
 
@@ -324,6 +330,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.pointFaces();
     surfaceEngine_.faceCentres();
     surfaceEngine_.pointPoints();
+    surfaceEngine_.boundaryPointEdges();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
 
@@ -441,6 +448,358 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     }
 
     Info << endl;
+}
+
+void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
+{
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
+    const edgeList& edges = surfaceEngine_.edges();
+    const labelList& bp = surfaceEngine_.bp();
+
+    polyMeshGen2DEngine mesh2DEngine
+    (
+        const_cast<polyMeshGen&>(surfaceEngine_.mesh())
+    );
+    const boolList& zMinPoint = mesh2DEngine.zMinPoints();
+
+    //- needed for parallel execution
+    surfaceEngine_.pointFaces();
+    surfaceEngine_.faceCentres();
+    surfaceEngine_.pointPoints();
+    surfaceEngine_.boundaryPointEdges();
+    surfaceEngine_.boundaryFacePatches();
+    surfaceEngine_.pointNormals();
+    partitioner_.corners();
+
+    labelListPMG procBndNodes, edgePoints, activeEdges, updatePoints;
+    forAll(edges, beI)
+    {
+        const edge& e = edges[beI];
+
+        if( zMinPoint[e.start()] ^ zMinPoint[e.end()] )
+        {
+            label bpI = bp[e.start()];
+            if( !zMinPoint[e.start()] )
+                bpI = bp[e.end()];
+
+            if( vertexType_[bpI] & EDGE )
+            {
+                activeEdges.append(beI);
+
+                updatePoints.append(bp[e.start()]);
+                updatePoints.append(bp[e.end()]);
+
+                edgePoints.append(bpI);
+
+                if( vertexType_[bpI] & PROCBND )
+                    procBndNodes.append(bpI);
+            }
+        }
+    }
+
+    meshSurfaceMapper2D mapper(surfaceEngine_, meshOctree_);
+
+    //- optimize edge vertices
+    Info << "Optimizing edges. Iteration:" << flush;
+    for(label i=0;i<nIterations;++i)
+    {
+        Info << "." << flush;
+
+        meshSurfaceEngineModifier bMod(surfaceEngine_);
+        # ifdef USE_OMP
+        # pragma omp parallel if( edgePoints.size() > 1000 )
+        # endif
+        {
+            LongList<labelledPoint> newPos;
+
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 20)
+            # endif
+            forAll(edgePoints, epI)
+            {
+                const label bpI = edgePoints[epI];
+
+                if( vertexType_[bpI] & PROCBND )
+                    continue;
+
+                const point newP = newEdgePositionLaplacian(bpI);
+                newPos.append(labelledPoint(bpI, newP));
+            }
+
+            forAll(newPos, i)
+                bMod.moveBoundaryVertexNoUpdate
+                (
+                    newPos[i].pointLabel(),
+                    newPos[i].coordinates()
+                );
+        }
+
+        if( Pstream::parRun() )
+        {
+            edgeNodeDisplacementParallel(procBndNodes);
+        }
+
+        //- move points with maximum z coordinate
+        mesh2DEngine.correctPoints();
+
+        //- update normal, centres, etc, after the surface has been modified
+        bMod.updateGeometry(updatePoints);
+
+        //- map boundary edges to the surface
+        mapper.mapVerticesOntoSurfacePatches(activeEdges);
+    }
+    Info << endl;
+
+    //- optimize nodes of surface vertices which are not on surface edges
+    Info << "Optimizing surface vertices. Iteration:";
+    for(label i=0;i<nIterations;++i)
+    {
+        procBndNodes.clear();
+
+        Info << "." << flush;
+
+        meshSurfaceEngineModifier bMod(surfaceEngine_);
+        # ifdef USE_OMP
+        # pragma omp parallel if( vertexType_.size() > 100 )
+        # endif
+        {
+            LongList<labelledPoint> newPos;
+
+            # ifdef USE_OMP
+            # pragma omp for schedule(dynamic, 10)
+            # endif
+            forAll(bPoints, bpI)
+                if( zMinPoint[bPoints[bpI]] && (vertexType_[bpI] & PARTITION) )
+                {
+                    if( vertexType_[bpI] & PROCBND )
+                    {
+                        # ifdef USE_OMP
+                        # pragma omp critical
+                        # endif
+                        {
+                            procBndNodes.append(bpI);
+                        }
+
+                        continue;
+                    }
+
+                    const point newP = newPositionLaplacianFC(bpI);
+
+                    newPos.append(labelledPoint(bpI, newP));
+                }
+
+            forAll(newPos, i)
+                bMod.moveBoundaryVertexNoUpdate
+                (
+                    newPos[i].pointLabel(),
+                    newPos[i].coordinates()
+                );
+        }
+
+        if( Pstream::parRun() )
+        {
+            nodeDisplacementLaplacianFCParallel(procBndNodes, true);
+        }
+
+        //- move the points which are not at minimum z coordinate
+        mesh2DEngine.correctPoints();
+
+        //- update geometrical data due to movement of vertices
+        bMod.updateGeometry();
+    }
+
+    Info << endl;
+}
+
+void meshSurfaceOptimizer::untangleSurface2D()
+{
+    const polyMeshGen& mesh = surfaceEngine_.mesh();
+    const faceListPMG& faces = mesh.faces();
+    const VRWGraph& pointFaces = mesh.addressingData().pointFaces();
+
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
+    const labelList& bp = surfaceEngine_.bp();
+
+    polyMeshGen2DEngine mesh2DEngine(const_cast<polyMeshGen&>(mesh));
+    const boolList& zMinPoint = mesh2DEngine.zMinPoints();
+    const boolList& activeFace = mesh2DEngine.activeFace();
+
+    //- needed for parallel execution
+    surfaceEngine_.pointFaces();
+    surfaceEngine_.faceCentres();
+    surfaceEngine_.pointPoints();
+    surfaceEngine_.boundaryPointEdges();
+    surfaceEngine_.boundaryFacePatches();
+    surfaceEngine_.pointNormals();
+
+    boolList activeBoundaryPoint(bPoints.size());
+    boolList changedFace(activeFace.size(), true);
+
+    label iterationI(0);
+    do
+    {
+        labelHashSet badFaces;
+        const label nBadFaces = findBadFaces(badFaces, changedFace);
+
+        Info << "Iteration " << iterationI
+             << ". Number of bad faces " << nBadFaces << endl;
+
+        if( nBadFaces == 0 )
+            break;
+
+        //- update active points and faces affected by the movement
+        //- of active points
+        activeBoundaryPoint = false;
+        changedFace = false;
+        forAllConstIter(labelHashSet, badFaces, it)
+        {
+            const face& f = faces[it.key()];
+
+            forAll(f, pI)
+            {
+                if( zMinPoint[f[pI]] )
+                {
+                    activeBoundaryPoint[bp[f[pI]]] = true;
+
+                    forAllRow(pointFaces, f[pI], pfI)
+                        changedFace[pointFaces(f[pI], pfI)] = true;
+                }
+            }
+        }
+
+        if( Pstream::parRun() )
+        {
+            const Map<label>& globalToLocal =
+                surfaceEngine_.globalToLocalBndPointAddressing();
+            const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
+            const VRWGraph& bpNeiProcs = surfaceEngine_.bpAtProcs();
+
+            std::map<label, labelListPMG> exchangeData;
+            forAll(neiProcs, i)
+                exchangeData[neiProcs[i]].clear();
+
+            //- collect active points at inter-processor boundaries
+            forAllConstIter(Map<label>, globalToLocal, it)
+            {
+                const label bpI = it();
+
+                if( activeBoundaryPoint[bpI] )
+                {
+                    forAllRow(bpNeiProcs, bpI, i)
+                    {
+                        const label neiProc = bpNeiProcs(bpI, i);
+
+                        if( neiProc == Pstream::myProcNo() )
+                            continue;
+
+                        exchangeData[neiProc].append(it.key());
+                    }
+                }
+            }
+
+            //- exchange active points among the processors
+            labelListPMG receivedData;
+            help::exchangeMap(exchangeData, receivedData);
+
+            //- ensure that all processors have the same nodes active
+            forAll(receivedData, i)
+            {
+                const label bpI = globalToLocal[receivedData[i]];
+
+                //- activate this boundary point
+                activeBoundaryPoint[bpI] = true;
+
+                //- set the changeFaces for the faces attached to this point
+                forAllRow(pointFaces, bPoints[bpI], pfI)
+                    changedFace[pointFaces(bPoints[bpI], pfI)] = true;
+            }
+        }
+
+        //- apply smoothing to the activated points
+        meshSurfaceEngineModifier bMod(surfaceEngine_);
+
+        for(label i=0;i<5;++i)
+        {
+            labelListPMG procBndNodes, procEdgeNodes;
+
+            # ifdef USE_OMP
+            # pragma omp parallel if( vertexType_.size() > 100 )
+            # endif
+            {
+                LongList<labelledPoint> newPos;
+
+                # ifdef USE_OMP
+                # pragma omp for schedule(dynamic, 10)
+                # endif
+                forAll(bPoints, bpI)
+                {
+                    if( !activeBoundaryPoint[bpI] )
+                        continue;
+
+                    if( vertexType_[bpI] & PARTITION )
+                    {
+                        if( vertexType_[bpI] & PROCBND )
+                        {
+                            # ifdef USE_OMP
+                            # pragma omp critical
+                            # endif
+                            {
+                                procBndNodes.append(bpI);
+                            }
+
+                            continue;
+                        }
+
+                        const point newP = newPositionSurfaceOptimizer(bpI);
+                        newPos.append(labelledPoint(bpI, newP));
+                    }
+                    else if( (vertexType_[bpI] & EDGE) && (iterationI > 4) )
+                    {
+                        if( vertexType_[bpI] & PROCBND )
+                        {
+                            # ifdef USE_OMP
+                            # pragma omp critical
+                            # endif
+                            {
+                                procEdgeNodes.append(bpI);
+                            }
+
+                            continue;
+                        }
+
+                        const point newP = newEdgePositionLaplacian(bpI);
+                        newPos.append(labelledPoint(bpI, newP));
+                    }
+                }
+
+                forAll(newPos, i)
+                    bMod.moveBoundaryVertexNoUpdate
+                    (
+                        newPos[i].pointLabel(),
+                        newPos[i].coordinates()
+                    );
+            }
+
+            if( Pstream::parRun() )
+            {
+                nodeDisplacementSurfaceOptimizerParallel(procBndNodes);
+                edgeNodeDisplacementParallel(procEdgeNodes);
+            }
+        }
+
+        //- move the points which are not at minimum z coordinate
+        mesh2DEngine.correctPoints();
+
+        //- update geometrical data due to movement of vertices
+        bMod.updateGeometry();
+
+        //- update cell centres and face centres
+        const_cast<polyMeshGenAddressing&>
+        (
+            mesh.addressingData()
+        ).updateGeometry(changedFace);
+
+    } while( ++iterationI < 10 );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

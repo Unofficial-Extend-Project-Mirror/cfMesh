@@ -43,47 +43,48 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     const edgeList& edges = meshSurface_.edges();
     const VRWGraph& edgeFaces = meshSurface_.edgeFaces();
     const labelList& facePatches = meshSurface_.boundaryFacePatches();
-    
-    label nPatches(0);
-    forAll(facePatches, patchI)
-        nPatches = Foam::max(nPatches, facePatches[patchI] + 1);
-    
+
     corners_.clear();
     edgeNodes_.clear();
-    partitionPartitions_.setSize(nPatches);
-    
+    partitionPartitions_.setSize(meshSurface_.mesh().boundaries().size());
+
     nEdgesAtPoint_.clear();
-    nEdgesAtPoint_.setSize(bPoints.size(), 0);
-    
+    nEdgesAtPoint_.setSize(bPoints.size());
+    nEdgesAtPoint_ = 0;
+
+    featureEdges_.clear();
+
     forAll(edgeFaces, edgeI)
     {
         if( edgeFaces.sizeOfRow(edgeI) != 2 )
             continue;
-        
+
         const label patch0 = facePatches[edgeFaces(edgeI, 0)];
         const label patch1 = facePatches[edgeFaces(edgeI, 1)];
-        
+
         if( patch0 != patch1 )
         {
             const edge& e = edges[edgeI];
             ++nEdgesAtPoint_[bp[e.start()]];
             ++nEdgesAtPoint_[bp[e.end()]];
-            
+
             partitionPartitions_[patch0].insert(patch1);
             partitionPartitions_[patch1].insert(patch0);
+
+            featureEdges_.insert(edgeI);
         }
     }
-    
+
     if( Pstream::parRun() )
     {
         const Map<label>& otherFaceAtProc = meshSurface_.otherEdgeFaceAtProc();
         const Map<label>& otherFacePatch = meshSurface_.otherEdgeFacePatch();
-        
+
         //- take into account feature edges at processor boundaries
         forAllConstIter(Map<label>, otherFaceAtProc, it)
         {
             const label beI = it.key();
-            
+
             if( it() <= Pstream::myProcNo() )
                 continue;
             if( otherFacePatch[beI] != facePatches[edgeFaces(beI, 0)] )
@@ -93,7 +94,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
                 ++nEdgesAtPoint_[bp[e.end()]];
             }
         }
-        
+
         //- gather data on all processors
         std::map<label, labelListPMG> exchangeData;
         const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
@@ -102,23 +103,23 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             (
                 std::make_pair(bpNeiProcs[i], labelListPMG())
             );
-        
+
         const Map<label>& globalToLocal =
             meshSurface_.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = meshSurface_.bpAtProcs();
         forAllConstIter(Map<label>, globalToLocal, it)
         {
             const label bpI = it();
-            
+
             forAllRow(bpAtProcs, bpI, i)
             {
                 const label procI = bpAtProcs(bpI, i);
-                
+
                 if( procI == Pstream::myProcNo() )
                     continue;
-                
+
                 labelListPMG& dts = exchangeData[procI];
-                
+
                 //- exchange data as follows:
                 //- 1. global point label
                 //- 2. number of feature edges connected to the vertex
@@ -126,22 +127,22 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
                 dts.append(nEdgesAtPoint_[bpI]);
             }
         }
-        
+
         //- exchange information
         labelListPMG receivedData;
         help::exchangeMap(exchangeData, receivedData);
-        
+
         //- add the edges from other processors to the points
         label counter(0);
         while( counter < receivedData.size() )
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             const label nEdges = receivedData[counter++];
-            
+
             nEdgesAtPoint_[bpI] += nEdges;
         }
     }
-    
+
     forAll(nEdgesAtPoint_, bpI)
     {
         if( nEdgesAtPoint_[bpI] > 2 )
@@ -153,7 +154,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             edgeNodes_.insert(bpI);
         }
     }
-    
+
     label counter = corners_.size();
     reduce(counter, sumOp<label>());
     Info << "Found " << counter
@@ -162,6 +163,12 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     reduce(counter, sumOp<label>());
     Info << "Found " << counter
         << " edge points at the surface of the volume mesh" << endl;
+
+//    const pointFieldPMG& points = meshSurface_.points();
+//    forAllConstIter(labelHashSet, corners_, it)
+//        Info << "Corner point " << it.key() << " has coordinates " << points[bPoints[it.key()]] << endl;
+//    forAllConstIter(labelHashSet, edgeNodes_, it)
+//        Info << "Edge point " << it.key() << " has coordinates " << points[bPoints[it.key()]] << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

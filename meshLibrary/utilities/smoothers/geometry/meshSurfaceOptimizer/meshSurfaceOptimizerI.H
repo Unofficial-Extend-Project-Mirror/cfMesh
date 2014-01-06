@@ -34,6 +34,12 @@ Description
 
 //#define DEBUGSmooth
 
+# ifdef DEBUGSmooth
+#include "triSurf.H"
+#include "triSurfModifier.H"
+#include "helperFunctions.H"
+# endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -45,7 +51,7 @@ const LongList<triFace>& meshSurfaceOptimizer::triangles() const
 {
     if( !trianglesPtr_ )
         calculateTrianglesAndAddressing();
-    
+
     return *trianglesPtr_;
 }
 
@@ -53,7 +59,7 @@ const VRWGraph& meshSurfaceOptimizer::pointTriangles() const
 {
     if( !pointTrianglesPtr_ )
         calculateTrianglesAndAddressing();
-    
+
     return *pointTrianglesPtr_;
 }
 
@@ -70,17 +76,17 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     # ifdef DEBUGSmooth
     Info << "Transforming boundary node " << bpI << endl;
     # endif
-    
+
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const VRWGraph& pPoints = surfaceEngine_.pointPoints();
     const LongList<triFace>& triangles = this->triangles();
     const constRow pTriangles = pointTriangles()[bpI];
-    
+
     # ifdef DEBUGSmooth
     Info << "Triangles containing this node are " << pTriangles << endl;
     # endif
-    
+
     //- create vecX and vecY
     const point& p = points[bPoints[bpI]];
     pts.setSize(0);
@@ -99,55 +105,89 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
             break;
         }
     }
-    
+
     if( !found )
         return false;
-    
+
     # ifdef DEBUGSmooth
     Info << "VecX " << vecX << endl;
     Info << "vecY " << vecY << endl;
     # endif
-    
+
     //- transform the vertices
     label counter(0);
     Map<label> pointMapping;
-    trias.setSize(pTriangles.size());
+
+    trias.clear();
     forAll(pTriangles, triI)
     {
         const triFace& tri = triangles[pTriangles[triI]];
-        
+
+        if( tri[0] != bpI )
+            continue;
+
+        triFace tf;
+
         forAll(tri, pI)
         {
             Map<label>::iterator fnd = pointMapping.find(tri[pI]);
             if( fnd != pointMapping.end() )
             {
-                trias[triI][pI] = fnd();
+                tf[pI] = fnd();
             }
             else
             {
-                point pt
+                const point pt
                 (
                     ((points[bPoints[tri[pI]]] - p) & vecX),
                     ((points[bPoints[tri[pI]]] - p) & vecY),
                     0.0
                 );
-                
+
                 pts.append(pt);
-                trias[triI][pI] = counter;
+                tf[pI] = counter;
                 pointMapping.insert(tri[pI], counter);
                 ++counter;
             }
         }
+
+        trias.append(tf);
     }
-    
+
     # ifdef DEBUGSmooth
     Info << "Original triangles " << endl;
     forAll(pTriangles, triI)
         Info << "Tri " << triI << " is " << triangles[pTriangles[triI]] << endl;
     Info << "Transformed triangles are " << trias << endl;
     Info << "Transformed vertices " << pts << endl;
+
+    triSurf surf;
+    triSurfModifier sMod(surf);
+    pointField& sPoints = sMod.pointsAccess();
+    sPoints.setSize(pts.size());
+    forAll(sPoints, i)
+        sPoints[i] = pts[i];
+    LongList<labelledTri>& sTrias = sMod.facetsAccess();
+    sTrias.setSize(trias.size());
+    forAll(sTrias, i)
+    {
+        labelledTri& tf = sTrias[i];
+        tf[0] = trias[i][0];
+        tf[1] = trias[i][1];
+        tf[2] = trias[i][2];
+
+        tf.region() = 0;
+    }
+    sMod.patchesAccess().setSize(1);
+    sMod.patchesAccess()[0].name() = "bnd";
+    sMod.patchesAccess()[0].geometricType() = "patch";
+
+    fileName sName("bndSimplex_");
+    sName += help::scalarToText(bpI);
+    sName += ".stl";
+    surf.writeSurface(sName);
     # endif
-    
+
     return found;
 }
 
@@ -165,13 +205,13 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
     # ifdef DEBUGSmooth
     Info << "Transforming boundary node " << bpI << endl;
     # endif
-    
+
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
     const labelList& globalPointLabel =
         surfaceEngine_.globalBoundaryPointLabel();
-    
+
     std::map<label, DynList<parTriFace> >::const_iterator
         pIter = m.find(globalPointLabel[bpI]);
     const DynList<parTriFace>& pFcs = pIter->second;
@@ -181,12 +221,12 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
         FatalError << "Wrong points supplied!" << abort(FatalError);
     Info << "Triangles containing this node are " << pFcs << endl;
     # endif
-    
+
     //- create vecX and vecY
     const point& p = points[bPoints[bpI]];
     pts.setSize(0);
     bool found(false);
-    
+
     forAll(pFcs, tI)
     {
         const point sp = pl.nearestPoint(pFcs[tI].trianglePoints().centre());
@@ -201,30 +241,30 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
             break;
         }
     }
-    
+
     if( !found )
         return false;
-    
+
     # ifdef DEBUGSmooth
     Info << "VecX " << vecX << endl;
     Info << "vecY " << vecY << endl;
     # endif
-    
+
     //- transform the vertices
     label counter(0);
     Map<label> pointMapping;
     trias.setSize(pFcs.size());
-    
+
     //- tranfer triangle from other proc first
     forAll(pFcs, triI)
     {
         const parTriFace& tri = pFcs[triI];
-        
+
         for(label pI=0;pI<3;++pI)
         {
             Map<label>::iterator fnd =
                 pointMapping.find(tri.globalLabelOfPoint(pI));
-            
+
             if( fnd != pointMapping.end() )
             {
                 trias[triI][pI] = fnd();
@@ -244,14 +284,14 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
                 {
                     tp = tri.trianglePoints().c();
                 }
-                
+
                 point pt
                 (
                     ((tp - p) & vecX),
                     ((tp - p) & vecY),
                     0.0
                 );
-                
+
                 pts.append(pt);
                 trias[triI][pI] = counter;
                 pointMapping.insert(tri.globalLabelOfPoint(pI), counter);
@@ -259,7 +299,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
             }
         }
     }
-    
+
     return found;
 }
 
@@ -277,10 +317,10 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
     if( transformIntoPlane )
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
-    
+
         if( magSqr(pNormal) < VSMALL )
             return points[bPoints[bpI]];
-        
+
         plane pl(points[bPoints[bpI]], pNormal);
 
         DynList<point> projectedPoints;
@@ -298,10 +338,10 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
     {
         forAllRow(pPoints, bpI, pI)
             newP += points[bPoints[pPoints(bpI, pI)]];
-        
+
         newP /= pPoints.sizeOfRow(bpI);
     }
-    
+
     return newP;
 }
 
@@ -315,37 +355,37 @@ inline point meshSurfaceOptimizer::newPositionLaplacianFC
     const pointFieldPMG& points = surfaceEngine_.points();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    
+
     vector newP(vector::zero);
 
     if( transformIntoPlane )
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
-        
+
         if( magSqr(pNormal) < VSMALL )
             return points[bPoints[bpI]];
-            
+
         plane pl(points[bPoints[bpI]], pNormal);
-    
+
         DynList<point> projectedPoints;
         projectedPoints.setSize(pointFaces.sizeOfRow(bpI));
         forAllRow(pointFaces, bpI, pfI)
             projectedPoints[pfI] =
                 pl.nearestPoint(faceCentres[pointFaces(bpI, pfI)]);
-    
+
         forAll(projectedPoints, pI)
             newP += projectedPoints[pI];
-    
+
         newP /= projectedPoints.size();
     }
     else
     {
         forAllRow(pointFaces, bpI, pfI)
             newP += faceCentres[pointFaces(bpI, pfI)];
-        
+
         newP /= pointFaces.sizeOfRow(bpI);
     }
-    
+
     return newP;
 }
 
@@ -360,24 +400,24 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
     const vectorField& faceAreas = surfaceEngine_.faceNormals();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    
+
     vector newP(vector::zero);
 
     if( transformIntoPlane )
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
-        
+
         if( magSqr(pNormal) < VSMALL )
             return points[bPoints[bpI]];
-            
+
         plane pl(points[bPoints[bpI]], pNormal);
-    
+
         DynList<point> projectedPoints;
         projectedPoints.setSize(pointFaces.sizeOfRow(bpI));
         forAllRow(pointFaces, bpI, pfI)
             projectedPoints[pfI] =
                 pl.nearestPoint(faceCentres[pointFaces(bpI, pfI)]);
-    
+
         scalar sumW(0.0);
         forAll(projectedPoints, pI)
         {
@@ -386,7 +426,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
             newP += w * projectedPoints[pI];
             sumW += w;
         }
-    
+
         newP /= Foam::max(sumW, VSMALL);
     }
     else
@@ -399,10 +439,10 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
             newP += w * faceCentres[pointFaces(bpI, pfI)];
             sumW += w;
         }
-        
+
         newP /= Foam::max(sumW, VSMALL);
     }
-    
+
     return newP;
 }
 
@@ -415,13 +455,13 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    
+
     # ifdef DEBUGSmooth
     Info << "Smoothing boundary node " << bpI << endl;
     Info << "Node label in the mesh is " << bPoints[bpI] << endl;
     Info << "Point coordinates " << points[bPoints[bpI]] << endl;
     # endif
-    
+
     //- project vertices onto the plane
     const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
     if( magSqr(pNormal) < VSMALL )
@@ -438,17 +478,17 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
         Warning << "Cannot transform in plane" << endl;
         return points[bPoints[bpI]];
     }
-    
+
     surfaceOptimizer so(pts, trias);
     const point newPoint = so.optimizePoint(tol);
-    
+
     const point newP
     (
         points[bPoints[bpI]] +
         vecX * newPoint.x() +
         vecY * newPoint.y()
     );
-    
+
     return newP;
 }
 
@@ -458,38 +498,44 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
     const bool transformIntoPlane
 ) const
 {
-    const VRWGraph& pPoints = surfaceEngine_.pointPoints();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const VRWGraph& pFaces = surfaceEngine_.pointFaces();
-    const labelList& facePatch = surfaceEngine_.boundaryFacePatches();
+    const edgeList& edges = surfaceEngine_.edges();
+    const VRWGraph& bpEdges = surfaceEngine_.boundaryPointEdges();
     const pointFieldPMG& points = surfaceEngine_.points();
-    
-    DynList<label> edgePoints(2);
-    forAllRow(pPoints, bpI, neiI)
-        if(
-            (vertexType_[pPoints(bpI, neiI)] & EDGE) ||
-            (vertexType_[pPoints(bpI, neiI)] & CORNER)
-        )
-            edgePoints.append(bPoints[pPoints(bpI, neiI)]);
-    
+
+    const labelHashSet& featureEdges = partitioner_.featureEdges();
+
+    DynList<label> edgePoints;
+
+    forAllRow(bpEdges, bpI, i)
+    {
+        const label beI = bpEdges(bpI, i);
+
+        if( featureEdges.found(beI) )
+        {
+            edgePoints.append(edges[beI].otherVertex(bPoints[bpI]));
+        }
+    }
+
+//        if(
+//            (vertexType_[pPoints(bpI, neiI)] & EDGE) ||
+//            (vertexType_[pPoints(bpI, neiI)] & CORNER)
+//        )
+//            edgePoints.append(bPoints[pPoints(bpI, neiI)]);
+
     if( edgePoints.size() < 2 )
         return points[bPoints[bpI]];
-        
-    DynList<label> pointPatches(2);
-    forAllRow(pFaces, bpI, pfI)
-        pointPatches.appendIfNotIn(facePatch[pFaces(bpI, pfI)]);
 
     # ifdef DEBUGSearch
     Info << "Edge points " << edgePoints << endl;
-    Info << "pointPatches " << pointPatches << endl;
     # endif
-    
+
     vector pos(vector::zero);
     forAll(edgePoints, epI)
         pos += points[edgePoints[epI]];
 
     pos /= edgePoints.size();
-    
+
     return pos;
 }
 

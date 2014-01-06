@@ -56,15 +56,18 @@ namespace Foam
 class meshSurfaceEngine
 {
     // Private data
-        //- mesh
+        //- reference to the mesh
         polyMeshGen& mesh_;
+
+        //- number of active patch
+        const label activePatch_;
 
         //- boundary points
         mutable labelList* boundaryPointsPtr_;
 
         //- boundary faces
         mutable faceList::subList* boundaryFacesPtr_;
-    
+
         //- patches boundary faces are in
         mutable labelList* boundaryFacePatchPtr_;
 
@@ -74,7 +77,7 @@ class meshSurfaceEngine
         //- point faces addressing
         mutable VRWGraph* pointFacesPtr_;
         mutable VRWGraph* pointInFacePtr_;
-    
+
         //- point-patches addressing
         mutable VRWGraph* pointPatchesPtr_;
 
@@ -84,60 +87,63 @@ class meshSurfaceEngine
         //- point points addressing
         mutable VRWGraph* pointPointsPtr_;
 
-        //- edges 
+        //- edges
         mutable edgeList* edgesPtr_;
-        
+
         //- boundary point-edges addressing
         mutable VRWGraph* bpEdgesPtr_;
 
         //- edge faces addressing
         mutable VRWGraph* edgeFacesPtr_;
-        
+
         //- face edges addressing
         mutable VRWGraph* faceEdgesPtr_;
-        
+
+        //- edge-patches addressing
+        mutable VRWGraph* edgePatchesPtr_;
+
         //- face-faces addressing
         mutable VRWGraph* faceFacesPtr_;
 
         //- point normals
         mutable vectorField* pointNormalsPtr_;
-        
+
         //- face normals
         mutable vectorField* faceNormalsPtr_;
-        
+
         //- face centres
         mutable vectorField* faceCentresPtr_;
-        
+
     // Private data for parallel execution
-    
+
         //- global boundary point label
         mutable labelList* globalBoundaryPointLabelPtr_;
-        
+
         //- global boundary point to local addressing
         mutable Map<label>* globalBoundaryPointToLocalPtr_;
-        
+
         //- boundary point-processors addressing
         mutable VRWGraph* bpProcsPtr_;
-        
+
         //- neighbour processors for communication when sending point data
         mutable DynList<label>* bpNeiProcsPtr_;
-        
+
         //- global boundary edge label
         mutable labelList* globalBoundaryEdgeLabelPtr_;
-        
+
         //- global boundary edge to local addressing
         mutable Map<label>* globalBoundaryEdgeToLocalPtr_;
-        
+
         //- boundary edge-processors addressing
         mutable VRWGraph* beProcsPtr_;
-        
+
         //- neighbour processors for communication when sending edge data
         mutable DynList<label>* beNeiProcsPtr_;
-        
+
         //- processor containing other face and face-patch addressing
         mutable Map<label>* otherEdgeFaceAtProcPtr_;
         mutable Map<label>* otherEdgeFacePatchPtr_;
-        
+
         //- global label for boundary faces
         mutable labelList* globalBoundaryFaceLabelPtr_;
 
@@ -147,11 +153,11 @@ class meshSurfaceEngine
         void calculateBoundaryFaces() const;
         void calculateBoundaryOwners() const;
         void calculateBoundaryNodes() const;
-        
+
         void calculateBoundaryFacePatches() const;
 
         void calculatePointFaces() const;
-        
+
         void calculatePointPatches() const;
 
         void calculatePointPoints() const;
@@ -159,21 +165,22 @@ class meshSurfaceEngine
         void calculatePointNormals() const;
         void calculateFaceNormals() const;
         void calculateFaceCentres() const;
-        
+
         void updatePointNormalsAtProcBoundaries() const;
 
         void calculateEdgesAndAddressing() const;
         void calculateFaceEdgesAddressing() const;
         void calculateEdgeFacesAddressing() const;
+        void calculateEdgePatchesAddressing() const;
         void calculateFaceFacesAddressing() const;
-        
+
     // Private member functions for parallel runs
-    
+
         void calcGlobalBoundaryPointLabels() const;
         void calcGlobalBoundaryEdgeLabels() const;
         void calcAddressingForProcEdges() const;
         void calcGlobalBoundaryFaceLabels() const;
-        
+
     // Private member functions
 
         void clearOut();
@@ -187,11 +194,14 @@ class meshSurfaceEngine
 public:
 
         friend class meshSurfaceEngineModifier;
-    
+
     // Constructors
 
         //- Construct from mesh
         meshSurfaceEngine(polyMeshGen& mesh);
+
+        //- Construct from mesh and patch
+        meshSurfaceEngine(polyMeshGen &mesh, const label patchI);
 
     // Destructor
 
@@ -206,7 +216,7 @@ public:
         const labelList& boundaryPoints() const;
 
         const faceList::subList& boundaryFaces() const;
-        
+
         //- patch label for each boundary face
         const labelList& boundaryFacePatches() const;
 
@@ -214,59 +224,61 @@ public:
 
         const VRWGraph& pointFaces() const;
         const VRWGraph& pointInFaces() const;
-        
+
         const VRWGraph& pointPatches() const;
 
         const VRWGraph& pointPoints() const;
 
         const vectorField& pointNormals() const;
-        
+
         const vectorField& faceNormals() const;
-        
+
         const vectorField& faceCentres() const;
 
         const labelList& bp() const;
 
         const edgeList& edges() const;
-        
+
         const VRWGraph& boundaryPointEdges() const;
 
         const VRWGraph& edgeFaces() const;
-        
+
         const VRWGraph& faceEdges() const;
-        
+
+        const VRWGraph& edgePatches() const;
+
         const VRWGraph& faceFaces() const;
-        
+
     // Functions for parallel runs
         //- global boundary point label
         const labelList& globalBoundaryPointLabel() const;
-        
+
         //- global point label to local label. Only for processors points
         const Map<label>& globalToLocalBndPointAddressing() const;
-        
+
         //- processors which contain the vertex
         const VRWGraph& bpAtProcs() const;
-        
+
         //- communication matrix for sending point data
         const DynList<label>& bpNeiProcs() const;
-        
+
         //- global boundary edge label
         const labelList& globalBoundaryEdgeLabel() const;
-        
+
         //- global boundary edge label to local label. Only for processor edges
         const Map<label>& globalToLocalBndEdgeAddressing() const;
-        
+
         //- processors which contain the edges
         const VRWGraph& beAtProcs() const;
-        
+
         //- communication matrix for sending edge data
         const DynList<label>& beNeiProcs() const;
-        
+
         //- patch label and processor label at which the other surface face
         //- sharing processor edge is located. Only for processor edges
         const Map<label>& otherEdgeFaceAtProc() const;
         const Map<label>& otherEdgeFacePatch() const;
-        
+
         //- global boundary face label
         const labelList& globalBoundaryFaceLabel() const;
 };

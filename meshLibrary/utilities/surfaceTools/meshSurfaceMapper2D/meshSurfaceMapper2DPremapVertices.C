@@ -29,6 +29,7 @@ Description
 #include "demandDrivenData.H"
 #include "meshSurfaceEngineModifier.H"
 #include "meshSurfaceMapper2D.H"
+#include "polyMeshGen2DEngine.H"
 #include "meshOctree.H"
 #include "refLabelledPoint.H"
 #include "helperFunctionsPar.H"
@@ -50,61 +51,81 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 {
     Info << "Smoothing mesh surface before mapping. Iteration:" << flush;
 
-    const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
+    const labelList& bp = surfaceEngine_.bp();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
-    const VRWGraph& pointFaces = surfaceEngine_.pointFaces();
+    const VRWGraph& edgeFaces = surfaceEngine_.edgeFaces();
+    const edgeList& edges = surfaceEngine_.edges();
 
-    List<labelledPoint> preMapPositions(movingPoints_.size());
+    List<labelledPoint> preMapPositions(activeBoundaryEdges_.size());
 
     for(label iterI=0;iterI<nIterations;++iterI)
     {
+        labelListPMG parBndEdges;
+
         //- use the shrinking laplace first
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40)
         # endif
-        forAll(movingPoints_, pI)
+        forAll(activeBoundaryEdges_, eI)
         {
-            const label bpI = movingPoints_[pI];
+            const label beI = activeBoundaryEdges_[eI];
 
             labelledPoint lp(0, vector::zero);
 
-            forAllRow(pointFaces, bpI, bfI)
+            if( edgeFaces.sizeOfRow(beI) == 2 )
+            {
+                forAllRow(edgeFaces, beI, efI)
+                {
+                    ++lp.pointLabel();
+                    lp.coordinates() += faceCentres[edgeFaces(beI, efI)];
+                }
+
+            }
+            else if( edgeFaces.sizeOfRow(beI) == 1 )
             {
                 ++lp.pointLabel();
-                lp.coordinates() += faceCentres[pointFaces(bpI, bfI)];
+                lp.coordinates() += faceCentres[edgeFaces(beI, 0)];
+
+                #ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                parBndEdges.append(eI);
             }
 
-            preMapPositions[pI] = lp;
+            //- store the information
+            preMapPositions[eI] = lp;
         }
 
         if( Pstream::parRun() )
         {
-            const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
-            const labelList& globalPointLabel =
-                surfaceEngine_.globalBoundaryPointLabel();
+            const VRWGraph& beAtProcs = surfaceEngine_.beAtProcs();
+            const labelList& globalEdgeLabel =
+                surfaceEngine_.globalBoundaryEdgeLabel();
             const Map<label>& globalToLocal =
-                surfaceEngine_.globalToLocalBndPointAddressing();
+                surfaceEngine_.globalToLocalBndEdgeAddressing();
 
             //- collect data to be sent to other processors
             std::map<label, LongList<refLabelledPoint> > exchangeData;
-            forAll(surfaceEngine_.bpNeiProcs(), i)
+            forAll(surfaceEngine_.beNeiProcs(), i)
                 exchangeData.insert
                 (
                     std::make_pair
                     (
-                        surfaceEngine_.bpNeiProcs()[i],
+                        surfaceEngine_.beNeiProcs()[i],
                         LongList<refLabelledPoint>()
                     )
                 );
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            Map<label> edgeToActiveAddressing;
+            forAll(parBndEdges, i)
             {
-                const label bpI = it();
+                const label beI = activeBoundaryEdges_[parBndEdges[i]];
+                edgeToActiveAddressing.insert(beI, parBndEdges[i]);
 
-                forAllRow(bpAtProcs, bpI, procI)
+                forAllRow(beAtProcs, beI, procI)
                 {
-                    const label neiProc = bpAtProcs(bpI, procI);
+                    const label neiProc = beAtProcs(beI, procI);
 
                     if( neiProc == Pstream::myProcNo() )
                         continue;
@@ -113,8 +134,8 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                     (
                         refLabelledPoint
                         (
-                            globalPointLabel[bpI],
-                            preMapPositions[bpI]
+                            globalEdgeLabel[beI],
+                            preMapPositions[beI]
                         )
                     );
                 }
@@ -130,9 +151,10 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 const refLabelledPoint& rlp = receivedData[i];
                 const labelledPoint& lps = rlp.lPoint();
 
-                const label bpI = globalToLocal[rlp.objectLabel()];
+                const label beI = globalToLocal[rlp.objectLabel()];
+                const label eI = edgeToActiveAddressing[beI];
 
-                labelledPoint& lp = preMapPositions[bpI];
+                labelledPoint& lp = preMapPositions[eI];
                 lp.pointLabel() += lps.pointLabel();
                 lp.coordinates() += lps.coordinates();
             }
@@ -142,19 +164,18 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
-        forAll(movingPoints_, pI)
+        forAll(activeBoundaryEdges_, eI)
         {
-            labelledPoint& lp = preMapPositions[pI];
+            labelledPoint& lp = preMapPositions[eI];
 
             if( lp.pointLabel() == 0 )
             {
-                Warning << "Surface point " << movingPoints_[pI]
-                    << " has no supporting faces" << endl;
+                Warning << "Surface edge " << activeBoundaryEdges_[eI]
+                    << " has no active faces" << endl;
                 continue;
             }
 
             lp.coordinates() /= lp.pointLabel();
-            lp.coordinates().z() = boundingBox_.min().z();
         }
 
         //- create the surface modifier and move the surface points
@@ -164,10 +185,12 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
         const label size = boundaryPoints.size();
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
-        forAll(movingPoints_, pI)
+        forAll(activeBoundaryEdges_, eI)
         {
-            const label bpI = movingPoints_[bpI];
-            const point& p = points[boundaryPoints[bpI]];
+            const label beI = activeBoundaryEdges_[eI];
+            const edge& e = edges[beI];
+
+            const point& p = points[e.start()];
 
             label patch;
             point pMap = p;
@@ -178,15 +201,15 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 pMap,
                 dSq,
                 patch,
-                preMapPositions[bpI].coordinates()
+                preMapPositions[eI].coordinates()
             );
 
+            pMap.z() = p.z();
             point newP = 0.5 * (pMap + p);
 
-            newP.z() = boundingBox_.min().z();
-            surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
-            newP.z() = boundingBox_.max().z();
-            surfaceModifier.moveBoundaryVertexNoUpdate(offsetPoints_[pI], newP);
+            surfaceModifier.moveBoundaryVertexNoUpdate(bp[e.start()], newP);
+            newP.z() = points[e.end()].z();
+            surfaceModifier.moveBoundaryVertexNoUpdate(bp[e.end()], newP);
         }
 
         surfaceModifier.updateGeometry();

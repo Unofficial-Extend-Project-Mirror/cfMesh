@@ -23,89 +23,111 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Class
-    surfaceOptimizer
+    cartesian2DMeshGenerator
 
 Description
-    Performs optimisation of a central vertex in a simplex
+    Creates a 2D cartesian mesh from the quadtree
 
 SourceFiles
-    surfaceOptimizer.C
+    cartesian2DMeshGenerator.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef surfaceOptimizer_H
-#define surfaceOptimizer_H
+#ifndef cartesian2DMeshGenerator_H
+#define cartesian2DMeshGenerator_H
 
-#include "point.H"
-#include "triFace.H"
-#include "DynList.H"
+#include "polyMeshGen.H"
+#include "IOdictionary.H"
+//#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+// Forward declarations
+class triSurf;
+class meshOctree;
+class Time;
+
 /*---------------------------------------------------------------------------*\
-                        Class surfaceOptimizer Declaration
+                    Class cartesian2DMeshGenerator Declaration
 \*---------------------------------------------------------------------------*/
 
-class surfaceOptimizer
+class cartesian2DMeshGenerator
 {
     // Private data
-        //- reference to the simplex points
-        DynList<point>& pts_;
+        //- reference to Time
+        const Time& db_;
 
-        //- reference to the triangles forming a simplex
-        const DynList<triFace>& trias_;
+        //- pointer to the surface
+        const triSurf* surfacePtr_;
 
-        //- min position of the bnd box
-        point pMin_;
+        //- IOdictionary containing information about cell sizes, etc..
+        IOdictionary meshDict_;
 
-        //- max position of the bnd box
-        point pMax_;
+        //- pointer to the octree
+        meshOctree* octreePtr_;
+
+        //- mesh
+        polyMeshGen mesh_;
 
     // Private member functions
-        //- evaluate stabilisation factor
-        scalar evaluateStabilisationFactor() const;
+        //- create cartesian mesh
+        void createCartesianMesh();
 
-        //- evaluate the functional
-        scalar evaluateFunc(const scalar& K) const;
+        //- prepare mesh surface
+        void surfacePreparation();
 
-        //- evaluate gradients needed for optimisation
-        void evaluateGradients(const scalar&, vector&, tensor&) const;
+        //- map mesh to the surface and untangle surface
+        void mapMeshToSurface();
 
-        //- optimise point position using the divide and conquer technique
-        scalar optimiseDivideAndConquer(const scalar tol);
+        //- capture edges and corners
+        void mapEdgesAndCorners();
 
-        //- optimise point position via the steepest descent method
-        scalar optimiseSteepestDescent(const scalar tol);
+        //- optimise surface mesh
+        void optimiseMeshSurface();
+
+        //- add boundary layers
+        void generateBoundaryLayers();
+
+        //- refine boundary layers
+        void refBoundaryLayers();
+
+        //- replace boundaries
+        void replaceBoundaries();
+
+        //- renumber the mesh
+        void renumberMesh();
+
+        //- generate mesh
+        void generateMesh();
 
         //- Disallow default bitwise copy construct
-        surfaceOptimizer(const surfaceOptimizer&);
+        cartesian2DMeshGenerator(const cartesian2DMeshGenerator&);
 
         //- Disallow default bitwise assignment
-        void operator=(const surfaceOptimizer&);
+        void operator=(const cartesian2DMeshGenerator&);
 
 public:
 
     // Constructors
 
-        //- Construct from transformed points and triangles forming a simplex
-        surfaceOptimizer
-        (
-            DynList<point>& pts,
-            const DynList<triFace>& trias
-        );
+        //- Construct from time
+        cartesian2DMeshGenerator(const Time&);
 
+        //- Construct from time and desired cell size
+        //cartesian2DMeshGenerator(const objectRegistry&, const volScalarField&);
 
     // Destructor
 
-        ~surfaceOptimizer();
+        ~cartesian2DMeshGenerator();
+
 
     // Member Functions
 
-        //- optimizes position of a central point in the simplex
-        point optimizePoint(const scalar tol = 0.1);
+        //- write the mesh
+        void writeMesh() const;
 };
 
 

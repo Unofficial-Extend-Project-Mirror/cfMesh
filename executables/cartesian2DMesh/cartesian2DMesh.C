@@ -22,45 +22,39 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+Application
+    Generates cartesian mesh
+
 Description
+    - takes a triangulated surface and generates a cartesian mesh
 
 \*---------------------------------------------------------------------------*/
 
-#include "meshSurfacePartitioner.H"
+#include "argList.H"
+#include "objectRegistry.H"
+#include "Time.H"
+#include "cartesian2DMeshGenerator.H"
+
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
+// Main program:
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-// Construct from meshSurfaceEngine. Holds reference!
-meshSurfacePartitioner::meshSurfacePartitioner
-(
-    const meshSurfaceEngine& meshSurface
-)
-:
-    meshSurface_(meshSurface),
-    corners_(),
-    edgeNodes_(),
-    partitionPartitions_(),
-    nEdgesAtPoint_(),
-    featureEdges_()
+int main(int argc, char *argv[])
 {
-    calculateCornersEdgesAndAddressing();
+#   include "setRootCase.H"
+#   include "createTime.H"
+
+    cartesian2DMeshGenerator omg(runTime);
+
+    Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
+        << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
+
+    omg.writeMesh();
+
+    Info << "End\n" << endl;
+    return 0;
 }
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfacePartitioner::~meshSurfacePartitioner()
-{}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -30,7 +30,13 @@ Description
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceEngine.H"
 
-//#define DEBUGSearch
+//#define DEBUGTriangulation
+
+# ifdef DEBUGTriangulation
+#include "triSurf.H"
+#include "triSurfModifier.H"
+#include "helperFunctions.H"
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,55 +52,85 @@ void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
         (
             "void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const"
         ) << "Addressing is already calculated!" << abort(FatalError);
-    
+
     const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+    const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const labelList& bp = surfaceEngine_.bp();
-    
-    triFace triangle; //- helper
-    
-    pointTrianglesPtr_ = new VRWGraph(surfaceEngine_.boundaryPoints().size());
+
+    pointTrianglesPtr_ = new VRWGraph(bPoints.size());
     VRWGraph& pointTriangles = *pointTrianglesPtr_;
-    
+
     trianglesPtr_ = new LongList<triFace>();
     LongList<triFace>& triangles = *trianglesPtr_;
-    
+
     //- start creating triangles
     forAll(bFaces, bfI)
     {
         const face& bf = bFaces[bfI];
-        
+
+        const label nTrias = bf.size() - 2;
+
         forAll(bf, pI)
         {
-            const label nTrias = bf.size() - 2;
+            triFace triangle;
             triangle[0] = bp[bf[pI]];
-            
+
             for(label i=0;i<nTrias;++i)
             {
                 triangle[1] = bp[bf[(pI+i+1)%bf.size()]];
                 triangle[2] = bp[bf[(pI+i+2)%bf.size()]];
-            
+
                 triangles.append(triangle);
             }
         }
     }
-    
+
     //- create point-triangles addressing
-    labelList nTriaAtPoint(pointTriangles.size(), 0);
-    forAll(triangles, triI)
+    pointTriangles.reverseAddressing(bPoints.size(), triangles);
+
+    # ifdef DEBUGTriangulation
+    const pointFieldPMG& points = surfaceEngine_.points();
+
+    forAll(bPoints, bpI)
     {
-        const triFace& tria = triangles[triI];
-        ++nTriaAtPoint[tria[0]];
+        triSurf surf;
+        Map<label> pointToPoint;
+        forAllRow(pointTriangles, bpI, ptI)
+        {
+            const triFace& tri = triangles[pointTriangles(bpI, ptI)];
+
+            if( tri[0] == bpI )
+            {
+                labelledTri lTri;
+                lTri.region() = 0;
+
+                for(label i=0;i<3;++i)
+                {
+                    if( !pointToPoint.found(tri[i]) )
+                    {
+                        pointToPoint.insert(tri[i], surf.points().size());
+                        surf.appendVertex(points[bPoints[tri[i]]]);
+                    }
+
+                    lTri[i] = pointToPoint[tri[i]];
+                }
+
+                surf.appendTriangle(lTri);
+            }
+        }
+
+        triSurfModifier sMod(surf);
+
+        sMod.patchesAccess().setSize(1);
+        sMod.patchesAccess()[0].name() = "bnd";
+        sMod.patchesAccess()[0].geometricType() = "patch";
+
+        fileName sName("bndPointSimplex_");
+        sName += help::scalarToText(bpI);
+        sName += ".stl";
+        surf.writeSurface(sName);
     }
-    
-    forAll(nTriaAtPoint, bpI)
-        pointTriangles.setRowSize(bpI, nTriaAtPoint[bpI]);
-    nTriaAtPoint = 0;
-    
-    forAll(triangles, triI)
-    {
-        const triFace& tria = triangles[triI];
-        pointTriangles(tria[0], nTriaAtPoint[tria[0]]++) = triI;
-    }
+    # endif
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

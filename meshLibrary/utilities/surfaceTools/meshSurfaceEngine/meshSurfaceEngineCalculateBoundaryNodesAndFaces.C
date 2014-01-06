@@ -57,16 +57,40 @@ void meshSurfaceEngine::calculateBoundaryFaces() const
         const PtrList<writePatch>& boundaries = mesh_.boundaries();
 
         label nBoundaryFaces(0);
-        forAll(boundaries, patchI)
-            nBoundaryFaces += boundaries[patchI].patchSize();
+        if( activePatch_ < 0 )
+        {
+            //- take all patches
+            forAll(boundaries, patchI)
+                nBoundaryFaces += boundaries[patchI].patchSize();
 
-        boundaryFacesPtr_ =
-            new faceList::subList
+            boundaryFacesPtr_ =
+                new faceList::subList
+                (
+                    faces,
+                    nBoundaryFaces,
+                    boundaries[0].patchStart()
+                );
+        }
+        else if( activePatch_ < boundaries.size() )
+        {
+            nBoundaryFaces = boundaries[activePatch_].patchSize();
+
+            boundaryFacesPtr_ =
+                new faceList::subList
+                (
+                    faces,
+                    nBoundaryFaces,
+                    boundaries[activePatch_].patchStart()
+                );
+        }
+        else
+        {
+            FatalErrorIn
             (
-                faces,
-                nBoundaryFaces,
-                boundaries[0].patchStart()
-            );
+                "void meshSurfaceEngine::calculateBoundaryFaces() const"
+            ) << "Cannot select boundary faces. Invalid patch index "
+              << activePatch_ << exit(FatalError);
+        }
 
         reduce(nBoundaryFaces, sumOp<label>());
         Info << "Found " << nBoundaryFaces << " boundary faces " << endl;
@@ -1214,6 +1238,47 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
             }
 
             edgeFaces.setRow(edgeI, eFaces);
+        }
+    }
+}
+
+void meshSurfaceEngine::calculateEdgePatchesAddressing() const
+{
+    edgePatchesPtr_ = new VRWGraph();
+    VRWGraph& edgePatches = *edgePatchesPtr_;
+
+    const VRWGraph& edgeFaces = this->edgeFaces();
+    const labelList& facePatch = this->boundaryFacePatches();
+
+    edgePatches.setSizeAndColumnWidth(edgeFaces.size(), 2);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(edgeFaces, eI)
+    {
+        DynList<label> ePatches;
+
+        forAllRow(edgeFaces, eI, i)
+        {
+            const label patchI = facePatch[edgeFaces(eI, i)];
+
+            ePatches.appendIfNotIn(patchI);
+        }
+
+        edgePatches.setRow(eI, ePatches);
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal = globalToLocalBndEdgeAddressing();
+        const Map<label>& otherPatch = this->otherEdgeFacePatch();
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label beI = it();
+
+            edgePatches.appendIfNotIn(beI, otherPatch[beI]);
         }
     }
 }

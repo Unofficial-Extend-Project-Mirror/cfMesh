@@ -23,89 +23,74 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Class
-    surfaceOptimizer
+    meshSurfaceEdgeExtractor2D
 
 Description
-    Performs optimisation of a central vertex in a simplex
+    Stores boundary faces into patches and captures edges and corners
 
 SourceFiles
-    surfaceOptimizer.C
+    meshSurfaceEdgeExtractor2D.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef surfaceOptimizer_H
-#define surfaceOptimizer_H
+#ifndef meshSurfaceEdgeExtractor2D_H
+#define meshSurfaceEdgeExtractor2D_H
 
-#include "point.H"
-#include "triFace.H"
-#include "DynList.H"
+#include "polyMeshGenModifier.H"
+#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+// Forward declarations
+class meshOctree;
+class meshSurfaceEngine;
+
 /*---------------------------------------------------------------------------*\
-                        Class surfaceOptimizer Declaration
+                Class meshSurfaceEdgeExtractor2D Declaration
 \*---------------------------------------------------------------------------*/
 
-class surfaceOptimizer
+class meshSurfaceEdgeExtractor2D
 {
     // Private data
-        //- reference to the simplex points
-        DynList<point>& pts_;
+        //- mesh
+        polyMeshGen& mesh_;
 
-        //- reference to the triangles forming a simplex
-        const DynList<triFace>& trias_;
-
-        //- min position of the bnd box
-        point pMin_;
-
-        //- max position of the bnd box
-        point pMax_;
+        //- octree
+        const meshOctree& meshOctree_;
 
     // Private member functions
-        //- evaluate stabilisation factor
-        scalar evaluateStabilisationFactor() const;
 
-        //- evaluate the functional
-        scalar evaluateFunc(const scalar& K) const;
+        //- distribute boundary faces into patches
+        void distributeBoundaryFaces();
 
-        //- evaluate gradients needed for optimisation
-        void evaluateGradients(const scalar&, vector&, tensor&) const;
-
-        //- optimise point position using the divide and conquer technique
-        scalar optimiseDivideAndConquer(const scalar tol);
-
-        //- optimise point position via the steepest descent method
-        scalar optimiseSteepestDescent(const scalar tol);
+        //- re-map points after edges have been extracted
+        void remapBoundaryPoints();
 
         //- Disallow default bitwise copy construct
-        surfaceOptimizer(const surfaceOptimizer&);
+        meshSurfaceEdgeExtractor2D(const meshSurfaceEdgeExtractor2D&);
 
         //- Disallow default bitwise assignment
-        void operator=(const surfaceOptimizer&);
+        void operator=(const meshSurfaceEdgeExtractor2D&);
 
 public:
 
     // Constructors
 
-        //- Construct from transformed points and triangles forming a simplex
-        surfaceOptimizer
+        //- Construct from mesh data
+        meshSurfaceEdgeExtractor2D
         (
-            DynList<point>& pts,
-            const DynList<triFace>& trias
+            polyMeshGen& mesh,
+            const meshOctree& octree
         );
-
 
     // Destructor
 
-        ~surfaceOptimizer();
+        ~meshSurfaceEdgeExtractor2D();
 
     // Member Functions
-
-        //- optimizes position of a central point in the simplex
-        point optimizePoint(const scalar tol = 0.1);
 };
 
 

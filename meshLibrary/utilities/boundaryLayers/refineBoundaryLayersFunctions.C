@@ -30,6 +30,7 @@ Description
 #include "meshSurfaceEngine.H"
 #include "helperFunctions.H"
 #include "polyMeshGenAddressing.H"
+#include "polyMeshGen2DEngine.H"
 #include "VRWGraphList.H"
 
 #include "labelledPair.H"
@@ -445,6 +446,44 @@ void refineBoundaryLayers::analyseLayers()
 
             if( !protectedValue[ptchI] )
                 nLayersAtPatch[ptchI] = maxNumLayers;
+        }
+    }
+
+    if( is2DMesh_ )
+    {
+        polyMeshGen2DEngine mesh2DEngine(mesh_);
+        const boolList& zMinPoint = mesh2DEngine.zMinPoints();
+        const boolList& zMaxPoint = mesh2DEngine.zMaxPoints();
+
+        const faceList::subList& bFaces = mse.boundaryFaces();
+
+        boolList allZMax(mesh_.boundaries().size(), true);
+        boolList allZMin(mesh_.boundaries().size(), true);
+
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(bFaces, bfI)
+        {
+            const face& bf = bFaces[bfI];
+
+            forAll(bf, pI)
+            {
+                if( !zMinPoint[bf[pI]] )
+                    allZMin[facePatch[bfI]] = false;
+                if( !zMaxPoint[bf[pI]] )
+                    allZMax[facePatch[bfI]] = false;
+            }
+        }
+
+        //- mark empty patches as already used
+        forAll(allZMin, patchI)
+        {
+            if( allZMin[patchI] ^ allZMax[patchI] )
+            {
+                nLayersAtPatch[patchI] = -1;
+                layerAtPatch_[patchI] = -1;
+            }
         }
     }
 

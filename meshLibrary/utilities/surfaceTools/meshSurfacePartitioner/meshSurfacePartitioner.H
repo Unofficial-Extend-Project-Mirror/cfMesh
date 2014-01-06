@@ -53,18 +53,21 @@ class meshSurfacePartitioner
     // Private data
         //- reference to mesh surface engine
         const meshSurfaceEngine& meshSurface_;
-    
+
         //- labels of corner nodes
         labelHashSet corners_;
-    
+
         //- labels of edge nodes
         labelHashSet edgeNodes_;
-    
+
         //- partition-partitions addressing
         List<labelHashSet> partitionPartitions_;
-    
+
         //- number of edges attached to a surface point
         labelList nEdgesAtPoint_;
+
+        //- labels of feature edges
+        labelHashSet featureEdges_;
 
     // Private member functions
         //- find corners, edge nodes and addressing
@@ -77,7 +80,7 @@ class meshSurfacePartitioner
         void operator=(const meshSurfacePartitioner&);
 
 public:
-    
+
     // Constructors
 
         //- Construct from mesh
@@ -89,16 +92,34 @@ public:
 
     // Member Functions
         //- return labels of corner nodes (from the list of boundary points)
-        const labelHashSet& corners() const;
-    
+        inline const labelHashSet& corners() const
+        {
+            return corners_;
+        }
+
         //- return labels of edge nodes (from the list of boundary points)
-        const labelHashSet& edgeNodes() const;
+        inline const labelHashSet& edgeNodes() const
+        {
+            return edgeNodes_;
+        }
 
         //- return the number of feature edges attached to a boundary point
-        label numberOfFeatureEdgesAtPoint(const label bpI) const;
+        inline label numberOfFeatureEdgesAtPoint(const label bpI) const
+        {
+            return nEdgesAtPoint_[bpI];
+        }
 
         //- return partition-partitions addressing
-        const List<labelHashSet>& partitionPartitions() const;
+        inline const List<labelHashSet>& partitionPartitions() const
+        {
+            return partitionPartitions_;
+        }
+
+        //- return labels of boundary edges which are feature edges
+        inline const labelHashSet& featureEdges() const
+        {
+            return featureEdges_;
+        }
 };
 
 

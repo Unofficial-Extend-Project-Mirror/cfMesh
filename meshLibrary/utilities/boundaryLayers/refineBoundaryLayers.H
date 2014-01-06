@@ -90,6 +90,9 @@ class refineBoundaryLayers
         //- check whether the refinement is already executed
         bool done_;
 
+        //- a flag whether a 2D mesh generation is active or not
+        bool is2DMesh_;
+
         //- information about existing boundary layers at patches
         //- only available layers
         labelList layerAtPatch_;
@@ -343,6 +346,9 @@ public:
     // Public member functions
         //- set no refinement flag
         void avoidRefinement();
+
+        //- activate 2D layer refinement
+        void activate2DMode();
 
         //- set the global number of boundary layers
         void setGlobalNumberOfLayers(const label nLayers);

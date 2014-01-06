@@ -22,45 +22,54 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
+Application
+    Test for smoothers
+
 Description
+    - reads the mesh and tries to untangle negative volume cells
 
 \*---------------------------------------------------------------------------*/
 
-#include "meshSurfacePartitioner.H"
+#include "argList.H"
+#include "surfaceOptimizer.H"
+#include "Time.H"
+#include "polyMeshGen.H"
+
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
+// Main program:
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-// Construct from meshSurfaceEngine. Holds reference!
-meshSurfacePartitioner::meshSurfacePartitioner
-(
-    const meshSurfaceEngine& meshSurface
-)
-:
-    meshSurface_(meshSurface),
-    corners_(),
-    edgeNodes_(),
-    partitionPartitions_(),
-    nEdgesAtPoint_(),
-    featureEdges_()
+int main(int argc, char *argv[])
 {
-    calculateCornersEdgesAndAddressing();
+    DynList<point> points;
+    DynList<triFace> trias;
+
+    points.append(point(-0.5, 1.2, 0)); // point which gets moved
+
+    points.append(point(0, 0, 0));
+    points.append(point(1, 0, 0));
+    points.append(point(1, 1, 0));
+    points.append(point(0.5, -0.01, 0));
+    points.append(point(0, 1, 0));
+
+    Info << "Points before movement " << points << endl;
+
+    trias.append(triFace(0, 1, 2));
+    trias.append(triFace(0, 2, 3));
+    trias.append(triFace(0, 3, 4));
+    trias.append(triFace(0, 4, 5));
+    trias.append(triFace(0, 5, 1));
+
+    surfaceOptimizer sOpt(points, trias);
+    sOpt.optimizePoint(1e-3);
+
+    Info << "Points after movement " << points << endl;
+
+    Info << "End\n" << endl;
+    return 0;
 }
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfacePartitioner::~meshSurfacePartitioner()
-{}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

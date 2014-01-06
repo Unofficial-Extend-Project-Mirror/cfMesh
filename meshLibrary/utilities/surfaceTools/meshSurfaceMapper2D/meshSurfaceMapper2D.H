@@ -51,6 +51,8 @@ namespace Foam
 
 // Forward declarations
 class meshOctree;
+class polyMeshGen;
+class polyMeshGen2DEngine;
 class meshSurfaceEngine;
 class meshSurfacePartitioner;
 class triSurfacePartitioner;
@@ -62,40 +64,45 @@ class triSurfacePartitioner;
 class meshSurfaceMapper2D
 {
     // Private data
-        //- mesh surface
+        //- reference to mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
         //- reference to the octree
         const meshOctree& meshOctree_;
 
-        //- mesh surface partitioner
-        mutable meshSurfacePartitioner* surfaceEnginePartitionerPtr_;
+        //- mesh 2D engine
+        mutable polyMeshGen2DEngine* mesh2DEnginePtr_;
 
         //- triSurface partitioner
         mutable triSurfacePartitioner* surfPartitionerPtr_;
 
-        //- bounding box of the mesh
-        boundBox boundingBox_;
+        //- mesh surface partitioner
+        mutable meshSurfacePartitioner* meshPartitionerPtr_;
 
-        //- mesh points which shall be moves
-        labelListPMG movingPoints_;
-
-        //- mesh points to which the movement of moving points shall be applied
-        labelListPMG offsetPoints_;
+        //- labels of edges which are at the boundary which shall be mapped
+        //- onto the surface
+        labelListPMG activeBoundaryEdges_;
 
     // Private member functions
-        //- create and return mesh surface partitioner
-        void createMeshSurfacePartitioner() const;
-        inline const meshSurfacePartitioner& meshPartitioner() const
-        {
-            if( !surfaceEnginePartitionerPtr_ )
-                createMeshSurfacePartitioner();
+        //- find active boundary edges
+        void findActiveBoundaryEdges();
 
-            return *surfaceEnginePartitionerPtr_;
+        //- create a 2D engine
+        void create2DEngine() const;
+
+        //- create and return mesh 2D engine
+        inline const polyMeshGen2DEngine& mesh2DEngine() const
+        {
+            if( !mesh2DEnginePtr_ )
+                create2DEngine();
+
+            return *mesh2DEnginePtr_;
         }
 
-        //- create and return triSurfacePartitioner
+        //- create surface partitioner
         void createTriSurfacePartitioner() const;
+
+        //- create and reurn surface partitioner
         inline const triSurfacePartitioner& surfacePartitioner() const
         {
             if( !surfPartitionerPtr_ )
@@ -104,30 +111,30 @@ class meshSurfaceMapper2D
             return *surfPartitionerPtr_;
         }
 
-        //- delete surfaceEnginePartitionerPtr_ and surfPartitionerPtr_
+        //- create mesh surface partitioner
+        void createMeshSurfacePartitioner() const;
+
+        //- create and return mesh surface partitioner
+        inline const meshSurfacePartitioner& meshPartitioner() const
+        {
+            if( !meshPartitionerPtr_ )
+                createMeshSurfacePartitioner();
+
+            return *meshPartitionerPtr_;
+        }
+
+        //- delete dynamically allocated data
         void clearOut();
 
-    // Private member functions
-        //- classify points
-        void classifyPoints();
-
-        //- map corner nodes to the boundary
-        void mapCorners(const labelListPMG& nodesToMap);
-
-        //- find mapping distance for selected points
+    // Private member functions needed for parallel execution
+        //- find mapping distance for corner points
         void findMappingDistance
         (
-            const labelListPMG& nodesToMap,
-            std::map<label, scalar>& mappingDistance
+            const labelListPMG&,
+            std::map<label, scalar>&
         ) const;
 
-    // Private member functions needed for parallel execution
-
-        //- check if nodes at parallel boundaries are selected at all processors
-        void selectNodesAtParallelBnd(const labelListPMG&);
-
-        //- map to the smallest distance
-        //- makes sense for parallel calculations, only
+        //- map to the location with the smallest distance
         void mapToSmallestDistance(LongList<parMapperHelper>&);
 
         //- Disallow default bitwise copy construct
@@ -148,33 +155,33 @@ public:
         ~meshSurfaceMapper2D();
 
     // Member Functions
-        //- map the given surface node on the selected patch
-        //- this does not make sense for vertices at parallel boundaries
-        void mapNodeToPatch(const label bpI, const label patchI = -1);
+
+        //- adjust z coordinates of the mesh to the ones in the surface mesh
+        void adjustZCoordinates();
 
         //- projects surface vertices onto their nearest location
         //- on the surface mesh
         void mapVerticesOntoSurface();
 
-        //- projects selected surface vertices to their nearest location
+        //- projects selected edge to their nearest location
         //- on the surface mesh
-        void mapVerticesOntoSurface(const labelListPMG& nodesToMap);
+        void mapVerticesOntoSurface(const labelListPMG& edgesToMap);
 
-        //- projects corner and edge vertices onto their nearest location
+        //- projects edges with corners onto their nearest location
         //- on the surface mesh
-        void mapCornersAndEdges();
+        void mapCorners();
 
-        //- projects selected edge vertices onto their nearest
+        //- projects selected edges with corners onto their nearest
         //- locations on the surface mesh
-        void mapEdgeNodes(const labelListPMG& nodesToMap);
+        void mapCorners(const labelListPMG& edgesToMap);
 
-        //- projects surface vertices onto the surface with respect
-        //- to the surface patch they belong to. Edges and corner are respected
+        //- projects surface edges onto the surface with respect
+        //- to the surface patch they belong to. Corners are respected
         void mapVerticesOntoSurfacePatches();
 
-        //- projects selected surface vertices onto the surface with respect
-        //- to the surface patch they belong to. Edges and corner are respected
-        void mapVerticesOntoSurfacePatches(const labelListPMG& nodesToMap);
+        //- projects selected surface edges onto the surface with respect
+        //- to the surface patch they belong to. Corners are respected
+        void mapVerticesOntoSurfacePatches(const labelListPMG& edgesToMap);
 
         //- a combination of mapping and smoothing intended for better
         //- feature capturing

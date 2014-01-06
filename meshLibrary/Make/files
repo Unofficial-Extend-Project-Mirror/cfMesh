@@ -15,6 +15,7 @@ edgeExtractor = $(edgeExtraction)/edgeExtractor
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
 meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtractorNonTopo
 meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
+meshSurfaceEdgeExtractor2D = utilities/surfaceTools/meshSurfaceEdgeExtractor2D
 correctEdgesBetweenPatches = utilities/surfaceTools/correctEdgesBetweenPatches
 createFundamentalSheetsBase = utilities/surfaceTools/createFundamentalSheets
 createFundamentalSheets = $(createFundamentalSheetsBase)/createFundamentalSheets
@@ -118,6 +119,8 @@ polyMeshGenerator = pMeshLibrary/polyMeshGenerator
 
 cartesianMeshExtractor = cartesianMesh/cartesianMeshExtractor
 cartesianMeshGenerator = cartesianMesh/cartesianMeshGenerator
+
+cartesian2DMeshGenerator = cartesian2DMesh/cartesian2DMeshGenerator
 
 dualMeshExtractor = dualMesh/dualMeshExtractor
 dualMeshGenerator = dualMesh/dualMeshGenerator
@@ -317,6 +320,9 @@ $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateBoundaryFaces.C
 $(meshSurfaceEdgeExtractorNonTopo)/meshSurfaceEdgeExtractorNonTopo.C
 $(meshSurfaceEdgeExtractorNonTopo)/meshSurfaceEdgeExtractorNonTopoDistributeFaces.C
 
+$(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2D.C
+$(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2DDistributeFaces.C
+
 $(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUN.C
 $(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUNDistributeFaces.C
 
@@ -456,6 +462,8 @@ $(cartesianMeshExtractor)/cartesianMeshExtractorPolyMesh.C
 $(cartesianMeshExtractor)/cartesianMeshExtractorDecomposeSplitHexes.C
 
 $(cartesianMeshGenerator)/cartesianMeshGenerator.C
+
+$(cartesian2DMeshGenerator)/cartesian2DMeshGenerator.C
 
 $(dualMeshExtractor)/dualMeshExtractor.C
 $(dualMeshExtractor)/dualMeshExtractorDecompose.C

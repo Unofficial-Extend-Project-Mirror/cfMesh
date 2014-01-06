@@ -384,7 +384,7 @@ void meshOctreeCreator::refineInsideAndUnknownBoxes()
 void meshOctreeCreator::createOctreeBoxes()
 {
     //- set root cube size in order to achieve desired maxCellSize
-    Info << "Setting cubes size and oher parameters" << endl;
+    Info << "Setting root cube size and refinement parameters" << endl;
     setRootCubeSizeAndRefParameters();
 
     //- refine to required boundary resolution

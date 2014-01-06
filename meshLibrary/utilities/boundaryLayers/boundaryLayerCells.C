@@ -57,10 +57,14 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
 
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
+    const edgeList& edges = mse.edges();
     const VRWGraph& faceEdges = mse.faceEdges();
     const VRWGraph& edgeFaces = mse.edgeFaces();
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
     const labelList& faceOwners = mse.faceOwners();
+    const labelList& bp = mse.bp();
+    const VRWGraph& pointPatches = mse.pointPatches();
+    const VRWGraph& pointFaces = mse.pointFaces();
 
     boolList treatPatches(mesh_.boundaries().size(), false);
     forAll(patchLabels, patchI)
@@ -204,7 +208,6 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     //- create cells at edges
-    const edgeList& edges = mse.edges();
     forAll(edgeFaces, edgeI)
     {
         //- do not consider edges with no faces attached to it
@@ -247,6 +250,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         if( otherVrts_.find(e.end()) == otherVrts_.end() )
             continue;
 
+        //- generate faces of the bnd layer cell
         DynList<DynList<label, 4>, 6> cellFaces;
         createNewCellFromEdge(e, pKeyI, pKeyJ, cellFaces);
 
@@ -259,18 +263,72 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         newBoundaryOwners.append(nOldCells+cellsToAdd.size());
         newBoundaryPatches.append(patchI);
 
-        if( Pstream::parRun() )
+        //- check if face 5 is a boundary face or at an inter-processor boundary
+        const label bps = bp[e.start()];
+        label unusedPatch(-1);
+        forAllRow(pointPatches, bps, i)
         {
-            if( procPoint[e.start()] )
+            const label ptchI = pointPatches(bps, i);
+
+            if( ptchI == patchI )
+                continue;
+            if( ptchI == patchJ )
+                continue;
+            if( unusedPatch != -1 )
             {
-                pointProcFaces.append(cellFaces[5]);
-                faceAtPatches.append(labelPair(patchI, patchJ));
+                unusedPatch = -1;
+                break;
             }
-            if( procPoint[e.end()] )
+
+            unusedPatch = ptchI;
+        }
+
+        if( unusedPatch != -1 && treatedPatch_[unusedPatch] )
+        {
+            //- add a face in the empty patch in case of 2D layer generation
+            newBoundaryFaces.appendList(cellFaces[5]);
+            newBoundaryOwners.append(nOldCells+cellsToAdd.size());
+            newBoundaryPatches.append(unusedPatch);
+        }
+        else if( Pstream::parRun() && procPoint[e.start()] )
+        {
+            //- add a face at inter-pocessor boundary
+            pointProcFaces.append(cellFaces[5]);
+            faceAtPatches.append(labelPair(patchI, patchJ));
+        }
+
+        //- check if face 4 is a boundary face or at an inter-processor boundary
+        const label bpe = bp[e.end()];
+        unusedPatch = -1;
+        forAllRow(pointPatches, bpe, i)
+        {
+            const label ptchI = pointPatches(bpe, i);
+
+            if( ptchI == patchI )
+                continue;
+            if( ptchI == patchJ )
+                continue;
+            if( unusedPatch != -1 )
             {
-                pointProcFaces.append(cellFaces[4]);
-                faceAtPatches.append(labelPair(patchI, patchJ));
+                unusedPatch = -1;
+                break;
             }
+
+            unusedPatch = ptchI;
+        }
+
+        if( unusedPatch != -1 && treatedPatch_[unusedPatch] )
+        {
+            //- add a face in the empty patch in case of 2D layer generation
+            newBoundaryFaces.appendList(cellFaces[4]);
+            newBoundaryOwners.append(nOldCells+cellsToAdd.size());
+            newBoundaryPatches.append(unusedPatch);
+        }
+        else if( Pstream::parRun() && procPoint[e.end()] )
+        {
+            //- add a face at inter-pocessor boundary
+            pointProcFaces.append(cellFaces[4]);
+            faceAtPatches.append(labelPair(patchI, patchJ));
         }
 
         //- append cell to the queue
@@ -278,9 +336,6 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     //- create cells for corner nodes
-    const VRWGraph& pointFaces = mse.pointFaces();
-    const labelList& bp = mse.bp();
-
     std::map<label, DynList<label, 3> > nodePatches;
     labelHashSet parPoint;
     if( Pstream::parRun() )
@@ -495,12 +550,18 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         DynList<label, 3> pKeys;
         forAll(patchIDs, patchI)
         {
-            pKeys.appendIfNotIn(patchKey_[patchIDs[patchI]]);
+            const label pKey = patchKey_[patchIDs[patchI]];
+
+            if( pKey < 0 )
+                continue;
+
+            pKeys.appendIfNotIn(pKey);
         }
 
         if( pKeys.size() != 3 )
             continue;
 
+        Info << "Creating corner cell at point " << iter->first << endl;
         DynList<DynList<label, 4>, 6> cellFaces;
         createNewCellFromNode(iter->first, pKeys, cellFaces);
 

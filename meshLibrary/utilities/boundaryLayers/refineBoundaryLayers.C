@@ -59,6 +59,7 @@ refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
     maxThicknessForPatch_(),
     discontinuousLayersForPatch_(),
     done_(false),
+    is2DMesh_(false),
     nLayersAtBndFace_(),
     splitEdges_(),
     splitEdgesAtPoint_(),
@@ -80,6 +81,11 @@ void refineBoundaryLayers::avoidRefinement()
 {
     globalNumLayers_ = 1;
     numLayersForPatch_.clear();
+}
+
+void refineBoundaryLayers::activate2DMode()
+{
+    is2DMesh_ = true;
 }
 
 void refineBoundaryLayers::setGlobalNumberOfLayers(const label nLayers)

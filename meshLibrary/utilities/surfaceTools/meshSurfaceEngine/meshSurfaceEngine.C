@@ -40,10 +40,10 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from surface. Holds reference!
 meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
 :
     mesh_(mesh),
+    activePatch_(-1),
     boundaryPointsPtr_(NULL),
     boundaryFacesPtr_(NULL),
     boundaryFacePatchPtr_(NULL),
@@ -57,6 +57,46 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
     bpEdgesPtr_(NULL),
     edgeFacesPtr_(NULL),
     faceEdgesPtr_(NULL),
+    edgePatchesPtr_(NULL),
+    faceFacesPtr_(NULL),
+    pointNormalsPtr_(NULL),
+    faceNormalsPtr_(NULL),
+    faceCentresPtr_(NULL),
+
+    globalBoundaryPointLabelPtr_(NULL),
+    globalBoundaryPointToLocalPtr_(NULL),
+    bpProcsPtr_(NULL),
+    bpNeiProcsPtr_(NULL),
+    globalBoundaryEdgeLabelPtr_(NULL),
+    globalBoundaryEdgeToLocalPtr_(NULL),
+    beProcsPtr_(NULL),
+    beNeiProcsPtr_(NULL),
+    otherEdgeFaceAtProcPtr_(NULL),
+    otherEdgeFacePatchPtr_(NULL),
+    globalBoundaryFaceLabelPtr_(NULL)
+{
+    calculateBoundaryFaces();
+    calculateBoundaryNodes();
+}
+
+meshSurfaceEngine::meshSurfaceEngine(polyMeshGen &mesh, const label patchI)
+:
+    mesh_(mesh),
+    activePatch_(patchI),
+    boundaryPointsPtr_(NULL),
+    boundaryFacesPtr_(NULL),
+    boundaryFacePatchPtr_(NULL),
+    boundaryFaceOwnersPtr_(NULL),
+    pointFacesPtr_(NULL),
+    pointInFacePtr_(NULL),
+    pointPatchesPtr_(NULL),
+    bppPtr_(NULL),
+    pointPointsPtr_(NULL),
+    edgesPtr_(NULL),
+    bpEdgesPtr_(NULL),
+    edgeFacesPtr_(NULL),
+    faceEdgesPtr_(NULL),
+    edgePatchesPtr_(NULL),
     faceFacesPtr_(NULL),
     pointNormalsPtr_(NULL),
     faceNormalsPtr_(NULL),
@@ -414,6 +454,25 @@ const VRWGraph& meshSurfaceEngine::faceEdges() const
     return *faceEdgesPtr_;
 }
 
+const VRWGraph& meshSurfaceEngine::edgePatches() const
+{
+    if( !edgePatchesPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& meshSurfaceEngine::edgePatches() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
+        calculateEdgePatchesAddressing();
+    }
+
+    return *edgePatchesPtr_;
+}
+
 const VRWGraph& meshSurfaceEngine::faceFaces() const
 {
     if( !faceFacesPtr_ )
@@ -667,6 +726,7 @@ void meshSurfaceEngine::clearOut()
     deleteDemandDrivenData(bpEdgesPtr_);
     deleteDemandDrivenData(edgeFacesPtr_);
     deleteDemandDrivenData(faceEdgesPtr_);
+    deleteDemandDrivenData(edgePatchesPtr_);
     deleteDemandDrivenData(faceFacesPtr_);
 
     deleteDemandDrivenData(globalBoundaryPointLabelPtr_);

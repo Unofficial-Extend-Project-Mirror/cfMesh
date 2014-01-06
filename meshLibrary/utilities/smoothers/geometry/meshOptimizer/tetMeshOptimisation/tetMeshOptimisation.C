@@ -38,7 +38,10 @@ Description
 #include "knuppMetric.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGSearch
 

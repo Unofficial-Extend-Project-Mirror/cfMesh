@@ -26,7 +26,12 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "meshSurfacePartitioner.H"
+#include "meshSurfaceEdgeExtractor2D.H"
+#include "demandDrivenData.H"
+
+#include "meshSurfaceOptimizer.H"
+
+// #define DEBUGSearch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -35,29 +40,25 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from meshSurfaceEngine. Holds reference!
-meshSurfacePartitioner::meshSurfacePartitioner
+// Construct from mesh, octree, regions for boundary vertices
+meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
 (
-    const meshSurfaceEngine& meshSurface
+    polyMeshGen& mesh,
+    const meshOctree& octree
 )
 :
-    meshSurface_(meshSurface),
-    corners_(),
-    edgeNodes_(),
-    partitionPartitions_(),
-    nEdgesAtPoint_(),
-    featureEdges_()
+    mesh_(mesh),
+    meshOctree_(octree)
 {
-    calculateCornersEdgesAndAddressing();
+    distributeBoundaryFaces();
+
+    remapBoundaryPoints();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfacePartitioner::~meshSurfacePartitioner()
+meshSurfaceEdgeExtractor2D::~meshSurfaceEdgeExtractor2D()
 {}
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

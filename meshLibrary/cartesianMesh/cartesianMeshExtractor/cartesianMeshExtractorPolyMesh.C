@@ -364,10 +364,15 @@ void cartesianMeshExtractor::createPolyMesh()
         const vectorField& fNormals = mse.faceNormals();
         const faceList::subList& bFaces = mse.boundaryFaces();
         const labelList& fOwner = mse.faceOwners();
+        const vectorField& fCentres = mse.faceCentres();
 
-        wordList patchNames(2);
+        const boundBox& bb = octree.rootBox();
+        const scalar tZ = 0.05 * (bb.max().z() - bb.min().z());
+
+        wordList patchNames(3);
         patchNames[0] = "defaultFaces";
-        patchNames[1] = "unusedFaces";
+        patchNames[1] = "unusedFacesBottom";
+        patchNames[2] = "unusedFacesTop";
 
         VRWGraph boundaryFaces;
         labelListPMG newFaceOwner;
@@ -383,7 +388,21 @@ void cartesianMeshExtractor::createPolyMesh()
 
             if( Foam::mag(fNormal.z()) > Foam::mag(fNormal.x() + fNormal.y()) )
             {
-                newFacePatch.append(1);
+                if( Foam::mag(fCentres[bfI].z() - bb.min().z()) < tZ )
+                {
+                    newFacePatch.append(1);
+                }
+                else if( Foam::mag(fCentres[bfI].z() - bb.max().z()) < tZ )
+                {
+                    newFacePatch.append(2);
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void cartesianMeshExtractor::createPolyMesh()"
+                    ) << "Cannot distribute the face!!" << exit(FatalError);
+                }
             }
             else
             {
@@ -399,6 +418,9 @@ void cartesianMeshExtractor::createPolyMesh()
             newFaceOwner,
             newFacePatch
         );
+
+        meshModifier.boundariesAccess()[1].patchType() = "empty";
+        meshModifier.boundariesAccess()[2].patchType() = "empty";
     }
 
     Info << "Finished creating polyMesh" << endl;
