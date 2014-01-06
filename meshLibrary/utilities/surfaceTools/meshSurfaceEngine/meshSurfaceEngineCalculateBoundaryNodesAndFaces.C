@@ -1250,11 +1250,8 @@ void meshSurfaceEngine::calculateEdgePatchesAddressing() const
     const VRWGraph& edgeFaces = this->edgeFaces();
     const labelList& facePatch = this->boundaryFacePatches();
 
-    edgePatches.setSizeAndColumnWidth(edgeFaces.size(), 2);
+    edgePatches.setSize(edgeFaces.size());
 
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
     forAll(edgeFaces, eI)
     {
         DynList<label> ePatches;

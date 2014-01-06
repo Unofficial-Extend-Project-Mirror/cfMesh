@@ -333,6 +333,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.boundaryPointEdges();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
+    this->triangles();
 
     labelListPMG procBndNodes, edgePoints;
     forAll(bPoints, bpI)
@@ -469,7 +470,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     surfaceEngine_.boundaryPointEdges();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
-    partitioner_.corners();
+    this->triangles();
 
     labelListPMG procBndNodes, edgePoints, activeEdges, updatePoints;
     forAll(edges, beI)
@@ -631,6 +632,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
     surfaceEngine_.boundaryPointEdges();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
+    this->triangles();
 
     boolList activeBoundaryPoint(bPoints.size());
     boolList changedFace(activeFace.size(), true);
@@ -800,6 +802,9 @@ void meshSurfaceOptimizer::untangleSurface2D()
         ).updateGeometry(changedFace);
 
     } while( ++iterationI < 10 );
+
+    //- delete invalid data
+    mesh.clearAddressingData();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

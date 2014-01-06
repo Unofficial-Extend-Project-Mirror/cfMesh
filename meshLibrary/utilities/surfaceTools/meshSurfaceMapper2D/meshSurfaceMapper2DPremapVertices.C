@@ -182,7 +182,6 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
         # ifdef USE_OMP
-        const label size = boundaryPoints.size();
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
         forAll(activeBoundaryEdges_, eI)

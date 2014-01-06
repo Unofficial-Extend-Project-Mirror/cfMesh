@@ -85,8 +85,7 @@ void meshOctree::findNearestSurfacePoint
 
             const VRWGraph& ct =
                 neighbours[neiI]->slotPtr()->containedTriangles_;
-            const constRow el =
-                ct[neighbours[neiI]->containedElements()];
+            const constRow el = ct[neighbours[neiI]->containedElements()];
             forAll(el, tI)
             {
                 const point p0 =
@@ -109,7 +108,10 @@ void meshOctree::findNearestSurfacePoint
     } while( !found && (iterationI++ < 5) );
 
     if( (!found || (region < 0)) && !Pstream::parRun() )
+    {
         Warning << "Could not find a boundary region for vertex " << p << endl;
+        Warning << "Found " << found << " and region " << region << endl;
+    }
 }
 
 void meshOctree::findNearestSurfacePointInRegion
