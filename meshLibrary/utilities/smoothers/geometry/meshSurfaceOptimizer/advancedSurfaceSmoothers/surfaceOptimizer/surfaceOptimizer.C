@@ -185,7 +185,7 @@ void surfaceOptimizer::evaluateGradients
         //- calculate the second gradient
         gradGradF +=
             gradGradLt / Astab -
-            2.0 * symm(gradLt * gradAstab) / sqrAstab -
+            twoSymm(gradLt * gradAstab) / sqrAstab -
             gradGradAstab * LSqrTri / sqrAstab +
             2.0 * LSqrTri * (gradAstab * gradAstab) / (sqrAstab * Astab);
     }

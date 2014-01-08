@@ -43,14 +43,14 @@ SourceFiles
 
 namespace Foam
 {
-    
+
 // Forward declarations
 class partTetMeshSimplex;
 
 /*---------------------------------------------------------------------------*\
                     Class volumeOptimizer Declaration
 \*---------------------------------------------------------------------------*/
-    
+
 //- class for volume optimizer
 class volumeOptimizer
 :
@@ -59,22 +59,28 @@ class volumeOptimizer
     // Private member functions
         //- evaluate functional
         scalar evaluateFunc() const;
-    
+
         //- find appropriate value of K
         scalar evaluateStabilisationFactor() const;
-        
+
         //- evaluate gradients of the functional
         void evaluateGradientsExact(vector&, tensor&) const;
-    
+
+        //- optimize position using a divide and conquer algorithm
+        scalar optimiseDivideAndConquer(const scalar tol);
+
+        //- optimise using the steepest descent
+        scalar optimiseSteepestDescent(const scalar tol);
+
     public:
-    
+
     // Constructor
         //- construct from partTetMeshSimplex
         volumeOptimizer(partTetMeshSimplex& simplex);
-    
+
     // Destructor
         ~volumeOptimizer();
-    
+
     // Member functions
         //- find the best position for the node
         void optimizeNodePosition(const scalar tol = 0.001);
