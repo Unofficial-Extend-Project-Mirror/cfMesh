@@ -49,23 +49,23 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                            Class parTriFace Declaration
 \*---------------------------------------------------------------------------*/
-        
+
 class parTriFace
 {
     // Private data
         label globalLabels_[3];
-    
+
         triangle<point, point> triPoints_;
-    
+
     public:
-        
+
     // Constructors
-    
+
         inline parTriFace()
         :
             triPoints_(vector::zero, vector::zero, vector::zero)
         {}
-        
+
         explicit inline parTriFace
         (
             const label globalLabel0,
@@ -80,36 +80,36 @@ class parTriFace
             globalLabels_[1] = globalLabel1;
             globalLabels_[2] = globalLabel2;
         }
-        
+
     // Destructor
-        
+
         ~parTriFace()
         {}
-            
+
     // Member functions
-            
+
         inline label globalLabelOfPoint(const label i) const
         {
             return globalLabels_[i];
         }
-        
+
         inline const triangle<point, point>& trianglePoints() const
         {
             return triPoints_;
         }
-        
+
     // Member operators
-        
+
         inline bool operator !=(const parTriFace& ptf) const
         {
-            Serr << "Not implemented" << endl;
+            Serr << "parTriFace::operator!= Not implemented" << endl;
             ::exit(1);
-            
+
             return true;
         }
-        
+
     // Friend operators
-        
+
         inline friend Ostream& operator<<(Ostream& os, const parTriFace& ptf)
         {
             os << token::BEGIN_LIST;
@@ -122,23 +122,23 @@ class parTriFace
             os.check("operator<<(Ostream&, const parTriFace&");
             return os;
         }
-        
+
         inline friend Istream& operator>>(Istream& is, parTriFace& ptf)
         {
             // Read beginning of parTriFace
             is.readBegin("parTriFace");
-        
+
             is >> ptf.globalLabels_[0];
             is >> ptf.globalLabels_[1];
             is >> ptf.globalLabels_[2];
             is >> ptf.triPoints_;
-            
+
             // Read end of parHelper
             is.readEnd("parTriFace");
-        
+
             // Check state of Istream
             is.check("operator>>(Istream&, parTriFace");
-            
+
             return is;
         }
 };

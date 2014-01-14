@@ -164,7 +164,6 @@ void meshOctreeModifier::markAdditionalLayers
 void meshOctreeModifier::refineSelectedBoxes
 (
     List<direction>& refineBox,
-    const bool quadtreeRefinement,
     const bool hexRefinement
 )
 {

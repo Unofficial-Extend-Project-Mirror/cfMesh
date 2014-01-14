@@ -86,7 +86,21 @@ void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
     }
 
     //- create point-triangles addressing
-    pointTriangles.reverseAddressing(bPoints.size(), triangles);
+    labelListPMG nTrianglesAtPoint(bPoints.size(), 0);
+
+    forAll(triangles, triI)
+        ++nTrianglesAtPoint[triangles[triI][0]];
+
+    pointTriangles.setSizeAndRowSize(nTrianglesAtPoint);
+
+    nTrianglesAtPoint = 0;
+
+    forAll(triangles, triI)
+    {
+        const label bpI = triangles[triI][0];
+
+        pointTriangles(bpI, nTrianglesAtPoint[bpI]++) = triI;
+    }
 
     # ifdef DEBUGTriangulation
     const pointFieldPMG& points = surfaceEngine_.points();

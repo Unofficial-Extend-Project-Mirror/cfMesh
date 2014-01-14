@@ -118,19 +118,16 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     label counter(0);
     Map<label> pointMapping;
 
-    trias.clear();
+    trias.setSize(pTriangles.size());
     forAll(pTriangles, triI)
     {
         const triFace& tri = triangles[pTriangles[triI]];
 
-        if( tri[0] != bpI )
-            continue;
-
-        triFace tf;
+        triFace& tf = trias[triI];
 
         forAll(tri, pI)
         {
-            Map<label>::iterator fnd = pointMapping.find(tri[pI]);
+            const Map<label>::iterator fnd = pointMapping.find(tri[pI]);
             if( fnd != pointMapping.end() )
             {
                 tf[pI] = fnd();
@@ -150,8 +147,6 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
                 ++counter;
             }
         }
-
-        trias.append(tf);
     }
 
     # ifdef DEBUGSmooth
@@ -203,7 +198,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
 ) const
 {
     # ifdef DEBUGSmooth
-    Info << "Transforming boundary node " << bpI << endl;
+    Info << "Transforming boundary node at parallel interface " << bpI << endl;
     # endif
 
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -251,7 +246,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
     # endif
 
     //- transform the vertices
-    label counter(0);
+    //label counter(0);
     Map<label> pointMapping;
     trias.setSize(pFcs.size());
 
@@ -260,14 +255,16 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
     {
         const parTriFace& tri = pFcs[triI];
 
+        triFace& tf = trias[triI];
+
         for(label pI=0;pI<3;++pI)
         {
-            Map<label>::iterator fnd =
+            const Map<label>::iterator fnd =
                 pointMapping.find(tri.globalLabelOfPoint(pI));
 
             if( fnd != pointMapping.end() )
             {
-                trias[triI][pI] = fnd();
+                tf[pI] = fnd();
             }
             else
             {
@@ -285,17 +282,16 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
                     tp = tri.trianglePoints().c();
                 }
 
-                point pt
+                const point pt
                 (
                     ((tp - p) & vecX),
                     ((tp - p) & vecY),
                     0.0
                 );
 
+                tf[pI] = pts.size();
+                pointMapping.insert(tri.globalLabelOfPoint(pI), pts.size());
                 pts.append(pt);
-                trias[triI][pI] = counter;
-                pointMapping.insert(tri.globalLabelOfPoint(pI), counter);
-                ++counter;
             }
         }
     }
@@ -516,12 +512,6 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
             edgePoints.append(edges[beI].otherVertex(bPoints[bpI]));
         }
     }
-
-//        if(
-//            (vertexType_[pPoints(bpI, neiI)] & EDGE) ||
-//            (vertexType_[pPoints(bpI, neiI)] & CORNER)
-//        )
-//            edgePoints.append(bPoints[pPoints(bpI, neiI)]);
 
     if( edgePoints.size() < 2 )
         return points[bPoints[bpI]];

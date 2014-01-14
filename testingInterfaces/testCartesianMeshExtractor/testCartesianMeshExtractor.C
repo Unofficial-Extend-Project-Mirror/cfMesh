@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     meshOctree mo(surf);
     meshOctreeCreator(mo, meshDict).createOctreeBoxes();
 
-    meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
+    //meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
 
     Info<< "Execution time for octree creation = "
         << runTime.elapsedCpuTime()

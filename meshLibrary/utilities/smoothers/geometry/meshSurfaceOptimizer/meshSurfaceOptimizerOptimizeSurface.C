@@ -164,8 +164,17 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
     surfaceEngine_.pointPoints();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
+    surfaceEngine_.boundaryPointEdges();
     this->triangles();
     this->pointTriangles();
+
+    if( Pstream::parRun() )
+    {
+        surfaceEngine_.bpAtProcs();
+        surfaceEngine_.globalToLocalBndPointAddressing();
+        surfaceEngine_.globalBoundaryPointLabel();
+        surfaceEngine_.bpNeiProcs();
+    }
 
     boolList smoothVertex;
 
@@ -333,6 +342,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.boundaryPointEdges();
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
+    surfaceEngine_.boundaryPointEdges();
     this->triangles();
 
     labelListPMG procBndNodes, edgePoints;

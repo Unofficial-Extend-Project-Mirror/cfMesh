@@ -35,7 +35,7 @@ Description
 #include "refLabelledPoint.H"
 #include "helperFunctionsPar.H"
 
-// #define DEBUGSearch
+//#define DEBUGSearch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,7 +54,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         return;
 
     //- update vertex normals
-    meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
+    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 
     //- create storage for data
     std::map<label, labelledPoint> localData;
@@ -156,7 +156,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         const point newP = lp.coordinates() / lp.pointLabel();
 
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-        surfaceModifier.moveBoundaryVertex
+        surfaceModifier.moveBoundaryVertexNoUpdate
         (
             bpI,
             newP
@@ -164,7 +164,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     }
 
     //- update vertex normals
-    meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
+    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
@@ -177,7 +177,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         return;
 
     //- update vertex normals
-    meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
+    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 
     //- create storage for data
     std::map<label, labelledPoint> localData;
@@ -265,7 +265,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         const point newP = lp.coordinates() / lp.pointLabel();
 
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-        surfaceModifier.moveBoundaryVertex
+        surfaceModifier.moveBoundaryVertexNoUpdate
         (
             bpI,
             newP
@@ -273,7 +273,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
     }
 
     //- update vertex normals
-    meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
+    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
@@ -286,7 +286,7 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
 
     //- update vertex normals
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-    surfaceModifier.updateVertexNormals();
+    //surfaceModifier.updateVertexNormals();
 
     //- exchange data with other processors
     std::map<label, DynList<parTriFace> > m;
@@ -322,7 +322,7 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
             vecY * newPoint.y()
         );
 
-        surfaceModifier.moveBoundaryVertex
+        surfaceModifier.moveBoundaryVertexNoUpdate
         (
             bpI,
             newP
@@ -333,7 +333,7 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
     surfaceModifier.syncVerticesAtParallelBoundaries(nodesToSmooth);
 
     //- update vertex normals
-    surfaceModifier.updateVertexNormals();
+    //surfaceModifier.updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::edgeNodeDisplacementParallel
@@ -496,7 +496,7 @@ void meshSurfaceOptimizer::exchangeData
         {
             m.insert
             (
-                std::make_pair(globalPointLabel[bpI], DynList<parTriFace>(6))
+                std::make_pair(globalPointLabel[bpI], DynList<parTriFace>())
             );
 
             pIter = m.find(globalPointLabel[bpI]);
