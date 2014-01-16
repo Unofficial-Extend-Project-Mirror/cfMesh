@@ -60,7 +60,7 @@ void frontalMarking
     result.append(startingIndex);
 
     //- add the starting element to the front
-    labelListPMG front;
+    labelLongList front;
     front.append(startingIndex);
 
     //- store information which element were already visited
@@ -207,7 +207,7 @@ label groupMarking
             groupI = nGroups++;
 
             elementInGroup[elI] = groupI;
-            labelListPMG front;
+            labelLongList front;
             front.append(elI);
 
             while( front.size() )

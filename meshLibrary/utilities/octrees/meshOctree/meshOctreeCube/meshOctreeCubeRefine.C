@@ -49,7 +49,7 @@ void meshOctreeCube::findContainedEdges
 {
     const VRWGraph& faceEdges = surface.facetEdges();
     const VRWGraph& edgeFaces = surface.edgeFacets();
-    const edgeListPMG& edges = surface.edges();
+    const edgeLongList& edges = surface.edges();
     const pointField& points = surface.points();
 
     const VRWGraph& containedElements = activeSlotPtr_->containedTriangles_;

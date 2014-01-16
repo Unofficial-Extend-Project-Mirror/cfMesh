@@ -381,7 +381,7 @@ inline void Foam::VRWGraph::mergeGraphs(const List<VRWGraph>& graphParts)
     }
     
     //- find the number of elements in each row
-    labelListPMG nElmtsInRow(nRows);
+    labelLongList nElmtsInRow(nRows);
     for(label rowI=0;rowI<nRows;++rowI)
     {
         label sum(0);
@@ -413,7 +413,7 @@ inline void Foam::VRWGraph::reverseAddressing
 )
 {
     const label origSize = origGraph.size();
-    labelListPMG nElmtsInRow(nRows);
+    labelLongList nElmtsInRow(nRows);
     
     for(label rowI=0;rowI<nRows;++rowI)
         nElmtsInRow[rowI] = 0;
@@ -466,7 +466,7 @@ inline void Foam::VRWGraph::reverseAddressing
 )
 {
     const label origSize = origGraph.size();
-    labelListPMG nElmtsInRow(nRows);
+    labelLongList nElmtsInRow(nRows);
     
     for(label rowI=0;rowI<nRows;++rowI)
         nElmtsInRow[rowI] = 0;

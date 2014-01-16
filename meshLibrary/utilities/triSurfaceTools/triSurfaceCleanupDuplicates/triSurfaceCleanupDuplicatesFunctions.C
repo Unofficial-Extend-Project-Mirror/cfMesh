@@ -43,7 +43,7 @@ namespace Foam
 
 bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 {
-    labelListPMG newTriangleLabel(surf_.size(), -1);
+    labelLongList newTriangleLabel(surf_.size(), -1);
 
     const VRWGraph& pointTriangles = surf_.pointFacets();
 
@@ -103,7 +103,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 {
     pointField& pts = const_cast<pointField&>(surf_.points());
-    labelListPMG newPointLabel(surf_.nPoints());
+    labelLongList newPointLabel(surf_.nPoints());
     bool foundDuplicates(false);
 
     # ifdef USE_OMP
@@ -196,7 +196,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
     //- remove triangles containing duplicate points
     LongList<labelledTri> newTriangles(surf_.facets());
-    labelListPMG newTriangleLabel(surf_.size(), -1);
+    labelLongList newTriangleLabel(surf_.size(), -1);
 
     counter = 0;
     forAll(surf_, triI)
@@ -238,7 +238,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
 void triSurfaceCleanupDuplicates::updateTriangleLabels
 (
-    const labelListPMG& newTriangleLabel
+    const labelLongList& newTriangleLabel
 )
 {
     //- update addressing between the original triangles and the cleaned mesh

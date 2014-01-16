@@ -60,7 +60,7 @@ void triSurfaceDetectPlanarRegions::checkPlanarRegions()
             n /= mag(n);
 
         planarRegion_[triI] = nRegions_;
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
         label nFacetsInRegion(1);
 
@@ -165,7 +165,7 @@ void triSurfaceDetectPlanarRegions::detectedRegions(VRWGraph& graph) const
 
 void triSurfaceDetectPlanarRegions::detectedRegions(const word prefix) const
 {
-    List<labelListPMG> facetsInRegion(nRegions_);
+    List<labelLongList> facetsInRegion(nRegions_);
     forAll(planarRegion_, triI)
     {
         if( planarRegion_[triI] == -1 )

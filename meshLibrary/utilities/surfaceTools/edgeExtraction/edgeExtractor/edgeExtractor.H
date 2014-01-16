@@ -40,7 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "labelList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
+#include "VRWGraph.H"
 #include "boolList.H"
 #include "Map.H"
 
@@ -81,10 +82,14 @@ class edgeExtractor
         labelList pointValence_;
 
         //- boundary face patch
-        labelListPMG facePatch_;
+        labelLongList facePatch_;
 
         //- edge classification
         List<direction> edgeType_;
+
+        //- feature edges in the surface mesh
+        //- which are candindates for an edge at the surface of the volume mesh
+        VRWGraph featureEdgesNearEdge_;
 
     // Private member functions
         //- calculate point valence
@@ -92,6 +97,10 @@ class edgeExtractor
 
         //- calculate the number of boundary faces for each cell
         void calculateSingleCellEdge();
+
+        //- search for feature edges in the surface mesh which are
+        //- in the vicinity of an edge at the surface of the volume mesh
+        void findFeatureEdgesNearEdge();
 
         //- calculate a list of booleans with the following properties:
         //- true if all faces at a surface vertex are in the same patch
@@ -111,8 +120,8 @@ class edgeExtractor
         //- as their neighbours
         void findFaceCandidates
         (
-            labelListPMG& faceCandidates,
-            const labelListPMG* facePatchPtr = NULL,
+            labelLongList& faceCandidates,
+            const labelLongList* facePatchPtr = NULL,
             const Map<label>* otherFacePatchPtr = NULL
         ) const;
 
@@ -120,7 +129,7 @@ class edgeExtractor
         void findOtherFacePatchesParallel
         (
             Map<label>& otherFacePatch,
-            const labelListPMG* facePatchPtr = NULL
+            const labelLongList* facePatchPtr = NULL
         ) const;
 
         //- project face centres on the nearest location at the surface mesh

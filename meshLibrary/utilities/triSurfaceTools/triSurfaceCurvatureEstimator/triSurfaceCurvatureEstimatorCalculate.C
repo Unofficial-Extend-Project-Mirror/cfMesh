@@ -142,7 +142,7 @@ void writeSurfaceToVTK
 void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 {
     const pointField& points = surface_.points();
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
     const VRWGraph& pointEdges = surface_.pointEdges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
@@ -232,7 +232,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
     const pointField& points = surface_.points();
     const VRWGraph& pointEdges = surface_.pointEdges();
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
 
     patchPositions_.setSize(surface_.size());
     gaussianCurvature_.setSize(points.size());

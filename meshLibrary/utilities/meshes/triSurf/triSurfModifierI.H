@@ -45,9 +45,9 @@ inline LongList<labelledTri>& triSurfModifier::facetsAccess()
     return const_cast<LongList<labelledTri>&>(surface_.facets());
 }
 
-inline edgeListPMG& triSurfModifier::featureEdgesAccess()
+inline edgeLongList& triSurfModifier::featureEdgesAccess()
 {
-    return const_cast<edgeListPMG&>(surface_.featureEdges());
+    return const_cast<edgeLongList&>(surface_.featureEdges());
 }
 
 inline geometricSurfacePatchList& triSurfModifier::patchesAccess()

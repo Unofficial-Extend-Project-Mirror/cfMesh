@@ -71,8 +71,9 @@ int main(int argc, char *argv[])
     triSurf surf(runTime.path()/surfaceFile);
 
     // construct the octree
-    meshOctree mo(surf);
-    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    meshOctree mo(surf, true);
+    meshOctreeCreator moc(mo, meshDict);
+    moc.createOctreeBoxes();
 
     //meshOctreeAutomaticRefinement(mo, meshDict, false).automaticRefinement();
 
@@ -85,6 +86,30 @@ int main(int argc, char *argv[])
 
     //cmg.decomposeSplitHexes();
     cmg.createMesh();
+
+    const pointFieldPMG& points = pmg.points();
+    forAll(points, pointI)
+    {
+        const point p = points[pointI];
+        for(label pointJ=pointI+1;pointJ<points.size();++pointJ)
+            if( mag(p - points[pointJ]) < 1e-10 )
+                Info << "Points " << pointI << " and " << pointJ
+                     << " are duplicates " << endl;
+    }
+
+    boolList usedPoint(points.size());
+    const faceListPMG& faces = pmg.faces();
+    forAll(faces, faceI)
+    {
+        const face& f = faces[faceI];
+
+        forAll(f, pI)
+            usedPoint[f[pI]] = true;
+    }
+
+    forAll(usedPoint, pointI)
+        if( !usedPoint[pointI] )
+            Info << "Point " << pointI << " is not used !!" << endl;
 
     pmg.write();
 

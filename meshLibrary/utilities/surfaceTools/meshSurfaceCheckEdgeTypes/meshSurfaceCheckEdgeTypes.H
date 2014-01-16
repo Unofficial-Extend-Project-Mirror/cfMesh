@@ -104,10 +104,10 @@ public:
         }
 
         //- return indices of convex edges
-        void convexEdges(labelListPMG& convexEdges) const;
+        void convexEdges(labelLongList& convexEdges) const;
 
         //- return indices of concave edges
-        void concaveEdges(labelListPMG& concaveEdges) const;
+        void concaveEdges(labelLongList& concaveEdges) const;
 };
 
 

@@ -32,7 +32,7 @@ Description
 #include "objectRegistry.H"
 #include "triSurf.H"
 #include "triFaceList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "IFstream.H"
 #include "OFstream.H"
 
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
         //- read selection entries
         label size;
         inFile >> size;
-        labelListPMG entries(size);
+        labelLongList entries(size);
         for(label i=0;i<size;++i)
             inFile >> entries[i];
 

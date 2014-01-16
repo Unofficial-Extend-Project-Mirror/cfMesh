@@ -66,7 +66,7 @@ void meshOctreeAddressing::checkGluedRegions()
     const LongList<edge>& edges = this->octreeEdges();
     
     DynList<label> neighbours(4);
-    labelListPMG removeBox;
+    labelLongList removeBox;
     forAll(boxType, leafI)
     {
         if(

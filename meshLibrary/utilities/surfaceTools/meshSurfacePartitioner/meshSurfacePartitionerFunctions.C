@@ -96,12 +96,12 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
 
         //- gather data on all processors
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
         forAll(bpNeiProcs, i)
             exchangeData.insert
             (
-                std::make_pair(bpNeiProcs[i], labelListPMG())
+                std::make_pair(bpNeiProcs[i], labelLongList())
             );
 
         const Map<label>& globalToLocal =
@@ -118,7 +118,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
                 if( procI == Pstream::myProcNo() )
                     continue;
 
-                labelListPMG& dts = exchangeData[procI];
+                labelLongList& dts = exchangeData[procI];
 
                 //- exchange data as follows:
                 //- 1. global point label
@@ -129,7 +129,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
 
         //- exchange information
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         //- add the edges from other processors to the points

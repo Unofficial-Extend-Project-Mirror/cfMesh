@@ -205,11 +205,11 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
         //- make sure that problematic points
         //- are consistent ove processor boundaries
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(bpNeiProcs, i)
             exchangeData.insert
             (
-                std::make_pair(bpNeiProcs[i], labelListPMG())
+                std::make_pair(bpNeiProcs[i], labelLongList())
             );
 
         forAllConstIter(Map<label>, globalToLocal, bpIter)
@@ -230,7 +230,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             }
         }
 
-        labelListPMG receiveData;
+        labelLongList receiveData;
         help::exchangeMap(exchangeData, receiveData);
 
         forAll(receiveData, i)
@@ -381,7 +381,7 @@ meshSurfaceCheckEdgeTypes::~meshSurfaceCheckEdgeTypes()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceCheckEdgeTypes::convexEdges(labelListPMG& convexEdges) const
+void meshSurfaceCheckEdgeTypes::convexEdges(labelLongList& convexEdges) const
 {
     convexEdges.clear();
 
@@ -392,7 +392,7 @@ void meshSurfaceCheckEdgeTypes::convexEdges(labelListPMG& convexEdges) const
     }
 }
 
-void meshSurfaceCheckEdgeTypes::concaveEdges(labelListPMG& concaveEdges) const
+void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
 {
     concaveEdges.clear();
 

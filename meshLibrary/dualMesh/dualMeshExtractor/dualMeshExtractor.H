@@ -66,7 +66,7 @@ class dualMeshExtractor
         polyMeshGen& mesh_;
     
         //- centre node labels
-        labelListPMG* centreNodeLabelPtr_;
+        labelLongList* centreNodeLabelPtr_;
 
     // Private member functions
         //- delete freestore data

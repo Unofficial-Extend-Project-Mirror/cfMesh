@@ -42,14 +42,14 @@ namespace Foam
 
 void triSurfacePatchManipulator::allocateFeatureEdges()
 {
-    const edgeListPMG& edges = surf_.edges();
+    const edgeLongList& edges = surf_.edges();
     const VRWGraph& pEdges = surf_.pointEdges();
 
     //- allocate featureEdges list
     featureEdges_.setSize(edges.size());
     featureEdges_ = direction(0);
 
-    const edgeListPMG& featureEdges = surf_.featureEdges();
+    const edgeLongList& featureEdges = surf_.featureEdges();
 
     forAll(featureEdges, feI)
     {
@@ -79,7 +79,7 @@ void triSurfacePatchManipulator::createPatches()
         if( facetInPatch_[triI] != -1 )
             continue;
 
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
         facetInPatch_[triI] = nPatches_;
 

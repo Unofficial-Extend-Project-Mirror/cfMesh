@@ -80,7 +80,7 @@ public:
         inline LongList<labelledTri>& facetsAccess();
 
         //- non-const access to feature edges
-        inline edgeListPMG& featureEdgesAccess();
+        inline edgeLongList& featureEdgesAccess();
 
         //- access to patches
         inline geometricSurfacePatchList& patchesAccess();

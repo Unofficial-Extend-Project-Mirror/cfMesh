@@ -79,7 +79,7 @@ Foam::Istream& Foam::operator>>
 
 void Foam::VRWGraph::optimizeMemoryUsage()
 {
-    labelListPMG newPosForNode(data_.size());
+    labelLongList newPosForNode(data_.size());
     label pos(0), nElements;
     nElements = data_.size();
     for(label elI=0;elI<nElements;++elI)

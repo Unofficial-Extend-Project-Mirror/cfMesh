@@ -38,7 +38,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "boolList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "DynList.H"
 #include "triFace.H"
 #include "meshSurfaceEngine.H"
@@ -187,7 +187,7 @@ class meshSurfaceOptimizer
         //- transfer data between processors
         void exchangeData
         (
-            const labelListPMG& nodesToSmooth,
+            const labelLongList& nodesToSmooth,
             std::map<label, DynList<parTriFace> >& m
         ) const;
 
@@ -195,27 +195,27 @@ class meshSurfaceOptimizer
         //- new position is the average of the neighbouring vertices
         void nodeDisplacementLaplacianParallel
         (
-            const labelListPMG& nodesToSmooth,
+            const labelLongList& nodesToSmooth,
             const bool transformIntoPlane = true
         );
 
         //- laplacian smoothing of points at processor boundaries
         void nodeDisplacementLaplacianFCParallel
         (
-            const labelListPMG& nodesToSmooth,
+            const labelLongList& nodesToSmooth,
             const bool transformIntoPlane = true
         );
 
         //- smooth nodes at processor boundaries using surface optimizer
         void nodeDisplacementSurfaceOptimizerParallel
         (
-            const labelListPMG& nodesToSmooth
+            const labelLongList& nodesToSmooth
         );
 
         //- smooth edge nodes at processor boundaries
         void edgeNodeDisplacementParallel
         (
-            const labelListPMG& nodesToSmooth
+            const labelLongList& nodesToSmooth
         );
 
         //- find invalid faces in the mesh

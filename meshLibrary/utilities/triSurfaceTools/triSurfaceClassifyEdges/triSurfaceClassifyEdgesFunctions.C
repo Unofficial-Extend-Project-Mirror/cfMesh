@@ -56,7 +56,7 @@ void triSurfaceClassifyEdges::checkOrientation()
 
     //- sort all surface facets into groups consisting of facets with consistent
     //- orientation. Do not cross non-manifold edges
-    labelListPMG orientationGroup(surf.size(), -1);
+    labelLongList orientationGroup(surf.size(), -1);
     label nGroups(0);
 
     forAll(surf, triI)
@@ -65,7 +65,7 @@ void triSurfaceClassifyEdges::checkOrientation()
             continue;
 
         orientationGroup[triI] = nGroups;
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
 
         while( front.size() != 0 )
@@ -138,7 +138,7 @@ void triSurfaceClassifyEdges::checkOrientation()
 
     //- find the octree leaves containing each triangle
     VRWGraph triangleInLeaves(surf.size());
-    labelListPMG ntl(surf.size(), 0);
+    labelLongList ntl(surf.size(), 0);
 
     DynList<label> helper(500);
     for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
@@ -279,9 +279,9 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
     const triSurf& surf = octree_.surface();
     const pointField& points = surf.points();
     const VRWGraph& edgeFacets = surf.edgeFacets();
-    const edgeListPMG& edges = surf.edges();
+    const edgeLongList& edges = surf.edges();
     const VRWGraph& pointEdges = surf.pointEdges();
-    const edgeListPMG& featureEdges = surf.featureEdges();
+    const edgeLongList& featureEdges = surf.featureEdges();
 
     edgeTypes_.setSize(edgeFacets.size());
     edgeTypes_ = NONE;

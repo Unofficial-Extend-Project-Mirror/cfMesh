@@ -182,7 +182,7 @@ triSurf::triSurf
 (
     const LongList<labelledTri>& triangles,
     const geometricSurfacePatchList& patches,
-    const edgeListPMG& featureEdges,
+    const edgeLongList& featureEdges,
     const pointField& points
 )
 :

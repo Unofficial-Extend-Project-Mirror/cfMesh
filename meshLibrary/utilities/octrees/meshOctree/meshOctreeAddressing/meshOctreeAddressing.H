@@ -91,8 +91,8 @@ class meshOctreeAddressing
     // Additional addressing useful for some algorithms
         //- faces of the octree
         mutable VRWGraph* octreeFacesPtr_;
-        mutable labelListPMG* octreeFacesOwnersPtr_;
-        mutable labelListPMG* octreeFacesNeighboursPtr_;
+        mutable labelLongList* octreeFacesOwnersPtr_;
+        mutable labelLongList* octreeFacesNeighboursPtr_;
         
         //- octree box-faces addressing
         mutable VRWGraph* leafFacesPtr_;
@@ -122,7 +122,7 @@ class meshOctreeAddressing
         mutable VRWGraph* edgeFacesPtr_;
         
         //- global octree point label
-        mutable labelListPMG* globalPointLabelPtr_;
+        mutable labelLongList* globalPointLabelPtr_;
         
         //- global point to local label addressing
         mutable Map<label>* globalPointToLocalPtr_;
@@ -131,7 +131,7 @@ class meshOctreeAddressing
         mutable VRWGraph* pointProcsPtr_;
         
         //- global octree face label
-        mutable labelListPMG* globalFaceLabelPtr_;
+        mutable labelLongList* globalFaceLabelPtr_;
         
         //- global face label to local label addressing
         mutable Map<label>* globalFaceToLocalPtr_;
@@ -140,7 +140,7 @@ class meshOctreeAddressing
         mutable VRWGraph* faceProcsPtr_;
         
         //- global leaf label
-        mutable labelListPMG* globalLeafLabelPtr_;
+        mutable labelLongList* globalLeafLabelPtr_;
         
         //- global leaf label to local label addressing for octree leaves
         mutable Map<label>* globalLeafToLocalPtr_;
@@ -273,10 +273,10 @@ public:
         inline const VRWGraph& octreeFaces() const;
         
         //- return owners of octree faces
-        inline const labelListPMG& octreeFaceOwner() const;
+        inline const labelLongList& octreeFaceOwner() const;
         
         //- return neighbours of octree faces
-        inline const labelListPMG& octreeFaceNeighbour() const;
+        inline const labelLongList& octreeFaceNeighbour() const;
         
         //- return octree box-faces addressing
         inline const VRWGraph& leafFaces() const;
@@ -333,7 +333,7 @@ public:
     // Access to data needed for parallel execution
     
         //- return global point labels
-        inline const labelListPMG& globalPointLabel() const;
+        inline const labelLongList& globalPointLabel() const;
         
         //- global point label to local label. Only for processors points
         inline const Map<label>& globalToLocalPointAddressing() const;
@@ -342,7 +342,7 @@ public:
         inline const VRWGraph& pointAtProcs() const;
         
         //- return global labels of octree faces
-        inline const labelListPMG& globalFaceLabel() const;
+        inline const labelLongList& globalFaceLabel() const;
         
         //- return global face label to face label. Only for processor faces
         inline const Map<label>& globalToLocalFaceAddressing() const;
@@ -351,7 +351,7 @@ public:
         inline const VRWGraph& faceAtProcs() const;
         
         //- return global labels of octree leaves
-        inline const labelListPMG& globalLeafLabel() const;
+        inline const labelLongList& globalLeafLabel() const;
         
         //- return processors which contain each octree leaf
         inline const VRWGraph& leafAtProcs() const;

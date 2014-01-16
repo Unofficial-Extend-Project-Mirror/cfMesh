@@ -62,7 +62,7 @@ void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
     }
 
     //- find the number of elements in each row
-    labelListPMG nElmtsInRow(nRows);
+    labelLongList nElmtsInRow(nRows);
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
@@ -97,7 +97,7 @@ void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
 void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
 {
     graph_.setSize(0);
-    labelListPMG nAppearances;
+    labelLongList nAppearances;
 
     # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
@@ -285,7 +285,7 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
     nEntries.setSize(nThreads);
 
     LongList<rowElement> newRows;
-    labelListPMG newData;
+    labelLongList newData;
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)

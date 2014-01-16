@@ -49,7 +49,7 @@ void boundaryLayers::addWrapperLayer()
     
     boolList treatPatches(mesh_.boundaries().size(), true);
     
-    labelListPMG newLabelForVertex(nPoints_, -1);
+    labelLongList newLabelForVertex(nPoints_, -1);
 
     pointFieldPMG& points = mesh_.points();
     points.setSize(points.size() + bPoints.size());

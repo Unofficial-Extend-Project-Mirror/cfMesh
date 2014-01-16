@@ -76,7 +76,7 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
         const label start = procBoundaries[patchI].patchStart();
         const label size = procBoundaries[patchI].patchSize();
         
-        labelListPMG dataToSend;
+        labelLongList dataToSend;
         for(label faceI=0;faceI<size;++faceI)
         {
             if( usedFace[start+faceI] )
@@ -96,7 +96,7 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     //- receive data at proc boundaries
     forAll(procBoundaries, patchI)
     {
-        labelListPMG receivedData;
+        labelLongList receivedData;
         
         IPstream fromOtherProc
         (
@@ -114,9 +114,9 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     const vectorField& faceCentres = origMesh_.addressingData().faceCentres();
     const vectorField& cellCentres = origMesh_.addressingData().cellCentres();
     
-    labelListPMG nodeLabelForPoint(points.size(), -1);
-    labelListPMG nodeLabelForFace(faces.size(), -1);
-    labelListPMG nodeLabelForCell(cells.size(), -1);
+    labelLongList nodeLabelForPoint(points.size(), -1);
+    labelLongList nodeLabelForFace(faces.size(), -1);
+    labelLongList nodeLabelForCell(cells.size(), -1);
     
     points_.clear();
     smoothVertex_.clear();
@@ -398,7 +398,7 @@ void partTetMesh::createSMOOTHPointsOrdering() const
     VRWGraph& internalPointsOrder = *internalPointsOrderPtr_;
     
     internalPointsOrder.setSize(0);
-    labelListPMG order(points_.size(), -1);
+    labelLongList order(points_.size(), -1);
     boolList helper(points_.size());
     
     bool found;
@@ -406,7 +406,7 @@ void partTetMesh::createSMOOTHPointsOrdering() const
     {
         found = false;
         helper = false;
-        labelListPMG selectedPoints;
+        labelLongList selectedPoints;
         
         forAll(points_, nodeI)
         {
@@ -473,7 +473,7 @@ void partTetMesh::createBOUNDARYPointsOrdering() const
     VRWGraph& boundaryPointsOrder = *boundaryPointsOrderPtr_;
     
     boundaryPointsOrder.setSize(0);
-    labelListPMG order(points_.size(), -1);
+    labelLongList order(points_.size(), -1);
     boolList helper(points_.size());
     
     bool found;
@@ -482,7 +482,7 @@ void partTetMesh::createBOUNDARYPointsOrdering() const
         found = false;
         helper = false;
         
-        labelListPMG selectedPoints;
+        labelLongList selectedPoints;
         forAll(points_, nodeI)
         {
             if( smoothVertex_[nodeI] & BOUNDARY )

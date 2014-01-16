@@ -61,7 +61,7 @@ void triSurfaceDetectMaterials::createPartitions()
             continue;
 
         facePartition_[triI] = nPartitions_;
-        labelListPMG front;
+        labelLongList front;
         front.append(triI);
 
         while( front.size() )
@@ -114,7 +114,7 @@ void triSurfaceDetectMaterials::createOctree()
     if( !octreePtr_ )
         octreePtr_ = new meshOctree(surf_);
 
-    const edgeListPMG& edges = surf_.edges();
+    const edgeLongList& edges = surf_.edges();
 
     if( edges.size() == 0 )
         FatalError << "Surface mesh has no edges!!" << exit(FatalError);
@@ -360,7 +360,7 @@ void triSurfaceDetectMaterials::findOctreeGroups()
         if( octreePtr_->hasContainedTriangles(leafI) )
             continue;
 
-        labelListPMG front;
+        labelLongList front;
         octreeGroupForBox_[leafI] = nOctreeGroups_;
         front.append(leafI);
 

@@ -177,8 +177,8 @@ int main(int argc, char *argv[])
     
     //- create patches from face selections
     VRWGraph boundaryFaces;
-    labelListPMG boundaryOwner;
-    labelListPMG boundaryPatches;
+    labelLongList boundaryOwner;
+    labelLongList boundaryPatches;
     
     const labelList& owner = pmg.owner();
     DynList<label> faceSubsets;
@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
     
     forAll(faceSubsets, setI)
     {
-    labelListPMG setFaces;
+    labelLongList setFaces;
     pmg.facesInSubset(faceSubsets[setI], setFaces);
     
     forAll(setFaces, i)

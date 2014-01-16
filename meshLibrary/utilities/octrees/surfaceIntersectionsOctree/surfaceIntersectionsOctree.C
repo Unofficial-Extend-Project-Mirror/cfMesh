@@ -66,7 +66,7 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
 
     //- find the smallest edge. Size of the smallest surfaceIntersectionsOctreeCube should not be
     //- smaller than the smallest edge
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
     const pointField& points = surface_.points();
 
     scalar dist(GREAT);

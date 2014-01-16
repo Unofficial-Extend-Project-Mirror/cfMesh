@@ -111,11 +111,11 @@ label meshSurfaceOptimizer::findInvertedVertices
             const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
             const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
 
-            std::map<label, labelListPMG> shareData;
+            std::map<label, labelLongList> shareData;
             forAll(neiProcs, procI)
                 shareData.insert
                 (
-                    std::make_pair(neiProcs[procI], labelListPMG())
+                    std::make_pair(neiProcs[procI], labelLongList())
                 );
 
             forAllConstIter(Map<label>, globalToLocal, iter)
@@ -137,7 +137,7 @@ label meshSurfaceOptimizer::findInvertedVertices
             }
 
             //- exchange data with other processors
-            labelListPMG receivedData;
+            labelLongList receivedData;
             help::exchangeMap(shareData, receivedData);
 
             forAll(receivedData, j)
@@ -185,7 +185,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
     label nInvertedTria;
     label nGlobalIter(0);
 
-    labelListPMG procBndNodes, movedPoints;
+    labelLongList procBndNodes, movedPoints;
 
     do
     {
@@ -345,7 +345,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.boundaryPointEdges();
     this->triangles();
 
-    labelListPMG procBndNodes, edgePoints;
+    labelLongList procBndNodes, edgePoints;
     forAll(bPoints, bpI)
     {
         if( vertexType_[bpI] & EDGE )
@@ -482,7 +482,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     surfaceEngine_.pointNormals();
     this->triangles();
 
-    labelListPMG procBndNodes, edgePoints, activeEdges, updatePoints;
+    labelLongList procBndNodes, edgePoints, activeEdges, updatePoints;
     forAll(edges, beI)
     {
         const edge& e = edges[beI];
@@ -686,7 +686,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
             const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
             const VRWGraph& bpNeiProcs = surfaceEngine_.bpAtProcs();
 
-            std::map<label, labelListPMG> exchangeData;
+            std::map<label, labelLongList> exchangeData;
             forAll(neiProcs, i)
                 exchangeData[neiProcs[i]].clear();
 
@@ -710,7 +710,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
             }
 
             //- exchange active points among the processors
-            labelListPMG receivedData;
+            labelLongList receivedData;
             help::exchangeMap(exchangeData, receivedData);
 
             //- ensure that all processors have the same nodes active
@@ -732,7 +732,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
 
         for(label i=0;i<5;++i)
         {
-            labelListPMG procBndNodes, procEdgeNodes;
+            labelLongList procBndNodes, procEdgeNodes;
 
             # ifdef USE_OMP
             # pragma omp parallel if( vertexType_.size() > 100 )

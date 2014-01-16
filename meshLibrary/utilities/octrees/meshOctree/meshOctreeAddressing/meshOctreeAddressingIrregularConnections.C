@@ -46,8 +46,8 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
 {
     Info << "Checking the surface of the selected boxes" << endl;
     
-    const labelListPMG& owner = this->octreeFaceOwner();
-    const labelListPMG& neighbour = this->octreeFaceNeighbour();
+    const labelLongList& owner = this->octreeFaceOwner();
+    const labelLongList& neighbour = this->octreeFaceNeighbour();
     const VRWGraph& faceEdges = this->faceEdges();
     const VRWGraph& edgeFaces = this->edgeFaces();
     const VRWGraph& edgeLeaves = this->edgeLeaves();

@@ -47,7 +47,7 @@ namespace Foam
 
 void meshOptimizer::laplaceSmoother::laplacianParallel
 (
-    const labelListPMG& procPoints,
+    const labelLongList& procPoints,
     const bool smoothOnlySurfaceNodes
 )
 {
@@ -62,7 +62,7 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
     pointFieldPMG& points = mesh_.points();
 
     //- exchange data between processors
-    const labelListPMG& globalPointLabel = addressing.globalPointLabel();
+    const labelLongList& globalPointLabel = addressing.globalPointLabel();
     const VRWGraph& pointAtProcs = addressing.pointAtProcs();
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
@@ -191,7 +191,7 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
 
 void meshOptimizer::laplaceSmoother::laplacianPCParallel
 (
-    const labelListPMG& procPoints
+    const labelLongList& procPoints
 )
 {
     if( !Pstream::parRun() )
@@ -206,7 +206,7 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
     pointFieldPMG& points = mesh_.points();
 
     //- exchange data between processors
-    const labelListPMG& globalPointLabel = addressing.globalPointLabel();
+    const labelLongList& globalPointLabel = addressing.globalPointLabel();
     const VRWGraph& pointAtProcs = addressing.pointAtProcs();
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
@@ -318,7 +318,7 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
 
 void meshOptimizer::laplaceSmoother::laplacianWPCParallel
 (
-    const labelListPMG& procPoints
+    const labelLongList& procPoints
 )
 {
     if( !Pstream::parRun() )
@@ -334,7 +334,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
     pointFieldPMG& points = mesh_.points();
 
     //- exchange data between processors
-    const labelListPMG& globalPointLabel = addressing.globalPointLabel();
+    const labelLongList& globalPointLabel = addressing.globalPointLabel();
     const VRWGraph& pointAtProcs = addressing.pointAtProcs();
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     

@@ -132,7 +132,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.pointSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG nodesInSubset;
+        labelLongList nodesInSubset;
         mesh_.pointsInSubset(indices[indexI], nodesInSubset);
         
         fpmaGeometryFile << mesh_.pointSubsetName(indices[indexI]) << nl;
@@ -147,7 +147,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.faceSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG facesInSubset;
+        labelLongList facesInSubset;
         mesh_.facesInSubset(indices[indexI], facesInSubset);
         
         fpmaGeometryFile << mesh_.faceSubsetName(indices[indexI]) << nl;
@@ -162,7 +162,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
     mesh_.cellSubsetIndices(indices);
     forAll(indices, indexI)
     {
-        labelListPMG cellsInSubset;
+        labelLongList cellsInSubset;
         mesh_.cellsInSubset(indices[indexI], cellsInSubset);
         
         fpmaGeometryFile << mesh_.cellSubsetName(indices[indexI]) << nl;

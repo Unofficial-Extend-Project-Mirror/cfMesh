@@ -66,7 +66,7 @@ void triSurfacePatchManipulator::detectedSurfaceRegions
 {
     graph.setSize(nPatches_);
 
-    labelListPMG nFacetsInPatch(nPatches_, 0);
+    labelLongList nFacetsInPatch(nPatches_, 0);
 
     forAll(facetInPatch_, triI)
         ++nFacetsInPatch[facetInPatch_[triI]];
@@ -127,7 +127,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
     }
 
     //- create triangles for the new surface
-    labelListPMG newFacetLabel(newTriangles.size(), -1);
+    labelLongList newFacetLabel(newTriangles.size(), -1);
 
     forAll(facetsInPatch, patchI)
         forAllRow(facetsInPatch, patchI, tI)
@@ -144,7 +144,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
         (
             newTriangles,
             newPatches,
-            edgeListPMG(),
+            edgeLongList(),
             surf_.points()
         );
 
@@ -157,7 +157,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 
         const label newID = newSurfPtr->addFacetSubset(sName);
 
-        labelListPMG facetsInSubset;
+        labelLongList facetsInSubset;
         surf_.facetsInSubset(subsetIDs[subsetI], facetsInSubset);
 
         forAll(facetsInSubset, i)
@@ -176,7 +176,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 
         const label newID = newSurfPtr->addPointSubset(sName);
 
-        labelListPMG pointsInSubset;
+        labelLongList pointsInSubset;
         surf_.pointsInSubset(subsetIDs[subsetI], pointsInSubset);
 
         forAll(pointsInSubset, i)

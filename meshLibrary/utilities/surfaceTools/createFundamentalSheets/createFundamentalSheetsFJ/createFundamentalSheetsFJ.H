@@ -42,7 +42,7 @@ SourceFiles
 
 #include "polyMeshGenModifier.H"
 #include "createFundamentalSheets.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

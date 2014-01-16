@@ -30,7 +30,7 @@ Description
 #include "demandDrivenData.H"
 #include "meshOctree.H"
 #include "polyMeshGenModifierAddCellByCell.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 //#define DEBUGHex
 
@@ -224,7 +224,7 @@ void hexMeshExtractor::classifyOctreePoints()
     const pointField& octreePoints = octreeAddressing_.octreePoints();
     const VRWGraph& octreeFaces = octreeAddressing_.octreeFaces();
     const VRWGraph& boxFaces = octreeAddressing_.leafFaces();
-    const labelListPMG& neighbour = octreeAddressing_.octreeFaceNeighbour();
+    const labelLongList& neighbour = octreeAddressing_.octreeFaceNeighbour();
     
     pointFieldPMG& points = polyMeshGenModifier(pmg).pointsAccess();
     points.setSize(octreePoints.size());
@@ -304,8 +304,8 @@ void hexMeshExtractor::createPoints()
     const meshOctree& octree = octreeAddressing_.octree();
     const VRWGraph& nodeLabels = octreeAddressing_.nodeLabels();
     const FRWGraph<label, 8>& nodeLeaves = octreeAddressing_.nodeLeaves();
-    centreNodeLabelPtr_ = new labelListPMG(boxType.size(), -1);
-    labelListPMG& centreNode = *centreNodeLabelPtr_;
+    centreNodeLabelPtr_ = new labelLongList(boxType.size(), -1);
+    labelLongList& centreNode = *centreNodeLabelPtr_;
     subVerticesPtr_ = new VRWGraph(boxType.size());
     VRWGraph& subVertices = *subVerticesPtr_;
 
@@ -552,7 +552,7 @@ hexMeshExtractor::createHexCells::createHexCells
 (
     polyMeshGen& mesh,
     const meshOctree& octree,
-    const labelListPMG& centreNodeLabel,
+    const labelLongList& centreNodeLabel,
     const VRWGraph& subVertices,
     const List<direction>& octreeVertexType,
     const VRWGraph& nodeLabels,

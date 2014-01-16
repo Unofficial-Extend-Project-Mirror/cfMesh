@@ -45,7 +45,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
     cellListPMG& cells = mesh_.cells_;
 
     label nFaces(0);
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     //- copy internal faces
     const label nInternalFaces = mesh_.nInternalFaces();
@@ -248,7 +248,7 @@ void polyMeshGenModifier::removeDuplicateFaces()
 
     faceListPMG& faces = mesh_.faces_;
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     label nFaces(0);
     forAll(faces, faceI)

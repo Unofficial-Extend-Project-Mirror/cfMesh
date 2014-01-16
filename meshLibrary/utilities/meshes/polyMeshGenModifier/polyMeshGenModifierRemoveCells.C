@@ -83,7 +83,7 @@ void polyMeshGenModifier::removeCells
 
     //- remove unwanted cells
     label nCells(0);
-    labelListPMG newCellLabel(cells.size(), -1);
+    labelLongList newCellLabel(cells.size(), -1);
     forAll(newCellLabel, cellI)
         if( !removeCell[cellI] )
             newCellLabel[cellI] = nCells++;

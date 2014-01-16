@@ -49,7 +49,7 @@ void polyMeshGenModifier::removeUnusedVertices()
             usePoint[f[pI]] = true;
     }
 
-    labelListPMG newLabel(points.size(), -1);
+    labelLongList newLabel(points.size(), -1);
     label nPoints(0);
     forAll(points, pI)
         if( usePoint[pI] )

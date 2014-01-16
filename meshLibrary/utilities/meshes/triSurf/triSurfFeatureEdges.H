@@ -38,7 +38,7 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "edgeListPMG.H"
+#include "edgeLongList.H"
 #include "meshSubset.H"
 #include "Map.H"
 
@@ -53,7 +53,7 @@ protected:
 
     // Protected data
         //- list of feature edges
-        edgeListPMG featureEdges_;
+        edgeLongList featureEdges_;
 
         //- map of edge subsets
         Map<meshSubset> featureEdgeSubsets_;
@@ -70,7 +70,7 @@ public:
         triSurfFeatureEdges();
 
         //- Construct from feature edges
-        triSurfFeatureEdges(const edgeListPMG& triangles);
+        triSurfFeatureEdges(const edgeLongList& triangles);
 
     // Destructor
         ~triSurfFeatureEdges();
@@ -80,7 +80,7 @@ public:
         inline label nFeatureEdges() const;
 
         //- access to feature edges
-        inline const edgeListPMG& featureEdges() const;
+        inline const edgeLongList& featureEdges() const;
 
         //- append an edge to the end of the list
         inline void appendFeatureEdge(const edge& e);

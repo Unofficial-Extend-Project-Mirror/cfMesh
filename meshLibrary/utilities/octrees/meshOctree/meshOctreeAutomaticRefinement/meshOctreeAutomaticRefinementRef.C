@@ -80,7 +80,7 @@ void meshOctreeAutomaticRefinement::automaticRefinement()
 bool meshOctreeAutomaticRefinement::curvatureRefinement()
 {
     List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
-    labelListPMG refinementCandidates;
+    labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
     while( refineBasedOnCurvature(refineBox, refinementCandidates) )
@@ -95,7 +95,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 {
     bool refine(false);
     List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
-    labelListPMG refinementCandidates;
+    labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
     while( refineBasedOnContainedCorners(refineBox, refinementCandidates) )
@@ -128,7 +128,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     meshOctreeModifier octreeModifier(octree_);
@@ -222,7 +222,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const boundBox& rootBox = octree_.rootBox();
@@ -328,7 +328,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const triSurfaceCurvatureEstimator& curv = curvature();
@@ -400,7 +400,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 (
     List<direction>& refineBox,
-    const labelListPMG& refCandidates
+    const labelLongList& refCandidates
 )
 {
     const boundBox& rootBox = octree_.rootBox();
@@ -465,7 +465,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 void meshOctreeAutomaticRefinement::refineSelectedBoxes
 (
     List<direction>& refineBox,
-    labelListPMG& refCandidates
+    labelLongList& refCandidates
 )
 {
     deleteDemandDrivenData(octreeAddressingPtr_);

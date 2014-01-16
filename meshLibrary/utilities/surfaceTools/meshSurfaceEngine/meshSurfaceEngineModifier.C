@@ -169,7 +169,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
 
     const Map<label>& globalToLocal =
         surfaceEngine_.globalToLocalBndPointAddressing();
-    labelListPMG syncNodes;
+    labelLongList syncNodes;
     forAllConstIter(Map<label>, globalToLocal, it)
         syncNodes.append(it());
 
@@ -178,7 +178,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
 
 void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
 (
-    const labelListPMG& syncNodes
+    const labelLongList& syncNodes
 )
 {
     if( !Pstream::parRun() )
@@ -233,7 +233,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
 
 void meshSurfaceEngineModifier::updateGeometry
 (
-    const labelListPMG& updateBndNodes
+    const labelLongList& updateBndNodes
 )
 {
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -316,7 +316,7 @@ void meshSurfaceEngineModifier::updateGeometry
 
 void meshSurfaceEngineModifier::updateGeometry()
 {
-    labelListPMG updateBndNodes(surfaceEngine_.boundaryPoints().size());
+    labelLongList updateBndNodes(surfaceEngine_.boundaryPoints().size());
 
     # ifdef USE_OMP
     # pragma omp parallel for if( updateBndNodes.size() > 10000 )

@@ -39,7 +39,7 @@ SourceFiles
 #include "polyMeshGenModifier.H"
 #include "triSurf.H"
 #include "DynList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 namespace Foam
 {
@@ -67,8 +67,8 @@ class boundaryFacesGenerator
 
         //- boundary faces
         VRWGraph boundaryFaces_;
-        labelListPMG boundaryOwners_;
-        labelListPMG boundaryPatches_;
+        labelLongList boundaryOwners_;
+        labelLongList boundaryPatches_;
         bool hasFacesInDefaultPatch_;
         label defaultPatchID_;
 

@@ -23,19 +23,19 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Class
-    labelListPMG
+    edgeLongList
 
 Description
-    This is a typedef for LongList<label>
+    This is a typedef for LongList<edge>
 
 SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef labelListPMG_H
-#define labelListPMG_H
+#ifndef edgeLongList_H
+#define edgeLongList_H
 
-#include "label.H"
+#include "edge.H"
 #include "LongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -45,7 +45,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-typedef LongList<label> labelListPMG;
+typedef LongList<edge> edgeLongList;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -65,7 +65,7 @@ class triSurfaceCleanupDuplicates
         const meshOctree& octree_;
 
         //- new triangle labels in case some of them is removed
-        labelListPMG newTriangleLabel_;
+        labelLongList newTriangleLabel_;
 
         //- check if the operation has already been performed
         bool done_;
@@ -78,7 +78,7 @@ class triSurfaceCleanupDuplicates
         bool mergeDuplicatePoints();
 
         //- update triangle mapping
-        void updateTriangleLabels(const labelListPMG&);
+        void updateTriangleLabels(const labelLongList&);
 
         //- Disallow default bitwise copy construct
         triSurfaceCleanupDuplicates(const triSurfaceCleanupDuplicates&);

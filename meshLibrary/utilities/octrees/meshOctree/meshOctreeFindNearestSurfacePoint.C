@@ -209,7 +209,7 @@ bool meshOctree::findNearestEdgePoint
     DynList<const meshOctreeCube*, 256> neighbours;
 
     const pointField& sp = surface_.points();
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
     edgePoint = p;
@@ -293,7 +293,7 @@ bool meshOctree::findNearestVertexToTheEdge
 
     const VRWGraph& edgeFaces = surface_.edgeFacets();
     const pointField& points = surface_.points();
-    const edgeListPMG& surfaceEdges = surface_.edges();
+    const edgeLongList& surfaceEdges = surface_.edges();
 
     distSq = VGREAT;
 

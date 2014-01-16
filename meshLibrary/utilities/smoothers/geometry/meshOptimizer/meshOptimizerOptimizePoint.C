@@ -44,7 +44,7 @@ namespace Foam
 
 void meshOptimizer::laplaceSmoother::laplacian
 (
-    const labelListPMG& smoothPoints,
+    const labelLongList& smoothPoints,
     const label nIterations
 )
 {
@@ -53,7 +53,7 @@ void meshOptimizer::laplaceSmoother::laplacian
 
     for(label iterationI=0;iterationI<nIterations;++iterationI)
     {
-        labelListPMG procPoints;
+        labelLongList procPoints;
 
         forAll(smoothPoints, i)
         {
@@ -88,7 +88,7 @@ void meshOptimizer::laplaceSmoother::laplacian
 
 void meshOptimizer::laplaceSmoother::laplacianSurface
 (
-    const labelListPMG& smoothPoints,
+    const labelLongList& smoothPoints,
     const label nIterations
 )
 {
@@ -97,7 +97,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
 
     for(label iterationI=0;iterationI<nIterations;++iterationI)
     {
-        labelListPMG procPoints;
+        labelLongList procPoints;
 
         forAll(smoothPoints, i)
         {
@@ -138,7 +138,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
 
 void meshOptimizer::laplaceSmoother::laplacianPC
 (
-    const labelListPMG& smoothPoints,
+    const labelLongList& smoothPoints,
     const label nIterations
 )
 {
@@ -148,7 +148,7 @@ void meshOptimizer::laplaceSmoother::laplacianPC
 
     for(label iterationI=0;iterationI<nIterations;++iterationI)
     {
-        labelListPMG procPoints;
+        labelLongList procPoints;
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 20)
@@ -187,7 +187,7 @@ void meshOptimizer::laplaceSmoother::laplacianPC
 
 void meshOptimizer::laplaceSmoother::laplacianWPC
 (
-    const labelListPMG& smoothPoints,
+    const labelLongList& smoothPoints,
     const label nIterations
 )
 {
@@ -199,7 +199,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
 
     for(label iterationI=0;iterationI<nIterations;++iterationI)
     {
-        labelListPMG procPoints;
+        labelLongList procPoints;
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 20)
@@ -243,7 +243,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
 
 void meshOptimizer::laplaceSmoother::updateMeshGeometry
 (
-    const labelListPMG& smoothPoints
+    const labelLongList& smoothPoints
 )
 {
     const cellListPMG& cells = mesh_.cells();
@@ -275,7 +275,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
         const label start = pBnd[patchI].patchStart();
         const label size = pBnd[patchI].patchSize();
 
-        labelListPMG sendData;
+        labelLongList sendData;
         for(label faceI=0;faceI<size;++faceI)
         {
             if( chF[start+faceI] )
@@ -339,7 +339,7 @@ meshOptimizer::laplaceSmoother::~laplaceSmoother()
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
 {
-    labelListPMG smoothPoints;
+    labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
     if( vertexLocation_[pointI] & INSIDE )
@@ -371,7 +371,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
     const label nIterations
 )
 {
-    labelListPMG smoothPoints;
+    labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
     if( vertexLocation_[pointI] & INSIDE )
@@ -394,7 +394,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
     const label nIterations
 )
 {
-    labelListPMG smoothPoints;
+    labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
     if( vertexLocation_[pointI] & INSIDE )

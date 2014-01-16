@@ -90,13 +90,13 @@ public:
         
         //- updates faceCentres, face normal, and point normals
         //- of the boundary faces attached to the selected boundary points
-        void updateGeometry(const labelListPMG&);
+        void updateGeometry(const labelLongList&);
         void updateGeometry();
         
         //- makes sure that all surface vertices at parallel boundaries
         //- have the same coordinates
         void syncVerticesAtParallelBoundaries();
-        void syncVerticesAtParallelBoundaries(const labelListPMG&);
+        void syncVerticesAtParallelBoundaries(const labelLongList&);
 };
 
 

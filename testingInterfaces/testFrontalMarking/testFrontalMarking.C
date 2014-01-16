@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
     meshNeighbourOperator mnop(pmg);
     meshSelectorOperator msop(fis.facetsIntersectingCells());
 
-    labelListPMG result;
+    labelLongList result;
     help::frontalMarking(result, 0, mnop, msop);
     Info << "Cells in the group " << result.size() << endl;
 

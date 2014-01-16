@@ -65,7 +65,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
 
     //- copy boundary faces and their owner face
     VRWGraph bndFaces;
-    labelListPMG origFaceLabel;
+    labelLongList origFaceLabel;
 
     forAll(boundaries, patchI)
     {
@@ -93,8 +93,8 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
     patchNames[bottomEmptyId] = "bottomEmptyFaces";
     patchNames[topEmptyId] = "topEmptyFaces";
 
-    labelListPMG bndFaceOwner(bndFaces.size());
-    labelListPMG bndFacePatch(bndFaces.size());
+    labelLongList bndFaceOwner(bndFaces.size());
+    labelLongList bndFacePatch(bndFaces.size());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)

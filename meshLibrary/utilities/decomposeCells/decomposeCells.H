@@ -56,7 +56,7 @@ class decomposeCells
         //- new boundary faces
         wordList patchNames_;
         VRWGraph newBoundaryFaces_;
-        labelListPMG newBoundaryPatches_;
+        labelLongList newBoundaryPatches_;
     
         VRWGraphList facesOfNewCells_;
     

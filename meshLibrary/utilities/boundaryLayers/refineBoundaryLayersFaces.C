@@ -950,7 +950,7 @@ void refineBoundaryLayers::generateNewFaces()
         std::map<label, DynList<labelPair, 2> > localSplits;
         forAll(procBoundaries, patchI)
         {
-            labelListPMG sendData;
+            labelLongList sendData;
 
             const label start = procBoundaries[patchI].patchStart();
             const label size = procBoundaries[patchI].patchSize();

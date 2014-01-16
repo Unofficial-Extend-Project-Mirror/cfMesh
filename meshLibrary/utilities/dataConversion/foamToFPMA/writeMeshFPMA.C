@@ -111,7 +111,7 @@ void createFIRESelections(polyMeshGen& mesh)
         {
             const word newName = "Proc" + sName.substr(10, sName.size()-10);
             
-            labelListPMG cellsInSubset;
+            labelLongList cellsInSubset;
             mesh.cellsInSubset(subsets[subsetI], cellsInSubset);
             const label subsetID = mesh.addCellSubset(newName);
             forAll(cellsInSubset, i)

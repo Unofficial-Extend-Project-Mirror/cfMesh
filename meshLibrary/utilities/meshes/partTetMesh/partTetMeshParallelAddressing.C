@@ -46,9 +46,9 @@ namespace Foam
 
 void partTetMesh::createParallelAddressing
 (
-    const labelListPMG& nodeLabelForPoint,
-    const labelListPMG& nodeLabelForFace,
-    const labelListPMG& nodeLabelForCell
+    const labelLongList& nodeLabelForPoint,
+    const labelLongList& nodeLabelForFace,
+    const labelLongList& nodeLabelForCell
 )
 {
     //- vertices marked as SMOOTH and BOUNDARY are used by the smoother
@@ -56,8 +56,8 @@ void partTetMesh::createParallelAddressing
     
     //- allocate global point labels
     if( !globalPointLabelPtr_ )
-        globalPointLabelPtr_ = new labelListPMG();
-    labelListPMG& globalTetPointLabel = *globalPointLabelPtr_;
+        globalPointLabelPtr_ = new labelLongList();
+    labelLongList& globalTetPointLabel = *globalPointLabelPtr_;
     globalTetPointLabel.setSize(points_.size());
     globalTetPointLabel = -1;
     
@@ -76,13 +76,13 @@ void partTetMesh::createParallelAddressing
     
     //- allocate storage for points at parallel boundaries
     if( !pAtParallelBoundariesPtr_ )
-        pAtParallelBoundariesPtr_ = new labelListPMG();
-    labelListPMG& pAtParallelBoundaries = *pAtParallelBoundariesPtr_;
+        pAtParallelBoundariesPtr_ = new labelLongList();
+    labelLongList& pAtParallelBoundaries = *pAtParallelBoundariesPtr_;
     pAtParallelBoundaries.clear();
 
     //- create point-processors addressing
-    std::map<label, labelListPMG> exchangeData;
-    std::map<label, labelListPMG>::iterator iter;
+    std::map<label, labelLongList> exchangeData;
+    std::map<label, labelLongList>::iterator iter;
     
     const polyMeshGenAddressing& addressing = origMesh_.addressingData();
     const Map<label>& globalToLocalPointAddressing =
@@ -91,7 +91,7 @@ void partTetMesh::createParallelAddressing
     const DynList<label>& pNeiProcs = addressing.pointNeiProcs();
     
     forAll(pNeiProcs, procI)
-        exchangeData.insert(std::make_pair(pNeiProcs[procI], labelListPMG()));
+        exchangeData.insert(std::make_pair(pNeiProcs[procI], labelLongList()));
     
     //- make sure that the same vertices are marked for smoothing on all procs
     //- this is performed by sending the labels of vertices which are not used
@@ -117,7 +117,7 @@ void partTetMesh::createParallelAddressing
     }
     
     //- exchange data with other processors
-    labelListPMG receivedData;
+    labelLongList receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
     //- set the values according to other processors
@@ -319,13 +319,13 @@ void partTetMesh::createParallelAddressing
 void partTetMesh::createBufferLayers()
 {
     VRWGraph& pProcs = *pAtProcsPtr_;
-    labelListPMG& globalTetPointLabel = *globalPointLabelPtr_;
+    labelLongList& globalTetPointLabel = *globalPointLabelPtr_;
     Map<label>& globalToLocal = *globalToLocalPointAddressingPtr_;
     const DynList<label>& neiProcs = *this->neiProcsPtr_;
     
     if( !pAtBufferLayersPtr_ )
-        pAtBufferLayersPtr_ = new labelListPMG();
-    labelListPMG& pAtBufferLayers = *pAtBufferLayersPtr_;
+        pAtBufferLayersPtr_ = new labelLongList();
+    labelLongList& pAtBufferLayers = *pAtBufferLayersPtr_;
     pAtBufferLayers.clear();
     
     //- create the map

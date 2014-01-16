@@ -57,7 +57,7 @@ inline const VRWGraph& triSurfAddressing::pointFacets() const
     return *pointFacetsPtr_;
 }
 
-inline const edgeListPMG& triSurfAddressing::edges() const
+inline const edgeLongList& triSurfAddressing::edges() const
 {
     if( !edgesPtr_ )
     {
@@ -65,7 +65,7 @@ inline const edgeListPMG& triSurfAddressing::edges() const
         if( omp_in_parallel() )
             FatalErrorIn
             (
-                "inline const edgeListPMG& triSurfAddressing::edges() const"
+                "inline const edgeLongList& triSurfAddressing::edges() const"
             ) << "Cannot calculate edges" << abort(FatalError);
         # endif
 

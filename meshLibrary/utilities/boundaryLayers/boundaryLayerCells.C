@@ -88,8 +88,8 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
 
     //- create lists for new boundary faces
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners;
-    labelListPMG newBoundaryPatches;
+    labelLongList newBoundaryOwners;
+    labelLongList newBoundaryPatches;
 
     //- create storage for new cells
     VRWGraphList cellsToAdd;
@@ -345,7 +345,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
-        std::map<label, labelListPMG> facesToSend;
+        std::map<label, labelLongList> facesToSend;
         std::map<label, DynList<face, 8> > parPointFaces;
         std::map<label, DynList<label, 3> > parPointPatches;
         for
@@ -373,7 +373,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
                     const label prI = pProcs(bpI, i);
 
                     if( facesToSend.find(prI) == facesToSend.end() )
-                        facesToSend.insert(std::make_pair(prI, labelListPMG()));
+                        facesToSend.insert(std::make_pair(prI, labelLongList()));
 
                     if( prI < pMin )
                         pMin = prI;
@@ -399,7 +399,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
                     continue;
                 }
 
-                labelListPMG& stp = facesToSend[pMin];
+                labelLongList& stp = facesToSend[pMin];
 
                 //- send the data to the processor with the lowest label
                 //- data is flatenned as follows
@@ -422,7 +422,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(facesToSend, receivedData);
 
         label counter(0);
@@ -789,7 +789,7 @@ void boundaryLayers::createNewFacesFromPointsParallel
 
     //- store processor faces
     VRWGraph newProcFaces;
-    labelListPMG newProc;
+    labelLongList newProc;
 
     forAll(pointOfOrigin, i)
     {

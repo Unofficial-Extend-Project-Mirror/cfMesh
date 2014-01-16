@@ -41,7 +41,7 @@ SourceFiles
 #include "meshOctreeAddressing.H"
 #include "meshOctreeCubeCoordinates.H"
 #include "VRWGraph.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -71,7 +71,7 @@ class tetCreatorOctree
         LongList<partTet> tets_;
         
         //- octree leaves sorted according to their level
-        List<labelListPMG> sortedLeaves_;
+        List<labelLongList> sortedLeaves_;
     
         //- node labels of vertices created inside split-hex boxes
         VRWGraph* subNodeLabelsPtr_;

@@ -39,7 +39,7 @@ namespace Foam
 void polyMeshGenModifier::addProcessorFaces
 (
     const VRWGraph& procFaces,
-    const labelListPMG& facePatches
+    const labelLongList& facePatches
 )
 {
     Info << "Adding processor faces" << endl;
@@ -70,7 +70,7 @@ void polyMeshGenModifier::addProcessorFaces
     }
 
     //- move faces to their new positions
-    labelListPMG newFaceLabel(nFaces, -1);
+    labelLongList newFaceLabel(nFaces, -1);
 
     if( endProcFaces != nFaces )
     {

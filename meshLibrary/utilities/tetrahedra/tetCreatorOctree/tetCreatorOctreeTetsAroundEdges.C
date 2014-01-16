@@ -77,7 +77,7 @@ void tetCreatorOctree::createTetsAroundEdges()
     //- incident to such edges
     forAllReverse(sortedLeaves_, levelI)
     {
-        const labelListPMG& curLevelLeaves = sortedLeaves_[levelI];
+        const labelLongList& curLevelLeaves = sortedLeaves_[levelI];
         
         forAll(curLevelLeaves, leafI)
         {

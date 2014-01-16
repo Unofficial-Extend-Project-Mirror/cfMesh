@@ -38,7 +38,7 @@ SourceFiles
 #define correctEdgesBetweenPatches_H
 
 #include "polyMeshGenModifier.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -66,8 +66,8 @@ class correctEdgesBetweenPatches
         //- boundary data
         wordList patchNames_;
         VRWGraph newBoundaryFaces_;
-        labelListPMG newBoundaryOwners_;
-        labelListPMG newBoundaryPatches_;
+        labelLongList newBoundaryOwners_;
+        labelLongList newBoundaryPatches_;
 
         //- holds data which cells have to be decomposed
         boolList decomposeCell_;

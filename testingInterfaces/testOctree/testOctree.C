@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 
     const scalar startTime = runTime.elapsedClockTime();
 
-    meshOctree* moPtr = new meshOctree(surf);
+    meshOctree* moPtr = new meshOctree(surf, true);
     meshOctreeCreator* mcPtr = new meshOctreeCreator(*moPtr, meshDict);
     mcPtr->createOctreeBoxes();
     deleteDemandDrivenData(mcPtr);
@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
             << " and " << moPtr->returnLeaf(i-1).coordinates()
             << abort(FatalError);
     }
-    /*  if( Pstream::parRun() )
+      if( Pstream::parRun() )
         {
             std::ostringstream ss;
 
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
             writeOctreeEnsight(*moPtr, "outsideBoxes", meshOctreeCube::OUTSIDE);
             writeOctreeEnsight(*moPtr, "dataBoxes", meshOctreeCube::DATA);
         }
-    */
+
     deleteDemandDrivenData(moPtr);
 
     Info<< "Execution time for octree creation = "

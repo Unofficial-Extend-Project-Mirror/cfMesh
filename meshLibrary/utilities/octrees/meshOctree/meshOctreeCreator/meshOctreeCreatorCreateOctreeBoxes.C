@@ -301,7 +301,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             if( Pstream::parRun() )
                 reduce(addLevel, maxOp<label>());
 
-            labelListPMG subsetFaces;
+            labelLongList subsetFaces;
             surface.facetsInSubset(subsetID, subsetFaces);
             const direction level = globalRefLevel_ + addLevel;
             forAll(subsetFaces, tI)
@@ -359,7 +359,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     //- this is a facet subset
                     const label subsetId = setToIndex[pName];
 
-                    labelListPMG facetsInSubset;
+                    labelLongList facetsInSubset;
                     surface.facetsInSubset(subsetId, facetsInSubset);
 
                     forAll(facetsInSubset, i)

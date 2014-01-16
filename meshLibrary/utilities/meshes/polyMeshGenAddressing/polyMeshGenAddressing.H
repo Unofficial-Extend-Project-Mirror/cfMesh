@@ -131,16 +131,16 @@ class polyMeshGenAddressing
     // Parallel demand driven data
         
         //- global point labels
-        mutable labelListPMG* globalPointLabelPtr_;
+        mutable labelLongList* globalPointLabelPtr_;
         
         //- global face labels
-        mutable labelListPMG* globalFaceLabelPtr_;
+        mutable labelLongList* globalFaceLabelPtr_;
         
         //- global cell labels
-        mutable labelListPMG* globalCellLabelPtr_;
+        mutable labelLongList* globalCellLabelPtr_;
         
         //- global edge labels
-        mutable labelListPMG* globalEdgeLabelPtr_;
+        mutable labelLongList* globalEdgeLabelPtr_;
         
     // Parallel addressing
     
@@ -327,10 +327,10 @@ public:
 
         // Parallel addressing
         
-            const labelListPMG& globalPointLabel() const;
-            const labelListPMG& globalFaceLabel() const;
-            const labelListPMG& globalCellLabel() const;
-            const labelListPMG& globalEdgeLabel() const;
+            const labelLongList& globalPointLabel() const;
+            const labelLongList& globalFaceLabel() const;
+            const labelLongList& globalCellLabel() const;
+            const labelLongList& globalEdgeLabel() const;
             
             const VRWGraph& pointAtProcs() const;
             const Map<label>& globalToLocalPointAddressing() const;

@@ -86,7 +86,7 @@ void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
     }
 
     //- create point-triangles addressing
-    labelListPMG nTrianglesAtPoint(bPoints.size(), 0);
+    labelLongList nTrianglesAtPoint(bPoints.size(), 0);
 
     forAll(triangles, triI)
         ++nTrianglesAtPoint[triangles[triI][0]];

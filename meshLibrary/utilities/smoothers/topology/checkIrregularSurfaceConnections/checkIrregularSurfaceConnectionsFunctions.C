@@ -179,7 +179,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         const PtrList<writeProcessorPatch>& procBoundaries =
             mesh_.procBoundaries();
 
-        const labelListPMG& globalCellLabel =
+        const labelLongList& globalCellLabel =
             mesh_.addressingData().globalCellLabel();
 
         std::map<label, DynList<edge> > dualEdgesForPoint;
@@ -277,7 +277,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         for
         (
             bpIter=dualEdgesForPoint.begin();
@@ -297,7 +297,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
                 //- 1. global point label
                 //- 2. number of edges at node
                 //- 3. labels of edges
-                labelListPMG& dts = exchangeData[neiProc];
+                labelLongList& dts = exchangeData[neiProc];
                 const DynList<edge>& edges = bpIter->second;
                 dts.append(globalPointLabel[bpI]);
                 dts.append(edges.size());
@@ -309,7 +309,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter = 0;
@@ -494,13 +494,13 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
         const VRWGraph& edgesAtProcs = mse.beAtProcs();
 
         const DynList<label>& neiProcs = mse.beNeiProcs();
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(neiProcs, procI)
             exchangeData.insert
             (
-                std::make_pair(neiProcs[procI], labelListPMG())
+                std::make_pair(neiProcs[procI], labelLongList())
             );
-        std::map<label, labelListPMG>::iterator eIter;
+        std::map<label, labelLongList>::iterator eIter;
 
         forAll(edgeFaces, eI)
         {
@@ -527,7 +527,7 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
         }
 
         //- send data to other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
@@ -735,11 +735,11 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
             }
         }
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         //- collect connections over processor edges on the processor with
         //- the lowest label to avoid duplication of data
         forAll(beNeiProcs, i)
-            exchangeData.insert(std::make_pair(beNeiProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
         forAllConstIter(Map<label>, otherFaceAtProc, it)
         {
             const label beI = it.key();
@@ -754,7 +754,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
@@ -795,7 +795,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
                 //- 1. global point label
                 //- 2. number of edges at node
                 //- 3. labels of edges
-                labelListPMG& dts = exchangeData[neiProc];
+                labelLongList& dts = exchangeData[neiProc];
                 const DynList<edge>& edges = bpIter->second;
                 dts.append(globalPointLabel[bpI]);
                 dts.append(edges.size());

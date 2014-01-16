@@ -44,7 +44,7 @@ SourceFiles
 #include "triSurfAddressing.H"
 #include <map>
 #include "DynList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -93,7 +93,7 @@ public:
         (
             const LongList<labelledTri>& triangles,
             const geometricSurfacePatchList& patches,
-            const edgeListPMG& featureEdges_,
+            const edgeLongList& featureEdges_,
             const pointField& points
         );
 

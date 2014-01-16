@@ -174,7 +174,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
                 const label start = procBoundaries[patchI].patchStart();
                 const label end = start + procBoundaries[patchI].patchSize();
 
-                labelListPMG dts;
+                labelLongList dts;
                 labelHashSet addedPoint;
                 for(label faceI=start;faceI<end;++faceI)
                 {
@@ -285,7 +285,7 @@ void meshSurfaceEngine::calculatePointFaces() const
     //- create boundary points
     const labelList& bp = this->bp();
 
-    labelListPMG npf;
+    labelLongList npf;
 
     # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();
@@ -548,7 +548,7 @@ void meshSurfaceEngine::calculatePointPatches() const
         const VRWGraph& bpAtProcs = this->bpAtProcs();
         const Map<label>& globalToLocal = globalToLocalBndPointAddressing();
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
 
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
@@ -564,11 +564,11 @@ void meshSurfaceEngine::calculatePointPatches() const
                 {
                     exchangeData.insert
                     (
-                        std::make_pair(neiProc, labelListPMG())
+                        std::make_pair(neiProc, labelLongList())
                     );
                 }
 
-                labelListPMG& dataToSend = exchangeData[neiProc];
+                labelLongList& dataToSend = exchangeData[neiProc];
 
                 //- prepare data which will be sent
                 //- data is sent as follows
@@ -583,7 +583,7 @@ void meshSurfaceEngine::calculatePointPatches() const
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
@@ -686,7 +686,7 @@ void meshSurfaceEngine::calculatePointPoints() const
             this->globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = this->bpAtProcs();
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
             const label bpI = iter();
@@ -706,11 +706,11 @@ void meshSurfaceEngine::calculatePointPoints() const
                     continue;
 
                 if( exchangeData.find(neiProc) == exchangeData.end() )
-                    exchangeData.insert(std::make_pair(neiProc,labelListPMG()));
+                    exchangeData.insert(std::make_pair(neiProc,labelLongList()));
 
                 if( neiToSend.size() != 0 )
                 {
-                    labelListPMG& dts = exchangeData[neiProc];
+                    labelLongList& dts = exchangeData[neiProc];
                     dts.append(globalPointLabel[bpI]);
                     dts.append(neiToSend.size());
                     forAll(neiToSend, i)
@@ -719,7 +719,7 @@ void meshSurfaceEngine::calculatePointPoints() const
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
@@ -1016,7 +1016,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
 
-            labelListPMG dts;
+            labelLongList dts;
             for(label faceI=start;faceI<end;++faceI)
             {
                 const face& f = faces[faceI];

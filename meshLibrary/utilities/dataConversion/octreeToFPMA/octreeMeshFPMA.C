@@ -116,7 +116,7 @@ void Foam::octreeMeshFPMA::writeSelections
     fpmaGeometryFile << 4 << nl;
     //- create outside selection
     fpmaGeometryFile << "Outside" << nl << 2 << nl;
-    labelListPMG selBoxes;
+    labelLongList selBoxes;
     const meshOctree& octree = addressing_.octree();
     for(label i=0;i<octree.numberOfLeaves();++i)
     {

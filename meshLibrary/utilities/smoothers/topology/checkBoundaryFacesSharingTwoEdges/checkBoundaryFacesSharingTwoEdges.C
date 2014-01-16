@@ -170,9 +170,9 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(bpNei, i)
-            exchangeData.insert(std::make_pair(bpNei[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(bpNei[i], labelLongList()));
 
         forAllConstIter(Map<label>, globalToLocal, it)
         {
@@ -193,7 +193,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         }
 
         //- exchange data
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         //- set remove flag to false
@@ -220,9 +220,9 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
         const DynList<label>& neiProcs = mse.bpNeiProcs();
 
         //- create data that shall be exhcnaged
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(neiProcs, i)
-            exchangeData.insert(std::make_pair(neiProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(neiProcs[i], labelLongList()));
 
         forAllConstIter(Map<label>, globalToLocal, it)
         {
@@ -234,14 +234,14 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
                 if( neiProc == Pstream::myProcNo() )
                     continue;
 
-                labelListPMG& data = exchangeData[neiProc];
+                labelLongList& data = exchangeData[neiProc];
                 data.append(it.key());
                 data.append(nBndFacesAtBndPoint_[bpI]);
             }
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);

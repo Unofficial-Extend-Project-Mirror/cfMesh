@@ -136,7 +136,7 @@ partTetMesh::partTetMesh
 
         if( Pstream::parRun() )
         {
-            const labelListPMG& globalPointLabel =
+            const labelLongList& globalPointLabel =
                 mesh.addressingData().globalPointLabel();
             const VRWGraph& pProcs = mesh.addressingData().pointAtProcs();
             const Map<label>& globalToLocal =
@@ -171,7 +171,7 @@ partTetMesh::partTetMesh
             }
 
             //- exchange data with other processors
-            labelListPMG receivedData;
+            labelLongList receivedData;
             help::exchangeMap(eData, receivedData);
 
             forAll(receivedData, i)
@@ -446,7 +446,7 @@ void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
             const label start = pBnd[patchI].patchStart();
             const label size = pBnd[patchI].patchSize();
 
-            labelListPMG sendData;
+            labelLongList sendData;
             for(label faceI=0;faceI<size;++faceI)
             {
                 if( chF[start+faceI] )

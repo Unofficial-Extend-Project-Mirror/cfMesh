@@ -193,8 +193,8 @@ void renameBoundaryPatches::calculateNewBoundary()
 
     //- start creating new boundary
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners;
-    labelListPMG newBoundaryPatches;
+    labelLongList newBoundaryOwners;
+    labelLongList newBoundaryPatches;
 
     const PtrList<writePatch>& boundaries = mesh_.boundaries();
     const faceListPMG& faces = mesh_.faces();

@@ -39,7 +39,7 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #include "VRWGraph.H"
-#include "edgeListPMG.H"
+#include "edgeLongList.H"
 #include "triSurfFacets.H"
 #include "labelledTri.H"
 #include "DynList.H"
@@ -65,7 +65,7 @@ class triSurfAddressing
         mutable VRWGraph* pointFacetsPtr_;
 
         //- edges in the triangulation
-        mutable edgeListPMG* edgesPtr_;
+        mutable edgeLongList* edgesPtr_;
 
         //- labels of edges in the triangles
         mutable VRWGraph* facetEdgesPtr_;

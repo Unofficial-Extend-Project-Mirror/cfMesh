@@ -49,15 +49,15 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Private member functions
 
-void meshSurfaceMapper::selectNodesAtParallelBnd(const labelListPMG& selNodes)
+void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
 {
     if( !Pstream::parRun() )
         return;
 
-    std::map<label, labelListPMG> exchangeData;
+    std::map<label, labelLongList> exchangeData;
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
     forAll(neiProcs, i)
-        exchangeData.insert(std::make_pair(neiProcs[i], labelListPMG()));
+        exchangeData.insert(std::make_pair(neiProcs[i], labelLongList()));
 
     const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
     const labelList& globalPointLabel =
@@ -84,7 +84,7 @@ void meshSurfaceMapper::selectNodesAtParallelBnd(const labelListPMG& selNodes)
     }
 
     //- exchange data
-    labelListPMG receivedData;
+    labelLongList receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
     forAll(receivedData, i)
@@ -92,7 +92,7 @@ void meshSurfaceMapper::selectNodesAtParallelBnd(const labelListPMG& selNodes)
         if( !selectedNode[globalToLocal[receivedData[i]]] )
         {
             selectedNode[globalToLocal[receivedData[i]]] = true;
-            const_cast<labelListPMG&>(selNodes).append
+            const_cast<labelLongList&>(selNodes).append
             (
                 globalToLocal[receivedData[i]]
             );
@@ -197,7 +197,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface()
 {
     Info << "Mapping vertices onto surface" << endl;
 
-    labelListPMG nodesToMap(surfaceEngine_.boundaryPoints().size());
+    labelLongList nodesToMap(surfaceEngine_.boundaryPoints().size());
     forAll(nodesToMap, i)
         nodesToMap[i] = i;
 
@@ -206,7 +206,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface()
     Info << "Finished mapping vertices onto surface" << endl;
 }
 
-void meshSurfaceMapper::mapVerticesOntoSurface(const labelListPMG& nodesToMap)
+void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
 {
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -277,7 +277,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 {
     Info << "Mapping vertices with respect to surface patches" << endl;
 
-    labelListPMG nodesToMap(surfaceEngine_.boundaryPoints().size());
+    labelLongList nodesToMap(surfaceEngine_.boundaryPoints().size());
     forAll(nodesToMap, i)
         nodesToMap[i] = i;
 
@@ -288,7 +288,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 
 void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 (
-    const labelListPMG& nodesToMap
+    const labelLongList& nodesToMap
 )
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
@@ -298,7 +298,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     boolList treatedPoint(surfaceEngine_.boundaryPoints().size(), false);
 
     //- find corner and edge points
-    labelListPMG selectedCorners, selectedEdges;
+    labelLongList selectedCorners, selectedEdges;
     forAll(nodesToMap, i)
     {
         if( cornerPoints.found(nodesToMap[i]) )

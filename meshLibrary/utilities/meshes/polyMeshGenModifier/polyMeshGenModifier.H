@@ -165,15 +165,15 @@ public:
         (
             const wordList& patchNames,
             const VRWGraph& boundaryFaces,
-            const labelListPMG& faceOwners,
-            const labelListPMG& facePatches
+            const labelLongList& faceOwners,
+            const labelLongList& facePatches
         );
 
         //- add additional faces into processor patches
         void addProcessorFaces
         (
             const VRWGraph& procFaces,
-            const labelListPMG& facePatches
+            const labelLongList& facePatches
         );
 
         //- add new processor patch and return its label

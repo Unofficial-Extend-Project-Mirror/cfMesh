@@ -55,7 +55,7 @@ namespace Foam
 
 void meshSurfaceMapper2D::findMappingDistance
 (
-    const labelListPMG& edgesToMap,
+    const labelLongList& edgesToMap,
     std::map<label, scalar>& mappingDistance
 ) const
 {
@@ -262,7 +262,7 @@ void meshSurfaceMapper2D::adjustZCoordinates()
 
 void meshSurfaceMapper2D::mapVerticesOntoSurface()
 {
-    labelListPMG edgesToMap;
+    labelLongList edgesToMap;
 
     forAll(activeBoundaryEdges_, beI)
         edgesToMap.append(activeBoundaryEdges_[beI]);
@@ -270,7 +270,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface()
     mapVerticesOntoSurface(edgesToMap);
 }
 
-void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelListPMG& edgesToMap)
+void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap)
 {
     const edgeList& edges = surfaceEngine_.edges();
     const labelList& bp = surfaceEngine_.bp();
@@ -280,7 +280,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelListPMG& edgesToMap)
     if( Pstream::parRun() )
         beAtProcsPtr = &surfaceEngine_.beAtProcs();
 
-    labelListPMG nodesToMap;
+    labelLongList nodesToMap;
     forAll(edgesToMap, i)
     {
         const edge& e = edges[edgesToMap[i]];
@@ -358,7 +358,7 @@ void meshSurfaceMapper2D::mapCorners()
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
 
-    labelListPMG selectedEdges;
+    labelLongList selectedEdges;
     forAll(activeBoundaryEdges_, eI)
     {
         const edge& e = edges[activeBoundaryEdges_[eI]];
@@ -370,7 +370,7 @@ void meshSurfaceMapper2D::mapCorners()
     mapCorners(selectedEdges);
 }
 
-void meshSurfaceMapper2D::mapCorners(const labelListPMG& edgesToMap)
+void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& corners = mPart.corners();
@@ -408,7 +408,7 @@ void meshSurfaceMapper2D::mapCorners(const labelListPMG& edgesToMap)
         if( !corners.found(bps) || !corners.found(bpe) )
             FatalErrorIn
             (
-                "meshSurfaceMapper2D::mapCorners(const labelListPMG&)"
+                "meshSurfaceMapper2D::mapCorners(const labelLongList&)"
             ) << "Trying to map a point that is not a corner"
                 << abort(FatalError);
 
@@ -472,7 +472,7 @@ void meshSurfaceMapper2D::mapCorners(const labelListPMG& edgesToMap)
         sMod.moveBoundaryVertexNoUpdate(bpe, mapPoint);
     }
 
-    labelListPMG nodesToMap;
+    labelLongList nodesToMap;
     forAll(edgesToMap, eI)
     {
         const edge& be = edges[edgesToMap[eI]];
@@ -486,7 +486,7 @@ void meshSurfaceMapper2D::mapCorners(const labelListPMG& edgesToMap)
 
 void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
 {
-    labelListPMG edgesToMap;
+    labelLongList edgesToMap;
 
     forAll(activeBoundaryEdges_, beI)
         edgesToMap.append(activeBoundaryEdges_[beI]);
@@ -496,7 +496,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
 
 void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 (
-    const labelListPMG& edgesToMap
+    const labelLongList& edgesToMap
 )
 {
     //- map the selected edges on their patches
@@ -511,7 +511,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     LongList<parMapperHelper> parallelBndEdges;
-    labelListPMG selectedCorners;
+    labelLongList selectedCorners;
 
     # ifdef USE_OMP
     const label size = edgesToMap.size();

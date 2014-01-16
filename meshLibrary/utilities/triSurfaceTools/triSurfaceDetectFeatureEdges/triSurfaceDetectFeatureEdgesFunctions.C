@@ -113,7 +113,7 @@ void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
     VRWGraph planarRegions;
     dpr.detectedRegions(planarRegions);
 
-    labelListPMG facetInPlanarRegion(surf_.size(), -1);
+    labelLongList facetInPlanarRegion(surf_.size(), -1);
 
     forAll(planarRegions, regionI)
         forAllRow(planarRegions, regionI, rfI)

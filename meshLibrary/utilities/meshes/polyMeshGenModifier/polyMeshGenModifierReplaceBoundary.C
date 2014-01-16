@@ -43,8 +43,8 @@ void polyMeshGenModifier::replaceBoundary
 (
     const wordList& patchNames,
     const VRWGraph& boundaryFaces,
-    const labelListPMG& faceOwners,
-    const labelListPMG& facePatches
+    const labelLongList& faceOwners,
+    const labelLongList& facePatches
 )
 {
     const label nIntFaces = mesh_.nInternalFaces();
@@ -52,7 +52,7 @@ void polyMeshGenModifier::replaceBoundary
     faceListPMG& faces = this->facesAccess();
     cellListPMG& cells = this->cellsAccess();
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
     for(label faceI=0;faceI<nIntFaces;++faceI)
         newFaceLabel[faceI] = faceI;
 

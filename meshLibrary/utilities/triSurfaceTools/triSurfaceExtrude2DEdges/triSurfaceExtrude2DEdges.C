@@ -84,7 +84,7 @@ void triSurfaceExtrude2DEdges::extrudeSurface(triSurf& newSurf) const
 
     //- create triangles from feature edges
     LongList<labelledTri>& triangles = sMod.facetsAccess();
-    const edgeListPMG& edges = surf_.featureEdges();
+    const edgeLongList& edges = surf_.featureEdges();
 
     triangles.setSize(2 * edges.size());
     forAll(edges, eI)

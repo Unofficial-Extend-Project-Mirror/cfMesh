@@ -30,7 +30,7 @@ Description
 #include "demandDrivenData.H"
 #include "meshOctree.H"
 #include "polyMeshGenModifierAddCellByCell.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 //#define DEBUGDual
 
@@ -47,8 +47,8 @@ void dualMeshExtractor::createPoints()
     
     const List<direction>& boxType = octreeAddressing_.boxType();
     const meshOctree& octree = octreeAddressing_.octree();
-    centreNodeLabelPtr_ = new labelListPMG(boxType.size(), -1);
-    labelListPMG& centreNode = *centreNodeLabelPtr_;
+    centreNodeLabelPtr_ = new labelLongList(boxType.size(), -1);
+    labelLongList& centreNode = *centreNodeLabelPtr_;
     
     const boundBox& rootBox = octree.rootBox();
     label nPoints(0);
@@ -74,7 +74,7 @@ void dualMeshExtractor::createPolyMesh()
     Info << "Creating polyMesh from octree" << endl;
     
     const meshOctree& octree = octreeAddressing_.octree();
-    const labelListPMG& centreNode = *centreNodeLabelPtr_;
+    const labelLongList& centreNode = *centreNodeLabelPtr_;
     const FRWGraph<label, 8>& nodeLeaves = octreeAddressing_.nodeLeaves();
     
     polyMeshGenModifierAddCellByCell meshModifier(mesh_);

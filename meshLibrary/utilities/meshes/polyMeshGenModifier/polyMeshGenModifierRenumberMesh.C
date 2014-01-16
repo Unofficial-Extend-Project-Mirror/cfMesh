@@ -51,7 +51,7 @@ void polyMeshGenModifier::renumberMesh()
         const VRWGraph& cellCells = mesh_.addressingData().cellCells();
 
         //- the business bit of the renumbering
-        labelListPMG nextCell;
+        labelLongList nextCell;
 
         boolList visited(cellCells.size(), false);
 
@@ -112,7 +112,7 @@ void polyMeshGenModifier::renumberMesh()
     cellList newCells(oldCells.size());
 
     //- The reverse order list gives the new cell label for every old cell
-    labelListPMG reverseOrder(newOrder.size());
+    labelLongList reverseOrder(newOrder.size());
 
     forAll(newOrder, cellI)
     {
@@ -123,7 +123,7 @@ void polyMeshGenModifier::renumberMesh()
 
     //- Renumber the faces.
     //- Reverse face order gives the new face number for every old face
-    labelListPMG reverseFaceOrder(oldOwner.size(), 0);
+    labelLongList reverseFaceOrder(oldOwner.size(), 0);
 
     //- Mark the internal faces with -2 so that they are inserted first
     forAll(newCells, cellI)
@@ -225,7 +225,7 @@ void polyMeshGenModifier::renumberMesh()
     }
 
     //- Face order gives the old face label for every new face
-    labelListPMG faceOrder(reverseFaceOrder.size());
+    labelLongList faceOrder(reverseFaceOrder.size());
 
     forAll(faceOrder, faceI)
     {

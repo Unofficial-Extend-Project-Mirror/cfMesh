@@ -28,7 +28,7 @@ Description
 
 #include "triSurfacePartitioner.H"
 #include "demandDrivenData.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 #include <omp.h>
@@ -56,7 +56,7 @@ void triSurfacePartitioner::calculatePartitionAddressing()
 void triSurfacePartitioner::calculateCornersAndAddressing()
 {
     const VRWGraph& pointFaces = surface_.pointFacets();
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
     //- find the number of feature edges connected to each surface node
@@ -134,7 +134,7 @@ void triSurfacePartitioner::calculatePartitionPartitions()
 
 void triSurfacePartitioner::calculateEdgePartitions()
 {
-    const edgeListPMG& edges = surface_.edges();
+    const edgeLongList& edges = surface_.edges();
     const VRWGraph& pointEdges = surface_.pointEdges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
@@ -168,7 +168,7 @@ void triSurfacePartitioner::calculateEdgePartitions()
         if( !featureEdge[eI] )
             continue;
 
-        labelListPMG front;
+        labelLongList front;
         front.append(eI);
         edgePartitions_[eI] = nPartitions;
         featureEdge[eI] = false;

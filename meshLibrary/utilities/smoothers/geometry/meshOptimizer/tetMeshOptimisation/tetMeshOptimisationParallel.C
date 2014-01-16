@@ -47,17 +47,17 @@ void tetMeshOptimisation::unifyNegativePoints(boolList& negativeNode) const
     //- where they exist
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
     const DynList<label>& neiProcs = tetMesh_.neiProcs();
-    const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
+    const labelLongList& globalPointLabel = tetMesh_.globalPointLabel();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
-    const labelListPMG& pAtParallelBoundaries =
+    const labelLongList& pAtParallelBoundaries =
         tetMesh_.pointsAtProcessorBoundaries();
     
-    std::map<label, labelListPMG> selectedNegativeNodes;
+    std::map<label, labelLongList> selectedNegativeNodes;
     forAll(neiProcs, procI)
         selectedNegativeNodes.insert
         (
-            std::make_pair(neiProcs[procI], labelListPMG())
+            std::make_pair(neiProcs[procI], labelLongList())
         );
     
     forAll(pAtParallelBoundaries, i)
@@ -80,7 +80,7 @@ void tetMeshOptimisation::unifyNegativePoints(boolList& negativeNode) const
         }
     }
     
-    labelListPMG receivedNodes;
+    labelLongList receivedNodes;
     help::exchangeMap(selectedNegativeNodes, receivedNodes);
     
     forAll(receivedNodes, i)
@@ -94,10 +94,10 @@ void tetMeshOptimisation::exchangeData
 )
 {
     const DynList<label>& neiProcs = tetMesh_.neiProcs();
-    const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
+    const labelLongList& globalPointLabel = tetMesh_.globalPointLabel();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
-    const labelListPMG& pAtParallelBoundaries =
+    const labelLongList& pAtParallelBoundaries =
         tetMesh_.pointsAtProcessorBoundaries();
     
     const LongList<point>& points = tetMesh_.points();
@@ -210,9 +210,9 @@ void tetMeshOptimisation::exchangeData
 void tetMeshOptimisation::updateBufferLayerPoints()
 {
     const LongList<point>& points = tetMesh_.points();
-    const labelListPMG& bufferLayerPoints = tetMesh_.bufferLayerPoints();
+    const labelLongList& bufferLayerPoints = tetMesh_.bufferLayerPoints();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
-    const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
+    const labelLongList& globalPointLabel = tetMesh_.globalPointLabel();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
     const DynList<label>& neiProcs = tetMesh_.neiProcs();
     
@@ -267,9 +267,9 @@ void tetMeshOptimisation::unifyCoordinatesParallel
     const DynList<label>& neiProcs = tetMesh_.neiProcs();
     const VRWGraph& pProcs = tetMesh_.pointAtProcs();
     const Map<label>& globalToLocal = tetMesh_.globalToLocalPointAddressing();
-    const labelListPMG& globalPointLabel = tetMesh_.globalPointLabel();
+    const labelLongList& globalPointLabel = tetMesh_.globalPointLabel();
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
-    const labelListPMG& pAtParallelBoundaries =
+    const labelLongList& pAtParallelBoundaries =
         tetMesh_.pointsAtProcessorBoundaries();
     
     //- create the map

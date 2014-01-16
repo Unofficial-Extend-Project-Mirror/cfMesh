@@ -110,7 +110,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
             
-            labelListPMG dts;
+            labelLongList dts;
             labelHashSet addedPoint;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -223,7 +223,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
             
-            labelListPMG dts;
+            labelLongList dts;
             labelHashSet addedPoint;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -404,7 +404,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
             
-            labelListPMG dts;
+            labelLongList dts;
             for(label faceI=start;faceI<end;++faceI)
             {
                 const face& f = faces[faceI];
@@ -537,7 +537,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
             
-            labelListPMG dts;
+            labelLongList dts;
             for(label faceI=start;faceI<end;++faceI)
             {
                 const face& f = faces[faceI];
@@ -653,7 +653,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
     const VRWGraph& beAtProcs = this->beAtProcs();
     const Map<label>& globalToLocal = this->globalToLocalBndEdgeAddressing();
         
-    std::map<label, labelListPMG> exchangeData;
+    std::map<label, labelLongList> exchangeData;
 
     forAllConstIter(Map<label>, globalToLocal, iter)
     {
@@ -667,7 +667,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
                 continue;
             
             if( exchangeData.find(neiProc) == exchangeData.end() )
-                exchangeData.insert(std::make_pair(neiProc, labelListPMG()));
+                exchangeData.insert(std::make_pair(neiProc, labelLongList()));
             
             if( eFaces.sizeOfRow(beI) == 1 )
             {

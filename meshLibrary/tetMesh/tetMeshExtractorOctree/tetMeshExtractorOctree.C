@@ -170,7 +170,7 @@ void tetMeshExtractorOctree::createPolyMesh()
 
     //- remove duplicate faces
     label nFaces(0);
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     forAll(faces, faceI)
     {

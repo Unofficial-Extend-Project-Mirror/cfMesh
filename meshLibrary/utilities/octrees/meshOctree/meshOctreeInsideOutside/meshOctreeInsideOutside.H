@@ -55,7 +55,7 @@ class meshOctreeInsideOutside
         meshOctreeModifier octreeModifier_;
     
         //- group for a given leaf
-        labelListPMG cubeGroup_;
+        labelLongList cubeGroup_;
     
         //- cubes belonging to each group of octree boxes
         VRWGraph cubesInGroup_;
@@ -70,7 +70,7 @@ class meshOctreeInsideOutside
         boolList hasOutsideNeighbour_;
     
         //- label of cubes at processor boundaries
-        labelListPMG communicationCubes_;
+        labelLongList communicationCubes_;
     
         //- labels of cubes marked by different threads
         VRWGraph neighbouringGroups_;

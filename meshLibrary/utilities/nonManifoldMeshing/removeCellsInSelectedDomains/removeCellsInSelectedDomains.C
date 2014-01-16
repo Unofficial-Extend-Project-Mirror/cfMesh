@@ -214,7 +214,7 @@ void removeCellsInSelectedDomains::markSelectedFacets()
             if( index >= 0 )
             {
                 //- it is a subset
-                labelListPMG facetsInSubset;
+                labelLongList facetsInSubset;
                 surf.facetsInSubset(index, facetsInSubset);
 
                 forAll(facetsInSubset, i)
@@ -316,7 +316,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
     //- find islands of cells which are not intersected by the selected domains
     //const cellListPMG& cells = mesh_.cells();
-    labelListPMG findCellGroups;
+    labelLongList findCellGroups;
 
     const label nGroups =
         help::groupMarking

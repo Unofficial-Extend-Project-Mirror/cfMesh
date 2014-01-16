@@ -95,8 +95,8 @@ void boundaryLayers::checkTopologyOfBoundaryFaces(const labelList& patchLabels)
         const Map<label>& otherProcPatch = mse.otherEdgeFacePatch();
         
         VRWGraph newBoundaryFaces;
-        labelListPMG newBoundaryOwners;
-        labelListPMG newBoundaryPatches;
+        labelLongList newBoundaryOwners;
+        labelLongList newBoundaryPatches;
         
         forAll(bFaces, bfI)
         {

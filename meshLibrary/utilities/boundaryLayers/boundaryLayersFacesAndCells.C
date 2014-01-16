@@ -68,8 +68,8 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 
     //- create lists for new boundary faces
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners;
-    labelListPMG newBoundaryPatches;
+    labelLongList newBoundaryOwners;
+    labelLongList newBoundaryPatches;
 
     //- create storage for new cells
     VRWGraphList cellsToAdd;
@@ -260,7 +260,7 @@ void boundaryLayers::createNewFacesParallel
 
     //- create new processor faces
     VRWGraph newProcFaces;
-    labelListPMG faceProcPatch;
+    labelLongList faceProcPatch;
     FixedList<label, 4> newF;
     forAll(treatedEdgeLabels, geI)
     {

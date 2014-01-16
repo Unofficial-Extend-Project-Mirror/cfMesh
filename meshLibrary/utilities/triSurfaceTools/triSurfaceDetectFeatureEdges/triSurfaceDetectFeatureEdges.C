@@ -66,9 +66,9 @@ triSurfaceDetectFeatureEdges::~triSurfaceDetectFeatureEdges()
 
 void triSurfaceDetectFeatureEdges::detectFeatureEdges()
 {
-    const edgeListPMG& edges = surf_.edges();
+    const edgeLongList& edges = surf_.edges();
     triSurfModifier surfMod(surf_);
-    edgeListPMG& featureEdges = surfMod.featureEdgesAccess();
+    edgeLongList& featureEdges = surfMod.featureEdgesAccess();
     featureEdges.clear();
 
     forAll(featureEdges_, eI)

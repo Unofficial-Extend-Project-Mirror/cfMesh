@@ -125,7 +125,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     const labelHashSet& invertedVertices = vertexCheck.invertedVertices();
 
     std::map<std::pair<label, label>, Pair<label> > edgeClassification;
-    labelListPMG procEdges;
+    labelLongList procEdges;
     forAll(eFaces, eI)
     {
         if( eFaces.sizeOfRow(eI) != 2 )
@@ -335,7 +335,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     if( Pstream::parRun() )
     {
         //- make sure that all processors have the same graph
-        labelListPMG flattenedPatches;
+        labelLongList flattenedPatches;
         forAll(treatPatchesWithPatch_, patchI)
         {
             if( treatPatchesWithPatch_[patchI].size() <= 1 )

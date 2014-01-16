@@ -49,7 +49,7 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
     //- this is needed for parallel runs to reduce the bandwidth
     labelHashSet transferCoordinates;
 
-    labelListPMG front;
+    labelLongList front;
     forAll(refineBox, leafI)
     {
         if( refineBox[leafI] )
@@ -69,7 +69,7 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
         private(neighbours) reduction(+ : nMarked)
         # endif
         {
-            labelListPMG tFront;
+            labelLongList tFront;
 
             # ifdef USE_OMP
             # pragma omp for

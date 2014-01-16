@@ -49,7 +49,7 @@ namespace Foam
 
 void meshSurfaceMapper::findMappingDistance
 (
-    const labelListPMG& nodesToMap,
+    const labelLongList& nodesToMap,
     std::map<label, scalar>& mappingDistance
 ) const
 {
@@ -131,7 +131,7 @@ void meshSurfaceMapper::findMappingDistance
     }
 }
 
-void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
+void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
@@ -161,7 +161,7 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
         if( !corners.found(bpI) )
             FatalErrorIn
             (
-                "meshSurfaceMapper::mapCorners(const labelListPMG&)"
+                "meshSurfaceMapper::mapCorners(const labelLongList&)"
             ) << "Trying to map a point that is not a corner"
                 << abort(FatalError);
 
@@ -247,7 +247,7 @@ void meshSurfaceMapper::mapCorners(const labelListPMG& nodesToMap)
     sMod.updateGeometry(nodesToMap);
 }
 
-void meshSurfaceMapper::mapEdgeNodes(const labelListPMG& nodesToMap)
+void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
@@ -363,7 +363,7 @@ void meshSurfaceMapper::mapCornersAndEdges()
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
-    labelListPMG selectedPoints;
+    labelLongList selectedPoints;
     forAllConstIter(labelHashSet, cornerPoints, it)
         selectedPoints.append(it.key());
 

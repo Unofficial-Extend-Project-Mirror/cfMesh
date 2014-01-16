@@ -94,29 +94,29 @@ class meshOptimizer
             // Private member functions
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the neighbouring vertices
-                void laplacian(const labelListPMG&, const label);
-                void laplacianSurface(const labelListPMG&, const label);
+                void laplacian(const labelLongList&, const label);
+                void laplacianSurface(const labelLongList&, const label);
             
                 void laplacianParallel
                 (
-                    const labelListPMG& procPoints,
+                    const labelLongList& procPoints,
                     const bool smoothOnlySurfaceNodes = false
                 );
                 
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
-                void laplacianPC(const labelListPMG&, const label);
-                void laplacianPCParallel(const labelListPMG& procPoints);
+                void laplacianPC(const labelLongList&, const label);
+                void laplacianPCParallel(const labelLongList& procPoints);
                 
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
-                void laplacianWPC(const labelListPMG&, const label);
-                void laplacianWPCParallel(const labelListPMG& procPoints);
+                void laplacianWPC(const labelLongList&, const label);
+                void laplacianWPCParallel(const labelLongList& procPoints);
                 
                 //- update geometry after smoothing
-                void updateMeshGeometry(const labelListPMG& smoothPoints);
+                void updateMeshGeometry(const labelLongList& smoothPoints);
                 
                 //- Disallow default bitwise copy construct
                 laplaceSmoother(const laplaceSmoother&);

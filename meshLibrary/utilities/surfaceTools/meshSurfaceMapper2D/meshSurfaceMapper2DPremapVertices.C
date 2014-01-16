@@ -61,7 +61,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 
     for(label iterI=0;iterI<nIterations;++iterI)
     {
-        labelListPMG parBndEdges;
+        labelLongList parBndEdges;
 
         //- use the shrinking laplace first
         # ifdef USE_OMP

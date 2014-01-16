@@ -239,9 +239,9 @@ void extrudeLayer::createNewVertices()
         const DynList<label>& pProcs = addr.pointNeiProcs();
 
         //- allocate the map
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(pProcs, i)
-            exchangeData.insert(std::make_pair(pProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(pProcs[i], labelLongList()));
 
         //- collect the information about markes points at processor boundaries
         forAllConstIter(Map<label>, globalToLocal, it)
@@ -299,10 +299,10 @@ void extrudeLayer::createNewVertices()
             mesh_.procBoundaries();
         const polyMeshGenAddressing& addr = mesh_.addressingData();
         const VRWGraph& pAtProcs = addr.pointAtProcs();
-        const labelListPMG& globalPointLabel = addr.globalPointLabel();
+        const labelLongList& globalPointLabel = addr.globalPointLabel();
         const Map<label>& globalToLocal = addr.globalToLocalPointAddressing();
         const DynList<label>& pProcs = addr.pointNeiProcs();
-        const labelListPMG& globalCellLabel = addr.globalCellLabel();
+        const labelLongList& globalCellLabel = addr.globalCellLabel();
 
         //- create the information which faces are attached to points
         //- at parallel boundaries in dual form where each edge represents
@@ -423,9 +423,9 @@ void extrudeLayer::createNewVertices()
         returnReduce(1, sumOp<label>());
         Pout << "Exchanging data with other processors" << endl;
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(pProcs, i)
-            exchangeData.insert(std::make_pair(pProcs[i], labelListPMG()));
+            exchangeData.insert(std::make_pair(pProcs[i], labelLongList()));
 
         //- fill in the exchangeData map
         forAllConstIter(dualEdgesMap, procPointsDual, dIter)
@@ -439,7 +439,7 @@ void extrudeLayer::createNewVertices()
                 if( neiProc == Pstream::myProcNo() )
                     continue;
 
-                labelListPMG& dts = exchangeData[neiProc];
+                labelLongList& dts = exchangeData[neiProc];
 
                 dts.append(globalPointLabel[pointI]);
 
@@ -455,7 +455,7 @@ void extrudeLayer::createNewVertices()
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         //- update local data
@@ -925,7 +925,7 @@ void extrudeLayer::createNewFacesParallel()
         return;
 
     VRWGraph newProcFaces;
-    labelListPMG faceProcPatch;
+    labelLongList faceProcPatch;
 
     //- add faces into the mesh
     polyMeshGenModifier(mesh_).addProcessorFaces(newProcFaces, faceProcPatch);
@@ -1226,8 +1226,8 @@ void extrudeLayer::updateBoundary()
         patchNames[patchI] = mesh_.boundaries()[patchI].patchName();
 
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners;
-    labelListPMG newBoundaryPatches;
+    labelLongList newBoundaryOwners;
+    labelLongList newBoundaryPatches;
 
     meshSurfaceEngine mse(mesh_);
     const faceList::subList& bFaces = mse.boundaryFaces();

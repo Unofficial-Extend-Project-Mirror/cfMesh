@@ -38,7 +38,7 @@ SourceFiles
 #define surfaceMorpherCells_H
 
 #include "polyMeshGenModifier.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -67,8 +67,8 @@ class surfaceMorpherCells
     
         //- new boundary faces and owner cells
         VRWGraph newBoundaryFaces_;
-        labelListPMG newBoundaryOwners_;
-        labelListPMG newBoundaryPatches_;
+        labelLongList newBoundaryOwners_;
+        labelLongList newBoundaryPatches_;
     
     // Private enumerators
         enum cellTypes

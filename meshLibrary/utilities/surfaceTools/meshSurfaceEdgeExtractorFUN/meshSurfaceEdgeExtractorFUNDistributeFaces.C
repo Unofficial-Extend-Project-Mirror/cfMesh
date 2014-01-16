@@ -64,8 +64,8 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
 
     wordList patchNames(nPatches);
     VRWGraph newBoundaryFaces;
-    labelListPMG newBoundaryOwners(bFaces.size());
-    labelListPMG newBoundaryPatches(bFaces.size());
+    labelLongList newBoundaryOwners(bFaces.size());
+    labelLongList newBoundaryPatches(bFaces.size());
 
     //- set patchNames
     forAll(surface.patches(), patchI)
@@ -159,7 +159,7 @@ void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
     meshSurfaceCheckEdgeTypes edgeCheck(mse);
 
     label id = mesh_.addPointSubset("convexEdges");
-    labelListPMG helper;
+    labelLongList helper;
     edgeCheck.convexEdges(helper);
     forAll(helper, i)
     {

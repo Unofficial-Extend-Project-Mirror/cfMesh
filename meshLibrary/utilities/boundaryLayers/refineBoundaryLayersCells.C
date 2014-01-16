@@ -713,7 +713,7 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
     # endif
 
     //- find the position of the common point in each boundary face
-    const edgeListPMG& splitEdges = bndLayers_.splitEdges_;
+    const edgeLongList& splitEdges = bndLayers_.splitEdges_;
     const VRWGraph& splitEdgesAtPoint = bndLayers_.splitEdgesAtPoint_;
 
     const face& baseFace = faces[c[dirFace[0]]];
@@ -934,7 +934,7 @@ void refineBoundaryLayers::refineCornerHexCell::generateNewPoints()
     }
 
     //- useful data for generating missing points
-    const edgeListPMG& splitEdges = bndLayers_.splitEdges_;
+    const edgeLongList& splitEdges = bndLayers_.splitEdges_;
     const edge& seDirI = splitEdges[splitEdgeInDirection_[0]];
     const edge& seDirJ = splitEdges[splitEdgeInDirection_[1]];
     const edge& seDirK = splitEdges[splitEdgeInDirection_[2]];
@@ -1643,7 +1643,7 @@ void refineBoundaryLayers::generateNewCells()
     # endif
 
     //- store internal faces originating from existing faces
-    labelListPMG newFaceLabel(newFaces_.size());
+    labelLongList newFaceLabel(newFaces_.size());
     faces.setSize(newFaces_.size());
 
     label currFace = 0;

@@ -42,7 +42,7 @@ inline label triSurfFeatureEdges::nFeatureEdges() const
     return featureEdges_.size();
 }
 
-inline const edgeListPMG& triSurfFeatureEdges::featureEdges() const
+inline const edgeLongList& triSurfFeatureEdges::featureEdges() const
 {
     return featureEdges_;
 }

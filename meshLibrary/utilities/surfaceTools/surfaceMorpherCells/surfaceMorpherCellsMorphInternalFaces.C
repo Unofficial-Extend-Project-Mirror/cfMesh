@@ -97,7 +97,7 @@ void surfaceMorpherCells::findBoundaryVertices()
                 //- create information about bnd nodes which must be exchanged
                 //- with other processors
                 labelHashSet addToSend;
-                labelListPMG dts;
+                labelLongList dts;
                 for(label faceI=start;faceI<end;++faceI)
                 {
                     const face& f = faces[faceI];

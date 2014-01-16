@@ -32,7 +32,7 @@ Description
 
 #include "argList.H"
 #include "Time.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "pointFieldPMG.H"
 #include "DynList.H"
 #include "FCWGraph.H"
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     {
         DynListHP<point*> l1;
 
-        labelListPMG l2(1000000, 15);
+        labelLongList l2(1000000, 15);
         
         l2.append(13);
         l2.append(18);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
     if( Pstream::parRun() )
     {
         Pout << "Here" << endl;
-        labelListPMG data;
+        labelLongList data;
         if( Pstream::myProcNo() == 0 )
         {
             data.setSize(100);

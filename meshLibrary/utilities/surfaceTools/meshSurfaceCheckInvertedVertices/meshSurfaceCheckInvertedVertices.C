@@ -198,9 +198,9 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
 
-        std::map<label, labelListPMG> shareData;
+        std::map<label, labelLongList> shareData;
         forAll(neiProcs, i)
-            shareData.insert(std::make_pair(neiProcs[i], labelListPMG()));
+            shareData.insert(std::make_pair(neiProcs[i], labelLongList()));
 
         forAllConstIter(Map<label>, globalToLocal, iter)
         {
@@ -221,7 +221,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
 
         //- exchange data with other processors
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(shareData, receivedData);
 
         forAll(receivedData, i)

@@ -39,7 +39,7 @@ triSurfFeatureEdges::triSurfFeatureEdges()
     featureEdgeSubsets_()
 {}
 
-triSurfFeatureEdges::triSurfFeatureEdges(const edgeListPMG& featureEdges)
+triSurfFeatureEdges::triSurfFeatureEdges(const edgeLongList& featureEdges)
 :
     featureEdges_(featureEdges),
     featureEdgeSubsets_()

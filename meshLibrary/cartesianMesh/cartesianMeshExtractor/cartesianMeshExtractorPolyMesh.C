@@ -85,14 +85,14 @@ void cartesianMeshExtractor::createPolyMesh()
     label nFaces(0);
 
     const VRWGraph& octreeFaces = octreeCheck_.octreeFaces();
-    const labelListPMG& owner = octreeCheck_.octreeFaceOwner();
-    const labelListPMG& neighbour = octreeCheck_.octreeFaceNeighbour();
+    const labelLongList& owner = octreeCheck_.octreeFaceOwner();
+    const labelLongList& neighbour = octreeCheck_.octreeFaceNeighbour();
 
     //- map storing box label and a direction for each processor face
     //- The map stores data in the same order on both sides of processor
     //- boundaries. This is a consequence of Morton ordering of
     //- leaf boxes in the octree.
-    std::map<label, labelListPMG> procFaces;
+    std::map<label, labelLongList> procFaces;
 
     forAll(octreeFaces, faceI)
     {
@@ -156,7 +156,7 @@ void cartesianMeshExtractor::createPolyMesh()
         label nProcBoundaries(nFaces), patchI(0);
 
         //- allocate memory for processor patches
-        std::map<label, labelListPMG>::const_iterator iter;
+        std::map<label, labelLongList>::const_iterator iter;
         for(iter=procFaces.begin();iter!=procFaces.end();++iter)
         {
             const label procI = iter->first;
@@ -188,7 +188,7 @@ void cartesianMeshExtractor::createPolyMesh()
         {
             procBoundaries[patchI].patchStart() = nProcBoundaries;
 
-            const labelListPMG& patchFaces = iter->second;
+            const labelLongList& patchFaces = iter->second;
 
             forAll(patchFaces, pfI)
             {
@@ -375,8 +375,8 @@ void cartesianMeshExtractor::createPolyMesh()
         patchNames[2] = "unusedFacesTop";
 
         VRWGraph boundaryFaces;
-        labelListPMG newFaceOwner;
-        labelListPMG newFacePatch;
+        labelLongList newFaceOwner;
+        labelLongList newFacePatch;
 
         forAll(fNormals, bfI)
         {

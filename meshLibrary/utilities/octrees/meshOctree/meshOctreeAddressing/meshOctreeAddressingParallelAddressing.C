@@ -53,8 +53,8 @@ void meshOctreeAddressing::calcGlobalPointLabels() const
     const FRWGraph<label, 8>& nodeLeaves = this->nodeLeaves();
 
     //- allocate containers
-    globalPointLabelPtr_ = new labelListPMG(nodeLeaves.size(), -1);
-    labelListPMG& globalPointLabel = *globalPointLabelPtr_;
+    globalPointLabelPtr_ = new labelLongList(nodeLeaves.size(), -1);
+    labelLongList& globalPointLabel = *globalPointLabelPtr_;
 
     globalPointToLocalPtr_ = new Map<label>();
     Map<label>& globalToLocal = *globalPointToLocalPtr_;
@@ -142,7 +142,7 @@ void meshOctreeAddressing::calcGlobalPointLabels() const
     //- it is done by sending the global leaf label and the node labels
     //- to processors which contain the leaves as part of buffer layers
     //- it is performed in reduce-like manner
-    const labelListPMG& globalLeafLabel = this->globalLeafLabel();
+    const labelLongList& globalLeafLabel = this->globalLeafLabel();
     const Map<label>& globalToLocalLeaf = this->globalToLocalLeafAddressing();
     const VRWGraph& leafAtProcs = this->leafAtProcs();
     const labelList& neiProcs = octree_.neiProcs();
@@ -219,7 +219,7 @@ void meshOctreeAddressing::calcGlobalPointLabels() const
     {
         const label neiProc = below[belowI];
 
-        labelListPMG dts;
+        labelLongList dts;
         forAllRow(procLeaves, neiProc, i)
         {
             const label leafI = procLeaves(neiProc, i);
@@ -303,7 +303,7 @@ void meshOctreeAddressing::calcGlobalPointLabels() const
     {
         const label neiProc = above[aboveI];
 
-        labelListPMG dts;
+        labelLongList dts;
         forAllRow(procLeaves, neiProc, i)
         {
             const label leafI = procLeaves(neiProc, i);
@@ -348,8 +348,8 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
             << "Cannot calculate global labels! Exitting" << exit(FatalError);
 
     //- allocate the memory
-    globalLeafLabelPtr_ = new labelListPMG(octree_.numberOfLeaves(), -1);
-    labelListPMG& globalLeafLabel = *globalLeafLabelPtr_;
+    globalLeafLabelPtr_ = new labelLongList(octree_.numberOfLeaves(), -1);
+    labelLongList& globalLeafLabel = *globalLeafLabelPtr_;
 
     globalLeafToLocalPtr_ = new Map<label>();
     Map<label>& globalToLocal = *globalLeafToLocalPtr_;
@@ -385,7 +385,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
         nLeaves += nLeavesAtProc[procI];
 
     //- set the global labels to local leaves
-    labelListPMG otherProcLeaves;
+    labelLongList otherProcLeaves;
     for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
     {
         const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
@@ -449,12 +449,12 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
 
     //- now the global leaf labels shall be sent from the processors
     //- that own the leaves to the processors that also contain them
-    std::map<label, labelListPMG> exchangeLabels;
+    std::map<label, labelLongList> exchangeLabels;
     std::map<label, LongList<meshOctreeCubeBasic> >::iterator it;
     for(it=exchangeData.begin();it!=exchangeData.end();++it)
     {
         it->second.clear();
-        exchangeLabels.insert(std::make_pair(it->first, labelListPMG()));
+        exchangeLabels.insert(std::make_pair(it->first, labelLongList()));
     }
 
     //- fill in the data
@@ -478,7 +478,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
     //- exchange the data
     rLeaves.clear();
     help::exchangeMap(exchangeData, rLeaves, Pstream::scheduled);
-    labelListPMG rLabels;
+    labelLongList rLabels;
     help::exchangeMap(exchangeLabels, rLabels, Pstream::scheduled);
 
     if( rLeaves.size() != rLabels.size() )
@@ -497,7 +497,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
     //- update leafAtProcs for all processors
     exchangeLabels.clear();
     forAll(neiProcs, procI)
-        exchangeLabels.insert(std::make_pair(neiProcs[procI], labelListPMG()));
+        exchangeLabels.insert(std::make_pair(neiProcs[procI], labelLongList()));
 
     forAllConstIter(Map<label>, globalToLocal, iter)
     {
@@ -513,7 +513,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
             if( procI == Pstream::myProcNo() )
                 continue;
 
-            labelListPMG& dts = exchangeLabels[procI];
+            labelLongList& dts = exchangeLabels[procI];
             dts.append(iter.key());
 
             dts.append(leafAtProcs.sizeOfRow(leafI));

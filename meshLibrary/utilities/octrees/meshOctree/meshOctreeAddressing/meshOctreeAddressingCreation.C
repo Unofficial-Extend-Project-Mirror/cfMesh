@@ -31,7 +31,7 @@ Description
 #include "VRWGraphSMPModifier.H"
 #include "demandDrivenData.H"
 #include "meshOctree.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "triSurf.H"
 
 # ifdef USE_OMP
@@ -393,7 +393,7 @@ void meshOctreeAddressing::findUsedBoxes() const
                 const label subsetID = ts.facetSubsetIndex(it.key());
                 if( subsetID >= 0 )
                 {
-                    labelListPMG facets;
+                    labelLongList facets;
                     ts.facetsInSubset(subsetID, facets);
 
                     forAll(facets, i)
@@ -462,7 +462,7 @@ void meshOctreeAddressing::findUsedBoxes() const
 
             if( subsetID >= 0 )
             {
-                labelListPMG facets;
+                labelLongList facets;
                 ts.facetsInSubset(subsetID, facets);
 
                 forAll(facets, i)
@@ -519,19 +519,19 @@ void meshOctreeAddressing::findUsedBoxes() const
     {
         //- make sure that all processors have the same information
         //- about BOUNDARY boxes
-        const labelListPMG& globalLeafLabel = this->globalLeafLabel();
+        const labelLongList& globalLeafLabel = this->globalLeafLabel();
         const VRWGraph& leafAtProcs = this->leafAtProcs();
         const Map<label>& globalLeafToLocal =
             this->globalToLocalLeafAddressing();
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(octree_.neiProcs(), procI)
             exchangeData.insert
             (
                 std::make_pair
                 (
                     octree_.neiProcs()[procI],
-                    labelListPMG()
+                    labelLongList()
                 )
             );
 
@@ -553,7 +553,7 @@ void meshOctreeAddressing::findUsedBoxes() const
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         forAll(receivedData, i)
@@ -605,8 +605,8 @@ void meshOctreeAddressing::calculateNodeType() const
 void meshOctreeAddressing::createOctreeFaces() const
 {
     octreeFacesPtr_ = new VRWGraph();
-    octreeFacesOwnersPtr_ = new labelListPMG();
-    octreeFacesNeighboursPtr_ = new labelListPMG();
+    octreeFacesOwnersPtr_ = new labelLongList();
+    octreeFacesNeighboursPtr_ = new labelLongList();
 
     const VRWGraph& nodeLabels = this->nodeLabels();
     const List<direction>& boxType = this->boxType();
@@ -627,7 +627,7 @@ void meshOctreeAddressing::createOctreeFaces() const
         //- is stored and later in used to store the faces into the octree faces
         //- graph in the correct order
         VRWGraph helperFaces;
-        labelListPMG helperOwner, helperNeighbour;
+        labelLongList helperOwner, helperNeighbour;
 
         # ifdef USE_OMP
         const label nThreads = omp_get_num_threads();
@@ -911,8 +911,8 @@ void meshOctreeAddressing::createOctreeFaces() const
 
 void meshOctreeAddressing::calculateLeafFaces() const
 {
-    const labelListPMG& owner = octreeFaceOwner();
-    const labelListPMG& neighbour = octreeFaceNeighbour();
+    const labelLongList& owner = octreeFaceOwner();
+    const labelLongList& neighbour = octreeFaceNeighbour();
 
     leafFacesPtr_ = new VRWGraph(octree_.numberOfLeaves());
     VRWGraph& leafFaces = *leafFacesPtr_;
@@ -951,8 +951,8 @@ void meshOctreeAddressing::calculateNodeFaces() const
 
 void meshOctreeAddressing::calculateLeafLeaves() const
 {
-    const labelListPMG& owner = octreeFaceOwner();
-    const labelListPMG& neighbour = octreeFaceNeighbour();
+    const labelLongList& owner = octreeFaceOwner();
+    const labelLongList& neighbour = octreeFaceNeighbour();
 
     leafLeavesPtr_ = new VRWGraph(octree_.numberOfLeaves());
     VRWGraph& leafLeaves = *leafLeavesPtr_;
@@ -1060,8 +1060,8 @@ void meshOctreeAddressing::calculateLeafEdges() const
 void meshOctreeAddressing::calculateEdgeLeaves() const
 {
     const VRWGraph& edgeFaces = this->edgeFaces();
-    const labelListPMG& owner = this->octreeFaceOwner();
-    const labelListPMG& neighbour = this->octreeFaceNeighbour();
+    const labelLongList& owner = this->octreeFaceOwner();
+    const labelLongList& neighbour = this->octreeFaceNeighbour();
 
     edgeLeavesPtr_ = new VRWGraph();
     VRWGraph& edgeLeaves = *edgeLeavesPtr_;

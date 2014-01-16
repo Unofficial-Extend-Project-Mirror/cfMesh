@@ -82,7 +82,7 @@ label findColumnCells
 (
     const polyMeshGen& mesh,
     const label faceI,
-    labelListPMG& columnCells
+    labelLongList& columnCells
 )
 {
     columnCells.setSize(0);
@@ -94,7 +94,7 @@ label findColumnCells
 
     boolList addedCell(mesh.cells().size(), false);
 
-    labelListPMG front;
+    labelLongList front;
     front.append(faceI);
 
     while( front.size() )
@@ -131,7 +131,7 @@ label findColumnCells
     const word& columnCellSet
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     findColumnCells(mesh, faceI, columnCells);
 
     const label cID = mesh.addCellSubset(columnCellSet);
@@ -189,7 +189,7 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const boolList& columnCells
     return selfIntersecting;
 }
 
-bool selfIntersectingColumn(const polyMeshGen& mesh, const labelListPMG& columnCells)
+bool selfIntersectingColumn(const polyMeshGen& mesh, const labelLongList& columnCells)
 {
     boolList cellsInColumn(mesh.cells().size(), false);
 
@@ -204,7 +204,7 @@ bool selfIntersectingColumn(const polyMeshGen& mesh, const labelListPMG& columnC
 
 bool selfIntersectingColumn(const polyMeshGen& mesh, const word& columnCellSet)
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
 
     const label setID = mesh.cellSubsetIndex(columnCellSet);
     mesh.cellsInSubset(setID, columnCells);
@@ -232,7 +232,7 @@ label findSheetCells
 (
     const polyMeshGen& mesh,
     const edge& sheetEdge,
-    labelListPMG& cellsInSheet
+    labelLongList& cellsInSheet
 )
 {
     cellsInSheet.setSize(0);
@@ -247,7 +247,7 @@ label findSheetCells
     const VRWGraph& edgeCells = mesh.addressingData().edgeCells();
     const VRWGraph& cellEdges = mesh.addressingData().cellEdges();
 
-    labelListPMG front;
+    labelLongList front;
 
     forAllRow(pointEdges, sheetEdge.start(), peI)
     {
@@ -324,7 +324,7 @@ label findSheetCells
     const word& sheetCellSet
 )
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     findSheetCells(mesh, sheetEdge, sheetCells);
 
     const label cID = mesh.addCellSubset(sheetCellSet);
@@ -386,7 +386,7 @@ bool hasSheetDigons(const polyMeshGen& mesh, const boolList& sheetCells)
 bool hasSheetDigons
 (
     const polyMeshGen& mesh,
-    const labelListPMG& sheetCells
+    const labelLongList& sheetCells
 )
 {
     boolList sCells(mesh.cells().size());
@@ -417,7 +417,7 @@ bool hasSheetDigons(const polyMeshGen& mesh, const word& sheetCellSet)
 {
     const label sheetID = mesh.cellSubsetIndex(sheetCellSet);
 
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     mesh.cellsInSubset(sheetID, sheetCells);
 
     return hasSheetDigons(mesh, sheetCells);
@@ -443,7 +443,7 @@ bool collapseColumn
     const label positionInFace
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     findColumnCells(mesh, faceI, columnCells);
 
     const label pointI = mesh.faces()[faceI][positionInFace];
@@ -456,7 +456,7 @@ bool collapseColumn
 bool collapseColumn
 (
     polyMeshGen& mesh,
-    const labelListPMG& columnCells,
+    const labelLongList& columnCells,
     const label pointI
 )
 {
@@ -566,7 +566,7 @@ bool collapseColumn
     //- find all points connected to the selected point
     boolList removePoint(mesh.points().size(), false);
 
-    labelListPMG front;
+    labelLongList front;
     front.append(pointI);
     while( front.size() )
     {
@@ -611,7 +611,7 @@ bool collapseColumn
             FatalErrorIn
             (
                 "bool collapseColumn(polyMeshGen&,"
-                "const labelListPMG&, const label"
+                "const labelLongList&, const label"
             ) << "Cannot find position in face " << faceI << exit(FatalError);
 
         const label pPos = f[pos];
@@ -795,7 +795,7 @@ bool collapseColumn
     const label pointI
 )
 {
-    labelListPMG columnCells;
+    labelLongList columnCells;
     const label cID = mesh.cellSubsetIndex(columnCellSet);
     mesh.cellsInSubset(cID, columnCells);
 
@@ -806,7 +806,7 @@ bool collapseColumn
 //- the sheet into a set of faces
 bool extractSheet(polyMeshGen& mesh, const edge& sheetEdge)
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     findSheetCells(mesh, sheetEdge, sheetCells);
 
     return extractSheet(mesh, sheetCells);
@@ -835,7 +835,7 @@ bool extractSheet(polyMeshGen& mesh, const boolList& sheetCells)
     VRWGraph pFaces;
     pFaces.reverseAddressing(mesh.points().size(), faces);
 
-    labelListPMG newPointLabel(mesh.points().size(), -1);
+    labelLongList newPointLabel(mesh.points().size(), -1);
 
     //- find faces which shall be removed from the mesh
     //- as a consequence of sheet extraction
@@ -1144,7 +1144,7 @@ bool extractSheet(polyMeshGen& mesh, const boolList& sheetCells)
     return true;
 }
 
-bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet)
+bool extractSheet(polyMeshGen& mesh, const labelLongList& cellsInSheet)
 {
     boolList sheetCells(mesh.cells().size(), false);
 
@@ -1159,7 +1159,7 @@ bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet)
 
 bool extractSheet(polyMeshGen& mesh, const word& sheetCellSet)
 {
-    labelListPMG sheetCells;
+    labelLongList sheetCells;
     const label cID = mesh.cellSubsetIndex(sheetCellSet);
     mesh.cellsInSubset(cID, sheetCells);
 

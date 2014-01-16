@@ -475,7 +475,7 @@ void polyMeshGenFaces::write() const
             )
         );
         
-        labelListPMG containedElements;
+        labelLongList containedElements;
         setIt->second.containedElements(containedElements);
         
         forAll(containedElements, i)

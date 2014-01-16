@@ -334,7 +334,7 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
 
     points.setSize(points.size() + nExtrudedVertices);
 
-    labelListPMG procPoints;
+    labelLongList procPoints;
     forAll(bPoints, bpI)
         if( patchVertex[bpI] )
         {
@@ -447,7 +447,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
         findPatchVertices(treatPatches, patchVertex);
 
         //- go throught the vertices and create the new ones
-        labelListPMG procPoints;
+        labelLongList procPoints;
         # ifdef USE_OMP
         # pragma omp parallel for if( nBndPts > 100 ) \
         schedule(dynamic, Foam::max(10, nBndPts/(2*omp_get_num_threads())))
@@ -614,7 +614,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             FatalErrorIn
             (
                 "void boundaryLayers::createNewVertices("
-                "const labelList& patchLabels, labelListPMG& newLabelForVertex,"
+                "const labelList& patchLabels, labelLongList& newLabelForVertex,"
                 "std::map<label, std::map<std::pair<label, label>, label> >&)"
             ) << "Boundary node " << bpI << " is not at an edge!"
                 << abort(FatalError);
@@ -641,7 +641,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
 
 void boundaryLayers::createNewPartitionVerticesParallel
 (
-    const labelListPMG& procPoints,
+    const labelLongList& procPoints,
     const List<direction>& pVertices,
     const boolList& treatPatches
 )
@@ -740,7 +740,7 @@ void boundaryLayers::createNewPartitionVerticesParallel
 
 void boundaryLayers::createNewEdgeVerticesParallel
 (
-    const labelListPMG& procPoints,
+    const labelLongList& procPoints,
     const List<direction>& pVertices,
     const boolList& treatPatches
 )
@@ -760,7 +760,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
     const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
     DynList<label> neiProcs(10);
-    labelListPMG edgePoints;
+    labelLongList edgePoints;
     Map<label> bpToEdgePoint;
     forAll(procPoints, pointI)
     {
@@ -868,7 +868,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
             FatalErrorIn
             (
                 "void boundaryLayers::createNewEdgeVerticesParallel("
-                    "const labelListPMG& procPoints,"
+                    "const labelLongList& procPoints,"
                     "const List<direction>& pVertices,"
                     "const boolList& treatPatches,"
                     "labelList& newLabelForVertex"
@@ -999,7 +999,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
                     (
                         "void boundaryLayers::createNewEdgeVerticesParallel"
                         "("
-                            "const labelListPMG& procPoints,"
+                            "const labelLongList& procPoints,"
                             "const List<direction>& pVertices,"
                             "const boolList& treatPatches,"
                             "labelList& newLabelForVertex"

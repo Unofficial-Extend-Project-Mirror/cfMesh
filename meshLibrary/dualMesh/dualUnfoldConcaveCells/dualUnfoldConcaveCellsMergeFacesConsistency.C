@@ -62,7 +62,7 @@ void dualUnfoldConcaveCells::createNeighbouringBoundaryFaces
     //- this here assumes that the original cell before edge extraction
     //- has only one boundary face!! This is the case if surface preparation
     //- is applied before edge extraction
-    labelListPMG newPatchForCell(mesh_.cells().size(), -1);
+    labelLongList newPatchForCell(mesh_.cells().size(), -1);
     forAll(newBoundaryFaces_, faceI)
     {
         if( newPatchForCell[newBoundaryOwners_[faceI]] == -1 )
@@ -83,7 +83,7 @@ void dualUnfoldConcaveCells::createNeighbouringBoundaryFaces
     }
 
     //- create a list of possible candidates to store
-    labelListPMG front;
+    labelLongList front;
     forAll(bPoints, bpI)
         if( typeOfVertex_[bPoints[bpI]] & REMOVE )
         {
@@ -100,7 +100,7 @@ void dualUnfoldConcaveCells::createNeighbouringBoundaryFaces
         
     while( front.size() != 0 )
     {
-        labelListPMG newFront;
+        labelLongList newFront;
         
         forAll(front, fpI)
         {

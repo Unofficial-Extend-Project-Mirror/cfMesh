@@ -38,7 +38,7 @@ SourceFiles
 #define dualUnfoldConcaveCells_H
 
 #include "polyMeshGenModifier.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -69,8 +69,8 @@ class dualUnfoldConcaveCells
     
         //- new boundary faces and owner cells
         VRWGraph newBoundaryFaces_;
-        labelListPMG newBoundaryOwners_;
-        labelListPMG newBoundaryPatches_;
+        labelLongList newBoundaryOwners_;
+        labelLongList newBoundaryPatches_;
 
     // Private member functions
         //- find edges to remove

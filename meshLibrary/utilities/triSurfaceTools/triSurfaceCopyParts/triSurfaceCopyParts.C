@@ -83,7 +83,7 @@ void triSurfaceCopyParts::markFacetsForCopying
         {
             if( parts[partI] == fsName )
             {
-                labelListPMG containedFacets;
+                labelLongList containedFacets;
                 surf_.facetsInSubset(facetSubsetsIDs[i], containedFacets);
 
                 forAll(containedFacets, cfI)
@@ -105,7 +105,7 @@ void triSurfaceCopyParts::copySurfaceMesh
 
     const pointField& pts = surf_.points();
 
-    labelListPMG newPointLabel(pts.size(), -1);
+    labelLongList newPointLabel(pts.size(), -1);
 
     label nPoints(0);
 

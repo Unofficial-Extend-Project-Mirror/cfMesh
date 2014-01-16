@@ -139,7 +139,7 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
 
     //- leaf boxes which are not in the range for the current processor
     //- shall be migrated to other processors
-    std::map<label, labelListPMG> leavesToSend;
+    std::map<label, labelLongList> leavesToSend;
 
     bool oneRemainingBox(false);
     forAll(globalLeafWeight, leafI)
@@ -189,7 +189,7 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
     label counter(0);
     for
     (
-        std::map<label, labelListPMG>::const_iterator it=leavesToSend.begin();
+        std::map<label, labelLongList>::const_iterator it=leavesToSend.begin();
         it!=leavesToSend.end();
         ++it
     )

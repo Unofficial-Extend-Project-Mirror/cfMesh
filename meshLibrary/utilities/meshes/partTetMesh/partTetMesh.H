@@ -37,7 +37,7 @@ SourceFiles
 #define partTetMesh_H
 
 #include "boolList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "VRWGraph.H"
 #include "DynList.H"
 #include "partTet.H"
@@ -71,7 +71,7 @@ class partTetMesh
         LongList<partTet> tets_;
     
         //- label of node in the polyMeshGen
-        labelListPMG nodeLabelInOrigMesh_;
+        labelLongList nodeLabelInOrigMesh_;
     
         //- shall a node be used for smoothing or not
         LongList<direction> smoothVertex_;
@@ -87,7 +87,7 @@ class partTetMesh
     
     // Private data for parallel runs
         //- global point label
-        mutable labelListPMG* globalPointLabelPtr_;
+        mutable labelLongList* globalPointLabelPtr_;
         
         //- processor for containing points
         mutable VRWGraph* pAtProcsPtr_;
@@ -99,10 +99,10 @@ class partTetMesh
         mutable DynList<label>* neiProcsPtr_;
         
         //- labels of points at parallel boundaries
-        mutable labelListPMG* pAtParallelBoundariesPtr_;
+        mutable labelLongList* pAtParallelBoundariesPtr_;
         
         //- labels of points serving as buffer layers on other processors
-        mutable labelListPMG* pAtBufferLayersPtr_;
+        mutable labelLongList* pAtBufferLayersPtr_;
     
     // Private member functions
     
@@ -112,9 +112,9 @@ class partTetMesh
         //- create parallel addressing
         void createParallelAddressing
         (
-            const labelListPMG& nodeLabelForPoint,
-            const labelListPMG& nodeLabelForFace,
-            const labelListPMG& nodeLabelForCell
+            const labelLongList& nodeLabelForPoint,
+            const labelLongList& nodeLabelForFace,
+            const labelLongList& nodeLabelForCell
         );
         
         //- create buffer layers
@@ -178,7 +178,7 @@ public:
             return smoothVertex_;
         }
         
-        inline const labelListPMG& nodeLabelInOrigMesh() const
+        inline const labelLongList& nodeLabelInOrigMesh() const
         {
             return nodeLabelInOrigMesh_;
         }
@@ -194,7 +194,7 @@ public:
         const VRWGraph& boundaryPointOrdering() const;
         
     // Access to parallel data
-        inline const labelListPMG& globalPointLabel() const
+        inline const labelLongList& globalPointLabel() const
         {
             if( !Pstream::parRun() )
                 FatalError << "This is a serial run" << abort(FatalError);
@@ -226,7 +226,7 @@ public:
             return *neiProcsPtr_;
         }
         
-        inline const labelListPMG& pointsAtProcessorBoundaries() const
+        inline const labelLongList& pointsAtProcessorBoundaries() const
         {
             if( !Pstream::parRun() )
                 FatalError << "This is a serial run" << abort(FatalError);
@@ -234,7 +234,7 @@ public:
             return *pAtParallelBoundariesPtr_;
         }
         
-        inline const labelListPMG& bufferLayerPoints() const
+        inline const labelLongList& bufferLayerPoints() const
         {
             if( !Pstream::parRun() )
                 FatalError << "This is a serial run" << abort(FatalError);

@@ -782,7 +782,7 @@ inline label numberOfFaceGroups
 )
 {
     const pointField& points = surface.points();
-    const edgeListPMG& edges = surface.edges();
+    const edgeLongList& edges = surface.edges();
     const VRWGraph& faceEdges = surface.facetEdges();
     const VRWGraph& edgeFaces = surface.edgeFacets();
 
@@ -870,7 +870,7 @@ inline label numberOfEdgeGroups
 )
 {
     const pointField& points = surface.points();
-    const edgeListPMG& edges = surface.edges();
+    const edgeLongList& edges = surface.edges();
     const VRWGraph& pointEdges = surface.pointEdges();
 
     const scalar rangeSq = range * range;

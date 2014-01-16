@@ -44,8 +44,8 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             << "for a serial run!" << exit(FatalError);
     
     if( !globalPointLabelPtr_ )
-        globalPointLabelPtr_ = new labelListPMG();
-    labelListPMG& globalPointLabel = *globalPointLabelPtr_;
+        globalPointLabelPtr_ = new labelLongList();
+    labelLongList& globalPointLabel = *globalPointLabelPtr_;
     globalPointLabel.setSize(mesh_.points().size());
     globalPointLabel = -1;
     
@@ -115,7 +115,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                 patchPoints[patchI];
             std::map<label, std::pair<label, label> >::const_iterator it;
             
-            labelListPMG dataToSend;
+            labelLongList dataToSend;
             for(it=patchPointsMap.begin();it!=patchPointsMap.end();++it)
             {
                 //- data is sent as follows
@@ -220,7 +220,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                 patchPoints[patchI];
             std::map<label, std::pair<label, label> >::const_iterator it;
             
-            labelListPMG dataToSend;
+            labelLongList dataToSend;
             for(it=patchPointsMap.begin();it!=patchPointsMap.end();++it)
             {
                 if( globalPointLabel[it->first] != -1 )
@@ -297,8 +297,8 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
 void polyMeshGenAddressing::calcGlobalFaceLabels() const
 {
     if( !globalFaceLabelPtr_ )
-        globalFaceLabelPtr_ = new labelListPMG();
-    labelListPMG& globalFaceLabel = *globalFaceLabelPtr_;
+        globalFaceLabelPtr_ = new labelLongList();
+    labelLongList& globalFaceLabel = *globalFaceLabelPtr_;
     globalFaceLabel.setSize(mesh_.faces().size());
     globalFaceLabel = -1;
     
@@ -409,8 +409,8 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
 void polyMeshGenAddressing::calcGlobalCellLabels() const
 {
     if( !globalCellLabelPtr_ )
-        globalCellLabelPtr_ = new labelListPMG();
-    labelListPMG& globalCellLabel = *globalCellLabelPtr_;
+        globalCellLabelPtr_ = new labelLongList();
+    labelLongList& globalCellLabel = *globalCellLabelPtr_;
     globalCellLabel.setSize(mesh_.cells().size());
     globalCellLabel = -1;
     
@@ -439,8 +439,8 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             << "for a serial run?!?!" << exit(FatalError);
     
     if( !globalEdgeLabelPtr_ )
-        globalEdgeLabelPtr_ = new labelListPMG();
-    labelListPMG& globalEdgeLabel = *globalEdgeLabelPtr_;
+        globalEdgeLabelPtr_ = new labelLongList();
+    labelLongList& globalEdgeLabel = *globalEdgeLabelPtr_;
     globalEdgeLabel.setSize(this->edges().size());
     globalEdgeLabel = -1;
     
@@ -507,7 +507,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                 }
             }
 */            
-            labelListPMG dataToSend;
+            labelLongList dataToSend;
             //nToSend = 0;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -621,7 +621,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
             
-            labelListPMG dataToSend;
+            labelLongList dataToSend;
             for(label faceI=start;faceI<end;++faceI)
             {
                 forAllRow(faceEdges, faceI, eI)
@@ -705,7 +705,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const labelListPMG& polyMeshGenAddressing::globalPointLabel() const
+const labelLongList& polyMeshGenAddressing::globalPointLabel() const
 {
     if( !globalPointLabelPtr_ || !pProcsPtr_ )
         calcGlobalPointLabels();
@@ -713,7 +713,7 @@ const labelListPMG& polyMeshGenAddressing::globalPointLabel() const
     return *globalPointLabelPtr_;
 }
 
-const labelListPMG& polyMeshGenAddressing::globalFaceLabel() const
+const labelLongList& polyMeshGenAddressing::globalFaceLabel() const
 {
     if( !globalFaceLabelPtr_ )
         calcGlobalFaceLabels();
@@ -721,7 +721,7 @@ const labelListPMG& polyMeshGenAddressing::globalFaceLabel() const
     return *globalFaceLabelPtr_;
 }
 
-const labelListPMG& polyMeshGenAddressing::globalCellLabel() const
+const labelLongList& polyMeshGenAddressing::globalCellLabel() const
 {
     if( !globalCellLabelPtr_ )
         calcGlobalCellLabels();
@@ -729,7 +729,7 @@ const labelListPMG& polyMeshGenAddressing::globalCellLabel() const
     return *globalCellLabelPtr_;
 }
 
-const labelListPMG& polyMeshGenAddressing::globalEdgeLabel() const
+const labelLongList& polyMeshGenAddressing::globalEdgeLabel() const
 {
     if( !globalEdgeLabelPtr_ )
         calcGlobalEdgeLabels();

@@ -567,7 +567,7 @@ bool checkCellPartTetrahedra
             const label start = procBnd[patchI].patchStart();
             const label size = procBnd[patchI].patchSize();
 
-            labelListPMG sendData;
+            labelLongList sendData;
             for(label faceI=0;faceI<size;++faceI)
             {
                 if( setPtr->found(faceI+start) )
@@ -1015,7 +1015,7 @@ bool checkFacePyramids
             const label start = procBoundaries[patchI].patchStart();
             const label size = procBoundaries[patchI].patchSize();
 
-            labelListPMG markedFaces;
+            labelLongList markedFaces;
             for(label faceI=0;faceI<size;++faceI)
             {
                 if( setPtr->found(start+faceI) )

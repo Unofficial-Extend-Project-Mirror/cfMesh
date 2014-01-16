@@ -58,7 +58,7 @@ namespace hexHelpers
     (
         const polyMeshGen& mesh,
         const label faceI,
-        labelListPMG& columnCells
+        labelLongList& columnCells
     );
     label findColumnCells
     (
@@ -77,7 +77,7 @@ namespace hexHelpers
     bool selfIntersectingColumn
     (
         const polyMeshGen& mesh,
-        const labelListPMG& columnCells
+        const labelLongList& columnCells
     );
     bool selfIntersectingColumn
     (
@@ -93,7 +93,7 @@ namespace hexHelpers
     (
         const polyMeshGen& mesh,
         const edge& sheetEdge,
-        labelListPMG& cellsInSheet
+        labelLongList& cellsInSheet
     );
     label findSheetCells
     (
@@ -107,7 +107,7 @@ namespace hexHelpers
     bool hasSheetDigons
     (
         const polyMeshGen& mesh,
-        const labelListPMG& sheetCells
+        const labelLongList& sheetCells
     );
     bool hasSheetDigons(const polyMeshGen& mesh, const word& sheetCellSet);
 
@@ -130,7 +130,7 @@ namespace hexHelpers
     bool collapseColumn
     (
         polyMeshGen& mesh,
-        const labelListPMG& columnCells,
+        const labelLongList& columnCells,
         const label pointI
     );
     bool collapseColumn
@@ -146,7 +146,7 @@ namespace hexHelpers
 
     //- extract the sheet of cells
     bool extractSheet(polyMeshGen& mesh, const boolList& sheetCells);
-    bool extractSheet(polyMeshGen& mesh, const labelListPMG& cellsInSheet);
+    bool extractSheet(polyMeshGen& mesh, const labelLongList& cellsInSheet);
     bool extractSheet(polyMeshGen& mesh, const word& sheetCellSet);
 
 } // End namespace hexHelpers

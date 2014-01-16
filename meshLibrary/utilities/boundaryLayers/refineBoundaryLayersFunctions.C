@@ -330,7 +330,7 @@ void refineBoundaryLayers::analyseLayers()
     mse.edgeFaces();
 
     //- find layers in patch
-    labelListPMG bndFaceInLayer;
+    labelLongList bndFaceInLayer;
     const label nGroups =
         help::groupMarking
         (
@@ -688,7 +688,7 @@ bool refineBoundaryLayers::findSplitEdges()
     # pragma omp parallel if( bFaces.size() > 1000 )
     # endif
     {
-        edgeListPMG localEdges;
+        edgeLongList localEdges;
 
         # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 100)
@@ -790,7 +790,7 @@ void refineBoundaryLayers::generateNewVertices()
     //- allocate the data from storing parameters applying to a split edge
     LongList<scalar> firstLayerThickness(splitEdges_.size());
     LongList<scalar> thicknessRatio(splitEdges_.size());
-    labelListPMG nNodesAtEdge(splitEdges_.size());
+    labelLongList nNodesAtEdge(splitEdges_.size());
 
     //- count the number of vertices for each split edge
     # ifdef USE_OMP
@@ -875,7 +875,7 @@ void refineBoundaryLayers::generateNewVertices()
     {
         //- transfer the information over all processor for edges
         //- at inter-processor boundaries
-        const labelListPMG& globalEdgeLabel =
+        const labelLongList& globalEdgeLabel =
             mesh_.addressingData().globalEdgeLabel();
         const VRWGraph& edgeAtProcs = mesh_.addressingData().edgeAtProcs();
         const Map<label>& globalToLocal =

@@ -77,7 +77,7 @@ class extrudeLayer
         LongList<bool> pairOrientation_;
     
         //- original point label
-        labelListPMG origPointLabel_;
+        labelLongList origPointLabel_;
     
     // Private member functions
         //- duplicate faces which will be extruded

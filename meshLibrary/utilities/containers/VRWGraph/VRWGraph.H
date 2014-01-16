@@ -38,7 +38,7 @@ SourceFiles
 #ifndef VRWGraph_H
 #define VRWGraph_H
 
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "graphRow.H"
 #include "DynList.H"
 #include "bool.H"
@@ -101,7 +101,7 @@ class VRWGraph
 {
     // Private data
         //- list containing the data
-        labelListPMG data_;
+        labelLongList data_;
     
         //- number of rows
         LongList<rowElement> rows_;

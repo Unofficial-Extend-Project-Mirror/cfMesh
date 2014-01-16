@@ -38,7 +38,7 @@ SourceFiles
 
 #include "labelList.H"
 #include "pointField.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "parMapperHelper.H"
 
 #include <map>
@@ -99,19 +99,19 @@ class meshSurfaceMapper
         
     // Private member functions
         //- map corner nodes to the boundary
-        void mapCorners(const labelListPMG& nodesToMap);
+        void mapCorners(const labelLongList& nodesToMap);
         
         //- find mapping distance for selected points
         void findMappingDistance
         (
-            const labelListPMG& nodesToMap,
+            const labelLongList& nodesToMap,
             std::map<label, scalar>& mappingDistance
         ) const;
         
     // Private member functions needed for parallel execution
         
         //- check if nodes at parallel boundaries are selected at all processors
-        void selectNodesAtParallelBnd(const labelListPMG&);
+        void selectNodesAtParallelBnd(const labelLongList&);
 
         //- map to the smallest distance
         //- makes sense for parallel calculations, only
@@ -145,7 +145,7 @@ public:
         
         //- projects selected surface vertices to their nearest location
         //- on the surface mesh
-        void mapVerticesOntoSurface(const labelListPMG& nodesToMap);
+        void mapVerticesOntoSurface(const labelLongList& nodesToMap);
         
         //- projects corner and edge vertices onto their nearest location
         //- on the surface mesh
@@ -153,7 +153,7 @@ public:
         
         //- projects selected edge vertices onto their nearest
         //- locations on the surface mesh
-        void mapEdgeNodes(const labelListPMG& nodesToMap);
+        void mapEdgeNodes(const labelLongList& nodesToMap);
         
         //- projects surface vertices onto the surface with respect
         //- to the surface patch they belong to. Edges and corner are respected
@@ -161,7 +161,7 @@ public:
         
         //- projects selected surface vertices onto the surface with respect
         //- to the surface patch they belong to. Edges and corner are respected
-        void mapVerticesOntoSurfacePatches(const labelListPMG& nodesToMap);
+        void mapVerticesOntoSurfacePatches(const labelLongList& nodesToMap);
         
         //- a combination of mapping and smoothing intended for better
         //- feature capturing

@@ -99,11 +99,11 @@ class meshOctreeAutomaticRefinement
         void setMaxRefLevel();
 
         //- refine selected boxes
-        void refineSelectedBoxes(List<direction>&, labelListPMG&);
+        void refineSelectedBoxes(List<direction>&, labelLongList&);
 
         //- refine DATA boxes based on curvature
         bool curvatureRefinement();
-        bool refineBasedOnCurvature(List<direction>&, const labelListPMG&);
+        bool refineBasedOnCurvature(List<direction>&, const labelLongList&);
 
         //- refine DATA boxes which contain two or more independent parts
         //- of the surface in their vicinity
@@ -111,7 +111,7 @@ class meshOctreeAutomaticRefinement
         bool refineBasedOnProximityTests
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
         //- refine DATA boxes containing 2 or more corners, 2 or more distinct
@@ -119,14 +119,14 @@ class meshOctreeAutomaticRefinement
         bool refineBasedOnContainedPartitions
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
         //- refine boxes based on the number of contained surface corners
         bool refineBasedOnContainedCorners
         (
             List<direction>&,
-            const labelListPMG&
+            const labelLongList&
         );
 
     // Private copy constructor

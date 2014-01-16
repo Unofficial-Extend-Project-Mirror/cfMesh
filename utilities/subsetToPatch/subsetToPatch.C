@@ -64,7 +64,7 @@ void makePatchFromSubset
     {
         const label subsetID = origSurf.facetSubsetIndex(subsetNames[subsetI]);
 
-        labelListPMG subsetFaces;
+        labelLongList subsetFaces;
         origSurf.facetsInSubset(subsetID, subsetFaces);
 
         const label regionI = origSurf.patches().size() + subsetI;

@@ -38,7 +38,7 @@ SourceFiles
 
 #include "labelList.H"
 #include "pointField.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "parMapperHelper.H"
 #include "boundBox.H"
 
@@ -81,7 +81,7 @@ class meshSurfaceMapper2D
 
         //- labels of edges which are at the boundary which shall be mapped
         //- onto the surface
-        labelListPMG activeBoundaryEdges_;
+        labelLongList activeBoundaryEdges_;
 
     // Private member functions
         //- find active boundary edges
@@ -130,7 +130,7 @@ class meshSurfaceMapper2D
         //- find mapping distance for corner points
         void findMappingDistance
         (
-            const labelListPMG&,
+            const labelLongList&,
             std::map<label, scalar>&
         ) const;
 
@@ -165,7 +165,7 @@ public:
 
         //- projects selected edge to their nearest location
         //- on the surface mesh
-        void mapVerticesOntoSurface(const labelListPMG& edgesToMap);
+        void mapVerticesOntoSurface(const labelLongList& edgesToMap);
 
         //- projects edges with corners onto their nearest location
         //- on the surface mesh
@@ -173,7 +173,7 @@ public:
 
         //- projects selected edges with corners onto their nearest
         //- locations on the surface mesh
-        void mapCorners(const labelListPMG& edgesToMap);
+        void mapCorners(const labelLongList& edgesToMap);
 
         //- projects surface edges onto the surface with respect
         //- to the surface patch they belong to. Corners are respected
@@ -181,7 +181,7 @@ public:
 
         //- projects selected surface edges onto the surface with respect
         //- to the surface patch they belong to. Corners are respected
-        void mapVerticesOntoSurfacePatches(const labelListPMG& edgesToMap);
+        void mapVerticesOntoSurfacePatches(const labelLongList& edgesToMap);
 
         //- a combination of mapping and smoothing intended for better
         //- feature capturing

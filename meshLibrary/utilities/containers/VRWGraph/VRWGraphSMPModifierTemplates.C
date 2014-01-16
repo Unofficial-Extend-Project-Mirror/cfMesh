@@ -112,7 +112,7 @@ template<class GraphType>
 void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
 {
     graph_.setSize(0);
-    labelListPMG nAppearances;
+    labelLongList nAppearances;
 
     # ifdef USE_OMP
     label nThreads = 3 * omp_get_num_procs();

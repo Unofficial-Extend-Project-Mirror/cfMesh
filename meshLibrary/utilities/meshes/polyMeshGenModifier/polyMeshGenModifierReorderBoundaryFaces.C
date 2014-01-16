@@ -56,7 +56,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
     //- count internal and boundary faces
     const label numBFaces = faces.size() - nInternalFaces;
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     //- find faces which should be repositioned
     label nReplaced(0);
@@ -84,7 +84,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         label& nItc = nInternalToChangeThread[threadI];
         label& nBtc = nBoundaryToChangeThread[threadI];
 
-        labelListPMG internalToChangeLocal, boundaryToChangeLocal;
+        labelLongList internalToChangeLocal, boundaryToChangeLocal;
 
         //- find the boundary faces within the range of internal faces
         # ifdef USE_OMP
@@ -252,7 +252,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
             "void polyMeshGenModifier::reorderProcBoundaryFaces()"
         ) << "Missing some faces!" << abort(FatalError);
 
-    labelListPMG newFaceLabel(faces.size(), -1);
+    labelLongList newFaceLabel(faces.size(), -1);
 
     //- faces added after processor boundaries should be moved up front
     faceList facesAtEnd(shift);

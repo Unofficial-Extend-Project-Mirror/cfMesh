@@ -46,7 +46,7 @@ namespace Foam
 
 void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
 (
-    const labelListPMG& nodesToSmooth,
+    const labelLongList& nodesToSmooth,
     const bool transformIntoPlane
 )
 {
@@ -169,7 +169,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
 
 void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 (
-    const labelListPMG& nodesToSmooth,
+    const labelLongList& nodesToSmooth,
     const bool transformIntoPlane
 )
 {
@@ -278,7 +278,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 
 void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
 (
-    const labelListPMG& nodesToSmooth
+    const labelLongList& nodesToSmooth
 )
 {
     if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
@@ -338,7 +338,7 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
 
 void meshSurfaceOptimizer::edgeNodeDisplacementParallel
 (
-    const labelListPMG& nodesToSmooth
+    const labelLongList& nodesToSmooth
 )
 {
     std::map<label, DynList<labelledPoint, 2> > mPts;
@@ -459,7 +459,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
 
 void meshSurfaceOptimizer::exchangeData
 (
-    const labelListPMG& nodesToSmooth,
+    const labelLongList& nodesToSmooth,
     std::map<label, DynList<parTriFace> >& m
 ) const
 {
@@ -551,7 +551,7 @@ void meshSurfaceOptimizer::exchangeData
             FatalErrorIn
             (
                 "void meshSurfaceOptimizer::exchangeData("
-                "const labelListPMG& nodesToSmooth,"
+                "const labelLongList& nodesToSmooth,"
                 "map<label, DynList<parTriFace> >& m"
                 ") const"
             ) << "Unknown point " << gpI << abort(FatalError);

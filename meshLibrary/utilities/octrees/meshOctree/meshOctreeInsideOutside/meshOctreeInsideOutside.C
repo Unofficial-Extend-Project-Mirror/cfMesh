@@ -29,7 +29,7 @@ Description
 #include "meshOctreeInsideOutside.H"
 #include "triSurf.H"
 #include "boundBox.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -138,7 +138,7 @@ void meshOctreeInsideOutside::frontalMarking()
     communicationCubes_.clear();
     neighbouringGroups_.clear();
 
-    labelListPMG frontCubes;
+    labelLongList frontCubes;
     DynList<label> neighbours(24);
 
     label nGroup(0), nThreads(1);
@@ -188,7 +188,7 @@ void meshOctreeInsideOutside::frontalMarking()
             frontCubes.append(leafI);
             cubeGroup_[leafI] = groupI;
 
-            labelListPMG neiDATACubes;
+            labelLongList neiDATACubes;
 
             while( frontCubes.size() )
             {

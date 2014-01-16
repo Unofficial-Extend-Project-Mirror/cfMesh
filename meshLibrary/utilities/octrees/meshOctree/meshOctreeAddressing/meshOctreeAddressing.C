@@ -175,8 +175,8 @@ meshOctreeAddressing::~meshOctreeAddressing()
 
 bool meshOctreeAddressing::isIntersectedFace(const label fI) const
 {
-    const labelListPMG& owner = octreeFaceOwner();
-    const labelListPMG& neighbour = octreeFaceNeighbour();
+    const labelLongList& owner = octreeFaceOwner();
+    const labelLongList& neighbour = octreeFaceNeighbour();
 
     if( neighbour[fI] < 0 )
         return false;

@@ -108,7 +108,7 @@ inline const VRWGraph& meshOctreeAddressing::octreeFaces() const
     return *octreeFacesPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::octreeFaceOwner() const
+inline const labelLongList& meshOctreeAddressing::octreeFaceOwner() const
 {
     if( !octreeFacesOwnersPtr_ )
         createOctreeFaces();
@@ -116,7 +116,7 @@ inline const labelListPMG& meshOctreeAddressing::octreeFaceOwner() const
     return *octreeFacesOwnersPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::octreeFaceNeighbour() const
+inline const labelLongList& meshOctreeAddressing::octreeFaceNeighbour() const
 {
     if( !octreeFacesNeighboursPtr_ )
         createOctreeFaces();
@@ -196,7 +196,7 @@ inline const VRWGraph& meshOctreeAddressing::edgeFaces() const
     return *edgeFacesPtr_;
 }
 
-inline const labelListPMG& meshOctreeAddressing::globalPointLabel() const
+inline const labelLongList& meshOctreeAddressing::globalPointLabel() const
 {
     if( !globalPointLabelPtr_ )
         calcGlobalPointLabels();
@@ -221,7 +221,7 @@ inline const VRWGraph& meshOctreeAddressing::pointAtProcs() const
     return *pointProcsPtr_;
 }
         
-inline const labelListPMG& meshOctreeAddressing::globalFaceLabel() const
+inline const labelLongList& meshOctreeAddressing::globalFaceLabel() const
 {
     if( !globalFaceLabelPtr_ )
         calcGlobalFaceLabels();
@@ -246,7 +246,7 @@ inline const VRWGraph& meshOctreeAddressing::faceAtProcs() const
     return *faceProcsPtr_;
 }
         
-inline const labelListPMG& meshOctreeAddressing::globalLeafLabel() const
+inline const labelLongList& meshOctreeAddressing::globalLeafLabel() const
 {
     if( !globalLeafLabelPtr_ )
         calcGlobalLeafLabels();

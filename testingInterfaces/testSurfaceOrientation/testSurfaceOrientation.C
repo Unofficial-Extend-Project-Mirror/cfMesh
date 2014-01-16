@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 
     triSurfaceClassifyEdges tce(mo);
     const List<direction>& edgeTypes = tce.edgeTypes();
-    const edgeListPMG& edges = surf.edges();
+    const edgeLongList& edges = surf.edges();
 
     const label featureNodes = surf.addPointSubset("featureNodes");
     const label convexId = surf.addPointSubset("convexEdges");

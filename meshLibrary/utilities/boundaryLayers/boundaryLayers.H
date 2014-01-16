@@ -39,7 +39,7 @@ SourceFiles
 #include "polyMeshGenModifier.H"
 #include "meshSurfaceEngine.H"
 #include "DynList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "Map.H"
 #include "labelPair.H"
 
@@ -83,7 +83,7 @@ class boundaryLayers
         List<DynList<label> > treatPatchesWithPatch_;
 
         //- label of a new node (helper)
-        labelListPMG newLabelForVertex_;
+        labelLongList newLabelForVertex_;
 
         //- map storing labels of new vertices created at node
         //- and corner vertices
@@ -141,7 +141,7 @@ class boundaryLayers
         //- creates new vertices for vertices at parallel boundaries
         void createNewPartitionVerticesParallel
         (
-            const labelListPMG& procPoints,
+            const labelLongList& procPoints,
             const List<direction>& pVertices,
             const boolList& treatPatches
         );
@@ -150,7 +150,7 @@ class boundaryLayers
         //- which are also at the border of the treated partitions
         void createNewEdgeVerticesParallel
         (
-            const labelListPMG& procPoints,
+            const labelLongList& procPoints,
             const List<direction>& pVertices,
             const boolList& treatPatches
         );

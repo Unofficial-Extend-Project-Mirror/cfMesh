@@ -39,7 +39,7 @@ SourceFiles
 #include "DynList.H"
 #include "parPartTet.H"
 #include "boundBox.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "boolList.H"
 
 #include <map>

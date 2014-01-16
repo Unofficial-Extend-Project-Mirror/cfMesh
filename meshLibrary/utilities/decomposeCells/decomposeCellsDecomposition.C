@@ -31,7 +31,7 @@ Description
 #include "polyMeshGenAddressing.H"
 #include "meshSurfaceEngine.H"
 #include "decomposeFaces.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 
 //#define DEBUGDecompose
 
@@ -209,7 +209,7 @@ void decomposeCells::addNewCells()
     const labelList& owner = mesh_.owner();
     const VRWGraph& pointFaces = mesh_.addressingData().pointFaces();
 
-    labelListPMG newBoundaryOwners;
+    labelLongList newBoundaryOwners;
 
     forAll(newBoundaryFaces_, faceI)
     {

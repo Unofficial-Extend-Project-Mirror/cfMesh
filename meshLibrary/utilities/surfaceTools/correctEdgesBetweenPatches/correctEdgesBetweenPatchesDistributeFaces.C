@@ -92,11 +92,11 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         }
 
         //- propagate information to all processors that need this information
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(mse.beNeiProcs(), i)
             exchangeData.insert
             (
-                std::make_pair(mse.beNeiProcs()[i], labelListPMG())
+                std::make_pair(mse.beNeiProcs()[i], labelLongList())
             );
 
         //- append labels of feature edges that need to be sent to other
@@ -118,7 +118,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);

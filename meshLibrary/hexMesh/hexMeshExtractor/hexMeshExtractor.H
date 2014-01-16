@@ -61,7 +61,7 @@ class hexMeshExtractor
         polyMeshGen& mesh_;
     
         //- centre node labels
-        labelListPMG* centreNodeLabelPtr_;
+        labelLongList* centreNodeLabelPtr_;
     
         //- subvertices generated inside octree leaves
         VRWGraph* subVerticesPtr_;
@@ -103,7 +103,7 @@ class hexMeshExtractor
                 const meshOctree& octree_;
     
                 //- centre node labels
-                const labelListPMG& centreNodeLabel_;
+                const labelLongList& centreNodeLabel_;
     
                 //- subvertices generated inside octree leaves
                 const VRWGraph& subVertices_;
@@ -150,7 +150,7 @@ class hexMeshExtractor
                 (
                     polyMeshGen& mesh,
                     const meshOctree& octree,
-                    const labelListPMG& centreNodeLabel,
+                    const labelLongList& centreNodeLabel,
                     const VRWGraph& subVertices,
                     const List<direction>& octreeVertexType,
                     const VRWGraph& nodeLabels,

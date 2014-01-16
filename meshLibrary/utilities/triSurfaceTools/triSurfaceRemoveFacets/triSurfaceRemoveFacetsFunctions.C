@@ -69,7 +69,7 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
 
         if( selectedEntities_.contains(fsName) )
         {
-            labelListPMG containedFacets;
+            labelLongList containedFacets;
             surf_.facetsInSubset(facetSubsetsIDs[i], containedFacets);
 
             forAll(containedFacets, cfI)
@@ -85,8 +85,8 @@ void triSurfaceRemoveFacets::removeFacets()
 
     //- calculate new indices of vertices and facets
     const pointField& points = surf_.points();
-    labelListPMG newPointLabel(surf_.points().size(), -1);
-    labelListPMG newFacetLabel(surf_.size(), -1);
+    labelLongList newPointLabel(surf_.points().size(), -1);
+    labelLongList newFacetLabel(surf_.size(), -1);
 
     label pointCounter(0), facetCounter(0);
 
@@ -143,9 +143,9 @@ void triSurfaceRemoveFacets::removeFacets()
     surf_.updateFacetsSubsets(newFacetLabel);
 
     //- update feature edges
-    const edgeListPMG& featureEdges = surf_.featureEdges();
+    const edgeLongList& featureEdges = surf_.featureEdges();
     label edgeCounter(0);
-    labelListPMG newFeatureEdgeLabel(featureEdges.size(), -1);
+    labelLongList newFeatureEdgeLabel(featureEdges.size(), -1);
 
     forAll(featureEdges, feI)
     {
@@ -157,7 +157,7 @@ void triSurfaceRemoveFacets::removeFacets()
         newFeatureEdgeLabel[feI] = edgeCounter++;
     }
 
-    edgeListPMG newFeatureEdges(edgeCounter);
+    edgeLongList newFeatureEdges(edgeCounter);
     forAll(newFeatureEdgeLabel, eI)
     {
         if( newFeatureEdgeLabel[eI] < 0 )

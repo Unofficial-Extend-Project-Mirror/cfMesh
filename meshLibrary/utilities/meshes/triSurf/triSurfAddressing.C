@@ -44,7 +44,7 @@ void triSurfAddressing::calculatePointFacets() const
 
 void triSurfAddressing::calculateEdges() const
 {
-    edgesPtr_ = new edgeListPMG();
+    edgesPtr_ = new edgeLongList();
 
     const VRWGraph& pFacets = pointFacets();
 
@@ -64,7 +64,7 @@ void triSurfAddressing::calculateEdges() const
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        edgeListPMG edgesHelper;
+        edgeLongList edgesHelper;
 
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -154,7 +154,7 @@ void triSurfAddressing::calculateEdges() const
 
 void triSurfAddressing::calculateFacetEdges() const
 {
-    const edgeListPMG& edges = this->edges();
+    const edgeLongList& edges = this->edges();
     const VRWGraph& pointFaces = this->pointFacets();
 
     facetEdgesPtr_ = new VRWGraph(facets_.size());
@@ -220,7 +220,7 @@ void triSurfAddressing::calculateEdgeFacets() const
 
 void triSurfAddressing::calculatePointEdges() const
 {
-    const edgeListPMG& edges = this->edges();
+    const edgeLongList& edges = this->edges();
 
     pointEdgesPtr_ = new VRWGraph();
 

@@ -186,7 +186,7 @@ void polyMeshGenPoints::write() const
     points_.write();
     
     std::map<label, meshSubset>::const_iterator setIt;
-    labelListPMG containedElements;
+    labelLongList containedElements;
     
     //- write point selections
     for(setIt=pointSubsets_.begin();setIt!=pointSubsets_.end();++setIt)

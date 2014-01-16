@@ -77,7 +77,7 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
 
         const DynList<label>& neiProcs = surfaceEngine_.beNeiProcs();
 
-        std::map<label, labelListPMG> exchangeData;
+        std::map<label, labelLongList> exchangeData;
         forAll(neiProcs, i)
                 exchangeData[neiProcs[i]].clear();
 
@@ -91,7 +91,7 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
             }
         }
 
-        labelListPMG receivedData;
+        labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         forAll(receivedData, i)

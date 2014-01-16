@@ -211,8 +211,8 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
         const VRWGraph& edgesAtProcs = mse.beAtProcs();
 
         DynList<label> neiProcs;
-        std::map<label, labelListPMG> exchangeData;
-        std::map<label, labelListPMG>::iterator eIter;
+        std::map<label, labelLongList> exchangeData;
+        std::map<label, labelLongList>::iterator eIter;
 
         forAll(edgeFaces, eI)
         {
@@ -237,10 +237,10 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
                         neiProcs.append(neiProc);
                         exchangeData.insert
                         (
-                            std::pair<label, labelListPMG>
+                            std::pair<label, labelLongList>
                             (
                                 neiProc,
-                                labelListPMG()
+                                labelLongList()
                             )
                         );
 
@@ -257,7 +257,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
         forAll(neiProcs, procI)
         {
             eIter = exchangeData.find(neiProcs[procI]);
-            const labelListPMG& dataToSend = eIter->second;
+            const labelLongList& dataToSend = eIter->second;
 
             OPstream toOtherProc
             (

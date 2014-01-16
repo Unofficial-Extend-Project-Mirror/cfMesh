@@ -40,7 +40,7 @@ SourceFiles
 #include "polyMeshGenModifier.H"
 #include "meshSurfaceEngine.H"
 #include "DynList.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "labelPair.H"
 
 #include <map>

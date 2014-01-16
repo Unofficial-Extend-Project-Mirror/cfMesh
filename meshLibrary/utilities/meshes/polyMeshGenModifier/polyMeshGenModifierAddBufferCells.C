@@ -54,7 +54,7 @@ void polyMeshGenModifier::addBufferCells()
     const cellListPMG& cells = mesh_.cells();
     const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
     const polyMeshGenAddressing& addressing = mesh_.addressingData();
-    const labelListPMG& globalPointLabel = addressing.globalPointLabel();
+    const labelLongList& globalPointLabel = addressing.globalPointLabel();
     const Map<label>& globalToLocal = addressing.globalToLocalPointAddressing();
     
     //- receive vertices
@@ -133,7 +133,7 @@ void polyMeshGenModifier::addBufferCells()
         for(;faceI<end;++faceI)
             cellsToSend.insert(owner[faceI]);
         
-        labelListPMG flattenedCells;
+        labelLongList flattenedCells;
         forAllConstIter(labelHashSet, cellsToSend, it)
         {
             const cell& c = cells[it.key()];

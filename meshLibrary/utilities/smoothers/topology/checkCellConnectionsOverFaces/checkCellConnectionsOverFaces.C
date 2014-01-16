@@ -27,7 +27,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "checkCellConnectionsOverFaces.H"
-#include "labelListPMG.H"
+#include "labelLongList.H"
 #include "labelledPair.H"
 
 # ifdef USE_OMP

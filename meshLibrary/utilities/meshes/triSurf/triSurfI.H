@@ -54,7 +54,7 @@ inline label triSurf::numberOfFaceGroups() const
     return nFaceGroups_;
 }
 
-inline const labelListPMG& triSurf::faceGroups() const
+inline const labelLongList& triSurf::faceGroups() const
 {
     if( !faceGroupPtr_ )
         calculateFaceGroups();
