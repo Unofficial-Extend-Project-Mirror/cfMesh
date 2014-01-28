@@ -57,13 +57,13 @@ int main(int argc, char *argv[])
     //- test number of nodes per processor face
     const pointFieldPMG& points = pmg.points();
     const faceListPMG& faces = pmg.faces();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         pmg.procBoundaries();
     
     //- check face count
     const label nIntFaces = pmg.nInternalFaces();
     label nBndFaces(0);
-    const PtrList<writePatch>& boundaries = pmg.boundaries();
+    const PtrList<boundaryPatch>& boundaries = pmg.boundaries();
     forAll(boundaries, patchI)
         nBndFaces += boundaries[patchI].patchSize();
     label nProcFaces(0);

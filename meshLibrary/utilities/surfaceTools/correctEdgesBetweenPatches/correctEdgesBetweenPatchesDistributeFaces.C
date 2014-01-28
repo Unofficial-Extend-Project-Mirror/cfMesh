@@ -199,7 +199,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
     if( Pstream::parRun() )
     {
         //- decompose processor faces having more than one feature edge
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         forAll(procBoundaries, patchI)

@@ -561,7 +561,10 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         if( pKeys.size() != 3 )
             continue;
 
+        # ifdef DEBUGLayer
         Info << "Creating corner cell at point " << iter->first << endl;
+        # endif
+
         DynList<DynList<label, 4>, 6> cellFaces;
         createNewCellFromNode(iter->first, pKeys, cellFaces);
 
@@ -783,7 +786,7 @@ void boundaryLayers::createNewFacesFromPointsParallel
     Map<label> otherProcToProcPatch;
     forAll(mesh_.procBoundaries(), patchI)
     {
-        const writeProcessorPatch& wp = mesh_.procBoundaries()[patchI];
+        const processorBoundaryPatch& wp = mesh_.procBoundaries()[patchI];
         otherProcToProcPatch.insert(wp.neiProcNo(), patchI);
     }
 

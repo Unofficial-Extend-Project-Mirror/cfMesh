@@ -58,7 +58,7 @@ class trianglePlaneIntersections
         pointField edgePoints_;
         boolList intersectedEdges_;
 
-        direction influence_;
+        label influence_;
     // Private member functions
 
         void calculateIntersections();
@@ -91,7 +91,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Member functions
 
-        direction triInfluence() const;
+        label triInfluence() const;
 
         const boolList& intersectedPoints() const;
 
@@ -107,7 +107,7 @@ public:
             const face&,
             const pointField&,
             const face&,
-            const direction,
+            const label,
             const DynList<point>&
         ) const;
 
@@ -117,9 +117,9 @@ public:
             const vector&,
             const pointField&,
             const face&,
-            const direction,
+            const label,
             const DynList<point>&,
-            direction&
+            label&
         ) const;
 
         bool edgePointInsideFace
@@ -127,7 +127,7 @@ public:
             const face&,
             const vector&,
             const pointField&,
-            const direction
+            const label
         ) const;
 
         bool pointInsideFace
@@ -135,7 +135,7 @@ public:
             const face&,
             const vector&,
             const pointField&,
-            const direction
+            const label
         ) const;
 };
 

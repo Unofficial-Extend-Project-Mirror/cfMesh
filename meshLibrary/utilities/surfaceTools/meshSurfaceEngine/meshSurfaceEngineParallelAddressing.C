@@ -70,7 +70,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
     //- find local points for the given processor
     const faceListPMG& faces = mesh_.faces();
     const labelList& bp = this->bp();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
     
     //- find which processor contain a given bnd point
@@ -348,7 +348,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
     const faceListPMG& faces = mesh_.faces();
     const labelList& bp = this->bp();
     const VRWGraph& pEdges = this->boundaryPointEdges();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
     
     //- find which processors contain a given bnd edge

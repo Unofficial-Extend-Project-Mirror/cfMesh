@@ -269,7 +269,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
     }
 
     //- make sure that neighbouring processors get the same information
-    const PtrList<writeProcessorPatch>& pBnd = mesh_.procBoundaries();
+    const PtrList<processorBoundaryPatch>& pBnd = mesh_.procBoundaries();
     forAll(pBnd, patchI)
     {
         const label start = pBnd[patchI].patchStart();

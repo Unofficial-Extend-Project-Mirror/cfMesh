@@ -200,7 +200,7 @@ void boundaryLayers::createNewFacesParallel
     Map<label> otherProcToProcPatch;
     forAll(mesh_.procBoundaries(), patchI)
     {
-        const writeProcessorPatch& wp = mesh_.procBoundaries()[patchI];
+        const processorBoundaryPatch& wp = mesh_.procBoundaries()[patchI];
         otherProcToProcPatch.insert(wp.neiProcNo(), patchI);
     }
 

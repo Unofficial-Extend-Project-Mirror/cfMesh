@@ -1,4 +1,4 @@
-#if defined(__GNUC__) && (defined(linux) || defined(linux64))
+#if defined(__GNUC__)
    OMP_FLAGS = -DUSE_OMP -fopenmp
 #else
    OMP_FLAGS =

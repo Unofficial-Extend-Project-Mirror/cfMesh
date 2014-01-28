@@ -295,7 +295,7 @@ void extrudeLayer::createNewVertices()
         }
 
         //- create new vertices at processor boundaries
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         const polyMeshGenAddressing& addr = mesh_.addressingData();
         const VRWGraph& pAtProcs = addr.pointAtProcs();

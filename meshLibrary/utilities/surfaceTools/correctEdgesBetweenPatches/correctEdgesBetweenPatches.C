@@ -92,7 +92,7 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
     decomposeCell_(mesh_.cells().size(), false),
     decompose_(false)
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
         patchNames_[patchI] = boundaries[patchI].patchName();
 

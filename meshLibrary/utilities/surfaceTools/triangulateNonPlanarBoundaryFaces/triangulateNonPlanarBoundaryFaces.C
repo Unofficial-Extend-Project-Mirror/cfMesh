@@ -46,7 +46,7 @@ void triangulateNonPlanarBoundaryFaces::findBoundaryCellsToDecompose()
     const labelList& owner = mesh_.owner();
     const faceListPMG& faces = mesh_.faces();
     
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     
     label nDecompose(0);
     

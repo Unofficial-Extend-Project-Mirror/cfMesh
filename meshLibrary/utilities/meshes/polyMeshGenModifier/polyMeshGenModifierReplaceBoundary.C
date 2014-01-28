@@ -59,7 +59,7 @@ void polyMeshGenModifier::replaceBoundary
     if( Pstream::parRun() )
     {
         //- shift processor faces
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries_;
 
         label nProcFaces(0);
@@ -159,7 +159,7 @@ void polyMeshGenModifier::replaceBoundary
     forAll(cells, cellI)
         cells[cellI].setSize(nFacesInCell[cellI]);
 
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     if( boundaries.size() == patchNames.size() )
     {
         forAll(boundaries, patchI)
@@ -177,7 +177,7 @@ void polyMeshGenModifier::replaceBoundary
             boundaries.set
             (
                 patchI,
-                new writePatch
+                new boundaryPatch
                 (
                     patchNames[patchI],
                     "patch",

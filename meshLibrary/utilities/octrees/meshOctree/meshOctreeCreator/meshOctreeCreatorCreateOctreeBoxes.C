@@ -85,11 +85,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
     {
         finished = false;
 
-        const scalar lSize = size / pow(2, globalRefLevel_);
+        const scalar lSize = size / Foam::pow(2, label(globalRefLevel_));
 
         if( lSize < (maxSize * (1.0-SMALL)) )
         {
-            const scalar bbSize = 0.5 * maxSize * pow(2, globalRefLevel_);
+            const scalar bbSize =
+                0.5 * maxSize * Foam::pow(2, label(globalRefLevel_));
             rootBox.max() = c + point(bbSize, bbSize, bbSize);
             rootBox.min() = c - point(bbSize, bbSize, bbSize);
             finished = true;
@@ -131,7 +132,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             finished = false;
 
-            const scalar lSize = maxSize / pow(2, addLevel);
+            const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
             if( lSize < cs )
             {
@@ -207,7 +208,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 finished = false;
 
-                const scalar lSize = maxSize / pow(2, addLevel);
+                const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
                 if( lSize < cs )
                 {
@@ -286,7 +287,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 finished = false;
 
-                const scalar lSize = maxSize / pow(2, addLevel);
+                const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
                 if( lSize < cs )
                 {

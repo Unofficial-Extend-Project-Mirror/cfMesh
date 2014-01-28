@@ -109,7 +109,7 @@ inline faceList mergePatchFaces
 {
     //- merge faces which share a common edge
     faceList patchFaces(pfcs.size());
-    direction counter(0);
+    label counter(0);
     forAll(pfcs, faceI)
         if( pfcs[faceI].size() > 2 )
         {
@@ -132,12 +132,12 @@ inline faceList mergePatchFaces
         counter = 0;
         merged = false;
 
-        for(direction nI=0;nI<(patchFaces.size()-1);nI++)
+        for(label nI=0;nI<(patchFaces.size()-1);nI++)
         {
             vector n0 = patchFaces[nI].normal(polyPoints);
             n0 /= mag(n0);
 
-            for(direction nJ=nI+1;nJ<patchFaces.size();nJ++)
+            for(label nJ=nI+1;nJ<patchFaces.size();nJ++)
             {
                 vector n1 = patchFaces[nI].normal(polyPoints);
                 n1 /= mag(n1);
@@ -169,7 +169,7 @@ inline faceList mergePatchFaces
         if( merged )
         {
             patchFaces.setSize(counter);
-            for(direction k=0;k<counter;k++)
+            for(label k=0;k<counter;k++)
                 patchFaces[k] = mergedFaces[k];
         }
 

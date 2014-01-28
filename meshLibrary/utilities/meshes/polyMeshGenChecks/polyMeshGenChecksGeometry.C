@@ -561,7 +561,7 @@ bool checkCellPartTetrahedra
     if( setPtr )
     {
         //- ensure that faces are selected at both sides
-        const PtrList<writeProcessorPatch>& procBnd = mesh.procBoundaries();
+        const PtrList<processorBoundaryPatch>& procBnd = mesh.procBoundaries();
         forAll(procBnd, patchI)
         {
             const label start = procBnd[patchI].patchStart();
@@ -728,7 +728,7 @@ bool checkFaceDotProduct
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -1006,7 +1006,7 @@ bool checkFacePyramids
     if( setPtr )
     {
         //- make sure that processor faces are marked on both sides
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         //- send and receive data where needed
@@ -1158,7 +1158,7 @@ bool checkFaceSkewness
     if( Pstream::parRun() )
     {
         //- check parallel boundaries
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -1265,7 +1265,7 @@ bool checkFaceSkewness
     //- boundary faces
     const faceListPMG& faces = mesh.faces();
     const pointFieldPMG& points = mesh.points();
-    const PtrList<writePatch>& boundaries = mesh.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh.boundaries();
     forAll(boundaries, patchI)
     {
         label faceI = boundaries[patchI].patchStart();
@@ -1409,7 +1409,7 @@ bool checkFaceUniformity
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -1759,7 +1759,7 @@ bool checkFaceFlatness
     if( Pstream::parRun() && setPtr )
     {
         //- make sure that processor faces are marked on both sides
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
         List<DynList<label> > markedFaces(procBoundaries.size());

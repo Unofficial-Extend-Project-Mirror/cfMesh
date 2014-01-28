@@ -130,7 +130,7 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
     }
 
     //- decompose boundary faces
-    PtrList<writePatch>& boundaries = meshModifier.boundariesAccess();
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -187,7 +187,7 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
     //- decompose processor faces
     if( Pstream::parRun() )
     {
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             meshModifier.procBoundariesAccess();
 
         forAll(procBoundaries, patchI)
@@ -430,7 +430,7 @@ void decomposeFaces::decomposeConcaveInternalFaces
         }
     }
 
-    PtrList<writePatch>& boundaries = meshModifier.boundariesAccess();
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();

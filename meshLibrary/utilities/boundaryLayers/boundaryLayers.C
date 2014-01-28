@@ -445,7 +445,7 @@ void boundaryLayers::addLayerForPatch(const label patchLabel)
     if( treatedPatch_[patchLabel] )
         return;
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     if( returnReduce(boundaries[patchLabel].patchSize(), sumOp<label>()) == 0 )
         return;
@@ -498,7 +498,7 @@ boundaryLayers::boundaryLayers
     nPoints_(mesh.points().size()),
     geometryAnalysed_(false)
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     patchNames_.setSize(boundaries.size());
     forAll(boundaries, patchI)
         patchNames_[patchI] = boundaries[patchI].patchName();
@@ -526,7 +526,7 @@ void boundaryLayers::addLayerForPatch(const word& patchName)
     if( !geometryAnalysed_ )
         findPatchesToBeTreatedTogether();
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     forAll(boundaries, patchI)
         if( boundaries[patchI].patchName() == patchName )
@@ -595,7 +595,7 @@ void boundaryLayers::addLayerForAllPatches()
     if( !geometryAnalysed_ )
         findPatchesToBeTreatedTogether();
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     if( !patchWiseLayers_ )
     {

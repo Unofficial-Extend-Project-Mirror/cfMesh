@@ -56,7 +56,7 @@ addToRunTimeSelectionTable
 
 void createFundamentalSheetsFJ::createInitialSheet()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     const label start = boundaries[0].patchStart();
     const label end
@@ -82,7 +82,7 @@ void createFundamentalSheetsFJ::createInitialSheet()
 
 void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     forAll(boundaries, patchI)
     {

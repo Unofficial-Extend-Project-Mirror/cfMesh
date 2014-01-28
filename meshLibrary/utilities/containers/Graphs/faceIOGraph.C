@@ -40,8 +40,7 @@ faceIOGraph::faceIOGraph(const IOobject& io)
 :
     regIOobject(io),
     VRWGraph()
-{
-}
+{}
 
 faceIOGraph::faceIOGraph
 (
@@ -61,8 +60,7 @@ faceIOGraph::faceIOGraph
 :
     regIOobject(io),
     VRWGraph(g)
-{
-}
+{}
 
 void faceIOGraph::operator=(const faceIOGraph& rhs)
 {
@@ -81,7 +79,7 @@ bool faceIOGraph::writeData(Ostream& os) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTemplateTypeNameAndDebugWithName(faceIOGraph, "faceList", 0);
+defineTypeNameWithName(faceIOGraph, "faceList");
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "writePatch.H"
+#include "boundaryPatch.H"
 #include "Ostream.H"
 #include "Istream.H"
 #include "token.H"
@@ -38,12 +38,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(writePatch, 0);
-addToRunTimeSelectionTable(writePatchBase, writePatch, dictionary);
+defineTypeNameAndDebug(boundaryPatch, 0);
+addToRunTimeSelectionTable(boundaryPatchBase, boundaryPatch, dictionary);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-writePatch::writePatch
+boundaryPatch::boundaryPatch
 (
     const word& n,
     const word& t,
@@ -51,18 +51,18 @@ writePatch::writePatch
     const label sF
 )
 :
-    writePatchBase(n, t, nF, sF)
+    boundaryPatchBase(n, t, nF, sF)
 {}
     
-writePatch::writePatch(const word& name, const dictionary& dict)
+boundaryPatch::boundaryPatch(const word& name, const dictionary& dict)
 :
-    writePatchBase(name, dict)
+    boundaryPatchBase(name, dict)
 {
 }
     
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary writePatch::dict() const
+dictionary boundaryPatch::dict() const
 {
     dictionary dict;
 
@@ -74,17 +74,17 @@ dictionary writePatch::dict() const
     return dict;
 }
 
-void writePatch::write(Ostream& os) const
+void boundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
-void writePatch::writeDict(Ostream& os) const
+void boundaryPatch::writeDict(Ostream& os) const
 {
     
 }
 
-Ostream& writePatch::operator<<(Ostream& os) const
+Ostream& boundaryPatch::operator<<(Ostream& os) const
 {
     os  << name_ << nl << token::BEGIN_BLOCK << nl
         << "    type " << type_ << token::END_STATEMENT << nl
@@ -95,7 +95,7 @@ Ostream& writePatch::operator<<(Ostream& os) const
     return os;
 }
 
-Istream& writePatch::operator>>(Istream& is)
+Istream& boundaryPatch::operator>>(Istream& is)
 {
     token t;
     is >> name_ >> t;
@@ -107,7 +107,7 @@ Istream& writePatch::operator>>(Istream& is)
     return is;
 }
 
-void writePatch::operator=(const writePatch& wp)
+void boundaryPatch::operator=(const boundaryPatch& wp)
 {
     name_ = wp.name_;
     type_ = wp.type_;
@@ -115,7 +115,7 @@ void writePatch::operator=(const writePatch& wp)
     startFace_ = wp.startFace_;
 }
 
-bool writePatch::operator!=(const writePatch& wp) const
+bool boundaryPatch::operator!=(const boundaryPatch& wp) const
 {
     if( name_ != wp.name_ )
     {

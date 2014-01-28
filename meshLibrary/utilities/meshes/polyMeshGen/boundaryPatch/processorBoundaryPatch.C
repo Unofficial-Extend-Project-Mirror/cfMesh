@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "writeProcessorPatch.H"
+#include "processorBoundaryPatch.H"
 #include "addToRunTimeSelectionTable.H"
 #include "dictionary.H"
 #include "Ostream.H"
@@ -38,12 +38,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(writeProcessorPatch, 0);
-addToRunTimeSelectionTable(writePatchBase, writeProcessorPatch, dictionary);
+defineTypeNameAndDebug(processorBoundaryPatch, 0);
+addToRunTimeSelectionTable(boundaryPatchBase, processorBoundaryPatch, dictionary);
     
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-writeProcessorPatch::writeProcessorPatch
+processorBoundaryPatch::processorBoundaryPatch
 (
     const word& name,
     const word& type,
@@ -53,18 +53,18 @@ writeProcessorPatch::writeProcessorPatch
     const label neighbProcNo
 )
 :
-    writePatchBase(name, type, nFaces, startFace),
+    boundaryPatchBase(name, type, nFaces, startFace),
     myProcNo_(myProcNo),
     neighbProcNo_(neighbProcNo)
 {}
     
-writeProcessorPatch::writeProcessorPatch
+processorBoundaryPatch::processorBoundaryPatch
 (
     const word& name,
     const dictionary& dict
 )
 :
-    writePatchBase(name, dict),
+    boundaryPatchBase(name, dict),
     myProcNo_(readLabel(dict.lookup("myProcNo"))),
     neighbProcNo_(readLabel(dict.lookup("neighbProcNo")))
 {
@@ -72,7 +72,7 @@ writeProcessorPatch::writeProcessorPatch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     
-dictionary writeProcessorPatch::dict() const
+dictionary processorBoundaryPatch::dict() const
 {
     dictionary dict;
 
@@ -86,17 +86,17 @@ dictionary writeProcessorPatch::dict() const
     return dict;
 }
 
-void writeProcessorPatch::write(Ostream& os) const
+void processorBoundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
-void writeProcessorPatch::writeDict(Ostream& os) const
+void processorBoundaryPatch::writeDict(Ostream& os) const
 {
     
 }
 
-Ostream& writeProcessorPatch::operator<<(Ostream& os) const
+Ostream& processorBoundaryPatch::operator<<(Ostream& os) const
 {
     os  << patchName() << nl << token::BEGIN_BLOCK << nl
         << "    type         " << patchType() << token::END_STATEMENT << nl
@@ -110,7 +110,7 @@ Ostream& writeProcessorPatch::operator<<(Ostream& os) const
     return os;
 }
 
-Istream& writeProcessorPatch::operator>>(Istream& is)
+Istream& processorBoundaryPatch::operator>>(Istream& is)
 {
     token t;
     is >> name_ >> t;
@@ -124,7 +124,7 @@ Istream& writeProcessorPatch::operator>>(Istream& is)
     return is;
 }
 
-void writeProcessorPatch::operator=(const writeProcessorPatch& wp)
+void processorBoundaryPatch::operator=(const processorBoundaryPatch& wp)
 {
     name_ = wp.name_;
     type_ = wp.type_;
@@ -134,7 +134,7 @@ void writeProcessorPatch::operator=(const writeProcessorPatch& wp)
     neighbProcNo_ = wp.neighbProcNo_;
 }
 
-bool writeProcessorPatch::operator!=(const writeProcessorPatch& wp) const
+bool processorBoundaryPatch::operator!=(const processorBoundaryPatch& wp) const
 {
     if( name_ != wp.name_ )
     {

@@ -208,8 +208,8 @@ void edgeExtractor::findFeatureEdgesNearEdge()
         }
     }
 
-    Info << "Feature edges near edge " << featureEdgesNearEdge_ << endl;
-    ::exit(0);
+    //Info << "Feature edges near edge " << featureEdgesNearEdge_ << endl;
+    //::exit(0);
 }
 
 void edgeExtractor::markPatchPoints(boolList& patchPoint)

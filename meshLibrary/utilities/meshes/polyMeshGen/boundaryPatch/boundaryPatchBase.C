@@ -26,7 +26,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "writePatchBase.H"
+#include "boundaryPatchBase.H"
 #include "Ostream.H"
 #include "Istream.H"
 #include "token.H"
@@ -40,17 +40,17 @@ namespace Foam
 
 defineTemplateTypeNameAndDebugWithName
 (
-    IOPtrList<writePatchBase>,
+    IOPtrList<boundaryPatchBase>,
     "polyBoundaryMesh",
     0
 );
     
-defineTypeNameAndDebug(writePatchBase, 0);
-defineRunTimeSelectionTable(writePatchBase, dictionary);
+defineTypeNameAndDebug(boundaryPatchBase, 0);
+defineRunTimeSelectionTable(boundaryPatchBase, dictionary);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-autoPtr<writePatchBase> writePatchBase::New
+autoPtr<boundaryPatchBase> boundaryPatchBase::New
 (
     const word& name,
     const dictionary& dict
@@ -69,19 +69,19 @@ autoPtr<writePatchBase> writePatchBase::New
     {
         FatalIOErrorIn
         (
-            "writePatchBase::New(const word&, const dictionary&)",
+            "boundaryPatchBase::New(const word&, const dictionary&)",
             dict
-        )   << "Unknown writePatchBase type " << type << nl << nl
-            << "Valid writePatchBase types are :" << nl
+        )   << "Unknown boundaryPatchBase type " << type << nl << nl
+            << "Valid boundaryPatchBase types are :" << nl
             << "[default: " << typeName_() << "]"
             << dictionaryConstructorTablePtr_->toc()
             << exit(FatalIOError);
     }
     
-    return autoPtr<writePatchBase>(cstrIter()(name, dict));
+    return autoPtr<boundaryPatchBase>(cstrIter()(name, dict));
 }
 
-autoPtr<writePatchBase> writePatchBase::New
+autoPtr<boundaryPatchBase> boundaryPatchBase::New
 (
     Istream& is
 )
@@ -89,12 +89,12 @@ autoPtr<writePatchBase> writePatchBase::New
     word name(is);
     dictionary dict(is);
 
-    return writePatchBase::New(name, dict);
+    return boundaryPatchBase::New(name, dict);
 }
     
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-writePatchBase::writePatchBase
+boundaryPatchBase::boundaryPatchBase
 (
     const word& n,
     const word& t,
@@ -108,7 +108,7 @@ writePatchBase::writePatchBase
     startFace_(sF)
 {}
     
-writePatchBase::writePatchBase(const word& name, const dictionary& dict)
+boundaryPatchBase::boundaryPatchBase(const word& name, const dictionary& dict)
 :
     name_(name),
     type_(),
@@ -123,10 +123,10 @@ writePatchBase::writePatchBase(const word& name, const dictionary& dict)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& operator<<(Ostream& os, const writePatchBase& wpb)
+Ostream& operator<<(Ostream& os, const boundaryPatchBase& wpb)
 {
     wpb.write(os);
-    os.check("Ostream& operator<<(Ostream& f, const writePatchBase& wpb");
+    os.check("Ostream& operator<<(Ostream& f, const boundaryPatchBase& wpb");
     return os;
 }
 

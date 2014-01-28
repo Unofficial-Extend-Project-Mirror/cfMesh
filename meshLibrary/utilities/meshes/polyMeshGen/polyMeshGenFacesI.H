@@ -66,13 +66,13 @@ inline const labelList& polyMeshGenFaces::neighbour() const
     return *neighbourPtr_;
 }
 
-inline const PtrList<writeProcessorPatch>&
+inline const PtrList<processorBoundaryPatch>&
 polyMeshGenFaces::procBoundaries() const
 {
     return procBoundaries_;
 }
 
-inline const PtrList<writePatch>& polyMeshGenFaces::boundaries() const
+inline const PtrList<boundaryPatch>& polyMeshGenFaces::boundaries() const
 {
     return boundaries_;
 }

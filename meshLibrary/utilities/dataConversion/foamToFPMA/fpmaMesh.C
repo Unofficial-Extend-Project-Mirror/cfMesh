@@ -96,7 +96,7 @@ void Foam::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
 void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 {
     //- write patches as face selections
-    const PtrList<writePatch>& patches = mesh_.boundaries();
+    const PtrList<boundaryPatch>& patches = mesh_.boundaries();
     
     label nSubsets(0);
     

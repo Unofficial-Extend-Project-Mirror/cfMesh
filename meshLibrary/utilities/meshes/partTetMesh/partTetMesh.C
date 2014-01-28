@@ -111,7 +111,7 @@ partTetMesh::partTetMesh
         }
 
     //- add additional layer of cells
-    for(label layerI=1;layerI<(additionalLayers+1);++layerI)
+    for(direction layerI=1;layerI<(additionalLayers+1);++layerI)
     {
         forAll(useCell, cI)
             if( useCell[cI] == layerI )
@@ -440,7 +440,7 @@ void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
         }
 
         //- make sure that neighbouring processors get the same information
-        const PtrList<writeProcessorPatch>& pBnd = origMesh_.procBoundaries();
+        const PtrList<processorBoundaryPatch>& pBnd = origMesh_.procBoundaries();
         forAll(pBnd, patchI)
         {
             const label start = pBnd[patchI].patchStart();

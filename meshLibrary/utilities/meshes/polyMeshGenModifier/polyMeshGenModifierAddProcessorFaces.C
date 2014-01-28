@@ -44,7 +44,7 @@ void polyMeshGenModifier::addProcessorFaces
 {
     Info << "Adding processor faces" << endl;
 
-    PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries_;
+    PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries_;
 
     labelList nAddedFaces(procBoundaries.size(), 0);
     forAll(facePatches, fI)
@@ -65,7 +65,7 @@ void polyMeshGenModifier::addProcessorFaces
     label endProcFaces(0);
     forAllReverse(procBoundaries, patchI)
     {
-        const writeProcessorPatch& wp = procBoundaries[patchI];
+        const processorBoundaryPatch& wp = procBoundaries[patchI];
         endProcFaces = Foam::max(endProcFaces, wp.patchStart()+wp.patchSize());
     }
 
@@ -139,7 +139,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
 {
     const label nProcPatches = mesh_.procBoundaries().size();
 
-    PtrList<writeProcessorPatch>& procBoundaries =
+    PtrList<processorBoundaryPatch>& procBoundaries =
         this->procBoundariesAccess();
 
     procBoundaries.setSize(nProcPatches + 1);
@@ -153,7 +153,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
     procBoundaries.set
     (
         nProcPatches,
-        new writeProcessorPatch
+        new processorBoundaryPatch
         (
             name,
             "processor",
@@ -169,7 +169,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
 
 bool polyMeshGenModifier::removeEmptyProcessorPatches()
 {
-    PtrList<writeProcessorPatch>& procBoundaries =
+    PtrList<processorBoundaryPatch>& procBoundaries =
         this->procBoundariesAccess();
 
     label nValidPatches(0);
@@ -182,7 +182,7 @@ bool polyMeshGenModifier::removeEmptyProcessorPatches()
     if( nValidPatches == procBoundaries.size() )
         return false;
 
-    PtrList<writeProcessorPatch> newProcBoundaries(nValidPatches);
+    PtrList<processorBoundaryPatch> newProcBoundaries(nValidPatches);
 
     nValidPatches = 0;
     forAll(procBoundaries, patchI)
@@ -192,7 +192,7 @@ bool polyMeshGenModifier::removeEmptyProcessorPatches()
             newProcBoundaries.set
             (
                 nValidPatches++,
-                new writeProcessorPatch(procBoundaries[patchI])
+                new processorBoundaryPatch(procBoundaries[patchI])
             );
         }
     }

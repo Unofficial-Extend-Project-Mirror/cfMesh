@@ -250,7 +250,7 @@ void refineBoundaryLayers::storeFacesIntoCells
     Pout << "faceFaces " << faceFaces << endl;
     # endif
 
-    label i, j, k;
+    label i(-1), j(-1), k(-1);
 
     forAll(faceFaces, nI)
     {
@@ -316,7 +316,7 @@ void refineBoundaryLayers::refineEdgeHexCell::determineFacesInDirections()
     Pout << "Generating new cells from edge cell " << cellI_ << endl;
     # endif
 
-    const PtrList<writePatch>& bnd = mesh.boundaries();
+    const PtrList<boundaryPatch>& bnd = mesh.boundaries();
     const label startBoundary = bnd[0].patchStart();
 
     //- find the number of layers for this cell
@@ -1692,7 +1692,7 @@ void refineBoundaryLayers::generateNewCells()
     Pout << "Initial number of faces " << facesFromFace_.size() << endl;
     # endif
 
-    PtrList<writePatch>& boundaries = meshModifier.boundariesAccess();
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -1735,7 +1735,7 @@ void refineBoundaryLayers::generateNewCells()
         # endif
 
         //- copy faces at inter-processor boundaries
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             meshModifier.procBoundariesAccess();
 
         forAll(procBoundaries, patchI)

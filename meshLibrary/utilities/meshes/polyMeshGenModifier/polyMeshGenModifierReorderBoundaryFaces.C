@@ -179,7 +179,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
     }
 
     //- re-create boundary data
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     if( boundaries.size() != 1 )
     {
         boundaries.clear();
@@ -187,7 +187,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
         boundaries.set
         (
             0,
-            new writePatch
+            new boundaryPatch
             (
                 "defaultFaces",
                 "patch",
@@ -224,7 +224,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
 
 void polyMeshGenModifier::reorderProcBoundaryFaces()
 {
-    PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries_;
+    PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries_;
     if( procBoundaries.size() == 0 )
     {
         Warning << "Processor " << Pstream::myProcNo() << " has no "
@@ -287,7 +287,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
     }
 
     //- set correct patch size
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     if( boundaries.size() == 1 )
     {
         boundaries[0].patchSize() =
@@ -302,7 +302,7 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
         boundaries.set
         (
             0,
-            new writePatch
+            new boundaryPatch
             (
                 "defaultFaces",
                 "patch",

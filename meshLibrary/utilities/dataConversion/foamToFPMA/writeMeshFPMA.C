@@ -84,7 +84,7 @@ void createFIRESelections(polyMeshGen& mesh)
         return;
     
     const faceListPMG& faces = mesh.faces();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh.procBoundaries();
     
     //- create face selections from proc patches

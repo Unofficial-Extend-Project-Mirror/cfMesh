@@ -60,7 +60,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
         }
 
     //- copy boundary faces
-    PtrList<writePatch>& boundaries = mesh_.boundaries_;
+    PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     labelList patchStart(boundaries.size());
     labelList nFacesInPatch(boundaries.size());
     label npI(0);
@@ -92,7 +92,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 
     if( Pstream::parRun() )
     {
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries_;
 
         label nProcFaces(0);
@@ -291,7 +291,7 @@ void polyMeshGenModifier::removeDuplicateFaces()
     //- update boundary faces (they cannot be duplicated)
     forAll(mesh_.boundaries_, patchI)
     {
-        writePatch& patch = mesh_.boundaries_[patchI];
+        boundaryPatch& patch = mesh_.boundaries_[patchI];
 
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();
@@ -307,7 +307,7 @@ void polyMeshGenModifier::removeDuplicateFaces()
     //- update processor faces (they cannot be duplicated)
     forAll(mesh_.procBoundaries_, patchI)
     {
-        writeProcessorPatch& patch = mesh_.procBoundaries_[patchI];
+        processorBoundaryPatch& patch = mesh_.procBoundaries_[patchI];
 
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();

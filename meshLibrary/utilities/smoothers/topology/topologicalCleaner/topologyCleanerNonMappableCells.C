@@ -47,7 +47,7 @@ void topologicalCleaner::checkNonMappableCells()
     const labelList& owner = mesh_.owner();
     
     List<direction> nBoundaryFaces(mesh_.cells().size(), direction(0));
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -87,7 +87,7 @@ void topologicalCleaner::checkNonMappableFaces()
     
     //- find boundary vertices
     boolList boundaryVertex(mesh_.points().size(), false);
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -142,7 +142,7 @@ void topologicalCleaner::checkNonMappableFaces()
     if( Pstream::parRun() )
     {
         //- check processor faces
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         
         forAll(procBoundaries, patchI)

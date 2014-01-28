@@ -145,7 +145,7 @@ void cartesianMeshExtractor::createPolyMesh()
     //- calculate faces in processor patches
     if( Pstream::parRun() )
     {
-        PtrList<writeProcessorPatch>& procBoundaries =
+        PtrList<processorBoundaryPatch>& procBoundaries =
             meshModifier.procBoundariesAccess();
 
         //- set the number of procBoundaries
@@ -166,7 +166,7 @@ void cartesianMeshExtractor::createPolyMesh()
             procBoundaries.set
             (
                 patchI,
-                new writeProcessorPatch
+                new processorBoundaryPatch
                 (
                     name+ssNei.str(),
                     "processor",

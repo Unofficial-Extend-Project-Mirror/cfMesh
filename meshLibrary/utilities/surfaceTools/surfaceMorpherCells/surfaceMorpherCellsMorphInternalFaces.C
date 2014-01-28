@@ -52,7 +52,7 @@ void surfaceMorpherCells::findBoundaryVertices()
     boundaryVertex_.setSize(mesh_.points().size());
     boundaryVertex_ = false;
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -80,7 +80,7 @@ void surfaceMorpherCells::findBoundaryVertices()
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         bool changed;
@@ -166,7 +166,7 @@ void surfaceMorpherCells::findBoundaryCells()
     cellFlags_.setSize(mesh_.cells().size());
     cellFlags_ = NONE;
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     forAll(boundaries, patchI)
     {
@@ -206,7 +206,7 @@ bool surfaceMorpherCells::morphInternalFaces()
     const labelList& neighbour = mesh_.neighbour();
 
     //- copy boundary faces
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     forAll(boundaries, patchI)
     {
@@ -339,7 +339,7 @@ bool surfaceMorpherCells::morphInternalFaces()
     //- treat processor boundaries
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -366,7 +366,7 @@ bool surfaceMorpherCells::morphInternalFaces()
                 DynList<edge> removeEdge(f.size());
 
                 face newF(f.size());
-                direction i(0);
+                label i(0);
 
                 forAll(f, pI)
                     if(
@@ -408,7 +408,7 @@ bool surfaceMorpherCells::morphInternalFaces()
                     //- create new boundary faces from the removed part
                     label mat(1);
                     List<direction> nodeMaterial(f.size(), direction(0));
-                    DynList< DynList<edge> > edgeMats(2);
+                    DynList< DynList<edge> > edgeMats;
                     forAll(nodeMaterial, nI)
                         if( !nodeMaterial[nI] && removeFaceVertex[nI] )
                         {
@@ -550,7 +550,7 @@ bool surfaceMorpherCells::morphInternalFaces()
 
         if( Pstream::parRun() )
         {
-            const PtrList<writeProcessorPatch>& procBoundaries =
+            const PtrList<processorBoundaryPatch>& procBoundaries =
                 mesh_.procBoundaries();
 
             forAll(procBoundaries, patchI)

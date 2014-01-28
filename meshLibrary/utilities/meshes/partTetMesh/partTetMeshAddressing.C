@@ -49,8 +49,8 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     const cellListPMG& cells = origMesh_.cells();
     const labelList& owner = origMesh_.owner();
     const labelList& neighbour = origMesh_.neighbour();
-    const PtrList<writePatch>& boundaries = origMesh_.boundaries();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<boundaryPatch>& boundaries = origMesh_.boundaries();
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         origMesh_.procBoundaries();
     const label nInternalFaces = origMesh_.nInternalFaces();
     
@@ -124,7 +124,7 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     //- create BOUNDARY points
     forAll(boundaries, patchI)
     {
-        const writePatch& patch = boundaries[patchI];
+        const boundaryPatch& patch = boundaries[patchI];
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();
         
@@ -161,7 +161,7 @@ void partTetMesh::createPointsAndTets(const List<direction>& useCell)
     //- create points at processor boundaries
     forAll(procBoundaries, patchI)
     {
-        const writeProcessorPatch& patch = procBoundaries[patchI];
+        const processorBoundaryPatch& patch = procBoundaries[patchI];
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();
         

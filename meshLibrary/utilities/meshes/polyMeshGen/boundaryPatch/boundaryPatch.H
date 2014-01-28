@@ -23,22 +23,22 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Class
-    writeProcessorPatch
+    boundaryPatch
 
 Description
-    Writes information for a given processor patch
+    Writes information for a given boundary patch
 
 SourceFiles
-    writeProcessorPatch.C
+    boundaryPatch.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef writeProcessorPatch_H
-#define writeProcessorPatch_H
+#ifndef boundaryPatch_H
+#define boundaryPatch_H
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "writePatchBase.H"
+#include "boundaryPatchBase.H"
 #include "typeInfo.H"
 
 namespace Foam
@@ -46,94 +46,59 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class writeProcessorPatch
-:   public writePatchBase 
+class boundaryPatch
+:   public boundaryPatchBase
 {
-    // private data
-    
-        label myProcNo_;
-    
-        label neighbProcNo_;
 
 public:
-    
-    //- Runtime type information
-    TypeName("processor");
 
-    // Construct from components
-        writeProcessorPatch
+    //- Runtime type information
+    TypeName("patch");
+
+    // Constructors
+
+        boundaryPatch
         (
-            const word& name,
-            const word& type,
-            const label nFaces,
-            const label startFace,
-            const label myProcNo,
-            const label neighbProcNo
+            const word&,
+            const word&,
+            const label,
+            const label
         );
 
-        writeProcessorPatch(const word& name, const dictionary&);
+        boundaryPatch(const word& name, const dictionary&);
 
-    // Construct and return a clone
-        virtual autoPtr<writePatchBase> clone() const
+    // Return clone of the object
+        virtual autoPtr<boundaryPatchBase> clone() const
         {
-            return autoPtr<writePatchBase>
+            return autoPtr<boundaryPatchBase>
             (
-                new writeProcessorPatch
+                new boundaryPatch
                 (
                     patchName(),
                     patchType(),
                     patchSize(),
-                    patchStart(),
-                    myProcNo_,
-                    neighbProcNo_
+                    patchStart()
                 )
             );
         }
 
-        virtual autoPtr<writePatchBase> clone
-        (
-            const writeProcessorPatch& pp
-        ) const
+        virtual autoPtr<boundaryPatchBase> clone(const boundaryPatch& wp) const
         {
-            return autoPtr<writePatchBase>
+            return autoPtr<boundaryPatchBase>
             (
-                new writeProcessorPatch
+                new boundaryPatch
                 (
-                    pp.patchName(),
-                    pp.patchType(),
-                    pp.patchSize(),
-                    pp.patchStart(),
-                    pp.myProcNo_,
-                    pp.neighbProcNo_
+                    wp.patchName(),
+                    wp.patchType(),
+                    wp.patchSize(),
+                    wp.patchStart()
                 )
             );
         }
-        
-    // Member functions
-        //- return the owner processor
-        inline label myProcNo() const
-        {
-            return myProcNo_;
-        }
-        
-        //- return the neighbour processor
-        inline label neiProcNo() const
-        {
-            return neighbProcNo_;
-        }
-        
-        //- check if the processor is the owner of the interface
-        inline bool owner() const
-        {
-            if( myProcNo_ < neighbProcNo_ )
-                return true;
-            
-            return false;
-        }
-        
+
         //- Return as dictionary of entries
         dictionary dict() const;
-        
+
     // Write
         //- write to Ostream
         void write(Ostream&) const;
@@ -142,13 +107,14 @@ public:
         void writeDict(Ostream&) const;
 
     // Member operators
+
         Ostream& operator<<(Ostream&) const;
-    
+
         Istream& operator>>(Istream&);
-    
-        void operator=(const writeProcessorPatch&);
-    
-        bool operator!=(const writeProcessorPatch&) const;
+
+        void operator=(const boundaryPatch&);
+
+        bool operator!=(const boundaryPatch&) const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

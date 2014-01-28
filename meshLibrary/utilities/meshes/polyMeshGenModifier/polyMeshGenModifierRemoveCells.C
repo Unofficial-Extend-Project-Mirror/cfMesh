@@ -127,7 +127,7 @@ void polyMeshGenModifier::removeCells
 
         if( Pstream::parRun() && !removeProcFaces )
         {
-            const PtrList<writeProcessorPatch>& procBoundaries =
+            const PtrList<processorBoundaryPatch>& procBoundaries =
                 mesh_.procBoundaries_;
 
             # ifdef USE_OMP

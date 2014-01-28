@@ -92,7 +92,7 @@ public:
         const DynList<label>& localGroupLabel
     ) const
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         const labelList& owner = mesh_.owner();
 
@@ -371,7 +371,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         forAll(procBoundaries, patchI)
@@ -457,7 +457,7 @@ void removeCellsInSelectedDomains::findAndRemoveCells()
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         forAll(procBoundaries, patchI)

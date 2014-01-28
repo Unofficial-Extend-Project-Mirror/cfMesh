@@ -74,7 +74,6 @@ void quadricFitting::calculateCoordinateSystem()
     label pI(0);
     while( !valid )
     {
-        vector v = otherPoints_[pI] - origin_;
         const point vp = pl.nearestPoint(otherPoints_[pI]);
         vecX_ = vp - origin_;
 

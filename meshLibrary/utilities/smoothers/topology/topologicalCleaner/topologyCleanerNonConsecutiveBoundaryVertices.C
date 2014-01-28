@@ -52,7 +52,7 @@ void topologicalCleaner::checkNonConsecutiveBoundaryVertices()
     boolList decomposeFace(faces.size(), false);
     bool changed(false);
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();

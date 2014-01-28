@@ -52,7 +52,7 @@ void checkNonMappableCellConnections::findCellTypes()
     cellType_ = INTERNALCELL;
 
     //- find boundary cells
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
@@ -184,7 +184,7 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
     const label nInternalFaces = mesh_.nInternalFaces();
-    const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
+    const PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries();
 
     labelListList otherProcType;
     if( Pstream::parRun() )

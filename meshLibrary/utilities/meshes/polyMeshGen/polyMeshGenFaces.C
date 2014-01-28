@@ -147,7 +147,7 @@ polyMeshGenFaces::polyMeshGenFaces
         boundaries_.set
         (
             patchI,
-            new writePatch
+            new boundaryPatch
             (
                 patchNames[patchI],
                 "patch",
@@ -315,7 +315,7 @@ void polyMeshGenFaces::read()
         neighbourPtr_->setSize(ownerPtr_->size(), -1);
     
         //- read boundary information
-    IOPtrList<writePatchBase> patches
+    IOPtrList<boundaryPatchBase> patches
     (
         IOobject
         (
@@ -342,7 +342,7 @@ void polyMeshGenFaces::read()
             boundaries_.set
             (
                 i,
-                new writePatch
+                new boundaryPatch
                 (
                     patches[patchI].patchName(),
                     patches[patchI].patchType(),
@@ -360,7 +360,7 @@ void polyMeshGenFaces::read()
             procBoundaries_.set
             (
                 i++,
-                new writeProcessorPatch
+                new processorBoundaryPatch
                 (
                     patches[patchI].patchName(),
                     patches[patchI].dict()
@@ -403,7 +403,7 @@ void polyMeshGenFaces::write() const
     neighbourPtr_->write();
     
     //- write boundary data
-    PtrList<writePatchBase> ptchs
+    PtrList<boundaryPatchBase> ptchs
     (
         procBoundaries_.size() + boundaries_.size()
     );
@@ -420,7 +420,7 @@ void polyMeshGenFaces::write() const
         ptchs.set
         (
             i++, 
-            writePatchBase::New
+            boundaryPatchBase::New
             (
                 boundaries_[patchI].patchName(),
                 dict
@@ -434,7 +434,7 @@ void polyMeshGenFaces::write() const
         ptchs.set
         (
             i++,
-            writePatchBase::New
+            boundaryPatchBase::New
             (
                 procBoundaries_[patchI].patchName(),
                 procBoundaries_[patchI].dict()
@@ -442,7 +442,7 @@ void polyMeshGenFaces::write() const
         );
     }
         
-    IOPtrList<writePatchBase> patches
+    IOPtrList<boundaryPatchBase> patches
     (
         IOobject
         (

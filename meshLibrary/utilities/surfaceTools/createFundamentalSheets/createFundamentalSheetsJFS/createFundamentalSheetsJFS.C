@@ -56,7 +56,7 @@ addToRunTimeSelectionTable
 
 void createFundamentalSheetsJFS::createInitialSheet()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     const label start = boundaries[0].patchStart();
     const label end
@@ -82,7 +82,7 @@ void createFundamentalSheetsJFS::createInitialSheet()
 
 void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();

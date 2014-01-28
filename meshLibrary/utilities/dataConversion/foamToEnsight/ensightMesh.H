@@ -79,7 +79,7 @@ class ensightMesh
             OFstream& ensightGeometryFile
         ) const;
         
-        void writePatches
+        void boundaryPatches
         (
             OFstream& ensightGeometryFile
         ) const;

@@ -254,7 +254,7 @@ public:
         const faceListPMG& faces = mesh.faces();
 
         const cell& c = mesh.cells()[faceOwner[bfI]];
-        const PtrList<writePatch>& boundaries = mesh.boundaries();
+        const PtrList<boundaryPatch>& boundaries = mesh.boundaries();
         const label start = boundaries[0].patchStart();
 
         label nBndFaces(0), baseFace(-1), otherBase(-1), nQuads(0);
@@ -343,7 +343,7 @@ void refineBoundaryLayers::analyseLayers()
     Info << "Number of independent layers in the mesh is " << nGroups << endl;
     # endif
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     //- create patch name to index addressing
     std::map<word, label> patchNameToIndex;
@@ -778,7 +778,7 @@ bool refineBoundaryLayers::findSplitEdges()
 
 void refineBoundaryLayers::generateNewVertices()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     pointFieldPMG& points = mesh_.points();
 
     const meshSurfaceEngine& mse = surfaceEngine();

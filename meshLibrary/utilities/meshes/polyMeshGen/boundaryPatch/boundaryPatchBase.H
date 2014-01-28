@@ -23,18 +23,18 @@ License
     Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 Class
-    writePatchBase
+    boundaryPatchBase
 
 Description
     Writes information for a given boundary patch
 
 SourceFiles
-    writePatchBase.C
+    boundaryPatchBase.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef writePatchBase_H
-#define writePatchBase_H
+#ifndef boundaryPatchBase_H
+#define boundaryPatchBase_H
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,7 +49,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class writePatchBase
+class boundaryPatchBase
 {
 protected:
     
@@ -65,11 +65,11 @@ protected:
 public:
     
     //- Runtime type information
-    TypeName("writePatchBase");
+    TypeName("boundaryPatchBase");
 
     // Constructors
     
-        writePatchBase
+        boundaryPatchBase
         (
             const word&,
             const word&,
@@ -77,11 +77,11 @@ public:
             const label
         );
 
-        writePatchBase(const word& name, const dictionary&);
+        boundaryPatchBase(const word& name, const dictionary&);
 
     // Destructor
 
-        virtual ~writePatchBase()
+        virtual ~boundaryPatchBase()
         {}
 
     // Declare run-time constructor selection table
@@ -89,7 +89,7 @@ public:
         declareRunTimeSelectionTable
         (
             autoPtr,
-            writePatchBase,
+            boundaryPatchBase,
             dictionary,
             (
                 const word& name,
@@ -100,20 +100,20 @@ public:
 
     // Selectors
         
-        static autoPtr<writePatchBase> New
+        static autoPtr<boundaryPatchBase> New
         (
             const word& name,
             const dictionary& dict
         );
         
-        static autoPtr<writePatchBase> New
+        static autoPtr<boundaryPatchBase> New
         (
             Istream&
         );
         
     // Construct and return a clone
     
-        autoPtr<writePatchBase> clone() const
+        autoPtr<boundaryPatchBase> clone() const
         {
             return New
             (
@@ -174,10 +174,10 @@ public:
         virtual dictionary dict() const = 0;
         
     // Member operators
-        friend Ostream& operator<<(Ostream&, const writePatchBase&);
+        friend Ostream& operator<<(Ostream&, const boundaryPatchBase&);
         virtual Istream& operator>>(Istream&) = 0;
-        //virtual void operator=(const writePatchBase&) = 0;
-        //virtual bool operator!=(const writePatchBase&) const = 0;
+        //virtual void operator=(const boundaryPatchBase&) = 0;
+        //virtual bool operator!=(const boundaryPatchBase&) const = 0;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

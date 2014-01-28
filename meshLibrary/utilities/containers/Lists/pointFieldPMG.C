@@ -34,13 +34,7 @@ Description
 
 namespace Foam
 {
-    //defineCompoundTypeName(IODynListHP<label>, labelIOListPMG);
-    //defineCompoundTypeName(IODynListHP<point>, pointIOFieldPMG);
-    //defineCompoundTypeName(IODynListHP<face>, faceIOListPMG);
-    //defineCompoundTypeName(IODynListHP<cell>, cellIOListPMG);
-    //addCompoundToRunTimeSelectionTable(IODynListHP<label>, labelIODynListHP);
-
-    defineTemplateTypeNameAndDebugWithName(pointFieldPMG, "vectorField", 0);
+    defineTypeNameWithName(pointFieldPMG, "vectorField");
 }
 
 // ************************************************************************* //

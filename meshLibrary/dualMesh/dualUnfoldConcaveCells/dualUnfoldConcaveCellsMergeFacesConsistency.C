@@ -352,7 +352,7 @@ void dualUnfoldConcaveCells::checkAndRepairBoundary()
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     
     newBoundaryFaces_.setSize(boundaries.size());
     newBoundaryOwners_.setSize(boundaries.size());

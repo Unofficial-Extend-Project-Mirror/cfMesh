@@ -196,12 +196,12 @@ void renameBoundaryPatches::calculateNewBoundary()
     labelLongList newBoundaryOwners;
     labelLongList newBoundaryPatches;
 
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     forAll(boundaries, patchI)
     {
-        const writePatch& wp = boundaries[patchI];
+        const boundaryPatch& wp = boundaries[patchI];
         const label start = wp.patchStart();
         const label end = start + wp.patchSize();
 

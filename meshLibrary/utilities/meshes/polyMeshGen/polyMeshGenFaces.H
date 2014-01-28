@@ -41,8 +41,8 @@ SourceFiles
 #include "polyMeshGenPoints.H"
 #include "faceListPMG.H"
 #include "labelIOList.H"
-#include "writeProcessorPatch.H"
-#include "writePatch.H"
+#include "processorBoundaryPatch.H"
+#include "boundaryPatch.H"
 
 namespace Foam
 {
@@ -61,10 +61,10 @@ protected:
         //- inter-processor boundaries. These faces are located after the other
         //- boundary faces in the list of faces. The processor
         //- boundaries are internal faces in the end.
-        PtrList<writeProcessorPatch> procBoundaries_;
+        PtrList<processorBoundaryPatch> procBoundaries_;
     
         //- boundary data
-        PtrList<writePatch> boundaries_;
+        PtrList<boundaryPatch> boundaries_;
 
         //- face subsets
         std::map<label, meshSubset> faceSubsets_;
@@ -133,13 +133,13 @@ public:
     // Boundary data
     
         //- inter-processor boundaries
-        inline const PtrList<writeProcessorPatch>& procBoundaries() const;
+        inline const PtrList<processorBoundaryPatch>& procBoundaries() const;
         
         //- return processor patch label for the given face label
         label faceIsInProcPatch(const label faceLabel) const;
         
         //- ordinary boundaries
-        inline const PtrList<writePatch>& boundaries() const;
+        inline const PtrList<boundaryPatch>& boundaries() const;
         
         //- return patch label for the given face label
         label faceIsInPatch(const label faceLabel) const;

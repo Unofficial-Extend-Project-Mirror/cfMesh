@@ -176,7 +176,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
         const labelList& owner = mesh_.owner();
         const labelList& neighbour = mesh_.neighbour();
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         const labelLongList& globalCellLabel =

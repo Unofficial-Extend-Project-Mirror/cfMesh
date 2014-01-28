@@ -30,7 +30,7 @@ Description
     every time it is resized
 
 SourceFiles
-    
+
 
 \*---------------------------------------------------------------------------*/
 
@@ -56,19 +56,20 @@ class pointFieldPMG
     // Private data
         //- number of used elements
         label nElmts_;
-    
+
     // Disallow bitwise assignment
         void operator=(const pointFieldPMG&);
-    
+
         pointFieldPMG(const pointFieldPMG&);
-    
+
     // Disallow transfer from pointField
         void transfer(pointField&);
-    
+
 public:
-    
-        TypeName("Field");
-    
+
+    // Declare type name
+        TypeName("vectorField");
+
     // Constructors
         //- construct from IOobject
         inline pointFieldPMG(const IOobject&);
@@ -81,7 +82,7 @@ public:
 
     // Destructor
         inline ~pointFieldPMG();
-            
+
     // Member functions
         //- return the number of used elements
         inline label size() const;
@@ -94,7 +95,7 @@ public:
 
         //- add a point at the end of the list
         inline void append(const point&);
-        
+
         //- return an element with bound checking
         inline point& newElmt(const label);
 
@@ -103,9 +104,9 @@ public:
 
     // Member operators
         inline void operator=(const pointField&);
-    
+
         friend inline Ostream& operator<<(Ostream&, const pointFieldPMG&);
-        
+
         friend inline Istream& operator>>(Istream&, pointFieldPMG&);
 };
 

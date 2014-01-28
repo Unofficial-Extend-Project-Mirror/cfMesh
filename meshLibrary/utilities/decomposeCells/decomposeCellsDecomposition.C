@@ -106,7 +106,7 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 
     if( Pstream::parRun() )
     {
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         //- send information to the neighbour processor

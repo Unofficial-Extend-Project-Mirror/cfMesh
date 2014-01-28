@@ -87,7 +87,7 @@ triSurfaceRemoveFacets = utilities/triSurfaceTools/triSurfaceRemoveFacets
 triSurfaceExtrude2DEdges = utilities/triSurfaceTools/triSurfaceExtrude2DEdges
 
 polyMeshGen = utilities/meshes/polyMeshGen
-writePatch  = utilities/meshes/polyMeshGen/writePatch
+boundaryPatch  = utilities/meshes/polyMeshGen/boundaryPatch
 polyMeshGen2DEngine = utilities/meshes/polyMeshGen2DEngine
 polyMeshGenModifier = utilities/meshes/polyMeshGenModifier
 polyMeshGenAddressing = utilities/meshes/polyMeshGenAddressing
@@ -156,9 +156,9 @@ $(polyMeshGen)/polyMeshGenCells.C
 
 $(polyMeshGen2DEngine)/polyMeshGen2DEngine.C
 
-$(writePatch)/writePatchBase.C
-$(writePatch)/writePatch.C
-$(writePatch)/writeProcessorPatch.C
+$(boundaryPatch)/boundaryPatchBase.C
+$(boundaryPatch)/boundaryPatch.C
+$(boundaryPatch)/processorBoundaryPatch.C
 
 $(polyMeshGenModifier)/polyMeshGenModifierRemoveUnusedVertices.C
 $(polyMeshGenModifier)/polyMeshGenModifierRemoveFaces.C

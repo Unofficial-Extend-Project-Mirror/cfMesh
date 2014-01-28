@@ -54,7 +54,7 @@ void meshSurfaceEngine::calculateBoundaryFaces() const
     if( mesh_.boundaries().size() != 0 )
     {
         const faceListPMG& faces = mesh_.faces();
-        const PtrList<writePatch>& boundaries = mesh_.boundaries();
+        const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
         label nBoundaryFaces(0);
         if( activePatch_ < 0 )
@@ -158,7 +158,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
     if( Pstream::parRun() )
     {
         const faceListPMG& faces = mesh_.faces();
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         //- exchange information with processors
@@ -256,7 +256,7 @@ void meshSurfaceEngine::calculateBoundaryFacePatches() const
     labelList& facePatch = *boundaryFacePatchPtr_;
 
     label faceI(0);
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label nFaces = boundaries[patchI].patchSize();
@@ -1007,7 +1007,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
         //- boundary faces. This procedure is needed to identify boundary
         //- edges which are not part of any boundary face on their processor
         const faceListPMG& faces = mesh_.faces();
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         //- send boundary edges to neighbour processors

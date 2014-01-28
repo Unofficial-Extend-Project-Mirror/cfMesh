@@ -48,7 +48,7 @@ namespace Foam
     
 void dualUnfoldConcaveCells::replaceBoundary()
 {
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     wordList patchNames(boundaries.size());
     forAll(boundaries, patchI)
         patchNames[patchI] = boundaries[patchI].patchName();

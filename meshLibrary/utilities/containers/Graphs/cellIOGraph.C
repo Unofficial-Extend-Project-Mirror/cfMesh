@@ -40,8 +40,7 @@ cellIOGraph::cellIOGraph(const IOobject& io)
 :
     regIOobject(io),
     VRWGraph()
-{
-}
+{}
 
 cellIOGraph::cellIOGraph
 (
@@ -61,8 +60,7 @@ cellIOGraph::cellIOGraph
 :
     regIOobject(io),
     VRWGraph(g)
-{
-}
+{}
 
 void cellIOGraph::operator=(const cellIOGraph& rhs)
 {
@@ -81,7 +79,7 @@ bool cellIOGraph::writeData(Ostream& os) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTemplateTypeNameAndDebugWithName(cellIOGraph, "cellList", 0);
+defineTypeNameWithName(cellIOGraph, "cellList");
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

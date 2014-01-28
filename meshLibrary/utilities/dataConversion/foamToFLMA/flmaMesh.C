@@ -214,7 +214,7 @@ void Foam::flmaMesh::writeSelections
 ) const
 {
     //- write patches as face selections
-    const PtrList<writePatch>& patches = mesh_.boundaries();
+    const PtrList<boundaryPatch>& patches = mesh_.boundaries();
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     const cellListPMG& cells = mesh_.cells();
@@ -243,7 +243,7 @@ void Foam::flmaMesh::writeSelections
     //- write patches as face selections
     forAll(patches, patchI)
     {
-        const writePatch& patch = patches[patchI];
+        const boundaryPatch& patch = patches[patchI];
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();
         

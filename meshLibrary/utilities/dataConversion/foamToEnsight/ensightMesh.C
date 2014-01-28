@@ -133,13 +133,13 @@ void Foam::ensightMesh::writeFaces
     }
 }
 
-void Foam::ensightMesh::writePatches
+void Foam::ensightMesh::boundaryPatches
 (
     Foam::OFstream& ensightGeometryFile
 ) const
 {
     const faceListPMG& faces = mesh_.faces();
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     
     forAll(boundaries, patchI)
     {
@@ -217,7 +217,7 @@ void ensightMesh::write
         ensightGeometryFile
     );
 
-    writePatches(ensightGeometryFile);
+    boundaryPatches(ensightGeometryFile);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -80,9 +80,9 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
 
     direction k(0);
 
-    while( (pow(2, k) < n) && (k < maxL) )
+    while( (pow(2, label(k)) < n) && (k < maxL) )
     {
-        k++;
+        ++k;
     }
 
     //- refine the tree such that there are not more than maxNInCube triangle
@@ -105,7 +105,6 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
         }
         else
         {
-            const point p = (oc.bb().max() + oc.bb().min()) / 2.0;
             bool inside(true);
             const FixedList<point, 8> vrt = oc.vertices();
             forAll(vrt, vrtI)
@@ -126,8 +125,7 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 surfaceIntersectionsOctree::~surfaceIntersectionsOctree()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

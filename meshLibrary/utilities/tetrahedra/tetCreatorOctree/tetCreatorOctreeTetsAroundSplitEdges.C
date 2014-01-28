@@ -36,59 +36,61 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void tetCreatorOctree::createTetsAroundSplitEdges()
 {
     Info << "Creating tets around split edges " << endl;
-    
+
     const labelList& cubeLabel = *cubeLabelPtr_;
     const meshOctree& octree = octreeCheck_.octree();
     const VRWGraph& nodeLabels = octreeCheck_.nodeLabels();
     const FRWGraph<label, 8>& pLeaves = octreeCheck_.nodeLeaves();
     const VRWGraph& subNodeLabels = *subNodeLabelsPtr_;
     const VRWGraph& faceCentreLabel = *faceCentreLabelPtr_;
-    
+
     # ifdef DEBUGTets
     Info << "Number of octree nodes " << octreeCheck_.numberOfNodes() << endl;
     # endif
-    
+
     //- find maximum refinement level of octree leaves attached to each vertex
     List<direction> nodeLevel(octreeCheck_.numberOfNodes());
-    
+
     forAll(pLeaves, nodeI)
     {
         direction level(0);
-        
+
         for(label plI=0;plI<8;++plI)
         {
             const label leafI = pLeaves(nodeI, plI);
-            
+
             if( leafI < 0 )
                 continue;
-            
+
             level = Foam::max(level, octree.returnLeaf(leafI).level());
         }
-        
+
         nodeLevel[nodeI] = level;
     }
-    
+
     //- start creating tets around split edges
     label helpNodes[2][8];
     label faceCentres[4];
-    
+
     forAllReverse(sortedLeaves_, levelI)
     {
         const labelLongList& curLevelLeaves = sortedLeaves_[levelI];
-        
+
+        const direction level = direction(levelI);
+
         forAll(curLevelLeaves, leafI)
         {
             const label curLabel = curLevelLeaves[leafI];
-            
+
             if( cubeLabel[curLabel] == -1 )
                 continue;
-            
+
             //- start checking edges
             for(label eI=0;eI<12;++eI)
             {
@@ -104,24 +106,24 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                         curLabel,
                         meshOctreeCubeCoordinates::edgeNodes_[eI][1]
                     );
-                
-                if( (nodeLevel[start] == levelI) && (nodeLevel[end] == levelI) )
+
+                if( (nodeLevel[start] == level) && (nodeLevel[end] == level) )
                     continue;
-                
+
                 //- the edge has at least one vertex at different ref level
                 bool create(true);
-                
+
                 FixedList<label, 4> edgeCubes;
                 const label fI = 2*(eI/4)+1;
-                
+
                 const label* fNodes =
                     meshOctreeCubeCoordinates::faceNodes_[fI];
-                
+
                 //- store octree leaves at this edge
                 //- they are all adjacent to the start point
                 for(label i=0;i<4;++i)
                     edgeCubes[i] = pLeaves(start, fNodes[i]);
-                
+
                 # ifdef DEBUGTets
                 Info << "Cube " << curLabel << " has nodes ";
                 forAllRow(nodeLabels, curLabel, i)
@@ -131,25 +133,25 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                 Info << "Edge nodes are " << start << " and " << end << endl;
                 Info << "Edge cubes " << edgeCubes << endl;
                 # endif
-                
+
                 forAll(edgeCubes, i)
                 {
                     const label cLabel = edgeCubes[i];
-                        
+
                     if(
                         (cLabel == -1) ||
                         (cLabel < curLabel) ||
-                        (octree.returnLeaf(cLabel).level() != levelI)
+                        (octree.returnLeaf(cLabel).level() != level)
                     )
                     {
                         create = false;
                         break;
                     }
-                    
+
                     # ifdef DEBUGTets
                     Info << "Edge cube " << i << " is " << cLabel << endl;
                     # endif
-                    
+
                     for(label j=0;j<8;++j)
                     {
                         if( nodeLabels(cLabel,j) == start )
@@ -162,10 +164,10 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                             {
                                 helpNodes[0][i] = -1;
                             }
-                            
+
                             helpNodes[0][i+4] = cubeLabel[cLabel];
                         }
-                        
+
                         if( nodeLabels(cLabel, j) == end )
                         {
                             if( subNodeLabels.sizeOfRow(cLabel) != 0 )
@@ -176,15 +178,15 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                             {
                                 helpNodes[1][i+4] = -1;
                             }
-                            
+
                             helpNodes[1][i] = cubeLabel[cLabel];
                         }
                     }
-                    
+
                     if( faceCentreLabel.sizeOfRow(cLabel) != 0 )
                     {
                         const label helpFace = eI/4;
-                                
+
                         faceCentres[i] =
                             faceCentreLabel
                             (
@@ -197,10 +199,10 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                         faceCentres[i] = -1;
                     }
                 }
-                
+
                 if( !create )
                     continue;
-                
+
                 # ifdef DEBUGTets
                 for(label n=0;n<4;++n)
                 {
@@ -212,8 +214,8 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                         << helpNodes[1][n+4] << endl;
                 }
                 # endif
-                
-                if( nodeLevel[start] > levelI )
+
+                if( nodeLevel[start] > level )
                 {
                     for(label k=0;k<4;++k)
                     {
@@ -228,7 +230,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 tetPoints_.size()
                             )
                         );
-                        
+
                         //- 2. tet
                         checkAndAppendTet
                         (
@@ -240,7 +242,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 faceCentres[k]
                             )
                         );
-                        
+
                         //- 3. tet
                         checkAndAppendTet
                         (
@@ -252,7 +254,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 tetPoints_.size()
                             )
                         );
-                        
+
                         //- 4. tet
                         checkAndAppendTet
                         (
@@ -280,7 +282,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 tetPoints_.size()
                             )
                         );
-                        
+
                         checkAndAppendTet
                         (
                             partTet
@@ -293,8 +295,8 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                         );
                     }
                 }
-                
-                if( nodeLevel[end] > levelI )
+
+                if( nodeLevel[end] > level )
                 {
                     for(label k=0;k<4;++k)
                     {
@@ -309,7 +311,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 end
                             )
                         );
-                        
+
                         // 2. tet
                         checkAndAppendTet
                         (
@@ -321,7 +323,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 tetPoints_.size()
                             )
                         );
-                        
+
                         //- 3. tet
                         checkAndAppendTet
                         (
@@ -333,7 +335,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 helpNodes[1][k+4]
                             )
                         );
-                        
+
                         //- 4. tet
                         checkAndAppendTet
                         (
@@ -361,7 +363,7 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                                 end
                             )
                         );
-                        
+
                         checkAndAppendTet
                         (
                             partTet
@@ -374,13 +376,13 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
                         );
                     }
                 }
-                
+
                 //- add the edge centre
                 tetPoints_.append(0.5 * (tetPoints_[start] + tetPoints_[end]));
             }
         }
     }
-    
+
     # ifdef DEBUGTets
     Info << "Created tets " << tets_ << endl;
     # endif

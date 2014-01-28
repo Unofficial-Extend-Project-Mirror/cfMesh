@@ -432,7 +432,7 @@ void refineBoundaryLayers::sortFacePoints
     # endif
 
     label procStart = mesh_.faces().size();
-    const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
+    const PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries();
     if( Pstream::parRun() )
         procStart = procBoundaries[0].patchStart();
 
@@ -654,7 +654,7 @@ void refineBoundaryLayers::sortFaceFaces
     # endif
 
     label procStart = mesh_.faces().size();
-    const PtrList<writeProcessorPatch>& procBoundaries = mesh_.procBoundaries();
+    const PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries();
     if( Pstream::parRun() )
         procStart = procBoundaries[0].patchStart();
 
@@ -942,7 +942,7 @@ void refineBoundaryLayers::generateNewFaces()
     if( Pstream::parRun() )
     {
         //- refine faces at interprocessor boundaries
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
         //- exchange information about the number of splits

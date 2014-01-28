@@ -113,7 +113,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
     if( Pstream::parRun() )
     {
         //- check processor faces
-        const PtrList<writeProcessorPatch>& procBoundaries =
+        const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         forAll(procBoundaries, patchI)
         {
@@ -330,7 +330,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
     //- processor boundaries
     forAll(mesh_.procBoundaries(), patchI)
     {
-        const writeProcessorPatch& patch = mesh_.procBoundaries()[patchI];
+        const processorBoundaryPatch& patch = mesh_.procBoundaries()[patchI];
         const label start = patch.patchStart();
         const label end = start + patch.patchSize();
 

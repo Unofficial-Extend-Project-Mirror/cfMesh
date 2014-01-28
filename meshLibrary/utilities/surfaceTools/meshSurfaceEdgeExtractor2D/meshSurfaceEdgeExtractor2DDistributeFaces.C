@@ -58,7 +58,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
     const pointFieldPMG& points = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     const triSurf& surf = meshOctree_.surface();
     const geometricSurfacePatchList& surfPatches = surf.patches();

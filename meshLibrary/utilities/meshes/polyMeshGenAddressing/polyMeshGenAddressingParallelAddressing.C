@@ -63,7 +63,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
     DynList<label>& pNeiProcs = *pointNeiProcsPtr_;
     
     const faceListPMG& faces = mesh_.faces();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
     
     //- find which processors contain a given bnd point
@@ -307,7 +307,7 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
     
     const label nIntFaces = mesh_.nInternalFaces();
     
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
     
     label nBoundaryFaces = 0;
@@ -379,7 +379,7 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
     forAll(numberOfInternalFaces, procI)
         startFace += numberOfInternalFaces[procI];
     
-    const PtrList<writePatch>& boundaries = mesh_.boundaries();
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     labelListList numberOfBoundaryFaces(Pstream::nProcs());
     numberOfBoundaryFaces[Pstream::myProcNo()].setSize(boundaries.size());
     forAll(boundaries, patchI)
@@ -459,7 +459,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
     
     const faceListPMG& faces = mesh_.faces();
     const VRWGraph& faceEdges = this->faceEdges();
-    const PtrList<writeProcessorPatch>& procBoundaries =
+    const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
     
     //- find which processor contain a given bnd edge

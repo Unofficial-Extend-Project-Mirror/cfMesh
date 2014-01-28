@@ -124,13 +124,13 @@ public:
         };
 
         //- access to processor boundary data
-        inline PtrList<writeProcessorPatch>& procBoundariesAccess()
+        inline PtrList<processorBoundaryPatch>& procBoundariesAccess()
         {
             return mesh_.procBoundaries_;
         }
 
         //- access to boundary data
-        inline PtrList<writePatch>& boundariesAccess()
+        inline PtrList<boundaryPatch>& boundariesAccess()
         {
             return mesh_.boundaries_;
         }
