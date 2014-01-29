@@ -107,12 +107,7 @@ lists = $(containers)/Lists
 
 meshZipper = utilities/meshZipper
 
-writeAsEnsight = utilities/dataConversion/foamToEnsight
-writeOctreeAsEnsight = utilities/dataConversion/octreeToEnsight
 writeAsFPMA = utilities/dataConversion/foamToFPMA
-writeAsFLMA = utilities/dataConversion/foamToFLMA
-simplexAsFLMA = utilities/dataConversion/simplexToFLMA
-writeOctreeAsFPMA = utilities/dataConversion/octreeToFPMA
 
 polyMeshExtractor = pMeshLibrary/polyMeshExtractor
 polyMeshGenerator = pMeshLibrary/polyMeshGenerator
@@ -493,22 +488,7 @@ $(voronoiMeshExtractor)/voronoiMeshExtractorCreateMesh.C
 
 $(voronoiMeshGenerator)/voronoiMeshGenerator.C
 
-$(writeAsEnsight)/ensightMesh.C
-$(writeAsEnsight)/writeMeshEnsight.C
-
-$(writeOctreeAsEnsight)/octreeMesh.C
-$(writeOctreeAsEnsight)/writeOctreeEnsight.C
-
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C
-
-$(writeAsFLMA)/writeMeshFLMA.C
-$(writeAsFLMA)/flmaMesh.C
-
-$(writeOctreeAsFPMA)/writeOctreeFPMA.C
-$(writeOctreeAsFPMA)/octreeMeshFPMA.C
-
-$(simplexAsFLMA)/simplexMesh.C
-$(simplexAsFLMA)/writeSimplexFLMA.C
 
 LIB = $(FOAM_LIBBIN)/libMeshLibrary
