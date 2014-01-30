@@ -31,10 +31,10 @@ Description
 #include "Time.H"
 #include "objectRegistry.H"
 #include "triSurf.H"
+#include "triSurfModifier.H"
 #include "triFaceList.H"
 #include "labelLongList.H"
 #include "IFstream.H"
-#include "OFstream.H"
 
 using namespace Foam;
 
@@ -58,6 +58,10 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    //- create the surface mesh
+    triSurf ts;
+    triSurfModifier tsm(ts);
+
     label counter;
 
     IFstream inFile(inFileName);
@@ -65,22 +69,23 @@ int main(int argc, char *argv[])
     inFile >> counter;
 
     //- read vertices
-    pointField points(counter);
-    for(label pointI=0;pointI<counter;++pointI)
+    pointField& points = tsm.pointsAccess();
+    points.setSize(counter);
+    forAll(points, pointI)
     {
-        point p;
+        point& p = points[pointI];
+
         inFile >> p.x();
         inFile >> p.y();
         inFile >> p.z();
-
-        points[pointI] = p;
     }
 
     //- read facets
     inFile >> counter;
     geometricSurfacePatchList patches(1);
     patches[0].name() = "patch";
-    LongList<labelledTri> triangles(counter);
+    LongList<labelledTri>& triangles = tsm.facetsAccess();
+    triangles.setSize(counter);
     forAll(triangles, triI)
     {
         inFile >> counter;
@@ -102,9 +107,6 @@ int main(int argc, char *argv[])
     inFile >> counter;
     forAll(triangles, triI)
         inFile >> counter;
-
-    //- create the surface mesh
-    triSurf ts(triangles, patches, points);
 
     //- start reading selections
     inFile >> counter;
@@ -137,7 +139,6 @@ int main(int argc, char *argv[])
     }
 
     //- write the surface
-
     ts.writeSurface(outFileName);
 
     Info << "End\n" << endl;
