@@ -113,17 +113,6 @@ int main(int argc, char *argv[])
     Info << "Writting surface to a file" << endl;
     surf.writeSurface("surfWithEdgeTypes.fms");
 
-/*    if( Pstream::parRun() )
-    {
-        std::ostringstream ss;
-        ss << Pstream::myProcNo();
-        writeMeshEnsight(pmg, "cartesianMesh"+ss.str());
-    }
-    else
-    {
-        writeMeshEnsight(pmg, "cartesianMesh");
-    }
-*/
     Info << "End\n" << endl;
     return 0;
 }

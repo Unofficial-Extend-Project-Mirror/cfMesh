@@ -46,12 +46,15 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    hexMeshGenerator omg(runTime);
+    //- hex mesher cannot be run in parallel yet
+    argList::noParallel();
+
+    hexMeshGenerator hmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
-    
-    omg.writeMesh();
+
+    hmg.writeMesh();
 
     Info << "End\n" << endl;
     return 0;

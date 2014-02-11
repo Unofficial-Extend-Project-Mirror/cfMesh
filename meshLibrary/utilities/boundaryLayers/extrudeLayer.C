@@ -36,7 +36,6 @@ Description
 
 #ifdef DEBUGExtrudeLayer
 #include "writeMeshFPMA.H"
-#include "writeMeshFLMA.H"
 #include "polyMeshGenChecks.H"
 #endif
 
@@ -722,7 +721,7 @@ void extrudeLayer::createNewVertices()
             mesh_.addPointToSubset(frontID, pI);
     }
 
-    writeMeshFLMA(mesh_, "withNewVertices");
+    writeMeshFPMA(mesh_, "withNewVertices");
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif

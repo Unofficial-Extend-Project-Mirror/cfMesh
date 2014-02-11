@@ -33,7 +33,6 @@ Description
 
 # ifdef DEBUGMorph
 #include <sstream>
-#include "writeMeshEnsight.H"
 # endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

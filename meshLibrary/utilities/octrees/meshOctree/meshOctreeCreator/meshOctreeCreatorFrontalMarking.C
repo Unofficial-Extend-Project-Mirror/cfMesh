@@ -30,9 +30,6 @@ Description
 #include "meshOctreeInsideOutside.H"
 
 //#define DEBUGSearch
-# ifdef DEBUGSearch
-#include "writeOctreeEnsight.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,13 +43,6 @@ void meshOctreeCreator::createInsideOutsideInformation()
     Info << "Marking inside/outside." << endl;
 
     meshOctreeInsideOutside insideOutside(octree_);
-
-    # ifdef DEBUGSearch
-    writeOctreeEnsight(octree_, "octreeInternal", meshOctreeCubeBasic::INSIDE);
-    writeOctreeEnsight(octree_, "octreeOutside", meshOctreeCubeBasic::OUTSIDE);
-    writeOctreeEnsight(octree_, "octreeData", meshOctreeCubeBasic::DATA);
-    writeOctreeEnsight(octree_, "octreeUnknown", meshOctreeCubeBasic::UNKNOWN);
-    # endif
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

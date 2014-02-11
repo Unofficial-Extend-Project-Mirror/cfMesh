@@ -76,9 +76,13 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             preMapPositions[bpI] = lp;
         }
 
+        //- pointer needed in case of parallel calculation
+        const VRWGraph* bpAtProcsPtr(NULL);
+
         if( Pstream::parRun() )
         {
             const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+            bpAtProcsPtr = &bpAtProcs;
             const labelList& globalPointLabel =
                 surfaceEngine_.globalBoundaryPointLabel();
             const Map<label>& globalToLocal =
@@ -156,11 +160,10 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
 
         //- create the surface modifier and move the surface points
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+        LongList<parMapperHelper> parallelBndNodes;
 
         # ifdef USE_OMP
-        const label size = boundaryPoints.size();
-        # pragma omp parallel for if( size > 1000 ) \
-        schedule(dynamic, Foam::max(100, size / (3 * omp_get_max_threads())))
+        # pragma omp parallel for schedule(dynamic, 50)
         # endif
         forAll(boundaryPoints, bpI)
         {
@@ -179,14 +182,35 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             );
 
             const point newP = 0.5 * (pMap + p);
+            //const point newP = preMapPositions[bpI].coordinates();
 
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
+
+            if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                parallelBndNodes.append
+                (
+                    parMapperHelper
+                    (
+                        newP,
+                        dSq,
+                        bpI,
+                        patch
+                    )
+                );
+            }
         }
 
-        surfaceModifier.updateGeometry();
-        surfaceModifier.syncVerticesAtParallelBoundaries();
+        mapToSmallestDistance(parallelBndNodes);
+
+        //surfaceModifier.updateGeometry();
+        //surfaceModifier.syncVerticesAtParallelBoundaries();
 
         Info << "." << flush;
+        break;
     }
 
     Info << endl;

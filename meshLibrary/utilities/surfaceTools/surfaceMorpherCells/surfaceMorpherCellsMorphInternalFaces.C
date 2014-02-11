@@ -35,7 +35,6 @@ Description
 
 #ifdef DEBUGMorph
 #include "polyMeshGenAddressing.H"
-#include "writeMeshEnsight.H"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -580,7 +579,6 @@ bool surfaceMorpherCells::morphInternalFaces()
     {
         Serr << Pstream::myProcNo() << "Open cells appeared!" << endl;
         //mesh_.write();
-        //writeMeshEnsight(mesh_, "openMeshAfterInternalMorph");
         Serr << "Cells " << zipCells << " are not zipped!!" << endl;
     }
     mesh_.clearAddressingData();

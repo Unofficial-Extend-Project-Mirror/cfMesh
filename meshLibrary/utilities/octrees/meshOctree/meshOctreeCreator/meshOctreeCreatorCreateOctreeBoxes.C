@@ -425,11 +425,11 @@ void meshOctreeCreator::createOctreeBoxes()
     }
 
     //- delete octree data which is not needed any more
-    if( Pstream::parRun() )
-    {
-        meshOctreeModifier om(octree_);
-        om.reduceMemoryConsumption();
-    }
+//    if( Pstream::parRun() )
+//    {
+//        meshOctreeModifier om(octree_);
+//        om.reduceMemoryConsumption();
+//    }
 }
 
 void meshOctreeCreator::createOctreeWithRefinedBoundary

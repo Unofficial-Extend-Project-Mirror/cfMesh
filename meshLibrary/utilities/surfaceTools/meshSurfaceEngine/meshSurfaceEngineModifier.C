@@ -42,15 +42,13 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from meshSurfaceEngine. Holds reference!
 meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
     meshSurfaceEngine& surfaceEngine
 )
 :
     surfaceEngine_(surfaceEngine)
-{
-}
+{}
 
 meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
@@ -58,14 +56,12 @@ meshSurfaceEngineModifier::meshSurfaceEngineModifier
 )
 :
     surfaceEngine_(const_cast<meshSurfaceEngine&>(surfaceEngine))
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceEngineModifier::~meshSurfaceEngineModifier()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -227,7 +223,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
         const labelledPoint& lp = receivedData[i];
         const label bpI = globalToLocal[lp.pointLabel()];
         const point newP = points[bPoints[bpI]] + lp.coordinates();
-        moveBoundaryVertex(bpI, newP);
+        moveBoundaryVertexNoUpdate(bpI, newP);
     }
 }
 
@@ -239,6 +235,7 @@ void meshSurfaceEngineModifier::updateGeometry
     const pointFieldPMG& points = surfaceEngine_.points();
     const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
     const VRWGraph& pFaces = surfaceEngine_.pointFaces();
+    const labelList& bp = surfaceEngine_.bp();
 
     boolList updateFaces(bFaces.size(), false);
     # ifdef USE_OMP
@@ -284,16 +281,32 @@ void meshSurfaceEngineModifier::updateGeometry
     if( surfaceEngine_.pointNormalsPtr_ )
     {
         const vectorField& faceNormals = surfaceEngine_.faceNormals();
-        const VRWGraph& pFaces = surfaceEngine_.pointFaces();
 
-        vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
+        boolList updateBndPoint(pFaces.size(), false);
         # ifdef USE_OMP
-        # pragma omp parallel for if( updateBndNodes.size() > 1000 ) \
-        schedule(dynamic, 100)
+        # pragma omp parallel for schedule(dynamic, 50)
         # endif
         forAll(updateBndNodes, i)
         {
             const label bpI = updateBndNodes[i];
+
+            forAllRow(pFaces, bpI, pfI)
+            {
+                const face& bf = bFaces[pFaces(bpI, pfI)];
+
+                forAll(bf, pI)
+                    updateBndPoint[bp[bf[pI]]] = true;
+            }
+        }
+
+        vectorField& pn = *surfaceEngine_.pointNormalsPtr_;
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 100)
+        # endif
+        forAll(updateBndPoint, bpI)
+        {
+            if( !updateBndPoint[bpI] )
+                continue;
 
             vector n(vector::zero);
             forAllRow(pFaces, bpI, pfI)
@@ -310,6 +323,106 @@ void meshSurfaceEngineModifier::updateGeometry
             }
 
             pn[bpI] = n;
+        }
+
+        if( Pstream::parRun() )
+        {
+            //- update point normals at inter-processor boundaries
+            const Map<label>& globalToLocal =
+                surfaceEngine_.globalToLocalBndPointAddressing();
+            const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+            const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
+
+            //- make sure that the points ar updated on all processors
+            std::map<label, labelLongList> exchangeNodeLabels;
+            forAll(neiProcs, i)
+                exchangeNodeLabels[neiProcs[i]].clear();
+
+            forAllConstIter(Map<label>, globalToLocal, it)
+            {
+                const label bpI = it();
+
+                if( updateBndPoint[bpI] )
+                {
+                    forAllRow(bpAtProcs, bpI, i)
+                    {
+                        const label neiProc = bpAtProcs(bpI, i);
+
+                        if( neiProc == Pstream::myProcNo() )
+                            continue;
+
+                        exchangeNodeLabels[neiProc].append(it.key());
+                    }
+                }
+            }
+
+            labelLongList receivedNodes;
+            help::exchangeMap(exchangeNodeLabels, receivedNodes);
+
+            forAll(receivedNodes, i)
+                updateBndPoint[globalToLocal[receivedNodes[i]]] = true;
+
+
+            //- start updating point normals
+            std::map<label, LongList<labelledPoint> > exchangeData;
+            forAll(neiProcs, i)
+                exchangeData[neiProcs[i]].clear();
+
+            //- prepare data for sending
+            forAllConstIter(Map<label>, globalToLocal, iter)
+            {
+                const label bpI = iter();
+
+                if( !updateBndPoint[bpI] )
+                    continue;
+
+                vector& n = pn[bpI];
+                n = vector::zero;
+
+                forAllRow(pFaces, bpI, pfI)
+                    n += faceNormals[pFaces(bpI, pfI)];
+
+                forAllRow(bpAtProcs, bpI, procI)
+                {
+                    const label neiProc = bpAtProcs(bpI, procI);
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    exchangeData[neiProc].append(labelledPoint(iter.key(), n));
+                }
+            }
+
+            //- exchange data with other procs
+            LongList<labelledPoint> receivedData;
+            help::exchangeMap(exchangeData, receivedData);
+
+            forAll(receivedData, i)
+            {
+                const label bpI = globalToLocal[receivedData[i].pointLabel()];
+                pn[bpI] += receivedData[i].coordinates();
+            }
+
+            //- normalize vectors
+            forAllConstIter(Map<label>, globalToLocal, it)
+            {
+                const label bpI = it();
+
+                if( !updateBndPoint[bpI] )
+                    continue;
+
+                vector normal = pn[bpI];
+                const scalar d = mag(normal);
+                if( d > VSMALL )
+                {
+                    normal /= d;
+                }
+                else
+                {
+                    normal = vector::zero;
+                }
+
+                pn[bpI] = normal;
+            }
         }
     }
 }

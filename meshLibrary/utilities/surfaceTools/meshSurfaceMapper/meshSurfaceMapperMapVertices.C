@@ -160,12 +160,10 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
         parMapperHelper& phOrig = parN[bpToList[bpI]];
         if( phOrig.movingDistance() < ph.movingDistance() )
         {
-            surfModifier.moveBoundaryVertex(bpI, ph.coordinates());
+            surfModifier.moveBoundaryVertexNoUpdate(bpI, ph.coordinates());
             phOrig = ph;
         }
     }
-
-    surfModifier.updateVertexNormals();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -268,9 +266,11 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
         # endif
     }
 
-    surfaceModifier.updateGeometry(nodesToMap);
-
+    //- make sure that the points are at the nearest location on the surface
     mapToSmallestDistance(parallelBndNodes);
+
+    //- re-calculate face normals, point normals, etc.
+    surfaceModifier.updateGeometry(nodesToMap);
 }
 
 void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
@@ -372,9 +372,12 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
         # endif
     }
 
-    surfaceModifier.updateGeometry(nodesToMap);
-
+    //- map vertices at inter-processor boundaries to the nearest location
+    //- on the surface
     mapToSmallestDistance(parallelBndNodes);
+
+    //- update face normals, point normals, etc.
+    surfaceModifier.updateGeometry(nodesToMap);
 
     //- map edge nodes
     mapEdgeNodes(selectedEdges);

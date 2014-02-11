@@ -36,7 +36,6 @@ Description
 #include "Time.H"
 #include "objectRegistry.H"
 #include "triSurf.H"
-#include "writeOctreeEnsight.H"
 
 #include <sstream>
 
@@ -106,24 +105,6 @@ int main(int argc, char *argv[])
             << " and " << moPtr->returnLeaf(i-1).coordinates()
             << abort(FatalError);
     }
-      if( Pstream::parRun() )
-        {
-            std::ostringstream ss;
-
-            ss << Pstream::myProcNo();
-
-            //writeOctreeEnsight(*moPtr, "insideBoxes"+ss.str(), meshOctreeCube::INSIDE);
-            //writeOctreeEnsight(*moPtr, "unknownBoxes"+ss.str(), meshOctreeCube::UNKNOWN);
-            //writeOctreeEnsight(*moPtr, "outsideBoxes"+ss.str(), meshOctreeCube::OUTSIDE);
-            writeOctreeEnsight(*moPtr, "dataBoxes"+ss.str(), meshOctreeCube::DATA);
-        }
-        else
-        {
-            writeOctreeEnsight(*moPtr, "insideBoxes", meshOctreeCube::INSIDE);
-            //writeOctreeEnsight(*moPtr, "unknownBoxes", meshOctreeCube::UNKNOWN);
-            writeOctreeEnsight(*moPtr, "outsideBoxes", meshOctreeCube::OUTSIDE);
-            writeOctreeEnsight(*moPtr, "dataBoxes", meshOctreeCube::DATA);
-        }
 
     deleteDemandDrivenData(moPtr);
 

@@ -47,12 +47,6 @@ Description
 #include "triSurfacePatchManipulator.H"
 
 //#define DEBUG
-//#define DEBUGflma
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFLMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -79,11 +73,6 @@ void hexMeshGenerator::generateDualMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "hexMesh");
-    # else
-    writeMeshEnsight(mesh_, "hexMesh");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -111,11 +100,6 @@ void hexMeshGenerator::surfacePreparation()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterTopoCleaning");
-    # else
-    writeMeshEnsight(mesh_, "afterTopoCleaning");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -131,11 +115,6 @@ void hexMeshGenerator::mapMeshToSurface()
     mapper.mapVerticesOntoSurface();
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterMapping");
-    # else
-    writeMeshEnsight(mesh_, "afterMapping");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
@@ -144,12 +123,6 @@ void hexMeshGenerator::mapMeshToSurface()
     meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
 
     # ifdef DEBUG
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "afterSurfaceSmoothing");
-    # else
-    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
@@ -161,11 +134,6 @@ void hexMeshGenerator::mapMeshToSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "withEdges");
-    # else
-    writeMeshEnsight(mesh_, "withEdges");
-    #endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -177,11 +145,7 @@ void hexMeshGenerator::optimiseMeshSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "optSurfaceWithEdges");
-    # else
-    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-    #endif
+    //::exit(0);
     # endif
 }
 
@@ -214,12 +178,8 @@ void hexMeshGenerator::generateBoundaryLayers()
     }
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_, "meshWithBndLayer");
-    # else
-    writeMeshEnsight(mesh_, "meshWithBndLayer");
-    # endif
     mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -235,11 +195,8 @@ void hexMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeMeshFV();
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"optimisedMesh");
-    # else
-    writeMeshEnsight(mesh_, "optimisedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -248,11 +205,8 @@ void hexMeshGenerator::replaceBoundaries()
     renameBoundaryPatches rbp(mesh_, meshDict_);
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"renamedPatchesMesh");
-    # else
-    writeMeshEnsight(mesh_, "renamedPatchesMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -261,11 +215,8 @@ void hexMeshGenerator::renumberMesh()
     polyMeshGenModifier(mesh_).renumberMesh();
 
     # ifdef DEBUG
-    # ifdef DEBUGflma
-    writeMeshFLMA(mesh_,"renumberedMesh");
-    # else
-    writeMeshEnsight(mesh_, "renumberedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 

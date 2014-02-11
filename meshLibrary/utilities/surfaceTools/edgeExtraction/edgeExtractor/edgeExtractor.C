@@ -1554,6 +1554,8 @@ void edgeExtractor::extractEdges()
 
     distributeBoundaryFaces();
 
+ //   return;
+
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();
     sPtr->writeSurface("initialDistributionOfPatches.stl");
@@ -1564,7 +1566,7 @@ void edgeExtractor::extractEdges()
 //    {
 //        changed = false;
 
-        Info << "Checking cells near concave edges" << endl;
+/*        Info << "Checking cells near concave edges" << endl;
         if( checkConcaveEdgeCells() )
         {
             # ifdef DEBUGEdgeExtractor
@@ -1577,7 +1579,7 @@ void edgeExtractor::extractEdges()
 
             //changed = true;
         }
-
+*/
         Info << "Checking patch in the neighbourhood of each face" << endl;
         if( checkFacePatches() )
         {

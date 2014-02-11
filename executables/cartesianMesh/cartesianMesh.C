@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    cartesianMeshGenerator omg(runTime);
+    cartesianMeshGenerator cmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
-    
-    omg.writeMesh();
+
+    cmg.writeMesh();
 
     Info << "End\n" << endl;
     return 0;

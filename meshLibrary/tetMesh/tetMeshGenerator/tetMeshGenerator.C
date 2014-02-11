@@ -48,12 +48,6 @@ Description
 #include "triSurfacePatchManipulator.H"
 
 //#define DEBUG
-//#define DEBUGfpma
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFPMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -69,15 +63,10 @@ void tetMeshGenerator::createTetMesh()
 
     tme.createMesh();
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "tetMesh");
-# else
-    writeMeshEnsight(mesh_, "tetMesh");
-# endif
-    ::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::surfacePreparation()
@@ -93,15 +82,10 @@ void tetMeshGenerator::surfacePreparation()
     }
     while( topologicalCleaner(mesh_).cleanTopology() );
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterTopoCleaning");
-# else
-    writeMeshEnsight(mesh_, "afterTopoCleaning");
-# endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::mapMeshToSurface()
@@ -111,28 +95,20 @@ void tetMeshGenerator::mapMeshToSurface()
 
     //- map mesh surface on the geometry surface
     meshSurfaceMapper(*msePtr, *octreePtr_).mapVerticesOntoSurface();
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterMapping");
-# else
-    writeMeshEnsight(mesh_, "afterMapping");
-# endif
+
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-# else
-    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-# endif
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
+
     deleteDemandDrivenData(msePtr);
 }
 
@@ -140,16 +116,10 @@ void tetMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "withEdges");
-# else
-    writeMeshEnsight(mesh_, "withEdges");
-#endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::optimiseMeshSurface()
@@ -157,15 +127,10 @@ void tetMeshGenerator::optimiseMeshSurface()
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
 
-# ifdef DEBUG
+    # ifdef DEBUG
     mesh_.write();
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-# else
-    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-#endif
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::generateBoudaryLayers()
@@ -191,11 +156,10 @@ void tetMeshGenerator::generateBoudaryLayers()
             bl.addLayerForPatch(createLayers[patchI]);
     }
 
-# ifdef DEBUG
-    writeMeshEnsight(mesh_, "meshWithBndLayer");
+    # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_FAILURE);
-# endif
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::optimiseFinalMesh()
@@ -209,39 +173,30 @@ void tetMeshGenerator::optimiseFinalMesh()
 
     optimizer.optimizeMeshFV();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"optimisedMesh");
-# else
-    writeMeshEnsight(mesh_, "optimisedMesh");
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renamedPatchesMesh");
-# else
-    writeMeshEnsight(mesh_, "renamedPatchesMesh");
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
 
-# ifdef DEBUG
-# ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renumberedMesh");
-# else
-    writeMeshEnsight(mesh_, "renumberedMesh");
-#endif
-# endif
+    # ifdef DEBUG
+    mesh_.write();
+    //::exit(0);
+    # endif
 }
 
 void tetMeshGenerator::generateMesh()
@@ -268,10 +223,7 @@ void tetMeshGenerator::generateMesh()
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from Time
-tetMeshGenerator::tetMeshGenerator
-(
-    const Time& time
-)
+tetMeshGenerator::tetMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(NULL),

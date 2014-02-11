@@ -45,12 +45,15 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    tetMeshGenerator omg(runTime);
+    //- tetrahedral mesher cannot be run in parallel yet
+    argList::noParallel();
+
+    tetMeshGenerator tmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << endl;
-    
-    omg.writeMesh();
+
+    tmg.writeMesh();
 
     Info << "End\n" << endl;
     return 0;

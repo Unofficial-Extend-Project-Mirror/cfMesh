@@ -42,10 +42,6 @@ Description
 //#define OCTREETiming
 //#define DEBUGSearch
 
-# ifdef DEBUGSearch
-#include "writeOctreeEnsight.H"
-# endif
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -330,7 +326,6 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
     # ifdef DEBUGSearch
-    writeOctreeEnsight(octree_, "BeforeMarking");
     forAll(leaves, leafI)
         Info << "Leaf " << leafI << " is " << *leaves[leafI]
             << " type " << label(leaves[leafI]->cubeType()) << endl;

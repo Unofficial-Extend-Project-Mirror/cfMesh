@@ -59,20 +59,20 @@ void meshOctree::findNearestSurfacePoint
     }
     else
     {
-        const scalar s = 1.5 * leaves_[cLabel]->size(rootBox_);
+        const scalar s = 0.75 * leaves_[cLabel]->size(rootBox_);
         sizeVec.x() = sizeVec.y() = sizeVec.z() = s;
     }
 
     //- find nearest surface vertex to the point p
-    bool found;
+    bool found(false);
     label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
 
+    distSq = VGREAT;
+
     do
     {
-        found = false;
         boundBox bb(p - sizeVec, p + sizeVec);
-        distSq = Foam::sqr(sizeVec.x());
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -91,7 +91,7 @@ void meshOctree::findNearestSurfacePoint
                 const point p0 =
                     help::nearestPointOnTheTriangle(el[tI], surface_, p);
 
-                const scalar dSq = magSqr(p0 - p);
+                const scalar dSq = Foam::magSqr(p0 - p);
                 if( dSq < distSq )
                 {
                     distSq = dSq;
@@ -106,6 +106,17 @@ void meshOctree::findNearestSurfacePoint
             sizeVec *= 2.0;
 
     } while( !found && (iterationI++ < 5) );
+
+    # ifdef DEBUGSearch
+    forAll(surface_, triI)
+    {
+        const point pp = help::nearestPointOnTheTriangle(triI, surface_, p);
+
+        if( distSq - magSqr(pp - p) > SMALL )
+            Pout << "Point " << p << " current nearest " << nearest
+                 << " closer point " << pp << endl;
+    }
+    # endif
 
     if( (!found || (region < 0)) && !Pstream::parRun() )
     {
@@ -130,20 +141,20 @@ void meshOctree::findNearestSurfacePointInRegion
     }
     else
     {
-        const scalar s = 1.5 * leaves_[cLabel]->size(rootBox_);
+        const scalar s = 0.75 * leaves_[cLabel]->size(rootBox_);
         sizeVec.x() = sizeVec.y() = sizeVec.z() = s;
     }
 
     //- find nearest surface vertex to the point p
-    bool found;
+    bool found(false);
     label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
 
+    distSq = VGREAT;
+
     do
     {
-        found = false;
         boundBox bb(p - sizeVec, p + sizeVec);
-        distSq = Foam::sqr(sizeVec.x());
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -166,7 +177,7 @@ void meshOctree::findNearestSurfacePointInRegion
                 const point p0 =
                     help::nearestPointOnTheTriangle(el[tI], surface_, p);
 
-                const scalar dSq = magSqr(p0 - p);
+                const scalar dSq = Foam::magSqr(p0 - p);
                 if( dSq < distSq )
                 {
                     distSq = dSq;
@@ -202,7 +213,7 @@ bool meshOctree::findNearestEdgePoint
     }
     else
     {
-        const scalar s = 1.5 * leaves_[cLabel]->size(rootBox_);
+        const scalar s = 0.75 * leaves_[cLabel]->size(rootBox_);
         sizeVec.x() = sizeVec.y() = sizeVec.z() = s;
     }
 
@@ -216,10 +227,11 @@ bool meshOctree::findNearestEdgePoint
     bool foundAnEdge(false);
     label iterationI(0);
 
+    distSq = VGREAT;
+
     do
     {
         boundBox bb(p - sizeVec, p + sizeVec);
-        distSq = Foam::sqr(sizeVec.x());
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -256,10 +268,11 @@ bool meshOctree::findNearestEdgePoint
                 const point s = sp[edges[ce[eI]].start()];
                 const point e = sp[edges[ce[eI]].end()];
                 const point np = help::nearestPointOnTheEdgeExact(s, e, p);
+                const scalar dSq = Foam::magSqr(np - p);
 
-                if( magSqr(np - p) < distSq )
+                if( dSq < distSq )
                 {
-                    distSq = magSqr(np - p);
+                    distSq = dSq;
                     edgePoint = np;
                     foundAnEdge = true;
                 }
@@ -286,7 +299,7 @@ bool meshOctree::findNearestVertexToTheEdge
     const scalar dst = mag(edgePoints[0] - edgePoints[1]);
     vector sizeVec(dst, dst, dst);
 
-    boundBox bb(c - 1.5 * sizeVec, c + 1.5 * sizeVec);
+    boundBox bb(c - 0.75 * sizeVec, c + 0.75 * sizeVec);
 
     DynList<const meshOctreeCube*, 256> leavesInBox;
     findLeavesContainedInBox(bb, leavesInBox);
@@ -373,12 +386,12 @@ bool meshOctree::findNearestCorner
     }
     else
     {
-        const scalar s = 1.5 * leaves_[cLabel]->size(rootBox_);
+        const scalar s = 0.75 * leaves_[cLabel]->size(rootBox_);
         sizeVec.x() = sizeVec.y() = sizeVec.z() = s;
     }
 
     //- find nearest surface vertex to the point p
-    bool found;
+    bool found(false);
     label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
 
@@ -386,11 +399,11 @@ bool meshOctree::findNearestCorner
     const VRWGraph& pEdges = surface_.pointEdges();
     const VRWGraph& eFacets = surface_.edgeFacets();
 
+    distSq = VGREAT;
+
     do
     {
-        found = false;
         boundBox bb(p - sizeVec, p + sizeVec);
-        distSq = Foam::sqr(sizeVec.x());
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -460,7 +473,7 @@ bool meshOctree::findNearestCorner
                         if( nEdges >= patches.size() )
                         {
                             //- all patches are present, check the distance
-                            const scalar dSq = magSqr(points[spI] - p);
+                            const scalar dSq = Foam::magSqr(points[spI] - p);
 
                             if( dSq < distSq )
                             {
@@ -515,13 +528,13 @@ bool meshOctree::findNearestVertexToPatches
         }
 
         newP /= patches.size();
-        if( magSqr(newP - mapPointApprox) < tol * searchRange_ )
+        if( Foam::magSqr(newP - mapPointApprox) < tol * searchRange_ )
             break;
 
         mapPointApprox = newP;
     }
 
-    distSq = magSqr(mapPointApprox - p);
+    distSq = Foam::magSqr(mapPointApprox - p);
     nearest = mapPointApprox;
 
     return true;

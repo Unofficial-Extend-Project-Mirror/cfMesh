@@ -30,14 +30,12 @@ Description
 #include "triSurf.H"
 #include "triSurfacePatchManipulator.H"
 #include "demandDrivenData.H"
-#include "objectRegistry.H"
 #include "Time.H"
 #include "meshOctreeCreator.H"
 #include "cartesianMeshExtractor.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
-#include "surfaceMorpherCells.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
 #include "topologicalCleaner.H"
@@ -52,13 +50,6 @@ Description
 #include "removeCellsInSelectedDomains.H"
 
 //#define DEBUG
-//#define DEBUGfpma
-//#define DEBUGEnsight
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFPMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -82,12 +73,7 @@ void cartesianMeshGenerator::createCartesianMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "cartesianMesh");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "cartesianMesh");
-    # endif
-    //::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -121,9 +107,6 @@ void cartesianMeshGenerator::surfacePreparation()
         }
 
         rCells.removeCells();
-
-        //mesh_.write();
-        //::exit(1);
     }
 
 
@@ -151,12 +134,8 @@ void cartesianMeshGenerator::surfacePreparation()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterTopoCleaning");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "afterTopoCleaning");
-    # endif
-    //::exit(EXIT_FAILURE);
+    returnReduce(1, sumOp<label>());
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -170,39 +149,25 @@ void cartesianMeshGenerator::mapMeshToSurface()
     mapper.preMapVertices();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "preMappedMesh");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "preMappedMesh");
-    # endif
     mesh_.write();
-    //::exit(EXIT_FAILURE);
+    returnReduce(1, sumOp<label>());
+    //::exit(EXIT_SUCCESS);
     # endif
 
     //- map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterMapping");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "afterMapping");
-    # endif
     mesh_.write();
-    //::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-    # endif
     mesh_.write();
-    ::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 
     deleteDemandDrivenData(msePtr);
@@ -213,16 +178,8 @@ void cartesianMeshGenerator::mapEdgesAndCorners()
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 
     # ifdef DEBUG
-    //mesh_.write();
-    meshOptimizer(mesh_).optimizeSurface(*octreePtr_);
     mesh_.write();
-    ::exit(EXIT_FAILURE);
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "withEdges");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "withEdges");
-    #endif
-    //::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -233,12 +190,7 @@ void cartesianMeshGenerator::optimiseMeshSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-    #endif
-    //::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -275,13 +227,8 @@ void cartesianMeshGenerator::generateBoundaryLayers()
     bl.addLayerForAllPatches();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "meshWithBndLayer");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "meshWithBndLayer");
-    # endif
     mesh_.write();
-    //::exit(EXIT_FAILURE);
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -314,11 +261,8 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeMeshFV();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"optimisedMesh");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "optimisedMesh");
-    #endif
+    mesh_.write();
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -327,11 +271,8 @@ void cartesianMeshGenerator::replaceBoundaries()
     renameBoundaryPatches rbp(mesh_, meshDict_);
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renamedPatchesMesh");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "renamedPatchesMesh");
-    #endif
+    mesh_.write();
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -340,11 +281,8 @@ void cartesianMeshGenerator::renumberMesh()
     polyMeshGenModifier(mesh_).renumberMesh();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renumberedMesh");
-    # elif DEBUGEnsight
-    writeMeshEnsight(mesh_, "renumberedMesh");
-    #endif
+    mesh_.write();
+    //::exit(EXIT_SUCCESS);
     # endif
 }
 

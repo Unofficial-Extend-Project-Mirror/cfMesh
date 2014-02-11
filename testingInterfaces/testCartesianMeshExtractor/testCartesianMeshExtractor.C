@@ -117,11 +117,6 @@ int main(int argc, char *argv[])
     {
         std::ostringstream ss;
         ss << Pstream::myProcNo();
-        writeMeshEnsight(pmg, "cartesianMesh"+ss.str());
-    }
-    else
-    {
-        writeMeshEnsight(pmg, "cartesianMesh");
     }
 */
     Info << "End\n" << endl;

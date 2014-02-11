@@ -38,7 +38,6 @@ Description
 #include "meshOctreeCreator.H"
 #include "triSurf.H"
 #include "polyMeshGen.H"
-#include "writeMeshEnsight.H"
 
 using namespace Foam;
 
@@ -50,9 +49,9 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-    
+
     objectRegistry registry(runTime);
-    
+
     IOdictionary meshDict
     (
         IOobject
@@ -64,13 +63,13 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-    
+
     fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
         surfaceFile = ".."/surfaceFile;
 
     triSurf surf(registry.path()/surfaceFile);
-    
+
     if( meshDict.found("subsetFileName") )
     {
         fileName subsetFileName = meshDict.lookup("subsetFileName");
@@ -85,7 +84,7 @@ int main(int argc, char *argv[])
 
     polyMeshGen pmg(registry);
     pmg.read();
-    
+
     // make sure that mesh contains all surface patches
     if(
         Pstream::parRun() &&
@@ -95,10 +94,10 @@ int main(int argc, char *argv[])
         wordList patchNames(surf.patches().size());
         labelList patchStart(patchNames.size(), pmg.nInternalFaces());
         labelList nFacesInPatch(patchNames.size(), 0);
-        
+
         forAll(patchNames, patchI)
             patchNames[patchI] = surf.patches()[patchI].name();
-        
+
         forAll(pmg.patchNames(), patchI)
         {
             label pos(-1);
@@ -108,20 +107,20 @@ int main(int argc, char *argv[])
                     pos = nameI;
                     break;
                 }
-                
+
             nFacesInPatch[pos] = pmg.numFacesInPatch()[patchI];
             patchStart[pos] = pmg.patchStart()[patchI];
-                
+
             for(label i=pos+1;i<patchNames.size();++i)
                 patchStart[i] += nFacesInPatch[pos];
         }
-        
+
         polyMeshGenModifier meshModifier(pmg);
         meshModifier.patchNamesAccess() = patchNames;
         meshModifier.patchStartAccess() = patchStart;
         meshModifier.nFacesInPatchAccess() = nFacesInPatch;
     }
-    
+
     meshSurfaceEngine ms(pmg);
     meshSurfaceOptimizer mo(ms, moc);
 
@@ -130,18 +129,17 @@ int main(int argc, char *argv[])
     for(label faceI=mesh.nInternalFaces();faceI<pmg.faces().size();faceI++)
     {
         const face& f = pmg.faces()[faceI];
-        
+
         forAll(f, pI)
             pointRegion[f[pI]] = 1;
     }
-    
+
     mo.preOptimizeSurface(pointRegion);
     */
     mo.optimizeSurface();
-    
+
     pmg.write();
-    writeMeshEnsight(pmg, "smoothMesh");
-    
+
     Info << "End\n" << endl;
     return 0;
 }

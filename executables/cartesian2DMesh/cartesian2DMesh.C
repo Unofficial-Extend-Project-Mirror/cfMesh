@@ -31,7 +31,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "objectRegistry.H"
 #include "Time.H"
 #include "cartesian2DMeshGenerator.H"
 
@@ -49,12 +48,12 @@ int main(int argc, char *argv[])
     //- 2d cartesian mesher cannot be run in parallel
     argList::noParallel();
 
-    cartesian2DMeshGenerator omg(runTime);
+    cartesian2DMeshGenerator cmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
 
-    omg.writeMesh();
+    cmg.writeMesh();
 
     Info << "End\n" << endl;
     return 0;

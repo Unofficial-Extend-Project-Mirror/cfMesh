@@ -35,7 +35,6 @@ Description
 //#define DEBUGEdges
 
 # ifdef DEBUGEdges
-#include "writeMeshEnsight.H"
 #include "primitiveMesh.H"
 # endif
 
@@ -43,16 +42,16 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void dualUnfoldConcaveCells::replaceBoundary()
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     wordList patchNames(boundaries.size());
     forAll(boundaries, patchI)
         patchNames[patchI] = boundaries[patchI].patchName();
-    
+
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.replaceBoundary
     (
@@ -61,7 +60,7 @@ void dualUnfoldConcaveCells::replaceBoundary()
         newBoundaryOwners_,
         newBoundaryPatches_
     );
-    
+
     newBoundaryFaces_.setSize(0);
     newBoundaryOwners_.setSize(0);
 }
@@ -97,36 +96,36 @@ dualUnfoldConcaveCells::~dualUnfoldConcaveCells()
 void dualUnfoldConcaveCells::unfoldInvalidCells()
 {
     const meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
-    
+
     if( findConcaveEdges(*msePtr) )
     {
         markVertexTypes(*msePtr);
-        
+
         storeAndMergeBoundaryFaces(*msePtr);
-        
+
         createNeighbouringBoundaryFaces(*msePtr);
-        
+
         storeRemainingBoundaryFaces(*msePtr);
-        
+
         removeConcaveVerticesFromIntFaces(*msePtr);
-        
+
         deleteDemandDrivenData(msePtr);
-        
+
         replaceBoundary();
-        
+
         checkAndRepairBoundary();
-        
+
         polyMeshGenModifier(mesh_).removeUnusedVertices();
-        
+
         # ifdef DEBUGEdges
         mesh_.addressingData().checkMesh(true);
         mesh_.write();
         ::exit(EXIT_FAILURE);
         # endif
-        
+
         correctEdgesBetweenPatches correctEdges(mesh_);
         meshSurfaceMapper(*msePtr, octree_).mapCornersAndEdges();
-        
+
         # ifdef DEBUGEdges
         mesh_.addressingData().checkMesh();
         # endif

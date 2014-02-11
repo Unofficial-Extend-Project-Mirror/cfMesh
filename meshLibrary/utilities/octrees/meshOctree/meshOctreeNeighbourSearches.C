@@ -48,9 +48,9 @@ label meshOctree::findLeafContainingVertex
     Info << "Finding leaf for vertex " << p << endl;
     # endif
 
-    const meshOctreeCube* oc = initialCubePtr_;
+    const meshOctreeCube* ocPtr = initialCubePtr_;
 
-    if( !oc->isVertexInside(rootBox_, p) )
+    if( !ocPtr->isVertexInside(rootBox_, p) )
     {
         # ifdef OCTREE_DEBUG
         Info << "Vertex " << p << " is not in the initial cube" << endl;
@@ -62,10 +62,10 @@ label meshOctree::findLeafContainingVertex
 
     do
     {
-        if( oc && !oc->isLeaf() )
+        if( ocPtr && !ocPtr->isLeaf() )
         {
             //- find a subCube containing the vertex;
-            const point c = oc->centre(rootBox_);
+            const point c = ocPtr->centre(rootBox_);
 
             label scI(0);
 
@@ -76,7 +76,7 @@ label meshOctree::findLeafContainingVertex
             if( !isQuadtree_ && p.z() >= c.z() )
                 scI |= 4;
 
-            oc = oc->subCube(scI);
+            ocPtr = ocPtr->subCube(scI);
         }
         else
         {
@@ -84,9 +84,9 @@ label meshOctree::findLeafContainingVertex
         }
     } while( !finished );
 
-    if( oc )
+    if( ocPtr )
     {
-        return oc->cubeLabel();
+        return ocPtr->cubeLabel();
     }
 
     return meshOctreeCubeBasic::OTHERPROC;
@@ -103,9 +103,9 @@ label meshOctree::findNeighbourOverNode
 
     const meshOctreeCubeCoordinates nc(cc + regularityPositions_[18+nodeI]);
 
-    const meshOctreeCube* nei = findCubeForPosition(nc);
+    const meshOctreeCube* neiPtr = findCubeForPosition(nc);
 
-    if( !nei )
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
@@ -124,21 +124,21 @@ label meshOctree::findNeighbourOverNode
 
         return -1;
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        return nei->cubeLabel();
+        return neiPtr->cubeLabel();
     }
     else
     {
         FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
             if( scPtr )
             {
                 sc[scI] = scPtr->cubeLabel();
@@ -177,9 +177,9 @@ void meshOctree::findNeighboursOverEdge
 
     const meshOctreeCubeCoordinates nc(cc + regularityPositions_[6+eI]);
 
-    const meshOctreeCube* nei = findCubeForPosition(nc);
+    const meshOctreeCube* neiPtr = findCubeForPosition(nc);
 
-    if( !nei )
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
@@ -196,21 +196,21 @@ void meshOctree::findNeighboursOverEdge
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        neighbourLeaves.append(nei->cubeLabel());
+        neighbourLeaves.append(neiPtr->cubeLabel());
     }
     else
     {
         FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
 
             if( scPtr )
             {
@@ -289,13 +289,13 @@ void meshOctree::findNeighboursInDirection
         break;
     }
 
-    const meshOctreeCube* nei =
+    const meshOctreeCube* neiPtr =
         findCubeForPosition
         (
             meshOctreeCubeCoordinates(cpx, cpy, cpz, cc.level())
         );
 
-    if( !nei )
+    if( !neiPtr )
     {
         const label levelLimiter = (1 << cc.level());
         if(
@@ -312,21 +312,21 @@ void meshOctree::findNeighboursInDirection
             neighbourLeaves.append(meshOctreeCubeBasic::OTHERPROC);
         }
     }
-    else if( nei->isLeaf() )
+    else if( neiPtr->isLeaf() )
     {
         # ifdef OCTREE_DEBUG
-        if( leaves_[nei->cubeLabel()] != nei )
+        if( leaves_[neiPtr->cubeLabel()] != neiPtr )
             FatalError << "Cube does not correspond to itself"
                 << abort(FatalError);
         # endif
-        neighbourLeaves.append(nei->cubeLabel());
+        neighbourLeaves.append(neiPtr->cubeLabel());
     }
     else
     {
         FixedList<label, 8> sc(-1);
         for(label scI=0;scI<8;++scI)
         {
-            meshOctreeCube* scPtr = nei->subCube(scI);
+            meshOctreeCube* scPtr = neiPtr->subCube(scI);
 
             if( scPtr )
             {
@@ -452,11 +452,11 @@ meshOctreeCube* meshOctree::findCubeForPosition
         return NULL;
     }
 
-    meshOctreeCube* nei(initialCubePtr_);
+    meshOctreeCube* neiPtr(initialCubePtr_);
 
     for(label i=(l-1);i>=0;--i)
     {
-        if( nei && !nei->isLeaf() )
+        if( neiPtr && !neiPtr->isLeaf() )
         {
             levelLimiter = (1 << i);
 
@@ -469,7 +469,7 @@ meshOctreeCube* meshOctree::findCubeForPosition
             if( !isQuadtree_ && (cpz & levelLimiter) )
                 scI |= 4;
 
-            nei = nei->subCube(scI);
+            neiPtr = neiPtr->subCube(scI);
         }
         else
         {
@@ -478,10 +478,10 @@ meshOctreeCube* meshOctree::findCubeForPosition
     }
 
     # ifdef OCTREE_DEBUG
-    Info << "Found position is " << *nei << endl;
+    Info << "Found position is " << *neiPtr << endl;
     # endif
 
-    return nei;
+    return neiPtr;
 }
 
 label meshOctree::findLeafLabelForPosition
@@ -489,13 +489,13 @@ label meshOctree::findLeafLabelForPosition
     const meshOctreeCubeCoordinates& cc
 ) const
 {
-    const meshOctreeCube* oc = findCubeForPosition(cc);
+    const meshOctreeCube* ocPtr = findCubeForPosition(cc);
 
-    if( oc && oc->isLeaf() )
+    if( ocPtr && ocPtr->isLeaf() )
     {
-        return oc->cubeLabel();
+        return ocPtr->cubeLabel();
     }
-    else if( !oc && (neiProcs_.size() != 0) )
+    else if( !ocPtr && (neiProcs_.size() != 0) )
     {
         const label levelLimiter = (1 << cc.level());
         if(

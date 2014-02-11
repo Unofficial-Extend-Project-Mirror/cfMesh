@@ -209,6 +209,18 @@ inline bool meshSurfaceOptimizer::transformIntoPlaneParallel
 
     std::map<label, DynList<parTriFace> >::const_iterator
         pIter = m.find(globalPointLabel[bpI]);
+
+    if( pIter == m.end() )
+    {
+        FatalErrorIn
+        (
+            "(const label, const plane&,"
+            " const std::map<label, DynList<parTriFace> >&,"
+            " vector&, vector&, DynList<point>&, DynList<triFace>&) const"
+        ) << " Cannot find node " << globalPointLabel[bpI]
+          << " in the map" << abort(FatalError);
+    }
+
     const DynList<parTriFace>& pFcs = pIter->second;
 
     # ifdef DEBUGSmooth

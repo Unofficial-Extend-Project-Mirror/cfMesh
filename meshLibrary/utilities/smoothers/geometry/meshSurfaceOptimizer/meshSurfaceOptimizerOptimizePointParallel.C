@@ -53,9 +53,6 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
         return;
 
-    //- update vertex normals
-    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
-
     //- create storage for data
     std::map<label, labelledPoint> localData;
 
@@ -162,9 +159,6 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
             newP
         );
     }
-
-    //- update vertex normals
-    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
@@ -175,9 +169,6 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 {
     if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
         return;
-
-    //- update vertex normals
-    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 
     //- create storage for data
     std::map<label, labelledPoint> localData;
@@ -271,9 +262,6 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
             newP
         );
     }
-
-    //- update vertex normals
-    //meshSurfaceEngineModifier(surfaceEngine_).updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
@@ -286,7 +274,6 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
 
     //- update vertex normals
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-    //surfaceModifier.updateVertexNormals();
 
     //- exchange data with other processors
     std::map<label, DynList<parTriFace> > m;
@@ -331,9 +318,6 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
 
     //- make sure that moved points have the same coordinates on all processors
     surfaceModifier.syncVerticesAtParallelBoundaries(nodesToSmooth);
-
-    //- update vertex normals
-    //surfaceModifier.updateVertexNormals();
 }
 
 void meshSurfaceOptimizer::edgeNodeDisplacementParallel
@@ -454,7 +438,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         }
     }
 
-    sm.updateGeometry(nodesToSmooth);
+    //sm.updateGeometry(nodesToSmooth);
 }
 
 void meshSurfaceOptimizer::exchangeData

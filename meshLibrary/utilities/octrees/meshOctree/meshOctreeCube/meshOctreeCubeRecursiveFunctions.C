@@ -72,7 +72,7 @@ void meshOctreeCube::leavesInBox
                         leaves
                     );
                 }
-                else
+                else if( Pstream::parRun() )
                 {
                     meshOctreeCubeCoordinates cc = refineForPosition(scI);
                     cc.cubeBox(rootBox, min, max);

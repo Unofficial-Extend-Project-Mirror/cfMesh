@@ -38,28 +38,27 @@ Description
 #ifdef DEBUGSmooth
 #include "Time.H"
 #include "objectRegistry.H"
-#include "writeMeshEnsight.H"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-                    
+
 void meshUntangler::cutRegion::createInitialConfiguration
 (
     const boundBox& bb
 )
-{    
+{
     pointsPtr_ = new DynList<point, 64>();
     DynList<point, 64>& bVertices = *pointsPtr_;
     edgesPtr_ = new DynList<edge, 128>();
     DynList<edge, 128>& bEdges = *edgesPtr_;
     facesPtr_ = new DynList<DynList<label, 8>, 64>();
     DynList<DynList<label, 8>, 64>& bFaces = *facesPtr_;
-    
+
     //- set vertices
     const point c = (bb.max() + bb.min()) / 2.0;
     const point vec = (bb.max() - bb.min()) / 2.0;
@@ -95,7 +94,7 @@ void meshUntangler::cutRegion::createInitialConfiguration
     (
         point(c.x() - vec.x(), c.y() + vec.y(), c.z() + vec.z())
     );
-    
+
     //- set edges
 
     //- edges in x direction
@@ -103,19 +102,19 @@ void meshUntangler::cutRegion::createInitialConfiguration
     bEdges.append(edge(3, 2));
     bEdges.append(edge(7, 6));
     bEdges.append(edge(4, 5));
-    
+
     //- edges in y direction
     bEdges.append(edge(1, 2));
     bEdges.append(edge(0, 3));
     bEdges.append(edge(4, 7));
     bEdges.append(edge(5, 6));
-    
+
     //- edges in z direction
     bEdges.append(edge(0, 4));
     bEdges.append(edge(1, 5));
     bEdges.append(edge(2, 6));
     bEdges.append(edge(3, 7));
-    
+
     //- set faces
     DynList<label, 8> f;
     f.setSize(4);
@@ -153,7 +152,7 @@ void meshUntangler::cutRegion::createInitialConfiguration
     f[2] = 2;
     f[3] = 6;
     bFaces.append(f);
-    
+
     # ifdef DEBUGSmooth
     Info << "Original vertices " << *pointsPtr_ << endl;
     Info << "Original edges " << *edgesPtr_ << endl;
@@ -162,7 +161,7 @@ void meshUntangler::cutRegion::createInitialConfiguration
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 meshUntangler::cutRegion::cutRegion(const boundBox& bb)
 :
     pointsPtr_(NULL),
@@ -191,7 +190,7 @@ meshUntangler::cutRegion::~cutRegion()
     deleteDemandDrivenData(cEdgesPtr_);
     deleteDemandDrivenData(cFacesPtr_);
 }
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void meshUntangler::cutRegion::planeCut(const plane& plane)
@@ -208,14 +207,14 @@ void meshUntangler::cutRegion::planeCut(const plane& plane)
             "cutRegion::planeCut(const plane& plane)"
         ) << "Pointers should not be allocated!" << abort(FatalError);
     }
-    
+
     Foam::Time runTime
     (
         Foam::Time::controlDictName,
         "../.",
         "testSmoothing"
     );
-    
+
     objectRegistry oR(runTime);
 
     polyMeshGen pmg
@@ -223,15 +222,14 @@ void meshUntangler::cutRegion::planeCut(const plane& plane)
         oR
     );
     this->createPolyMeshFromRegion(pmg);
-    writeMeshEnsight(pmg, "feasibleRegion");
     # endif
-    
+
     if( findNewVertices(plane) )
     {
         findNewEdges();
-    
+
         findNewFaces();
-        
+
         if( !valid_ ) return;
 
         deleteDemandDrivenData(pointsPtr_);
@@ -258,13 +256,13 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
     points.setSize(pointsPtr_->size());
     forAll(points, pI)
         points[pI] = (*pointsPtr_)[pI];
-    
+
     faceListPMG& faces = meshModifier.facesAccess();
     cellListPMG& cells = meshModifier.cellsAccess();
     cells.setSize(1);
     cells[0].setSize(facesPtr_->size());
     faces.setSize(facesPtr_->size());
-    
+
     const DynList<edge, 128>& edges = *edgesPtr_;
     const DynList<DynList<label, 8>, 64>& fcs = *facesPtr_;
     forAll(faces, fI)
@@ -273,7 +271,7 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
         const DynList<label, 8>& f = fcs[fI];
         forAll(f, eI)
             fEdges.append(edges[f[eI]]);
-        
+
         Info << "Edges forming face " << fI << " are " << fEdges << endl;
         labelListList sf = sortEdgesIntoChains(fEdges).sortedChains();
         if( sf.size() != 1 )
@@ -282,7 +280,7 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
                 "void meshOptimizer::meshUntangler::"
                 "cutRegion::createPolyMeshFromRegion(polyMesgGen&)"
             ) << "More than one face created!" << abort(FatalError);
-        
+
         faces[fI] = face(sf[0]);
         cells[0][fI] = fI;
     }

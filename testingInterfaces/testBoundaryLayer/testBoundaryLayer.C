@@ -167,7 +167,6 @@ int main(int argc, char *argv[])
     //meshOctree* octreePtr = NULL;
     //meshOptimizer(*octreePtr, pmg).preOptimize();
 
-    //writeMeshEnsight(pmg, "meshWithBndLayers");
     //pmg.addressingData().checkMesh(true);
 
     Info << "End\n" << endl;

@@ -45,12 +45,15 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    voronoiMeshGenerator omg(runTime);
+    //- polyhedral mesher cannot be run in parallel yet
+    argList::noParallel();
+
+    voronoiMeshGenerator pmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << endl;
-    
-    omg.writeMesh();
+
+    pmg.writeMesh();
 
     Info << "End\n" << endl;
     return 0;

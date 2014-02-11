@@ -35,7 +35,6 @@ Description
 //#define DEBUGMaterials
 
 # ifdef DEBUGMaterials
-#include "writeOctreeEnsight.H"
 #include "helperFunctions.H"
 # endif
 
@@ -296,10 +295,6 @@ void triSurfaceDetectMaterials::createOctree()
     Info << "Number of INSIDE leaves " << nInside << endl;
     Info << "Number of OUTSIDE leaves " << nOutside << endl;
     Info << "Number of UNKNOWN leaves " << nUnknown << endl;
-
-    # ifdef DEBUGMaterials
-    writeOctreeEnsight(*octreePtr_, "refinedOctree", meshOctreeCubeBasic::DATA);
-    # endif
 }
 
 void triSurfaceDetectMaterials::refineOctree()

@@ -38,7 +38,6 @@ Description
 #include "polyMeshGen.H"
 #include "voronoiMeshExtractor.H"
 #include "triSurf.H"
-#include "writeMeshEnsight.H"
 
 using namespace Foam;
 
@@ -50,9 +49,9 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-    
+
     objectRegistry registry(runTime);
-    
+
     IOdictionary meshDict
     (
         IOobject
@@ -64,7 +63,7 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-    
+
     const fileName surfaceFile = meshDict.lookup("surfaceFile");
 
     triSurf surf(registry.path()/surfaceFile);
@@ -72,19 +71,18 @@ int main(int argc, char *argv[])
     // construct the octree
     meshOctree mo(surf);
     meshOctreeCreator(mo, meshDict).createOctreeBoxes();
-    
+
     Info<< "Execution time for octree creation = "
         << runTime.elapsedCpuTime()
         << " s\n" << endl << endl;
-    
+
     polyMeshGen pmg(registry);
     voronoiMeshExtractor vmg(mo, meshDict, pmg);
-    
+
     vmg.createMesh();
-    
+
     pmg.write();
-    writeMeshEnsight(pmg, "voronoiMesh");
-    
+
     Info << "End\n" << endl;
     return 0;
 }

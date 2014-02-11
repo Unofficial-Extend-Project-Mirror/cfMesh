@@ -37,7 +37,6 @@ Description
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceEdgeExtractor.H"
 #include "triSurf.H"
-#include "writeMeshEnsight.H"
 
 using namespace Foam;
 
@@ -49,9 +48,9 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-    
+
     objectRegistry registry(runTime);
-    
+
     IOdictionary meshDict
     (
         IOobject
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-    
+
     const fileName surfaceFile = meshDict.lookup("surfaceFile");
 
     triSurf surf(registry.path()/surfaceFile);
@@ -71,16 +70,16 @@ int main(int argc, char *argv[])
     // construct the octree
     meshOctree mo(surf);
     meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(8);
-    
+
     // construct the polyMeshGen
     polyMeshGen pmg(registry);
     pmg.read();
-    
+
     // find regions for boundary vertices
     meshSurfaceEngine mse(pmg);
-    
+
     labelList pointRegion(pmg.points().size(), -1);
-    
+
     Info << "Finding boundary regions for boundary vertices" << endl;
     const labelList& bPoints = mse.boundaryPoints();
     forAll(bPoints, bpI)
@@ -90,13 +89,12 @@ int main(int argc, char *argv[])
         mo.findNearestSurfacePoint(np, pointRegion[bPoints[bpI]], p);
         p = np;
     }
-    
+
     Info << "Extracting edges" << endl;
     meshSurfaceEdgeExtractor(pmg, mo, pointRegion);
-    
-    writeMeshEnsight(pmg, "meshWithEdges");
+
     pmg.addressingData().checkMesh(true);
-    
+
     Info << "End\n" << endl;
     return 0;
 }

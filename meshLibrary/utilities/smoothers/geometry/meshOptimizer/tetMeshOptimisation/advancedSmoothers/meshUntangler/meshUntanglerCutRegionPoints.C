@@ -38,16 +38,15 @@ Description
 #ifdef DEBUGSmooth
 #include "Time.H"
 #include "objectRegistry.H"
-#include "writeMeshEnsight.H"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 bool meshUntangler::cutRegion::findNewVertices
 (
     const plane& plane
@@ -56,28 +55,28 @@ bool meshUntangler::cutRegion::findNewVertices
     #ifdef DEBUGSmooth
     Info << "Finding new vertices" << endl;
     #endif
-    
+
     const DynList<point, 64>& points = *pointsPtr_;
-    
+
     newVertexLabel_.setSize(points.size());
     newVertexLabel_ = -1;
 
     vertexDistance_.setSize(points.size());
-    
+
     vertexTypes_.setSize(points.size());
     vertexTypes_ = direction(NONE);
 
     origNumVertices_ = 0;
-    
+
     cPtsPtr_ = new DynList<point, 64>();
-    
+
     const point& rp = plane.refPoint();
     const vector& n = plane.normal();
     forAll(points, pI)
     {
         const point& p = points[pI];
         vertexDistance_[pI] = ((p - rp) & n);
-        
+
         if( vertexDistance_[pI] > tol_ )
         {
             cPtsPtr_->append(p);
@@ -92,7 +91,7 @@ bool meshUntangler::cutRegion::findNewVertices
             vertexDistance_[pI] = 0.0;
         }
     }
-    
+
     #ifdef DEBUGSmooth
     Info << "tolerance " << tol_ << endl;
     Info << "New number of vertices is " << origNumVertices_ << endl;
@@ -101,7 +100,7 @@ bool meshUntangler::cutRegion::findNewVertices
             << ". Vertex distance from plane is " << vertexDistance_[pI]
             << " and its new label is " << newVertexLabel_[pI] << endl;
     #endif
-    
+
     if( origNumVertices_ < points.size() )
     {
         return true;
@@ -109,7 +108,7 @@ bool meshUntangler::cutRegion::findNewVertices
     else
     {
         deleteDemandDrivenData(cPtsPtr_);
-        
+
         return false;
     }
 }
@@ -121,7 +120,7 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
     DynList<label, 64> newLabelForPoint;
     newLabelForPoint.setSize(points.size());
     newLabelForPoint = -1;
-    
+
     bool found(false);
     forAll(points, pI)
     {
@@ -133,15 +132,15 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
                 Info << "Vertices " << pI << " and " << pJ
                     << " are too close" << endl;
                 # endif
-                
+
                 newLabelForPoint[pJ] = pI;
                 found = true;
             }
     }
-    
+
     if( !found )
         return;
-    
+
     forAll(edges, eI)
     {
         edge& e = edges[eI];
@@ -150,11 +149,11 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
         if( newLabelForPoint[e.end()] != -1 )
             e.end() = newLabelForPoint[e.end()];
     }
-    
+
     //- remove edges which contain the same vertex
     newEdgeLabel_ = -1;
     label edgeLabel(0);
-    
+
     cEdgesPtr_ = new DynList<edge, 128>();
     forAll(edges, eI)
         if( edges[eI].start() != edges[eI].end() )
@@ -162,30 +161,30 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
             cEdgesPtr_->append(edges[eI]);
             newEdgeLabel_[eI] = edgeLabel++;
         }
-        
+
     deleteDemandDrivenData(edgesPtr_);
     edgesPtr_ = cEdgesPtr_;
     cEdgesPtr_ = NULL;
-        
+
     //- renumber faces
     const DynList<DynList<label, 8>, 64>& faces = *facesPtr_;
     cFacesPtr_ = new DynList<DynList<label, 8>, 64>();
     forAll(faces, fI)
     {
         const DynList<label, 8>& f = faces[fI];
-        
+
         DynList<label, 8> nf(f.size());
-        
+
         forAll(f, eI)
             if( newEdgeLabel_[f[eI]] != -1 )
                 nf.append(newEdgeLabel_[f[eI]]);
-            
+
         if( nf.size() > 2 )
         {
             cFacesPtr_->append(nf);
         }
     }
-    
+
     deleteDemandDrivenData(facesPtr_);
     facesPtr_ = cFacesPtr_;
     cFacesPtr_ = NULL;

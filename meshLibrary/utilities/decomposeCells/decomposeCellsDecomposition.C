@@ -35,10 +35,6 @@ Description
 
 //#define DEBUGDecompose
 
-# ifdef DEBUGDecompose
-#include "writeMeshEnsight.H"
-# endif
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -58,7 +54,6 @@ void decomposeCells::decomposeMesh(const boolList& decomposeCell)
 
     # ifdef DEBUGDecompose
     mesh_.addressingData().checkMesh();
-    writeMeshEnsight(mesh_, "decomposedMesh");
     # endif
 }
 

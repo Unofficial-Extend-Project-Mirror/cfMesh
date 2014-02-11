@@ -45,12 +45,6 @@ Description
 #include "checkMeshDict.H"
 
 //#define DEBUG
-//#define DEBUGfpma
-
-# ifdef DEBUG
-#include "writeMeshEnsight.H"
-#include "writeMeshFPMA.H"
-# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -67,11 +61,6 @@ void dualMeshGenerator::generateDualMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "dualMesh");
-    # else
-    writeMeshEnsight(mesh_, "dualMesh");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -90,11 +79,6 @@ void dualMeshGenerator::surfacePreparation()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterTopoCleaning");
-    # else
-    writeMeshEnsight(mesh_, "afterTopoCleaning");
-    # endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -108,11 +92,6 @@ void dualMeshGenerator::mapMeshToSurface()
     meshSurfaceMapper(*msePtr, *octreePtr_).mapVerticesOntoSurface();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterMapping");
-    # else
-    writeMeshEnsight(mesh_, "afterMapping");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
@@ -121,12 +100,6 @@ void dualMeshGenerator::mapMeshToSurface()
     meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
 
     # ifdef DEBUG
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "afterSurfaceSmoothing");
-    # else
-    writeMeshEnsight(mesh_, "afterSurfaceSmoothing");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
@@ -138,11 +111,6 @@ void dualMeshGenerator::mapMeshToSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "withEdges");
-    # else
-    writeMeshEnsight(mesh_, "withEdges");
-    #endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -154,11 +122,6 @@ void dualMeshGenerator::optimiseMeshSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "optSurfaceWithEdges");
-    # else
-    writeMeshEnsight(mesh_, "optSurfaceWithEdges");
-    #endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -175,12 +138,6 @@ void dualMeshGenerator::checkConcaveEdges()
 
     # ifdef DEBUG
     mesh_.write();
-    //meshOptimizer(*octreePtr_, mesh_).preOptimize();
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "correctedEdges");
-    # else
-    writeMeshEnsight(mesh_, "correctedEdges");
-    #endif
     //::exit(EXIT_FAILURE);
     # endif
 }
@@ -214,11 +171,6 @@ void dualMeshGenerator::generateBoudaryLayers()
     }
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_, "meshWithBndLayer");
-    # else
-    writeMeshEnsight(mesh_, "meshWithBndLayer");
-    # endif
     mesh_.write();
     //::exit(EXIT_FAILURE);
     # endif
@@ -236,11 +188,8 @@ void dualMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeMeshFV();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"optimisedMesh");
-    # else
-    writeMeshEnsight(mesh_, "optimisedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -249,11 +198,8 @@ void dualMeshGenerator::replaceBoundaries()
     renameBoundaryPatches rbp(mesh_, meshDict_);
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renamedPatchesMesh");
-    # else
-    writeMeshEnsight(mesh_, "renamedPatchesMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 
@@ -262,11 +208,8 @@ void dualMeshGenerator::renumberMesh()
     polyMeshGenModifier(mesh_).renumberMesh();
 
     # ifdef DEBUG
-    # ifdef DEBUGfpma
-    writeMeshFPMA(mesh_,"renumberedMesh");
-    # else
-    writeMeshEnsight(mesh_, "renumberedMesh");
-    #endif
+    mesh_.write();
+    //::exit(0);
     # endif
 }
 

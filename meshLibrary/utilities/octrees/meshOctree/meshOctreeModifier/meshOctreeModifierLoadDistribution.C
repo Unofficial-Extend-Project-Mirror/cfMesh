@@ -36,7 +36,6 @@ Description
 
 # ifdef DEBUGBalancing
 #include <sstream>
-#include "writeOctreeEnsight.H"
 # endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

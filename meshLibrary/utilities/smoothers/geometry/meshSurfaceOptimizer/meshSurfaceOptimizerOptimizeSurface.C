@@ -223,7 +223,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
                 LongList<labelledPoint> newPos;
 
                 # ifdef USE_OMP
-                # pragma omp for schedule(guided)
+                # pragma omp for schedule(dynamic, 40)
                 # endif
                 forAll(movedPoints, i)
                 {
@@ -249,6 +249,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
             if( Pstream::parRun() )
                 nodeDisplacementLaplacianFCParallel(procBndNodes, true);
 
+            //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
 
             //- use surface optimizer
@@ -259,7 +260,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
                 LongList<labelledPoint> newPos;
 
                 # ifdef USE_OMP
-                # pragma omp for schedule(guided)
+                # pragma omp for schedule(dynamic, 20)
                 # endif
                 forAll(movedPoints, i)
                 {
@@ -285,10 +286,11 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
             if( Pstream::parRun() )
                 nodeDisplacementSurfaceOptimizerParallel(procBndNodes);
 
-            surfaceModifier.updateGeometry(movedPoints);
-
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
+
+            //- update normals and other geometric data
+            surfaceModifier.updateGeometry(movedPoints);
 
         } while( nInvertedTria && (++nIter < 20) );
 
@@ -319,6 +321,9 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
 
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
+
+            //- update normals and other geometric data
+            surfaceModifier.updateGeometry(movedPoints);
 
             if( nGlobalIter > 3 )
                 remapVertex = false;
@@ -394,14 +399,16 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
                 );
         }
 
-        bMod.updateGeometry(edgePoints);
-
         if( Pstream::parRun() )
         {
             edgeNodeDisplacementParallel(procBndNodes);
         }
 
+        //- project vertices back onto the boundary
         mapper.mapEdgeNodes(edgePoints);
+
+        //- update the geometry information
+        bMod.updateGeometry(edgePoints);
     }
     Info << endl;
 
@@ -450,12 +457,12 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
                 );
         }
 
-        bMod.updateGeometry();
-
         if( Pstream::parRun() )
         {
             nodeDisplacementLaplacianFCParallel(procBndNodes,true);
         }
+
+        bMod.updateGeometry();
     }
 
     Info << endl;
@@ -553,11 +560,11 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
         //- move points with maximum z coordinate
         mesh2DEngine.correctPoints();
 
-        //- update normal, centres, etc, after the surface has been modified
-        bMod.updateGeometry(updatePoints);
-
         //- map boundary edges to the surface
         mapper.mapVerticesOntoSurfacePatches(activeEdges);
+
+        //- update normal, centres, etc, after the surface has been modified
+        bMod.updateGeometry(updatePoints);
     }
     Info << endl;
 
