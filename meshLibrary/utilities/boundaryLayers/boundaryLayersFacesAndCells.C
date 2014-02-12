@@ -36,8 +36,6 @@ Description
 
 //#define DEBUGLayer
 
-#include "writeMeshFPMA.H"
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam

@@ -54,10 +54,6 @@ Description
 
 //#define DEBUG
 
-# ifdef DEBUG
-#include "writeMeshFPMA.H"
-# endif
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam

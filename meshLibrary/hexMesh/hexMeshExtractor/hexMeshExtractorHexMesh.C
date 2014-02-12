@@ -34,10 +34,6 @@ Description
 
 //#define DEBUGHex
 
-# ifdef DEBUGHex
-#include "writeMeshFPMA.H"
-# endif
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -291,7 +287,7 @@ void hexMeshExtractor::classifyOctreePoints()
         };
     }
 
-    writeMeshFPMA(pmg, "markedPoints");
+    mesh_.write();
     # endif
 }
 
@@ -525,7 +521,7 @@ void hexMeshExtractor::createPoints()
     }
     meshModifier.reorderBoundaryFaces();
 
-    writeMeshFPMA(pmg, "subVerticesAndCentres");
+    mesh_.write();
     # endif
 }
 

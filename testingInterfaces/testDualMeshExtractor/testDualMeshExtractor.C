@@ -39,7 +39,6 @@ Description
 #include "polyMeshGenAddressing.H"
 #include "dualMeshExtractor.H"
 #include "triSurf.H"
-#include "writeMeshFPMA.H"
 
 using namespace Foam;
 
@@ -82,7 +81,6 @@ int main(int argc, char *argv[])
     meshOptimizer mOpt(pmg);
     mOpt.untangleMeshFV();
 
-    //writeMeshFPMA(pmg, "dualMesh");
     pmg.addressingData().checkMesh(true);
     pmg.write();
 

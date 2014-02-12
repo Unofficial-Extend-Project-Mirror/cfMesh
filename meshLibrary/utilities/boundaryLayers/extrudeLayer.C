@@ -32,10 +32,11 @@ Description
 #include "meshSurfaceEngine.H"
 #include "labelledPointScalar.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 #ifdef DEBUGExtrudeLayer
-#include "writeMeshFPMA.H"
 #include "polyMeshGenChecks.H"
 #endif
 
@@ -721,7 +722,6 @@ void extrudeLayer::createNewVertices()
             mesh_.addPointToSubset(frontID, pI);
     }
 
-    writeMeshFPMA(mesh_, "withNewVertices");
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif
@@ -912,7 +912,7 @@ void extrudeLayer::movePoints()
     }
 
     # ifdef DEBUGExtrudeLayer
-    writeMeshFPMA(mesh_, "movedPoints");
+    mesh_.write();
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif

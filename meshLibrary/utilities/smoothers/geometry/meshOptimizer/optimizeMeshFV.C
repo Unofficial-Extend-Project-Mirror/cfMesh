@@ -37,7 +37,6 @@ Description
 //#define DEBUGSmooth
 
 # ifdef DEBUGSmooth
-#include "writeMeshFPMA.H"
 #include "helperFunctions.H"
 #include "polyMeshGenModifier.H"
 # endif
