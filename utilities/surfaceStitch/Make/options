@@ -1,4 +1,4 @@
 EXE_INC = -I../../meshLibrary/lnInclude \
     -I$(LIB_SRC)/triSurface/lnInclude
 
-EXE_LIBS = -ltriSurface -lmeshTools -lMeshLibrary
+EXE_LIBS = -ltriSurface -lmeshTools -lmeshLibrary

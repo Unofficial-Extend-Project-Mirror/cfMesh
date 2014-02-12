@@ -117,10 +117,6 @@ cartesianMeshGenerator = cartesianMesh/cartesianMeshGenerator
 
 cartesian2DMeshGenerator = cartesian2DMesh/cartesian2DMeshGenerator
 
-dualMeshExtractor = dualMesh/dualMeshExtractor
-dualMeshGenerator = dualMesh/dualMeshGenerator
-dualUnfoldConcaveCells = dualMesh/dualUnfoldConcaveCells
-
 hexMeshExtractor = hexMesh/hexMeshExtractor
 hexMeshGenerator = hexMesh/hexMeshGenerator
 
@@ -460,16 +456,6 @@ $(cartesianMeshGenerator)/cartesianMeshGenerator.C
 
 $(cartesian2DMeshGenerator)/cartesian2DMeshGenerator.C
 
-$(dualMeshExtractor)/dualMeshExtractor.C
-$(dualMeshExtractor)/dualMeshExtractorDecompose.C
-$(dualMeshExtractor)/dualMeshExtractorPolyMesh.C
-
-$(dualUnfoldConcaveCells)/dualUnfoldConcaveCells.C
-$(dualUnfoldConcaveCells)/dualUnfoldConcaveCellsMergeFaces.C
-$(dualUnfoldConcaveCells)/dualUnfoldConcaveCellsMergeFacesConsistency.C
-
-$(dualMeshGenerator)/dualMeshGenerator.C
-
 $(hexMeshExtractor)/hexMeshExtractor.C
 $(hexMeshExtractor)/hexMeshExtractorHexMesh.C
 
@@ -491,4 +477,4 @@ $(voronoiMeshGenerator)/voronoiMeshGenerator.C
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C
 
-LIB = $(FOAM_LIBBIN)/libMeshLibrary
+LIB = $(FOAM_LIBBIN)/libmeshLibrary

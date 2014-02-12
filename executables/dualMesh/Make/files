@@ -1,3 +1,0 @@
-dualMesh.C
-
-EXE = $(FOAM_APPBIN)/dualMesh
