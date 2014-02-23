@@ -146,7 +146,7 @@ bool edgeExtractor::findCornerCandidates()
         }
     }
 
-    DynList<label> containedTriangles(200);
+    DynList<label> containedTriangles;
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40) private(containedTriangles)
     # endif

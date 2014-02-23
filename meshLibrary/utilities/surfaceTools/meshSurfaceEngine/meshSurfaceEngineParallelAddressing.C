@@ -40,39 +40,39 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
 {
     if( !globalBoundaryPointLabelPtr_ )
         globalBoundaryPointLabelPtr_ = new labelList();
-    
+
     const labelList& bPoints = this->boundaryPoints();
     labelList& globalPointLabel = *globalBoundaryPointLabelPtr_;
     globalPointLabel.setSize(bPoints.size());
     globalPointLabel = -1;
-    
+
     if( !bpProcsPtr_ )
         bpProcsPtr_ = new VRWGraph(bPoints.size());
-    
+
     if( !globalBoundaryPointToLocalPtr_ )
         globalBoundaryPointToLocalPtr_ = new Map<label>();
-    
+
     if( !bpNeiProcsPtr_ )
-        bpNeiProcsPtr_ = new DynList<label>(10);
-    
+        bpNeiProcsPtr_ = new DynList<label>();
+
     if( !Pstream::parRun() )
         return;
-    
+
     VRWGraph& bpAtProcs = *bpProcsPtr_;
-    
+
     //- find local points for the given processor
     const faceListPMG& faces = mesh_.faces();
     const labelList& bp = this->bp();
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
-    
+
     //- find which processor contain a given bnd point
     forAll(procBoundaries, patchI)
     {
@@ -97,19 +97,19 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                 }
         }
     }
-    
+
     //- exchange data with other processor and update bpAtProcs
     //- continue this process as long as there is some change
     bool finished;
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
             labelLongList dts;
             labelHashSet addedPoint;
             for(label faceI=start;faceI<end;++faceI)
@@ -132,7 +132,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                             dts.append(bpAtProcs(bpI, i));
                     }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -141,7 +141,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             );
             toOtherProc << dts;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -151,9 +151,9 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
@@ -171,7 +171,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
 
@@ -185,7 +185,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             forAllRow(bpAtProcs, bpI, procI)
                 if( bpAtProcs(bpI, procI) < pMin )
                     pMin = bpAtProcs(bpI, procI);
-            
+
             if( pMin == Pstream::myProcNo() )
             {
                 ++nLocalPoints;
@@ -199,7 +199,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
         {
             ++nLocalPoints;
         }
-        
+
     //- give local points their labels
     label startPoint(0);
     labelList nPointsAtProc(Pstream::nProcs());
@@ -212,17 +212,17 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
     forAll(localPoints, pI)
         if( localPoints[pI] )
             globalPointLabel[pI] = startPoint++;
-        
+
     //- send labels to non-local points
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
             labelLongList dts;
             labelHashSet addedPoint;
             for(label faceI=start;faceI<end;++faceI)
@@ -235,7 +235,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                     {
                         if( addedPoint.found(bpI) )
                             continue;
-                        
+
                         addedPoint.insert(bpI);
                         //- data is sent as follows
                         //- 1. face position in patch
@@ -247,7 +247,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                     }
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -256,7 +256,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             );
             toOtherProc << dts;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -266,16 +266,16 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const face& f = faces[start+receivedData[counter++]];
                 const label pI = receivedData[counter++];
                 const label globalLabel = receivedData[counter++];
-                
+
                 if( globalPointLabel[bp[f[pI]]] == -1 )
                 {
                     globalPointLabel[bp[f[pI]]] = globalLabel;
@@ -296,24 +296,24 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- create globalToLocal addressing
     forAll(bpAtProcs, bpI)
     {
         if( bpAtProcs.sizeOfRow(bpI) != 0 )
         {
             globalBoundaryPointToLocalPtr_->insert(globalPointLabel[bpI], bpI);
-            
+
             forAllRow(bpAtProcs, bpI, j)
             {
                 const label procI = bpAtProcs(bpI, j);
-                
+
                 if( procI == Pstream::myProcNo() )
                     continue;
-                
+
                 bpNeiProcsPtr_->appendIfNotIn(procI);
             }
         }
@@ -324,33 +324,33 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
 {
     if( !globalBoundaryEdgeLabelPtr_ )
         globalBoundaryEdgeLabelPtr_ = new labelList();
-    
+
     const edgeList& bEdges = this->edges();
-    
+
     labelList& globalEdgeLabel = *globalBoundaryEdgeLabelPtr_;
     globalEdgeLabel.setSize(bEdges.size());
     globalEdgeLabel = -1;
-    
+
     if( !beProcsPtr_ )
         beProcsPtr_ = new VRWGraph(bEdges.size());
-    
+
     if( !globalBoundaryEdgeToLocalPtr_ )
         globalBoundaryEdgeToLocalPtr_ = new Map<label>();
-    
+
     if( !beNeiProcsPtr_ )
-        beNeiProcsPtr_ = new DynList<label>(10);
-    
+        beNeiProcsPtr_ = new DynList<label>();
+
     if( !Pstream::parRun() )
         return;
-    
+
     VRWGraph& beAtProcs = *beProcsPtr_;
-    
+
     const faceListPMG& faces = mesh_.faces();
     const labelList& bp = this->bp();
     const VRWGraph& pEdges = this->boundaryPointEdges();
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
-    
+
     //- find which processors contain a given bnd edge
     forAll(procBoundaries, patchI)
     {
@@ -362,7 +362,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             forAll(f, eI)
             {
                 const edge e = f.faceEdge(eI);
-                
+
                 if( bp[e.start()] != -1 )
                 {
                     const label bpI = bp[e.start()];
@@ -373,7 +373,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                             edgeI = pEdges(bpI, peI);
                             break;
                         }
-                        
+
                     if( edgeI != -1 )
                     {
                         beAtProcs.appendIfNotIn
@@ -391,19 +391,19 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             }
         }
     }
-    
+
     //- exchange data with other processor and update beAtProcs
     //- continue this process as long as there is some change
     bool finished;
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
             labelLongList dts;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -411,7 +411,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                 forAll(f, eI)
                 {
                     const edge e = f.faceEdge(eI);
-                    
+
                     if( bp[e.start()] != -1 )
                     {
                         const label bpI = bp[e.start()];
@@ -422,7 +422,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                                 edgeI = pEdges(bpI, peI);
                                 break;
                             }
-                            
+
                         if( edgeI != -1 )
                         {
                             //- data is sent as follows
@@ -439,7 +439,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                     }
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -448,7 +448,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             );
             toOtherProc << dts;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -458,21 +458,21 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const face& f = faces[start+receivedData[counter++]];
                 const label eI = receivedData[counter++];
-                
+
                 const edge e = f.faceEdge(eI);
                 label edgeI(-1);
                 forAllRow(pEdges, bp[e.start()], peI)
                     if( bEdges[pEdges(bp[e.start()], peI)] == e )
                         edgeI = pEdges(bp[e.start()], peI);
-                
+
                 const label nProcs = receivedData[counter++];
                 for(label i=0;i<nProcs;++i)
                 {
@@ -485,10 +485,10 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- start calculating global edge labels
     label nLocalEdges(0);
     boolList localEdges(bEdges.size(), true);
@@ -499,7 +499,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             forAllRow(beAtProcs, bpI, procI)
                 if( beAtProcs(bpI, procI) < pMin )
                     pMin = beAtProcs(bpI, procI);
-            
+
             if( pMin == Pstream::myProcNo() )
             {
                 ++nLocalEdges;
@@ -513,7 +513,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
         {
             ++nLocalEdges;
         }
-        
+
     //- give local points their labels
     label startEdge(0);
     labelList nEdgesAtProc(Pstream::nProcs());
@@ -522,7 +522,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
     Pstream::scatterList(nEdgesAtProc);
     for(label i=0;i<Pstream::myProcNo();++i)
         startEdge += nEdgesAtProc[i];
-    
+
     forAll(localEdges, pI)
         if( localEdges[pI] )
             globalEdgeLabel[pI] = startEdge++;
@@ -531,12 +531,12 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
             labelLongList dts;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -544,7 +544,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                 forAll(f, eI)
                 {
                     const edge e = f.faceEdge(eI);
-                    
+
                     if( bp[e.start()] != -1 )
                     {
                         const label bpI = bp[e.start()];
@@ -555,7 +555,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                                 edgeI = pEdges(bpI, peI);
                                 break;
                             }
-                            
+
                         if( (edgeI != -1) && (globalEdgeLabel[edgeI] != -1) )
                         {
                             //- data is sent as follows
@@ -569,7 +569,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                     }
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -578,7 +578,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             );
             toOtherProc << dts;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -588,23 +588,23 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const face& f = faces[start+receivedData[counter++]];
                 const label eI = receivedData[counter++];
-                
+
                 const edge e = f.faceEdge(eI);
                 label edgeI(-1);
                 forAllRow(pEdges, bp[e.start()], peI)
                     if( bEdges[pEdges(bp[e.start()], peI)] == e )
                         edgeI = pEdges(bp[e.start()], peI);
-                
+
                 const label globalLabel = receivedData[counter++];
-                
+
                 if( globalEdgeLabel[edgeI] == -1 )
                 {
                     globalEdgeLabel[edgeI] = globalLabel;
@@ -620,24 +620,24 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- create globalToLocal addressing
     forAll(beAtProcs, beI)
     {
         if( beAtProcs.sizeOfRow(beI) != 0 )
         {
             globalBoundaryEdgeToLocalPtr_->insert(globalEdgeLabel[beI], beI);
-            
+
             forAllRow(beAtProcs, beI, j)
             {
                 const label procI = beAtProcs(beI, j);
-                
+
                 if( procI == Pstream::myProcNo() )
                     continue;
-                
+
                 beNeiProcsPtr_->appendIfNotIn(procI);
             }
         }
@@ -652,23 +652,23 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
     const VRWGraph& eFaces = this->edgeFaces();
     const VRWGraph& beAtProcs = this->beAtProcs();
     const Map<label>& globalToLocal = this->globalToLocalBndEdgeAddressing();
-        
+
     std::map<label, labelLongList> exchangeData;
 
     forAllConstIter(Map<label>, globalToLocal, iter)
     {
         const label beI = iter();
-        
+
         forAllRow(beAtProcs, beI, procI)
         {
             const label neiProc = beAtProcs(beI, procI);
-            
+
             if( neiProc == Pstream::myProcNo() )
                 continue;
-            
+
             if( exchangeData.find(neiProc) == exchangeData.end() )
                 exchangeData.insert(std::make_pair(neiProc, labelLongList()));
-            
+
             if( eFaces.sizeOfRow(beI) == 1 )
             {
                 exchangeData[neiProc].append(globalEdgeLabel[beI]);
@@ -679,7 +679,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
             }
         }
     }
-   
+
     //- exchange edge-face patches with other processors
     std::map<label, labelList> receivedMap;
     help::exchangeMap(exchangeData, receivedMap);
@@ -715,17 +715,17 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
 void meshSurfaceEngine::calcGlobalBoundaryFaceLabels() const
 {
     const faceList::subList& bFaces = boundaryFaces();
-    
+
     if( !globalBoundaryFaceLabelPtr_ )
         globalBoundaryFaceLabelPtr_ = new labelList(bFaces.size());
-    
+
     labelList& globalFaceLabel = *globalBoundaryFaceLabelPtr_;
-    
+
     labelList nFacesAtProc(Pstream::nProcs());
     nFacesAtProc[Pstream::myProcNo()] = bFaces.size();
     Pstream::gatherList(nFacesAtProc);
     Pstream::scatterList(nFacesAtProc);
-    
+
     label startFace(0);
     for(label i=0;i<Pstream::myProcNo();++i)
         startFace += nFacesAtProc[i];

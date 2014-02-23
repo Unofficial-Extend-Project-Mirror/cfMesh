@@ -55,7 +55,7 @@ void meshOctreeCube::findContainedEdges
     const VRWGraph& containedElements = activeSlotPtr_->containedTriangles_;
     VRWGraph& containedEdges = activeSlotPtr_->containedEdges_;
 
-    DynList<label> addedEdges(10);
+    DynList<label> addedEdges;
     labelHashSet addEdge;
     forAllRow(containedElements, containedElementsLabel_, tI)
     {

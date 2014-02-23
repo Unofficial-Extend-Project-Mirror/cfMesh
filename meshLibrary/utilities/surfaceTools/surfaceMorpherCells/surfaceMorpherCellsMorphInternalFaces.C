@@ -279,7 +279,7 @@ bool surfaceMorpherCells::morphInternalFaces()
             forAll(nodeMaterial, nI)
                 if( !nodeMaterial[nI] && removeFaceVertex[nI] )
                 {
-                    edgeMats.append(DynList<edge>(f.size()));
+                    edgeMats.append(DynList<edge>());
                     DynList<label> front;
                     front.append(nI);
 
@@ -362,7 +362,7 @@ bool surfaceMorpherCells::morphInternalFaces()
                 const face& f = copy;
 
                 boolList removeFaceVertex(f.size(), false);
-                DynList<edge> removeEdge(f.size());
+                DynList<edge> removeEdge;
 
                 face newF(f.size());
                 label i(0);
@@ -411,7 +411,7 @@ bool surfaceMorpherCells::morphInternalFaces()
                     forAll(nodeMaterial, nI)
                         if( !nodeMaterial[nI] && removeFaceVertex[nI] )
                         {
-                            edgeMats.append(DynList<edge>(f.size()));
+                            edgeMats.append(DynList<edge>());
                             DynList<label> front;
                             front.append(nI);
 

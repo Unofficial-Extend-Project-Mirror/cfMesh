@@ -35,9 +35,9 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void tetTessellation::createInitialTets()
 {
     boundaryPoints_[0] = points_.size();
@@ -56,8 +56,8 @@ void tetTessellation::createInitialTets()
     points_.append(max_);
     boundaryPoints_[7] = points_.size();
     points_.append(point(min_.x(), max_.y(), max_.z()));
-    
-    DynList<label> tetLabels(5);
+
+    DynList<label> tetLabels;
     tetLabels.append(elmts_.size());
     elmts_.append
     (
@@ -113,12 +113,12 @@ void tetTessellation::createInitialTets()
             boundaryPoints_[6]
         )
     );
-    
+
     elmts_[tetLabels[0]].setNeighbour(0, tetLabels[4]);
     elmts_[tetLabels[1]].setNeighbour(0, tetLabels[4]);
     elmts_[tetLabels[2]].setNeighbour(0, tetLabels[4]);
     elmts_[tetLabels[3]].setNeighbour(0, tetLabels[4]);
-    
+
     elmts_[tetLabels[4]].setNeighbour(0, tetLabels[1]);
     elmts_[tetLabels[4]].setNeighbour(1, tetLabels[3]);
     elmts_[tetLabels[4]].setNeighbour(2, tetLabels[2]);
@@ -196,7 +196,7 @@ tetTessellation::tetTessellation
     Info << "Elements " << elmts_ << endl;
     forAll(elmts_, eI)
         Info << "Volume of element " << eI
-            << " is " << elmts_[eI].mag(points_) << endl; 
+            << " is " << elmts_[eI].mag(points_) << endl;
     # endif
 }
 
@@ -216,7 +216,7 @@ tetTessellation::tetTessellation(const boundBox& bb)
     Info << "Elements " << elmts_ << endl;
     forAll(elmts_, eI)
         Info << "Volume of element " << eI
-            << " is " << elmts_[eI].mag(points_) << endl; 
+            << " is " << elmts_[eI].mag(points_) << endl;
     # endif
 }
 

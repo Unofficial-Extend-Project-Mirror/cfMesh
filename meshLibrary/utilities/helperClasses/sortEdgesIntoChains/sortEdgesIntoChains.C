@@ -50,23 +50,23 @@ void sortEdgesIntoChains::createNodeLabels()
         if( !newNodeLabel_.found(e.end()) )
             newNodeLabel_.insert(e.end(), nPoints++);
     }
-    
-    edgesAtPoint_.setSize(nPoints, DynList<label>(2));
+
+    edgesAtPoint_.setSize(nPoints, DynList<label>());
     forAll(bEdges_, eI)
     {
         const edge& e = bEdges_[eI];
         label l = newNodeLabel_[e.start()];
         edgesAtPoint_[l].append(eI);
-        
+
         l = newNodeLabel_[e.end()];
         edgesAtPoint_[l].append(eI);
     }
-    
+
     forAll(edgesAtPoint_, pI)
         if( edgesAtPoint_[pI].size() % 2 )
             openEdges_ = true;
 }
-    
+
 bool sortEdgesIntoChains::findPointsBelongingToTheChain
 (
     const label currPos,
@@ -76,13 +76,13 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
     # ifdef DEBUGSort
     Info << "Finding point belonging to a chain" << endl;
     # endif
-    
+
     chainEdges.setSize(bEdges_.size());
     chainEdges = false;
-    
+
     if( edgesAtPoint_[currPos].size() != 2 )
         return false;
-    
+
     const label commonVrt =
         bEdges_[edgesAtPoint_[currPos][0]].commonVertex
             (
@@ -92,18 +92,18 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
     label nextVrt = bEdges_[edgesAtPoint_[currPos][1]].otherVertex(commonVrt);
     forAll(edgesAtPoint_[currPos], posI)
         chainEdges[edgesAtPoint_[currPos][posI]] = true;
-    
+
     # ifdef DEBUGSort
     Info << "commonVrt " << commonVrt << endl;
     Info << "prevVrt " << prevVrt << endl;
     Info << "nextVrt " << nextVrt << endl;
     # endif
-    
+
     bool found;
     do
     {
         found = false;
-        
+
         const DynList<label>& vEdges = edgesAtPoint_[newNodeLabel_[prevVrt]];
         if( vEdges.size() == 2 )
         {
@@ -113,14 +113,14 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
                     found = true;
                     chainEdges[vEdges[eI]] = true;
                     prevVrt = bEdges_[vEdges[eI]].otherVertex(prevVrt);
-                }    
+                }
         }
     } while( found );
-    
+
     do
     {
         found = false;
-        
+
         const DynList<label>& vEdges = edgesAtPoint_[newNodeLabel_[nextVrt]];
         if( vEdges.size() == 2 )
         {
@@ -130,10 +130,10 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
                     found = true;
                     chainEdges[vEdges[eI]] = true;
                     nextVrt = bEdges_[vEdges[eI]].otherVertex(nextVrt);
-                }    
+                }
         }
     } while( found );
-    
+
     if(
         (edgesAtPoint_[newNodeLabel_[nextVrt]].size() != 2) &&
         (edgesAtPoint_[newNodeLabel_[prevVrt]].size() != 2) &&
@@ -143,11 +143,11 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
         chainEdges = false;
         return false;
     }
-    
+
     # ifdef DEBUGSort
     Info << "Chain edges " << chainEdges << endl;
     # endif
-    
+
     return true;
 }
 
@@ -161,7 +161,7 @@ void sortEdgesIntoChains::shrinkEdges(const boolList& chainEdges)
             (
                 edgesAtPoint_[newNodeLabel_[e.start()]].containsAtPosition(eI)
             );
-            
+
             edgesAtPoint_[newNodeLabel_[e.end()]].removeElement
             (
                 edgesAtPoint_[newNodeLabel_[e.end()]].containsAtPosition(eI)
@@ -175,37 +175,37 @@ void sortEdgesIntoChains::createChainFromEdges(const boolList& chainEdges)
     forAll(chainEdges, eI)
         if( chainEdges[eI] )
             ++i;
-        
+
     labelList chainPoints(i);
     i = 0;
-        
+
     forAll(chainEdges, eI)
         if( chainEdges[eI] )
         {
             chainPoints[i++] = bEdges_[eI].start();
             chainPoints[i++] = bEdges_[eI].end();
-            
+
             # ifdef DEBUGSort
             Info << "Init chainPoints " << chainPoints << endl;
             # endif
-            
+
             bool found;
             do
             {
                 # ifdef DEBUGSort
                 Info << "Iteration " << label(i-1) << endl;
                 # endif
-                
+
                 found = false;
                 const DynList<label>& pEdges =
                     edgesAtPoint_[newNodeLabel_[chainPoints[i-1]]];
-                
+
                 forAll(pEdges, peI)
                     if( chainEdges[pEdges[peI]] )
                     {
                         const label otherPoint =
                             bEdges_[pEdges[peI]].otherVertex(chainPoints[i-1]);
-                        
+
                         # ifdef DEBUGSort
                         Info << "Other point " << otherPoint << endl;
                         # endif
@@ -215,14 +215,14 @@ void sortEdgesIntoChains::createChainFromEdges(const boolList& chainEdges)
                             continue;
                         if( chainPoints[0] == otherPoint )
                             continue;
-                        
+
                         found = true;
                         chainPoints[i++] = otherPoint;
                     }
             } while( found );
-            
+
             createdChains_.append(chainPoints);
-            
+
             break;
         }
 }
@@ -230,7 +230,7 @@ void sortEdgesIntoChains::createChainFromEdges(const boolList& chainEdges)
 void sortEdgesIntoChains::sortEdges()
 {
     createNodeLabels();
-    
+
     if( !openEdges_ )
     {
         boolList chainEdges(bEdges_.size());
@@ -238,7 +238,7 @@ void sortEdgesIntoChains::sortEdges()
             if( findPointsBelongingToTheChain(pI, chainEdges) )
             {
                 createChainFromEdges(chainEdges);
-                
+
                 shrinkEdges(chainEdges);
             }
     }
@@ -256,7 +256,7 @@ sortEdgesIntoChains::sortEdgesIntoChains(const DynList<edge>& bEdges)
 {
     sortEdges();
 }
-            
+
 sortEdgesIntoChains::~sortEdgesIntoChains()
 {
 }

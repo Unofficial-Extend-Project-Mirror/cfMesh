@@ -79,13 +79,19 @@ class edgeExtractor
         mutable const triSurfaceClassifyEdges* surfEdgeClassificationPtr_;
 
         //- valence of surface points
-        labelList pointValence_;
+        labelLongList pointValence_;
+
+        //- patch to which a boundary point is mapped to
+        labelLongList pointPatch_;
 
         //- boundary face patch
         labelLongList facePatch_;
 
         //- edge classification
-        List<direction> edgeType_;
+        LongList<direction> edgeType_;
+
+        //- patches in the vicinity of a face on the surface of the volume mesh
+        VRWGraph patchesNearFace_;
 
         //- feature edges in the surface mesh
         //- which are candindates for an edge at the surface of the volume mesh
@@ -97,6 +103,10 @@ class edgeExtractor
 
         //- calculate the number of boundary faces for each cell
         void calculateSingleCellEdge();
+
+        //- search for surface patches in the vicinity of a face
+        //- at the surface of the volume mesh
+        void findPatchesNearSurfaceFace();
 
         //- search for feature edges in the surface mesh which are
         //- in the vicinity of an edge at the surface of the volume mesh

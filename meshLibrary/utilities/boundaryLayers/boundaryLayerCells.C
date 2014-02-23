@@ -381,8 +381,8 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
 
                 if( Pstream::myProcNo() == pMin )
                 {
-                    DynList<face, 8> pFaces(3);
-                    DynList<label, 3> pPatches(3);
+                    DynList<face, 8> pFaces;
+                    DynList<label, 3> pPatches;
                     forAllRow(pointFaces, bpI, fI)
                     {
                         const label bfI = pointFaces(bpI, fI);

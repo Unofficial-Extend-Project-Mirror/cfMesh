@@ -139,7 +139,7 @@ void meshOctreeInsideOutside::frontalMarking()
     neighbouringGroups_.clear();
 
     labelLongList frontCubes;
-    DynList<label> neighbours(24);
+    DynList<label> neighbours;
 
     label nGroup(0), nThreads(1);
 
@@ -342,7 +342,7 @@ void meshOctreeInsideOutside::markOutsideCubes()
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
 
-    DynList<label> neighbours(24);
+    DynList<label> neighbours;
     label nChanged;
     bool keepUpdating;
 
@@ -481,7 +481,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
     const triSurf& surface = octree.surface();
-    DynList<label> neighbours(60);
+    DynList<label> neighbours;
 
     boolList checkedPatches(leaves.size(), false);
 

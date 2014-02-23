@@ -45,14 +45,14 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
     for(label i=0;i<nElmts_;++i)
         Info << "Element to delete is " << elmts_[delElmts_[i]] << endl;
     # endif
-    
+
     //- create new elements
     DynList<tessellationElement>* newElementsPtr =
         new DynList<tessellationElement>(4*nElmts_);
     for(label i=0;i<nElmts_;++i)
     {
         const tessellationElement& elmt = elmts_[delElmts_[i]];
-        
+
         for(direction j=0;j<DIM1;++j)
         {
             const label nei = elmt.neighbour(j);
@@ -69,7 +69,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
             }
         }
     }
-    
+
     //- create labels of new elements and store them
     labelList newLabels(newElementsPtr->size());
     forAll(newLabels, lI)
@@ -83,7 +83,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
             newLabels[lI] = elmts_.size();
             elmts_.append((*newElementsPtr)[lI]);
         }
-        
+
     deleteDemandDrivenData(newElementsPtr);
     # ifdef DEBUGTessalation
     Info << "Labels of new elements " << newLabels << endl;
@@ -99,7 +99,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
                 const label n = newPointLabel.size();
                 newPointLabel.insert(elmt[i], n);
             }
-        
+
         const label nei = elmt.neighbour(3);
         if( nei != -1 )
         {
@@ -112,26 +112,26 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
                 }
         }
     }
-    
+
     //- create neighbours of newly created elements
     List< DynList<label> > nodeElements
     (
         newPointLabel.size(),
-        DynList<label>(6)
+        DynList<label>()
     );
-    
+
     forAll(newLabels, lI)
     {
         const tessellationElement& elmt = elmts_[newLabels[lI]];
         for(direction i=0;i<DIM;++i)
             nodeElements[newPointLabel[elmt[i]]].append(newLabels[lI]);
     }
-        
+
     # ifdef DEBUGTessalation
     Info << "Node elements " << nodeElements << endl;
     Info <<"New point label " << newPointLabel << endl;
     # endif
-        
+
     forAll(newLabels, lI)
     {
         tessellationElement& elmt = elmts_[newLabels[lI]];
@@ -147,7 +147,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
                     elmt.setNeighbour(i, nel[elI]);
         }
     }
-    
+
     # ifdef DEBUGTessalation
     forAll(newLabels, lI)
     {
@@ -157,7 +157,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
         {
             Info << "Neighbour over face " << elmt.face(i) << " is "
                 << elmt.neighbour(i) << endl;
-                        
+
             triFace f = elmt.face(i);
             if( elmt.neighbour(i) != -1 )
             {
@@ -174,7 +174,7 @@ void tetTessellation::makeNewElements(const label elmtI, const label pI)
                                 << abort(FatalError);
                     }
                 }
-                
+
                 if( !found )
                     FatalError << "Cannot find neighbour!" << abort(FatalError);
             }

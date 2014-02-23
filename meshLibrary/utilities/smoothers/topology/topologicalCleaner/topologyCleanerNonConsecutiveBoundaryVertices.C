@@ -79,7 +79,7 @@ void topologicalCleaner::checkNonConsecutiveBoundaryVertices()
                 {
                     const face& f = faces[c[fI]];
 
-                    DynList<label> shN(f.size());
+                    DynList<label> shN;
 
                     forAll(bf, pI)
                         forAll(f, pJ)

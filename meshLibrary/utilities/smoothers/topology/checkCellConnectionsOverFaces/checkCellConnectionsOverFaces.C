@@ -48,6 +48,9 @@ namespace Foam
 
 // * * * * * * * * * * Private member functions * * * * * * * * * * * * * * * //
 
+namespace meshConnectionsHelper
+{
+
 class meshConnectionsNeighbourOperator
 {
     const polyMeshGen& mesh_;
@@ -175,6 +178,12 @@ public:
     }
 };
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace meshConnectionsHelper
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 void checkCellConnectionsOverFaces::findCellGroups()
 {
     Info << "Checking cell connections" << endl;
@@ -183,8 +192,8 @@ void checkCellConnectionsOverFaces::findCellGroups()
         help::groupMarking
         (
             cellGroup_,
-            meshConnectionsNeighbourOperator(mesh_),
-            meshConnectionsSelectorOperator()
+            meshConnectionsHelper::meshConnectionsNeighbourOperator(mesh_),
+            meshConnectionsHelper::meshConnectionsSelectorOperator()
         );
 
     Info << "Finished checking cell connections" << endl;

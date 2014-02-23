@@ -93,7 +93,7 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
     nCorners = 0;
 
     //- store corner data
-    DynList<label> patches(10);
+    DynList<label> patches;
     forAll(pointFaces, pointI)
     {
         if( nEdgesAtNode[pointI] < direction(3) )

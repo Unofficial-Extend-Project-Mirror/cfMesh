@@ -51,7 +51,7 @@ void createFacesFromChain::findPointsBelongingToTheFace
     endPoints.setSize(chainPoints_.size());
     endPoints = false;
     includePoints = false;
-    
+
     const label currRegion = regionsForPointAtPosition_[currPos][0];
     if( regionsForPointAtPosition_[currPos].size() != 1 )
     {
@@ -62,19 +62,19 @@ void createFacesFromChain::findPointsBelongingToTheFace
         ) << "Trying to create a face from an invalid point!"
             << abort(FatalError);
     }
-    
+
     # ifdef DEBUGCutter
     Info << "Finding vertices belonging to the face from chain "
         << chainPoints_ << endl;
     # endif
-    
+
     forAll(chainPoints_, pI)
     {
         const label pos = (pI+currPos) % chainPoints_.size();
-        
+
         if( regionsForPointAtPosition_[pos].contains(currRegion) )
             includePoints[pos] = true;
-        
+
         if( regionsForPointAtPosition_[pos].size() > 1 )
         {
             endPoints[pos] = true;
@@ -89,15 +89,15 @@ void createFacesFromChain::findPointsBelongingToTheFace
                 << abort(FatalError);
         }
     }
-    
+
     forAllReverse(chainPoints_, pI)
     {
         const label pos = (pI+currPos) % chainPoints_.size();
         if( includePoints[pos] ) break;
-        
+
         if( regionsForPointAtPosition_[pos].contains(currRegion) )
             includePoints[pos] = true;
-        
+
         if( regionsForPointAtPosition_[pos].size() > 1 )
         {
             endPoints[pos] = true;
@@ -113,7 +113,7 @@ void createFacesFromChain::findPointsBelongingToTheFace
                 << abort(FatalError);
         }
     }
-    
+
     # ifdef DEBUGCutter
     Info << "Include points " << includePoints << endl;
     Info << "End points " << endPoints << endl;
@@ -137,16 +137,16 @@ void createFacesFromChain::shrinkTheChain
         ) << "Trying to create a face from an invalid point!"
             << abort(FatalError);
     }
-    
+
     # ifdef DEBUGCutter
     Info << "Shrinking chain " << chainPoints_ << endl;
     # endif
-    
+
     labelList shrinkedChain(chainPoints_.size());
     List<DynList<label> > shrinkedRegions(chainPoints_.size());
-    
+
     direction pI(0);
-    
+
     forAll(chainPoints_, vI)
         if( !includePoints[vI] )
         {
@@ -165,15 +165,15 @@ void createFacesFromChain::shrinkTheChain
                     );
             ++pI;
         }
-        
+
     //- set sizes
     shrinkedChain.setSize(pI);
     shrinkedRegions.setSize(pI);
-        
+
     //- store the shrinked lists
     chainPoints_ = shrinkedChain;
     regionsForPointAtPosition_ = shrinkedRegions;
-        
+
     # ifdef DEBUGCutter
     Info << "Shrinked chain " << chainPoints_ << endl;
     Info << "Shrinked regions " << regionsForPointAtPosition_ << endl;
@@ -200,7 +200,7 @@ createFacesFromChain::createFacesFromChain
         forAll(row, rI)
             regionsForPointAtPosition_[vI].append(row[rI]);
     }
-    
+
     # ifdef DEBUGCutter
     Info << "Making boundary faces for chain " << chainPoints_ << endl;
     Info << "Regions for chain points " << regionsForPointAtPosition_ << endl;
@@ -222,13 +222,13 @@ createFacesFromChain::createFacesFromChain
     {
         regionsForPointAtPosition_[vI] = pointRegions[chVertices[vI]];
     }
-    
+
     # ifdef DEBUGCutter
     Info << "Making boundary faces for chain " << chainPoints_ << endl;
     Info << "Regions for chain points " << regionsForPointAtPosition_ << endl;
     # endif
 }
-            
+
 createFacesFromChain::~createFacesFromChain()
 {
 }
@@ -242,15 +242,15 @@ void createFacesFromChain::createFacesWithoutACorner()
     do
     {
         found = false;
-        
+
         boolList includePoints, endPoints;
-        
+
         //- this function removes nodes from the chainPoints_ and creates
         //- new faces. In order to create a valid face, it is important that
         //- that a chain of vertices belonging to a given patch is singly
         //- connected. Non-singly connected chains are not treated until they
         //- become singly connected after elimination of other chains
-        
+
         /*
         boolList usedPoint(chainPoints_.size(), false);
         Map<label> numOfChains;
@@ -258,11 +258,11 @@ void createFacesFromChain::createFacesWithoutACorner()
             if( !usedPoint[pI] && (regionsForPointAtPosition_[pI].size() == 1) )
             {
                 findPointsBelongingToTheFace(pI, includePoints, endPoints);
-                
+
                 forAll(includePoints, ipI)
                     if( includePoints[ipI] )
                         usedPoint[ipI] = true;
-                    
+
                 if( !numOfChains.found(regionsForPointAtPosition_[pI][0]) )
                 {
                     numOfChains.insert
@@ -277,7 +277,7 @@ void createFacesFromChain::createFacesWithoutACorner()
                 }
             }
         */
-        
+
         //- start creating faces and eliminating nodes from the chain for
         //- singly connected topologies
         forAll(chainPoints_, pI)
@@ -285,42 +285,42 @@ void createFacesFromChain::createFacesWithoutACorner()
                 (regionsForPointAtPosition_[pI].size() == 1)
             //&& (numOfChains[regionsForPointAtPosition_[pI][0]] == 1)
             )
-            {    
+            {
                 findPointsBelongingToTheFace(pI, includePoints, endPoints);
-                
+
                 //- create a new face
                 face f(chainPoints_.size());
                 direction vrtI(0);
-                
+
                 forAll(includePoints, incI)
                     if( includePoints[incI] )
                         f[vrtI++] = chainPoints_[incI];
-                    
-                DynList<label> facePatches(3);
+
+                DynList<label> facePatches;
                 forAll(endPoints, epI)
                     if( endPoints[epI] )
                     {
                         const DynList<label>& pr =
                             regionsForPointAtPosition_[epI];
-                        
+
                         forAll(pr, i)
                             facePatches.appendIfNotIn(pr[i]);
                     }
-                    
+
                 //- face must contain an additional corner point if the number
                 //- of associated patches is greater than 2. Skip creating the
                 //- face is this is the case
                 if( facePatches.size() > 2 )
                     continue;
-                
+
                 found = true;
-                    
+
                 if( vrtI > 2 )
                 {
                     f.setSize(vrtI);
                     createdFaces_.append(f);
                     faceRegions_.append(regionsForPointAtPosition_[pI][0]);
-                
+
                     # ifdef DEBUGCutter
                     Info << "Created face " << f << endl;
                     # endif
@@ -328,31 +328,28 @@ void createFacesFromChain::createFacesWithoutACorner()
 
                 //- shrink the chainPoints_
                 shrinkTheChain(pI, includePoints, endPoints);
-                
+
                 break;
             }
     } while( found );
 }
-            
-void createFacesFromChain::createFacesWithACorner
-(
-    const label cornerLabel
-)
+
+void createFacesFromChain::createFacesWithACorner(const label cornerLabel)
 {
     label start(-1), facePatch(-1);
     forAll(chainPoints_, cpI)
         if( regionsForPointAtPosition_[cpI].size() == 2 )
         {
             start = cpI;
-            
-            DynList<label> commonPatches(2);
+
+            DynList<label> commonPatches;
             const DynList<label>& np =
                 regionsForPointAtPosition_[chainPoints_.fcIndex(cpI)];
-            
+
             forAll(np, npI)
                 if( regionsForPointAtPosition_[cpI].contains(np[npI]) )
                     commonPatches.append(np[npI]);
-                
+
             if( commonPatches.size() == 1 )
             {
                 facePatch = commonPatches[0];
@@ -365,19 +362,19 @@ void createFacesFromChain::createFacesWithACorner
                     "createFacesWithACorner(const label cornerLabel)"
                 ) << "Cannot determine face patch" << abort(FatalError);
             }
-            
+
             break;
         }
-        
+
     //- start creating faces with a corner
     face f(5);
     direction vI(0);
     f[vI++] = chainPoints_[start];
-    
+
     for(label cpI=1;cpI<chainPoints_.size();++cpI)
     {
         const label pos = (cpI + start) % chainPoints_.size();
-        
+
         if( regionsForPointAtPosition_[pos].size() == 1 )
         {
             f.newElmt(vI++) = chainPoints_[pos];
@@ -391,7 +388,7 @@ void createFacesFromChain::createFacesWithACorner
             vI = 0;
             createdFaces_.append(f);
             faceRegions_.append(facePatch);
-            
+
             //- start creting new face
             f[vI++] = chainPoints_[pos];
             const label ppos =
@@ -415,7 +412,7 @@ void createFacesFromChain::createFacesWithACorner
                 << abort(FatalError);
         }
     }
-    
+
     //- add the start position into the last face
     f.newElmt(vI++) = chainPoints_[start];
     f.newElmt(vI++) = cornerLabel;

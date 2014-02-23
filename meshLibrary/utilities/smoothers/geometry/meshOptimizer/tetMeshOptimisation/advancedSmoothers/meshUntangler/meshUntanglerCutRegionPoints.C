@@ -173,7 +173,7 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
     {
         const DynList<label, 8>& f = faces[fI];
 
-        DynList<label, 8> nf(f.size());
+        DynList<label, 8> nf;
 
         forAll(f, eI)
             if( newEdgeLabel_[f[eI]] != -1 )

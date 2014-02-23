@@ -182,7 +182,6 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             );
 
             const point newP = 0.5 * (pMap + p);
-            //const point newP = preMapPositions[bpI].coordinates();
 
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
 
@@ -204,13 +203,14 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             }
         }
 
+        //- make sure that the vertices at inter-processor boundaries
+        //- are mapped onto the same location
         mapToSmallestDistance(parallelBndNodes);
 
-        //surfaceModifier.updateGeometry();
-        //surfaceModifier.syncVerticesAtParallelBoundaries();
+        //- update the surface geometry of the
+        surfaceModifier.updateGeometry();
 
         Info << "." << flush;
-        break;
     }
 
     Info << endl;

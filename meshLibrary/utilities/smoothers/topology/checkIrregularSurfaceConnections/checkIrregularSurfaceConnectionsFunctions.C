@@ -74,7 +74,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
     //- cells connected to a vertex must create a single loop when cells
     //- are visited over faces from to the other
     label nBadVertices(0);
-    DynList<label> frontCells(100);
+    DynList<label> frontCells;
 
     const label size = bPoints.size();
     # ifdef USE_OMP
@@ -191,7 +191,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
             dualEdgesForPoint.insert
             (
-                std::make_pair(bpI, DynList<edge>(10))
+                std::make_pair(bpI, DynList<edge>())
             );
         }
 
@@ -624,7 +624,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
     }
 
     //- check number of face groups
-    DynList<label> front(100);
+    DynList<label> front;
     const label size = pointFaces.size();
     # ifdef USE_OMP
     # pragma omp parallel for private(front) schedule(dynamic)
@@ -715,7 +715,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
             if( !parallelBndPoint[bpI] )
                 continue;
 
-            dualEdgesForPoint.insert(std::make_pair(bpI, DynList<edge>(10)));
+            dualEdgesForPoint.insert(std::make_pair(bpI, DynList<edge>()));
 
             forAllRow(pointEdges, bpI, peI)
             {

@@ -345,7 +345,7 @@ void triSurfaceDetectMaterials::findOctreeGroups()
     octreeGroupForBox_ = -1;
     nOctreeGroups_ = 0;
 
-    DynList<label> neighs(24);
+    DynList<label> neighs;
     for(label leafI=0;leafI<nLeaves;++leafI)
     {
         if( octreeGroupForBox_[leafI] != -1 )
@@ -401,7 +401,7 @@ void triSurfaceDetectMaterials::findMaterialsAndWalls()
     partitionType_ = 0;
 
     const label nLeaves = octreePtr_->numberOfLeaves();
-    DynList<label> containedTriangles(64), neighbours(24);
+    DynList<label> containedTriangles, neighbours;
     for(label leafI=0;leafI<nLeaves;++leafI)
     {
         //const meshOctreeCubeBasic& oc = octreePtr_->returnLeaf(leafI);
@@ -561,7 +561,7 @@ void triSurfaceDetectMaterials::findMaterialsAndWalls()
     //- renumber partitionMaterials_ according to newGroupLabels
     forAll(partitionMaterials_, partitionI)
     {
-        DynList<label> partitions(partitionMaterials_.sizeOfRow(partitionI));
+        DynList<label> partitions;
         forAllRow(partitionMaterials_, partitionI, i)
             partitions.appendIfNotIn
             (

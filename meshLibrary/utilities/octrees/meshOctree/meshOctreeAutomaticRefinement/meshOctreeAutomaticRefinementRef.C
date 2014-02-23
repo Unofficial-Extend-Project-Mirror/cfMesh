@@ -164,7 +164,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
         }
     }
 
-    DynList<label> leavesInBox(128);
+    DynList<label> leavesInBox;
     # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
     private(leavesInBox) shared(cornerInLeaf) \
@@ -243,7 +243,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     const triSurf& surf = octree_.surface();
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
-    DynList<label> patches, ePartitions, helper(100);
+    DynList<label> patches, ePartitions, helper;
     # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
     private(patches, ePartitions, helper) \
@@ -336,7 +336,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
     const boundBox& rootBox = octree_.rootBox();
 
     label nMarked(0);
-    DynList<label> containedTrias(100);
+    DynList<label> containedTrias;
     # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 10000 ) \
     private(containedTrias) \
@@ -407,11 +407,10 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
     const triSurf& surf = octree_.surface();
 
     label nMarked(0);
-    DynList<label> neighbours(64), helper(128);
+    DynList<label> helper;
     # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
-    private(neighbours, helper) \
-    reduction(+ : nMarked) schedule(dynamic, 20)
+    private(helper) reduction(+ : nMarked) schedule(dynamic, 20)
     # endif
     forAll(refCandidates, refI)
     {

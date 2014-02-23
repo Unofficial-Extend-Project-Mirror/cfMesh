@@ -132,7 +132,7 @@ point boundaryLayers::createNewVertex
         Info << "Vertex is on the border" << endl;
         # endif
 
-        DynList<label> otherPatches(2);
+        DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
             if( !treatPatches[pPatches(bpI, patchI)] )
                 otherPatches.appendIfNotIn
@@ -542,9 +542,9 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
         const point& p = points[pointI];
 
         std::map<std::pair<label, label>, label>& m = otherVrts_[pointI];
-        DynList<label> usedPatches(3);
-        DynList<label> newNodeLabel(3);
-        DynList<vector> newPatchPenetrationVector(3);
+        DynList<label> usedPatches;
+        DynList<label> newNodeLabel;
+        DynList<vector> newPatchPenetrationVector;
         forAllRow(pPatches, bpI, patchI)
         {
             const label pKey = patchKey_[pPatches(bpI, patchI)];
@@ -759,7 +759,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
     const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
     const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
-    DynList<label> neiProcs(10);
+    DynList<label> neiProcs;
     labelLongList edgePoints;
     Map<label> bpToEdgePoint;
     forAll(procPoints, pointI)
@@ -810,7 +810,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
         const point& p = points[bPoints[bpI]];
 
         //- find patches for the given point
-        DynList<label> otherPatches(2);
+        DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
             if( !treatPatches[pPatches(bpI, patchI)] )
                 otherPatches.appendIfNotIn(pPatches(bpI, patchI));
@@ -928,7 +928,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
         const label bpI = edgePoints[epI];
 
         //- find patches for the given point
-        DynList<label> otherPatches(2);
+        DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
             if( !treatPatches[pPatches(bpI, patchI)] )
                 otherPatches.appendIfNotIn(pPatches(bpI, patchI));
@@ -953,7 +953,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
         const point& p = points[bPoints[bpI]];
 
         //- find patches for the given point
-        DynList<label> otherPatches(2);
+        DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
             if( !treatPatches[pPatches(bpI, patchI)] )
                 otherPatches.appendIfNotIn(pPatches(bpI, patchI));

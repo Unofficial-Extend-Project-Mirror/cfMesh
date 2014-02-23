@@ -41,10 +41,10 @@ namespace Foam
 labelList boundaryFacesGenerator::patchesForPoint(const label vI) const
 {
     labelList pcs(pointRegions_.sizeOfRow(vI));
-    
+
     forAll(pcs, pI)
         pcs[pI] = pointRegions_(vI, pI);
-    
+
     return pcs;
 }
 
@@ -58,7 +58,7 @@ void boundaryFacesGenerator::determineCellPatches
     const cellListPMG& polyCells_ = mesh_.cells();
     const faceListPMG& polyFaces_ = mesh_.faces();
     const cell& c = polyCells_[cellI];
-        
+
     # ifdef DEBUGCutter
     Info << "Cell faces are " << c << endl;
     forAll(c, fI)
@@ -71,12 +71,12 @@ void boundaryFacesGenerator::determineCellPatches
     # ifdef DEBUGCutter
     Info << "Cell points are " << cellPoints << endl;
     # endif
-        
+
     //- find which boundary regions intersect the polyhedron
     //- this can be determined by monitoring patch labels
     //- of cell points
     patches.clear();
-    
+
     forAll(cellPoints, cpI)
     {
         const labelList pp = patchesForPoint(cellPoints[cpI]);
@@ -100,14 +100,14 @@ void boundaryFacesGenerator::createBoundaryChainsForCell
     //- find edges which appear once
     //- these edges are on the boundary
     const edgeList cellEdges = c.edges(polyFaces_);
-    
+
     labelList nAppearances(cellEdges.size(), 0);
     forAll(c, fI)
     {
         const face& f = polyFaces_[c[fI]];
-        
+
         const edgeList fe = f.edges();
-                
+
         forAll(fe, eI)
             forAll(cellEdges, i)
             if( fe[eI] == cellEdges[i] )
@@ -116,10 +116,10 @@ void boundaryFacesGenerator::createBoundaryChainsForCell
                 break;
             }
     }
-        
+
     //- create a list of boundary edges
-    DynList<edge> boundaryEdges(10);
-            
+    DynList<edge> boundaryEdges;
+
     forAll(nAppearances, aI)
         if( nAppearances[aI] == 1 )
         {
@@ -137,7 +137,7 @@ void boundaryFacesGenerator::createBoundaryChainsForCell
             ) << "Cell " << cellI << " is not topologically closed!"
                 << abort(FatalError);
         }
-            
+
     //- sort edges into chains
     boundaryChains = sortEdgesIntoChains(boundaryEdges).sortedChains();
 
@@ -158,15 +158,15 @@ void boundaryFacesGenerator::createBoundaryFacesForCell(const label cellI)
             << nl << "This generally means that there is not enough cells "
             << "in that region. It can be remedied by refining "
             << "the mesh there." << exit(FatalError);
-    
+
     //- determine cell patches
-    DynList<label> patches(5);
+    DynList<label> patches;
     determineCellPatches(cellI, patches);
-    
+
     # ifdef DEBUGCutter
     Info << "Cell patches " << patches << endl;
     # endif
-    
+
     //- create boundary chains for cell
     labelListList boundaryChains;
     createBoundaryChainsForCell(cellI, boundaryChains);
@@ -181,12 +181,12 @@ void boundaryFacesGenerator::createBoundaryFacesForCell(const label cellI)
     (
         boundaryChains.size()
     );
-    
+
     forAll(facePoints, chI)
     {
         facePoints[chI].setSize(patches.size()+1);
     }
-    
+
     //- create faces for the given chains
     forAll(boundaryChains, bcI)
         createFacesForChain
@@ -195,16 +195,16 @@ void boundaryFacesGenerator::createBoundaryFacesForCell(const label cellI)
             patches,
             facePoints[bcI]
         );
-    
+
     # ifdef DEBUGCutter
     Info << "facePoints " << facePoints << endl;
     # endif
-    
+
     //- store faces into the list
     forAll(facePoints, chI)
     {
         const List< DynList<face> >& chfcs = facePoints[chI];
-        
+
         forAll(chfcs, patchI)
         {
             const DynList<face>& patchFaces = chfcs[patchI];

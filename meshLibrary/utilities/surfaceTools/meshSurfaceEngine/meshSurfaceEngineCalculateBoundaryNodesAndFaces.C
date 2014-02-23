@@ -691,7 +691,7 @@ void meshSurfaceEngine::calculatePointPoints() const
         {
             const label bpI = iter();
 
-            DynList<label> neiToSend(10);
+            DynList<label> neiToSend;
             forAllRow(pointPoints, bpI, j)
             {
                 const label bpJ = pointPoints(bpI, j);

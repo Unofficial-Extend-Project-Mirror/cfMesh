@@ -140,7 +140,7 @@ void triSurfaceClassifyEdges::checkOrientation()
     VRWGraph triangleInLeaves(surf.size());
     labelLongList ntl(surf.size(), 0);
 
-    DynList<label> helper(500);
+    DynList<label> helper;
     for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
     {
         helper.clear();

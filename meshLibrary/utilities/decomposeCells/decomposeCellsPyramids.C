@@ -36,7 +36,7 @@ Description
 
 namespace Foam
 {
-    
+
 void decomposeCells::findAddressingForCell
 (
     const label cellI,
@@ -47,6 +47,12 @@ void decomposeCells::findAddressingForCell
 ) const
 {
     const cell& c = mesh_.cells()[cellI];
+
+    vrt.clear();
+    edges.clear();
+    edgeFaces.clear();
+    faceEdges.setSize(c.size());
+
     const faceListPMG& faces = mesh_.faces();
     forAll(faceEdges, feI)
     {
@@ -57,10 +63,11 @@ void decomposeCells::findAddressingForCell
     forAll(c, fI)
     {
         const face& f = faces[c[fI]];
-        const edgeList edg = faces[c[fI]].edges();
 
-        forAll(edg, eI)
+        forAll(f, eI)
         {
+            const edge e = f.faceEdge(eI);
+
             bool store(true);
             forAll(vrt, vI)
                 if( vrt[vI] == f[eI] )
@@ -72,13 +79,12 @@ void decomposeCells::findAddressingForCell
             {
                 vrt.append(f[eI]);
             }
-            else
-            {
-                store = true;
-            }
+
+            //- check if the edge alreready exists
+            store = true;
 
             forAll(edges, eJ)
-                if( edg[eI] == edges[eJ] )
+                if( e == edges[eJ] )
                 {
                     store = false;
                     faceEdges[fI][eI] = eJ;
@@ -92,7 +98,7 @@ void decomposeCells::findAddressingForCell
                 DynList<label, 2> ef;
                 ef.append(fI);
                 edgeFaces.append(ef);
-                edges.append(edg[eI]);
+                edges.append(e);
             }
         }
     }
@@ -101,16 +107,22 @@ void decomposeCells::findAddressingForCell
     forAll(edgeFaces, efI)
         if( edgeFaces[efI].size() != 2 )
         {
+            forAll(c, fI)
+                Info << "Face " << c[fI] << " is " << faces[c[fI]] << endl;
+
             Info << "Edges " << edges << endl;
             Info << "faceEdges " << faceEdges << endl;
             Info << "edgeFaces " << edgeFaces << endl;
             mesh_.write();
             FatalErrorIn
             (
-                "faceListList pMesh::decomposeCellIntoPyramids()"
+                "void decomposeCells::findAddressingForCell"
+                "(const label, DynList<label, 32>&, DynList<edge, 64>&"
+                ", DynList<DynList<label, 8> >&"
+                ", DynList<DynList<label, 2>, 64>&) const"
             ) << "Cell " << cellI << " is not topologically closed!"
                 << abort(FatalError);
-        }    
+        }
 }
 
 label decomposeCells::findTopVertex
@@ -123,19 +135,19 @@ label decomposeCells::findTopVertex
 {
     const cell& c = mesh_.cells()[cellI];
     const faceListPMG& faces = mesh_.faces();
-    
+
     pointFieldPMG& pointsAccess = mesh_.points();
 
     //- there is no vertex in 3 or more patches
     //- find boundary faces
     label topVertex(-1);
-    
+
     const labelList cp = c.labels(faces);
     point p(vector::zero);
     forAll(cp, cpI)
         p += pointsAccess[cp[cpI]];
     p /= cp.size();
-    
+
     topVertex = pointsAccess.size();
     pointsAccess.append(p);
 
@@ -153,7 +165,7 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
     const labelList& owner = mesh_.owner();
 
     const cell& c = cells[cellI];
-    
+
     # ifdef DEBUGDecompose
     Info << "Starting decomposing cell " << cellI << endl;
     Info << "Cell consists of faces " << c << endl;
@@ -173,7 +185,7 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
     //- if there exist a corner vertex which is in 3 or more patches then
     //- it is selected as the top vertex
     label topVertex = findTopVertex(cellI, vrt, edges, edgeFaces);
-    
+
     //- start generating pyramids
     forAll(c, fI)
     {
@@ -183,7 +195,7 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
         const face& f = faces[c[fI]];
         DynList<DynList<label, 8> > cellFaces;
         cellFaces.setSize(f.size() + 1);
-        
+
         DynList<triFace> triFaces;
         triFaces.setSize(f.size());
         forAll(triFaces, pI)
@@ -192,12 +204,12 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
             triFaces[pI][1] = f[pI];
             triFaces[pI][2] = topVertex;
         }
-        
+
         label cfI(0);
         if( owner[c[fI]] == cellI )
         {
             cellFaces[cfI++] = faces[c[fI]];
-            
+
             forAll(triFaces, tfI)
             {
                 cellFaces[cfI++] = triFaces[tfI];
@@ -214,12 +226,12 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
                 rf[1] = triFaces[tfI][2];
                 rf[2] = triFaces[tfI][1];
                 cellFaces[cfI++] = rf;
-            }                
+            }
         }
-        
+
         # ifdef DEBUGDecompose
         Info << "Cell for face is " << cellFaces << endl;
-        
+
         DynList<edge, 64> cEdges;
         DynList<DynList<label, 2>, 64> eFaces;
         forAll(cellFaces, fI)
@@ -228,9 +240,9 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
             forAll(f, eI)
             {
                 const edge e(f[eI], f[(eI+1)%f.size()]);
-                
+
                 const label pos = cEdges.contains(e);
-                
+
                 if( pos < 0 )
                 {
                     cEdges.append(e);
@@ -244,12 +256,12 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
                 }
             }
         }
-        
+
         forAll(eFaces, eI)
             if( eFaces[eI].size() != 2 )
                 Pout << "This pyrmid is not topologically closed" << endl;
         # endif
-        
+
         facesOfNewCells_.appendGraph(cellFaces);
     }
 }

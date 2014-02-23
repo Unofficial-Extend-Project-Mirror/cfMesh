@@ -293,7 +293,7 @@ bool checkCellsZipUp
             }
         }
 
-        DynList<edge> singleEdges(cellEdges.size());
+        DynList<edge> singleEdges;
 
         forAll(edgeUsage, edgeI)
         {

@@ -278,7 +278,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
 
     //- cubes which share a common, face, edge or vertex are added into
     //- the current processor's tree
-    DynList<label> neighbours(56);
+    DynList<label> neighbours;
     forAll(receivedCoordinates, ccI)
     {
         octree_.findAllLeafNeighbours

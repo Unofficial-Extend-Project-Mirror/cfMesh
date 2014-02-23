@@ -182,7 +182,7 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
         return false;
 
     Map<label> nAppearances;
-    DynList<label> triangles(100);
+    DynList<label> triangles;
     octree_.containedTriangles(owner[fI], triangles);
     forAll(triangles, triI)
     {
@@ -251,7 +251,7 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
     const VRWGraph& edgeCubes = this->edgeLeaves();
 
     Map<label> nAppearances;
-    DynList<label> triangles(100);
+    DynList<label> triangles;
     bool sameLevel(true);
 
     forAllRow(edgeCubes, eI, i)
@@ -326,7 +326,7 @@ void meshOctreeAddressing::edgeIntersections
         SMALL * mag(points[edges[eI].start()] - points[edges[eI].end()]);
 
     Map<label> nAppearances;
-    DynList<label> triangles(100);
+    DynList<label> triangles;
 
     forAllRow(edgeCubes, eI, i)
     {

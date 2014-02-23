@@ -279,8 +279,8 @@ inline face removeEdgesFromFace
 
 inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
 {
-    DynList<edge> cellEdges(12);
-    DynList<label> nAppearances(12);
+    DynList<edge> cellEdges;
+    DynList<label> nAppearances;
 
     forAll(cellFaces, fI)
     {
@@ -466,8 +466,8 @@ inline bool areElementsInChain(const boolList& sel)
 inline void zipOpenChain(DynList<edge>& bEdges)
 {
     //- close the chain if open
-    DynList<label> chainVertices(5);
-    List<label> nAppearances(5);
+    DynList<label> chainVertices;
+    List<label> nAppearances;
     forAll(bEdges, eI)
     {
         const edge& e = bEdges[eI];

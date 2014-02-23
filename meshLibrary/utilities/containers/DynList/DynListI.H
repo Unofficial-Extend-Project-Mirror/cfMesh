@@ -101,7 +101,7 @@ inline Foam::DynList<T, staticSize>::DynList(const label s)
     UList<T>(staticData_, staticSize),
     nextFree_(0)
 {
-    allocateSize(s);
+    setSize(s);
 }
 
 //- Construct given size

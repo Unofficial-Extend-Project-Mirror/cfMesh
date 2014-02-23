@@ -46,24 +46,24 @@ bool subdivisionTessellation::addPoint(const label pI)
     (
         "bool subdivisionTessellation::addPoint(const label)"
     ) << "Not implemented!" << exit(FatalError);
-    
+
     return false;
 }
 void subdivisionTessellation::addCentroid(const label elmtI)
 {
     const label pI = points_.size();
     points_.append(elmts_[elmtI].centroid(points_));
-    
+
     # ifdef DEBUGTessalation
     Info << "subdivisionTessellation:: Adding centroid " << pI << endl;
     # endif
-    
+
     nElmts_ = 0;
 
     treeSearch(elmtI);
 
     makeNewElements(elmtI, pI);
-    
+
     resetInfluences(elmtI);
 }
 
@@ -84,39 +84,39 @@ void subdivisionTessellation::addEdgeCentre
     const label pI = points_.size();
     const edge e = elmts_[elmtI].edges()[eI];
     points_.append(0.5*(points_[e[0]]+points_[e[1]]));
-    
+
     # ifdef DEBUGTessalation
     Info << "subdivisionTessellation:: Adding edge centre "
         << points_[pI] << endl;
     # endif
-    
+
     nElmts_ = 0;
 
     treeSearch(elmtI, e);
 
     makeNewElementsBisect(elmtI, e, pI);
-    
+
     resetInfluences(elmtI);
 }
-    
+
 void subdivisionTessellation::treeSearch(const label elmtI)
 {
     tessellationElement& elmt = elmts_[elmtI];
-    
+
     //- stop searching it the tessellationElement is marked already
     if( elmt.influence_ & tessellationElement::GOOD ) return;
-        
+
     # ifdef DEBUGTessalation
     Info << "Setting GOOD at element " << elmtI << endl;
     # endif
-    
+
     elmt.influence_ |= tessellationElement::GOOD;
     delElmts_[nElmts_++] = elmtI;
-    
+
     for(direction ineigh=0;ineigh<DIM1;++ineigh)
     {
         const label el = elmt.neighbour(ineigh);
-        
+
         if( el != -1 )
             elmts_[el].influence_ |= tessellationElement::BOUND;
     }
@@ -129,13 +129,13 @@ void subdivisionTessellation::treeSearch
 )
 {
     tessellationElement& elmt = elmts_[elmtI];
-    
+
     //- stop searching if there exist an element with unknown influence
     if( !pointOk_ ) return;
 
     //- stop searching it the tessellationElement is marked already
     if( elmt.influence_ & tessellationElement::GOOD ) return;
-        
+
     if( (elmt.whichPosition(e[0]) != -1) && (elmt.whichPosition(e[1]) != -1) )
     {
         elmt.influence_ |= tessellationElement::GOOD;
@@ -153,7 +153,7 @@ void subdivisionTessellation::treeSearch
     for(direction i=0;i<DIM1;++i)
     {
         const label el = elmt.neighbour(i);
-        
+
         if( el != -1 )
         {
             //- search other tessellationElements
@@ -177,14 +177,14 @@ void subdivisionTessellation::makeNewElementsBisect
     for(label i=0;i<nElmts_;++i)
         Info << "Element to delete is " << elmts_[delElmts_[i]] << endl;
     # endif
-    
+
     //- create new elements
     DynList<tessellationElement>* newElementsPtr =
         new DynList<tessellationElement>(4*nElmts_);
     for(label i=0;i<nElmts_;++i)
     {
         const tessellationElement& elmt = elmts_[delElmts_[i]];
-        
+
         for(direction j=0;j<DIM1;++j)
         {
             const label nei = elmt.neighbour(j);
@@ -208,7 +208,7 @@ void subdivisionTessellation::makeNewElementsBisect
             }
         }
     }
-    
+
     //- create labels of new elements and store them
     labelList newLabels(newElementsPtr->size());
     forAll(newLabels, lI)
@@ -222,7 +222,7 @@ void subdivisionTessellation::makeNewElementsBisect
             newLabels[lI] = elmts_.size();
             elmts_.append((*newElementsPtr)[lI]);
         }
-        
+
     deleteDemandDrivenData(newElementsPtr);
     # ifdef DEBUGTessalation
     Info << "Labels of new elements " << newLabels << endl;
@@ -238,7 +238,7 @@ void subdivisionTessellation::makeNewElementsBisect
                 const label n = newPointLabel.size();
                 newPointLabel.insert(elmt[i], n);
             }
-        
+
         const label nei = elmt.neighbour(3);
         if( nei != -1 )
         {
@@ -251,26 +251,26 @@ void subdivisionTessellation::makeNewElementsBisect
                 }
         }
     }
-    
+
     //- create neighbours of newly created elements
     List< DynList<label> > nodeElements
     (
         newPointLabel.size(),
-        DynList<label>(6)
+        DynList<label>()
     );
-    
+
     forAll(newLabels, lI)
     {
         const tessellationElement& elmt = elmts_[newLabels[lI]];
         for(direction i=0;i<DIM;++i)
             nodeElements[newPointLabel[elmt[i]]].append(newLabels[lI]);
     }
-        
+
     # ifdef DEBUGTessalation
     Info << "Node elements " << nodeElements << endl;
     Info <<"New point label " << newPointLabel << endl;
     # endif
-        
+
     forAll(newLabels, lI)
     {
         tessellationElement& elmt = elmts_[newLabels[lI]];
@@ -289,7 +289,7 @@ void subdivisionTessellation::makeNewElementsBisect
                 }
         }
     }
-    
+
     # ifdef DEBUGTessalation
     forAll(newLabels, lI)
     {
@@ -299,7 +299,7 @@ void subdivisionTessellation::makeNewElementsBisect
         {
             Info << "Neighbour over face " << elmt.face(i) << " is "
                 << elmt.neighbour(i) << endl;
-                        
+
             triFace f = elmt.face(i);
             if( elmt.neighbour(i) != -1 )
             {
@@ -316,7 +316,7 @@ void subdivisionTessellation::makeNewElementsBisect
                                 << abort(FatalError);
                     }
                 }
-                
+
                 if( !found )
                     FatalError << "Cannot find neighbour!" << abort(FatalError);
             }
@@ -330,7 +330,7 @@ void subdivisionTessellation::checkTessellation() const
     forAll(elmts_, elI)
     {
         const tessellationElement& elmt = elmts_[elI];
-        
+
         if( elmt.mag(points_) < 0.0 )
         {
             FatalErrorIn

@@ -800,7 +800,7 @@ inline label numberOfFaceGroups
 
     label nGroups(0);
 
-    DynList<label> front(containedElements.size());
+    DynList<label> front;
 
     forAllConstIter(labelHashSet, triaInRange, it)
         if( !elGroup.found(it.key()) )
@@ -891,7 +891,7 @@ inline label numberOfEdgeGroups
 
     label nGroups(0);
 
-    DynList<label> front(containedEdges.size());
+    DynList<label> front;
 
     forAllConstIter(labelHashSet, edgesInRange, it)
         if( !elGroup.found(it.key()) )

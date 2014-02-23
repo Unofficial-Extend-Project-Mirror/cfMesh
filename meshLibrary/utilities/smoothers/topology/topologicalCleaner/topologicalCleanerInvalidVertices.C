@@ -89,12 +89,12 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
         {
             materialForCell[cI] = material;
 
-            DynList<label> frontCells(10);
+            DynList<label> frontCells;
             frontCells.append(cI);
 
             do
             {
-                DynList<label> newFrontCells(10);
+                DynList<label> newFrontCells;
 
                 forAll(frontCells, fcI)
                 {

@@ -70,7 +70,6 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
             DynList<label, 32> vrt;
             DynList<edge, 64> edges;
             DynList<DynList<label, 8> > faceEdges;
-            faceEdges.setSize(cells[cellI].size());
             DynList<DynList<label, 2>, 64> edgeFaces;
 
             findAddressingForCell(cellI, vrt, edges, faceEdges, edgeFaces);

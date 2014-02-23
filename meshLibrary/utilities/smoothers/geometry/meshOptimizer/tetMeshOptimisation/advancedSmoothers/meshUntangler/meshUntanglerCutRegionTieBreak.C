@@ -36,7 +36,7 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
@@ -47,31 +47,31 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     // to find a single region which will be cut off from the feasible region.
     // This will be done by finding the node with the most negative distance,
     // and then start marking vertices connected to that vertex via an edge.
-    
+
     # ifdef DEBUGSmooth
     Info << "Starting tie break" << endl;
     # endif
-    
+
     //- delete pointer data
     deleteDemandDrivenData(cPtsPtr_);
     deleteDemandDrivenData(cEdgesPtr_);
     deleteDemandDrivenData(cFacesPtr_);
-    
+
     //- remove coincident vertices
     //removeCoincidentVertices();
-    
+
     const DynList<edge, 128>& edges = *edgesPtr_;
 
-    DynList<edge> faceEdges(f.size());
+    DynList<edge> faceEdges;
     forAll(f, eI)
         faceEdges.append(edges[f[eI]]);
-        
+
     labelListList fvertices = sortEdgesIntoChains(faceEdges).sortedChains();
     if( fvertices.size() != 1 )
     {
         valid_ = false;
         return;
-        
+
         Info << "Face vertices " << fvertices << endl;
         FatalErrorIn
         (
@@ -79,19 +79,19 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
         ) << "Number of created faces is not 1 but "
             << fvertices.size() << abort(FatalError);
     }
-    
+
     const labelList& fv = fvertices[0];
-    
+
     DynList<label, 64> vertexRegion;
     vertexRegion.setSize(fv.size());
     vertexRegion = 0;
-    
+
     label region(1);
     forAll(fv, vI)
         if( !vertexTypes_[fv[vI]] && !vertexRegion[vI] )
         {
             vertexRegion[vI] = region;
-            
+
             label fcI = fv.fcIndex(vI);
             label rcI = fv.rcIndex(vI);
             bool found;
@@ -104,7 +104,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
                     fcI = fv.fcIndex(fcI);
                     found = true;
                 }
-                
+
                 if( !vertexTypes_[fv[rcI]] )
                 {
                     vertexRegion[rcI] = region;
@@ -112,16 +112,16 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
                     found = true;
                 }
             } while( found );
-            
+
             ++region;
         }
-        
+
     # ifdef DEBUGSmooth
     Info << "Tolerance " << tol_ << endl;
     Info << "Number of regions " << region-1 << endl;
     Info << "Vertex regions " << vertexRegion << endl;
     # endif
-    
+
     if( region > 2 )
     {
         //- there are more than two regions which need to be cut off
@@ -130,7 +130,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
             Info << "Distance for vertex " << fv[vI] << " is "
                 << vertexDistance_[fv[vI]] << endl;
         # endif
-        
+
         //- there should be only one cut-off region
         //- there this region will be determined by the most negative
         //- distance from plane
@@ -142,7 +142,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
                 minDist = vertexDistance_[fv[vI]];
                 minRegion = vertexRegion[vI];
             }
-            
+
         forAll(vertexRegion, vI)
             if( vertexRegion[vI] && (vertexRegion[vI] != minRegion) )
             {
@@ -160,20 +160,20 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
             {
                 vertexTypes_[fv[vI]] ^= INPLANE;
                 vertexTypes_[fv[vI]] |= KEEP;
-                
+
                 # ifdef DEBUGSmooth
                 Info << "Node " << vI << " was INPLANE" << endl;
                 Info << "New type " << label(vertexTypes_[fv[vI]]) << endl;
                 # endif
             }
     }
-    
+
     # ifdef DEBUGSmooth
     forAll(fv, vI)
         Info << "Vertex type for vertex " << fv[vI] << " is "
             << label(vertexTypes_[fv[vI]]) << endl;
     # endif
-    
+
     //- create new points
     const DynList<point, 64>& points = *pointsPtr_;
     cPtsPtr_ = new DynList<point, 64>();
@@ -185,7 +185,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
             cPtsPtr_->append(points[pI]);
             newVertexLabel_[pI] = origNumVertices_++;
         }
-        
+
     //- find new edges and continue creating faces
     findNewEdges();
 }
