@@ -353,6 +353,7 @@ void meshOctreeCube::refineMissingCube
             sCubes[i] = NULL;
 
         const label subCubesLabel = slotPtr->childCubes_.size();
+
         slotPtr->childCubes_.appendFixedList(sCubes);
         subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
     }
@@ -373,7 +374,7 @@ void meshOctreeCube::refineMissingCube
     {
         const VRWGraph& containedElements =
             activeSlotPtr_->containedTriangles_;
-        DynList<label> ce(containedElements.sizeOfRow(containedElementsLabel_));
+        DynList<label, 512> ce;
 
         forAllRow(containedElements, containedElementsLabel_, tI)
         {

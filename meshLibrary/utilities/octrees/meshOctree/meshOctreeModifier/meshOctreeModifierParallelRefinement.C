@@ -164,20 +164,6 @@ void meshOctreeModifier::refineTreeForCoordinates
 
         if( nei->isLeaf() )
         {
-/*            label containedTrianglesI(-1), containedEdgesI(-1);
-
-            if( containedTriangles.size() )
-            {
-                containedTrianglesI = octree_.containedTriangles_.size();
-                octree_.containedTriangles_.appendList(containedTriangles);
-            }
-
-            if( containedEdges.size() )
-            {
-                containedEdgesI = octree_.containedEdges_.size();
-                octree_.containedEdges_.appendList(containedEdges);
-            }
-*/
             //- refine the missing cube
             //nei->refineMissingCube(scI, containedTrianglesI, containedEdgesI);
             nei->refineMissingCube

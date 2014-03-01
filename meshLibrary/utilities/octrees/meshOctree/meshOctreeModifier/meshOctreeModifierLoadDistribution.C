@@ -29,7 +29,10 @@ Description
 #include "meshOctreeModifier.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define OCTREETiming
 //#define DEBUGBalancing
@@ -271,12 +274,14 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
 
     //- create boxes from the received coordinates
     forAll(migratedCubes, mcI)
+    {
         refineTreeForCoordinates
         (
             migratedCubes[mcI].coordinates(),
             Pstream::myProcNo(),
             migratedCubes[mcI].cubeType()
         );
+    }
 
     createListOfLeaves();
 
