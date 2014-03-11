@@ -33,7 +33,10 @@ Description
 #include "helperFunctionsPar.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,7 +49,6 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 {
     const meshSurfaceEngine& mse = *surfaceEnginePtr_;
     const pointFieldPMG& points = mse.points();
-    const labelList& bp = mse.bp();
     const VRWGraph& pointFaces = mse.pointFaces();
     const VRWGraph& pointInFaces = mse.pointInFaces();
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -64,6 +66,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         if( activePointsPtr_ && !activePointsPtr_->operator[](bpI) )
             continue;
 
+        const vector& pNormal = pNormals[bpI];
+
         forAllRow(pointFaces, bpI, pfI)
         {
             const label pI = pointInFaces(bpI, pfI);
@@ -79,20 +83,20 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 fCentres[bfI]
             );
 
-            vector n = triNext.normal();
-            scalar m = mag(n);
-            if( m < VSMALL )
+            vector nNext = triNext.normal();
+            scalar mNext = mag(nNext);
+            if( mNext < VSMALL )
             {
                 # ifdef USE_OMP
                 # pragma omp critical
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
             else
             {
-                n /= m;
+                nNext /= mNext;
             }
 
             if( magSqr(triNext.a() - triNext.b()) < VSMALL )
@@ -102,7 +106,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
             if( magSqr(triNext.c() - triNext.a()) < VSMALL )
             {
@@ -111,17 +115,17 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
 
-            if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
+            if( (nNext & pNormal) < 0.0 )
             {
                 # ifdef USE_OMP
                 # pragma omp critical
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
 
             //- check the second triangle (with previous node)
@@ -132,20 +136,20 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 points[bf.prevLabel(pI)]
             );
 
-            n = triPrev.normal();
-            m = mag(n);
-            if( m < VSMALL )
+            vector nPrev = triPrev.normal();
+            scalar mPrev = mag(nPrev);
+            if( mPrev < VSMALL )
             {
                 # ifdef USE_OMP
                 # pragma omp critical
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
             else
             {
-                n /= m;
+                nPrev /= mPrev;
             }
 
             if( magSqr(triPrev.a() - triPrev.b()) < VSMALL )
@@ -155,7 +159,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
             if( magSqr(triPrev.c() - triPrev.a()) < VSMALL )
             {
@@ -164,27 +168,29 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
 
-            if( (n & pNormals[bp[bf[pI]]]) < 0.0 )
+            if( (nPrev & pNormal) < 0.0 )
             {
                 # ifdef USE_OMP
                 # pragma omp critical
                 # endif
                 invertedVertices_.insert(bf[pI]);
 
-                continue;
+                break;
             }
 
             //- check whether the normals of both triangles
             //- point in the same direction
-            if( (triNext.normal() & triPrev.normal()) < 0.0 )
+            if( (nNext & nPrev) < 0.0 )
             {
                 # ifdef USE_OMP
                 # pragma omp critical
                 # endif
                 invertedVertices_.insert(bf[pI]);
+
+                break;
             }
         }
     }

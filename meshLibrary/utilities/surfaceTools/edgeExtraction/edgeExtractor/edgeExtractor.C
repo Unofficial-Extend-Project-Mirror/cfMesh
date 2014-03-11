@@ -1304,7 +1304,7 @@ bool edgeExtractor::checkFacePatches()
         //- in the current patch
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40) \
-        if( candidates.size() > 1000 ) reduction(+ : nCorrected)
+        reduction(+ : nCorrected)
         # endif
         forAll(candidates, i)
         {
@@ -1314,7 +1314,7 @@ bool edgeExtractor::checkFacePatches()
             //- do not change patches of faces where all points are mapped
             //- onto the same patch
             bool allInSamePatch(true);
-            forAll(bFaces[bfI], pI)
+            forAll(bf, pI)
                 if( pointPatch_[bp[bf[pI]]] != newBoundaryPatches[bfI] )
                 {
                     allInSamePatch = false;
@@ -1551,10 +1551,8 @@ bool edgeExtractor::findCornerCandidates()
 
 void edgeExtractor::projectDeterminedFeatureVertices()
 {
-    VRWGraph pointPatches;
-    pointPatches.setSizeAndRowSize(pointValence_);
-    forAll(pointPatches, pI)
-        pointPatches.setRowSize(pI, 0);
+    List<DynList<label, 5> > pointPatches;
+    pointPatches.setSize(pointValence_.size());
 
     const meshSurfaceEngine& mse = surfaceEngine();
     const pointFieldPMG& points = mse.mesh().points();
@@ -1568,7 +1566,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
         const face& bf = bFaces[bfI];
 
         forAll(bf, pI)
-            pointPatches.appendIfNotIn(bp[bf[pI]], facePatch_[bfI]);
+            pointPatches[bp[bf[pI]]].appendIfNotIn(facePatch_[bfI]);
     }
 
     if( Pstream::parRun() )
@@ -1590,6 +1588,8 @@ void edgeExtractor::projectDeterminedFeatureVertices()
         {
             const label bpI = it();
 
+            const DynList<label, 5>& pPatches = pointPatches[bpI];
+
             forAllRow(bpAtProcs, bpI, i)
             {
                 const label neiProc = bpAtProcs(bpI, i);
@@ -1599,8 +1599,8 @@ void edgeExtractor::projectDeterminedFeatureVertices()
 
                 LongList<labelPair>& data = exchangeData[neiProc];
 
-                forAllRow(pointPatches, bpI, ppI)
-                    data.append(labelPair(it.key(), pointPatches(bpI, ppI)));
+                forAll(pPatches, ppI)
+                    data.append(labelPair(it.key(), pPatches[ppI]));
             }
         }
 
@@ -1613,7 +1613,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
         {
             const labelPair& lp = receivedData[i];
 
-            pointPatches.appendIfNotIn(globalToLocal[lp.first()], lp.second());
+            pointPatches[globalToLocal[lp.first()]].appendIfNotIn(lp.second());
         }
     }
 
@@ -1626,7 +1626,9 @@ void edgeExtractor::projectDeterminedFeatureVertices()
         # endif
         forAll(pointPatches, bpI)
         {
-            if( pointPatches.sizeOfRow(bpI) < 2 )
+            const DynList<label, 5>& pPatches = pointPatches[bpI];
+
+            if( pPatches.size() < 2 )
                 continue;
 
             const point& p = points[bPoints[bpI]];
@@ -1634,7 +1636,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             point newP(vector::zero);
             label counter(0);
 
-            forAllRow(pointPatches, bpI, i)
+            forAll(pPatches, i)
             {
                 point pp;
                 scalar dSq;
@@ -1642,7 +1644,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
                 (
                     pp,
                     dSq,
-                    pointPatches(bpI, i),
+                    pPatches[i],
                     p
                 );
 
@@ -1673,8 +1675,8 @@ bool edgeExtractor::untangleSurface()
 
 void edgeExtractor::extractEdges()
 {
-//    bool changed;
-//    label nIter(0);
+    bool changed;
+    label nIter(0);
 
     distributeBoundaryFaces();
 
@@ -1694,24 +1696,10 @@ void edgeExtractor::extractEdges()
     deleteDemandDrivenData(sPtr);
     # endif
 
-//    do
-//    {
-//        changed = false;
+    do
+    {
+        changed = false;
 
-/*        Info << "Checking cells near concave edges" << endl;
-        if( checkConcaveEdgeCells() )
-        {
-            # ifdef DEBUGEdgeExtractor
-            Info << "Changes due to concave edge cells" << endl;
-            fileName sName("changedConcaveCells"+help::scalarToText(nIter)+".stl");
-            sPtr = surfaceWithPatches();
-            sPtr->writeSurface(sName);
-            deleteDemandDrivenData(sPtr);
-            # endif
-
-            //changed = true;
-        }
-*/
         Info << "Checking patch in the neighbourhood of each face" << endl;
         if( checkFacePatches() )
         {
@@ -1723,23 +1711,23 @@ void edgeExtractor::extractEdges()
             deleteDemandDrivenData(sPtr);
             # endif
 
-            //changed = true;
+            changed = true;
         }
 
         //findEdgeCandidates();
-/*
-        if( findCornerCandidates() )
-        {
-            # ifdef DEBUGEdgeExtractor
-            Info << "Changes due to corner candidates" << endl;
-            fileName sName("findCornerCandidates"+help::scalarToText(nIter)+".stl");
-            sPtr = surfaceWithPatches();
-            sPtr->writeSurface(sName);
-            deleteDemandDrivenData(sPtr);
-            # endif
 
-            changed = true;
-        }
+//        if( findCornerCandidates() )
+//        {
+//            # ifdef DEBUGEdgeExtractor
+//            Info << "Changes due to corner candidates" << endl;
+//            fileName sName("findCornerCandidates"+help::scalarToText(nIter)+".stl");
+//            sPtr = surfaceWithPatches();
+//            sPtr->writeSurface(sName);
+//            deleteDemandDrivenData(sPtr);
+//            # endif
+
+//            changed = true;
+//        }
 
         projectDeterminedFeatureVertices();
 
@@ -1759,9 +1747,8 @@ void edgeExtractor::extractEdges()
         {
             break;
         }
-        */
 
-//    } while( changed && ++nIter < 3 );
+    } while( changed && ++nIter < 3 );
 
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();

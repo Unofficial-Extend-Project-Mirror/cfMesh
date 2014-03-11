@@ -31,6 +31,7 @@ Description
 
 #include "correctEdgesBetweenPatches.H"
 #include "meshSurfaceOptimizer.H"
+#include "meshSurfaceCheckInvertedVertices.H"
 
 // #define DEBUGSearch
 
@@ -53,9 +54,9 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 {
     distributeBoundaryFaces();
 
-    correctEdgesBetweenPatches featureEdges(mesh);
-
     remapBoundaryPoints();
+
+    correctEdgesBetweenPatches featureEdges(mesh);
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

@@ -36,7 +36,9 @@ Description
 #include "labelledPoint.H"
 
 #include <map>
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -140,10 +142,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                 const label f1 = edgeFaces(edgeI, 1);
 
                 if( facePatch[f0] == facePatch[f1] )
-                {
                     edgeTypes_[edgeI] |= PATCHEDGE;
-                    continue;
-                }
 
                 const edge e = edges[edgeI];
 

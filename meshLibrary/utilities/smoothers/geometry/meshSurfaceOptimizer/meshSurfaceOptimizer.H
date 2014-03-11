@@ -89,7 +89,12 @@ class meshSurfaceOptimizer
         inline const VRWGraph& pointTriangles() const;
 
         //- find vertices which are inverted
-        label findInvertedVertices(boolList& smoothVertex) const;
+        //- mark additional layers of vertices near the inverted ones
+        label findInvertedVertices
+        (
+            boolList& smoothVertex,
+            const label nAdditionalLayers = 2
+        ) const;
 
         //- transform into a 2D space in plane
         inline bool transformIntoPlane
@@ -254,7 +259,7 @@ public:
 
     // Member Functions
         //- optimisation before the edges and corners are created
-        bool preOptimizeSurface();
+        bool preOptimizeSurface(const label nAdditionalLayers = 2);
 
         //- optimize boundary nodes after boundary regions are created
         void optimizeSurface(const label nIterations = 5);

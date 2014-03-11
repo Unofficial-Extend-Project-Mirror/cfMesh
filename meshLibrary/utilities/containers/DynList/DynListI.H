@@ -94,7 +94,6 @@ inline Foam::DynList<T, staticSize>::DynList()
 {}
 
 
-//- Construct given size
 template<class T, Foam::label staticSize>
 inline Foam::DynList<T, staticSize>::DynList(const label s)
 :
@@ -104,7 +103,18 @@ inline Foam::DynList<T, staticSize>::DynList(const label s)
     setSize(s);
 }
 
-//- Construct given size
+template<class T, Foam::label staticSize>
+inline Foam::DynList<T, staticSize>::DynList(const label s, const T& val)
+:
+    UList<T>(staticData_, staticSize),
+    nextFree_(0)
+{
+    setSize(s);
+
+    for(label i=0;i<s;++i)
+        this->operator[](i) = val;
+}
+
 template<class T, Foam::label staticSize>
 inline Foam::DynList<T, staticSize>::DynList(const UList<T>& ul)
 :

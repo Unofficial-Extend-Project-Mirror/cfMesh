@@ -101,6 +101,9 @@ public:
         //- Construct given size
         explicit inline DynList(const label);
 
+        //- Construct from given size and defualt value
+        explicit inline DynList(const label, const T&);
+
         //- Construct from UList. nextFree_ set to size().
         explicit inline DynList(const UList<T>&);
 

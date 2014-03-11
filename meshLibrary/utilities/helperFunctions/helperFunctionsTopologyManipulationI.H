@@ -423,9 +423,10 @@ inline label sharedVertex(const faceListType& fcs)
     return -1;
 }
 
-inline bool areElementsInChain(const boolList& sel)
+template<class boolListType>
+inline bool areElementsInChain(const boolListType& sel)
 {
-    boolList selInChain(sel.size(), false);
+    DynList<bool> selInChain(sel.size(), false);
 
     forAll(sel, eI)
     {

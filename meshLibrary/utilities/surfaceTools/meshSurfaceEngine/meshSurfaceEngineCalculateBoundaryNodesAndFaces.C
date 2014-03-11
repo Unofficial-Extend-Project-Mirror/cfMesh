@@ -745,7 +745,7 @@ void meshSurfaceEngine::calculatePointNormals() const
     pointNormalsPtr_ = new vectorField(pFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( pFaces.size() > 1000 )
+    # pragma omp parallel for if( pFaces.size() > 1000 ) schedule(dynamic, 50)
     # endif
     forAll(pFaces, pI)
     {

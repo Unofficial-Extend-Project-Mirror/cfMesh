@@ -119,7 +119,8 @@ namespace help
     inline label sharedVertex(const faceListType& fcs);
 
     //- check if selected elements are in one singly-connected chain
-    inline bool areElementsInChain(const boolList& sel);
+    template<class boolListType>
+    inline bool areElementsInChain(const boolListType& sel);
 
     //- sort the edge chain such that the end of one edge is the beginning
     //- of the next one (valid for singly-connected chains, only)

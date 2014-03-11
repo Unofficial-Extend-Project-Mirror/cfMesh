@@ -56,7 +56,8 @@ namespace Foam
 
 label meshSurfaceOptimizer::findInvertedVertices
 (
-    boolList& smoothVertex
+    boolList& smoothVertex,
+    const label nAdditionalLayers
 ) const
 {
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
@@ -93,7 +94,7 @@ label meshSurfaceOptimizer::findInvertedVertices
         return 0;
 
     //- add additional layers around inverted points
-    for(label i=0;i<2;++i)
+    for(label i=0;i<nAdditionalLayers;++i)
     {
         boolList originallySelected = smoothVertex;
         forAll(smoothVertex, bpI)
@@ -152,7 +153,7 @@ label meshSurfaceOptimizer::findInvertedVertices
     return nInvertedTria;
 }
 
-bool meshSurfaceOptimizer::preOptimizeSurface()
+bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
 {
     Info << "Optimizing positions of surface nodes" << endl;
 
@@ -193,7 +194,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface()
 
         do
         {
-            nInvertedTria = findInvertedVertices(smoothVertex);
+            nInvertedTria = findInvertedVertices(smoothVertex, nLayers);
 
             if( nInvertedTria == 0 ) break;
 
@@ -466,6 +467,8 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     }
 
     Info << endl;
+
+    preOptimizeSurface(0);
 }
 
 void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
