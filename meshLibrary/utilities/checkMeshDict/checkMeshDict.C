@@ -89,22 +89,42 @@ void checkMeshDict::checkLocalRefinementLevel() const
             {
                 const dictionary& dict = refDict.subDict(entries[dictI]);
 
-                if( !dict.found("additionalRefinementLevels") )
-                    FatalErrorIn
+                if( dict.found("cellSize") )
+                {
+                    const scalar cs = readScalar(dict.lookup("cellSize"));
+
+                    if( cs > 0.0 )
+                        continue;
+
+                    WarningIn
                     (
                         "void checkMeshDict::checkLocalRefinementLevel() const"
-                    ) << "Cannot read keyword additionalRefinementLevels "
-                      << "for " << entries[dictI] << exit(FatalError);
+                    ) << "Cell size for " << entries[dictI]
+                         << " is negative" << endl;
+                }
+                else if( dict.found("additionalRefinementLevels") )
+                {
+                    const label nLevels =
+                        readLabel(dict.lookup("additionalRefinementLevels"));
 
-                const label nLevels =
-                    readLabel(dict.lookup("additionalRefinementLevels"));
+                    if( nLevels > 0 )
+                        continue;
 
-                if( nLevels < 0 )
                     WarningIn
                     (
                         "void checkMeshDict::checkLocalRefinementLevel() const"
                     ) << "Refinement level for " << entries[dictI]
                          << " is negative" << endl;
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkLocalRefinementLevel() const"
+                    ) << "Cannot read keyword"
+                      << " additionalRefinementLevels or cellSize"
+                      << "for " << entries[dictI] << exit(FatalError);
+                }
             }
         }
         else

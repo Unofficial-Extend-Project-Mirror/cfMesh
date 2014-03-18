@@ -134,7 +134,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
             const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
-            if( lSize < cs )
+            if( lSize <= cs )
             {
                 finished = true;
             }
@@ -210,7 +210,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
-                if( lSize < cs )
+                if( lSize <= cs )
                 {
                     finished = true;
                 }
@@ -289,7 +289,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const scalar lSize = maxSize / Foam::pow(2, addLevel);
 
-                if( lSize < cs )
+                if( lSize <= cs )
                 {
                     finished = true;
                 }
@@ -339,8 +339,35 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 const word& pName = entries[dictI];
                 const dictionary& patchDict = dict.subDict(pName);
 
-                const direction nLevel =
-                    readLabel(patchDict.lookup("additionalRefinementLevels"));
+                label nLevel(0);
+
+                if( patchDict.found("additionalRefinementLevels") )
+                {
+                    nLevel =
+                        readLabel(patchDict.lookup("additionalRefinementLevels"));
+                }
+                else if( patchDict.found("cellSize") )
+                {
+                    const scalar cs =
+                        readScalar(patchDict.lookup("cellSize"));
+
+                    do
+                    {
+                        finished = false;
+
+                        const scalar lSize = maxSize / Foam::pow(2, nLevel);
+
+                        if( lSize <= cs )
+                        {
+                            finished = true;
+                        }
+                        else
+                        {
+                            ++nLevel;
+                        }
+                    } while( !finished );
+                }
+
                 const direction level = globalRefLevel_ + nLevel;
 
                 if( patchToIndex.find(pName) != patchToIndex.end() )
