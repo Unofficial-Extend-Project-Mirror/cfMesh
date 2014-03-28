@@ -42,10 +42,10 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     const labelList& bp = meshSurface_.bp();
     const edgeList& edges = meshSurface_.edges();
     const VRWGraph& edgeFaces = meshSurface_.edgeFaces();
-    const labelList& facePatches = meshSurface_.boundaryFacePatches();
+    const VRWGraph& pointFaces = meshSurface_.pointFaces();
 
     corners_.clear();
-    edgeNodes_.clear();
+    edgePoints_.clear();
     partitionPartitions_.setSize(meshSurface_.mesh().boundaries().size());
 
     nEdgesAtPoint_.clear();
@@ -59,8 +59,8 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         if( edgeFaces.sizeOfRow(edgeI) != 2 )
             continue;
 
-        const label patch0 = facePatches[edgeFaces(edgeI, 0)];
-        const label patch1 = facePatches[edgeFaces(edgeI, 1)];
+        const label patch0 = facePatch_[edgeFaces(edgeI, 0)];
+        const label patch1 = facePatch_[edgeFaces(edgeI, 1)];
 
         if( patch0 != patch1 )
         {
@@ -78,7 +78,38 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     if( Pstream::parRun() )
     {
         const Map<label>& otherFaceAtProc = meshSurface_.otherEdgeFaceAtProc();
-        const Map<label>& otherFacePatch = meshSurface_.otherEdgeFacePatch();
+
+        //- find patches on other procs sharing surface edges
+        Map<label> otherFacePatch;
+
+        const DynList<label>& beNeiProcs = meshSurface_.beNeiProcs();
+        const Map<label>& globalToLocalEdges =
+            meshSurface_.globalToLocalBndEdgeAddressing();
+
+        std::map<label, labelLongList> exchangeData;
+        forAll(beNeiProcs, i)
+            exchangeData[beNeiProcs[i]].clear();
+
+        forAllConstIter(Map<label>, globalToLocalEdges, it)
+        {
+            const label beI = it();
+
+            labelLongList& data = exchangeData[otherFaceAtProc[beI]];
+
+            data.append(it.key());
+            data.append(facePatch_[edgeFaces(beI, 0)]);
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        for(label i=0;i<receivedData.size();)
+        {
+            const label geI = receivedData[i++];
+            const label patchI = receivedData[i++];
+
+            otherFacePatch.insert(globalToLocalEdges[geI], patchI);
+        }
 
         //- take into account feature edges at processor boundaries
         forAllConstIter(Map<label>, otherFaceAtProc, it)
@@ -87,7 +118,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
 
             if( it() <= Pstream::myProcNo() )
                 continue;
-            if( otherFacePatch[beI] != facePatches[edgeFaces(beI, 0)] )
+            if( otherFacePatch[beI] != facePatch_[edgeFaces(beI, 0)] )
             {
                 const edge& e = edges[beI];
                 ++nEdgesAtPoint_[bp[e.start()]];
@@ -96,7 +127,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
 
         //- gather data on all processors
-        std::map<label, labelLongList> exchangeData;
+        exchangeData.clear();
         const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
         forAll(bpNeiProcs, i)
             exchangeData.insert
@@ -129,7 +160,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
 
         //- exchange information
-        labelLongList receivedData;
+        receivedData.clear();
         help::exchangeMap(exchangeData, receivedData);
 
         //- add the edges from other processors to the points
@@ -143,15 +174,79 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
     }
 
+    //- mark edges and corners
     forAll(nEdgesAtPoint_, bpI)
     {
         if( nEdgesAtPoint_[bpI] > 2 )
         {
             corners_.insert(bpI);
+            cornerPatches_[bpI].clear();
         }
         else if( nEdgesAtPoint_[bpI] == 2 )
         {
-            edgeNodes_.insert(bpI);
+            edgePoints_.insert(bpI);
+        }
+    }
+
+    //- find patches attached to corners
+    forAllConstIter(labelHashSet, corners_, it)
+    {
+        const label bpI = it.key();
+
+        forAllRow(pointFaces, bpI, pfI)
+        {
+            cornerPatches_[bpI].appendIfNotIn(facePatch_[pointFaces(bpI, pfI)]);
+        }
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal =
+            meshSurface_.globalToLocalBndPointAddressing();
+        const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
+        const VRWGraph& bpAtProcs = meshSurface_.bpAtProcs();
+
+        std::map<label, labelLongList> exchangeData;
+        forAll(bpNeiProcs, i)
+            exchangeData[bpNeiProcs[i]].clear();
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            if( corners_.found(bpI) )
+            {
+                const DynList<label>& cPatches = cornerPatches_[bpI];
+
+                forAllRow(bpAtProcs, bpI, i)
+                {
+                    const label neiProc = bpAtProcs(bpI, i);
+
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    labelLongList& data = exchangeData[neiProc];
+
+                    data.append(it.key());
+                    data.append(cPatches.size());
+                    forAll(cPatches, ppI)
+                        data.append(cPatches[ppI]);
+                }
+            }
+        }
+
+        //- exchange data with other prcessors
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        label counter(0);
+        while( counter < receivedData.size() )
+        {
+            const label bpI = globalToLocal[receivedData[counter++]];
+            const label size = receivedData[counter++];
+
+            for(label i=0;i<size;++i)
+                cornerPatches_[bpI].appendIfNotIn(receivedData[counter++]);
         }
     }
 
@@ -159,16 +254,10 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     reduce(counter, sumOp<label>());
     Info << "Found " << counter
         << " corners at the surface of the volume mesh" << endl;
-    counter = edgeNodes_.size();
+    counter = edgePoints_.size();
     reduce(counter, sumOp<label>());
     Info << "Found " << counter
         << " edge points at the surface of the volume mesh" << endl;
-
-//    const pointFieldPMG& points = meshSurface_.points();
-//    forAllConstIter(labelHashSet, corners_, it)
-//        Info << "Corner point " << it.key() << " has coordinates " << points[bPoints[it.key()]] << endl;
-//    forAllConstIter(labelHashSet, edgeNodes_, it)
-//        Info << "Edge point " << it.key() << " has coordinates " << points[bPoints[it.key()]] << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

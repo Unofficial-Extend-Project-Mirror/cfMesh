@@ -39,14 +39,14 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * Private member functions * * * * * * * * * * * * * * * * * //
-    
+
 const meshSurfaceEngine& meshOptimizer::meshSurface() const
 {
     if( !msePtr_ )
         msePtr_ = new meshSurfaceEngine(mesh_);
-    
+
     return *msePtr_;
 }
 
@@ -62,7 +62,7 @@ label meshOptimizer::findBadFaces
 ) const
 {
     badFaces.clear();
-    
+
     polyMeshGenChecks::checkFacePyramids
     (
         mesh_,
@@ -71,7 +71,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkFaceFlatness
     (
         mesh_,
@@ -80,7 +80,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkCellPartTetrahedra
     (
         mesh_,
@@ -89,7 +89,7 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     polyMeshGenChecks::checkFaceAreas
     (
         mesh_,
@@ -98,9 +98,9 @@ label meshOptimizer::findBadFaces
         &badFaces,
         &changedFace
     );
-    
+
     const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-    
+
     return nBadFaces;
 }
 
@@ -111,7 +111,7 @@ label meshOptimizer::findLowQualityFaces
 ) const
 {
     badFaces.clear();
-    
+
     polyMeshGenChecks::checkFaceDotProduct
     (
         mesh_,
@@ -119,7 +119,7 @@ label meshOptimizer::findLowQualityFaces
         70.0,
         &badFaces
     );
-    
+
     polyMeshGenChecks::checkFaceSkewness
     (
         mesh_,
@@ -127,9 +127,9 @@ label meshOptimizer::findLowQualityFaces
         2.0,
         &badFaces
     );
-    
+
     const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-    
+
     return nBadFaces;
 }
 
@@ -144,25 +144,25 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 {
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bPoints = mse.boundaryPoints();
-    
+
     //- mark boundary vertices
     forAll(bPoints, bpI)
         vertexLocation_[bPoints[bpI]] = BOUNDARY;
-    
+
     //- mark edge vertices
     meshSurfacePartitioner mPart(mse);
-    forAllConstIter(labelHashSet, mPart.edgeNodes(), it)
+    forAllConstIter(labelHashSet, mPart.edgePoints(), it)
         vertexLocation_[bPoints[it.key()]] = EDGE;
-    
+
     //- mark corner vertices
     forAllConstIter(labelHashSet, mPart.corners(), it)
         vertexLocation_[bPoints[it.key()]] = CORNER;
-    
+
     if( Pstream::parRun() )
     {
         const polyMeshGenAddressing& addresing = mesh_.addressingData();
         const VRWGraph& pointAtProcs = addresing.pointAtProcs();
-        
+
         forAll(pointAtProcs, pointI)
             if( pointAtProcs.sizeOfRow(pointI) != 0 )
                 vertexLocation_[pointI] |= PARALLELBOUNDARY;

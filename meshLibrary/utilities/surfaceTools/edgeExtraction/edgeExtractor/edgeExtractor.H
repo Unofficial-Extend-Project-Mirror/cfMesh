@@ -67,7 +67,7 @@ class edgeExtractor
         polyMeshGen& mesh_;
 
         //- surface engine
-        mutable const meshSurfaceEngine* surfaceEnginePtr_;
+        mutable meshSurfaceEngine* surfaceEnginePtr_;
 
         //- reference to the octree
         const meshOctree& meshOctree_;
@@ -85,7 +85,10 @@ class edgeExtractor
         labelLongList pointPatch_;
 
         //- boundary face patch
-        labelLongList facePatch_;
+        labelList facePatch_;
+
+        //- number of cells attached to a boundary edge
+        labelLongList nCellsAtEdge_;
 
         //- edge classification
         LongList<direction> edgeType_;
@@ -131,7 +134,7 @@ class edgeExtractor
         void findFaceCandidates
         (
             labelLongList& faceCandidates,
-            const labelLongList* facePatchPtr = NULL,
+            const labelList* facePatchPtr = NULL,
             const Map<label>* otherFacePatchPtr = NULL
         ) const;
 
@@ -139,12 +142,15 @@ class edgeExtractor
         void findOtherFacePatchesParallel
         (
             Map<label>& otherFacePatch,
-            const labelLongList* facePatchPtr = NULL
+            const labelList* facePatchPtr = NULL
         ) const;
 
         //- project face centres on the nearest location at the surface mesh
         //- and assign the patch to the patch of the surface element
         void distributeBoundaryFaces();
+
+        //- move faces into the patch with the best alignment
+        bool distributeBoundaryFacesNormalAlignment();
 
         //- go through the boundary faces which have at least one neighour
         //- assigned to a different patch and check which of its edges
@@ -193,16 +199,23 @@ public:
         //- input geometry
         void moveVerticesTowardsDiscontinuities(const label nIterations = 2);
 
-
-
         //- check if there exist cells at concave feature edges which have more
         //- than one face at the boundary and the faces are
         //- distributed into patches at the concave edge
         bool checkConcaveEdgeCells();
 
         //- check and improve the distribution of mesh faces into patches
-        //- in order to minimize the number of decomposed faces and to optimize
-        bool checkFacePatches();
+        //- in order to minimize the number of decomposed faces
+        bool checkFacePatchesTopology();
+
+        //- checks whether there exist corners which do not exist in the surface
+        //- mesh, and checks whether the locations of corners in the volume mesh
+        //- are near the existing counterparts in the surface mesh
+        bool checkCorners();
+
+        //- optimise distribution of mesh faces into patches
+        //- in order to get better geometric quality of the mesh
+        bool checkFacePatchesGeometry();
 
         //- find the nearest points on the surface of the volume mesh
         //- to the corners on the surface mesh

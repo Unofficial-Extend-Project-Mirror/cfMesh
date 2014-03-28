@@ -29,6 +29,7 @@ Description
 #include "surfaceIntersectionsOctree.H"
 #include "triSurf.H"
 #include "boundBox.H"
+#include "SLList.H"
 
 // #define DEBUGSearch
 
@@ -89,15 +90,12 @@ surfaceIntersectionsOctree::surfaceIntersectionsOctree
     //- in a single octree cube
     initialCube_.refineTree(maxN, k);
 
-    SLList<surfaceIntersectionsOctreeCube*> leaves;
+    LongList<surfaceIntersectionsOctreeCube*> leaves;
     findLeavesForCube(&initialCube_, leaves);
 
-    for(SLList<surfaceIntersectionsOctreeCube*>::iterator cIter = leaves.begin();
-        cIter != leaves.end();
-        ++cIter
-    )
+    forAll(leaves, leafI)
     {
-        surfaceIntersectionsOctreeCube& oc = *cIter();
+        surfaceIntersectionsOctreeCube& oc = *leaves[leafI];
 
         if( oc.containedElements().size() > 0 )
         {
@@ -132,7 +130,7 @@ surfaceIntersectionsOctree::~surfaceIntersectionsOctree()
 void surfaceIntersectionsOctree::findLeavesForCube
 (
     surfaceIntersectionsOctreeCube* oc,
-    SLList<surfaceIntersectionsOctreeCube*>& lvs
+    LongList<surfaceIntersectionsOctreeCube*>& lvs
 ) const
 {
     if( oc->isLeaf() )
@@ -151,7 +149,8 @@ void surfaceIntersectionsOctree::findLeavesForCube
     }
 }
 
-surfaceIntersectionsOctreeCube* surfaceIntersectionsOctree::findLeafContainingVertex(const point& p) const
+surfaceIntersectionsOctreeCube*
+surfaceIntersectionsOctree::findLeafContainingVertex(const point& p) const
 {
     # ifdef OCTREE_DEBUG
     Info << "Finding leaf for vertex " << p << endl;
@@ -175,7 +174,8 @@ surfaceIntersectionsOctreeCube* surfaceIntersectionsOctree::findLeafContainingVe
         if( !oc->isLeaf() )
         {
             //- find a subCube containing the vertex;
-            const FixedList<surfaceIntersectionsOctreeCube*, 8>& sc = *oc->subCubes();
+            const FixedList<surfaceIntersectionsOctreeCube*, 8>& sc =
+                *oc->subCubes();
 
             bool found(false);
 
@@ -193,8 +193,8 @@ surfaceIntersectionsOctreeCube* surfaceIntersectionsOctree::findLeafContainingVe
             if( !found )
                 FatalErrorIn
                 (
-                    "surfaceIntersectionsOctreeCube* meshOctree::findLeafContainingVertex"
-                    "(const point& p) const"
+                    "surfaceIntersectionsOctreeCube* meshOctree::"
+                    "findLeafContainingVertex(const point& p) const"
                 ) << "Vertex is not found in any subCubes!!"
                     << abort(FatalError);
         }

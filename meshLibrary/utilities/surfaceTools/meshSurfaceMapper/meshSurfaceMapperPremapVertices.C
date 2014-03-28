@@ -140,11 +140,14 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             }
         }
 
-        //- calculate coordinates of points for searching
+        //- create the surface modifier and move the surface points
+        meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+        LongList<parMapperHelper> parallelBndNodes;
+
         # ifdef USE_OMP
-        # pragma omp parallel for
+        # pragma omp parallel for schedule(dynamic, 50)
         # endif
-        forAll(preMapPositions, bpI)
+        forAll(boundaryPoints, bpI)
         {
             labelledPoint& lp = preMapPositions[bpI];
 
@@ -156,20 +159,10 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             }
 
             lp.coordinates() /= lp.pointLabel();
-        }
 
-        //- create the surface modifier and move the surface points
-        meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-        LongList<parMapperHelper> parallelBndNodes;
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 50)
-        # endif
-        forAll(boundaryPoints, bpI)
-        {
             const point& p = points[boundaryPoints[bpI]];
 
-            label patch;
+            label patch, nearestTri;
             point pMap = p;
             scalar dSq;
 
@@ -177,8 +170,9 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             (
                 pMap,
                 dSq,
+                nearestTri,
                 patch,
-                preMapPositions[bpI].coordinates()
+                lp.coordinates()
             );
 
             const point newP = 0.5 * (pMap + p);

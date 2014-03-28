@@ -47,18 +47,18 @@ namespace Foam
 /*---------------------------------------------------------------------------*\
                 Class labelledPair Declaration
 \*---------------------------------------------------------------------------*/
-    
+
 class labelledPair
 {
     // Private data
         //- label
         label pLabel_;
-    
+
         //- pair data
         labelPair pair_;
-    
+
     public:
-        
+
     // Constructors
         //- Null construct
         labelledPair()
@@ -66,7 +66,7 @@ class labelledPair
             pLabel_(-1),
             pair_()
         {}
-        
+
         //- Construct from label and pair
         labelledPair
         (
@@ -77,32 +77,32 @@ class labelledPair
             pLabel_(pl),
             pair_(lp)
         {}
-            
+
     // Destructor
         ~labelledPair()
         {}
-            
+
     // Member functions
         //- return pair label
         inline label pairLabel() const
         {
             return pLabel_;
         }
-        
+
         //- return the pair
         inline const labelPair& pair() const
         {
             return pair_;
         }
-        
+
     // Member operators
-        
+
         inline void operator=(const labelledPair& lpp)
         {
             pLabel_ = lpp.pLabel_;
             pair_ = lpp.pair_;
         }
-        
+
         inline bool operator==
         (
             const labelledPair& lpp
@@ -110,13 +110,17 @@ class labelledPair
         {
             if( pLabel_ != lpp.pLabel_ )
                 return false;
-            
-            if( (pair_ != lpp.pair_) && (pair_.reversePair() != lpp.pair_) )
-                return false;
-            
-            return true;
+
+            const labelPair& op = lpp.pair_;
+
+            if( (pair_.first() == op.first()) && (pair_.second() == op.second()) )
+                return true;
+            if( (pair_.first() == op.second()) && (pair_.second() == op.first()) )
+                return true;
+
+            return false;
         }
-        
+
         inline bool operator!=
         (
             const labelledPair& lcc
@@ -124,7 +128,7 @@ class labelledPair
         {
             return !this->operator==(lcc);
         }
-        
+
         inline bool operator<(const labelledPair& lpp) const
         {
             if( pLabel_ < lpp.pLabel_ )
@@ -135,22 +139,22 @@ class labelledPair
             {
                 return false;
             }
-            
+
             if(
                 (pair_.first() + pair_.second()) <
                 (lpp.pair().first() + lpp.pair().second())
             )
                 return true;
-            
+
             if(
                 Foam::min(pair_.first(), pair_.second()) <
                 Foam::min(lpp.pair().first(), lpp.pair().second())
             )
                 return true;
-            
+
             return false;
         }
-        
+
     // Friend operators
         friend Ostream& operator<<
         (
@@ -170,7 +174,7 @@ class labelledPair
 
             return os;
         }
-        
+
         friend Istream& operator>>
         (
             Istream& is,
@@ -179,16 +183,16 @@ class labelledPair
         {
             // Read beginning of labelledPair
             is.readBegin("labelledPair");
-        
+
             is >> lpp.pLabel_;
             is >> lpp.pair_;
-            
+
             // Read end of labelledPair
             is.readEnd("labelledPair");
-        
+
             // Check state of Istream
             is.check("operator>>(Istream&, labelledPair");
-            
+
             return is;
         }
 };

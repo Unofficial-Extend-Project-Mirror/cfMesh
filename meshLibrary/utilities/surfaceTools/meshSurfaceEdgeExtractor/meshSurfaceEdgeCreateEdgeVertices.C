@@ -81,6 +81,7 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
             {
                 point newP;
                 scalar distSq;
+                label nse;
 
                 FixedList<point, 2> edgePoints;
                 FixedList<label, 2> patches;
@@ -91,12 +92,13 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
                 patches[1] = pointRegions_(e, 0);
 
                 const bool found =
-                meshOctree_.findNearestVertexToTheEdge
+                meshOctree_.findNearestPointToEdge
                 (
-                    edgePoints,
-                    patches,
                     newP,
-                    distSq
+                    distSq,
+                    nse,
+                    edgePoints,
+                    patches
                 );
 
                 if( found )

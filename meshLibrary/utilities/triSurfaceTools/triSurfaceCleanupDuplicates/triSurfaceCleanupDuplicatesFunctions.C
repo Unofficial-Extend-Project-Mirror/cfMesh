@@ -31,7 +31,9 @@ Description
 #include "meshOctree.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 #include <set>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

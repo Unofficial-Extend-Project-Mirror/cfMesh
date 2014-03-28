@@ -761,14 +761,20 @@ void boundaryLayers::createNewFacesFromPointsParallel
                 const label fI = pointFaceCandidates(pointI, i);
                 const DynList<label, 4>& f = faceCandidates[fI];
 
-                Pair<label> pk
+                const labelPair pk
                 (
                     patchKey_[candidatePatches[fI][0]],
                     patchKey_[candidatePatches[fI][1]]
                 );
 
+                const labelPair rpk
+                (
+                    patchKey_[candidatePatches[fI][1]],
+                    patchKey_[candidatePatches[fI][0]]
+                );
+
                 if(
-                    (f[0] == pointI) && ((pk == lp) || (pk.reversePair() == lp))
+                    (f[0] == pointI) && ((pk == lp) || (rpk == lp))
                 )
                 {
                     //- found the processor containing other face

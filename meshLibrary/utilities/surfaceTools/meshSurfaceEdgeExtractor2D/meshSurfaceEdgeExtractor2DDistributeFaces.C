@@ -125,8 +125,8 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
             //- find the patch index of the nearest location on the surface mesh
             point mapPoint;
             scalar distSq;
-            label patchI;
-            meshOctree_.findNearestSurfacePoint(mapPoint, distSq, patchI, c);
+            label patchI, nt;
+            meshOctree_.findNearestSurfacePoint(mapPoint, distSq, nt, patchI, c);
 
             bndFacePatch[bfI] = patchI;
         }

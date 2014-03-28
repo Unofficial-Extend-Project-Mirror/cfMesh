@@ -36,7 +36,7 @@ SourceFiles
 #ifndef surfaceIntersectionsOctree_H
 #define surfaceIntersectionsOctree_H
 
-#include "SLList.H"
+#include "LongList.H"
 #include "boolList.H"
 #include "pointIndexHit.H"
 #include "surfaceIntersectionsOctreeCube.H"
@@ -90,7 +90,7 @@ class surfaceIntersectionsOctree
         void findLeavesForCube
         (
             surfaceIntersectionsOctreeCube*,
-            SLList<surfaceIntersectionsOctreeCube*>&
+            LongList<surfaceIntersectionsOctreeCube*>&
         ) const;
 
         //- Disallow default bitwise copy construct
@@ -142,7 +142,10 @@ public:
         ) const;
 
         //- find a cube containing the vertex
-        surfaceIntersectionsOctreeCube* findLeafContainingVertex(const point&) const;
+        surfaceIntersectionsOctreeCube* findLeafContainingVertex
+        (
+            const point&
+        ) const;
 };
 
 

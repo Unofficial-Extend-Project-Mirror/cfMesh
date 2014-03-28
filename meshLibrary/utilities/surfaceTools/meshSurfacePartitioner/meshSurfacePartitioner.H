@@ -39,6 +39,8 @@ SourceFiles
 #include "meshSurfaceEngine.H"
 #include "HashSet.H"
 
+#include <map>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -54,11 +56,17 @@ class meshSurfacePartitioner
         //- reference to mesh surface engine
         const meshSurfaceEngine& meshSurface_;
 
+        //- pointer to face patches
+        const labelList& facePatch_;
+
         //- labels of corner nodes
         labelHashSet corners_;
 
-        //- labels of edge nodes
-        labelHashSet edgeNodes_;
+        //- patches at a corner node
+        std::map<label, DynList<label> > cornerPatches_;
+
+        //- labels of edge points
+        labelHashSet edgePoints_;
 
         //- partition-partitions addressing
         List<labelHashSet> partitionPartitions_;
@@ -83,24 +91,37 @@ public:
 
     // Constructors
 
-        //- Construct from mesh
+        //- Construct from meshSurfaceEngine
         meshSurfacePartitioner(const meshSurfaceEngine&);
+
+        //- Construct from meshSurfaceEngine and face patches
+        meshSurfacePartitioner
+        (
+            const meshSurfaceEngine& meshSurface,
+            const labelList& facePatch
+        );
 
     // Destructor
 
         ~meshSurfacePartitioner();
 
     // Member Functions
-        //- return labels of corner nodes (from the list of boundary points)
+        //- return labels of corner points (from the list of boundary points)
         inline const labelHashSet& corners() const
         {
             return corners_;
         }
 
-        //- return labels of edge nodes (from the list of boundary points)
-        inline const labelHashSet& edgeNodes() const
+        //- return label of patches near corner points
+        inline const std::map<label, DynList<label> >& cornerPatches() const
         {
-            return edgeNodes_;
+            return cornerPatches_;
+        }
+
+        //- return labels of edge points (from the list of boundary points)
+        inline const labelHashSet& edgePoints() const
+        {
+            return edgePoints_;
         }
 
         //- return the number of feature edges attached to a boundary point

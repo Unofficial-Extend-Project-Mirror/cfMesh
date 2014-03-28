@@ -258,8 +258,19 @@ public:
         ~meshSurfaceOptimizer();
 
     // Member Functions
-        //- optimisation before the edges and corners are created
-        bool preOptimizeSurface(const label nAdditionalLayers = 2);
+        //- runs a surface smoother on the selected boundary points
+        bool untangleSurface
+        (
+            const labelLongList& activeBoundaryPoints,
+            const label nAdditionalLayers = 0
+        );
+
+        //- checks for invertex surface elements and tries to untangle them
+        //- it tries to keep the points on the surface for a couple
+        //- of iteration and gives up the final iterations
+        //- by default, it smooths two additional layers of elements
+        //- around the inverted ones
+        bool untangleSurface(const label nAdditionalLayers = 2);
 
         //- optimize boundary nodes after boundary regions are created
         void optimizeSurface(const label nIterations = 5);

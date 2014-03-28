@@ -45,11 +45,13 @@ void meshOctree::findNearestSurfacePoint
 (
     point& nearest,
     scalar& distSq,
+    label& nearestTriangle,
     label& region,
     const point& p
 ) const
 {
     region = -1;
+    nearestTriangle = 1;
 
     const label cLabel = findLeafContainingVertex(p);
     vector sizeVec;
@@ -96,6 +98,7 @@ void meshOctree::findNearestSurfacePoint
                 {
                     distSq = dSq;
                     nearest = p0;
+                    nearestTriangle = el[tI];
                     region = surface_[el[tI]].region();
                     found = true;
                 }
@@ -129,6 +132,7 @@ void meshOctree::findNearestSurfacePointInRegion
 (
     point& nearest,
     scalar& distSq,
+    label& nearestTriangle,
     const label region,
     const point& p
 ) const
@@ -149,12 +153,13 @@ void meshOctree::findNearestSurfacePointInRegion
     bool found(false);
     label iterationI(0);
     DynList<const meshOctreeCube*, 256> neighbours;
+    nearestTriangle = -1;
 
     distSq = VGREAT;
 
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -182,6 +187,7 @@ void meshOctree::findNearestSurfacePointInRegion
                 {
                     distSq = dSq;
                     nearest = p0;
+                    nearestTriangle = el[tI];
                     found = true;
                 }
             }
@@ -198,10 +204,11 @@ void meshOctree::findNearestSurfacePointInRegion
 
 bool meshOctree::findNearestEdgePoint
 (
-    const point& p,
-    const DynList<label>& regions,
     point& edgePoint,
-    scalar& distSq
+    scalar& distSq,
+    label& nearestEdge,
+    const point& p,
+    const DynList<label>& regions
 ) const
 {
     //- find the estimate for the searching range
@@ -228,6 +235,7 @@ bool meshOctree::findNearestEdgePoint
     label iterationI(0);
 
     distSq = VGREAT;
+    nearestEdge = -1;
 
     do
     {
@@ -274,6 +282,7 @@ bool meshOctree::findNearestEdgePoint
                 {
                     distSq = dSq;
                     edgePoint = np;
+                    nearestEdge = ce[eI];
                     foundAnEdge = true;
                 }
             }
@@ -287,12 +296,13 @@ bool meshOctree::findNearestEdgePoint
     return foundAnEdge;
 }
 
-bool meshOctree::findNearestVertexToTheEdge
+bool meshOctree::findNearestPointToEdge
 (
-    const FixedList<point, 2>& edgePoints,
-    const FixedList<label, 2>& edgePointRegions,
     point& nearest,
-    scalar& distSq
+    scalar& distSq,
+    label& nearestEdge,
+    const FixedList<point, 2>& edgePoints,
+    const FixedList<label, 2>& edgePointRegions
 ) const
 {
     const point c = 0.5 * (edgePoints[0] + edgePoints[1]);
@@ -309,6 +319,7 @@ bool meshOctree::findNearestVertexToTheEdge
     const edgeLongList& surfaceEdges = surface_.edges();
 
     distSq = VGREAT;
+    nearestEdge = -1;
 
     bool found(false);
 
@@ -357,6 +368,7 @@ bool meshOctree::findNearestVertexToTheEdge
                     if( magSqr(nearestOnEdge - nearestOnLine) < distSq )
                     {
                         nearest = nearestOnEdge;
+                        nearestEdge = edges[eI];
                         distSq = magSqr(nearestOnEdge - nearestOnLine);
                         found = true;
                     }
@@ -372,6 +384,7 @@ bool meshOctree::findNearestCorner
 (
     point& nearest,
     scalar& distSq,
+    label& nearestPoint,
     const point& p,
     const DynList<label>& patches
 ) const
@@ -400,6 +413,7 @@ bool meshOctree::findNearestCorner
     const VRWGraph& eFacets = surface_.edgeFacets();
 
     distSq = VGREAT;
+    nearestPoint = -1;
 
     do
     {
@@ -438,7 +452,7 @@ bool meshOctree::findNearestCorner
                     {
                         const label eI = pEdges(spI, i);
 
-                        if( pEdges.sizeOfRow(eI) < 2 )
+                        if( eFacets.sizeOfRow(eI) != 2 )
                             break;
 
                         if(
@@ -480,6 +494,7 @@ bool meshOctree::findNearestCorner
                                 distSq = dSq;
                                 found = true;
                                 nearest = points[spI];
+                                nearestPoint = spI;
                             }
                         }
                     }
@@ -495,7 +510,7 @@ bool meshOctree::findNearestCorner
     return found;
 }
 
-bool meshOctree::findNearestVertexToPatches
+bool meshOctree::findNearestPointToPatches
 (
     point& nearest,
     scalar& distSq,
@@ -507,6 +522,21 @@ bool meshOctree::findNearestVertexToPatches
     if( patches.size() == 0 )
         return false;
 
+    point mapPoint(p);
+    scalar dSq(VGREAT);
+
+    bool found(false);
+    if( patches.size() == 2 )
+    {
+        label nse;
+        found = findNearestEdgePoint(mapPoint, dSq, nse, p, patches);
+    }
+    else if( patches.size() > 2 )
+    {
+        label nsp;
+        found = findNearestCorner(mapPoint, dSq, nsp, p, patches);
+    }
+
     point mapPointApprox(p);
     scalar distSqApprox;
     label iter(0);
@@ -516,10 +546,12 @@ bool meshOctree::findNearestVertexToPatches
         forAll(patches, patchI)
         {
             point np;
+            label nearestTri;
             this->findNearestSurfacePointInRegion
             (
                 np,
                 distSqApprox,
+                nearestTri,
                 patches[patchI],
                 mapPointApprox
             );
@@ -528,7 +560,7 @@ bool meshOctree::findNearestVertexToPatches
         }
 
         newP /= patches.size();
-        if( Foam::magSqr(newP - mapPointApprox) < tol * searchRange_ )
+        if( Foam::magSqr(newP - mapPointApprox) < tol * dSq )
             break;
 
         mapPointApprox = newP;
@@ -536,6 +568,12 @@ bool meshOctree::findNearestVertexToPatches
 
     distSq = Foam::magSqr(mapPointApprox - p);
     nearest = mapPointApprox;
+
+    if( found && (dSq < 1.5 * distSq) )
+    {
+        nearest = mapPoint;
+        distSq = dSq;
+    }
 
     return true;
 }

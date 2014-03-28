@@ -44,7 +44,7 @@ namespace Foam
 void meshSurfaceOptimizer::classifySurfaceVertices()
 {
     const labelHashSet& corners = partitioner_.corners();
-    const labelHashSet& edgePoints = partitioner_.edgeNodes();
+    const labelHashSet& edgePoints = partitioner_.edgePoints();
 
     //- set all vertices to partition
     vertexType_ = PARTITION;

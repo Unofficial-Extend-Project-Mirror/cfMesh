@@ -31,6 +31,7 @@ Description
 #include "boundBox.H"
 #include "DynList.H"
 #include "helperFunctions.H"
+#include "SLList.H"
 
 // #define DEBUGSearch
 

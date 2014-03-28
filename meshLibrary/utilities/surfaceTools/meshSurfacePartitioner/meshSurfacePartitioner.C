@@ -35,15 +35,34 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from meshSurfaceEngine. Holds reference!
 meshSurfacePartitioner::meshSurfacePartitioner
 (
     const meshSurfaceEngine& meshSurface
 )
 :
     meshSurface_(meshSurface),
+    facePatch_(meshSurface.boundaryFacePatches()),
     corners_(),
-    edgeNodes_(),
+    cornerPatches_(),
+    edgePoints_(),
+    partitionPartitions_(),
+    nEdgesAtPoint_(),
+    featureEdges_()
+{
+    calculateCornersEdgesAndAddressing();
+}
+
+meshSurfacePartitioner::meshSurfacePartitioner
+(
+    const meshSurfaceEngine& meshSurface,
+    const labelList& facePatch
+)
+:
+    meshSurface_(meshSurface),
+    facePatch_(facePatch),
+    corners_(),
+    cornerPatches_(),
+    edgePoints_(),
     partitionPartitions_(),
     nEdgesAtPoint_(),
     featureEdges_()

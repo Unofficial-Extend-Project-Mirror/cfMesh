@@ -192,6 +192,188 @@ bool edgeExtractor::findCornerCandidates()
     return changed;
 }
 
+bool edgeExtractor::checkCorners()
+{
+    bool changed(false);
+
+    const pointFieldPMG& points = mesh_.points();
+    const meshSurfaceEngine& mse = this->surfaceEngine();
+    const labelList& bPoints = mse.boundaryPoints();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const labelList& bp = mse.bp();
+    const edgeList& edges = mse.edges();
+    const VRWGraph& faceEdges = mse.faceEdges();
+    const VRWGraph& edgeFaces = mse.edgeFaces();
+
+    const triSurfacePartitioner& sPart = this->partitioner();
+    const labelList& surfEdgeIndex = sPart.edgePartitions();
+
+    //- allocate a copy of boundary patches
+    labelList newBoundaryPatches(facePatch_.size());
+
+    label nCorrected;
+    Map<label> otherProcNewPatch;
+
+    label iter(0);
+
+    do
+    {
+        nCorrected = 0;
+        newBoundaryPatches = facePatch_;
+
+        //- check whether there exist situations where a boundary face
+        //- is surrounded by more faces in different patches than the
+        //- faces in the current patch
+        if( Pstream::parRun() )
+        {
+            findOtherFacePatchesParallel
+            (
+                otherProcNewPatch,
+                &facePatch_
+            );
+        }
+
+        //- update the information which edges are assigned as feature edges
+        meshSurfacePartitioner mPart(mse, facePatch_);
+
+        //- find corners in the current constelation and their nearest
+        //- counterparts in the suface mesh
+        const std::map<label, DynList<label> >& cornerPatches =
+            mPart.cornerPatches();
+
+        std::map<label, label> cornerIndex;
+        std::map<label, std::pair<point, scalar> > nearestToCorner;
+
+        typedef std::map<label, DynList<label> > mapType;
+        forAllConstIter(mapType, cornerPatches, it)
+        {
+            const label bpI = it->first;
+            const DynList<label>& neiPatches = it->second;
+
+            const point& p = points[bPoints[bpI]];
+            point pMap;
+            scalar dSq;
+            label nsp;
+
+            if( !meshOctree_.findNearestCorner(pMap, dSq, nsp, p, neiPatches) )
+            {
+                nsp = -1;
+                meshOctree_.findNearestPointToPatches(pMap, dSq, p, neiPatches);
+            }
+
+            nearestToCorner[bpI] = std::make_pair(pMap, dSq);
+            cornerIndex[bpI] = nsp;
+        }
+
+        //- for all edge nodes find their nearest counterparts in the surface
+        const labelHashSet& featureEdge = mPart.featureEdges();
+
+        std::map<label, std::pair<point, scalar> > nearestToEdgePoint;
+        std::map<label, label> edgePointIndex;
+
+        forAllConstIter(labelHashSet, featureEdge, it)
+        {
+            const label beI = it.key();
+
+            //- get the patches bounded by this feature edge
+            DynList<label> patches(2);
+
+            if( edgeFaces.sizeOfRow(beI) == 2 )
+            {
+                patches[0] = facePatch_[edgeFaces(beI, 0)];
+                patches[1] = facePatch_[edgeFaces(beI, 1)];
+            }
+            else if( edgeFaces.sizeOfRow(beI) == 1 )
+            {
+                patches[0] = facePatch_[edgeFaces(beI, 0)];
+                patches[1] = otherProcNewPatch[beI];
+            }
+
+            //- check if some points have alreay been checked
+            const edge& e = edges[beI];
+            const label bps = bp[e.start()];
+            const label bpe = bp[e.end()];
+
+            DynList<label> checkPoints;
+            if
+            (
+                (cornerPatches.find(bps) == cornerPatches.end()) &&
+                (nearestToEdgePoint.find(bps) == nearestToEdgePoint.end())
+            )
+                checkPoints.append(bps);
+
+            if
+            (
+                (cornerPatches.find(bpe) == cornerPatches.end()) &&
+                (nearestToEdgePoint.find(bpe) == nearestToEdgePoint.end())
+            )
+                checkPoints.append(bpe);
+
+            forAll(checkPoints, i)
+            {
+                const point& p = points[bPoints[checkPoints[i]]];
+                point pMap;
+                scalar dSq;
+                label nse;
+
+                if( !meshOctree_.findNearestEdgePoint(pMap, dSq, nse, p, patches) )
+                {
+                    nse = -1;
+                    meshOctree_.findNearestPointToPatches(pMap, dSq, p, patches);
+                }
+
+                nearestToEdgePoint[checkPoints[i]] = std::make_pair(pMap, dSq);
+                edgePointIndex[checkPoints[i]] = nse;
+            }
+        }
+
+
+        forAll(bFaces, bfI)
+        {
+            const face& bf = bFaces[bfI];
+
+            DynList<label> neiPatch(bf.size(), facePatch_[bfI]);
+
+            forAll(bf, eI)
+            {
+                const label beI = faceEdges(bfI, eI);
+
+                if( featureEdge.found(beI) )
+                {
+                    if( edgeFaces.sizeOfRow(beI) == 2 )
+                    {
+                        label otherFace = edgeFaces(beI, 0);
+                        if( otherFace == bfI )
+                            otherFace = edgeFaces(beI, 1);
+
+                        neiPatch[eI] = facePatch_[otherFace];
+                    }
+                    else if( edgeFaces.sizeOfRow(beI) == 1 )
+                    {
+                        neiPatch[eI] = otherProcNewPatch[beI];
+                    }
+                }
+            }
+        }
+
+        reduce(nCorrected, sumOp<label>());
+
+        //::exit(0);
+
+        if( nCorrected )
+        {
+            changed = true;
+            facePatch_ = newBoundaryPatches;
+        }
+
+        if( ++iter > 0 )
+            break;
+
+    } while( nCorrected != 0 );
+
+    return changed;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 } // End namespace Foam

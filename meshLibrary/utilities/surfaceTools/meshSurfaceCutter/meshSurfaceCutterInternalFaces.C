@@ -32,12 +32,6 @@ Description
 
 //#define DEBUGCutter
 
-# ifdef DEBUGCutter
-#include "triSurfSearch.H"
-#include "octreeDataTriSurface.H"
-#include "octree.H"
-# endif
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam

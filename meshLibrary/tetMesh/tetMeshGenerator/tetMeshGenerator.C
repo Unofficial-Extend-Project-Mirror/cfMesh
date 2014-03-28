@@ -90,6 +90,7 @@ void tetMeshGenerator::surfacePreparation()
 
 void tetMeshGenerator::mapMeshToSurface()
 {
+    return;
     //- calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
 
@@ -102,7 +103,7 @@ void tetMeshGenerator::mapMeshToSurface()
     # endif
 
     //- untangle surface faces
-    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
     # ifdef DEBUG
     mesh_.write();

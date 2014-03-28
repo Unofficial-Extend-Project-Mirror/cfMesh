@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     triSurf surf(runTime.path()/surfaceFile);
 
     // construct the octree
-    meshOctree mo(surf, true);
+    meshOctree mo(surf);
     meshOctreeCreator moc(mo, meshDict);
     moc.createOctreeBoxes();
 
@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     cmg.createMesh();
 
     const pointFieldPMG& points = pmg.points();
-    forAll(points, pointI)
+/*    forAll(points, pointI)
     {
         const point p = points[pointI];
         for(label pointJ=pointI+1;pointJ<points.size();++pointJ)
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
                 Info << "Points " << pointI << " and " << pointJ
                      << " are duplicates " << endl;
     }
-
+*/
     boolList usedPoint(points.size());
     const faceListPMG& faces = pmg.faces();
     forAll(faces, faceI)

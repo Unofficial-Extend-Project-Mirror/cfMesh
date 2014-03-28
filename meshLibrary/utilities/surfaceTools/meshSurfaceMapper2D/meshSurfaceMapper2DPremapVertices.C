@@ -191,7 +191,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 
             const point& p = points[e.start()];
 
-            label patch;
+            label patch, nt;
             point pMap = p;
             scalar dSq;
 
@@ -199,6 +199,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
             (
                 pMap,
                 dSq,
+                nt,
                 patch,
                 preMapPositions[eI].coordinates()
             );

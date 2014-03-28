@@ -37,7 +37,9 @@ Description
 
 #include <map>
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -170,7 +172,7 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
 
 void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
 {
-    label patch;
+    label patch, nt;
     point mapPoint;
     scalar dSq;
 
@@ -180,11 +182,11 @@ void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
 
     if( patchI < 0 )
     {
-        meshOctree_.findNearestSurfacePoint(mapPoint, dSq, patch, p);
+        meshOctree_.findNearestSurfacePoint(mapPoint, dSq, nt, patch, p);
     }
     else
     {
-        meshOctree_.findNearestSurfacePointInRegion(mapPoint, dSq, patchI, p);
+        meshOctree_.findNearestSurfacePointInRegion(mapPoint, dSq, nt, patchI, p);
     }
 
     meshSurfaceEngineModifier surfModifier(surfaceEngine_);
@@ -230,7 +232,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
             << points[boundaryPoints[bpI]] << endl;
         # endif
 
-        label patch;
+        label patch, nt;
         point mapPoint;
         scalar dSq;
 
@@ -238,6 +240,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
         (
             mapPoint,
             dSq,
+            nt,
             patch,
             points[boundaryPoints[bpI]]
         );
@@ -293,7 +296,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
-    const labelHashSet& edgePoints = mPart.edgeNodes();
+    const labelHashSet& edgePoints = mPart.edgePoints();
 
     boolList treatedPoint(surfaceEngine_.boundaryPoints().size(), false);
 
@@ -340,10 +343,12 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
         const point& p = points[bPoints[bpI]];
         point mapPoint;
         scalar dSq;
+        label nt;
         meshOctree_.findNearestSurfacePointInRegion
         (
             mapPoint,
             dSq,
+            nt,
             pointPatches(bpI, 0),
             p
         );

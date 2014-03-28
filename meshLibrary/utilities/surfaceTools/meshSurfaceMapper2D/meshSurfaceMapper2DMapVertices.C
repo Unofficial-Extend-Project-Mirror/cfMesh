@@ -306,7 +306,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
              << e << endl;
         # endif
 
-        label patch;
+        label patch, nt;
         point mapPoint;
         scalar dSq;
 
@@ -314,6 +314,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
         (
             mapPoint,
             dSq,
+            nt,
             patch,
             points[e.start()]
         );
@@ -426,10 +427,12 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
             forAll(ePatches, epI)
             {
                 point np;
+                label nt;
                 meshOctree_.findNearestSurfacePointInRegion
                 (
                     np,
                     distSqApprox,
+                    nt,
                     ePatches[epI],
                     mapPointApprox
                 );
@@ -449,7 +452,8 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
         //- find the nearest triSurface corner for the given corner
         scalar distSq;
         point mapPoint;
-        meshOctree_.findNearestEdgePoint(p, ePatches, mapPoint, distSq);
+        label nse;
+        meshOctree_.findNearestEdgePoint(mapPoint, distSq, nse, p, ePatches);
 
         if( distSq > mappingDistance[beI] )
         {
@@ -537,11 +541,13 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
         const point& p = points[e.start()];
         point mapPoint;
         scalar dSq;
+        label nt;
 
         meshOctree_.findNearestSurfacePointInRegion
         (
             mapPoint,
             dSq,
+            nt,
             edgePatches(beI, 0),
             p
         );

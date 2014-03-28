@@ -128,7 +128,7 @@ void voronoiMeshGenerator::mapMeshToSurface()
     # endif
 
     //- untangle surface faces
-    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
     # ifdef DEBUG
     mesh_.write();
@@ -152,7 +152,9 @@ void voronoiMeshGenerator::mapEdgesAndCorners()
 void voronoiMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
-    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
+    meshSurfaceOptimizer surfOptimiser(mse, *octreePtr_);
+    surfOptimiser.optimizeSurface();
+    surfOptimiser.untangleSurface();
 
     # ifdef DEBUG
     mesh_.write();

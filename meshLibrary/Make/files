@@ -5,8 +5,10 @@ meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
 boundaryFacesGenerator = utilities/surfaceTools/boundaryFacesGenerator
 boundaryLayers = utilities/boundaryLayers
 checkMeshDict = utilities/checkMeshDict
+
 meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvertedVertices
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
+meshSurfaceDetectPlanarRegions = utilities/surfaceTools/meshSurfaceDetectPlanarRegions
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
 meshSurfaceMapper  =  utilities/surfaceTools/meshSurfaceMapper
 meshSurfaceMapper2D = utilities/surfaceTools/meshSurfaceMapper2D
@@ -17,10 +19,12 @@ meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtracto
 meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
 meshSurfaceEdgeExtractor2D = utilities/surfaceTools/meshSurfaceEdgeExtractor2D
 correctEdgesBetweenPatches = utilities/surfaceTools/correctEdgesBetweenPatches
+
 createFundamentalSheetsBase = utilities/surfaceTools/createFundamentalSheets
 createFundamentalSheets = $(createFundamentalSheetsBase)/createFundamentalSheets
 createFundamentalSheetsJFS = $(createFundamentalSheetsBase)/createFundamentalSheetsJFS
 createFundamentalSheetsFJ = $(createFundamentalSheetsBase)/createFundamentalSheetsFJ
+
 decomposeCellsNearConcaveEdges = utilities/surfaceTools/decomposeCellsNearConcaveEdges
 renameBoundaryPatches = utilities/surfaceTools/renameBoundaryPatches
 
@@ -74,17 +78,18 @@ checkCellConnectionsOverFaces = $(topology)/checkCellConnectionsOverFaces
 checkIrregularSurfaceConnections = $(topology)/checkIrregularSurfaceConnections
 checkNonMappableCellConnections = $(topology)/checkNonMappableCellConnections
 
-triSurfaceCleanupDuplicates = utilities/triSurfaceTools/triSurfaceCleanupDuplicates
-triSurfaceCopyParts = utilities/triSurfaceTools/triSurfaceCopyParts
-triSurfaceCurvatureEstimator = utilities/triSurfaceTools/triSurfaceCurvatureEstimator
-triSurfacePartitioner = utilities/triSurfaceTools/triSurfacePartitioner
-triSurfaceDetectMaterials = utilities/triSurfaceTools/triSurfaceDetectMaterials
-triSurfaceDetectPlanarRegions = utilities/triSurfaceTools/triSurfaceDetectPlanarRegions
-triSurfaceDetectFeatureEdges = utilities/triSurfaceTools/triSurfaceDetectFeatureEdges
-triSurfaceClassifyEdges = utilities/triSurfaceTools/triSurfaceClassifyEdges
-triSurfacePatchManipulator = utilities/triSurfaceTools/triSurfacePatchManipulator
-triSurfaceRemoveFacets = utilities/triSurfaceTools/triSurfaceRemoveFacets
-triSurfaceExtrude2DEdges = utilities/triSurfaceTools/triSurfaceExtrude2DEdges
+triSurfaceTools = utilities/triSurfaceTools
+triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
+triSurfaceCopyParts = $(triSurfaceTools)/triSurfaceCopyParts
+triSurfaceCurvatureEstimator = $(triSurfaceTools)/triSurfaceCurvatureEstimator
+triSurfacePartitioner = $(triSurfaceTools)/triSurfacePartitioner
+triSurfaceDetectMaterials = $(triSurfaceTools)/triSurfaceDetectMaterials
+triSurfaceDetectPlanarRegions = $(triSurfaceTools)/triSurfaceDetectPlanarRegions
+triSurfaceDetectFeatureEdges = $(triSurfaceTools)/triSurfaceDetectFeatureEdges
+triSurfaceClassifyEdges = $(triSurfaceTools)/triSurfaceClassifyEdges
+triSurfacePatchManipulator = $(triSurfaceTools)/triSurfacePatchManipulator
+triSurfaceRemoveFacets = $(triSurfaceTools)/triSurfaceRemoveFacets
+triSurfaceExtrude2DEdges = $(triSurfaceTools)/triSurfaceExtrude2DEdges
 
 polyMeshGen = utilities/meshes/polyMeshGen
 boundaryPatch  = utilities/meshes/polyMeshGen/boundaryPatch
@@ -287,6 +292,8 @@ $(meshSurfaceCheckInvertedVertices)/meshSurfaceCheckInvertedVertices.C
 
 $(meshSurfaceCheckEdgeTypes)/meshSurfaceCheckEdgeTypes.C
 
+$(meshSurfaceDetectPlanarRegions)/meshSurfaceDetectPlanarRegions.C
+
 $(meshSurfaceCutter)/meshSurfaceCutter.C
 $(meshSurfaceCutter)/meshSurfaceCutterFaceCutter.C
 $(meshSurfaceCutter)/meshSurfaceCutterInternalFaces.C
@@ -303,6 +310,7 @@ $(meshSurfaceMapper2D)/meshSurfaceMapper2DMapVertices.C
 $(meshSurfaceMapper2D)/meshSurfaceMapper2DPremapVertices.C
 
 $(edgeExtractor)/edgeExtractor.C
+$(edgeExtractor)/edgeExtractorCorners.C
 
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeExtractor.C
 $(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateEdgeVertices.C

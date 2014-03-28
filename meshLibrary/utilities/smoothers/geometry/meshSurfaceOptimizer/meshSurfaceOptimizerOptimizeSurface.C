@@ -153,9 +153,13 @@ label meshSurfaceOptimizer::findInvertedVertices
     return nInvertedTria;
 }
 
-bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
+bool meshSurfaceOptimizer::untangleSurface
+(
+    const labelLongList& selectedBoundaryPoints,
+    const label nAdditionalLayers
+)
 {
-    Info << "Optimizing positions of surface nodes" << endl;
+    Info << "Starting untangling the surface of the volume mesh" << endl;
 
     bool changed(false);
 
@@ -177,7 +181,12 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
         surfaceEngine_.bpNeiProcs();
     }
 
-    boolList smoothVertex;
+    boolList smoothVertex(bPoints.size(), false);
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(selectedBoundaryPoints, i)
+        smoothVertex[selectedBoundaryPoints[i]] = true;
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);
@@ -186,7 +195,8 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
     label nInvertedTria;
     label nGlobalIter(0);
 
-    labelLongList procBndNodes, movedPoints;
+    labelLongList procBndPoints, movedPoints;
+    labelLongList procEdgePoints, movedEdgePoints;
 
     do
     {
@@ -194,27 +204,80 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
 
         do
         {
-            nInvertedTria = findInvertedVertices(smoothVertex, nLayers);
+            nInvertedTria = findInvertedVertices(smoothVertex, nAdditionalLayers);
 
             if( nInvertedTria == 0 ) break;
 
             changed = true;
 
-            procBndNodes.clear();
+            procBndPoints.clear();
             movedPoints.clear();
+            procEdgePoints.clear();
+            movedEdgePoints.clear();
+
             forAll(bPoints, bpI)
             {
-                if( smoothVertex[bpI] && (vertexType_[bpI] & PARTITION) )
+                if( !smoothVertex[bpI] )
+                    continue;
+
+                if( vertexType_[bpI] & PARTITION )
                 {
                     movedPoints.append(bpI);
 
                     if( vertexType_[bpI] & PROCBND )
                     {
-                        procBndNodes.append(bpI);
+                        procBndPoints.append(bpI);
+                        continue;
+                    }
+                }
+                else if( vertexType_[bpI] & EDGE )
+                {
+                    movedEdgePoints.append(bpI);
+
+                    if( vertexType_[bpI] & PROCBND )
+                    {
+                        procEdgePoints.append(bpI);
                         continue;
                     }
                 }
             }
+
+            //- smooth edge vertices
+            # ifdef USE_OMP
+            # pragma omp parallel
+            # endif
+            {
+                LongList<labelledPoint> newPos;
+
+                # ifdef USE_OMP
+                # pragma omp for schedule(dynamic, 40)
+                # endif
+                forAll(movedEdgePoints, i)
+                {
+                    const label bpI = movedEdgePoints[i];
+
+                    if( vertexType_[bpI] & PROCBND )
+                        continue;
+
+                    newPos.append
+                    (
+                        labelledPoint(bpI, newEdgePositionLaplacian(bpI))
+                    );
+                }
+
+                forAll(newPos, i)
+                    surfaceModifier.moveBoundaryVertexNoUpdate
+                    (
+                        newPos[i].pointLabel(),
+                        newPos[i].coordinates()
+                    );
+            }
+
+            if( Pstream::parRun() )
+                edgeNodeDisplacementParallel(procEdgePoints);
+
+            //- update normals and other geometric data
+            surfaceModifier.updateGeometry(movedEdgePoints);
 
             //- use laplacian smoothing
             # ifdef USE_OMP
@@ -248,7 +311,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
             }
 
             if( Pstream::parRun() )
-                nodeDisplacementLaplacianFCParallel(procBndNodes, true);
+                nodeDisplacementLaplacianFCParallel(procBndPoints, true);
 
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
@@ -285,7 +348,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
             }
 
             if( Pstream::parRun() )
-                nodeDisplacementSurfaceOptimizerParallel(procBndNodes);
+                nodeDisplacementSurfaceOptimizerParallel(procBndPoints);
 
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
@@ -300,7 +363,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
             Info << "Smoothing remaining inverted vertices " << endl;
 
             movedPoints.clear();
-            procBndNodes.clear();
+            procBndPoints.clear();
             forAll(smoothVertex, bpI)
                 if( smoothVertex[bpI] )
                 {
@@ -308,7 +371,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
 
                     if( vertexType_[bpI] & PROCBND )
                     {
-                        procBndNodes.append(bpI);
+                        procBndPoints.append(bpI);
                         continue;
                     }
 
@@ -317,7 +380,7 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
 
             if( Pstream::parRun() )
             {
-                nodeDisplacementLaplacianFCParallel(procBndNodes, false);
+                nodeDisplacementLaplacianFCParallel(procBndPoints, false);
             }
 
             if( remapVertex )
@@ -332,9 +395,18 @@ bool meshSurfaceOptimizer::preOptimizeSurface(const label nLayers)
 
     } while( nInvertedTria && (++nGlobalIter < 10) );
 
-    Info << "Finished optimizing positions of surface nodes" << endl;
+    Info << "Finished untangling the surface of the volume mesh" << endl;
 
     return changed;
+}
+
+bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
+{
+    labelLongList selectedNodes(surfaceEngine_.boundaryPoints().size());
+    forAll(selectedNodes, i)
+        selectedNodes[i] = i;
+
+    return untangleSurface(selectedNodes, nAdditionalLayers);
 }
 
 void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
@@ -468,7 +540,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 
     Info << endl;
 
-    preOptimizeSurface(0);
+    untangleSurface(0);
 }
 
 void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
@@ -528,7 +600,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
 
         meshSurfaceEngineModifier bMod(surfaceEngine_);
         # ifdef USE_OMP
-        # pragma omp parallel if( edgePoints.size() > 1000 )
+        # pragma omp parallel if( edgePoints.size() > 100 )
         # endif
         {
             LongList<labelledPoint> newPos;

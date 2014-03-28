@@ -164,6 +164,7 @@ public:
         (
             point& nearest,
             scalar& distSq,
+            label& nearestTriangle,
             label& region,
             const point& p
         ) const;
@@ -173,6 +174,7 @@ public:
         (
             point& nearest,
             scalar& distSq,
+            label& nearestTriangle,
             const label region,
             const point& p
         ) const;
@@ -180,18 +182,20 @@ public:
         //- find nearest feature-edges vertex to a given vertex
         bool findNearestEdgePoint
         (
-            const point& p,
-            const DynList<label>& regions,
             point& edgePoint,
-            scalar& distSq
+            scalar& distSq,
+            label& nearestEdge,
+            const point& p,
+            const DynList<label>& regions
         ) const;
 
-        bool findNearestVertexToTheEdge
+        bool findNearestPointToEdge
         (
-            const FixedList<point, 2>& edgePoints,
-            const FixedList<label, 2>& edgePointRegions,
             point& nearest,
-            scalar& distSq
+            scalar& distSq,
+            label& nearestEdge,
+            const FixedList<point, 2>& edgePoints,
+            const FixedList<label, 2>& edgePointRegions
         ) const;
 
         //- find nearest corner point
@@ -199,12 +203,13 @@ public:
         (
             point& nearest,
             scalar& distSq,
+            label& nearestPoint,
             const point& p,
             const DynList<label>& patches
         ) const;
 
         //- find the nearest vertex to the given patches
-        bool findNearestVertexToPatches
+        bool findNearestPointToPatches
         (
             point& nearest,
             scalar& distSq,

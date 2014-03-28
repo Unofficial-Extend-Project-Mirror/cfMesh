@@ -163,7 +163,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
     # endif
 
     //- untangle surface faces
-    meshSurfaceOptimizer(*msePtr, *octreePtr_).preOptimizeSurface();
+    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
     # ifdef DEBUG
     mesh_.write();
@@ -196,34 +196,8 @@ void cartesianMeshGenerator::optimiseMeshSurface()
 
 void cartesianMeshGenerator::generateBoundaryLayers()
 {
+    //- add boundary layers
     boundaryLayers bl(mesh_);
-
-/*    if( meshDict_.found("boundaryLayers") )
-    {
-        if( )
-        wordList createLayers;
-
-        if( meshDict_.isDict("boundaryLayers") )
-        {
-            const dictionary& dict = meshDict_.subDict("boundaryLayers");
-            createLayers = dict.toc();
-        }
-        else
-        {
-            wordList bndLayers(meshDict_.lookup("boundaryLayers"));
-            createLayers.transfer(bndLayers);
-        }
-
-        forAll(createLayers, patchI)
-            bl.addLayerForPatch(createLayers[patchI]);
-    }
-    else
-    {
-        //bl.createOTopologyLayers();
-        bl.addLayerForAllPatches();
-    }
-    */
-
     bl.addLayerForAllPatches();
 
     # ifdef DEBUG
@@ -251,14 +225,16 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
 void cartesianMeshGenerator::optimiseFinalMesh()
 {
-    //- final optimisation
-    meshOptimizer optimizer(mesh_);
-
-    optimizer.optimizeSurface(*octreePtr_);
-
+    //- untangle the surface if needed
+    meshSurfaceEngine mse(mesh_);
+    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
     deleteDemandDrivenData(octreePtr_);
 
+    //- final optimisation
+    meshOptimizer optimizer(mesh_);
     optimizer.optimizeMeshFV();
+    optimizer.optimizeLowQualityFaces();
+    optimizer.untangleMeshFV();
 
     # ifdef DEBUG
     mesh_.write();

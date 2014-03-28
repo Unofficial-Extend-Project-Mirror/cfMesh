@@ -187,10 +187,12 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
             forAllRow(pPatches, bpI, patchI)
             {
                 point np;
+                label nt;
                 meshOctree_.findNearestSurfacePointInRegion
                 (
                     np,
                     distSqApprox,
+                    nt,
                     pPatches(bpI, patchI),
                     mapPointApprox
                 );
@@ -292,10 +294,12 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
             forAll(patches, patchI)
             {
                 point np;
+                label nt;
                 meshOctree_.findNearestSurfacePointInRegion
                 (
                     np,
                     distSqApprox,
+                    nt,
                     patches[patchI],
                     mapPointApprox
                 );
@@ -314,7 +318,8 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         //- find the nearest vertex on the triSurface feature edge
         point mapPoint;
         scalar distSq;
-        meshOctree_.findNearestEdgePoint(p, patches, mapPoint, distSq);
+        label nse;
+        meshOctree_.findNearestEdgePoint(mapPoint, distSq, nse, p, patches);
 
         //- use the vertex with the smallest mapping distance
         if( distSq > 1.2 * distSqApprox )
@@ -370,7 +375,7 @@ void meshSurfaceMapper::mapCornersAndEdges()
     mapCorners(selectedPoints);
 
     selectedPoints.clear();
-    const labelHashSet& edgePoints = mPart.edgeNodes();
+    const labelHashSet& edgePoints = mPart.edgePoints();
     forAllConstIter(labelHashSet, edgePoints, it)
         selectedPoints.append(it.key());
 

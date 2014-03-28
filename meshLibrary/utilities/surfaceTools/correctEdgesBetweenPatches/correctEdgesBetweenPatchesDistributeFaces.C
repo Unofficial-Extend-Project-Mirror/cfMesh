@@ -288,8 +288,8 @@ void correctEdgesBetweenPatches::patchCorrection()
         nodeType[it.key()] |= 1;
 
     //- set flgs to edge vertices
-    const labelHashSet& edgeNodes = surfacePartitioner.edgeNodes();
-    forAllConstIter(labelHashSet, edgeNodes, it)
+    const labelHashSet& edgePoints = surfacePartitioner.edgePoints();
+    forAllConstIter(labelHashSet, edgePoints, it)
         nodeType[it.key()] |= 2;
 
     //- set flags for feature edges

@@ -70,14 +70,6 @@ int main(int argc, char *argv[])
 
     triSurf surf(registry.path()/surfaceFile);
 
-    if( meshDict.found("subsetFileName") )
-    {
-        fileName subsetFileName = meshDict.lookup("subsetFileName");
-        if( Pstream::parRun() )
-            subsetFileName = ".."/subsetFileName;
-        surf.readFaceSubsets(registry.path()/subsetFileName);
-    }
-
     // construct the octree
     meshOctree moc(surf);
     meshOctreeCreator(moc, meshDict).createOctreeBoxes();
@@ -85,58 +77,9 @@ int main(int argc, char *argv[])
     polyMeshGen pmg(registry);
     pmg.read();
 
-    // make sure that mesh contains all surface patches
-    if(
-        Pstream::parRun() &&
-        (pmg.patchNames().size() != surf.patches().size())
-    )
-    {
-        wordList patchNames(surf.patches().size());
-        labelList patchStart(patchNames.size(), pmg.nInternalFaces());
-        labelList nFacesInPatch(patchNames.size(), 0);
 
-        forAll(patchNames, patchI)
-            patchNames[patchI] = surf.patches()[patchI].name();
-
-        forAll(pmg.patchNames(), patchI)
-        {
-            label pos(-1);
-            forAll(patchNames, nameI)
-                if( patchNames[nameI] == pmg.patchNames()[patchI] )
-                {
-                    pos = nameI;
-                    break;
-                }
-
-            nFacesInPatch[pos] = pmg.numFacesInPatch()[patchI];
-            patchStart[pos] = pmg.patchStart()[patchI];
-
-            for(label i=pos+1;i<patchNames.size();++i)
-                patchStart[i] += nFacesInPatch[pos];
-        }
-
-        polyMeshGenModifier meshModifier(pmg);
-        meshModifier.patchNamesAccess() = patchNames;
-        meshModifier.patchStartAccess() = patchStart;
-        meshModifier.nFacesInPatchAccess() = nFacesInPatch;
-    }
-
-    meshSurfaceEngine ms(pmg);
-    meshSurfaceOptimizer mo(ms, moc);
-
-    /*
-    labelList pointRegion(pmg.points().size(), -1);
-    for(label faceI=mesh.nInternalFaces();faceI<pmg.faces().size();faceI++)
-    {
-        const face& f = pmg.faces()[faceI];
-
-        forAll(f, pI)
-            pointRegion[f[pI]] = 1;
-    }
-
-    mo.preOptimizeSurface(pointRegion);
-    */
     mo.optimizeSurface();
+    mo.untangleSurface();
 
     pmg.write();
 

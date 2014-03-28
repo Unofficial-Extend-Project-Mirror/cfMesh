@@ -159,7 +159,7 @@ void triSurfacePartitioner::calculateEdgePartitions()
     forAll(corners_, i)
         corners.insert(corners_[i]);
 
-    edgePartitions_.setSize(edgeFaces. size());
+    edgePartitions_.setSize(edgeFaces.size());
     edgePartitions_ = -1;
 
     label nPartitions(0);

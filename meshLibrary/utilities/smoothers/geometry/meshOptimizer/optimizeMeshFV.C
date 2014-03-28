@@ -235,8 +235,7 @@ void meshOptimizer::optimizeMeshFV()
     Info << "Starting smoothing the mesh" << endl;
 
     laplaceSmoother lps(mesh_, vertexLocation_);
-    lps.optimizeLaplacianPC(2);
-    lps.optimizeLaplacianWPC(3);
+    lps.optimizeLaplacianPC(5);
 
     untangleMeshFV();
 

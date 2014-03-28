@@ -39,7 +39,9 @@ Description
 #include "meshSurfaceCheckEdgeTypes.H"
 #include "meshSurfaceEngine.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -87,11 +89,11 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     {
         const point c = bFaces[bfI].centre(points);
 
-        label facePatch;
+        label facePatch, nt;
         point p;
         scalar distSq;
 
-        meshOctree_.findNearestSurfacePoint(p, distSq, facePatch, c);
+        meshOctree_.findNearestSurfacePoint(p, distSq, nt, facePatch, c);
 
         if( (facePatch > -1) && (facePatch < nPatches) )
         {
