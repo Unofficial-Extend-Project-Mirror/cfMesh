@@ -52,6 +52,7 @@ void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
 {
     edgeExtractor extractor(mesh_, meshOctree_);
 
+    Info << "Extracting edges" << endl;
     extractor.extractEdges();
 
     extractor.updateMeshPatches();

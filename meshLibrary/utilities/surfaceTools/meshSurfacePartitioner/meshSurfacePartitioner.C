@@ -45,7 +45,7 @@ meshSurfacePartitioner::meshSurfacePartitioner
     corners_(),
     cornerPatches_(),
     edgePoints_(),
-    partitionPartitions_(),
+    patchPatches_(),
     nEdgesAtPoint_(),
     featureEdges_()
 {
@@ -63,7 +63,7 @@ meshSurfacePartitioner::meshSurfacePartitioner
     corners_(),
     cornerPatches_(),
     edgePoints_(),
-    partitionPartitions_(),
+    patchPatches_(),
     nEdgesAtPoint_(),
     featureEdges_()
 {

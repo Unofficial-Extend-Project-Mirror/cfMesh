@@ -933,7 +933,7 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
     const triSurf& surf = meshOctree_.surface();
     const pointField& sPoints = surf.points();
 
-    label nCorrected;
+    label nCorrected, nIterations(0);
     Map<label> otherProcNewPatch;
 
     do
@@ -1068,7 +1068,7 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             //- transfer the new patches back
             facePatch_.transfer(newBoundaryPatches);
         }
-    } while( nCorrected != 0 );
+    } while( (nCorrected != 0) && (++nIterations < 5) );
 
     return changed;
 }
@@ -1207,9 +1207,9 @@ void edgeExtractor::findEdgeCandidates()
     }
 
     //- start post-processing gathered data
-    const labelList& edgePartition = partitioner.edgePartitions();
+    const labelList& edgeGroup = partitioner.edgeGroups();
 
-    List<List<labelledScalar> > edgePartitionAndWeights(edges.size());
+    List<List<labelledScalar> > edgeGroupAndWeights(edges.size());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40) \
@@ -1231,11 +1231,11 @@ void edgeExtractor::findEdgeCandidates()
             DynList<labelledScalar> weights;
             forAll(sc, i)
             {
-                const label sPart = edgePartition[sc[i].scalarLabel()];
+                const label sPart = edgeGroup[sc[i].scalarLabel()];
 
                 forAll(ec, j)
                 {
-                    const label ePart = edgePartition[ec[j].scalarLabel()];
+                    const label ePart = edgeGroup[ec[j].scalarLabel()];
 
                     if( (sPart >= 0) && (sPart == ePart) )
                     {
@@ -1252,16 +1252,16 @@ void edgeExtractor::findEdgeCandidates()
             }
 
             //- store the data
-            edgePartitionAndWeights[edgeI].setSize(weights.size());
-            forAll(edgePartitionAndWeights[edgeI], epI)
-                edgePartitionAndWeights[edgeI][epI] = weights[epI];
+            edgeGroupAndWeights[edgeI].setSize(weights.size());
+            forAll(edgeGroupAndWeights[edgeI], epI)
+                edgeGroupAndWeights[edgeI][epI] = weights[epI];
 
             //- sort the data according to the weights
-            stableSort(edgePartitionAndWeights[edgeI]);
+            stableSort(edgeGroupAndWeights[edgeI]);
         }
     }
 
-    Info << "Edge partitions and weights " << edgePartitionAndWeights << endl;
+    Info << "Edge partitions and weights " << edgeGroupAndWeights << endl;
 }
 
 bool edgeExtractor::checkConcaveEdgeCells()
@@ -1759,11 +1759,6 @@ bool edgeExtractor::checkFacePatchesTopology()
             if( (newPatch < 0) || (newPatch == facePatch_[bfI]) )
                 continue;
 
-            //- do not swap if the number of neighbours in the patch
-            //- does not dominate
-            if( nNeiEdges <= (bf.size() / 2) )
-                continue;
-
             //- check whether the edges shared ith the neighbour patch form
             //- a singly linked chain
             DynList<bool> sharedEdge;
@@ -1790,13 +1785,7 @@ bool edgeExtractor::checkFacePatchesTopology()
 
             //- transfer the new patches back
             facePatch_.transfer(newBoundaryPatches);
-
-            const triSurf* surfPtr = surfaceWithPatches();
-            surfPtr->writeSurface("checkFacePatches_"+help::scalarToText(nIter)+".stl");
-            deleteDemandDrivenData(surfPtr);
         }
-
-        //break;
 
     } while( nCorrected != 0 && (nIter < 3) );
 
@@ -2773,7 +2762,23 @@ void edgeExtractor::extractEdges()
         Info << "No topological adjustment was needed" << endl;
     }
 
-    return;
+    Info << "Checking quality of corner points" << endl;
+    if( checkCorners() )
+    {
+        Info << "Finished checking quality of corner points" << endl;
+
+        # ifdef DEBUGEdgeExtractor
+        Info << "Changes due to face patches" << endl;
+        fileName sName("checkPoints"+help::scalarToText(nIter)+".stl");
+        sPtr = surfaceWithPatches();
+        sPtr->writeSurface(sName);
+        deleteDemandDrivenData(sPtr);
+        # endif
+    }
+    else
+    {
+        Info << "No adjustment of corner points was needed" << endl;
+    }
 
     //- project the selected feature vertices onto the corresponding
     //- objects on the surface mesh and improve the distribution of patches
@@ -2787,7 +2792,7 @@ void edgeExtractor::extractEdges()
         //- project feature vertices onto the surface mesh
         projectDeterminedFeatureVertices();
 
-        if( checkFacePatchesGeometry()  )
+        if( checkCorners()  )
         {
             # ifdef DEBUGEdgeExtractor
             Info << "Changes due to untangling" << endl;
@@ -2852,6 +2857,59 @@ const triSurf* edgeExtractor::surfaceWithPatches() const
             surfPtr->appendTriangle(tri);
         }
     }
+
+    return surfPtr;
+}
+
+const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
+{
+    //- allocate the memory for the surface mesh
+    triSurf* surfPtr = new triSurf();
+
+    //- surface of the volume mesh
+    const meshSurfaceEngine& mse = surfaceEngine();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const VRWGraph& pFaces = mse.pointFaces();
+    const labelList& bp = mse.bp();
+    const pointFieldPMG& points = mesh_.points();
+
+    //- modifier of the new surface mesh
+    triSurfModifier surfModifier(*surfPtr);
+    surfModifier.patchesAccess() = meshOctree_.surface().patches();
+    pointField& sPts = surfModifier.pointsAccess();
+
+    //- create the triangulation of the volume mesh surface
+    labelLongList newPointLabel(points.size(), -1);
+    label nPoints(0);
+    forAllRow(pFaces, bpI, pfI)
+    {
+        const label bfI = pFaces(bpI, pfI);
+        const face& bf = bFaces[bfI];
+
+        forAll(bf, pI)
+            if( newPointLabel[bf[pI]] == -1 )
+                newPointLabel[bf[pI]] = nPoints++;
+
+        labelledTri tri;
+        tri.region() = facePatch_[bfI];
+        tri[0] = newPointLabel[bf[0]];
+
+        for(label i=bf.size()-2;i>0;--i)
+        {
+            tri[1] = newPointLabel[bf[i]];
+            tri[2] = newPointLabel[bf[i+1]];
+
+            surfPtr->appendTriangle(tri);
+        }
+    }
+
+    //- copy points
+    sPts.setSize(nPoints);
+    forAll(newPointLabel, pointI)
+        if( newPointLabel[pointI] != -1 )
+        {
+            sPts[newPointLabel[pointI]] = points[pointI];
+        }
 
     return surfPtr;
 }

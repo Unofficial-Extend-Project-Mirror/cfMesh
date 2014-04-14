@@ -6,5 +6,6 @@
 
 EXE_INC = \
     $(OMP_FLAGS) \
+    -g -ggdb -DFULLDEBUG -O0 \
     -I$(LIB_SRC)/triSurface/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude

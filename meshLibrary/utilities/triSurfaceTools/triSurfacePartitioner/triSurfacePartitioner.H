@@ -63,39 +63,39 @@ class triSurfacePartitioner
         List<DynList<label> > cornerPatches_;
 
         //- information which partitions share an edge with a given partition
-        List<labelHashSet> partitionPartitions_;
+        List<labelHashSet> patchPatches_;
 
         //- edge partitions
-        labelList edgePartitions_;
+        labelList edgeGroups_;
 
-        //- information which edge partitions share a corner
-        //- with a given partition
-        List<labelHashSet> edgePartitionEdgePartitions_;
+        //- information which edge groups share a corner
+        //- with a given group
+        List<labelHashSet> edgeGroupEdgeGroups_;
 
-        //- partition of the edge between the surface partitions
-        std::map<std::pair<label, label>, labelHashSet> partitionsEdgeParts_;
+        //- edge groups between surface patches
+        std::map<std::pair<label, label>, labelHashSet> patchesEdgeGroups_;
 
-        //- corners shared by edge partitions
-        std::map<std::pair<label, label>, labelHashSet> edgePartitionsCorners_;
+        //- corners shared by edge groups
+        std::map<std::pair<label, label>, labelHashSet> edgeGroupsCorners_;
 
     // Private member functions
-        //- calculate partitions
-        void calculatePartitionAddressing();
+        //- calculate patch addressing
+        void calculatePatchAddressing();
 
         //- find surface corners
         void calculateCornersAndAddressing();
 
-        //- calculate partitionPartitions_ addressing
-        void calculatePartitionPartitions();
+        //- calculate patch-patches addressing
+        void calculatePatchPatches();
 
-        //- calculate edge partitions
-        void calculateEdgePartitions();
+        //- calculate edge groups
+        void calculateEdgeGroups();
 
-        //- calculate surface partition to edge partitions addressing
-        void calculatePartitionsToEdgePartitions();
+        //- calculate surface patch to edge groups addressing
+        void calculatePatchToEdgeGroups();
 
-        //- calculate edge partitions to corner addressing
-        void calculateEdgePartitionsToCorners();
+        //- calculate edge groups to corner addressing
+        void calculateEdgeGroupsToCorners();
 
         //- Disallow default bitwise copy construct
         triSurfacePartitioner(const triSurfacePartitioner&);
@@ -122,26 +122,26 @@ public:
         //- return corner patches
         const List<DynList<label> >& cornerPatches() const;
 
-        //- return partition-partitions addressing
-        const List<labelHashSet>& partitionPartitions() const;
+        //- return patch-patches addressing
+        const List<labelHashSet>& patchPatches() const;
 
-        //- return edge partitions. Partitions of edges which are not
-        //- the feature edges is set to -1
-        const labelList& edgePartitions() const;
+        //- return edge groups. Edges which are not
+        //- feature edges are set to -1
+        const labelList& edgeGroups() const;
 
-        //- Edge partition - edge partitions addressing
-        const List<labelHashSet>& edgePartitionEdgePartitions() const;
+        //- Edge group - edge groups addressing
+        const List<labelHashSet>& edgeGroupEdgeGroups() const;
 
-        //- Return partitions of feature edges between the given partitions
-        void edgePartitionsBetweenPartitions
+        //- Return groups of feature edges shared by the given patches
+        void edgeGroupsSharedByPatches
         (
             const label partition1,
             const label partition2,
             DynList<label>& edgePartitions
         ) const;
 
-        //- return corners shared between the given edge partitions
-        void cornersBetweenEdgePartitions
+        //- return corners shared shared by the given edge groups
+        void cornersSharedByEdgeGroups
         (
             const label edgePartition1,
             const label edgePartition2,

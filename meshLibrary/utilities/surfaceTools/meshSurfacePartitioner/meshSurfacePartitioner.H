@@ -68,8 +68,8 @@ class meshSurfacePartitioner
         //- labels of edge points
         labelHashSet edgePoints_;
 
-        //- partition-partitions addressing
-        List<labelHashSet> partitionPartitions_;
+        //- patch-patches addressing
+        List<labelHashSet> patchPatches_;
 
         //- number of edges attached to a surface point
         labelList nEdgesAtPoint_;
@@ -130,10 +130,10 @@ public:
             return nEdgesAtPoint_[bpI];
         }
 
-        //- return partition-partitions addressing
-        inline const List<labelHashSet>& partitionPartitions() const
+        //- return patch-patches addressing
+        inline const List<labelHashSet>& patchPatches() const
         {
-            return partitionPartitions_;
+            return patchPatches_;
         }
 
         //- return labels of boundary edges which are feature edges

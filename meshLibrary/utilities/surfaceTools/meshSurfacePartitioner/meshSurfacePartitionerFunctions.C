@@ -46,7 +46,28 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
 
     corners_.clear();
     edgePoints_.clear();
-    partitionPartitions_.setSize(meshSurface_.mesh().boundaries().size());
+
+    //- count the number of patches
+    label nPatches(0);
+    # ifdef USE_OMP
+    # pragma omp parallel
+    {
+        label localMax(0);
+
+        forAll(facePatch_, bfI)
+            localMax = Foam::max(localMax, facePatch_[bfI]);
+
+        # pragma omp critical
+        nPatches = Foam::max(localMax, nPatches);
+    }
+    # else
+    forAll(facePatch_, bfI)
+        nPatches = Foam::max(nPatches, facePatch_[bfI]);
+    # endif
+    ++nPatches;
+
+    //- set the size and starting creating addressing
+    patchPatches_.setSize(nPatches);
 
     nEdgesAtPoint_.clear();
     nEdgesAtPoint_.setSize(bPoints.size());
@@ -68,8 +89,8 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             ++nEdgesAtPoint_[bp[e.start()]];
             ++nEdgesAtPoint_[bp[e.end()]];
 
-            partitionPartitions_[patch0].insert(patch1);
-            partitionPartitions_[patch1].insert(patch0);
+            patchPatches_[patch0].insert(patch1);
+            patchPatches_[patch1].insert(patch0);
 
             featureEdges_.insert(edgeI);
         }

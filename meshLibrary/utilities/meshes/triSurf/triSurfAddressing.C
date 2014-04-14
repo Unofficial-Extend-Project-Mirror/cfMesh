@@ -211,9 +211,10 @@ void triSurfAddressing::calculateFacetEdges() const
 
 void triSurfAddressing::calculateEdgeFacets() const
 {
+    const edgeLongList& edges = this->edges();
     const VRWGraph& faceEdges = this->facetEdges();
 
-    edgeFacetsPtr_ = new VRWGraph();
+    edgeFacetsPtr_ = new VRWGraph(edges.size());
 
     VRWGraphSMPModifier(*edgeFacetsPtr_).reverseAddressing(faceEdges);
 }
@@ -222,9 +223,9 @@ void triSurfAddressing::calculatePointEdges() const
 {
     const edgeLongList& edges = this->edges();
 
-    pointEdgesPtr_ = new VRWGraph();
+    pointEdgesPtr_ = new VRWGraph(points_.size());
 
-    VRWGraphSMPModifier(*pointEdgesPtr_).reverseAddressing(edges);
+    pointEdgesPtr_->reverseAddressing(edges);
 }
 
 void triSurfAddressing::calculateFacetFacetsEdges() const

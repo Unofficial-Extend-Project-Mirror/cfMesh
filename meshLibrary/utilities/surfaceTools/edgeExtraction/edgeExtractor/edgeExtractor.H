@@ -230,9 +230,13 @@ public:
         //- assemble the above functionality into a workflow
         void extractEdges();
 
-        //- generate a surface mesh based and store the created patches
+        //- generate a surface mesh and store the created patches
         //- this is mainly intended for debugging purposes
         const triSurf* surfaceWithPatches() const;
+
+        //- generate a surface mesh constin of facets adjacent to the requested
+        //- surface point
+        const triSurf* surfaceWithPatches(const label bpI) const;
 
         //- update mesh with selected patches
         void updateMeshPatches();

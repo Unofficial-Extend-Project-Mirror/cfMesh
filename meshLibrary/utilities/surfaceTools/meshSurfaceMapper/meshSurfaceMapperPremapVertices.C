@@ -31,6 +31,7 @@ Description
 #include "meshSurfaceMapper.H"
 #include "meshOctree.H"
 #include "refLabelledPoint.H"
+#include "refLabelledPointScalar.H"
 #include "helperFunctionsPar.H"
 
 # ifdef USE_OMP
@@ -54,8 +55,27 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
     const pointFieldPMG& points = surfaceEngine_.points();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const VRWGraph& pointFaces = surfaceEngine_.pointFaces();
+    const VRWGraph& pointInFace = surfaceEngine_.pointInFaces();
+    const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
 
-    List<labelledPoint> preMapPositions(boundaryPoints.size());
+    List<labelledPointScalar> preMapPositions(boundaryPoints.size());
+    List<DynList<scalar, 6> > faceCentreDistances(bFaces.size());
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(bFaces, bfI)
+    {
+        const point& c = faceCentres[bfI];
+        const face& bf = bFaces[bfI];
+
+        faceCentreDistances[bfI].setSize(bf.size());
+
+        forAll(bf, pI)
+        {
+            faceCentreDistances[bfI][pI] = magSqr(points[bf[pI]] - c);
+        }
+    }
 
     for(label iterI=0;iterI<nIterations;++iterI)
     {
@@ -65,12 +85,21 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         # endif
         forAll(pointFaces, bpI)
         {
-            labelledPoint lp(0, vector::zero);
+            labelledPointScalar lp(bpI, vector::zero, 0.0);
 
-            forAllRow(pointFaces, bpI, bfI)
+            const point& p = points[boundaryPoints[bpI]];
+
+            forAllRow(pointFaces, bpI, pfI)
             {
-                ++lp.pointLabel();
-                lp.coordinates() += faceCentres[pointFaces(bpI, bfI)];
+                const label bfI = pointFaces(bpI, pfI);
+                const point& fc = faceCentres[pointFaces(bpI, pfI)];
+                const label pos = pointInFace(bpI, pfI);
+                const scalar w
+                (
+                    max(magSqr(p - fc) / faceCentreDistances[bfI][pos], SMALL)
+                );
+                lp.coordinates() += w * faceCentres[bfI];
+                lp.scalarValue() += w;
             }
 
             preMapPositions[bpI] = lp;
@@ -89,14 +118,14 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 surfaceEngine_.globalToLocalBndPointAddressing();
 
             //- collect data to be sent to other processors
-            std::map<label, LongList<refLabelledPoint> > exchangeData;
+            std::map<label, LongList<labelledPointScalar> > exchangeData;
             forAll(surfaceEngine_.bpNeiProcs(), i)
                 exchangeData.insert
                 (
                     std::make_pair
                     (
                         surfaceEngine_.bpNeiProcs()[i],
-                        LongList<refLabelledPoint>()
+                        LongList<labelledPointScalar>()
                     )
                 );
 
@@ -113,30 +142,30 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
 
                     exchangeData[neiProc].append
                     (
-                        refLabelledPoint
+                        labelledPointScalar
                         (
                             globalPointLabel[bpI],
-                            preMapPositions[bpI]
+                            preMapPositions[bpI].coordinates(),
+                            preMapPositions[bpI].scalarValue()
                         )
                     );
                 }
             }
 
             //- exchange data with other processors
-            LongList<refLabelledPoint> receivedData;
+            LongList<labelledPointScalar> receivedData;
             help::exchangeMap(exchangeData, receivedData);
 
             //- combine collected data with the available data
             forAll(receivedData, i)
             {
-                const refLabelledPoint& rlp = receivedData[i];
-                const labelledPoint& lps = rlp.lPoint();
+                const labelledPointScalar& lps = receivedData[i];
 
-                const label bpI = globalToLocal[rlp.objectLabel()];
+                const label bpI = globalToLocal[lps.pointLabel()];
 
-                labelledPoint& lp = preMapPositions[bpI];
-                lp.pointLabel() += lps.pointLabel();
+                labelledPointScalar& lp = preMapPositions[bpI];
                 lp.coordinates() += lps.coordinates();
+                lp.scalarValue() += lps.scalarValue();
             }
         }
 
@@ -149,16 +178,9 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         # endif
         forAll(boundaryPoints, bpI)
         {
-            labelledPoint& lp = preMapPositions[bpI];
+            labelledPointScalar& lps = preMapPositions[bpI];
 
-            if( lp.pointLabel() == 0 )
-            {
-                Warning << "Surface point " << bpI
-                    << " has no supporting faces" << endl;
-                continue;
-            }
-
-            lp.coordinates() /= lp.pointLabel();
+            lps.coordinates() /= lps.scalarValue();
 
             const point& p = points[boundaryPoints[bpI]];
 
@@ -172,7 +194,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 dSq,
                 nearestTri,
                 patch,
-                lp.coordinates()
+                lps.coordinates()
             );
 
             const point newP = 0.5 * (pMap + p);

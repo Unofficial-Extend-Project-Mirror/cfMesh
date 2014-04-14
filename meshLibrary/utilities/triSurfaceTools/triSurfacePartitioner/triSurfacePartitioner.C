@@ -29,9 +29,7 @@ Description
 #include "triSurfacePartitioner.H"
 #include "demandDrivenData.H"
 
-//#define DEBUGMorph
-
-# ifdef DEBUGMorph
+# ifdef DEBUGPartitioner
 #include <sstream>
 # endif
 
@@ -50,13 +48,13 @@ triSurfacePartitioner::triSurfacePartitioner
     surface_(surface),
     corners_(),
     cornerPatches_(),
-    partitionPartitions_(surface.patches().size()),
-    edgePartitions_(),
-    edgePartitionEdgePartitions_(),
-    partitionsEdgeParts_(),
-    edgePartitionsCorners_()
+    patchPatches_(surface.patches().size()),
+    edgeGroups_(),
+    edgeGroupEdgeGroups_(),
+    patchesEdgeGroups_(),
+    edgeGroupsCorners_()
 {
-    calculatePartitionAddressing();
+    calculatePatchAddressing();
 }
 
 triSurfacePartitioner::~triSurfacePartitioner()
@@ -74,53 +72,52 @@ const List<DynList<label> >& triSurfacePartitioner::cornerPatches() const
     return cornerPatches_;
 }
 
-const List<labelHashSet>& triSurfacePartitioner::partitionPartitions() const
+const List<labelHashSet>& triSurfacePartitioner::patchPatches() const
 {
-    return partitionPartitions_;
+    return patchPatches_;
 }
 
-const labelList& triSurfacePartitioner::edgePartitions() const
+const labelList& triSurfacePartitioner::edgeGroups() const
 {
-    return edgePartitions_;
+    return edgeGroups_;
 }
 
-const List<labelHashSet>&
-triSurfacePartitioner::edgePartitionEdgePartitions() const
+const List<labelHashSet>& triSurfacePartitioner::edgeGroupEdgeGroups() const
 {
-    return edgePartitionEdgePartitions_;
+    return edgeGroupEdgeGroups_;
 }
 
-void triSurfacePartitioner::edgePartitionsBetweenPartitions
+void triSurfacePartitioner::edgeGroupsSharedByPatches
 (
-    const label partition1,
-    const label partition2,
-    DynList<label>& edgePartitions
+    const label patch1,
+    const label patch2,
+    DynList<label>& edgeGroups
 ) const
 {
-    edgePartitions.clear();
+    edgeGroups.clear();
 
     std::pair<label, label> pp
     (
-        Foam::min(partition1, partition2),
-        Foam::max(partition1, partition2)
+        Foam::min(patch1, patch2),
+        Foam::max(patch1, patch2)
     );
 
     std::map<std::pair<label, label>, labelHashSet>::const_iterator it =
-        partitionsEdgeParts_.find(pp);
+        patchesEdgeGroups_.find(pp);
 
-    if( it != partitionsEdgeParts_.end() )
+    if( it != patchesEdgeGroups_.end() )
     {
-        const labelList edgeParts = it->second.toc();
+        const labelHashSet& eGroups = it->second;
 
-        forAll(edgeParts, partI)
-            edgePartitions.append(edgeParts[partI]);
+        forAllConstIter(labelHashSet, eGroups, it)
+            edgeGroups.append(it.key());
     }
 }
 
-void triSurfacePartitioner::cornersBetweenEdgePartitions
+void triSurfacePartitioner::cornersSharedByEdgeGroups
 (
-    const label edgePartition1,
-    const label edgePartition2,
+    const label edgeGroup1,
+    const label edgeGroup2,
     DynList<label>& corners
 ) const
 {
@@ -128,19 +125,19 @@ void triSurfacePartitioner::cornersBetweenEdgePartitions
 
     std::pair<label, label> ep
     (
-        Foam::min(edgePartition1, edgePartition2),
-        Foam::max(edgePartition1, edgePartition2)
+        Foam::min(edgeGroup1, edgeGroup2),
+        Foam::max(edgeGroup1, edgeGroup2)
     );
 
     std::map<std::pair<label, label>, labelHashSet>::const_iterator it =
-        edgePartitionsCorners_.find(ep);
+        edgeGroupsCorners_.find(ep);
 
-    if( it != edgePartitionsCorners_.end() )
+    if( it != edgeGroupsCorners_.end() )
     {
-        const labelList corn = it->second.toc();
+        const labelHashSet& corn = it->second;
 
-        forAll(corn, cornerI)
-            corners.append(corn[cornerI]);
+        forAllConstIter(labelHashSet, corn, it)
+            corners.append(it.key());
     }
 }
 

@@ -229,9 +229,9 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     const triSurfacePartitioner& sPart = this->partitioner();
 
     //- find leaves which contains corner nodes
-    const List<labelHashSet>& pPart = sPart.partitionPartitions();
-    const labelList& edgePartition = sPart.edgePartitions();
-    const List<labelHashSet>& ePart = sPart.edgePartitionEdgePartitions();
+    const List<labelHashSet>& pPatches = sPart.patchPatches();
+    const labelList& edgeGroups = sPart.edgeGroups();
+    const List<labelHashSet>& eNeiGroups = sPart.edgeGroupEdgeGroups();
 
     # ifdef DEBUGAutoRef
     Info << "pPart " << pPart << endl;
@@ -243,10 +243,10 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     const triSurf& surf = octree_.surface();
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
-    DynList<label> patches, ePartitions, helper;
+    DynList<label> patches, eGroups, helper;
     # ifdef USE_OMP
     # pragma omp parallel for if( refCandidates.size() > 1000 ) \
-    private(patches, ePartitions, helper) \
+    private(patches, eGroups, helper) \
     reduction(+ : nMarked) schedule(dynamic, 20)
     # endif
     forAll(refCandidates, refI)
@@ -271,9 +271,9 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
         //- find edge partitions contained in this box
         helper.clear();
         octree_.findEdgesInBox(bb, helper);
-        ePartitions.clear();
+        eGroups.clear();
         forAll(helper, i)
-            ePartitions.appendIfNotIn(edgePartition[helper[i]]);
+            eGroups.appendIfNotIn(edgeGroups[helper[i]]);
 
         # ifdef DEBUGAutoRef
         Info << "patches for leaf " << leafI << " are " << patches << endl;
@@ -283,7 +283,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
         forAll(patches, patchI)
         {
             for(label patchJ=(patchI+1);patchJ<patches.size();++patchJ)
-                if( !pPart[patches[patchI]].found(patches[patchJ]) )
+                if( !pPatches[patches[patchI]].found(patches[patchJ]) )
                 {
                     # ifdef DEBUGAutoRef
                     Info << "2.Here" << endl;
@@ -294,10 +294,10 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
                 }
         }
 
-        forAll(ePartitions, ePartI)
+        forAll(eGroups, egI)
         {
-            for(label ePartJ=ePartI+1;ePartJ<ePartitions.size();++ePartJ)
-                if( !ePart[ePartitions[ePartI]].found(ePartitions[ePartJ]) )
+            for(label egJ=egI+1;egJ<eGroups.size();++egJ)
+                if( !eNeiGroups[eGroups[egI]].found(eGroups[egJ]) )
                 {
                     refine = true;
                     break;
