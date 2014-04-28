@@ -94,7 +94,7 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizer
     vector vecX, vecY;
     if( !transformIntoPlane(bpI, pl, vecX, vecY, pts, trias) )
     {
-        Warning << "Cannot transform in plane" << endl;
+        Warning << "Cannot transform into plane" << endl;
         return;
     }
 

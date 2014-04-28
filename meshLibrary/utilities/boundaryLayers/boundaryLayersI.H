@@ -82,7 +82,7 @@ inline void boundaryLayers::createNewCellFromEdge
     const edge& e,
     const label pKeyI,
     const label pKeyJ,
-    DynList<DynList<label, 4>, 6>& cellFaces
+    FixedList<FixedList<label, 4>, 6>& cellFaces
 ) const
 {
     const std::map<std::pair<label, label>, label>& ms =
@@ -174,52 +174,48 @@ inline void boundaryLayers::createNewCellFromEdge
         }
     }
     
-    cellFaces.setSize(6);
-    DynList<label, 4> f;
-    f.setSize(4);
     //- F0
-    f[0] = e.end();
-    f[1] = e.start();
-    f[2] = p1s;
-    f[3] = p1e;
-    cellFaces[0] = f;
+    cellFaces[0][0] = e.end();
+    cellFaces[0][1] = e.start();
+    cellFaces[0][2] = p1s;
+    cellFaces[0][3] = p1e;
+
     //- F1
-    f[0] = p0e;
-    f[1] = ne;
-    f[2] = ns;
-    f[3] = p0s;
-    cellFaces[1] = f;
+    cellFaces[1][0] = p0e;
+    cellFaces[1][1] = ne;
+    cellFaces[1][2] = ns;
+    cellFaces[1][3] = p0s;
+
     //- F2
-    f[0] = e.start();
-    f[1] = e.end();
-    f[2] = p0e;
-    f[3] = p0s;
-    cellFaces[2] = f;
+    cellFaces[2][0] = e.start();
+    cellFaces[2][1] = e.end();
+    cellFaces[2][2] = p0e;
+    cellFaces[2][3] = p0s;
+
     //- F3
-    f[0] = p1s;
-    f[1] = ns;
-    f[2] = ne;
-    f[3] = p1e;
-    cellFaces[3] = f;
+    cellFaces[3][0] = p1s;
+    cellFaces[3][1] = ns;
+    cellFaces[3][2] = ne;
+    cellFaces[3][3] = p1e;
+
     //- F4
-    f[0] = e.end();
-    f[1] = p1e;
-    f[2] = ne;
-    f[3] = p0e;
-    cellFaces[4] = f;
+    cellFaces[4][0] = e.end();
+    cellFaces[4][1] = p1e;
+    cellFaces[4][2] = ne;
+    cellFaces[4][3] = p0e;
+
     //- F5
-    f[0] = e.start();
-    f[1] = p0s;
-    f[2] = ns;
-    f[3] = p1s;
-    cellFaces[5] = f;
+    cellFaces[5][0] = e.start();
+    cellFaces[5][1] = p0s;
+    cellFaces[5][2] = ns;
+    cellFaces[5][3] = p1s;
 }
 
 inline void boundaryLayers::createNewCellFromNode
 (
     const label pointI,
     const DynList<label, 3>& pKeys,
-    DynList<DynList<label, 4>, 6>& cellFaces
+    FixedList<FixedList<label, 4>, 6>& cellFaces
 ) const
 {
     const std::map<std::pair<label, label>, label>& m =
@@ -263,9 +259,6 @@ inline void boundaryLayers::createNewCellFromNode
     const label p12 = m.find(pr)->second;
     
     //- create the cell and append it
-    cellFaces.setSize(6);
-    forAll(cellFaces, fI)
-        cellFaces[fI].setSize(4);
     
     //- F0
     cellFaces[0][0] = pointI;

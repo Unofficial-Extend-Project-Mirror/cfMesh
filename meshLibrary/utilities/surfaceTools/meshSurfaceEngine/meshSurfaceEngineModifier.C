@@ -200,8 +200,12 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
     forAll(syncNodes, snI)
     {
         const label bpI = syncNodes[snI];
+
+        if( bpAtProcs.sizeOfRow(bpI) == 0 )
+            continue;
+
         point p = points[bPoints[bpI]] / bpAtProcs.sizeOfRow(bpI);
-        moveBoundaryVertex(bpI, p);
+        moveBoundaryVertexNoUpdate(bpI, p);
 
         forAllRow(bpAtProcs, bpI, i)
         {

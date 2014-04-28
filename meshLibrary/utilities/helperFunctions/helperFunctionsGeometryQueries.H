@@ -58,6 +58,14 @@ namespace Foam
 
 namespace help
 {
+    //- check if a list has nan entries
+    template<class ListType>
+    bool isnan(const ListType&);
+
+    //- check if a list has inf entries
+    template<class ListType>
+    bool isinf(const ListType&);
+
     //- check if the faces share a convex edge
     bool isSharedEdgeConvex
     (

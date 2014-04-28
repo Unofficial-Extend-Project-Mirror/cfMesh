@@ -52,23 +52,20 @@ inline pointFieldPMG::pointFieldPMG(const IOobject& io, const label s)
     regIOobject(io),
     pointField(s),
     nElmts_(s)
-{
-}
+{}
 
 inline pointFieldPMG::pointFieldPMG(const IOobject& io, const pointField& pts)
 :
     regIOobject(io),
     pointField(pts),
     nElmts_(pts.size())
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Destructor
 
 inline pointFieldPMG::~pointFieldPMG()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
             
@@ -86,6 +83,12 @@ inline void pointFieldPMG::setSize(const label nElmts)
     }
 
     nElmts_ = nElmts;
+}
+
+inline void pointFieldPMG::reserve(const label capacity)
+{
+    if( capacity > size() )
+        this->setSize(capacity);
 }
 
 inline void pointFieldPMG::clear()

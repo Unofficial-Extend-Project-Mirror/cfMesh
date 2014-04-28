@@ -68,7 +68,8 @@ class meshSurfaceMapper
         const meshOctree& meshOctree_;
     
         //- mesh surface partitioner
-        mutable meshSurfacePartitioner* surfaceEnginePartitionerPtr_;
+        mutable const meshSurfacePartitioner* surfaceEnginePartitionerPtr_;
+        const bool deletePartitioner_;
     
         //- triSurface partitioner
         mutable triSurfacePartitioner* surfPartitionerPtr_;
@@ -129,6 +130,9 @@ public:
 
         //- Construct from meshSurfaceEngine and octree
         meshSurfaceMapper(const meshSurfaceEngine&, const meshOctree&);
+
+        //- Construct from meshSurfacePartitioner and octree
+        meshSurfaceMapper(const meshSurfacePartitioner&, const meshOctree&);
 
     // Destructor
 

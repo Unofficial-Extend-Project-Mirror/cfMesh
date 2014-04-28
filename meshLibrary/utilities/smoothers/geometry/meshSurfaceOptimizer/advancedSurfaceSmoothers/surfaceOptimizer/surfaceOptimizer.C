@@ -310,11 +310,11 @@ scalar surfaceOptimizer::optimiseSteepestDescent(const scalar tol)
             disp.x() = mat.solveFirst(source);
             disp.y() = mat.solveSecond(source);
 
-            if( mag(disp) > 0.7 * avgEdge )
+            if( mag(disp) > 0.2 * avgEdge )
             {
                 vector dir = disp / mag(disp);
 
-                disp = dir * 0.7 * avgEdge;
+                disp = dir * 0.2 * avgEdge;
             }
         }
 
@@ -377,6 +377,12 @@ surfaceOptimizer::~surfaceOptimizer()
 
 point surfaceOptimizer::optimizePoint(const scalar tol)
 {
+    const scalar scale = mag(pMax_ - pMin_);
+    forAll(pts_, i)
+        pts_[i] /= scale;
+    pMin_ /= scale;
+    pMax_ /= scale;
+
     point& pOpt = pts_[trias_[0][0]];
 
     const scalar funcDivide = optimiseDivideAndConquer(tol);
@@ -386,6 +392,11 @@ point surfaceOptimizer::optimizePoint(const scalar tol)
 
     if( funcSteepest > funcDivide )
         pOpt = newPoint;
+
+    forAll(pts_, i)
+        pts_[i] *= scale;
+    pMin_ *= scale;
+    pMax_ *= scale;
 
     return pOpt;
 }

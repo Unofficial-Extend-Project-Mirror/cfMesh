@@ -60,6 +60,14 @@ const meshSurfaceEngine& boundaryLayers::surfaceEngine() const
     return *msePtr_;
 }
 
+const meshSurfacePartitioner& boundaryLayers::surfacePartitioner() const
+{
+    if( !meshPartitionerPtr_ )
+        meshPartitionerPtr_ = new meshSurfacePartitioner(surfaceEngine());
+
+    return *meshPartitionerPtr_;
+}
+
 void boundaryLayers::findPatchesToBeTreatedTogether()
 {
     if( geometryAnalysed_ )
@@ -70,16 +78,17 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
     const meshSurfaceEngine& mse = surfaceEngine();
 
-    const VRWGraph& pPatches = mse.pointPatches();
     const pointFieldPMG& points = mesh_.points();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const edgeList& edges = mse.edges();
     const VRWGraph& eFaces = mse.edgeFaces();
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
 
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
+
     //- patches must be treated together if there exist a corner where
     //- more than three patches meet
-    meshSurfacePartitioner mPart(mse);
     const labelHashSet& corners = mPart.corners();
     forAllConstIter(labelHashSet, corners, it)
     {
@@ -487,6 +496,7 @@ boundaryLayers::boundaryLayers
 :
     mesh_(mesh),
     msePtr_(NULL),
+    meshPartitionerPtr_(NULL),
     patchWiseLayers_(true),
     terminateLayersAtConcaveEdges_(false),
     patchNames_(),

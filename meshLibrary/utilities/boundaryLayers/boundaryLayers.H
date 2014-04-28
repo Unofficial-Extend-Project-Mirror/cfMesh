@@ -38,6 +38,7 @@ SourceFiles
 
 #include "polyMeshGenModifier.H"
 #include "meshSurfaceEngine.H"
+#include "meshSurfacePartitioner.H"
 #include "DynList.H"
 #include "labelLongList.H"
 #include "Map.H"
@@ -52,6 +53,7 @@ namespace Foam
 
 // Forward declarations
 class meshSurfaceEngine;
+class meshSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
                            Class boundaryLayers Declaration
@@ -64,6 +66,9 @@ class boundaryLayers
 
         //- pointer to mesh surface engine
         mutable meshSurfaceEngine* msePtr_;
+
+        //- poiner to meshSurfacePartitioner
+        mutable meshSurfacePartitioner* meshPartitionerPtr_;
 
         //- shall I create patch-wise layers (true)
         //- O-topology layer (false)
@@ -99,8 +104,11 @@ class boundaryLayers
         bool geometryAnalysed_;
 
     // Private member functions
-        //- Return reference to meshSurfaceEngine
+        //- Return const reference to meshSurfaceEngine
         const meshSurfaceEngine& surfaceEngine() const;
+
+        //- return const reference to meshSurfacePartitioner
+        const meshSurfacePartitioner& surfacePartitioner() const;
 
         //- find if any other patches need to be treated together
         //- with the given one
@@ -195,7 +203,7 @@ class boundaryLayers
             const edge& e,
             const label pKeyI,
             const label pKeyJ,
-            DynList<DynList<label, 4>, 6>& cellFaces
+            FixedList<FixedList<label, 4>, 6>& cellFaces
         ) const;
 
         //- creating hex cells near corners
@@ -203,7 +211,7 @@ class boundaryLayers
         (
             const label pointI,
             const DynList<label, 3>& pKeys,
-            DynList<DynList<label, 4>, 6>& cellFaces
+            FixedList<FixedList<label, 4>, 6>& cellFaces
         ) const;
 
         //- create a bnd layer for a given patch
@@ -213,6 +221,7 @@ class boundaryLayers
         inline void clearOut()
         {
             deleteDemandDrivenData(msePtr_);
+            deleteDemandDrivenData(meshPartitionerPtr_);
         }
 
     // Enumerators

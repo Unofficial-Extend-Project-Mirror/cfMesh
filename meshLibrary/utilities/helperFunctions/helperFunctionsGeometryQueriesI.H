@@ -51,6 +51,26 @@ namespace help
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
+template<class ListType>
+inline bool isnan(const ListType& l)
+{
+    forAll(l, i)
+        if( l[i] != l[i] )
+            return true;
+
+    return false;
+}
+
+template<class ListType>
+bool isinf(const ListType& l)
+{
+    forAll(l, i)
+        if( (l[i] < -VGREAT) || (l[i] > VGREAT) )
+            return true;
+
+    return false;
+}
+
 inline bool isSharedEdgeConvex
 (
     const pointField& points,

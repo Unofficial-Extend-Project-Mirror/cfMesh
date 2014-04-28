@@ -208,85 +208,89 @@ public:
         ~meshSurfaceEngine();
 
     // Member Functions
-        const polyMeshGen& mesh() const;
-        const pointFieldPMG& points() const;
-        const faceListPMG& faces() const;
-        const cellListPMG& cells() const;
+        inline const polyMeshGen& mesh() const;
+        inline const pointFieldPMG& points() const;
+        inline const faceListPMG& faces() const;
+        inline const cellListPMG& cells() const;
 
-        const labelList& boundaryPoints() const;
+        inline const labelList& boundaryPoints() const;
 
-        const faceList::subList& boundaryFaces() const;
+        inline const faceList::subList& boundaryFaces() const;
 
         //- patch label for each boundary face
-        const labelList& boundaryFacePatches() const;
+        inline const labelList& boundaryFacePatches() const;
 
-        const labelList& faceOwners() const;
+        inline const labelList& faceOwners() const;
 
-        const VRWGraph& pointFaces() const;
-        const VRWGraph& pointInFaces() const;
+        inline const VRWGraph& pointFaces() const;
+        inline const VRWGraph& pointInFaces() const;
 
-        const VRWGraph& pointPatches() const;
+        //inline const VRWGraph& pointPatches() const;
 
-        const VRWGraph& pointPoints() const;
+        inline const VRWGraph& pointPoints() const;
 
-        const vectorField& pointNormals() const;
+        inline const vectorField& pointNormals() const;
 
-        const vectorField& faceNormals() const;
+        inline const vectorField& faceNormals() const;
 
-        const vectorField& faceCentres() const;
+        inline const vectorField& faceCentres() const;
 
-        const labelList& bp() const;
+        inline const labelList& bp() const;
 
-        const edgeList& edges() const;
+        inline const edgeList& edges() const;
 
-        const VRWGraph& boundaryPointEdges() const;
+        inline const VRWGraph& boundaryPointEdges() const;
 
-        const VRWGraph& edgeFaces() const;
+        inline const VRWGraph& edgeFaces() const;
 
-        const VRWGraph& faceEdges() const;
+        inline const VRWGraph& faceEdges() const;
 
-        const VRWGraph& edgePatches() const;
+        inline const VRWGraph& edgePatches() const;
 
-        const VRWGraph& faceFaces() const;
+        inline const VRWGraph& faceFaces() const;
 
     // Functions for parallel runs
         //- global boundary point label
-        const labelList& globalBoundaryPointLabel() const;
+        inline const labelList& globalBoundaryPointLabel() const;
 
         //- global point label to local label. Only for processors points
-        const Map<label>& globalToLocalBndPointAddressing() const;
+        inline const Map<label>& globalToLocalBndPointAddressing() const;
 
         //- processors which contain the vertex
-        const VRWGraph& bpAtProcs() const;
+        inline const VRWGraph& bpAtProcs() const;
 
         //- communication matrix for sending point data
-        const DynList<label>& bpNeiProcs() const;
+        inline const DynList<label>& bpNeiProcs() const;
 
         //- global boundary edge label
-        const labelList& globalBoundaryEdgeLabel() const;
+        inline const labelList& globalBoundaryEdgeLabel() const;
 
         //- global boundary edge label to local label. Only for processor edges
-        const Map<label>& globalToLocalBndEdgeAddressing() const;
+        inline const Map<label>& globalToLocalBndEdgeAddressing() const;
 
         //- processors which contain the edges
-        const VRWGraph& beAtProcs() const;
+        inline const VRWGraph& beAtProcs() const;
 
         //- communication matrix for sending edge data
-        const DynList<label>& beNeiProcs() const;
+        inline const DynList<label>& beNeiProcs() const;
 
         //- patch label and processor label at which the other surface face
         //- sharing processor edge is located. Only for processor edges
-        const Map<label>& otherEdgeFaceAtProc() const;
-        const Map<label>& otherEdgeFacePatch() const;
+        inline const Map<label>& otherEdgeFaceAtProc() const;
+        inline const Map<label>& otherEdgeFacePatch() const;
 
         //- global boundary face label
-        const labelList& globalBoundaryFaceLabel() const;
+        inline const labelList& globalBoundaryFaceLabel() const;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "meshSurfaceEngineI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

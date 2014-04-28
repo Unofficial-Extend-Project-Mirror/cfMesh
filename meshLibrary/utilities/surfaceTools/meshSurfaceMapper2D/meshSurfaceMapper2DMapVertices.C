@@ -375,10 +375,10 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& corners = mPart.corners();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     const pointFieldPMG& points = surfaceEngine_.points();
     const edgeList& edges = surfaceEngine_.edges();
-    const VRWGraph& pPatches = surfaceEngine_.pointPatches();
     const labelList& bp = surfaceEngine_.bp();
 
     std::map<label, scalar> mappingDistance;

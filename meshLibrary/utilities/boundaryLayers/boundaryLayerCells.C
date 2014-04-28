@@ -63,9 +63,12 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
     const labelList& faceOwners = mse.faceOwners();
     const labelList& bp = mse.bp();
-    const VRWGraph& pointPatches = mse.pointPatches();
     const VRWGraph& pointFaces = mse.pointFaces();
 
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pointPatches = mPart.pointPatches();
+
+    //- mark patches which will be extruded into layer cells
     boolList treatPatches(mesh_.boundaries().size(), false);
     forAll(patchLabels, patchI)
     {
@@ -251,7 +254,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
             continue;
 
         //- generate faces of the bnd layer cell
-        DynList<DynList<label, 4>, 6> cellFaces;
+        FixedList<FixedList<label, 4>, 6> cellFaces;
         createNewCellFromEdge(e, pKeyI, pKeyJ, cellFaces);
 
         //- store boundary faces
@@ -336,8 +339,13 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     //- create cells for corner nodes
-    std::map<label, DynList<label, 3> > nodePatches;
+    typedef std::map<std::pair<label, label>, label> mPairToLabelType;
+    typedef std::map<label, mPairToLabelType> mPointsType;
+    typedef std::map<label, DynList<label, 3> > ppType;
+
+    ppType nodePatches;
     labelHashSet parPoint;
+
     if( Pstream::parRun() )
     {
         const labelList& bPoints = mse.boundaryPoints();
@@ -346,17 +354,15 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
         std::map<label, labelLongList> facesToSend;
-        std::map<label, DynList<face, 8> > parPointFaces;
-        std::map<label, DynList<label, 3> > parPointPatches;
-        for
-        (
-            std::map<
-                label, std::map<std::pair<label, label>, label>
-            >::const_iterator iter=otherVrts_.begin();
-            iter!=otherVrts_.end();
-            ++iter
-        )
+
+        typedef std::map<label, DynList<DynList<label, 8>, 8> > ppfType;
+
+        ppfType parPointFaces;
+        ppType parPointPatches;
+
+        forAllConstIter(mPointsType, otherVrts_, iter)
         {
+            //- skip points on feature edges
             if( iter->second.size() == 2 )
                 continue;
 
@@ -373,7 +379,10 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
                     const label prI = pProcs(bpI, i);
 
                     if( facesToSend.find(prI) == facesToSend.end() )
-                        facesToSend.insert(std::make_pair(prI, labelLongList()));
+                        facesToSend.insert
+                        (
+                            std::make_pair(prI, labelLongList())
+                        );
 
                     if( prI < pMin )
                         pMin = prI;
@@ -381,21 +390,25 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
 
                 if( Pstream::myProcNo() == pMin )
                 {
-                    DynList<face, 8> pFaces;
-                    DynList<label, 3> pPatches;
-                    forAllRow(pointFaces, bpI, fI)
-                    {
-                        const label bfI = pointFaces(bpI, fI);
-                        pPatches.append(boundaryFacePatches[bfI]);
+                    DynList<label, 3>& pPatches = parPointPatches[bpI];
+                    pPatches.setSize(pointFaces.sizeOfRow(bpI));
 
-                        face bf;
-                        bf.setSize(bFaces[bfI].size());
+                    DynList<DynList<label, 8>, 8>& pFaces = parPointFaces[bpI];
+                    pFaces.setSize(pPatches.size());
+
+                    forAllRow(pointFaces, bpI, pfI)
+                    {
+                        const label bfI = pointFaces(bpI, pfI);
+                        const face& bf = bFaces[bfI];
+
+                        pPatches[pfI] = boundaryFacePatches[bfI];
+
+                        DynList<label, 8>& bfCopy = pFaces[pfI];
+                        bfCopy.setSize(bf.size());
                         forAll(bf, pI)
-                            bf[pI] = globalPointLabel[bp[bf[pI]]];
-                        pFaces.append(bf);
+                            bfCopy[pI] = globalPointLabel[bp[bf[pI]]];
                     }
-                    parPointFaces.insert(std::make_pair(bpI, pFaces));
-                    parPointPatches.insert(std::make_pair(bpI, pPatches));
+
                     continue;
                 }
 
@@ -409,14 +422,15 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
                 //- 4. global labels of face points
                 stp.append(globalPointLabel[bpI]);
                 stp.append(pointFaces.sizeOfRow(bpI));
-                forAllRow(pointFaces, bpI, fI)
+                forAllRow(pointFaces, bpI, pfI)
                 {
-                    const label bfI = pointFaces(bpI, fI);
+                    const label bfI = pointFaces(bpI, pfI);
                     const face& bf = bFaces[bfI];
+
                     stp.append(bf.size());
                     stp.append(boundaryFacePatches[bfI]);
                     forAll(bf, pI)
-                        stp.append(globalPointLabel[bf[pI]]);
+                        stp.append(globalPointLabel[bp[bf[pI]]]);
                 }
             }
         }
@@ -432,7 +446,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
             const label nFaces = receivedData[counter++];
             for(label fI=0;fI<nFaces;++fI)
             {
-                face f(receivedData[counter++]);
+                DynList<label, 8> f(receivedData[counter++]);
                 parPointPatches[bpI].append(receivedData[counter++]);
                 forAll(f, pI)
                     f[pI] = receivedData[counter++];
@@ -441,34 +455,28 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         }
 
         //- sort faces sharing corners at the parallel boundaries
-        for
-        (
-            std::map<label, DynList<face, 8> >::iterator iter=parPointFaces.begin();
-            iter!=parPointFaces.end();
-            ++iter
-        )
+        forAllIter(ppfType, parPointFaces, iter)
         {
-            DynList<face, 8>& pFaces = iter->second;
+            DynList<DynList<label, 8>, 8>& pFaces = iter->second;
             DynList<label, 3>& fPatches = parPointPatches[iter->first];
             const label gpI = globalPointLabel[iter->first];
 
             for(label i=0;i<pFaces.size();++i)
             {
-                const face& bf = pFaces[i];
-                const edge e = bf.faceEdge(bf.which(gpI));
+                const DynList<label, 8>& bf = pFaces[i];
+                const label pos = bf.containsAtPosition(gpI);
+                const edge e(bf[pos], bf[bf.fcIndex(pos)]);
 
                 for(label j=i+1;j<pFaces.size();++j)
                 {
-                    const face& obf = pFaces[j];
-                    if(
-                        (obf.which(e.start()) >= 0) &&
-                        (obf.which(e.end()) >= 0)
-                    )
+                    const DynList<label, 8>& obf = pFaces[j];
+                    if( obf.contains(e.start()) && obf.contains(e.end()) )
                     {
-                        face add;
-                        add.transfer(pFaces[i+1]);
-                        pFaces[i+1].transfer(pFaces[j]);
-                        pFaces[j].transfer(add);
+                        DynList<label, 8> add;
+                        add = pFaces[i+1];
+                        pFaces[i+1] = pFaces[j];
+                        pFaces[j] = add;
+
                         const label pAdd = fPatches[i+1];
                         fPatches[i+1] = fPatches[j];
                         fPatches[j] = pAdd;
@@ -477,7 +485,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
                 }
             }
 
-            DynList<label, 3> patchIDs(fPatches.size());
+            DynList<label, 3> patchIDs;
             forAll(fPatches, fpI)
                 patchIDs.appendIfNotIn(fPatches[fpI]);
 
@@ -485,15 +493,8 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         }
     }
 
-    //- sort out vertices at one processor
-    for
-    (
-        std::map<
-            label, std::map<std::pair<label, label>, label>
-        >::const_iterator iter=otherVrts_.begin();
-        iter!=otherVrts_.end();
-        ++iter
-    )
+    //- sort out point which are not at inter-processor boundaries
+    forAllConstIter(mPointsType, otherVrts_, iter)
     {
         if( iter->second.size() == 2 )
             continue;
@@ -504,7 +505,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         const label bpI = bp[iter->first];
 
         //- ensure correct orientation
-        labelList pFaces(pointFaces.sizeOfRow(bpI));
+        DynList<label> pFaces(pointFaces.sizeOfRow(bpI));
         forAll(pFaces, fI)
             pFaces[fI] = pointFaces(bpI, fI);
 
@@ -539,12 +540,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     //- create layer cells for corner nodes
-    for
-    (
-        std::map<label, DynList<label, 3> >::iterator iter=nodePatches.begin();
-        iter!=nodePatches.end();
-        ++iter
-    )
+    forAllIter(ppType, nodePatches, iter)
     {
         const DynList<label, 3>& patchIDs = iter->second;
         DynList<label, 3> pKeys;
@@ -562,10 +558,10 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
             continue;
 
         # ifdef DEBUGLayer
-        Info << "Creating corner cell at point " << iter->first << endl;
+        Pout << "Creating corner cell at point " << iter->first << endl;
         # endif
 
-        DynList<DynList<label, 4>, 6> cellFaces;
+        FixedList<FixedList<label, 4>, 6> cellFaces;
         createNewCellFromNode(iter->first, pKeys, cellFaces);
 
         //- store boundary faces
@@ -619,6 +615,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     polyMeshGenModifier meshModifier(mesh_);
 
     meshModifier.addCells(cellsToAdd);
+
     cellsToAdd.clear();
     meshModifier.reorderBoundaryFaces();
     meshModifier.replaceBoundary

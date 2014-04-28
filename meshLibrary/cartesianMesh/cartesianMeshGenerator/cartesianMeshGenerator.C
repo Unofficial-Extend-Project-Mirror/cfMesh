@@ -135,7 +135,7 @@ void cartesianMeshGenerator::surfacePreparation()
     # ifdef DEBUG
     mesh_.write();
     returnReduce(1, sumOp<label>());
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 

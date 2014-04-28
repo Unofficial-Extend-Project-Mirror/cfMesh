@@ -56,6 +56,677 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
+void edgeExtractor::faceEvaluator::calculateNeiPatchesParallel()
+{
+    otherFacePatch_.clear();
+
+    const labelList& fPatches = extractor_.facePatch_;
+
+    if( Pstream::parRun() )
+    {
+        const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+        const VRWGraph& edgeFaces = mse.edgeFaces();
+        const Map<label>& otherProc = mse.otherEdgeFaceAtProc();
+        const Map<label>& globalToLocal =
+            mse.globalToLocalBndEdgeAddressing();
+
+        //- create communication matrix
+        std::map<label, labelLongList> exchangeData;
+        const DynList<label>& neiProcs = mse.beNeiProcs();
+        forAll(neiProcs, procI)
+            exchangeData.insert
+            (
+                std::make_pair(neiProcs[procI], labelLongList())
+            );
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label beI = it();
+
+            if( edgeFaces.sizeOfRow(beI) == 1 )
+            {
+                labelLongList& dts = exchangeData[otherProc[beI]];
+                //- send data as follows:
+                //- 1. global edge label
+                //- 2. patch of the attached boundary face
+                dts.append(it.key());
+                dts.append(fPatches[edgeFaces(beI, 0)]);
+            }
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        label counter(0);
+        while( counter < receivedData.size() )
+        {
+            const label beI = globalToLocal[receivedData[counter++]];
+            const label fPatch = receivedData[counter++];
+
+            otherFacePatch_.insert(beI, fPatch);
+        }
+    }
+}
+
+void edgeExtractor::faceEvaluator::calculateNeiPatchesParallelNewPatches()
+{
+    if( newOtherFacePatchPtr_ )
+        return;
+
+    if( !newBoundaryPatchesPtr_ )
+        FatalErrorIn
+        (
+            "void edgeExtractor::faceEvaluator::"
+            "calculateNeiPatchesParallelNewPatches()"
+        ) << "newBoundaryPatchesPtr_ are NULL" << exit(FatalError);
+
+    newOtherFacePatchPtr_ = new Map<label>();
+    Map<label>& otherFacePatch = *newOtherFacePatchPtr_;
+
+    const labelList& fPatches = *newBoundaryPatchesPtr_;
+
+    if( Pstream::parRun() )
+    {
+        const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+        const VRWGraph& edgeFaces = mse.edgeFaces();
+        const Map<label>& otherProc = mse.otherEdgeFaceAtProc();
+        const Map<label>& globalToLocal =
+            mse.globalToLocalBndEdgeAddressing();
+
+        //- create communication matrix
+        std::map<label, labelLongList> exchangeData;
+        const DynList<label>& neiProcs = mse.beNeiProcs();
+        forAll(neiProcs, procI)
+            exchangeData.insert
+            (
+                std::make_pair(neiProcs[procI], labelLongList())
+            );
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label beI = it();
+
+            if( edgeFaces.sizeOfRow(beI) == 1 )
+            {
+                labelLongList& dts = exchangeData[otherProc[beI]];
+                //- send data as follows:
+                //- 1. global edge label
+                //- 2. patch of the attached boundary face
+                dts.append(it.key());
+                dts.append(fPatches[edgeFaces(beI, 0)]);
+            }
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        label counter(0);
+        while( counter < receivedData.size() )
+        {
+            const label beI = globalToLocal[receivedData[counter++]];
+            const label fPatch = receivedData[counter++];
+
+            otherFacePatch.insert(beI, fPatch);
+        }
+    }
+}
+
+void edgeExtractor::faceEvaluator::neiPatchesOverEdges
+(
+    const label bfI,
+    const labelList& fPatches,
+    const Map<label>& otherFacePatch,
+    DynList<label> &neiPatches
+) const
+{
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+
+    const VRWGraph& faceEdges = mse.faceEdges();
+    const VRWGraph& edgeFaces = mse.edgeFaces();
+
+    neiPatches.setSize(faceEdges.sizeOfRow(bfI));
+
+    forAllRow(faceEdges, bfI, feI)
+    {
+        const label beI = faceEdges(bfI, feI);
+
+        if( edgeFaces.sizeOfRow(beI) == 2 )
+        {
+            label nei = edgeFaces(beI, 0);
+            if( nei == bfI )
+                nei = edgeFaces(beI, 1);
+
+            neiPatches[feI] = fPatches[nei];
+        }
+        else if( edgeFaces.sizeOfRow(beI) == 1 )
+        {
+            neiPatches[feI] = otherFacePatch[beI];
+        }
+    }
+}
+
+label edgeExtractor::faceEvaluator::bestPatchTopological
+(
+    const DynList<label>& neiPatches,
+    const label currentPatch
+)
+{
+    //- find indices of all neighbour patches
+    DynList<label> allNeiPatches;
+    forAll(neiPatches, i)
+        allNeiPatches.appendIfNotIn(neiPatches[i]);
+
+    if( (allNeiPatches.size() == 1) && (allNeiPatches[0] == currentPatch) )
+        return currentPatch;
+
+    //- counter the number of neighbours in a patch
+    Map<label> nNeiInPatch(allNeiPatches.size());
+    forAll(allNeiPatches, i)
+        nNeiInPatch.insert(allNeiPatches[i], 0);
+    forAll(neiPatches, eI)
+        ++nNeiInPatch[neiPatches[eI]];
+
+    label newPatch = -1;
+    label nNeiEdges(0);
+    forAllConstIter(Map<label>, nNeiInPatch, it)
+    {
+        if( it() > nNeiEdges )
+        {
+            newPatch = it.key();
+            nNeiEdges = it();
+        }
+        else if
+        (
+            (it() == nNeiEdges) && (it.key() == currentPatch)
+        )
+        {
+            newPatch = it.key();
+        }
+    }
+
+    //- do not swap if the situation allows for more than one edge
+    //- shared with faces in other patches than the dominant one
+    if( nNeiEdges < (neiPatches.size() - 1) )
+        return currentPatch;
+
+    //- do not swap if the best face is in the current patch
+    if( (newPatch < 0) || (newPatch == currentPatch) )
+        return currentPatch;
+
+    //- check whether the edges shared ith the neighbour patch form
+    //- a singly linked chain
+    DynList<bool> sharedEdge;
+    sharedEdge.setSize(neiPatches.size());
+    sharedEdge = false;
+
+    forAll(neiPatches, eI)
+        if( neiPatches[eI] == newPatch )
+            sharedEdge[eI] = true;
+
+    if( help::areElementsInChain(sharedEdge) )
+        return newPatch;
+
+    return currentPatch;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+edgeExtractor::faceEvaluator::faceEvaluator(const edgeExtractor& ee)
+:
+    extractor_(ee),
+    otherFacePatch_(),
+    newBoundaryPatchesPtr_(NULL),
+    newOtherFacePatchPtr_(NULL)
+{
+    if( Pstream::parRun() )
+        calculateNeiPatchesParallel();
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+edgeExtractor::faceEvaluator::~faceEvaluator()
+{
+    deleteDemandDrivenData(newOtherFacePatchPtr_);
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+void edgeExtractor::faceEvaluator::setNewBoundaryPatches
+(
+    const labelList& newBoudaryPatches
+)
+{
+    newBoundaryPatchesPtr_ = &newBoudaryPatches;
+
+    if( Pstream::parRun() )
+        calculateNeiPatchesParallelNewPatches();
+}
+
+void edgeExtractor::faceEvaluator::neiPatchesOverEdges
+(
+    const label bfI,
+    DynList<label>& neiPatches
+) const
+{
+    neiPatchesOverEdges
+    (
+        bfI,
+        extractor_.facePatch_,
+        otherFacePatch_,
+        neiPatches
+    );
+}
+
+label edgeExtractor::faceEvaluator::bestPatchTopological(const label bfI) const
+{
+    //- get neighbour patches over edges
+    DynList<label> neiPatches;
+    neiPatchesOverEdges
+    (
+        bfI,
+        extractor_.facePatch_,
+        otherFacePatch_,
+        neiPatches
+    );
+
+    return bestPatchTopological(neiPatches, extractor_.facePatch_[bfI]);
+}
+
+label edgeExtractor::faceEvaluator::bestPatchAfterModification
+(
+    const label bfI
+) const
+{
+    const label patchI = newBoundaryPatchesPtr_->operator[](bfI);
+
+    if( patchI != extractor_.facePatch_[bfI] )
+    {
+        DynList<label> newNeiPatches;
+        neiPatchesOverEdges
+        (
+            bfI,
+            *newBoundaryPatchesPtr_,
+            *newOtherFacePatchPtr_,
+            newNeiPatches
+        );
+
+        return bestPatchTopological(newNeiPatches, patchI);
+    }
+
+    return patchI;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+void edgeExtractor::cornerEvaluator::createParallelAddressing()
+{
+    const labelHashSet& corners = partitioner_.corners();
+
+    const labelList& facePatch = extractor_.facePatch_;
+
+    typedef Map<label> mapType;
+
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const pointFieldPMG& points = mse.points();
+    const labelList& bp = mse.bp();
+    const VRWGraph& pointFaces = mse.pointFaces();
+    const labelList& globalLabel = mse.globalBoundaryPointLabel();
+    const mapType& globalToLocal = mse.globalToLocalBndPointAddressing();
+    const VRWGraph& bpAtProcs = mse.bpAtProcs();
+    const DynList<label>& neiProcs = mse.bpNeiProcs();
+
+    typedef std::map<label, LongList<labelledPoint> > exchangeMapType;
+    exchangeMapType exchangeData;
+    forAll(neiProcs, i)
+        exchangeData[neiProcs[i]].clear();
+
+    faceMap_.clear();
+    faceAtProc_.clear();
+    facePatches_.clear();
+
+    forAllConstIter(mapType, globalToLocal, it)
+    {
+        const label bpI = it();
+
+        if( corners.found(bpI) )
+        {
+            forAllRow(bpAtProcs, bpI, i)
+            {
+                const label neiProc = bpAtProcs(bpI, i);
+
+                if( neiProc == Pstream::myProcNo() )
+                    continue;
+
+                LongList<labelledPoint>& dts = exchangeData[neiProc];
+
+                //- data is send in the ollowing form
+                //- 1. globsl label of the current point
+                //- 2. number of faces attached to the point
+                //- 3. for each face send its patch, number of points and point
+                dts.append(labelledPoint(it.key(), vector::zero));
+                dts.append
+                (
+                    labelledPoint(pointFaces.sizeOfRow(bpI), vector::zero)
+                );
+                forAllRow(pointFaces, bpI, i)
+                {
+                    const face& bf = bFaces[pointFaces(bpI, i)];
+                    dts.append
+                    (
+                        labelledPoint
+                        (
+                            facePatch[pointFaces(bpI, i)],
+                            vector::zero
+                        )
+                    );
+                    dts.append(labelledPoint(bf.size(), vector::zero));
+
+                    DynList<labelledPoint> lpf;
+                    forAll(bf, pI)
+                    {
+                        const labelledPoint lp
+                        (
+                            globalLabel[bp[bf[bpI]]],
+                            points[bf[pI]]
+                        );
+
+                        dts.append(lp);
+                        lpf.append(lp);
+                    }
+
+                    faceMap_[bpI].append(lpf);
+                    faceAtProc_[bpI].append(Pstream::myProcNo());
+                    facePatches_[bpI].append(facePatch[pointFaces(bpI, i)]);
+                }
+            }
+        }
+    }
+
+    std::map<label, List<labelledPoint> > receivedDataMap;
+    help::exchangeMap(exchangeData, receivedDataMap);
+
+    for
+    (
+        std::map<label, List<labelledPoint> >::const_iterator it=receivedDataMap.begin();
+        it!=receivedDataMap.end();
+        ++it
+    )
+    {
+        const label procI = it->first;
+        const List<labelledPoint>& receivedData = it->second;
+
+        for(label i=0;i<receivedData.size();)
+        {
+            const label bpI = globalToLocal[receivedData[i++].pointLabel()];
+
+            const label nFaces = receivedData[i++].pointLabel();
+
+            for(label fI=0;fI<nFaces;++fI)
+            {
+                const label patchI = receivedData[i++].pointLabel();
+                const label size = receivedData[i++].pointLabel();
+
+                DynList<labelledPoint> lpf(size);
+                forAll(lpf, pI)
+                    lpf[pI] = receivedData[i++];
+
+                faceMap_[bpI].append(lpf);
+                faceAtProc_[bpI].append(procI);
+                facePatches_[bpI].append(patchI);
+            }
+        }
+    }
+
+    //- srot the faces in the counter-clockwise order
+    for
+    (
+        std::map<label, DynList<label> >::iterator it=faceAtProc_.begin();
+        it!=faceAtProc_.end();
+        ++it
+    )
+    {
+        const label bpI = it->first;
+
+        DynList<label>& faceProc = it->second;
+        DynList<label>& fPatches = facePatches_[bpI];
+        DynList<DynList<labelledPoint, 6> >& pFaces = faceMap_[bpI];
+
+        forAll(pFaces, i)
+        {
+            const DynList<labelledPoint, 6>& lpf = pFaces[i];
+
+            label pos(-1);
+            forAll(lpf, pI)
+                if( lpf[i].pointLabel() == globalLabel[bpI] )
+                {
+                    pos = pI;
+                    break;
+                }
+
+            for(label j=i+2;j<pFaces.size();++j)
+            {
+                const DynList<labelledPoint, 6>& olpf = pFaces[j];
+
+                if( olpf.contains(lpf[lpf.rcIndex(pos)]) )
+                {
+                    label helper = faceProc[j];
+                    faceProc[j] = faceProc[i+1];
+                    faceProc[i+1] = helper;
+
+                    helper = fPatches[j];
+                    fPatches[j] = fPatches[i+1];
+                    fPatches[i+1] = helper;
+
+                    DynList<labelledPoint, 6> lpfHelper;
+                    lpfHelper = pFaces[j];
+                    pFaces[j] = pFaces[i+1];
+                    pFaces[i+1] = lpfHelper;
+                }
+            }
+        }
+    }
+}
+
+void edgeExtractor::cornerEvaluator::sortedFacesAtPoint
+(
+    const label bpI,
+    DynList<label>& pFaces
+) const
+{
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+    const VRWGraph& pointFaces = mse.pointFaces();
+    const VRWGraph& pointInFace = mse.pointInFaces();
+
+    pFaces = pointFaces[bpI];
+
+    forAll(pFaces, i)
+    {
+        const face& bf = bFaces[pFaces[i]];
+        const label pos = pointFaces.containsAtPosition(bpI, pFaces[i]);
+
+        const edge e = bf.faceEdge(bf.rcIndex(pointInFace(bpI, pos)));
+
+        for(label j=i+2;j<pFaces.size();++j)
+        {
+            if( bFaces[pFaces[j]].which(e.start()) >= 0 )
+            {
+                label bfJ = pFaces[i+1];
+                pFaces[i+1] = pFaces[j];
+                pFaces[j] = bfJ;
+            }
+        }
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+edgeExtractor::cornerEvaluator::cornerEvaluator
+(
+    const edgeExtractor& ee,
+    const meshSurfacePartitioner& mPart
+)
+:
+    extractor_(ee),
+    partitioner_(mPart),
+    faceMap_(),
+    facePatches_(),
+    faceAtProc_()
+{
+    if( Pstream::parRun() )
+        createParallelAddressing();
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+edgeExtractor::cornerEvaluator::~cornerEvaluator()
+{}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
+void edgeExtractor::cornerEvaluator::improveCorners
+(
+    labelList& newBoundaryPatches
+)
+{
+    const meshOctree& mo = extractor_.meshOctree_;
+
+    const labelHashSet& corners = partitioner_.corners();
+
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+    const labelList& bPoints = mse.boundaryPoints();
+    const pointFieldPMG& points = mse.points();
+    const faceList::subList& bFaces = mse.boundaryFaces();
+
+    forAllConstIter(labelHashSet, corners, it)
+    {
+        const point& p = points[bPoints[it.key()]];
+
+        if( faceMap_.find(it.key()) == faceMap_.end() )
+        {
+            const labelList& facePatch = extractor_.facePatch_;
+            Info << "Checking corner " << it.key() << endl;
+
+            //- get faces attached to this point
+            //- sorted in the counter-clocwise order
+            DynList<label> pFaces;
+            sortedFacesAtPoint(it.key(), pFaces);
+
+            Info << "Faces at corner " << pFaces << endl;
+
+            //- find feature edges attached to the point
+            DynList<labelPair> edgePatches;
+            DynList<label> edgeIndex;
+            forAll(pFaces, i)
+            {
+                const label patch0 = facePatch[pFaces[i]];
+                const label patch1 = facePatch[pFaces[pFaces.fcIndex(i)]];
+
+                if( patch0 != patch1 )
+                {
+                    edgeIndex.append(i);
+                    edgePatches.append(labelPair(patch0, patch1));
+                }
+            }
+
+            Info << "Edge patches " << edgePatches << endl;
+            Info << "Edge indices " << edgeIndex << endl;
+
+            //- find the best aligned feature edge to the feature edge
+            DynList<label> bestEdgeIndices(edgePatches.size());
+            forAll(edgePatches, i)
+            {
+                const label patch0 = edgePatches[i].first();
+                const label patch1 = edgePatches[i].second();
+                DynList<label> patches(2);
+                patches[0] = patch0;
+                patches[1] = patch1;
+
+                //- find the proection of the first point onto the feature edge
+                point mps;
+                scalar dSqS;
+                mo.findNearestPointToPatches(mps, dSqS, p, patches);
+
+                scalar bestAlignment(0.0);
+                label bestEdgeIndex;
+
+                forAll(pFaces, pfI)
+                {
+                    const face& bf = bFaces[pFaces[pfI]];
+
+                    const label pos = bf.which(bPoints[it.key()]);
+
+                    const point& pe = points[bf[bf.rcIndex(pos)]];
+
+                    //- calculate the vector of current edge
+                    vector ev = pe - p;
+                    ev /= (mag(ev) + VSMALL);
+
+                    //- project the endpoint onto the feature edge
+                    point mpe;
+                    scalar dSqE;
+                    mo.findNearestPointToPatches(mpe, dSqE, pe, patches);
+
+                    vector fv = mpe - mps;
+                    fv /= (mag(fv) + VSMALL);
+
+                    //- calculate alignment metrix between the current edge
+                    //- and the feature edge
+                    const scalar align = 0.5 * (1.0 + (ev & fv));
+
+                    if( align > bestAlignment )
+                    {
+                        bestAlignment = align;
+                        bestEdgeIndex = pfI;
+                    }
+                }
+
+                bestEdgeIndices[i] = bestEdgeIndex;
+            }
+
+            Info << "\nPatches of edges at corner " << it.key()
+                 << " are " << edgePatches << endl;
+            Info << "Orig edge indices " << edgeIndex << endl;
+            Info << "New edge indices " << bestEdgeIndices << endl;
+
+            DynList<label> newFacePatches(pFaces.size());
+            forAll(bestEdgeIndices, i)
+            {
+                const label patch = edgePatches[i].first();
+                label index = bestEdgeIndices[i];
+
+                while( index != bestEdgeIndices[bestEdgeIndices.fcIndex(i)] )
+                {
+                    newFacePatches[index] = patch;
+                    index = (index + 1) % pFaces.size();
+                }
+            }
+
+            bool allPatchesRemain(true);
+            forAll(edgePatches, i)
+                if( !newFacePatches.contains(edgePatches[i].first()) )
+                {
+                    allPatchesRemain = false;
+                    break;
+                }
+
+            Info << "New patches at point" << newFacePatches << endl;
+            if( allPatchesRemain )
+            {
+                forAll(pFaces, i)
+                    newBoundaryPatches[pFaces[i]] = newFacePatches[i];
+            }
+        }
+        else
+        {
+
+        }
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+
 bool edgeExtractor::findCornerCandidates()
 {
     bool changed(false);
@@ -243,27 +914,26 @@ bool edgeExtractor::checkCorners()
         //- update the information which edges are assigned as feature edges
         meshSurfacePartitioner mPart(mse, newBoundaryPatches);
 
-        std::map<std::pair<label, label>, label> patchNeighbourStatistics;
-
         //- find corners in the current constelation
-        const std::map<label, DynList<label> >& cornerPatches =
-            mPart.cornerPatches();
+        typedef std::map<label, DynList<label> > idToDynListMap;
+        const labelHashSet& corners = mPart.corners();
+        const VRWGraph& pPatches = mPart.pointPatches();
 
-        std::map<label, label> cornerIndex;
-        std::map<label, std::pair<point, scalar> > nearestToCorner;
-
-        typedef std::map<label, DynList<label> > mapType;
+        typedef std::map<label, label> mapType;
         typedef std::map<label, std::pair<point, scalar> > distMapType;
+
+        mapType cornerIndex;
+        distMapType nearestToCorner;
 
         # ifdef DEBUGEdgeExtractor
         Info << "Finding corners " << endl;
         # endif
 
         //- find nearest corners in the surface mesh
-        forAllConstIter(mapType, cornerPatches, it)
+        forAllConstIter(labelHashSet, corners, it)
         {
-            const label bpI = it->first;
-            const DynList<label>& neiPatches = it->second;
+            const label bpI = it.key();
+            const DynList<label> neiPatches = pPatches[bpI];
 
             const point& p = points[bPoints[bpI]];
             point pMap;
@@ -281,19 +951,14 @@ bool edgeExtractor::checkCorners()
         }
 
         std::map<label, DynList<label> > bpMappedAtSurfaceCorner;
-        for
-        (
-            std::map<label, label>::const_iterator mIt=cornerIndex.begin();
-            mIt!=cornerIndex.end();
-            ++mIt
-        )
+        forAllConstIter(mapType, cornerIndex, mIt)
         {
             if( mIt->second < 0 )
             {
                 //- the corner does not exist in the surface mesh
                 //- this may be a situation where parts of the surface are in
                 //- close proximity and are not topologically connected
-                Warning << "Should not get in here. Not implementes" << endl;
+                Warning << "Should not get in here. Not implemented" << endl;
             }
             else
             {
@@ -302,9 +967,15 @@ bool edgeExtractor::checkCorners()
         }
 
         # ifdef DEBUGEdgeExtractor
-        for(mapType::const_iterator mIt=bpMappedAtSurfaceCorner.begin();mIt!=bpMappedAtSurfaceCorner.end();++mIt)
+        for
+        (
+            mapType::const_iterator mIt=bpMappedAtSurfaceCorner.begin();
+            mIt!=bpMappedAtSurfaceCorner.end();
+            ++mIt
+        )
             if( mIt->second.size() > 1 )
-                Info << "Surface corner " << mIt->first << " mapped mesh points " << mIt->second << endl;
+                Info << "Surface corner " << mIt->first
+                     << " mapped mesh points " << mIt->second << endl;
         # endif
 
         //- for all edge nodes find their nearest counterparts in the surface
@@ -314,8 +985,8 @@ bool edgeExtractor::checkCorners()
 
         const labelHashSet& featureEdge = mPart.featureEdges();
 
-        std::map<label, std::pair<point, scalar> > nearestToEdgePoint;
-        std::map<label, label> edgePointIndex;
+        distMapType nearestToEdgePoint;
+        mapType edgePointIndex;
         std::map<std::pair<label, label>, labelLongList> edgesSharedByPatches;
 
         forAllConstIter(labelHashSet, featureEdge, it)
@@ -352,14 +1023,14 @@ bool edgeExtractor::checkCorners()
             DynList<label> checkPoints;
             if
             (
-                (cornerPatches.find(bps) == cornerPatches.end()) &&
+                corners.found(bps) &&
                 (nearestToEdgePoint.find(bps) == nearestToEdgePoint.end())
             )
                 checkPoints.append(bps);
 
             if
             (
-                (cornerPatches.find(bpe) == cornerPatches.end()) &&
+                corners.found(bpe) &&
                 (nearestToEdgePoint.find(bpe) == nearestToEdgePoint.end())
             )
                 checkPoints.append(bpe);
@@ -394,8 +1065,10 @@ bool edgeExtractor::checkCorners()
                 patchPatches[mIt->first.first].found(mIt->first.second);
 
             # ifdef DEBUGEdgeExtractor
-            Info << "Patches " << mIt->first.first << " and " << mIt->first.second
-                 << " share " << mIt->second << " edges " << validConnection << endl;
+            Info << "Patches " << mIt->first.first
+                 << " and " << mIt->first.second
+                 << " share " << mIt->second
+                 << " edges " << validConnection << endl;
             # endif
 
             if( !validConnection )
@@ -442,7 +1115,8 @@ bool edgeExtractor::checkCorners()
             forAllConstIter(labelHashSet, nearPoints, iterN)
             {
                 Info << "Near point " << iterN.key() << endl;
-                Info << "Faces containing near point are " << facesContainingPoint[iterN.key()] << endl;
+                Info << "Faces containing near point are "
+                     << facesContainingPoint[iterN.key()] << endl;
             }
             # endif
 
@@ -474,12 +1148,16 @@ bool edgeExtractor::checkCorners()
 
             # ifdef DEBUGEdgeExtractor
             surfPtr = surfaceWithPatches(bpI);
-            surfPtr->writeSurface("corner_"+help::scalarToText(bpI)+"_iter_"+help::scalarToText(nIteration)+".fms");
+            surfPtr->writeSurface
+            (
+                "corner_"+help::scalarToText(bpI)+
+                "_iter_"+help::scalarToText(nIteration)+".fms"
+            );
             deleteDemandDrivenData(surfPtr);
             Info << "Best candidate " << bestPoint << endl;
             # endif
 
-            //- sort faces and edges at the corner in the counter-clockwise order
+            //- sort faces and edges at the corner in counter-clockwise order
             DynList<label> pFaces, pEdges;
 
             DynList<label> front;
@@ -940,136 +1618,6 @@ bool edgeExtractor::checkCorners()
             }
         }
 
-        //- find the nearest edge points
-/*        forAll(bFaces, bfI)
-        {
-            const face& bf = bFaces[bfI];
-
-            DynList<label> neiPatch(bf.size(), newBoundaryPatches[bfI]);
-            DynList<label> ePoints, cPoints;
-
-            forAll(bf, eI)
-            {
-                const label beI = faceEdges(bfI, eI);
-                const label bpI = bp[bf[eI]];
-
-                if( edgePointIndex.find(bpI) != edgePointIndex.end() )
-                    ePoints.append(eI);
-                if( cornerIndex.find(bpI) != cornerIndex.end() )
-                    cPoints.append(eI);
-
-                if( featureEdge.found(beI) )
-                {
-                    if( edgeFaces.sizeOfRow(beI) == 2 )
-                    {
-                        label otherFace = edgeFaces(beI, 0);
-                        if( otherFace == bfI )
-                            otherFace = edgeFaces(beI, 1);
-
-                        neiPatch[eI] = newBoundaryPatches[otherFace];
-                    }
-                    else if( edgeFaces.sizeOfRow(beI) == 1 )
-                    {
-                        neiPatch[eI] = otherProcNewPatch[beI];
-                    }
-                }
-            }
-
-            if( cPoints.size() == 0 )
-                continue;
-
-            Info << "Face " << bfI << " corner points " << cPoints << endl;
-            Info << "Feature edges " << neiPatch << endl;
-
-            DynList<label> nearestPoint(cPoints.size(), -1);
-            forAll(cPoints, cpI)
-            {
-                const label bpI = bp[bf[cPoints[cpI]]];
-                //const label nearestSurfaceCorner = cornerIndex[bpI];
-
-                const vector cornerPoint = nearestToCorner[bpI].first;
-                //const vector dSq = nearestToCorner[bpI].second;
-
-                //- find face point nearest to the surface corner
-                scalar minDist(VGREAT);
-                label nearPoint(-1);
-                forAll(bf, pI)
-                {
-                    const point& p = points[bf[pI]];
-
-                    const scalar distSq = magSqr(p - cornerPoint);
-
-                    if( distSq < minDist )
-                    {
-                        minDist = distSq;
-                        nearPoint = pI;
-                    }
-                }
-
-                nearestPoint[cpI] = nearPoint;
-            }
-
-            Info << "Nearest points to corners " << nearestPoint << endl;
-            forAll(cPoints, cpI)
-            {
-                //- check if the corner is closest to itself
-                if( nearestPoint[cpI] == cPoints[cpI] )
-                    continue;
-
-                //- find the shortest path from the current corner point
-                //- to the point nearest to the corner
-                scalar distPos(0.0), distNeg(0.0);
-                bool otherPosCorner(false), otherNegCorner(false);
-
-                //- calculate squared length of the path in the positive direction
-                label index(cPoints[cpI]);
-                while( index != nearestPoint[cpI] )
-                {
-                    const label pos = cPoints.containsAtPosition(index);
-                    if( (pos >= 0) && (cPoints[pos] != cPoints[cpI]) )
-                        otherPosCorner = true;
-
-                    const edge e = bf.faceEdge(index);
-                    distPos += magSqr(points[e[0]] - points[e[1]]);
-
-                    index = bf.fcIndex(index);
-                }
-
-                //- calculate squared length of the path in the negative direction
-                index = cPoints[cpI];
-                while( index != nearestPoint[cpI] )
-                {
-                    index = bf.rcIndex(index);
-
-                    const label pos = cPoints.containsAtPosition(index);
-                    if( (pos >= 0) && (nearestPoint[pos] != nearestPoint[cpI]) )
-                        otherNegCorner = true;
-
-                    const edge e = bf.faceEdge(index);
-                    distNeg += magSqr(points[e[0]] - points[e[1]]);
-                }
-
-                Info << "Dist pos " << distPos << endl;
-                Info << "Other corner pos " << otherPosCorner << endl;
-
-                Info << "Dist neg " << distNeg << endl;
-                Info << "Other corner neg " << otherNegCorner << endl;
-
-                if( !otherPosCorner && distPos < distNeg )
-                {
-                    newBoundaryPatches[bfI] = neiPatch[bf.rcIndex(cPoints[cpI])];
-                    ++nCorrected;
-                }
-                else if( !otherNegCorner && (distNeg < distPos) )
-                {
-                    newBoundaryPatches[bfI] = neiPatch[cPoints[cpI]];
-                    ++nCorrected;
-                }
-            }
-
-        }
-        */
-
         reduce(nCorrected, sumOp<label>());
 
         if( nCorrected )
@@ -1086,13 +1634,14 @@ bool edgeExtractor::checkCorners()
 
         # ifdef DEBUGEdgeExtractor
         surfPtr = surfaceWithPatches();
-        surfPtr->writeSurface("checkCornersAfterIteration_"+help::scalarToText(nIteration)+".fms");
+        surfPtr->writeSurface
+        (
+            "checkCornersAfterIteration_"+help::scalarToText(nIteration)+".fms"
+        );
         deleteDemandDrivenData(surfPtr);
         # endif
 
     } while( nCorrected != 0 );
-
-
 
     return changed;
 }

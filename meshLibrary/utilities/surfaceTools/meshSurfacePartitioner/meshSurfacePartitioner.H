@@ -26,7 +26,7 @@ Class
     meshSurfacePartitioner
 
 Description
-    Finds corners and edge nodes at the surface of the volume mesh
+    Finds corners and edge points at the surface of the volume mesh
 
 SourceFiles
     meshSurfacePartitioner.C
@@ -37,6 +37,7 @@ SourceFiles
 #define meshSurfacePartitioner_H
 
 #include "meshSurfaceEngine.H"
+#include "VRWGRaph.H"
 #include "HashSet.H"
 
 #include <map>
@@ -59,11 +60,11 @@ class meshSurfacePartitioner
         //- pointer to face patches
         const labelList& facePatch_;
 
-        //- labels of corner nodes
-        labelHashSet corners_;
+        //- patches at a surface point
+        VRWGraph pointPatches_;
 
-        //- patches at a corner node
-        std::map<label, DynList<label> > cornerPatches_;
+        //- labels of corner points
+        labelHashSet corners_;
 
         //- labels of edge points
         labelHashSet edgePoints_;
@@ -78,7 +79,7 @@ class meshSurfacePartitioner
         labelHashSet featureEdges_;
 
     // Private member functions
-        //- find corners, edge nodes and addressing
+        //- find corners, edge points and addressing
         void calculateCornersEdgesAndAddressing();
 
         //- Disallow default bitwise copy construct
@@ -106,16 +107,30 @@ public:
         ~meshSurfacePartitioner();
 
     // Member Functions
+        //- return const reference to meshSurfaceEngine
+        inline const meshSurfaceEngine& surfaceEngine() const
+        {
+            return meshSurface_;
+        }
+
+        //- return const reference to a list containing boudary patch index
+        //- for each boundary face
+        inline const labelList& boundaryFacePatches() const
+        {
+            return facePatch_;
+        }
+
+        //- return const reference to a graph of patches attached to a surface
+        //- point
+        inline const VRWGraph& pointPatches() const
+        {
+            return pointPatches_;
+        }
+
         //- return labels of corner points (from the list of boundary points)
         inline const labelHashSet& corners() const
         {
             return corners_;
-        }
-
-        //- return label of patches near corner points
-        inline const std::map<label, DynList<label> >& cornerPatches() const
-        {
-            return cornerPatches_;
         }
 
         //- return labels of edge points (from the list of boundary points)

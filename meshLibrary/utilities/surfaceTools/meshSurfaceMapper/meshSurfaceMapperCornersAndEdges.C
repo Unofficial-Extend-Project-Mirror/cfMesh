@@ -36,7 +36,10 @@ Description
 #include "labelledScalar.H"
 
 #include "helperFunctionsPar.H"
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGMapping
 
@@ -140,10 +143,10 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& corners = mPart.corners();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const VRWGraph& pPatches = surfaceEngine_.pointPatches();
 
     std::map<label, scalar> mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
@@ -169,22 +172,16 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
         const scalar maxDist = mappingDistance[bpI];
 
         //- find the nearest position to the given point patches
+        const DynList<label> patches = pPatches[bpI];
+
         point mapPointApprox(p);
         scalar distSqApprox;
-//        DynList<label> patches;
-//        patches = pPatches[bpI];
-//        meshOctree_.findNearestVertexToPatches
-//        (
-//            mapPointApprox,
-//            distSqApprox,
-//            p,
-//            patches
-//        );
+
         label iter(0);
         while( iter++ < 20 )
         {
             point newP(vector::zero);
-            forAllRow(pPatches, bpI, patchI)
+            forAll(patches, patchI)
             {
                 point np;
                 label nt;
@@ -193,14 +190,14 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
                     np,
                     distSqApprox,
                     nt,
-                    pPatches(bpI, patchI),
+                    patches[patchI],
                     mapPointApprox
                 );
 
                 newP += np;
             }
 
-            newP /= pPatches.sizeOfRow(bpI);
+            newP /= patches.size();
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
 
@@ -220,9 +217,9 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
             {
                 bool store(true);
                 const DynList<label>& cPatches = cornerPatches[scI];
-                forAllRow(pPatches, bpI, i)
+                forAll(patches, i)
                 {
-                    if( !cPatches.contains(pPatches(bpI, i)) )
+                    if( !cPatches.contains(patches[i]) )
                     {
                         store = false;
                         break;
@@ -253,7 +250,9 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const VRWGraph& pPatches = surfaceEngine_.pointPatches();
+
+    const meshSurfacePartitioner& mPart = meshPartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     //- find mapping distance for selected vertices
     std::map<label, scalar> mappingDistance;
@@ -277,10 +276,8 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         const label bpI = nodesToMap[i];
         const point& p = points[bPoints[bpI]];
 
-        //- find patches at this edge vertex
-        DynList<label> patches;
-        forAllRow(pPatches, bpI, j)
-            patches.append(pPatches(bpI, j));
+        //- find patches at this edge point
+        DynList<label> patches = pPatches[bpI];
 
         const scalar maxDist = mappingDistance[bpI];
 

@@ -42,8 +42,8 @@ meshSurfacePartitioner::meshSurfacePartitioner
 :
     meshSurface_(meshSurface),
     facePatch_(meshSurface.boundaryFacePatches()),
+    pointPatches_(),
     corners_(),
-    cornerPatches_(),
     edgePoints_(),
     patchPatches_(),
     nEdgesAtPoint_(),
@@ -60,8 +60,8 @@ meshSurfacePartitioner::meshSurfacePartitioner
 :
     meshSurface_(meshSurface),
     facePatch_(facePatch),
+    pointPatches_(),
     corners_(),
-    cornerPatches_(),
     edgePoints_(),
     patchPatches_(),
     nEdgesAtPoint_(),

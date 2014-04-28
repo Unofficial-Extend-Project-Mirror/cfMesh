@@ -43,6 +43,8 @@ SourceFiles
 #include "labelLongList.H"
 #include "VRWGraph.H"
 #include "boolList.H"
+#include "labelledPoint.H"
+#include "DynList.H"
 #include "Map.H"
 
 namespace Foam
@@ -51,6 +53,7 @@ namespace Foam
 // Forward declarations
 class polyMeshGen;
 class meshSurfaceEngine;
+class meshSurfacePartitioner;
 class meshOctree;
 class triSurf;
 class triSurfaceClassifyEdges;
@@ -120,7 +123,7 @@ class edgeExtractor
         //- false otherwise
         void markPatchPoints(boolList&);
 
-        //- get th surface engine
+        //- get the surface engine
         const meshSurfaceEngine& surfaceEngine() const;
 
         //- get the surface partitioner
@@ -145,6 +148,41 @@ class edgeExtractor
             const labelList* facePatchPtr = NULL
         ) const;
 
+        //- find neighbour patches over edges for a boundary face
+        void findNeiPatches
+        (
+            const label,
+            const Map<label>&,
+            DynList<label>&
+        ) const;
+
+        //- calculate alignment between the boundary edge and a feature edge
+        //- between the specified patches
+        scalar calculateAlignmentForEdge
+        (
+            const label beI,
+            const label patch0,
+            const label patch1
+        ) const;
+
+        //- calculates the deformation energy metric for the boundary edge
+        //- when it would be constrained to a feature edge between
+        //- the specified patches
+        scalar calculateDeformationMetricForEdge
+        (
+            const label beI,
+            const label patch0,
+            const label patch1
+        ) const;
+
+        //- calculates deformation energy metric for a face
+        scalar calculateDeformationMetricForFace
+        (
+            const label bfI,
+            const DynList<label>& neiPatches,
+            const label facePatch = -1
+        ) const;
+
         //- project face centres on the nearest location at the surface mesh
         //- and assign the patch to the patch of the surface element
         void distributeBoundaryFaces();
@@ -162,6 +200,121 @@ class edgeExtractor
 
         //- Disallow default bitwise assignment
         void operator=(const edgeExtractor&);
+
+    // Private nested classes
+
+        class faceEvaluator
+        {
+            // Private data
+                //- const reference to the parent class
+                const edgeExtractor& extractor_;
+
+                //- calculated patches of faces over inter-processor boundaries
+                Map<label> otherFacePatch_;
+
+                //- new status of face patches after re-assigning of patches
+                const labelList* newBoundaryPatchesPtr_;
+
+                //- calculated patches of faces over inter-processor boundaries
+                //- after re-assigning of patches
+                Map<label>* newOtherFacePatchPtr_;
+
+            // Private member functions
+                //- calculate patches of faces over inter-processor boundaries
+                void calculateNeiPatchesParallel();
+                void calculateNeiPatchesParallelNewPatches();
+
+                //- calculate neighbour patches over edges of a boundary face
+                void neiPatchesOverEdges
+                (
+                    const label bfI,
+                    const labelList& fPatches,
+                    const Map<label>& otherFacePatch,
+                    DynList<label> &neiPatches
+                ) const;
+
+                //- evaluate new patch for a face based on the number of
+                //- common edges shared between faces in oterh patches
+                static label bestPatchTopological
+                (
+                    const DynList<label>& neiPatches,
+                    const label currentPatch
+                );
+
+        public:
+
+            // Constructors
+                //- Construct from edgeExtractor
+                faceEvaluator(const edgeExtractor&);
+
+            // Destructor
+                ~faceEvaluator();
+
+            // Public member functions
+                //- set the values for new boundary patches
+                void setNewBoundaryPatches(const labelList& newBoudaryPatches);
+
+                //- calculate neighbour patches over edges of a face
+                void neiPatchesOverEdges
+                (
+                    const label bfI,
+                    DynList<label>& neiPatches
+                ) const;
+
+                //- return the patch that the face shall be moved to such that
+                //- the number of feature edges between the two patches
+                //- is minimised
+                label bestPatchTopological(const label bfI) const;
+
+                //- return the best patch for a face by comparing the patch
+                //- before and after modifications to face patches
+                //- have been made
+                //- this function checks whether the changes of face patches
+                //- cause oscillations in the procedure
+                label bestPatchAfterModification(const label bfI) const;
+        };
+
+        class cornerEvaluator
+        {
+            // Private data
+                //- const reference to the parent class
+                const edgeExtractor& extractor_;
+
+                //- const reference to meshSurfacePartitioner
+                const meshSurfacePartitioner& partitioner_;
+
+                //- faces attached to points at inter-processor boundaries
+                std::map<label, DynList<DynList<labelledPoint, 6> > > faceMap_;
+                std::map<label, DynList<label> > facePatches_;
+                std::map<label, DynList<label> > faceAtProc_;
+
+            // Private member functions
+                //- create addressing at inter-processor boundaries
+                void createParallelAddressing();
+
+                //- sort faces attached to a boundary point
+                void sortedFacesAtPoint(const label, DynList<label>&) const;
+
+        public:
+
+            // Constructors
+                //- construct from edgeExtractor and meshSurfacePartitioner
+                cornerEvaluator
+                (
+                    const edgeExtractor&,
+                    const meshSurfacePartitioner&
+                );
+
+            // Destructor
+                ~cornerEvaluator();
+
+            // Public member functions
+
+                //- check patches of the faces attached to corners
+                //- and re-assign the patches such that the mesh undergoes
+                //- minimum rotation during the projection stage
+                void improveCorners(labelList& newBoundaryPatches);
+        };
 
     // Private enumerators
 
@@ -241,6 +394,7 @@ public:
         //- update mesh with selected patches
         void updateMeshPatches();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

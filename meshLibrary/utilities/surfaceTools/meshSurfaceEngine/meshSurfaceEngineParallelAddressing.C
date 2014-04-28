@@ -33,6 +33,7 @@ Description
 #include "helperFunctionsPar.H"
 
 #include <map>
+#include <set>
 
 // #define DEBUGSearch
 
@@ -352,6 +353,9 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
         mesh_.procBoundaries();
 
     //- find which processors contain a given bnd edge
+    typedef std::set<std::pair<label, label> > procEdgeMap;
+    List<procEdgeMap> facesWithProcBndEdges(procBoundaries.size());
+
     forAll(procBoundaries, patchI)
     {
         const label start = procBoundaries[patchI].patchStart();
@@ -359,12 +363,13 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
         for(label faceI=start;faceI<end;++faceI)
         {
             const face& f = faces[faceI];
+
             forAll(f, eI)
             {
-                const edge e = f.faceEdge(eI);
-
-                if( bp[e.start()] != -1 )
+                if( bp[f[eI]] != -1 )
                 {
+                    const edge e = f.faceEdge(eI);
+
                     const label bpI = bp[e.start()];
                     label edgeI(-1);
                     forAllRow(pEdges, bpI, peI)
@@ -376,6 +381,11 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
 
                     if( edgeI != -1 )
                     {
+                        facesWithProcBndEdges[patchI].insert
+                        (
+                            std::make_pair(faceI, eI)
+                        );
+
                         beAtProcs.appendIfNotIn
                         (
                             edgeI,
@@ -399,43 +409,42 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
     {
         finished = true;
 
-        forAll(procBoundaries, patchI)
+        forAll(facesWithProcBndEdges, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
-            const label end = start + procBoundaries[patchI].patchSize();
+            const procEdgeMap& procBndEdges = facesWithProcBndEdges[patchI];
 
             labelLongList dts;
-            for(label faceI=start;faceI<end;++faceI)
+            forAllConstIter(procEdgeMap, procBndEdges, it)
             {
-                const face& f = faces[faceI];
-                forAll(f, eI)
+                const std::pair<label, label>& fPair = *it;
+
+                const face& f = faces[fPair.first];
+                const edge e = f.faceEdge(fPair.second);
+
+                if( bp[e.start()] != -1 )
                 {
-                    const edge e = f.faceEdge(eI);
-
-                    if( bp[e.start()] != -1 )
-                    {
-                        const label bpI = bp[e.start()];
-                        label edgeI(-1);
-                        forAllRow(pEdges, bpI, peI)
-                            if( bEdges[pEdges(bpI, peI)] == e )
-                            {
-                                edgeI = pEdges(bpI, peI);
-                                break;
-                            }
-
-                        if( edgeI != -1 )
+                    const label bpI = bp[e.start()];
+                    label edgeI(-1);
+                    forAllRow(pEdges, bpI, peI)
+                        if( bEdges[pEdges(bpI, peI)] == e )
                         {
-                            //- data is sent as follows
-                            //- 1. face position in patch
-                            //- 2. local edge position in face
-                            //- 3. number of processors for edge
-                            //- 4. proc labels
-                            dts.append(faceI-start);
-                            dts.append((f.size()-eI-1)%f.size());
-                            dts.append(beAtProcs.sizeOfRow(edgeI));
-                            forAllRow(beAtProcs, edgeI, i)
-                                dts.append(beAtProcs(edgeI, i));
+                            edgeI = pEdges(bpI, peI);
+                            break;
                         }
+
+                    if( edgeI != -1 )
+                    {
+                        //- data is sent as follows
+                        //- 1. face position in patch
+                        //- 2. local edge position in face
+                        //- 3. number of processors for edge
+                        //- 4. proc labels
+                        dts.append(fPair.first-start);
+                        dts.append((f.size()-fPair.second-1)%f.size());
+                        dts.append(beAtProcs.sizeOfRow(edgeI));
+                        forAllRow(beAtProcs, edgeI, i)
+                            dts.append(beAtProcs(edgeI, i));
                     }
                 }
             }
@@ -464,7 +473,8 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             label counter(0);
             while( counter < receivedData.size() )
             {
-                const face& f = faces[start+receivedData[counter++]];
+                const label faceI = start+receivedData[counter++];
+                const face& f = faces[faceI];
                 const label eI = receivedData[counter++];
 
                 const edge e = f.faceEdge(eI);
@@ -479,6 +489,11 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                     const label neiProc = receivedData[counter++];
                     if( !beAtProcs.contains(edgeI, neiProc) )
                     {
+                        facesWithProcBndEdges[patchI].insert
+                        (
+                            std::make_pair(faceI, eI)
+                        );
+
                         beAtProcs.append(edgeI, neiProc);
                         finished = false;
                     }
@@ -532,40 +547,40 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
     {
         finished = true;
 
-        forAll(procBoundaries, patchI)
+        forAll(facesWithProcBndEdges, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
-            const label end = start + procBoundaries[patchI].patchSize();
+            const procEdgeMap& procBndEdges = facesWithProcBndEdges[patchI];
 
             labelLongList dts;
-            for(label faceI=start;faceI<end;++faceI)
+            forAllConstIter(procEdgeMap, procBndEdges, it)
             {
+                const label faceI = it->first;
                 const face& f = faces[faceI];
-                forAll(f, eI)
+
+                const label eI = it->second;
+                const edge e = f.faceEdge(eI);
+
+                if( bp[e.start()] != -1 )
                 {
-                    const edge e = f.faceEdge(eI);
-
-                    if( bp[e.start()] != -1 )
-                    {
-                        const label bpI = bp[e.start()];
-                        label edgeI(-1);
-                        forAllRow(pEdges, bpI, peI)
-                            if( bEdges[pEdges(bpI, peI)] == e )
-                            {
-                                edgeI = pEdges(bpI, peI);
-                                break;
-                            }
-
-                        if( (edgeI != -1) && (globalEdgeLabel[edgeI] != -1) )
+                    const label bpI = bp[e.start()];
+                    label edgeI(-1);
+                    forAllRow(pEdges, bpI, peI)
+                        if( bEdges[pEdges(bpI, peI)] == e )
                         {
-                            //- data is sent as follows
-                            //- 1. face position in patch
-                            //- 2. local edge position in face
-                            //- 3. global edge label
-                            dts.append(faceI-start);
-                            dts.append((f.size()-eI-1)%f.size());
-                            dts.append(globalEdgeLabel[edgeI]);
+                            edgeI = pEdges(bpI, peI);
+                            break;
                         }
+
+                    if( (edgeI != -1) && (globalEdgeLabel[edgeI] != -1) )
+                    {
+                        //- data is sent as follows
+                        //- 1. face position in patch
+                        //- 2. local edge position in face
+                        //- 3. global edge label
+                        dts.append(faceI-start);
+                        dts.append((f.size()-eI-1)%f.size());
+                        dts.append(globalEdgeLabel[edgeI]);
                     }
                 }
             }
@@ -642,7 +657,6 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             }
         }
     }
-
 }
 
 void meshSurfaceEngine::calcAddressingForProcEdges() const
@@ -652,8 +666,55 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
     const VRWGraph& eFaces = this->edgeFaces();
     const VRWGraph& beAtProcs = this->beAtProcs();
     const Map<label>& globalToLocal = this->globalToLocalBndEdgeAddressing();
+    const DynList<label>& beNeiProcs = this->beNeiProcs();
 
     std::map<label, labelLongList> exchangeData;
+    forAll(beNeiProcs, i)
+        exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
+
+    //- check if it the surface is manifold over inter-processor edges
+    Map<label> nFacesAtEdge;
+    forAllConstIter(Map<label>, globalToLocal, iter)
+    {
+        const label beI = iter();
+        nFacesAtEdge.insert(beI, eFaces.sizeOfRow(beI));
+
+        forAllRow(beAtProcs, beI, i)
+        {
+            const label neiProc = beAtProcs(beI, i);
+
+            if( neiProc == Pstream::myProcNo() )
+                continue;
+
+            labelLongList& dts = exchangeData[neiProc];
+            dts.append(iter.key());
+            dts.append(eFaces.sizeOfRow(beI));
+        }
+    }
+
+    labelLongList receivedData;
+    help::exchangeMap(exchangeData, receivedData);
+    for(label counter=0;counter<receivedData.size();)
+    {
+        const label beI = globalToLocal[receivedData[counter++]];
+        nFacesAtEdge[beI] += receivedData[counter++];
+    }
+
+    forAllConstIter(Map<label>, nFacesAtEdge, iter)
+    {
+        if( iter() != 2 )
+            FatalErrorIn
+            (
+                "void meshSurfaceEngine::calcAddressingForProcEdges() const"
+            ) << "Surface is not manifold at boundary edge "
+              << iter.key() << exit(FatalError);
+    }
+
+    //- find the processor which contains other face containing an edge
+    //- at inter-processor boundary
+    exchangeData.clear();
+    forAll(beNeiProcs, i)
+        exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
 
     forAllConstIter(Map<label>, globalToLocal, iter)
     {
@@ -665,9 +726,6 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
 
             if( neiProc == Pstream::myProcNo() )
                 continue;
-
-            if( exchangeData.find(neiProc) == exchangeData.end() )
-                exchangeData.insert(std::make_pair(neiProc, labelLongList()));
 
             if( eFaces.sizeOfRow(beI) == 1 )
             {

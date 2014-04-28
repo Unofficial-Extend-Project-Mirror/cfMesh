@@ -44,6 +44,7 @@ SourceFiles
 #include "meshSurfaceEngine.H"
 #include "parTriFace.H"
 #include "meshSurfacePartitioner.H"
+#include "partTriMesh.H"
 
 #include <map>
 
@@ -63,21 +64,21 @@ class plane;
 class meshSurfaceOptimizer
 {
     // Private data
-        //- reference to the mesh surface
-        meshSurfaceEngine& surfaceEngine_;
+        //- const reference to the mesh surface
+        const meshSurfaceEngine& surfaceEngine_;
 
-        //- reference to the octree
+        //- const reference to the octree
         const meshOctree& meshOctree_;
 
         //- type of surface vertex
         List<direction> vertexType_;
 
-        //- form trihedra
-        mutable LongList<triFace>* trianglesPtr_;
-        mutable VRWGraph* pointTrianglesPtr_;
-
         //- surface partitioner
-        meshSurfacePartitioner partitioner_;
+        const meshSurfacePartitioner* partitionerPtr_;
+        const bool deletePartitioner_;
+
+        //- mesh of surface triangles needed for some smoothers
+        mutable partTriMesh* triMeshPtr_;
 
     // Private member functions
         //- classify surface vertices as PARTITION, EDGE, CORNER
@@ -85,8 +86,9 @@ class meshSurfaceOptimizer
 
         //- calculate surface triangulation
         void calculateTrianglesAndAddressing() const;
-        inline const LongList<triFace>& triangles() const;
-        inline const VRWGraph& pointTriangles() const;
+        inline const partTriMesh& triMesh() const;
+        inline void updateTriMesh(const labelLongList&);
+        inline void updateTriMesh();
 
         //- find vertices which are inverted
         //- mark additional layers of vertices near the inverted ones
@@ -148,17 +150,12 @@ class meshSurfaceOptimizer
         inline point newPositionSurfaceOptimizer
         (
             const label bpI,
-            const scalar tol = 0.001,
-            const bool transformIntoPlane = true
+            const scalar tol = 0.001
         ) const;
 
         //- new position of edge vertex
         //- the position is the average of neighbouring edge vertices
-        inline point newEdgePositionLaplacian
-        (
-            const label bpI,
-            const bool transformIntoPlane = true
-        ) const;
+        inline point newEdgePositionLaplacian(const label bpI) const;
 
         //- smooth the node using the laplacian smoother
         //- new position is the average of the neighbouring vertices
@@ -186,6 +183,28 @@ class meshSurfaceOptimizer
 
         //- smooth edge node
         void edgeNodeDisplacement(const label bpI) const;
+
+        //- smooth selected edge points
+        void smoothEdgePoints
+        (
+            const labelLongList& edgePoints,
+            const labelLongList& procEdgePoints
+        );
+
+        //- smooth selected points using laplaceFC
+        void smoothLaplacianFC
+        (
+            const labelLongList& selectedPoints,
+            const labelLongList& selectedProcPoints,
+            const bool transform = true
+        );
+
+        //- smooth selected points using surface optimizer
+        void smoothSurfaceOptimizer
+        (
+            const labelLongList& selectedPoints,
+            const labelLongList& selectedProcPoints
+        );
 
     // Functions needed for parallel runs
 
@@ -246,11 +265,10 @@ public:
     // Constructors
 
         //- Construct from mesh surface and octree
-        meshSurfaceOptimizer
-        (
-            meshSurfaceEngine& surface,
-            const meshOctree& octree
-        );
+        meshSurfaceOptimizer(const meshSurfaceEngine&, const meshOctree&);
+
+        //- Construct from partitioner and octree
+        meshSurfaceOptimizer(const meshSurfacePartitioner&, const meshOctree&);
 
 
     // Destructor

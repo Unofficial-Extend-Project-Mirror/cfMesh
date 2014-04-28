@@ -36,7 +36,10 @@ Description
 #include "labelledScalar.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGLayer
 
@@ -54,7 +57,8 @@ void boundaryLayers::findPatchVertices
 ) const
 {
     const meshSurfaceEngine& mse = surfaceEngine();
-    const VRWGraph& pPatches = mse.pointPatches();
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     pVertices.setSize(pPatches.size());
     pVertices = NONE;
@@ -97,7 +101,6 @@ void boundaryLayers::findPatchVertices
             if( pVertices[bpI] && (bpAtProcs.sizeOfRow(bpI) != 0) )
                 pVertices[bpI] |= PARALLELBOUNDARY;
     }
-
 }
 
 point boundaryLayers::createNewVertex
@@ -112,9 +115,11 @@ point boundaryLayers::createNewVertex
     const faceList::subList& bFaces = mse.boundaryFaces();
     const vectorField& pNormals = mse.pointNormals();
     const VRWGraph& pFaces = mse.pointFaces();
-    const VRWGraph& pPatches = mse.pointPatches();
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
     const VRWGraph& pointPoints = mse.pointPoints();
+
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     const pointFieldPMG& points = mesh_.points();
 
@@ -164,22 +169,20 @@ point boundaryLayers::createNewVertex
                 }
             }
 
-            const scalar magV = mag(v);
-            if( magV > VSMALL )
-                v /= magV;
+            const scalar magV = mag(v) + VSMALL;
+            v /= magV;
 
             normal -= (normal & v) * v;
 
-            const scalar magN = mag(normal);
-            if( magN > VSMALL )
-                normal /= magN;
+            const scalar magN = mag(normal) + VSMALL;
+            normal /= magN;
 
             forAllRow(pointPoints, bpI, ppI)
             {
                 if( patchVertex[pointPoints(bpI, ppI)] )
                     continue;
 
-                vector vec = points[bPoints[pointPoints(bpI, ppI)]] - p;
+                const vector vec = points[bPoints[pointPoints(bpI, ppI)]] - p;
                 const scalar prod = 0.5 * mag(vec & normal);
 
                 if( prod < dist )
@@ -226,10 +229,9 @@ point boundaryLayers::createNewVertex
 
             //- normal vector is co-linear with that edge
             normal = p - points[bPoints[otherVertex]];
-            dist = 0.5 * mag(normal);
+            dist = 0.5 * mag(normal) + VSMALL;
 
-            if( mag(dist) > VSMALL )
-                normal /= 2.0 * dist;
+            normal /= 2.0 * dist;
         }
         else
         {
@@ -303,7 +305,14 @@ point boundaryLayers::createNewVertex
     Info << "Distance is " << dist << endl;
     # endif
 
-    return p - dist * normal;
+    dist = Foam::max(dist, VSMALL);
+
+    const point newP = p - dist * normal;
+
+    if( help::isnan(newP) || help::isinf(newP) )
+        return p;
+
+    return newP;
 }
 
 void boundaryLayers::createNewVertices(const boolList& treatPatches)
@@ -321,7 +330,6 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
     if( Pstream::parRun() )
     {
         mse.pointNormals();
-        mse.pointPatches();
         mse.pointPoints();
     }
 
@@ -400,21 +408,25 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
     patchKey_ = -1;
 
     const meshSurfaceEngine& mse = surfaceEngine();
-    const VRWGraph& pPatches = mse.pointPatches();
     const labelList& bPoints = mse.boundaryPoints();
     const label nBndPts = bPoints.size();
+
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
 
     //- the following is needed for parallel runs
     //- it is ugly, but must stay for now :(
     mse.boundaryFaces();
     mse.pointNormals();
     mse.pointFaces();
-    mse.boundaryFacePatches();
     mse.pointPoints();
 
     pointFieldPMG& points = mesh_.points();
     boolList treatPatches(mesh_.boundaries().size());
     List<direction> patchVertex(nBndPts);
+
+    //- make sure than the points are never re-allocated during the process
+    points.reserve(points.size() + 2 * nBndPts);
 
     //- generate new layer vertices for each patch
     forAll(patchLabels, patchI)
@@ -449,8 +461,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
         //- go throught the vertices and create the new ones
         labelLongList procPoints;
         # ifdef USE_OMP
-        # pragma omp parallel for if( nBndPts > 100 ) \
-        schedule(dynamic, Foam::max(10, nBndPts/(2*omp_get_num_threads())))
+        # pragma omp parallel for if( nBndPts > 1000 ) schedule(dynamic, 50)
         # endif
         for(label bpI=0;bpI<nBndPts;++bpI)
         {
@@ -573,7 +584,14 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             newP += newPatchPenetrationVector[0];
             newP += newPatchPenetrationVector[1];
 
-            points.append(newP);
+            if( !help::isnan(newP) && !help::isinf(newP) )
+            {
+                points.append(newP);
+            }
+            else
+            {
+                points.append(p);
+            }
             newLabelForVertex_[pointI] = nPoints_;
             ++nPoints_;
         }
@@ -591,7 +609,15 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
                         p + newPatchPenetrationVector[i] +
                         newPatchPenetrationVector[j];
 
-                    points.append(np);
+                    if( !help::isnan(np) && !help::isinf(np) )
+                    {
+                        points.append(np);
+                    }
+                    else
+                    {
+                        points.append(p);
+                    }
+
                     m.insert
                     (
                         std::make_pair
@@ -605,7 +631,15 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             }
 
             //- create new position for the existing point
-            points.append(newP);
+            if( !help::isnan(newP) && !help::isinf(newP) )
+            {
+                points.append(newP);
+            }
+            else
+            {
+                points.append(p);
+            }
+
             newLabelForVertex_[pointI] = nPoints_;
             ++nPoints_;
         }
@@ -732,7 +766,15 @@ void boundaryLayers::createNewPartitionVerticesParallel
             continue;
 
         const point& p = points[bPoints[bpI]];
-        points[nPoints_] = p - pNormals[bpI] * penetrationDistances[bpI];
+        const point np = p - pNormals[bpI] * penetrationDistances[bpI];
+        if( !help::isnan(np) && !help::isinf(np) )
+        {
+            points[nPoints_] = np;
+        }
+        else
+        {
+            points[nPoints_] = p;
+        }
         newLabelForVertex_[bPoints[bpI]] = nPoints_;
         ++nPoints_;
     }
@@ -784,7 +826,9 @@ void boundaryLayers::createNewEdgeVerticesParallel
     if( returnReduce(edgePoints.size(), sumOp<label>()) == 0 )
         return;
 
-    const VRWGraph& pPatches = mse.pointPatches();
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const VRWGraph& pPatches = mPart.pointPatches();
+
     const VRWGraph& pFaces = mse.pointFaces();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
@@ -935,15 +979,13 @@ void boundaryLayers::createNewEdgeVerticesParallel
 
         if( otherPatches.size() == 1 )
         {
-            const scalar magV = mag(v[epI]);
-            if( magV > VSMALL )
-                v[epI] /= magV;
+            const scalar magV = mag(v[epI]) + VSMALL;
+            v[epI] /= magV;
             normal[epI] -= (normal[epI] & v[epI]) * v[epI];
         }
 
-        const scalar magN = mag(normal[epI]);
-        if( magN > VSMALL )
-            normal[epI] /= magN;
+        const scalar magN = mag(normal[epI]) + VSMALL;
+        normal[epI] /= magN;
     }
 
     //- calculate distances
@@ -1052,7 +1094,15 @@ void boundaryLayers::createNewEdgeVerticesParallel
         const label bpI = edgePoints[epI];
 
         const point& p = points[bPoints[bpI]];
-        points[nPoints_] = p - normal[epI] * dist[epI];
+        const point np = p - normal[epI] * dist[epI];
+        if( !help::isnan(np) && !help::isinf(np) )
+        {
+            points[nPoints_] = np;
+        }
+        else
+        {
+            points[nPoints_] = p;
+        }
 
         if( pKey == -1 )
         {

@@ -47,93 +47,39 @@ namespace Foam
 
 void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
 {
-    if( trianglesPtr_ || pointTrianglesPtr_ )
+    if( triMeshPtr_ )
         FatalErrorIn
         (
             "void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const"
         ) << "Addressing is already calculated!" << abort(FatalError);
 
-    const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
-    const labelList& bPoints = surfaceEngine_.boundaryPoints();
-    const labelList& bp = surfaceEngine_.bp();
-
-    pointTrianglesPtr_ = new VRWGraph(bPoints.size());
-    VRWGraph& pointTriangles = *pointTrianglesPtr_;
-
-    trianglesPtr_ = new LongList<triFace>();
-    LongList<triFace>& triangles = *trianglesPtr_;
-
-    //- start creating triangles
-    forAll(bFaces, bfI)
-    {
-        const face& bf = bFaces[bfI];
-
-        const label nTrias = bf.size() - 2;
-
-        forAll(bf, pI)
-        {
-            triFace triangle;
-            triangle[0] = bp[bf[pI]];
-
-            for(label i=0;i<nTrias;++i)
-            {
-                triangle[1] = bp[bf[(pI+i+1)%bf.size()]];
-                triangle[2] = bp[bf[(pI+i+2)%bf.size()]];
-
-                triangles.append(triangle);
-            }
-        }
-    }
-
-    //- create point-triangles addressing
-    labelLongList nTrianglesAtPoint(bPoints.size(), 0);
-
-    forAll(triangles, triI)
-        ++nTrianglesAtPoint[triangles[triI][0]];
-
-    pointTriangles.setSizeAndRowSize(nTrianglesAtPoint);
-
-    nTrianglesAtPoint = 0;
-
-    forAll(triangles, triI)
-    {
-        const label bpI = triangles[triI][0];
-
-        pointTriangles(bpI, nTrianglesAtPoint[bpI]++) = triI;
-    }
+    triMeshPtr_ = new partTriMesh(*partitionerPtr_);
 
     # ifdef DEBUGTriangulation
-    const pointFieldPMG& points = surfaceEngine_.points();
+    const labelList& sPoints = triMeshPtr_->meshSurfacePointLabelInTriMesh();
 
-    forAll(bPoints, bpI)
+    forAll(sPoints, bpI)
     {
         triSurf surf;
-        Map<label> pointToPoint;
-        forAllRow(pointTriangles, bpI, ptI)
-        {
-            const triFace& tri = triangles[pointTriangles(bpI, ptI)];
 
-            if( tri[0] == bpI )
-            {
-                labelledTri lTri;
-                lTri.region() = 0;
+        const label spI = sPoints[bpI];
 
-                for(label i=0;i<3;++i)
-                {
-                    if( !pointToPoint.found(tri[i]) )
-                    {
-                        pointToPoint.insert(tri[i], surf.points().size());
-                        surf.appendVertex(points[bPoints[tri[i]]]);
-                    }
-
-                    lTri[i] = pointToPoint[tri[i]];
-                }
-
-                surf.appendTriangle(lTri);
-            }
-        }
+        partTriMeshSimplex simplex(*triMeshPtr_, spI);
 
         triSurfModifier sMod(surf);
+
+        pointField& pts = sMod.pointsAccess();
+        pts.setSize(simplex.pts().size());
+        forAll(pts, i)
+            pts[i] = simplex.pts()[i];
+
+        LongList<labelledTri>& trias = sMod.facetsAccess();
+        trias.setSize(simplex.triangles().size());
+        forAll(trias, i)
+        {
+            const triFace& t = simplex.triangles()[i];
+            trias[i] = labelledTri(t[0], t[1], t[2], 0);
+        }
 
         sMod.patchesAccess().setSize(1);
         sMod.patchesAccess()[0].name() = "bnd";

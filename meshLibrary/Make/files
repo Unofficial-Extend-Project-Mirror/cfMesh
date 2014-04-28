@@ -98,6 +98,7 @@ polyMeshGenModifier = utilities/meshes/polyMeshGenModifier
 polyMeshGenAddressing = utilities/meshes/polyMeshGenAddressing
 polyMeshGenChecks = utilities/meshes/polyMeshGenChecks
 partTetMesh = utilities/meshes/partTetMesh
+partTriMesh = utilities/meshes/partTriMesh
 primitiveMesh = utilities/meshes/primitiveMesh
 triSurf = utilities/meshes/triSurf
 cell = utilities/meshes/primitives/cell
@@ -194,6 +195,11 @@ $(partTetMesh)/partTetMesh.C
 $(partTetMesh)/partTetMeshAddressing.C
 $(partTetMesh)/partTetMeshParallelAddressing.C
 $(partTetMesh)/partTetMeshSimplex.C
+
+$(partTriMesh)/partTriMesh.C
+$(partTriMesh)/partTriMeshAddressing.C
+$(partTriMesh)/partTriMeshParallelAddressing.C
+$(partTriMesh)/partTriMeshSimplex.C
 
 $(triSurf)/triSurf.C
 $(triSurf)/triSurfPoints.C

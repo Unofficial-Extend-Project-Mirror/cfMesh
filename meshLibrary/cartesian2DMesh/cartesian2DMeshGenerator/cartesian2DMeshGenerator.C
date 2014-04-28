@@ -187,7 +187,6 @@ void cartesian2DMeshGenerator::refBoundaryLayers()
         meshSurfaceEngine mse(mesh_);
         meshSurfaceOptimizer optimizer(mse, *octreePtr_);
 
-        optimizer.optimizeSurface2D();
         optimizer.untangleSurface2D();
     }
 }

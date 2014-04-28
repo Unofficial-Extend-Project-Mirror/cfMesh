@@ -33,7 +33,7 @@ Description
 #include "meshSurfaceMapper.H"
 #include "surfaceOptimizer.H"
 #include "refLabelledPoint.H"
-#include "helperFunctionsPar.H"
+#include "helperFunctions.H"
 
 //#define DEBUGSearch
 
@@ -244,22 +244,38 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         lpd.coordinates() += lp.lPoint().coordinates();
     }
 
+    pointField newPositions(nodesToSmooth.size());
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
     forAll(nodesToSmooth, pI)
     {
         const label bpI = nodesToSmooth[pI];
 
         if( localData.find(bpI) == localData.end() )
+        {
+            newPositions[pI] = points[bPoints[bpI]];
             continue;
+        }
 
         //- create new point position
         const labelledPoint& lp = localData[bpI];
         const point newP = lp.coordinates() / lp.pointLabel();
 
-        meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+        newPositions[pI] = newP;
+    }
+
+    meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(newPositions, pI)
+    {
         surfaceModifier.moveBoundaryVertexNoUpdate
         (
-            bpI,
-            newP
+            nodesToSmooth[pI],
+            newPositions[pI]
         );
     }
 }
@@ -272,7 +288,6 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
     if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
         return;
 
-    //- update vertex normals
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
     //- exchange data with other processors
@@ -284,12 +299,20 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
     const vectorField& pNormals = surfaceEngine_.pointNormals();
 
     //- perform smoothing
+    pointField newPositions(nodesToSmooth.size());
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 10)
+    # endif
     forAll(nodesToSmooth, pI)
     {
         const label bpI = nodesToSmooth[pI];
 
         if( magSqr(pNormals[bpI]) < VSMALL )
+        {
+            newPositions[pI] = points[bPoints[bpI]];
             continue;
+        }
 
         plane pl(points[bPoints[bpI]], pNormals[bpI]);
         point vecX, vecY;
@@ -297,7 +320,10 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
         DynList<triFace> trias;
 
         if( !transformIntoPlaneParallel(bpI, pl, m, vecX, vecY, pts, trias) )
+        {
+            newPositions[pI] = points[bPoints[bpI]];
             continue;
+        }
 
         surfaceOptimizer so(pts, trias);
         point newPoint = so.optimizePoint(0.001);
@@ -309,12 +335,25 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
             vecY * newPoint.y()
         );
 
+        if( help::isnan(newP) || help::isinf(newP) )
+        {
+            newPositions[pI] = points[bPoints[bpI]];
+        }
+        else
+        {
+            newPositions[pI] = newP;
+        }
+    }
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(newPositions, pI)
         surfaceModifier.moveBoundaryVertexNoUpdate
         (
-            bpI,
-            newP
+            nodesToSmooth[pI],
+            newPositions[pI]
         );
-    }
 
     //- make sure that moved points have the same coordinates on all processors
     surfaceModifier.syncVerticesAtParallelBoundaries(nodesToSmooth);
@@ -422,23 +461,36 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
 
     //- Finally, the data is ready to start smoothing
     meshSurfaceEngineModifier sm(surfaceEngine_);
-    forAll(nodesToSmooth, nI)
+
+    pointField newPositions(nodesToSmooth.size());
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(nodesToSmooth, pI)
     {
-        const label bpI = nodesToSmooth[nI];
+        const label bpI = nodesToSmooth[pI];
 
         const DynList<labelledPoint, 2>& nPts = mPts[globalPointLabel[bpI]];
         point newP(vector::zero);
         forAll(nPts, ppI)
             newP += nPts[ppI].coordinates();
 
-        if( nPts.size() > 1 )
+        if( nPts.size() == 2 )
         {
             newP /= nPts.size();
-            sm.moveBoundaryVertexNoUpdate(bpI, newP);
+            newPositions[pI] = newP;
+        }
+        else
+        {
+            newPositions[pI] = points[bPoints[bpI]];
         }
     }
 
-    //sm.updateGeometry(nodesToSmooth);
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(newPositions, pI)
+        sm.moveBoundaryVertexNoUpdate(nodesToSmooth[pI], newPositions[pI]);
 }
 
 void meshSurfaceOptimizer::exchangeData
@@ -447,6 +499,7 @@ void meshSurfaceOptimizer::exchangeData
     std::map<label, DynList<parTriFace> >& m
 ) const
 {
+    /*
     const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
 
@@ -543,6 +596,7 @@ void meshSurfaceOptimizer::exchangeData
 
         pIter->second.append(receivedData[tI]);
     }
+    */
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

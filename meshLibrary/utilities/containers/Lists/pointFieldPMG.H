@@ -50,7 +50,7 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class pointFieldPMG
-:    public regIOobject,
+:   public regIOobject,
     public pointField
 {
     // Private data
@@ -89,6 +89,12 @@ public:
 
         //- set the number of used elements
         inline void setSize(const label nElmts);
+
+        //- reserve the memory for the specified number of elements
+        //- the request is ignored if the specified value is smaller than
+        //- the current number of elements
+        //- does not change the size
+        inline void reserve(const label capacity);
 
         //- set the size to zero
         inline void clear();

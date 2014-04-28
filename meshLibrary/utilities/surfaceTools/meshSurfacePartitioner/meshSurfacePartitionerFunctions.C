@@ -109,16 +109,19 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
 
         std::map<label, labelLongList> exchangeData;
         forAll(beNeiProcs, i)
-            exchangeData[beNeiProcs[i]].clear();
+            exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
 
         forAllConstIter(Map<label>, globalToLocalEdges, it)
         {
             const label beI = it();
 
-            labelLongList& data = exchangeData[otherFaceAtProc[beI]];
+            if( edgeFaces.sizeOfRow(beI) == 1 )
+            {
+                labelLongList& data = exchangeData[otherFaceAtProc[beI]];
 
-            data.append(it.key());
-            data.append(facePatch_[edgeFaces(beI, 0)]);
+                data.append(it.key());
+                data.append(facePatch_[edgeFaces(beI, 0)]);
+            }
         }
 
         labelLongList receivedData;
@@ -151,10 +154,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         exchangeData.clear();
         const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
         forAll(bpNeiProcs, i)
-            exchangeData.insert
-            (
-                std::make_pair(bpNeiProcs[i], labelLongList())
-            );
+            exchangeData.insert(std::make_pair(bpNeiProcs[i], labelLongList()));
 
         const Map<label>& globalToLocal =
             meshSurface_.globalToLocalBndPointAddressing();
@@ -201,7 +201,6 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         if( nEdgesAtPoint_[bpI] > 2 )
         {
             corners_.insert(bpI);
-            cornerPatches_[bpI].clear();
         }
         else if( nEdgesAtPoint_[bpI] == 2 )
         {
@@ -209,15 +208,12 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
     }
 
-    //- find patches attached to corners
-    forAllConstIter(labelHashSet, corners_, it)
+    //- find patches at a surface points
+    pointPatches_.setSize(pointFaces.size());
+    forAll(pointFaces, bpI)
     {
-        const label bpI = it.key();
-
         forAllRow(pointFaces, bpI, pfI)
-        {
-            cornerPatches_[bpI].appendIfNotIn(facePatch_[pointFaces(bpI, pfI)]);
-        }
+            pointPatches_.appendIfNotIn(bpI, facePatch_[pointFaces(bpI, pfI)]);
     }
 
     if( Pstream::parRun() )
@@ -235,24 +231,19 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         {
             const label bpI = it();
 
-            if( corners_.found(bpI) )
+            forAllRow(bpAtProcs, bpI, i)
             {
-                const DynList<label>& cPatches = cornerPatches_[bpI];
+                const label neiProc = bpAtProcs(bpI, i);
 
-                forAllRow(bpAtProcs, bpI, i)
-                {
-                    const label neiProc = bpAtProcs(bpI, i);
+                if( neiProc == Pstream::myProcNo() )
+                    continue;
 
-                    if( neiProc == Pstream::myProcNo() )
-                        continue;
+                labelLongList& data = exchangeData[neiProc];
 
-                    labelLongList& data = exchangeData[neiProc];
-
-                    data.append(it.key());
-                    data.append(cPatches.size());
-                    forAll(cPatches, ppI)
-                        data.append(cPatches[ppI]);
-                }
+                data.append(it.key());
+                data.append(pointPatches_.sizeOfRow(bpI));
+                forAllRow(pointPatches_, bpI, i)
+                    data.append(pointPatches_(bpI, i));
             }
         }
 
@@ -267,7 +258,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             const label size = receivedData[counter++];
 
             for(label i=0;i<size;++i)
-                cornerPatches_[bpI].appendIfNotIn(receivedData[counter++]);
+                pointPatches_.appendIfNotIn(bpI, receivedData[counter++]);
         }
     }
 

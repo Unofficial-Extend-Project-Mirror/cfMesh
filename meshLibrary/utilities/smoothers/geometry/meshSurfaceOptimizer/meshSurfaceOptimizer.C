@@ -43,8 +43,8 @@ namespace Foam
 
 void meshSurfaceOptimizer::classifySurfaceVertices()
 {
-    const labelHashSet& corners = partitioner_.corners();
-    const labelHashSet& edgePoints = partitioner_.edgePoints();
+    const labelHashSet& corners = partitionerPtr_->corners();
+    const labelHashSet& edgePoints = partitionerPtr_->edgePoints();
 
     //- set all vertices to partition
     vertexType_ = PARTITION;
@@ -116,19 +116,34 @@ label meshSurfaceOptimizer::findBadFaces
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh surface and octree
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
-    meshSurfaceEngine& surface,
+    const meshSurfaceEngine& surface,
     const meshOctree& octree
 )
 :
     surfaceEngine_(surface),
     meshOctree_(octree),
     vertexType_(surface.boundaryPoints().size()),
-    trianglesPtr_(NULL),
-    pointTrianglesPtr_(NULL),
-    partitioner_(surface)
+    partitionerPtr_(new meshSurfacePartitioner(surface)),
+    deletePartitioner_(true),
+    triMeshPtr_(NULL)
+{
+    classifySurfaceVertices();
+}
+
+meshSurfaceOptimizer::meshSurfaceOptimizer
+(
+    const meshSurfacePartitioner& partitioner,
+    const meshOctree& octree
+)
+:
+    surfaceEngine_(partitioner.surfaceEngine()),
+    meshOctree_(octree),
+    vertexType_(surfaceEngine_.boundaryPoints().size()),
+    partitionerPtr_(&partitioner),
+    deletePartitioner_(false),
+    triMeshPtr_(NULL)
 {
     classifySurfaceVertices();
 }
@@ -137,8 +152,10 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 
 meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
-    deleteDemandDrivenData(trianglesPtr_);
-    deleteDemandDrivenData(pointTrianglesPtr_);
+    deleteDemandDrivenData(triMeshPtr_);
+
+    if( deletePartitioner_ )
+        deleteDemandDrivenData(partitionerPtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

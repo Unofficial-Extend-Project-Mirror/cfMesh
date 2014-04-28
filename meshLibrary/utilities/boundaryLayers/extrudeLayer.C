@@ -30,6 +30,7 @@ Description
 #include "helperFunctions.H"
 #include "polyMeshGenAddressing.H"
 #include "meshSurfaceEngine.H"
+#include "meshSurfacePartitioner.H"
 #include "labelledPointScalar.H"
 
 # ifdef USE_OMP
@@ -1233,7 +1234,9 @@ void extrudeLayer::updateBoundary()
     const labelList& bfOwner = mse.faceOwners();
     const labelList& facePatch = mse.boundaryFacePatches();
     const labelList& bp = mse.bp();
-    const VRWGraph& pointPatches = mse.pointPatches();
+
+    meshSurfacePartitioner mPart(mse);
+    const VRWGraph& pointPatches = mPart.pointPatches();
 
     //- store existing boundary faces. They remain in the mesh
     forAll(bFaces, bfI)

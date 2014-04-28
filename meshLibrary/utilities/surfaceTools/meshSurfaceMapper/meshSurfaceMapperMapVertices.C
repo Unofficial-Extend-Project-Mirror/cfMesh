@@ -186,7 +186,14 @@ void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
     }
     else
     {
-        meshOctree_.findNearestSurfacePointInRegion(mapPoint, dSq, nt, patchI, p);
+        meshOctree_.findNearestSurfacePointInRegion
+        (
+            mapPoint,
+            dSq,
+            nt,
+            patchI,
+            p
+        );
     }
 
     meshSurfaceEngineModifier surfModifier(surfaceEngine_);
@@ -297,6 +304,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
     const labelHashSet& edgePoints = mPart.edgePoints();
+    const VRWGraph& pointPatches = mPart.pointPatches();
 
     boolList treatedPoint(surfaceEngine_.boundaryPoints().size(), false);
 
@@ -319,7 +327,6 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     //- map the remaining selected points
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
-    const VRWGraph& pointPatches = surfaceEngine_.pointPatches();
 
     const VRWGraph* bpAtProcsPtr(NULL);
     if( Pstream::parRun() )

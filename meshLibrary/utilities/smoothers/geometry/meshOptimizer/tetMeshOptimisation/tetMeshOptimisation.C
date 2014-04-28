@@ -56,14 +56,12 @@ namespace Foam
 tetMeshOptimisation::tetMeshOptimisation(partTetMesh& mesh)
 :
     tetMesh_(mesh)
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshOptimisation::~tetMeshOptimisation()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

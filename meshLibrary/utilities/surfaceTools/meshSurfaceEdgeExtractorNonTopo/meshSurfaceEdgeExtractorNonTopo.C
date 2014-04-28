@@ -54,9 +54,17 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 {
     distributeBoundaryFaces();
 
+    //mesh_.write();
+    //returnReduce(1, sumOp<label>());
+    //::exit(0);
+
     remapBoundaryPoints();
 
     correctEdgesBetweenPatches featureEdges(mesh);
+
+    //mesh_.write();
+    //returnReduce(1, sumOp<label>());
+    //::exit(0);
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
