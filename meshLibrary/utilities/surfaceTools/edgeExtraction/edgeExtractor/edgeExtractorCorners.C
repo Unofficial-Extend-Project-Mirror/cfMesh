@@ -171,6 +171,65 @@ void edgeExtractor::faceEvaluator::calculateNeiPatchesParallelNewPatches()
     }
 }
 
+void edgeExtractor::faceEvaluator::neiFacesOverEdges
+(
+    const label bfI,
+    DynList<label>& neiFaces
+) const
+{
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+
+    const VRWGraph& faceEdges = mse.faceEdges();
+    const VRWGraph& edgeFaces = mse.edgeFaces();
+
+    neiFaces.setSize(faceEdges.sizeOfRow(bfI));
+
+    forAllRow(faceEdges, bfI, feI)
+    {
+        const label beI = faceEdges(bfI, feI);
+
+        if( edgeFaces.sizeOfRow(beI) == 2 )
+        {
+            neiFaces[feI] = edgeFaces(beI, 0);
+            if( neiFaces[feI] == bfI )
+                neiFaces[feI] = edgeFaces(beI, 1);
+        }
+        else
+        {
+            neiFaces[feI] = -1;
+        }
+    }
+}
+
+void edgeExtractor::faceEvaluator::neiFacesProcs
+(
+    const label bfI,
+    DynList<label>& neiProcs
+) const
+{
+    const meshSurfaceEngine& mse = extractor_.surfaceEngine();
+
+    const VRWGraph& faceEdges = mse.faceEdges();
+
+    neiProcs.setSize(faceEdges.sizeOfRow(bfI));
+    neiProcs = Pstream::myProcNo();
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& otherFaceProc = mse.otherEdgeFaceAtProc();
+
+        forAllRow(faceEdges, bfI, feI)
+        {
+            const label beI = faceEdges(bfI, feI);
+
+            const Map<label>::const_iterator it = otherFaceProc.find(beI);
+
+            if( it != otherFaceProc.end() )
+                neiProcs[feI] = it();
+        }
+    }
+}
+
 void edgeExtractor::faceEvaluator::neiPatchesOverEdges
 (
     const label bfI,
@@ -341,7 +400,7 @@ label edgeExtractor::faceEvaluator::bestPatchAfterModification
 
     if( patchI != extractor_.facePatch_[bfI] )
     {
-        DynList<label> newNeiPatches;
+        DynList<label> newNeiPatches, oldNeiPatches;
         neiPatchesOverEdges
         (
             bfI,
@@ -349,6 +408,35 @@ label edgeExtractor::faceEvaluator::bestPatchAfterModification
             *newOtherFacePatchPtr_,
             newNeiPatches
         );
+
+        neiPatchesOverEdges
+        (
+            bfI,
+            extractor_.facePatch_,
+            otherFacePatch_,
+            oldNeiPatches
+        );
+
+        DynList<label> neiFaces, neiProcs;
+        neiFacesOverEdges(bfI, neiFaces);
+        neiFacesProcs(bfI, neiProcs);
+
+        forAll(neiFaces, eI)
+        {
+            const label origPatchI = extractor_.facePatch_[neiFaces[eI]];
+            const label newPatchI = (*newBoundaryPatchesPtr_)[neiFaces[eI]];
+
+            if( neiFaces[eI] > bfI )
+            {
+                if( newPatchI != origPatchI )
+                    newNeiPatches[eI] = origPatchI;
+            }
+            else if( neiFaces[eI] < 0 )
+            {
+                if( neiProcs[eI] > Pstream::myProcNo() )
+                    newNeiPatches[eI] = origPatchI;
+            }
+        }
 
         return bestPatchTopological(newNeiPatches, patchI);
     }

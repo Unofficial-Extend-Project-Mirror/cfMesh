@@ -90,7 +90,6 @@ void tetMeshGenerator::surfacePreparation()
 
 void tetMeshGenerator::mapMeshToSurface()
 {
-    return;
     //- calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
 

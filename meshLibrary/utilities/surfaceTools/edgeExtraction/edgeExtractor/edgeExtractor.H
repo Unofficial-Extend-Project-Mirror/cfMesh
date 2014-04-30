@@ -224,6 +224,12 @@ class edgeExtractor
                 void calculateNeiPatchesParallel();
                 void calculateNeiPatchesParallelNewPatches();
 
+                //- find neighbour faces over edges
+                void neiFacesOverEdges(const label, DynList<label>&) const;
+
+                //- find processors of faces over edges
+                void neiFacesProcs(const label, DynList<label>&) const;
+
                 //- calculate neighbour patches over edges of a boundary face
                 void neiPatchesOverEdges
                 (
@@ -234,7 +240,7 @@ class edgeExtractor
                 ) const;
 
                 //- evaluate new patch for a face based on the number of
-                //- common edges shared between faces in oterh patches
+                //- common edges shared between faces in other patches
                 static label bestPatchTopological
                 (
                     const DynList<label>& neiPatches,

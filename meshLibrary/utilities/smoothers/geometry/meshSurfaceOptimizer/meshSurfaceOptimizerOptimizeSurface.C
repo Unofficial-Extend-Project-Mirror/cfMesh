@@ -280,65 +280,34 @@ void meshSurfaceOptimizer::smoothLaplacianFC
 
 void meshSurfaceOptimizer::smoothSurfaceOptimizer
 (
-    const labelLongList& selectedPoints,
-    const labelLongList& selectedProcPoints
+    const labelLongList& selectedPoints
 )
 {
     this->triMesh();
     updateTriMesh(selectedPoints);
 
-    DynList<LongList<labelledPoint> > newPositions(1);
-    # ifdef USE_OMP
-    newPositions.setSize(omp_get_num_procs());
-    # endif
+    pointField newPositions(selectedPoints.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel num_threads(newPositions.size())
+    # pragma omp parallel for schedule(dynamic, 20)
     # endif
+    forAll(selectedPoints, i)
     {
-        # ifdef USE_OMP
-        LongList<labelledPoint>& newPos = newPositions[omp_get_thread_num()];
-        # else
-        LongList<labelledPoint>& newPos = newPositions[0];
-        # endif
+        const label bpI = selectedPoints[i];
 
-        # ifdef USE_OMP
-        # pragma omp for schedule(dynamic, 20)
-        # endif
-        forAll(selectedPoints, i)
-        {
-            const label bpI = selectedPoints[i];
-
-            if( vertexType_[bpI] & PROCBND )
-                continue;
-
-            newPos.append(labelledPoint(bpI, newPositionSurfaceOptimizer(bpI)));
-        }
+        newPositions[i] = newPositionSurfaceOptimizer(bpI);
     }
-
-    if( Pstream::parRun() )
-        nodeDisplacementSurfaceOptimizerParallel(selectedProcPoints);
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
     # ifdef USE_OMP
-    # pragma omp parallel num_threads(newPositions.size())
+    # pragma omp parallel for schedule(dynamic, 100)
     # endif
+    forAll(newPositions, i)
     {
-        # ifdef USE_OMP
-        const label threadI = omp_get_thread_num();
-        # else
-        const label threadI = 0;
-        # endif
+        const label bpI = selectedPoints[i];
 
-        const LongList<labelledPoint>& newPos = newPositions[threadI];
-
-        forAll(newPos, i)
-            surfaceModifier.moveBoundaryVertexNoUpdate
-            (
-                newPos[i].pointLabel(),
-                newPos[i].coordinates()
-            );
+        surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newPositions[i]);
     }
 
     //- update geometry addressing for moved points
@@ -477,7 +446,7 @@ bool meshSurfaceOptimizer::untangleSurface
             surfaceModifier.updateGeometry(movedPoints);
 
             //- use surface optimizer
-            smoothSurfaceOptimizer(movedPoints, procBndPoints);
+            smoothSurfaceOptimizer(movedPoints);
 
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
@@ -879,7 +848,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
 
             bMod.updateGeometry(edgePts);
 
-            smoothSurfaceOptimizer(movedPts, procBndPts);
+            smoothSurfaceOptimizer(movedPts);
 
             bMod.updateGeometry(movedPts);
         }

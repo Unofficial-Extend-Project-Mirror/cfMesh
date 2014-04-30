@@ -200,11 +200,7 @@ class meshSurfaceOptimizer
         );
 
         //- smooth selected points using surface optimizer
-        void smoothSurfaceOptimizer
-        (
-            const labelLongList& selectedPoints,
-            const labelLongList& selectedProcPoints
-        );
+        void smoothSurfaceOptimizer(const labelLongList& selectedPoints);
 
     // Functions needed for parallel runs
 
