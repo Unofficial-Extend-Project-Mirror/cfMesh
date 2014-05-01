@@ -364,7 +364,7 @@ bool meshSurfaceOptimizer::untangleSurface
 
     do
     {
-        label nIter(0), nAfterRefresh;
+        label nIter(0), nAfterRefresh(0);
 
         do
         {
