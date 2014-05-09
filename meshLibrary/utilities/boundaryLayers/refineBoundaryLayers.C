@@ -219,7 +219,7 @@ void refineBoundaryLayers::refineLayers()
         if( it->second > 1 )
             refinePatch = true;
 
-    if( !(globalNumLayers_ > 1 || refinePatch) )
+    if( (globalNumLayers_ < 2) && !refinePatch )
         return;
 
     Info << "Starting refining boundary layers" << endl;
@@ -305,6 +305,7 @@ void refineBoundaryLayers::readSettings
                     {
                         const label nLayers =
                             readLabel(patchDict.lookup("nLayers"));
+
                         refLayers.setNumberOfLayersForPatch(pName, nLayers);
                     }
                     if( patchDict.found("thicknessRatio") )

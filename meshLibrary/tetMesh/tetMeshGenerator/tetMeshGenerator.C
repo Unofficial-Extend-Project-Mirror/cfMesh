@@ -46,6 +46,7 @@ Description
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
+#include "refineBoundaryLayers.H"
 
 //#define DEBUG
 
@@ -135,25 +136,28 @@ void tetMeshGenerator::optimiseMeshSurface()
 
 void tetMeshGenerator::generateBoudaryLayers()
 {
-    boundaryLayers bl(mesh_);
-
     if( meshDict_.found("boundaryLayers") )
     {
-        wordList createLayers;
+        boundaryLayers bl(mesh_);
 
-        if( meshDict_.isDict("boundaryLayers") )
-        {
-            const dictionary& dict = meshDict_.subDict("boundaryLayers");
-            createLayers = dict.toc();
-        }
-        else
-        {
-            wordList bndLayers(meshDict_.lookup("boundaryLayers"));
-            createLayers.transfer(bndLayers);
-        }
+        const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
 
-        forAll(createLayers, patchI)
-            bl.addLayerForPatch(createLayers[patchI]);
+        if( bndLayers.found("nLayers") )
+        {
+            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
+
+            if( nLayers > 0 )
+                bl.addLayerForAllPatches();
+        }
+        else if( bndLayers.found("patchBoundaryLayers") )
+        {
+            const dictionary& patchLayers =
+                bndLayers.subDict("patchBoundaryLayers");
+            const wordList createLayers = patchLayers.toc();
+
+            forAll(createLayers, patchI)
+                bl.addLayerForPatch(createLayers[patchI]);
+        }
     }
 
     # ifdef DEBUG
@@ -177,6 +181,23 @@ void tetMeshGenerator::optimiseFinalMesh()
     mesh_.write();
     //::exit(0);
     # endif
+}
+
+void tetMeshGenerator::refBoundaryLayers()
+{
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
+
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.optimizeLowQualityFaces();
+        optimizer.untangleMeshFV();
+    }
 }
 
 void tetMeshGenerator::replaceBoundaries()
@@ -214,6 +235,8 @@ void tetMeshGenerator::generateMesh()
     generateBoudaryLayers();
 
     optimiseFinalMesh();
+
+    refBoundaryLayers();
 
     renumberMesh();
 
