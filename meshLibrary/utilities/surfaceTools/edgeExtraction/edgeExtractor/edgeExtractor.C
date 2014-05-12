@@ -2094,7 +2094,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
             break;
 
         //- check if there exist any inverted faces
-        meshSurfaceCheckInvertedVertices surfCheck(mse, &activePoints);
+        meshSurfaceCheckInvertedVertices surfCheck(mse, activePoints);
         const labelHashSet& invertedPoints = surfCheck.invertedVertices();
 
         if( returnReduce(invertedPoints.size(), sumOp<label>()) == 0 )

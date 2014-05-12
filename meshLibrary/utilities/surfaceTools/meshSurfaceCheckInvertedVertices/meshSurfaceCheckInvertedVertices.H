@@ -47,7 +47,7 @@ namespace Foam
 {
 
 // Forward declarations
-class meshSurfaceEngine;
+class meshSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
             Class meshSurfaceCheckInvertedVertices Declaration
@@ -56,11 +56,8 @@ class meshSurfaceEngine;
 class meshSurfaceCheckInvertedVertices
 {
     // Private data
-        //- shall the mesh surface be deleted or not
-        bool deleteSurface_;
-    
-        //- mesh surface
-        const meshSurfaceEngine* surfaceEnginePtr_;
+        //- mesh surface partitioner
+        const meshSurfacePartitioner& surfacePartitioner_;
     
         //- active surface points
         const boolList* activePointsPtr_;
@@ -85,15 +82,18 @@ public:
 
     // Constructors
 
-        //- Construct from meshSurfaceEngine
+        //- Construct from meshSurfacePartitioner
         meshSurfaceCheckInvertedVertices
         (
-            const meshSurfaceEngine&,
-            const boolList* activePointsPtr = NULL
+            const meshSurfacePartitioner&
         );
 
-        //- Construct from the mesh
-        meshSurfaceCheckInvertedVertices(polyMeshGen&);
+        //- Construct from meshSurfacePartitioner and a list of active points
+        meshSurfaceCheckInvertedVertices
+        (
+            const meshSurfacePartitioner&,
+            const boolList& activePoints
+        );
 
     // Destructor
 

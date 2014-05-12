@@ -74,7 +74,7 @@ label meshSurfaceOptimizer::findInvertedVertices
 
     //- check the vertices at the surface
     //- mark the ones where the mesh is tangled
-    meshSurfaceCheckInvertedVertices vrtCheck(surfaceEngine_, &smoothVertex);
+    meshSurfaceCheckInvertedVertices vrtCheck(surfaceEngine_, smoothVertex);
     const labelHashSet& inverted = vrtCheck.invertedVertices();
 
     smoothVertex = false;
