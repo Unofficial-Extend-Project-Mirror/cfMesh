@@ -2389,8 +2389,6 @@ bool edgeExtractor::untangleSurface()
 
 void edgeExtractor::extractEdges()
 {
-    meshOctree_.surface().writeSurface("surf.fms");
-
     distributeBoundaryFaces();
 
     distributeBoundaryFacesNormalAlignment();

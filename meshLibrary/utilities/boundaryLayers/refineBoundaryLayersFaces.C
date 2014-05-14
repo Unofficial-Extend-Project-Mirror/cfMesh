@@ -169,6 +169,16 @@ void refineBoundaryLayers::refineFace
     Pout << "dir1Edges " << dir1Edges << endl;
     # endif
 
+    if( (dir0 < 0) && (dir1 < 0) )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::refineFace(const face&,"
+            " const FixedList<label, 2>&, DynList<DynList<label, 4> >&)"
+        ) << "Cannot splitting directions for a face"
+          << abort(FatalError);
+    }
+
     //- in case of only one refinement direction, it must direction 0
     if( (dir1 != -1) && (dir0 == -1) )
     {

@@ -37,7 +37,7 @@ SourceFiles
 #define meshSurfacePartitioner_H
 
 #include "meshSurfaceEngine.H"
-#include "VRWGRaph.H"
+#include "VRWGraph.H"
 #include "HashSet.H"
 
 #include <map>
