@@ -1127,7 +1127,6 @@ void refineBoundaryLayers::generateNewVertices()
                     << " param " << param
                     << " new point " << nPoints
                     << " has coordinates " << newP << endl;
-                    }
                 # endif
 
                 param += firstThickness * Foam::pow(thicknessRatio[seI], pI);

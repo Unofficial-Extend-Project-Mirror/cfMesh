@@ -32,6 +32,10 @@ Description
 
 #include "polyMeshGenFaces.H"
 
+# ifdef USE_OMP
+#include <omp.h>
+# endif
+
 namespace Foam
 {
 
@@ -45,7 +49,18 @@ inline const faceListPMG& polyMeshGenFaces::faces() const
 inline label polyMeshGenFaces::nInternalFaces() const
 {
     if( !(ownerPtr_ && neighbourPtr_) )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::nInternalFaces() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateOwnersAndNeighbours();
+    }
 
     return nIntFaces_;
 }
@@ -53,7 +68,18 @@ inline label polyMeshGenFaces::nInternalFaces() const
 inline const labelList& polyMeshGenFaces::owner() const
 {
     if( !ownerPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::owner() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateOwnersAndNeighbours();
+    }
     
     return *ownerPtr_;
 }
@@ -61,7 +87,18 @@ inline const labelList& polyMeshGenFaces::owner() const
 inline const labelList& polyMeshGenFaces::neighbour() const
 {
     if( !neighbourPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenFaces::neighbour() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateOwnersAndNeighbours();
+    }
     
     return *neighbourPtr_;
 }

@@ -100,6 +100,9 @@ class voronoiMeshGenerator
         //- mesh optimisation
         void optimiseFinalMesh();
 
+        //- refine boundary layer
+        void refBoundaryLayers();
+
         //- replace boundaries
         void replaceBoundaries();
 

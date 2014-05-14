@@ -249,6 +249,7 @@ void decomposeCells::addNewCells()
     );
 
     polyMeshGenModifier(mesh_).removeUnusedVertices();
+    polyMeshGenModifier(mesh_).clearAll();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

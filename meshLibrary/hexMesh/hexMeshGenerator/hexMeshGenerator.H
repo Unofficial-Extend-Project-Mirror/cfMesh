@@ -94,6 +94,9 @@ class hexMeshGenerator
         //- mesh optimisation
         void optimiseFinalMesh();
 
+        //- refine boundary layers
+        void refBoundaryLayers();
+
         //- replace boundaries
         void replaceBoundaries();
 

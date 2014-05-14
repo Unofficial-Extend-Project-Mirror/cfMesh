@@ -45,6 +45,7 @@ Description
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
+#include "refineBoundaryLayers.H"
 
 //#define DEBUG
 
@@ -153,34 +154,28 @@ void hexMeshGenerator::generateBoundaryLayers()
 {
     boundaryLayers bl(mesh_);
 
-    if( meshDict_.found("boundaryLayers") )
-    {
-        wordList createLayers;
-
-        if( meshDict_.isDict("boundaryLayers") )
-        {
-            const dictionary& dict = meshDict_.subDict("boundaryLayers");
-            createLayers = dict.toc();
-        }
-        else
-        {
-            wordList bndLayers(meshDict_.lookup("boundaryLayers"));
-            createLayers.transfer(bndLayers);
-        }
-
-        forAll(createLayers, patchI)
-            bl.addLayerForPatch(createLayers[patchI]);
-    }
-    else
-    {
-        //bl.createOTopologyLayers();
-        bl.addLayerForAllPatches();
-    }
+    bl.addLayerForAllPatches();
 
     # ifdef DEBUG
     mesh_.write();
     //::exit(0);
     # endif
+}
+
+void hexMeshGenerator::refBoundaryLayers()
+{
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
+
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.untangleMeshFV();
+    }
 }
 
 void hexMeshGenerator::optimiseFinalMesh()

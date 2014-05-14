@@ -35,13 +35,12 @@ Description
 #include "voronoiMeshExtractor.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
-//#include "meshSurfaceEdgeExtractorNonTopo.H"
-//#include "decomposeCellsNearConcaveEdges.H"
 #include "surfaceMorpherCells.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
 #include "topologicalCleaner.H"
 #include "boundaryLayers.H"
+#include "refineBoundaryLayers.H"
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
@@ -206,6 +205,24 @@ void voronoiMeshGenerator::generateBoudaryLayers()
     # endif
 }
 
+void voronoiMeshGenerator::refBoundaryLayers()
+{
+    mesh_.write();
+
+    if( meshDict_.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh_);
+
+        refineBoundaryLayers::readSettings(meshDict_, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer optimizer(mesh_);
+
+        optimizer.untangleMeshFV();
+    }
+}
+
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
@@ -255,11 +272,11 @@ void voronoiMeshGenerator::generateMesh()
 
     optimiseMeshSurface();
 
-    //decomposeConcaveCells();
-
     generateBoudaryLayers();
 
     optimiseFinalMesh();
+
+    refBoundaryLayers();
 
     renumberMesh();
 

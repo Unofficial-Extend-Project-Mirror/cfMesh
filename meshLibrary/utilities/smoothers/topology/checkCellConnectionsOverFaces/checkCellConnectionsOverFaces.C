@@ -188,6 +188,7 @@ void checkCellConnectionsOverFaces::findCellGroups()
 {
     Info << "Checking cell connections" << endl;
 
+    mesh_.owner();
     nGroups_ =
         help::groupMarking
         (

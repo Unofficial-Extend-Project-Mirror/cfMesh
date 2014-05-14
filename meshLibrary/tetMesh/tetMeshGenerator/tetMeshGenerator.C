@@ -176,6 +176,8 @@ void tetMeshGenerator::optimiseFinalMesh()
     deleteDemandDrivenData(octreePtr_);
 
     optimizer.optimizeMeshFV();
+    optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeMeshFV();
 
     # ifdef DEBUG
     mesh_.write();
@@ -195,7 +197,6 @@ void tetMeshGenerator::refBoundaryLayers()
 
         meshOptimizer optimizer(mesh_);
 
-        optimizer.optimizeLowQualityFaces();
         optimizer.untangleMeshFV();
     }
 }
