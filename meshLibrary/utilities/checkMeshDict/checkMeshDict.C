@@ -472,11 +472,20 @@ void checkMeshDict::updateLocalRefinementLevel
                 const wordList& updatedPatchNames = it->second;
 
                 const dictionary& pDict = dict.subDict(pName);
-                const label nLevels =
-                    readLabel(pDict.lookup("additionalRefinementLevels"));
-
                 dictionary copy;
-                copy.add("additionalRefinementLevels", nLevels);
+                if( pDict.found("additionalRefinementLevels") )
+                {
+                    const label nLevels =
+                        readLabel(pDict.lookup("additionalRefinementLevels"));
+
+                    copy.add("additionalRefinementLevels", nLevels);
+                }
+                else if( pDict.found("cellSize") )
+                {
+                    const scalar cs = readScalar(pDict.lookup("cellSize"));
+
+                    copy.add("cellSize", cs);
+                }
 
                 //- add new patches
                 forAll(updatedPatchNames, nameI)
