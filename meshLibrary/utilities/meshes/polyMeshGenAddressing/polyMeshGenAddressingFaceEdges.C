@@ -27,7 +27,9 @@ License
 #include "polyMeshGenAddressing.H"
 #include "VRWGraphSMPModifier.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -111,7 +113,18 @@ void polyMeshGenAddressing::calcFaceEdges() const
 const VRWGraph& polyMeshGenAddressing::faceEdges() const
 {
     if( !fePtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::faceEdges() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcFaceEdges();
+    }
 
     return *fePtr_;
 }

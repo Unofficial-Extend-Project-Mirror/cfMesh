@@ -33,7 +33,9 @@ Description
 
 #include "polyMeshGenAddressing.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -125,7 +127,18 @@ void polyMeshGenAddressing::makeCellCentresAndVols
 const vectorField& polyMeshGenAddressing::cellCentres() const
 {
     if( !cellCentresPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const vectorField& polyMeshGenAddressing::cellCentres() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcCellCentresAndVols();
+    }
 
     return *cellCentresPtr_;
 }
@@ -133,7 +146,18 @@ const vectorField& polyMeshGenAddressing::cellCentres() const
 const scalarField& polyMeshGenAddressing::cellVolumes() const
 {
     if( !cellVolumesPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const scalarField& polyMeshGenAddressing::cellVolumes() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcCellCentresAndVols();
+    }
 
     return *cellVolumesPtr_;
 }

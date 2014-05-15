@@ -124,7 +124,18 @@ void polyMeshGenAddressing::makeFaceCentresAndAreas
 const vectorField& polyMeshGenAddressing::faceCentres() const
 {
     if( !faceCentresPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const vectorField& polyMeshGenAddressing::faceCentres() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcFaceCentresAndAreas();
+    }
 
     return *faceCentresPtr_;
 }
@@ -132,7 +143,18 @@ const vectorField& polyMeshGenAddressing::faceCentres() const
 const vectorField& polyMeshGenAddressing::faceAreas() const
 {
     if( !faceAreasPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const vectorField& polyMeshGenAddressing::faceAreas() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcFaceCentresAndAreas();
+    }
 
     return *faceAreasPtr_;
 }

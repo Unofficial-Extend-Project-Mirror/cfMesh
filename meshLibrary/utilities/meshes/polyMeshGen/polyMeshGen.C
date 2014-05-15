@@ -31,14 +31,13 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 polyMeshGen::polyMeshGen(const Time& t)
 :
     polyMeshGenCells(t)
-{
-}
+{}
 
 //- Construct from components without the boundary
 polyMeshGen::polyMeshGen
@@ -50,8 +49,7 @@ polyMeshGen::polyMeshGen
 )
 :
     polyMeshGenCells(t, points, faces, cells)
-{
-}
+{}
 
 //- Construct from components with the boundary
 polyMeshGen::polyMeshGen
@@ -75,14 +73,12 @@ polyMeshGen::polyMeshGen
         patchStart,
         nFacesInPatch
     )
-{
-}
-        
+{}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Destructor
 polyMeshGen::~polyMeshGen()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

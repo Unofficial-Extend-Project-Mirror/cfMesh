@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
     Info << "Starting bnd layer refinement "
          << runTime.elapsedClockTime() << endl;
 
+    //polyMeshGenChecks::checkMesh(pmg, true);
+
     refineBoundaryLayers refLayers(pmg);
 
     refineBoundaryLayers::readSettings(meshDict, refLayers);
@@ -82,8 +84,8 @@ int main(int argc, char *argv[])
     Info << "Finished with bnd layer refinement "
          << runTime.elapsedClockTime() << endl;
 
-    //polyMeshGenChecks::checkMesh(pmg, true);
-
+    polyMeshGenChecks::checkMesh(pmg, true);
+    return 0;
     pmg.write();
     //meshOctree* octreePtr = NULL;
     //meshOptimizer(*octreePtr, pmg).preOptimize();

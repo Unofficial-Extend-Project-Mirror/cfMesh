@@ -276,6 +276,9 @@ public:
             return true;
         }
 
+        if( (nQuads + 2) != c.size() )
+            return false;
+
         if( nBndFaces != 1 )
             return false;
 
@@ -288,7 +291,7 @@ public:
             const bool sEdge =
                 help::shareAnEdge(faces[c[baseFace]], faces[c[fI]]);
 
-            if( faces[c[fI]].size() == 4 && sEdge )
+            if( (faces[c[fI]].size() == 4) && sEdge )
             {
                 ++nQuadsAttachedToBaseFace;
             }
@@ -328,6 +331,8 @@ void refineBoundaryLayers::analyseLayers()
     mse.faceOwners();
     mse.faceEdges();
     mse.edgeFaces();
+    mse.edges();
+    mse.boundaryPointEdges();
 
     //- find layers in patch
     labelLongList bndFaceInLayer;
@@ -380,6 +385,10 @@ void refineBoundaryLayers::analyseLayers()
         }
     }
 
+    # ifdef DEBUGLayer
+    Info << "Layer at patch " << layerAtPatch_ << endl;
+    # endif
+
     //- set the information which patches are a single boundary layer face
     patchesInLayer_.setSize(nValidLayers);
     forAll(layerAtPatch_, patchI)
@@ -394,6 +403,8 @@ void refineBoundaryLayers::analyseLayers()
     }
 
     # ifdef DEBUGLayer
+    Info << "Patches in layer " << patchesInLayer_ << endl;
+
     //- write layers to a subset
     std::map<label, label> layerId;
     for(label i=0;i<nValidLayers;++i)
@@ -417,18 +428,17 @@ void refineBoundaryLayers::analyseLayers()
     labelList nLayersAtPatch(layerAtPatch_.size(), -1);
     boolList protectedValue(layerAtPatch_.size(), false);
 
-    forAll(boundaries, patchI)
+    forAll(patchesInLayer_, layerI)
     {
-        const label layerI = layerAtPatch_[patchI];
-
-        if( layerI < 0 )
-            continue;
+        const DynList<word>& layerPatches = patchesInLayer_[layerI];
 
         label maxNumLayers(1);
+        bool hasLocalValue(false);
 
-        forAll(patchesInLayer_[layerI], lpI)
+        //- find the maximum requested number of layers over the layer
+        forAll(layerPatches, lpI)
         {
-            const word pName = patchesInLayer_[layerI][lpI];
+            const word pName = layerPatches[lpI];
 
             std::map<word, label>::const_iterator it =
                 numLayersForPatch_.find(pName);
@@ -441,28 +451,28 @@ void refineBoundaryLayers::analyseLayers()
                     discontinuousLayersForPatch_.end()
                 )
                 {
-                    //- set the numbe of layers and lock this location
+                    //- set the number of layers and lock this location
                     nLayersAtPatch[patchNameToIndex[pName]] = it->second;
                     protectedValue[patchNameToIndex[pName]] = true;
+                    hasLocalValue = true;
                 }
                 else
                 {
                     //- take the maximum number of layers
                     maxNumLayers = Foam::max(maxNumLayers, it->second);
+                    hasLocalValue = true;
                 }
             }
         }
 
-        if( maxNumLayers == 1 )
-        {
-            //- apply global settings to the patches which are not overriden
+        //- apply the global value if no local values exist
+        if( !hasLocalValue )
             maxNumLayers = globalNumLayers_;
-        }
 
-        //- set the number of layer to all patches which are not protected
-        forAll(patchesInLayer_[layerI], lpI)
+        //- apply the maximum number of ayer of all unprotected patches
+        forAll(layerPatches, lpI)
         {
-            const label ptchI = patchNameToIndex[patchesInLayer_[layerI][lpI]];
+            const label ptchI = patchNameToIndex[layerPatches[lpI]];
 
             if( !protectedValue[ptchI] )
                 nLayersAtPatch[ptchI] = maxNumLayers;

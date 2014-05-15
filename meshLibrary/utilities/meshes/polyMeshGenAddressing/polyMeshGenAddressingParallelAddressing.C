@@ -31,9 +31,9 @@ License
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void polyMeshGenAddressing::calcGlobalPointLabels() const
 {
     if( !Pstream::parRun() )
@@ -42,30 +42,30 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             "void polyMeshGenAddressing::calcGlobalPointLabels() const"
         ) << "Cannot calculate global point addressing "
             << "for a serial run!" << exit(FatalError);
-    
+
     if( !globalPointLabelPtr_ )
         globalPointLabelPtr_ = new labelLongList();
     labelLongList& globalPointLabel = *globalPointLabelPtr_;
     globalPointLabel.setSize(mesh_.points().size());
     globalPointLabel = -1;
-    
+
     if( !pProcsPtr_ )
         pProcsPtr_ = new VRWGraph();
     VRWGraph& pProcs = *pProcsPtr_;
     pProcs.setSize(mesh_.points().size());
-    
+
     if( !globalToLocalPointAddressingPtr_ )
         globalToLocalPointAddressingPtr_ = new Map<label>();
     Map<label>& globalToLocal = *globalToLocalPointAddressingPtr_;
-    
+
     if( !pointNeiProcsPtr_ )
         pointNeiProcsPtr_ = new DynList<label>();
     DynList<label>& pNeiProcs = *pointNeiProcsPtr_;
-    
+
     const faceListPMG& faces = mesh_.faces();
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
-    
+
     //- find which processors contain a given bnd point
     List<std::map<label, std::pair<label, label> > > patchPoints;
     patchPoints.setSize(procBoundaries.size());
@@ -73,48 +73,48 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
     {
         const label start = procBoundaries[patchI].patchStart();
         const label end = start + procBoundaries[patchI].patchSize();
-        
+
         std::map<label, std::pair<label, label> >& patchPointsMap =
             patchPoints[patchI];
-    
+
         for(label faceI=start;faceI<end;++faceI)
         {
             const face& f = faces[faceI];
-            
+
             forAll(f, pI)
             {
                 std::map<label, std::pair<label, label> >::iterator it =
                     patchPointsMap.find(f[pI]);
-                
+
                 if( it != patchPointsMap.end() )
                     continue;
-                
+
                 const std::pair<label, label> pp
                 (
                     faceI-start,
                     (f.size()-pI)%f.size()
                 );
                 patchPointsMap.insert(std::make_pair(f[pI], pp));
-                
+
                 pProcs.appendIfNotIn(f[pI], procBoundaries[patchI].myProcNo());
                 pProcs.appendIfNotIn(f[pI], procBoundaries[patchI].neiProcNo());
             }
         }
     }
-    
+
     //- exchange data with other processor and update bProcs
     //- continue this process as long as there is some change
     bool finished;
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const std::map<label, std::pair<label, label> >& patchPointsMap =
                 patchPoints[patchI];
             std::map<label, std::pair<label, label> >::const_iterator it;
-            
+
             labelLongList dataToSend;
             for(it=patchPointsMap.begin();it!=patchPointsMap.end();++it)
             {
@@ -129,7 +129,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                 forAllRow(pProcs, it->first, i)
                     dataToSend.append(pProcs(it->first, i));
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -138,7 +138,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             );
             toOtherProc << dataToSend;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -148,9 +148,9 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
@@ -168,10 +168,10 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- start calculating global point labels
     label nLocalPoints(0);
     boolList localPoints(mesh_.points().size(), true);
@@ -181,7 +181,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             label pMin = pProcs(pI, 0);
             forAllRow(pProcs, pI, procI)
                 pMin = Foam::min(pMin, pProcs(pI, procI));
-            
+
             if( pMin == Pstream::myProcNo() )
             {
                 ++nLocalPoints;
@@ -195,7 +195,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
         {
             ++nLocalPoints;
         }
-        
+
     //- give local points their labels
     label startPoint(0);
     labelList nPointsAtProc(Pstream::nProcs());
@@ -204,22 +204,22 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
     Pstream::scatterList(nPointsAtProc);
     for(label i=0;i<Pstream::myProcNo();++i)
         startPoint += nPointsAtProc[i];
-    
+
     forAll(localPoints, pI)
         if( localPoints[pI] )
             globalPointLabel[pI] = startPoint++;
-        
+
     //- send labels to non-local points
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const std::map<label, std::pair<label, label> >& patchPointsMap =
                 patchPoints[patchI];
             std::map<label, std::pair<label, label> >::const_iterator it;
-            
+
             labelLongList dataToSend;
             for(it=patchPointsMap.begin();it!=patchPointsMap.end();++it)
             {
@@ -234,7 +234,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                     dataToSend.append(globalPointLabel[it->first]);
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -243,7 +243,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             );
             toOtherProc << dataToSend;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -253,16 +253,16 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const face& f = faces[start+receivedData[counter++]];
                 const label pI = receivedData[counter++];
                 const label globalLabel = receivedData[counter++];
-                
+
                 if( globalPointLabel[f[pI]] == -1 )
                 {
                     globalPointLabel[f[pI]] = globalLabel;
@@ -279,7 +279,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
 
@@ -288,7 +288,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
         if( pProcs.sizeOfRow(pointI) != 0 )
         {
             globalToLocal.insert(globalPointLabel[pointI], pointI);
-            
+
             forAllRow(pProcs, pointI, i)
                 pNeiProcs.appendIfNotIn(pProcs(pointI, i));
         }
@@ -301,35 +301,35 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
     labelLongList& globalFaceLabel = *globalFaceLabelPtr_;
     globalFaceLabel.setSize(mesh_.faces().size());
     globalFaceLabel = -1;
-    
+
     if( !Pstream::parRun() )
         return;
-    
+
     const label nIntFaces = mesh_.nInternalFaces();
-    
+
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
-    
+
     label nBoundaryFaces = 0;
     forAll(procBoundaries, patchI)
     {
         if( procBoundaries[patchI].owner() )
             nBoundaryFaces += procBoundaries[patchI].patchSize();
     }
-    
+
     label startFace(0);
     labelList numberOfInternalFaces(Pstream::nProcs());
     numberOfInternalFaces[Pstream::myProcNo()] = nIntFaces + nBoundaryFaces;
-    
+
     Pstream::gatherList(numberOfInternalFaces);
     Pstream::scatterList(numberOfInternalFaces);
     for(label i=0;i<Pstream::myProcNo();++i)
         startFace += numberOfInternalFaces[i];
-    
+
     //- calculate labels for internal faces
     for(label faceI=0;faceI<nIntFaces;++faceI)
         globalFaceLabel[faceI] = startFace++;
-    
+
     //- calculate labels for processor boundaries
     forAll(procBoundaries, patchI)
     {
@@ -342,7 +342,7 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
                 globalFaceLabel[start+bfI] = startFace;
                 dataToSend[bfI] = startFace++;
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -352,7 +352,7 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
             toOtherProc << dataToSend;
         }
     }
-    
+
     forAll(procBoundaries, patchI)
     {
         if( !procBoundaries[patchI].owner() )
@@ -362,10 +362,10 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
                 Pstream::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
-            
+
             labelList receivedLabels;
             fromOtherProc >> receivedLabels;
-            
+
             const label start = procBoundaries[patchI].patchStart();
             forAll(receivedLabels, bfI)
             {
@@ -373,12 +373,12 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
             }
         }
     }
-    
+
     //- create global labels for boundary faces
     startFace = 0;
     forAll(numberOfInternalFaces, procI)
         startFace += numberOfInternalFaces[procI];
-    
+
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     labelListList numberOfBoundaryFaces(Pstream::nProcs());
     numberOfBoundaryFaces[Pstream::myProcNo()].setSize(boundaries.size());
@@ -389,18 +389,18 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
     }
     Pstream::gatherList(numberOfBoundaryFaces);
     Pstream::scatterList(numberOfBoundaryFaces);
-    
+
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
         const label nBoundaryFaces = boundaries[patchI].patchSize();
-        
+
         for(label procI=0;procI<Pstream::myProcNo();++procI)
             startFace += numberOfBoundaryFaces[procI][patchI];
-        
+
         for(label bfI=0;bfI<nBoundaryFaces;++bfI)
             globalFaceLabel[start+bfI] = startFace++;
-        
+
         for(label procI=Pstream::myProcNo()+1;procI<Pstream::nProcs();++procI)
             startFace += numberOfBoundaryFaces[procI][patchI];
     }
@@ -413,10 +413,10 @@ void polyMeshGenAddressing::calcGlobalCellLabels() const
     labelLongList& globalCellLabel = *globalCellLabelPtr_;
     globalCellLabel.setSize(mesh_.cells().size());
     globalCellLabel = -1;
-    
+
     if( !Pstream::parRun() )
         return;
-    
+
     label startLabel(0);
     labelList nCellsAtProc(Pstream::nProcs());
     nCellsAtProc[Pstream::myProcNo()] = globalCellLabel.size();
@@ -424,7 +424,7 @@ void polyMeshGenAddressing::calcGlobalCellLabels() const
     Pstream::scatterList(nCellsAtProc);
     for(label i=0;i<Pstream::myProcNo();++i)
         startLabel += nCellsAtProc[i];
-    
+
     forAll(globalCellLabel, cellI)
         globalCellLabel[cellI] = startLabel++;
 }
@@ -437,31 +437,31 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             "void polyMeshGenAddressing::calcGlobalEdgeLabels() const"
         ) << "Cannot calculate global edge addressing "
             << "for a serial run?!?!" << exit(FatalError);
-    
+
     if( !globalEdgeLabelPtr_ )
         globalEdgeLabelPtr_ = new labelLongList();
     labelLongList& globalEdgeLabel = *globalEdgeLabelPtr_;
     globalEdgeLabel.setSize(this->edges().size());
     globalEdgeLabel = -1;
-    
+
     if( !eProcsPtr_ )
         eProcsPtr_ = new VRWGraph();
     VRWGraph& eProcs = *eProcsPtr_;
     eProcs.setSize(this->edges().size());
-    
+
     if( !globalToLocalEdgeAddressingPtr_ )
         globalToLocalEdgeAddressingPtr_ = new Map<label>();
     Map<label>& globalToLocal = *globalToLocalEdgeAddressingPtr_;
-    
+
     if( !edgeNeiProcsPtr_ )
         edgeNeiProcsPtr_ = new DynList<label>();
     DynList<label>& eNeiProcs = *edgeNeiProcsPtr_;
-    
+
     const faceListPMG& faces = mesh_.faces();
     const VRWGraph& faceEdges = this->faceEdges();
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh_.procBoundaries();
-    
+
     //- find which processor contain a given bnd edge
     forAll(procBoundaries, patchI)
     {
@@ -484,19 +484,19 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             }
         }
     }
-    
+
     //- exchange data with other processor and update eProcs
     //- continue this process as long as there is some change
     bool finished;
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
 /*            label nToSend(0);
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -506,7 +506,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                     nToSend += eProcs.sizeOfRow(faceEdges(faceI, eI));
                 }
             }
-*/            
+*/
             labelLongList dataToSend;
             //nToSend = 0;
             for(label faceI=start;faceI<end;++faceI)
@@ -527,7 +527,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                         dataToSend.append(eProcs(edgeI, i));
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -536,7 +536,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             );
             toOtherProc << dataToSend;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -546,17 +546,17 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const label faceI = start+receivedData[counter++];
                 const label eI = receivedData[counter++];
-                
+
                 const label edgeI = faceEdges(faceI, eI);
-                
+
                 const label nProcs = receivedData[counter++];
                 for(label i=0;i<nProcs;++i)
                 {
@@ -569,10 +569,10 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- start calculating global edge labels
     label nLocalEdges(0);
     boolList localEdges(eProcs.size(), true);
@@ -583,7 +583,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             forAllRow(eProcs, edgeI, procI)
                 if( eProcs(edgeI, procI) < pMin )
                     pMin = eProcs(edgeI, procI);
-            
+
             if( pMin == Pstream::myProcNo() )
             {
                 ++nLocalEdges;
@@ -597,7 +597,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
         {
             ++nLocalEdges;
         }
-        
+
     //- give local points their labels
     label startEdge(0);
     labelList nEdgesAtProc(Pstream::nProcs());
@@ -606,7 +606,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
     Pstream::scatterList(nEdgesAtProc);
     for(label i=0;i<Pstream::myProcNo();++i)
         startEdge += nEdgesAtProc[i];
-    
+
     forAll(localEdges, pI)
         if( localEdges[pI] )
             globalEdgeLabel[pI] = startEdge++;
@@ -615,12 +615,12 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
     do
     {
         finished = true;
-        
+
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            
+
             labelLongList dataToSend;
             for(label faceI=start;faceI<end;++faceI)
             {
@@ -640,7 +640,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                     }
                 }
             }
-            
+
             OPstream toOtherProc
             (
                 Pstream::blocking,
@@ -649,7 +649,7 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             );
             toOtherProc << dataToSend;
         }
-        
+
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -659,19 +659,19 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
             );
             labelList receivedData;
             fromOtherProc >> receivedData;
-            
+
             const label start = procBoundaries[patchI].patchStart();
-            
+
             label counter(0);
             while( counter < receivedData.size() )
             {
                 const label faceI = start+receivedData[counter++];
                 const label eI = receivedData[counter++];
-                
+
                 const label edgeI = faceEdges(faceI, eI);
-                
+
                 const label globalLabel = receivedData[counter++];
-                
+
                 if( globalEdgeLabel[edgeI] == -1 )
                 {
                     globalEdgeLabel[edgeI] = globalLabel;
@@ -688,16 +688,16 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
                 }
             }
         }
-        
+
         reduce(finished, minOp<bool>());
     } while( !finished );
-    
+
     //- create globalToLocal addressing
     forAll(eProcs, edgeI)
         if( eProcs.sizeOfRow(edgeI) != 0 )
         {
             globalToLocal.insert(globalEdgeLabel[edgeI], edgeI);
-            
+
             forAllRow(eProcs, edgeI, i)
                 eNeiProcs.appendIfNotIn(eProcs(edgeI, i));
         }
@@ -708,16 +708,40 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
 const labelLongList& polyMeshGenAddressing::globalPointLabel() const
 {
     if( !globalPointLabelPtr_ || !pProcsPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const labelLongList& polyMeshGenAddressing::"
+                "globalPointLabel() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalPointLabels();
-    
+    }
+
     return *globalPointLabelPtr_;
 }
 
 const labelLongList& polyMeshGenAddressing::globalFaceLabel() const
 {
     if( !globalFaceLabelPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const labelLongList& polyMeshGenAddressing"
+                "::globalFaceLabel() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalFaceLabels();
-    
+    }
+
     return *globalFaceLabelPtr_;
 }
 
@@ -725,63 +749,144 @@ const labelLongList& polyMeshGenAddressing::globalCellLabel() const
 {
     if( !globalCellLabelPtr_ )
         calcGlobalCellLabels();
-    
+
     return *globalCellLabelPtr_;
 }
 
 const labelLongList& polyMeshGenAddressing::globalEdgeLabel() const
 {
     if( !globalEdgeLabelPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const labelLongList& polyMeshGenAddressing"
+                "::globalEdgeLabel() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalEdgeLabels();
-    
+    }
+
     return *globalEdgeLabelPtr_;
 }
 
 const VRWGraph& polyMeshGenAddressing::pointAtProcs() const
 {
     if( !globalPointLabelPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::pointAtProcs() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalPointLabels();
-    
+    }
+
     return *pProcsPtr_;
 }
 
 const DynList<label>& polyMeshGenAddressing::pointNeiProcs() const
 {
     if( !pointNeiProcsPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const DynList<label>& polyMeshGenAddressing"
+                "::pointNeiProcs() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalPointLabels();
-    
+    }
+
     return *pointNeiProcsPtr_;
 }
 
 const Map<label>& polyMeshGenAddressing::globalToLocalPointAddressing() const
 {
     if( !globalToLocalPointAddressingPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const Map<label>& polyMeshGenAddressing"
+                "::globalToLocalPointAddressing() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalPointLabels();
-    
+    }
+
     return *globalToLocalPointAddressingPtr_;
 }
 
 const VRWGraph& polyMeshGenAddressing::edgeAtProcs() const
 {
     if( !globalEdgeLabelPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::edgeAtProcs() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalEdgeLabels();
-    
+    }
+
     return *eProcsPtr_;
 }
 
 const DynList<label>& polyMeshGenAddressing::edgeNeiProcs() const
 {
     if( !edgeNeiProcsPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const DynList<label>& polyMeshGenAddressing::edgeNeiProcs() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalEdgeLabels();
-    
+    }
+
     return *edgeNeiProcsPtr_;
 }
 
 const Map<label>& polyMeshGenAddressing::globalToLocalEdgeAddressing() const
 {
     if( !globalToLocalEdgeAddressingPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const Map<label>& polyMeshGenAddressing"
+                "::globalToLocalEdgeAddressing() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcGlobalEdgeLabels();
-    
+    }
+
     return *globalToLocalEdgeAddressingPtr_;
 }
 

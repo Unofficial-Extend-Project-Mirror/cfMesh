@@ -61,6 +61,15 @@ const VRWGraph& polyMeshGenAddressing::pointEdges() const
 {
     if( !pePtr_ )
     {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::pointEdges() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcPointEdges();
     }
 

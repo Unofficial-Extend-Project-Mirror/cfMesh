@@ -137,7 +137,18 @@ void polyMeshGenAddressing::calcEdgeFaces() const
 const VRWGraph& polyMeshGenAddressing::edgeFaces() const
 {
     if( !efPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const VRWGraph& polyMeshGenAddressing::edgeFaces() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcEdgeFaces();
+    }
 
     return *efPtr_;
 }

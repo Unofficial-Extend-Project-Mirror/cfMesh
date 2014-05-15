@@ -233,7 +233,18 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
 void polyMeshGenCells::calculateAddressingData() const
 {
     if( !ownerPtr_ || !neighbourPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenCells::calculateAddressingData() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateOwnersAndNeighbours();
+    }
 
     addressingDataPtr_ = new polyMeshGenAddressing(*this);
 }
@@ -314,7 +325,18 @@ polyMeshGenCells::~polyMeshGenCells()
 const polyMeshGenAddressing& polyMeshGenCells::addressingData() const
 {
     if( !addressingDataPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "inline label polyMeshGenCells::addressingData() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calculateAddressingData();
+    }
 
     return *addressingDataPtr_;
 }

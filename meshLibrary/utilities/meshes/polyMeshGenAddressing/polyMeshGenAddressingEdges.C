@@ -29,7 +29,9 @@ License
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -156,7 +158,18 @@ void polyMeshGenAddressing::calcEdges() const
 const edgeList& polyMeshGenAddressing::edges() const
 {
     if( !edgesPtr_ )
+    {
+        # ifdef USE_OMP
+        if( omp_in_parallel() )
+            FatalErrorIn
+            (
+                "const edgeList& polyMeshGenAddressing::edges() const"
+            ) << "Calculating addressing inside a parallel region."
+                << " This is not thread safe" << exit(FatalError);
+        # endif
+
         calcEdges();
+    }
 
     return *edgesPtr_;
 }

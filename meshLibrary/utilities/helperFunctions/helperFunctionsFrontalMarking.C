@@ -119,7 +119,9 @@ public:
         //- operator for finding neighbours
         inline void operator()(const label groupI, DynList<label>& ng) const
         {
-            ng = neiGroups_[groupI];
+            ng.setSize(neiGroups_.sizeOfRow(groupI));
+            forAllRow(neiGroups_, groupI, i)
+                ng[i] = neiGroups_(groupI, i);
         }
 };
 
@@ -167,14 +169,17 @@ label groupMarking
     label nThreads(1);
 
     # ifdef USE_OMP
-    nThreads = 3 * omp_get_num_procs();
+    //nThreads = 3 * omp_get_num_procs();
     # endif
+
+    DynList<label> nGroupsAtThread(nThreads, 0);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        const label chunkSize = neighbourCalculator.size() / nThreads + 1;
+        const label chunkSize =
+            Foam::max(1, neighbourCalculator.size() / nThreads);
 
         # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
@@ -186,12 +191,12 @@ label groupMarking
 
         const label minEl = threadI * chunkSize;
 
-        const label maxEl =
-            Foam::min
-            (
-                neighbourCalculator.size(),
-                minEl + chunkSize
-            );
+        label maxEl = minEl + chunkSize;
+        if( threadI == (nThreads - 1) )
+            maxEl = Foam::max(maxEl, neighbourCalculator.size());
+
+        label& groupI = nGroupsAtThread[threadI];
+        groupI = 0;
 
         for(label elI=minEl;elI<maxEl;++elI)
         {
@@ -199,12 +204,6 @@ label groupMarking
                 continue;
             if( !selector(elI) )
                 continue;
-
-            label groupI;
-            # ifdef USE_OMP
-            # pragma omp critical
-            # endif
-            groupI = nGroups++;
 
             elementInGroup[elI] = groupI;
             labelLongList front;
@@ -238,7 +237,28 @@ label groupMarking
                     }
                 }
             }
+
+            ++groupI;
         }
+
+        # ifdef USE_OMP
+        # pragma omp barrier
+
+        # pragma omp master
+        {
+            forAll(nGroupsAtThread, i)
+                nGroups += nGroupsAtThread[i];
+        }
+        # else
+        nGroups = groupI;
+        # endif
+
+        label startGroup(0);
+        for(label i=0;i<threadI;++i)
+            startGroup += nGroupsAtThread[i];
+
+        for(label elI=minEl;elI<maxEl;++elI)
+            elementInGroup[elI] += startGroup;
 
         # ifdef USE_OMP
         # pragma omp barrier
@@ -280,6 +300,17 @@ label groupMarking
                     neighbouringGroups.appendIfNotIn(groupI, lGroups[i]);
             }
         }
+    }
+
+    forAll(neighbouringGroups, i)
+    {
+        labelList helper(neighbouringGroups.sizeOfRow(i));
+        forAllRow(neighbouringGroups, i, j)
+            helper[j] = neighbouringGroups(i, j);
+
+        sort(helper);
+
+        neighbouringGroups[i] = helper;
     }
 
     //- start processing connections between the group and merge the connected
