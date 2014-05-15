@@ -171,12 +171,25 @@ void refineBoundaryLayers::refineFace
 
     if( (dir0 < 0) && (dir1 < 0) )
     {
+        Pout << "Refining face " << f << endl;
+        forAll(f, pI)
+        {
+            if( splitEdgesAtPoint_.size() >= f[pI] )
+            Pout << "Split edges at point " << f[pI]
+                 << " are " << splitEdgesAtPoint_[f[pI]] << endl;
+        }
+        Pout << "Splits in direction " << nLayersInDirection << endl;
+        Pout << "Here " << endl;
+        Pout << "Dir0 " << dir0 << endl;
+        Pout << "dir0Edges " << dir0Edges << endl;
+        Pout << "Dir1 " << dir1 << endl;
+        Pout << "dir1Edges " << dir1Edges << endl;
+
         FatalErrorIn
         (
             "void refineBoundaryLayers::refineFace(const face&,"
             " const FixedList<label, 2>&, DynList<DynList<label, 4> >&)"
-        ) << "Cannot splitting directions for a face"
-          << abort(FatalError);
+        ) << "Cannot find split edges for a face" << abort(FatalError);
     }
 
     //- in case of only one refinement direction, it must direction 0

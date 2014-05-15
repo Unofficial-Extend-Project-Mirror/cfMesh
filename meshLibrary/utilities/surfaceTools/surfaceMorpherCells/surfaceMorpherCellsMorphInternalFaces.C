@@ -229,8 +229,7 @@ bool surfaceMorpherCells::morphInternalFaces()
 
         const face& f = faces[faceI];
 
-        boolList removeFaceVertex(f.size(), false);
-        DynList<edge> removeEdge(f.size());
+        DynList<bool> removeFaceVertex(f.size(), false);
 
         face newF(f.size());
         label i(0);
@@ -243,9 +242,6 @@ bool surfaceMorpherCells::morphInternalFaces()
             )
             {
                 removeFaceVertex[pI] = true;
-
-                removeEdge.appendIfNotIn(f.faceEdge(f.rcIndex(pI)));
-                removeEdge.appendIfNotIn(f.faceEdge(pI));
 
                 # ifdef DEBUGMorph
                 Info << "Removing vertex " << f[pI] << " from face "
@@ -274,7 +270,7 @@ bool surfaceMorpherCells::morphInternalFaces()
 
             //- create new boundary faces from the removed part
             label mat(1);
-            List<direction> nodeMaterial(f.size(), direction(0));
+            DynList<direction> nodeMaterial(f.size(), direction(0));
             DynList<DynList<edge>, 2> edgeMats;
             forAll(nodeMaterial, nI)
                 if( !nodeMaterial[nI] && removeFaceVertex[nI] )
@@ -361,8 +357,7 @@ bool surfaceMorpherCells::morphInternalFaces()
 
                 const face& f = copy;
 
-                boolList removeFaceVertex(f.size(), false);
-                DynList<edge> removeEdge;
+                DynList<bool> removeFaceVertex(f.size(), false);
 
                 face newF(f.size());
                 label i(0);
@@ -375,9 +370,6 @@ bool surfaceMorpherCells::morphInternalFaces()
                     )
                     {
                         removeFaceVertex[pI] = true;
-
-                        removeEdge.appendIfNotIn(f.faceEdge(f.rcIndex(pI)));
-                        removeEdge.appendIfNotIn(f.faceEdge(pI));
 
                         # ifdef DEBUGMorph
                         Info << "Removing vertex " << f[pI] << " from face "
@@ -406,7 +398,7 @@ bool surfaceMorpherCells::morphInternalFaces()
 
                     //- create new boundary faces from the removed part
                     label mat(1);
-                    List<direction> nodeMaterial(f.size(), direction(0));
+                    DynList<direction> nodeMaterial(f.size(), direction(0));
                     DynList< DynList<edge> > edgeMats;
                     forAll(nodeMaterial, nI)
                         if( !nodeMaterial[nI] && removeFaceVertex[nI] )

@@ -393,6 +393,26 @@ void refineBoundaryLayers::analyseLayers()
         );
     }
 
+    # ifdef DEBUGLayer
+    //- write layers to a subset
+    std::map<label, label> layerId;
+    for(label i=0;i<nValidLayers;++i)
+        layerId[i] = mesh_.addFaceSubset("layerFaces_"+help::scalarToText(i));
+
+    forAll(layerAtPatch_, i)
+    {
+        if( layerAtPatch_[i] < 0 )
+            continue;
+
+        const label start = boundaries[i].patchStart();
+        const label end = start + boundaries[i].patchSize();
+
+        for(label faceI=start;faceI<end;++faceI)
+            mesh_.addFaceToSubset(layerId[layerAtPatch_[i]], faceI);
+    }
+    mesh_.write();
+    # endif
+
     //- set the number of boundary layers for each patch
     labelList nLayersAtPatch(layerAtPatch_.size(), -1);
     boolList protectedValue(layerAtPatch_.size(), false);
