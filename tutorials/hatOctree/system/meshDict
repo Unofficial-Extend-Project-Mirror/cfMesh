@@ -19,7 +19,7 @@ object	meshDict;
 
 maxCellSize	0.01;
 
-surfaceFile	"surfaceMeshes/geom.fms";
+surfaceFile	"geom.fms";
 
 boundaryLayers
 {
