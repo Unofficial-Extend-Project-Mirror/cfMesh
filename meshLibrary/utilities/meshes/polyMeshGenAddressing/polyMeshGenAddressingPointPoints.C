@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
-     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+    \\  /    A nd           | Copyright held by the original author
+     \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of cfMesh.
@@ -26,7 +26,9 @@ License
 #include "polyMeshGenAddressing.H"
 #include "VRWGraphSMPModifier.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

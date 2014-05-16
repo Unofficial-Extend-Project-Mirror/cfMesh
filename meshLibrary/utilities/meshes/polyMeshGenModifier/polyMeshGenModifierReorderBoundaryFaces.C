@@ -28,7 +28,9 @@ Description
 #include "polyMeshGenModifier.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGSearch
 

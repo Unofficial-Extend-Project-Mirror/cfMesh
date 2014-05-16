@@ -31,7 +31,9 @@ Description
 
 #include "triSurfAddressing.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 namespace Foam
 {

@@ -30,7 +30,9 @@ Description
 #include "helperFunctions.H"
 #include "meshSurfaceEngine.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGCheck
 

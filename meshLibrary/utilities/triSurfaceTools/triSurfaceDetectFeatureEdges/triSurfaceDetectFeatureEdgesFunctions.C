@@ -31,7 +31,9 @@ Description
 #include "demandDrivenData.H"
 #include "labelPair.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

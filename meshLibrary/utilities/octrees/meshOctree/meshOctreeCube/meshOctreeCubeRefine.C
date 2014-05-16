@@ -29,7 +29,9 @@ Description
 #include "VRWGraph.H"
 #include "triSurf.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGSearch
 

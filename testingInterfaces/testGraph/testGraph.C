@@ -34,7 +34,9 @@ Description
 #include "VRWGraph.H"
 #include "VRWGraphModifier.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 using namespace Foam;
 
@@ -44,7 +46,7 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-    
+
 //#   include "setRootCase.H"
 //#   include "createTime.H"
 
@@ -56,32 +58,32 @@ int main(int argc, char *argv[])
         forAllRow(origGraph, i, j)
             origGraph(i, j) = i+j;
     }
-    
+
     for(label i=0;i<10;++i)
     {
         omp_set_num_threads(1);
-        
+
         Info << "Starting transpose" << endl;
-        
+
         scalar before = omp_get_wtime();
         {
             VRWGraph reverse;
             reverse.reverseAddressing(origGraph);
-        
+
             Info << "Single thread run " << omp_get_wtime() - before << endl;
         }
-        
+
         omp_set_num_threads(2);
         {
             VRWGraph reverse;
             before = omp_get_wtime();
             VRWGraphModifier(reverse).reverseAddressing(origGraph);
-        
+
             Info << "Parallel run " << omp_get_wtime() - before << endl;
-            
+
             VRWGraph rev;
             rev.reverseAddressing(origGraph);
-            
+
             forAll(reverse, rowI)
             {
                 if( reverse.sizeOfRow(rowI) != rev.sizeOfRow(rowI) )
@@ -93,10 +95,10 @@ int main(int argc, char *argv[])
             }
         }
     }
-    
+
     //Info << "Orig graph " << origGraph << endl;
     //Info << "Reversed graph " << reverse << endl;
-    
+
     Info << "End\n" << endl;
     return 0;
 }

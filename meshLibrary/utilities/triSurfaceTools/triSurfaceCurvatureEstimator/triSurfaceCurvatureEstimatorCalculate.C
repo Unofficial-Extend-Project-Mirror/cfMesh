@@ -36,7 +36,10 @@ Description
 #include "OFstream.H"
 
 #include <map>
+
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGCurvatureEstimator
 

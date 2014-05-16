@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
-     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+    \\  /    A nd           | Copyright held by the original author
+     \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of cfMesh.
@@ -86,7 +86,7 @@ void polyMeshGenAddressing::printAllocated() const
     {
         Pout<< "    Point-point" << endl;
     }
-    
+
     if( cpPtr_ )
     {
         Pout<< "    Cell-point" << endl;
@@ -160,7 +160,7 @@ void polyMeshGenAddressing::clearParallelAddressing()
     deleteDemandDrivenData(globalFaceLabelPtr_);
     deleteDemandDrivenData(globalCellLabelPtr_);
     deleteDemandDrivenData(globalEdgeLabelPtr_);
-    
+
     deleteDemandDrivenData(pProcsPtr_);
     deleteDemandDrivenData(globalToLocalPointAddressingPtr_);
     deleteDemandDrivenData(pointNeiProcsPtr_);

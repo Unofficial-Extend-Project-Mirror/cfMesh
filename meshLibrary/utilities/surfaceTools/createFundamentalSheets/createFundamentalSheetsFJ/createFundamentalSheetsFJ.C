@@ -32,7 +32,9 @@ Description
 
 #include "addToRunTimeSelectionTable.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGSearch
 

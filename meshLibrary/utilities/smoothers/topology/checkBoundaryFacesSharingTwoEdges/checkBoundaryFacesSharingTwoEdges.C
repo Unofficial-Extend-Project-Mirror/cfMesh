@@ -32,7 +32,9 @@ Description
 #include "decomposeFaces.H"
 #include "decomposeCells.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 //#define DEBUGCheck
 

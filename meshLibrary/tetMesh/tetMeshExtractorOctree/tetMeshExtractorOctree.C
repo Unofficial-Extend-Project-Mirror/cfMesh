@@ -33,7 +33,9 @@ Description
 #include "tessellationDimSpace.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // #define DEBUGTets
 

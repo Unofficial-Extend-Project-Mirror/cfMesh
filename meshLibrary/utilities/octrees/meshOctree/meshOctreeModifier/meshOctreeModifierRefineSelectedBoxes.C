@@ -29,7 +29,10 @@ Description
 #include "triSurf.H"
 #include "HashSet.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
+
 #include <sys/stat.h>
 
 //#define OCTREETiming
