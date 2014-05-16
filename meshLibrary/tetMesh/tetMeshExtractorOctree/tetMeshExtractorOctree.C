@@ -29,7 +29,6 @@ Description
 #include "meshOctree.H"
 #include "triSurface.H"
 #include "polyMeshGenModifierAddCellByCell.H"
-
 #include "demandDrivenData.H"
 
 # ifdef USE_OMP
