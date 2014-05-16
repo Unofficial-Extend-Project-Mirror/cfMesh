@@ -16,29 +16,21 @@ FoamFile
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+application	;
+deltaT	1;
+endTime	50;
+graphFormat	raw;
+purgeWrite	0;
+runTimeModifiable	yes;
+startFrom	startTime;
+startTime	0;
+stopAt	endTime;
+timeFormat	general;
+timePrecision	6;
+writeCompression	uncompressed;
+writeControl	timeStep;
+writeFormat	ascii;
+writeInterval	20;
+writePrecision	6;
 
-surfaceFile "geom.stl";
-
-maxCellSize 0.2;
-
-boundaryCellSize 0.025;
-
-minCellSize 0.0125;
-
-localRefinement
-{
-    defaultFaces0006
-    {
-        cellSize 0.005;
-    }
-    defaultFaces0007
-    {
-        cellSize 0.0025;
-    }
-    defaultFaces0009
-    {
-        cellSize 0.0025;
-    }
-}
- 
 // ************************************************************************* //

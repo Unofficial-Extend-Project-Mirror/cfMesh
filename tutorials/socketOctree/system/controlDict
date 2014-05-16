@@ -1,19 +1,23 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
+
 // ************************************************************************* //
-// FoamX Case Dictionary.
 
-version             1.0;
-format              ascii;
-root                "/home/franjo/foam/franjo2.0/run";
-case                "jetAdaptive";
-instance            "system";
-local               "";
-class               dictionary;
-form                dictionary;
-object              controlDict;
-
-// ************************************************************************* //
-
-applicationClass    icoFoam;
+applicationClass    ;
 
 startFrom           latestTime;
 
@@ -21,7 +25,7 @@ startTime           0;
 
 stopAt              endTime;
 
-endTime             500;
+endTime             2000;
 
 deltaT              1;
 
@@ -31,7 +35,7 @@ writeInterval       100;
 
 cycleWrite          0;
 
-writeFormat         binary;
+writeFormat         ascii;
 
 writeCompression    compressed;
 
