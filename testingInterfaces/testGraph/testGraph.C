@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Test for VCWGraph
@@ -35,7 +34,9 @@ Description
 #include "VRWGraph.H"
 #include "VRWGraphModifier.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 using namespace Foam;
 
@@ -45,7 +46,7 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-    
+
 //#   include "setRootCase.H"
 //#   include "createTime.H"
 
@@ -57,32 +58,32 @@ int main(int argc, char *argv[])
         forAllRow(origGraph, i, j)
             origGraph(i, j) = i+j;
     }
-    
+
     for(label i=0;i<10;++i)
     {
         omp_set_num_threads(1);
-        
+
         Info << "Starting transpose" << endl;
-        
+
         scalar before = omp_get_wtime();
         {
             VRWGraph reverse;
             reverse.reverseAddressing(origGraph);
-        
+
             Info << "Single thread run " << omp_get_wtime() - before << endl;
         }
-        
+
         omp_set_num_threads(2);
         {
             VRWGraph reverse;
             before = omp_get_wtime();
             VRWGraphModifier(reverse).reverseAddressing(origGraph);
-        
+
             Info << "Parallel run " << omp_get_wtime() - before << endl;
-            
+
             VRWGraph rev;
             rev.reverseAddressing(origGraph);
-            
+
             forAll(reverse, rowI)
             {
                 if( reverse.sizeOfRow(rowI) != rev.sizeOfRow(rowI) )
@@ -94,10 +95,10 @@ int main(int argc, char *argv[])
             }
         }
     }
-    
+
     //Info << "Orig graph " << origGraph << endl;
     //Info << "Reversed graph " << reverse << endl;
-    
+
     Info << "End\n" << endl;
     return 0;
 }
