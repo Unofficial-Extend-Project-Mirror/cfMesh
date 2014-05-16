@@ -1,49 +1,65 @@
-// The FOAM Project // File: adaptiveProperties 
-/*
--------------------------------------------------------------------------------
- =========         | dictionary
- \\      /         |
-  \\    /          | Name: adaptiveProperties 
-   \\  /           | Family: Data file
-    \\/            |
-    F ield         | FOAM version: 1.9.6
-    O peration     | Product of Nabla Ltd.
-    A and          |
-    M anipulation  | Email: Enquiries@Nabla.co.uk
--------------------------------------------------------------------------------
-*/
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
+\*---------------------------------------------------------------------------*/
 
-version  0.5;
-format   ascii;
-
-root     "/home/larson/franjo/foam/run";
-case     "thetaTest";
-instance "system";
-local    "";
-
-note     "fvSchemes for Foam";
-
-class    dictionary;
-object   adaptiveProperties;
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-surfaceFile "socket1.stl";
+boundaryCellSize	1.5;
+keepCellsIntersectingBoundary	1;
+maxCellSize	3;
+minCellSize	0.375;
+removeGluedMesh	0;
+surfaceFile	"socket.fms";
 
-maxCellSize 4.0;
+boundaryLayers
+{
+    maxFirstLayerThickness	0.5;
+    nLayers	3;
+    thicknessRatio	1.2;
 
-boundaryCellSize 2.0;
+    patchBoundaryLayers
+    {
 
-minCellSize 0.05;
+        patch7
+        {
+            allowDiscontinuity	0;
+            maxFirstLayerThickness	0.5;
+            nLayers	4;
+            thicknessRatio	1.1;
+        }
+    }
+}
 
-internalVertex (0.0 1.0 -0.25);
-/*
-patchCellSize
-2
-(
-    walls   0.05
-    walls1  0.05 
-);
-*/
-     
+localRefinement
+{
+
+    patch15
+    {
+        additionalRefinementLevels	1;
+    }
+
+    subset1
+    {
+        cellSize	1.5;
+    }
+
+    subset2
+    {
+        cellSize	1.5;
+    }
+}
+
 // ************************************************************************* //

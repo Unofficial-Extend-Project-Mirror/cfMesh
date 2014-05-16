@@ -1,30 +1,19 @@
-// The FOAM Project // File: adaptiveProperties 
-/*
--------------------------------------------------------------------------------
- =========         | dictionary
- \\      /         |
-  \\    /          | Name: adaptiveProperties 
-   \\  /           | Family: Data file
-    \\/            |
-    F ield         | FOAM version: 1.9.6
-    O peration     | Product of Nabla Ltd.
-    A and          |
-    M anipulation  | Email: Enquiries@Nabla.co.uk
--------------------------------------------------------------------------------
-*/
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
+\*---------------------------------------------------------------------------*/
 
-version  0.5;
-format   ascii;
-
-root     "/home/larson/franjo/foam/run";
-case     "thetaTest";
-instance "system";
-local    "";
-
-note     "fvSchemes for Foam";
-
-class    dictionary;
-object   adaptiveProperties;
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -35,49 +24,48 @@ maxCellSize 30.0;
 boundaryCellSize 7.5;
 
 objectRefinements
-5
-(
-ear1
 {
-    cellSize 3.75;
-    type cone;
-    p0   (-100 1873 -320);
-    radius0  200;
-    p1   (-560 1400 0);
-    radius1   200;
+    ear1
+    {
+        cellSize 3.75;
+        type cone;
+        p0   (-100 1873 -320);
+        radius0  200;
+        p1   (-560 1400 0);
+        radius1   200;
+    }
+    ear2
+    {
+        cellSize 3.75;
+        type cone;
+        p0   (-650 1873 -620);
+        radius0  200;
+        p1   (-670 1300 0);
+        radius1  200;
+    }
+    tail
+    {
+        cellSize 3.75;
+        type box;
+        centre  (500 500 150);
+        lengthX  100;
+        lengthY  150;
+        lengthZ  200;
+    }
+    insideTheBody
+    {
+        cellSize 3.75;
+        type sphere;
+        centre  (0 700 0);
+        radius  50;
+    }
+    muzzlePiercing
+    {
+        cellSize 3.75;
+        type line;
+        p0      (-750 1000 450);
+        p1      (-750 1500 450);
+    }
 }
-ear2
-{
-    cellSize 3.75;
-    type cone;
-    p0   (-650 1873 -620);
-    radius0  200;
-    p1   (-670 1300 0);
-    radius1  200;
-}
-tail
-{
-    cellSize 3.75;
-    type box;
-    centre  (500 500 150);
-    lengthX  100;
-    lengthY  150;
-    lengthZ  200;
-}
-insideTheBody
-{
-    cellSize 3.75;
-    type sphere;
-    centre  (0 700 0);
-    radius  50;
-}
-muzzlePiercing
-{
-    cellSize 3.75;
-    type line;
-    p0      (-750 1000 450);
-    p1      (-750 1500 450);
-}
-);
 
 // ************************************************************************* //
