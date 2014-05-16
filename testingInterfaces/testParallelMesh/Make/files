@@ -1,4 +1,0 @@
-
-testParallelMesh.C
-
-EXE = $(FOAM_USER_APPBIN)/testParallelMesh
