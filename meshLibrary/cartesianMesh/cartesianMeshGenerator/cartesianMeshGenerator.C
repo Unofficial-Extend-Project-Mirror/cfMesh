@@ -47,6 +47,7 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "removeCellsInSelectedDomains.H"
+#include "triSurfaceMetaData.H"
 
 //#define DEBUG
 
@@ -313,6 +314,16 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         surfaceFile = ".."/surfaceFile;
 
     surfacePtr_ = new triSurf(db_.path()/surfaceFile);
+
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+    }
 
     if( surfacePtr_->featureEdges().size() != 0 )
     {

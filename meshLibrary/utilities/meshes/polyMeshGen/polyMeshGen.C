@@ -27,6 +27,7 @@ Description
 
 #include "polyMeshGen.H"
 #include "demandDrivenData.H"
+#include "OFstream.H"
 
 namespace Foam
 {
@@ -35,7 +36,8 @@ namespace Foam
 
 polyMeshGen::polyMeshGen(const Time& t)
 :
-    polyMeshGenCells(t)
+    polyMeshGenCells(t),
+    metaDict_()
 {}
 
 //- Construct from components without the boundary
@@ -47,7 +49,8 @@ polyMeshGen::polyMeshGen
     const cellList& cells
 )
 :
-    polyMeshGenCells(t, points, faces, cells)
+    polyMeshGenCells(t, points, faces, cells),
+    metaDict_()
 {}
 
 //- Construct from components with the boundary
@@ -71,7 +74,8 @@ polyMeshGen::polyMeshGen
         patchNames,
         patchStart,
         nFacesInPatch
-    )
+    ),
+    metaDict_()
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -84,11 +88,67 @@ polyMeshGen::~polyMeshGen()
 void polyMeshGen::read()
 {
     polyMeshGenCells::read();
+
+    metaDict_ =
+        IOdictionary
+        (
+            IOobject
+            (
+                "meshMetaDict",
+                runTime_.constant(),
+                "polyMesh",
+                runTime_,
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            )
+        );
 }
 
 void polyMeshGen::write() const
 {
+    //- remove old mesh before writting
+    const fileName meshDir = runTime_.path()/runTime_.constant()/"polyMesh";
+
+    rm(meshDir/"points");
+    rm(meshDir/"faces");
+    rm(meshDir/"owner");
+    rm(meshDir/"neighbour");
+    rm(meshDir/"cells");
+    rm(meshDir/"boundary");
+    rm(meshDir/"pointZones");
+    rm(meshDir/"faceZones");
+    rm(meshDir/"cellZones");
+    rm(meshDir/"meshModifiers");
+    rm(meshDir/"parallelData");
+    rm(meshDir/"meshMetaDict");
+
+    // remove sets if they exist
+    if (isDir(meshDir/"sets"))
+    {
+        rmDir(meshDir/"sets");
+    }
+
+    //- write the mesh
     polyMeshGenCells::write();
+
+    //- write meta data
+    OFstream fName(meshDir/"meshMetaDict");
+    IOdictionary writeMeta
+    (
+        IOobject
+        (
+            "meshMetaDict",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        metaDict_
+    );
+
+    writeMeta.writeHeader(fName);
+    writeMeta.writeData(fName);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
