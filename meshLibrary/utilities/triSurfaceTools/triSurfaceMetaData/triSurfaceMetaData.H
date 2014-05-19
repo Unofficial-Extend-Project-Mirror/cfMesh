@@ -22,92 +22,82 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGen
+    triSurfaceMetaData
 
 Description
-    Mesh with selections
+    Generates meta data of the surface mesh. It contains:
+    The number of points
+    The number of triangles
+    The number of patches
+    The number of feature edges
+    The number of subsets, names, and the number of elements in each subset
 
 SourceFiles
+    triSurfaceMetaData.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef polyMeshGen_H
-#define polyMeshGen_H
+#ifndef triSurfaceMetaData_H
+#define triSurfaceMetaData_H
+
+#include "triSurf.H"
+#include "dictionary.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#include "polyMeshGenCells.H"
-#include "dictionary.H"
 
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+/*---------------------------------------------------------------------------*\
+                Class triSurfaceMetaData Declaration
+\*---------------------------------------------------------------------------*/
 
-class polyMeshGen
-: public polyMeshGenCells
+class triSurfaceMetaData
 {
     // Private data
-        //- meta data about the meshing process
+        //- const reference to triSurf
+        const triSurf& surf_;
+
+        //- patches/subsets for removal
         dictionary metaDict_;
 
+    // Private member functions
+        //- create dictionary with meta data
+        void createMetaData();
+
+        //- Disallow default bitwise copy construct
+        triSurfaceMetaData(const triSurfaceMetaData&);
+
+        //- Disallow default bitwise assignment
+        void operator=(const triSurfaceMetaData&);
+
 public:
-    
+
     // Constructors
-        //- Null constructor
-        polyMeshGen(const Time& t);
 
-        //- Construct from components without the boundary
-        polyMeshGen
-        (
-            const Time& t,
-            const pointField& points,
-            const faceList& faces,
-            const cellList& cells
-        );
+        //- Construct from triSurf
+        triSurfaceMetaData(const triSurf& surface);
 
-        //- Construct from components with the boundary
-        polyMeshGen
-        (
-            const Time& t,
-            const pointField& points,
-            const faceList& faces,
-            const cellList& cells,
-            const wordList& patchNames,
-            const labelList& patchStart,
-            const labelList& nFacesInPatch
-        );
-        
     // Destructor
 
-        ~polyMeshGen();
+        ~triSurfaceMetaData();
 
-    // Public member functions
-        //- return a constant reference to metaDict
-        inline const dictionary& metaData() const
+
+    // Member Functions
+
+        //- return a constant reference to meta data
+        const dictionary& metaData() const
         {
             return metaDict_;
         }
-
-        //- return a reference to metaDict
-        inline dictionary& metaData()
-        {
-            return metaDict_;
-        }
-
-    // Read mesh
-        void read();
-    
-    // Write mesh
-        void write() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// ************************************************************************* //

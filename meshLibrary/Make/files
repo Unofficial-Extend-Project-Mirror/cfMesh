@@ -69,6 +69,7 @@ triSurfaceClassifyEdges = $(triSurfaceTools)/triSurfaceClassifyEdges
 triSurfacePatchManipulator = $(triSurfaceTools)/triSurfacePatchManipulator
 triSurfaceRemoveFacets = $(triSurfaceTools)/triSurfaceRemoveFacets
 triSurfaceExtrude2DEdges = $(triSurfaceTools)/triSurfaceExtrude2DEdges
+triSurfaceMetaData = $(triSurfaceTools)/triSurfaceMetaData
 
 polyMeshGen = utilities/meshes/polyMeshGen
 boundaryPatch  = utilities/meshes/polyMeshGen/boundaryPatch
@@ -366,6 +367,8 @@ $(triSurfaceRemoveFacets)/triSurfaceRemoveFacets.C
 $(triSurfaceRemoveFacets)/triSurfaceRemoveFacetsFunctions.C
 
 $(triSurfaceExtrude2DEdges)/triSurfaceExtrude2DEdges.C
+
+$(triSurfaceMetaData)/triSurfaceMetaData.C
 
 $(cartesianMeshExtractor)/cartesianMeshExtractor.C
 $(cartesianMeshExtractor)/cartesianMeshExtractorPointsAndAddressing.C

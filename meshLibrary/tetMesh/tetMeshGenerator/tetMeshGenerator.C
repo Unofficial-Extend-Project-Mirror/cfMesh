@@ -44,6 +44,7 @@ Description
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
 #include "refineBoundaryLayers.H"
+#include "triSurfaceMetaData.H"
 
 //#define DEBUG
 
@@ -270,6 +271,16 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
+
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+    }
 
     if( surfacePtr_->featureEdges().size() != 0 )
     {
