@@ -1,49 +1,36 @@
-// ************************************************************************* //
-// FoamX Case Dictionary.
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
+\*---------------------------------------------------------------------------*/
 
-version             1.0;
-format              ascii;
-root                "/home/franjo/foam/franjo2.0/run";
-case                "tubeBundleAdaptive";
-instance            "system";
-local               "";
-class               dictionary;
-form                dictionary;
-object              controlDict;
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
 
-// ************************************************************************* //
-
-applicationClass    icoFoam;
-
-startFrom           latestTime;
-
-startTime           0;
-
-stopAt              endTime;
-
-endTime             2000;
-
-deltaT              1;
-
-writeControl        timeStep;
-
-writeInterval       100;
-
-cycleWrite          0;
-
-writeFormat         ascii;
-
-writeCompression    compressed;
-
-timeFormat          general;
-
-timePrecision       6;
-
-runTimeModifiable   yes;
-
-nCorrectors         2;
-
-nNonOrthogonalCorrectors 0;
-
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+application	;
+deltaT	0.001;
+endTime	2;
+graphFormat	raw;
+purgeWrite	0;
+runTimeModifiable	yes;
+startFrom	latestTime;
+startTime	0;
+stopAt	endTime;
+timeFormat	general;
+timePrecision	6;
+writeCompression	compressed;
+writeControl	timeStep;
+writeFormat	binary;
+writeInterval	100;
+writePrecision	6;
 
 // ************************************************************************* //

@@ -1,4 +1,0 @@
-
-testSmoothing.C
-
-EXE = $(FOAM_USER_APPBIN)/testSmoothing

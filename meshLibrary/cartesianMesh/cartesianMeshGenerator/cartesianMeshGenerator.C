@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -47,7 +46,7 @@ Description
 #include "checkIrregularSurfaceConnections.H"
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
-#include "removeCellsInSelectedDomains.H"
+#include "triSurfaceMetaData.H"
 
 //#define DEBUG
 
@@ -79,37 +78,6 @@ void cartesianMeshGenerator::createCartesianMesh()
 
 void cartesianMeshGenerator::surfacePreparation()
 {
-    //- remove cells inside the domains specified by the user
-    if( meshDict_.found("removeDomains") )
-    {
-        if( Pstream::parRun() )
-        {
-            WarningIn
-            (
-                "void cartesianMeshGenerator::surfacePreparation()"
-            ) << "The feature removeDomains is not availabel for MPI runs"
-              << exit(FatalError);
-        }
-
-        const dictionary& dict = meshDict_.subDict("removeDomains");
-
-        const wordList domainNames = dict.toc();
-
-        mesh_.clearAddressingData();
-        removeCellsInSelectedDomains rCells(mesh_, *octreePtr_);
-
-        //- read the patches/subsets forming this domain
-        forAll(domainNames, domainI)
-        {
-            wordList domainParts(dict.lookup(domainNames[domainI]));
-
-            rCells.selectCellsInDomain(domainParts);
-        }
-
-        rCells.removeCells();
-    }
-
-
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
@@ -315,6 +283,16 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
     surfacePtr_ = new triSurf(db_.path()/surfaceFile);
 
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+    }
+
     if( surfacePtr_->featureEdges().size() != 0 )
     {
         //- create surface patches based on the feature edges
@@ -335,39 +313,6 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
     generateMesh();
 }
-
-/*
-cartesianMeshGenerator::cartesianMeshGenerator
-(
-    const objectRegistry& time,
-    const volScalarField& localCellSize
-)
-:
-    db_(time),
-    surfacePtr_(NULL),
-    meshDict_
-    (
-        IOobject
-        (
-            "meshDict",
-            db_.time().constant(),
-            db_,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    ),
-    octreePtr_(NULL),
-    mesh_(time)
-{
-    fileName surfaceFile = meshDict_.lookup("surfaceFile");
-
-    surfacePtr_ = new triSurface(db_.path()/surfaceFile);
-
-    octreePtr_ = new meshOctree(*surfacePtr_);
-
-    generateMesh();
-}
-*/
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
