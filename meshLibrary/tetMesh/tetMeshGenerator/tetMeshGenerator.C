@@ -306,39 +306,6 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
     generateMesh();
 }
 
-/*
-tetMeshGenerator::tetMeshGenerator
-(
-    const Time& time,
-    const volScalarField& localCellSize
-)
-:
-    runTime_(time),
-    surfacePtr_(NULL),
-    meshDict_
-   (
-        IOobject
-       (
-            "meshDict",
-            runTime_.constant(),
-            runTime_,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-       )
-   ),
-    octreePtr_(NULL),
-    mesh_(time)
-{
-    fileName surfaceFile = meshDict_.lookup("surfaceFile");
-
-    surfacePtr_ = new triSurface(runTime_.path()/surfaceFile);
-
-    octreePtr_ = new meshOctree(*surfacePtr_);
-
-    generateMesh();
-}
-*/
-
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshGenerator::~tetMeshGenerator()

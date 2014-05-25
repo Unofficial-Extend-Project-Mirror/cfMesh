@@ -37,7 +37,6 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
-//#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -114,9 +113,6 @@ public:
 
         //- Construct from time
         cartesian2DMeshGenerator(const Time&);
-
-        //- Construct from time and desired cell size
-        //cartesian2DMeshGenerator(const objectRegistry&, const volScalarField&);
 
     // Destructor
 

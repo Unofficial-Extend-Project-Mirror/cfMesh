@@ -30,7 +30,6 @@ Description
 #include "triSurf.H"
 #include "triSurfacePatchManipulator.H"
 #include "demandDrivenData.H"
-#include "objectRegistry.H"
 #include "Time.H"
 #include "meshOctreeCreator.H"
 #include "cartesianMeshExtractor.H"
@@ -296,39 +295,6 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
     generateMesh();
 }
-
-/*
-cartesian2DMeshGenerator::cartesian2DMeshGenerator
-(
-    const objectRegistry& time,
-    const volScalarField& localCellSize
-)
-:
-    db_(time),
-    surfacePtr_(NULL),
-    meshDict_
-    (
-        IOobject
-        (
-            "meshDict",
-            db_.time().constant(),
-            db_,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    ),
-    octreePtr_(NULL),
-    mesh_(time)
-{
-    fileName surfaceFile = meshDict_.lookup("surfaceFile");
-
-    surfacePtr_ = new triSurface(db_.path()/surfaceFile);
-
-    octreePtr_ = new meshOctree(*surfacePtr_);
-
-    generateMesh();
-}
-*/
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
