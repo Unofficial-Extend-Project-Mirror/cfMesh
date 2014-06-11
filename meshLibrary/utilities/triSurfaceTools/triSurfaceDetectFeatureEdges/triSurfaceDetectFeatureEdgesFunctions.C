@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -28,11 +27,12 @@ Description
 
 #include "triSurfaceDetectFeatureEdges.H"
 #include "helperFunctions.H"
-#include "triSurfaceDetectPlanarRegions.H"
 #include "demandDrivenData.H"
 #include "labelPair.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -98,41 +98,6 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 
         if( cosAngle < tol )
             featureEdges_[edgeI] |= 1;
-    }
-}
-
-void triSurfaceDetectFeatureEdges::detectFeatureEdgesPointAngleCriterion()
-{
-
-}
-
-void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
-{
-    triSurfaceDetectPlanarRegions dpr(surf_, 0.1);
-
-    VRWGraph planarRegions;
-    dpr.detectedRegions(planarRegions);
-
-    labelLongList facetInPlanarRegion(surf_.size(), -1);
-
-    forAll(planarRegions, regionI)
-        forAllRow(planarRegions, regionI, rfI)
-            facetInPlanarRegion[planarRegions(regionI, rfI)] = regionI;
-
-    const VRWGraph& edgeFaces = surf_.edgeFacets();
-
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 40)
-    # endif
-    forAll(edgeFaces, edgeI)
-    {
-        const constRow eFaces = edgeFaces[edgeI];
-
-        if( eFaces.size() != 2 )
-            continue;
-
-        if( facetInPlanarRegion[eFaces[0]] != facetInPlanarRegion[eFaces[1]] )
-            featureEdges_[edgeI] |= 4;
     }
 }
 

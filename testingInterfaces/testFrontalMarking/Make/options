@@ -1,7 +1,0 @@
-EXE_INC = \
-    -DUSE_OMP -g -ggdb -DFULLDEBUG -O0 \
-    -I$(LIB_SRC)/triSurface/lnInclude \
-    -I$(LIB_SRC)/meshTools/lnInclude \
-    -I../../meshLibrary/lnInclude
-
-EXE_LIBS = -lMeshLibrary -ltriSurface -lmeshTools

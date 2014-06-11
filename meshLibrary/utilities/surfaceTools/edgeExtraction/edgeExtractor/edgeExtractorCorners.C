@@ -1,26 +1,25 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -737,7 +736,7 @@ void edgeExtractor::cornerEvaluator::improveCorners
                 mo.findNearestPointToPatches(mps, dSqS, p, patches);
 
                 scalar bestAlignment(0.0);
-                label bestEdgeIndex;
+                label bestEdgeIndex(-1);
 
                 forAll(pFaces, pfI)
                 {
@@ -1003,7 +1002,6 @@ bool edgeExtractor::checkCorners()
         meshSurfacePartitioner mPart(mse, newBoundaryPatches);
 
         //- find corners in the current constelation
-        typedef std::map<label, DynList<label> > idToDynListMap;
         const labelHashSet& corners = mPart.corners();
         const VRWGraph& pPatches = mPart.pointPatches();
 
@@ -1394,7 +1392,7 @@ bool edgeExtractor::checkCorners()
             //- check which group of faces shall change patch in order to make
             //- the best fitting edge a feature edge
             DynList<labelPair> groupPairs, groupPatches;
-            labelPair groupsForChanging;
+            labelPair groupsForChanging(-1, -1);
             forAll(pEdges, i)
             {
                 const label beI = pEdges[i];
@@ -1510,7 +1508,11 @@ bool edgeExtractor::checkCorners()
                                 nei = edgeFaces(beI, 1);
 
                             const label posNei = pFaces.containsAtPosition(nei);
-                            if( (posNei < 0) || (faceInGroup[posNei] != faceInGroup[j]) )
+                            if
+                            (
+                                (posNei < 0) ||
+                                (faceInGroup[posNei] != faceInGroup[j])
+                            )
                             {
                                 if( facePatch_[bfI] != facePatch_[nei] )
                                 {
@@ -1522,8 +1524,20 @@ bool edgeExtractor::checkCorners()
                                     point mps, mpe;
                                     scalar dSqS, dSqE;
 
-                                    meshOctree_.findNearestPointToPatches(mps, dSqS, ps, patches);
-                                    meshOctree_.findNearestPointToPatches(mpe, dSqE, pe, patches);
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mps,
+                                        dSqS,
+                                        ps,
+                                        patches
+                                    );
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mpe,
+                                        dSqE,
+                                        pe,
+                                        patches
+                                    );
 
                                     vector fv = mpe - mps;
                                     fv /= (mag(fv) + VSMALL);
@@ -1532,7 +1546,8 @@ bool edgeExtractor::checkCorners()
                                     c = max(-1.0, c);
                                     const scalar angle = acos(c);
 
-                                    Eold += 1.0/magE * (dSqS + dSqE) + magE * angle;
+                                    Eold +=
+                                        1.0/magE * (dSqS + dSqE) + magE * angle;
                                 }
                                 if( otherPatch != facePatch_[nei] )
                                 {
@@ -1545,8 +1560,20 @@ bool edgeExtractor::checkCorners()
                                     point mps, mpe;
                                     scalar dSqS, dSqE;
 
-                                    meshOctree_.findNearestPointToPatches(mps, dSqS, ps, patches);
-                                    meshOctree_.findNearestPointToPatches(mpe, dSqE, pe, patches);
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mps,
+                                        dSqS,
+                                        ps,
+                                        patches
+                                    );
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mpe,
+                                        dSqE,
+                                        pe,
+                                        patches
+                                    );
 
                                     vector fv = mpe - mps;
                                     fv /= (mag(fv) + VSMALL);
@@ -1555,7 +1582,8 @@ bool edgeExtractor::checkCorners()
                                     c = max(-1.0, c);
                                     const scalar angle = acos(c);
 
-                                    Enew += 1.0/magE * (dSqS + dSqE) + magE * angle;
+                                    Enew +=
+                                        1.0/magE * (dSqS + dSqE) + magE * angle;
                                 }
                             }
                         }
@@ -1574,7 +1602,10 @@ bool edgeExtractor::checkCorners()
                             if( faceInGroup[j] != gp.first() )
                                 continue;
 
-                            newPatchForFace.append(labelPair(pFaces[j], otherPatch));
+                            newPatchForFace.append
+                            (
+                                labelPair(pFaces[j], otherPatch)
+                            );
                         }
                     }
                 }
@@ -1614,7 +1645,11 @@ bool edgeExtractor::checkCorners()
                                 nei = edgeFaces(beI, 1);
 
                             const label posNei = pFaces.containsAtPosition(nei);
-                            if( (posNei < 0) || (faceInGroup[posNei] != faceInGroup[j]) )
+                            if
+                            (
+                                (posNei < 0) ||
+                                (faceInGroup[posNei] != faceInGroup[j])
+                            )
                             {
                                 if( facePatch_[bfI] != facePatch_[nei] )
                                 {
@@ -1627,8 +1662,20 @@ bool edgeExtractor::checkCorners()
                                     point mps, mpe;
                                     scalar dSqS, dSqE;
 
-                                    meshOctree_.findNearestPointToPatches(mps, dSqS, ps, patches);
-                                    meshOctree_.findNearestPointToPatches(mpe, dSqE, pe, patches);
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mps,
+                                        dSqS,
+                                        ps,
+                                        patches
+                                    );
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mpe,
+                                        dSqE,
+                                        pe,
+                                        patches
+                                    );
 
                                     vector fv = mpe - mps;
                                     fv /= (mag(fv) + VSMALL);
@@ -1637,7 +1684,8 @@ bool edgeExtractor::checkCorners()
                                     c = max(-1.0, c);
                                     const scalar angle = acos(c);
 
-                                    Eold += 1.0/magE * (dSqS + dSqE) + magE * angle;
+                                    Eold +=
+                                        1.0/magE * (dSqS + dSqE) + magE * angle;
                                 }
                                 if( otherPatch != facePatch_[nei] )
                                 {
@@ -1650,8 +1698,20 @@ bool edgeExtractor::checkCorners()
                                     point mps, mpe;
                                     scalar dSqS, dSqE;
 
-                                    meshOctree_.findNearestPointToPatches(mps, dSqS, ps, patches);
-                                    meshOctree_.findNearestPointToPatches(mpe, dSqE, pe, patches);
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mps,
+                                        dSqS,
+                                        ps,
+                                        patches
+                                    );
+                                    meshOctree_.findNearestPointToPatches
+                                    (
+                                        mpe,
+                                        dSqE,
+                                        pe,
+                                        patches
+                                    );
 
                                     vector fv = mpe - mps;
                                     fv /= (mag(fv) + VSMALL);
@@ -1660,7 +1720,8 @@ bool edgeExtractor::checkCorners()
                                     c = max(-1.0, c);
                                     const scalar angle = acos(c);
 
-                                    Enew += 1.0/magE * (dSqS + dSqE) + magE * angle;
+                                    Enew +=
+                                        1.0/magE * (dSqS + dSqE) + magE * angle;
                                 }
                             }
                         }
@@ -1679,25 +1740,31 @@ bool edgeExtractor::checkCorners()
                             if( faceInGroup[j] != gp.second() )
                                 continue;
 
-                            newPatchForFace.append(labelPair(pFaces[j], otherPatch));
+                            newPatchForFace.append
+                            (
+                                labelPair(pFaces[j], otherPatch)
+                            );
                         }
                     }
                 }
             }
 
             # ifdef DEBUGEdgeExtractor
-            Info << "New patches for boundary faces " << newPatchForFace << endl;
+            Info << "New patches for boundary faces "
+                 << newPatchForFace << endl;
             # endif
         }
 
         labelHashSet changedPatch;
-        for(std::map<label, DynList<labelPair> >::const_iterator it=facesAtCornerNewPatches.begin();it!=facesAtCornerNewPatches.end();++it)
+        typedef std::map<label, DynList<labelPair> > labelToPairMap;
+        forAllConstIter(labelToPairMap, facesAtCornerNewPatches, it)
         {
             const DynList<labelPair>& lp = it->second;
             forAll(lp, i)
             {
                 if( changedPatch.found(lp[i].first()) )
-                    FatalError << "Face " << lp[i].first() << " is already modified" << abort(FatalError);
+                    FatalError << "Face " << lp[i].first()
+                               << " is already modified" << abort(FatalError);
 
                 changedPatch.insert(lp[i].first());
 

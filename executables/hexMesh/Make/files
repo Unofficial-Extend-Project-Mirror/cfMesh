@@ -1,3 +1,0 @@
-hexMesh.C
-
-EXE = $(FOAM_APPBIN)/hexMesh

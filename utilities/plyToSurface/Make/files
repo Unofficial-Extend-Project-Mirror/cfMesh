@@ -1,3 +1,0 @@
-plyToSurface.C
-
-EXE = $(FOAM_APPBIN)/plyToSurface

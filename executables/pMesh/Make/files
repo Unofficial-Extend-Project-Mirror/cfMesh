@@ -1,3 +1,0 @@
-pMesh.C
-
-EXE = $(FOAM_APPBIN)/pMesh
