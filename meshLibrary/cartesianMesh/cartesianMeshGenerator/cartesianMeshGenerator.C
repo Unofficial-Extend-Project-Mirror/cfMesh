@@ -46,7 +46,6 @@ Description
 #include "checkIrregularSurfaceConnections.H"
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
-#include "removeCellsInSelectedDomains.H"
 #include "triSurfaceMetaData.H"
 
 //#define DEBUG
@@ -79,37 +78,6 @@ void cartesianMeshGenerator::createCartesianMesh()
 
 void cartesianMeshGenerator::surfacePreparation()
 {
-    //- remove cells inside the domains specified by the user
-    if( meshDict_.found("removeDomains") )
-    {
-        if( Pstream::parRun() )
-        {
-            WarningIn
-            (
-                "void cartesianMeshGenerator::surfacePreparation()"
-            ) << "The feature removeDomains is not availabel for MPI runs"
-              << exit(FatalError);
-        }
-
-        const dictionary& dict = meshDict_.subDict("removeDomains");
-
-        const wordList domainNames = dict.toc();
-
-        mesh_.clearAddressingData();
-        removeCellsInSelectedDomains rCells(mesh_, *octreePtr_);
-
-        //- read the patches/subsets forming this domain
-        forAll(domainNames, domainI)
-        {
-            wordList domainParts(dict.lookup(domainNames[domainI]));
-
-            rCells.selectCellsInDomain(domainParts);
-        }
-
-        rCells.removeCells();
-    }
-
-
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
@@ -345,39 +313,6 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
     generateMesh();
 }
-
-/*
-cartesianMeshGenerator::cartesianMeshGenerator
-(
-    const objectRegistry& time,
-    const volScalarField& localCellSize
-)
-:
-    db_(time),
-    surfacePtr_(NULL),
-    meshDict_
-    (
-        IOobject
-        (
-            "meshDict",
-            db_.time().constant(),
-            db_,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    ),
-    octreePtr_(NULL),
-    mesh_(time)
-{
-    fileName surfaceFile = meshDict_.lookup("surfaceFile");
-
-    surfacePtr_ = new triSurface(db_.path()/surfaceFile);
-
-    octreePtr_ = new meshOctree(*surfacePtr_);
-
-    generateMesh();
-}
-*/
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 

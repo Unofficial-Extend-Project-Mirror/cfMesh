@@ -118,9 +118,6 @@ public:
         //- Construct from time
         cartesianMeshGenerator(const Time&);
 
-        //- Construct from time and desired cell size
-        //cartesianMeshGenerator(const objectRegistry&, const volScalarField&);
-
     // Destructor
 
         ~cartesianMeshGenerator();

@@ -1,3 +1,0 @@
-testSurfaceOrientation.C
-
-EXE = $(FOAM_USER_APPBIN)/testSurfaceOrientation

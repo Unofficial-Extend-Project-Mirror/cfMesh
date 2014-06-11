@@ -29,8 +29,6 @@ Description
 #include "meshOctree.H"
 #include "triSurface.H"
 #include "polyMeshGenModifierAddCellByCell.H"
-#include "tessellationElement.H"
-#include "tessellationDimSpace.H"
 #include "demandDrivenData.H"
 
 # ifdef USE_OMP
@@ -104,23 +102,55 @@ void tetMeshExtractorOctree::createPolyMesh()
 
             const partTet& elmt = tets[elmtI];
 
-            tessellationElement telmt(elmt[0], elmt[1], elmt[2], elmt[3]);
+            //tessellationElement telmt(elmt[0], elmt[1], elmt[2], elmt[3]);
 
             label faceI = 4 * elmtI;
-            for(label i=0;i<4;++i)
-            {
-                cells[elmtI][i] = faceI;
 
-                face& f = faces[faceI];
-                f.setSize ( 3 );
+            //- first face
+            cells[elmtI][0] = faceI;
 
-                const triFace tf = telmt.face(i);
-                f[0] = tf[0];
-                f[1] = tf[2];
-                f[2] = tf[1];
+            face& f0 = faces[faceI];
+            f0.setSize(3);
 
-                ++faceI;
-            }
+            f0[0] = elmt.a();
+            f0[1] = elmt.c();
+            f0[2] = elmt.b();
+
+            ++faceI;
+
+            //- second face
+            cells[elmtI][1] = faceI;
+
+            face& f1 = faces[faceI];
+            f1.setSize(3);
+
+            f1[0] = elmt.a();
+            f1[1] = elmt.b();
+            f1[2] = elmt.d();
+
+            ++faceI;
+
+            //- third face
+            cells[elmtI][2] = faceI;
+
+            face& f2 = faces[faceI];
+            f2.setSize ( 3 );
+
+            f2[0] = elmt.b();
+            f2[1] = elmt.c();
+            f2[2] = elmt.d();
+
+            ++faceI;
+
+            //- fourth face
+            cells[elmtI][3] = faceI;
+
+            face& f3 = faces[faceI];
+            f3.setSize ( 3 );
+
+            f3[0] = elmt.c();
+            f3[1] = elmt.a();
+            f3[2] = elmt.d();
         }
 
         # ifdef USE_OMP

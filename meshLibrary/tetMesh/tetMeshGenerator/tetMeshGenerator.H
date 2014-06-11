@@ -56,80 +56,77 @@ class Time;
 class tetMeshGenerator
 {
     // Private data
-    //- reference to Time
-    const Time& runTime_;
+        //- reference to Time
+        const Time& runTime_;
 
-    //- pointer to the surface
-    const triSurf* surfacePtr_;
+        //- pointer to the surface
+        const triSurf* surfacePtr_;
 
-    //- IOdictionary containing information about cell sizes, etc..
-    IOdictionary meshDict_;
+        //- IOdictionary containing information about cell sizes, etc..
+        IOdictionary meshDict_;
 
-    //- pointer to the octree
-    meshOctree* octreePtr_;
+        //- pointer to the octree
+        meshOctree* octreePtr_;
 
-    //- mesh
-    polyMeshGen mesh_;
+        //- mesh
+        polyMeshGen mesh_;
 
     // Private member functions
-    //- create cartesian mesh
-    void createTetMesh();
+        //- create cartesian mesh
+        void createTetMesh();
 
-    //- prepare mesh surface
-    void surfacePreparation();
+        //- prepare mesh surface
+        void surfacePreparation();
 
-    //- map mesh to the surface and untangle surface
-    void mapMeshToSurface();
+        //- map mesh to the surface and untangle surface
+        void mapMeshToSurface();
 
-    //- capture edges and corners
-    void mapEdgesAndCorners();
+        //- capture edges and corners
+        void mapEdgesAndCorners();
 
-    //- optimise surface mesh
-    void optimiseMeshSurface();
+        //- optimise surface mesh
+        void optimiseMeshSurface();
 
-    //- add boundary layers
-    void generateBoudaryLayers();
+        //- add boundary layers
+        void generateBoudaryLayers();
 
-    //- mesh optimisation
-    void optimiseFinalMesh();
+        //- mesh optimisation
+        void optimiseFinalMesh();
 
-    //- refine boundary layers
-    void refBoundaryLayers();
+        //- refine boundary layers
+        void refBoundaryLayers();
 
-    //- replace boundaries
-    void replaceBoundaries();
+        //- replace boundaries
+        void replaceBoundaries();
 
-    //- renumber the mesh
-    void renumberMesh();
+        //- renumber the mesh
+        void renumberMesh();
 
-    //- generate mesh
-    void generateMesh();
+        //- generate mesh
+        void generateMesh();
 
-    //- Disallow default bitwise copy construct
-    tetMeshGenerator ( const tetMeshGenerator& );
+        //- Disallow default bitwise copy construct
+        tetMeshGenerator(const tetMeshGenerator&);
 
-    //- Disallow default bitwise assignment
-    void operator= ( const tetMeshGenerator& );
+        //- Disallow default bitwise assignment
+        void operator=(const tetMeshGenerator&);
 
 public:
 
     // Constructors
 
-    //- Construct from time
-    tetMeshGenerator ( const Time& );
-
-    //- Construct from time and desired cell size
-    //tetMeshGenerator(const Time&, const volScalarField&);
+        //- Construct from time
+        tetMeshGenerator(const Time&);
 
     // Destructor
 
-    ~tetMeshGenerator();
+        ~tetMeshGenerator();
 
 
     // Member Functions
 
-    //- write the mesh
-    void writeMesh() const;
+        //- write the mesh
+        void writeMesh() const;
 };
 
 

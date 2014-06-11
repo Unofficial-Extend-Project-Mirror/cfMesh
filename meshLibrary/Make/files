@@ -1,14 +1,11 @@
 
-boundaryOutwardOrientation = utilities/surfaceTools/boundaryOutwardOrientation
 meshSurfaceEngine  =  utilities/surfaceTools/meshSurfaceEngine
 meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
-boundaryFacesGenerator = utilities/surfaceTools/boundaryFacesGenerator
 boundaryLayers = utilities/boundaryLayers
 checkMeshDict = utilities/checkMeshDict
 
 meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvertedVertices
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
-meshSurfaceDetectPlanarRegions = utilities/surfaceTools/meshSurfaceDetectPlanarRegions
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
 meshSurfaceMapper  =  utilities/surfaceTools/meshSurfaceMapper
 meshSurfaceMapper2D = utilities/surfaceTools/meshSurfaceMapper2D
@@ -16,26 +13,14 @@ edgeExtraction = utilities/surfaceTools/edgeExtraction
 edgeExtractor = $(edgeExtraction)/edgeExtractor
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
 meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtractorNonTopo
-meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
 meshSurfaceEdgeExtractor2D = utilities/surfaceTools/meshSurfaceEdgeExtractor2D
 correctEdgesBetweenPatches = utilities/surfaceTools/correctEdgesBetweenPatches
-
-createFundamentalSheetsBase = utilities/surfaceTools/createFundamentalSheets
-createFundamentalSheets = $(createFundamentalSheetsBase)/createFundamentalSheets
-createFundamentalSheetsJFS = $(createFundamentalSheetsBase)/createFundamentalSheetsJFS
-createFundamentalSheetsFJ = $(createFundamentalSheetsBase)/createFundamentalSheetsFJ
 
 decomposeCellsNearConcaveEdges = utilities/surfaceTools/decomposeCellsNearConcaveEdges
 renameBoundaryPatches = utilities/surfaceTools/renameBoundaryPatches
 
-hexHelpers = utilities/hexahedra/hexHelpers
-
 intersectionTools = utilities/intersectionTools
 findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
-
-nonManifoldMeshing = utilities/nonManifoldMeshing
-findNonManifoldInterfaces = $(nonManifoldMeshing)/findNonManifoldInterfaces
-removeCellsInSelectedDomains = $(nonManifoldMeshing)/removeCellsInSelectedDomains
 
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
@@ -48,7 +33,7 @@ volumeOptimizer = $(tetMeshOptimisation)/advancedSmoothers/volumeOptimizer
 meshSurfaceOptimizer = utilities/smoothers/geometry/meshSurfaceOptimizer
 surfaceOptimizer = $(meshSurfaceOptimizer)/advancedSurfaceSmoothers/surfaceOptimizer
 surfaceMorpherCells = utilities/surfaceTools/surfaceMorpherCells
-triangulateNonPlanarBoundaryFaces = utilities/surfaceTools/triangulateNonPlanarBoundaryFaces
+
 utilitiesOctrees  =  utilities/octrees
 meshOctree  =  utilities/octrees/meshOctree
 meshOctreeCube  =  utilities/octrees/meshOctree/meshOctreeCube
@@ -59,14 +44,10 @@ meshOctreeModifier = utilities/octrees/meshOctree/meshOctreeModifier
 meshOctreeAutoRef = utilities/octrees/meshOctree/meshOctreeAutomaticRefinement
 patchRefinement = utilities/octrees/meshOctree/refinementControls/patchRefinement
 objectRefinement = utilities/octrees/meshOctree/refinementControls/objectRefinement
-surfaceIntersectionsOctree  =  utilities/octrees/surfaceIntersectionsOctree
-surfaceIntersectionsOctreeCube = utilities/octrees/surfaceIntersectionsOctree/surfaceIntersectionsOctreeCube
 helperFunctions  =  utilities/helperFunctions
 createFacesFromChain = utilities/helperClasses/createFacesFromChain
 sortEdgesIntoChains = utilities/helperClasses/sortEdgesIntoChains
 trianglePlaneIntersections  =  utilities/helperClasses/trianglePlaneIntersections
-tetrahedra = utilities/tetrahedra/tetTessellation
-tetPointsCreator = utilities/tetrahedra/tetPointsCreator
 tetCreatorOctree = utilities/tetrahedra/tetCreatorOctree
 faceDecomposition = utilities/faceDecomposition
 decomposeCells = utilities/decomposeCells
@@ -83,8 +64,6 @@ triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
 triSurfaceCopyParts = $(triSurfaceTools)/triSurfaceCopyParts
 triSurfaceCurvatureEstimator = $(triSurfaceTools)/triSurfaceCurvatureEstimator
 triSurfacePartitioner = $(triSurfaceTools)/triSurfacePartitioner
-triSurfaceDetectMaterials = $(triSurfaceTools)/triSurfaceDetectMaterials
-triSurfaceDetectPlanarRegions = $(triSurfaceTools)/triSurfaceDetectPlanarRegions
 triSurfaceDetectFeatureEdges = $(triSurfaceTools)/triSurfaceDetectFeatureEdges
 triSurfaceClassifyEdges = $(triSurfaceTools)/triSurfaceClassifyEdges
 triSurfacePatchManipulator = $(triSurfaceTools)/triSurfacePatchManipulator
@@ -124,15 +103,9 @@ cartesianMeshGenerator = cartesianMesh/cartesianMeshGenerator
 
 cartesian2DMeshGenerator = cartesian2DMesh/cartesian2DMeshGenerator
 
-hexMeshExtractor = hexMesh/hexMeshExtractor
-hexMeshGenerator = hexMesh/hexMeshGenerator
-
 tetMeshExtractor = tetMesh/tetMeshExtractor
 tetMeshExtractorOctree = tetMesh/tetMeshExtractorOctree
 tetMeshGenerator = tetMesh/tetMeshGenerator
-
-voronoiMeshExtractor = voronoiMesh/voronoiMeshExtractor
-voronoiMeshGenerator = voronoiMesh/voronoiMeshGenerator
 
 $(checkMeshDict)/checkMeshDict.C
 
@@ -209,27 +182,7 @@ $(triSurf)/triSurfFeatureEdges.C
 $(triSurf)/triSurfAddressing.C
 $(triSurf)/triSurfModifier.C
 
-$(hexHelpers)/hexHelpers.C
-
 $(findCellsIntersectingSurface)/findCellsIntersectingSurface.C
-
-$(findNonManifoldInterfaces)/findNonManifoldInterfaces.C
-
-$(removeCellsInSelectedDomains)/removeCellsInSelectedDomains.C
-
-$(tetrahedra)/tessellationElement.C
-$(tetrahedra)/tetTessellation.C
-$(tetrahedra)/tetTessellationFunctions.C
-$(tetrahedra)/tetTessellationNewElmts.C
-
-$(tetrahedra)/delaunayTessellation/delaunayTessellation.C
-$(tetrahedra)/delaunayTessellation/delaunayTessellationFunctions.C
-
-$(tetrahedra)/subdivisionTessellation/subdivisionTessellation.C
-$(tetrahedra)/subdivisionTessellation/subdivisionTessellationFunctions.C
-
-$(tetPointsCreator)/tetPointsCreator.C
-$(tetPointsCreator)/tetPointsCreatorAddPoints.C
 
 $(tetCreatorOctree)/tetCreatorOctree.C
 $(tetCreatorOctree)/tetCreatorOctreePointsAndAddressing.C
@@ -243,17 +196,11 @@ $(faceDecomposition)/decomposeFaces.C
 
 $(helperFunctions)/helperFunctionsStringConversion.C
 
-$(createFacesFromChain)/createFacesFromChain.C
-
 $(sortEdgesIntoChains)/sortEdgesIntoChains.C
-
-$(trianglePlaneIntersections)/trianglePlaneIntersections.C
 
 $(surfaceMorpherCells)/surfaceMorpherCells.C
 $(surfaceMorpherCells)/surfaceMorpherCellsMorphInternalFaces.C
 $(surfaceMorpherCells)/surfaceMorpherCellsCreateBoundaryFaces.C
-
-$(triangulateNonPlanarBoundaryFaces)/triangulateNonPlanarBoundaryFaces.C
 
 $(decomposeCells)/decomposeCells.C
 $(decomposeCells)/decomposeCellsPyramids.C
@@ -281,12 +228,6 @@ $(boundaryLayers)/refineBoundaryLayersFunctions.C
 $(boundaryLayers)/refineBoundaryLayersFaces.C
 $(boundaryLayers)/refineBoundaryLayersCells.C
 
-$(boundaryOutwardOrientation)/boundaryOutwardOrientation.C
-
-$(boundaryFacesGenerator)/boundaryFacesGenerator.C
-$(boundaryFacesGenerator)/boundaryFacesGeneratorCreateBoundaryFaces.C
-$(boundaryFacesGenerator)/boundaryFacesGeneratorFacesForChain.C
-
 $(meshSurfaceEngine)/meshSurfaceEngine.C
 $(meshSurfaceEngine)/meshSurfaceEngineCalculateBoundaryNodesAndFaces.C
 $(meshSurfaceEngine)/meshSurfaceEngineParallelAddressing.C
@@ -298,14 +239,6 @@ $(meshSurfacePartitioner)/meshSurfacePartitionerFunctions.C
 $(meshSurfaceCheckInvertedVertices)/meshSurfaceCheckInvertedVertices.C
 
 $(meshSurfaceCheckEdgeTypes)/meshSurfaceCheckEdgeTypes.C
-
-$(meshSurfaceDetectPlanarRegions)/meshSurfaceDetectPlanarRegions.C
-
-$(meshSurfaceCutter)/meshSurfaceCutter.C
-$(meshSurfaceCutter)/meshSurfaceCutterFaceCutter.C
-$(meshSurfaceCutter)/meshSurfaceCutterInternalFaces.C
-$(meshSurfaceCutter)/meshSurfaceCutterEdgePoints.C
-$(meshSurfaceCutter)/meshSurfaceCutterBoundaryFaces.C
 
 $(meshSurfaceMapper)/meshSurfaceMapper.C
 $(meshSurfaceMapper)/meshSurfaceMapperMapVertices.C
@@ -319,30 +252,14 @@ $(meshSurfaceMapper2D)/meshSurfaceMapper2DPremapVertices.C
 $(edgeExtractor)/edgeExtractor.C
 $(edgeExtractor)/edgeExtractorCorners.C
 
-$(meshSurfaceEdgeExtractor)/meshSurfaceEdgeExtractor.C
-$(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateEdgeVertices.C
-$(meshSurfaceEdgeExtractor)/meshSurfaceEdgeCreateBoundaryFaces.C
-
 $(meshSurfaceEdgeExtractorNonTopo)/meshSurfaceEdgeExtractorNonTopo.C
 $(meshSurfaceEdgeExtractorNonTopo)/meshSurfaceEdgeExtractorNonTopoDistributeFaces.C
 
 $(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2D.C
 $(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2DDistributeFaces.C
 
-$(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUN.C
-$(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUNDistributeFaces.C
-
 $(correctEdgesBetweenPatches)/correctEdgesBetweenPatches.C
 $(correctEdgesBetweenPatches)/correctEdgesBetweenPatchesDistributeFaces.C
-
-$(createFundamentalSheets)/createFundamentalSheets.C
-
-$(createFundamentalSheetsJFS)/createFundamentalSheetsJFS.C
-
-$(createFundamentalSheetsFJ)/createFundamentalSheetsFJ.C
-
-$(decomposeCellsNearConcaveEdges)/decomposeCellsNearConcaveEdges.C
-$(decomposeCellsNearConcaveEdges)/decomposeCellsNearConcaveEdgesDecompose.C
 
 $(renameBoundaryPatches)/renameBoundaryPatches.C
 
@@ -426,12 +343,6 @@ $(objectRefinement)/lineRefinement.C
 $(objectRefinement)/coneRefinement.C
 $(objectRefinement)/boxRefinement.C
 
-$(surfaceIntersectionsOctreeCube)/surfaceIntersectionsOctreeCube.C
-$(surfaceIntersectionsOctreeCube)/surfaceIntersectionsOctreeCubeIntersections.C
-$(surfaceIntersectionsOctreeCube)/surfaceIntersectionsOctreeCubeRefine.C
-$(surfaceIntersectionsOctree)/surfaceIntersectionsOctree.C
-$(surfaceIntersectionsOctree)/surfaceIntersectionsOctreeIntersections.C
-
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicates.C
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicatesFunctions.C
 
@@ -442,11 +353,6 @@ $(triSurfacePartitioner)/triSurfacePartitionerCreateAddressing.C
 
 $(triSurfaceCurvatureEstimator)/triSurfaceCurvatureEstimator.C
 $(triSurfaceCurvatureEstimator)/triSurfaceCurvatureEstimatorCalculate.C
-
-$(triSurfaceDetectMaterials)/triSurfaceDetectMaterials.C
-$(triSurfaceDetectMaterials)/triSurfaceDetectMaterialsFunctions.C
-
-$(triSurfaceDetectPlanarRegions)/triSurfaceDetectPlanarRegions.C
 
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdges.C
 $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdgesFunctions.C
@@ -473,23 +379,9 @@ $(cartesianMeshGenerator)/cartesianMeshGenerator.C
 
 $(cartesian2DMeshGenerator)/cartesian2DMeshGenerator.C
 
-$(hexMeshExtractor)/hexMeshExtractor.C
-$(hexMeshExtractor)/hexMeshExtractorHexMesh.C
-
-$(hexMeshGenerator)/hexMeshGenerator.C
-
-$(tetMeshExtractor)/tetMeshExtractor.C
-$(tetMeshExtractor)/tetMeshExtractorPointsAndCells.C
-
 $(tetMeshExtractorOctree)/tetMeshExtractorOctree.C
 
 $(tetMeshGenerator)/tetMeshGenerator.C
-
-$(voronoiMeshExtractor)/voronoiMeshExtractor.C
-$(voronoiMeshExtractor)/voronoiMeshExtractorAddressing.C
-$(voronoiMeshExtractor)/voronoiMeshExtractorCreateMesh.C
-
-$(voronoiMeshGenerator)/voronoiMeshGenerator.C
 
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C

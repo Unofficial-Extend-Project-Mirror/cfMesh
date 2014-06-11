@@ -838,7 +838,6 @@ void edgeExtractor::distributeBoundaryFaces()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
-    const labelList& bp = mse.bp();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const pointFieldPMG& points = mse.points();
 
@@ -925,7 +924,6 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
     const pointFieldPMG& points = mesh_.points();
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
-    const labelList& bp = mse.bp();
     const VRWGraph& faceEdges = mse.faceEdges();
     const VRWGraph& edgeFaces = mse.edgeFaces();
 
@@ -2494,7 +2492,6 @@ const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const VRWGraph& pFaces = mse.pointFaces();
-    const labelList& bp = mse.bp();
     const pointFieldPMG& points = mesh_.points();
 
     //- modifier of the new surface mesh
