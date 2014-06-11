@@ -31,7 +31,6 @@ Description
 
 #include "argList.H"
 #include "Time.H"
-#include "objectRegistry.H"
 
 #include <sstream>
 
@@ -46,15 +45,13 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
     
-    objectRegistry registry(runTime);
-    
     IOdictionary meshDict
     (
         IOobject
         (
             "meshDict",
-            registry.time().system(),
-            registry,
+            runTime.system(),
+            runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
@@ -65,8 +62,8 @@ int main(int argc, char *argv[])
         IOobject
         (
             "decomposeParDict",
-            registry.time().system(),
-            registry,
+            runTime.system(),
+            runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
@@ -89,7 +86,10 @@ int main(int argc, char *argv[])
         mkDir(runTime.path()/file);
         
         //- copy the contents of the const directory into processor*
-        cp(registry.path()/"constant", runTime.path()/file);
+        cp(runTime.path()/"constant", runTime.path()/file);
+
+        //- generate 0 directories for
+	mkDir(runTime.path()/file/"0");
     }
     
     Info << "End\n" << endl;

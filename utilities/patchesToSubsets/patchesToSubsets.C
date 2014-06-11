@@ -28,7 +28,6 @@ Description
 
 #include "argList.H"
 #include "Time.H"
-#include "objectRegistry.H"
 #include "triSurf.H"
 #include "triFaceList.H"
 #include "labelLongList.H"
