@@ -1,0 +1,25 @@
+Atri(x, y) := (p1y - p2y) * x + (p2x - p1x) * y + p1x * p2y - p2x * p1y;
+
+Astab(x, y) := 0.5 * (Atri(x,y) + sqrt(Atri(x,y) * Atri(x, y) + K));
+
+Le0(x, y) := (p1x - x) * (p1x - x) + (p1y - y) * (p1y - y);
+
+Le1(x, y) := (p2x - x) * (p2x - x) + (p2y - y) * (p2y - y);
+
+Le2(x, y) := (p2x - p1x) * (p2x - p1x) + (p2y - p1y) * (p2y - p1y);
+
+Lsq(x, y) := Le0(x, y) + Le1(x, y) + Le2(x, y);
+
+F(x, y) := Lsq(x, y) / Astab(x, y);
+
+gradFx(x, y) := diff(F(x, y), x);
+
+gradFy(x, y) := diff(F(x, y), y);
+
+gradGradFxx(x, y) := diff(gradFx(x, y), x);
+
+gradGradFxy(x, y) := diff(gradFx(x, y), y);
+
+gradGradFyx(x, y) := diff(gradFy(x, y), x);
+
+gradGradFyy(x, y) := diff(gradFy(x, y), y);

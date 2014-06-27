@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.3                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+Elements 1(
+
+(16000 16001 16002 16003) neighbours are  -1 -1 -1 -1
+
+)
+Volume of element 0 is 13527.7
+Number of points is 16004
+Number of tetrahedra is  1
+ExecutionTime = 6.24 s
+
+
+Influence 1.36325
