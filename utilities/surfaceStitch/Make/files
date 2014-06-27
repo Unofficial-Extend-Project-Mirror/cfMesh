@@ -1,0 +1,3 @@
+surfaceStitch.C
+
+EXE = $(FOAM_APPBIN)/surfaceStitch
