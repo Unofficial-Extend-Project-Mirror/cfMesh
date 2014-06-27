@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                |
 | \\      /  F ield         | cfMesh: A library for mesh generation          | 
@@ -14,6 +15,35 @@ FoamFile
     location  "system";
     object    meshDict;
 }
+=======
+// The FOAM Project // File: adaptiveProperties 
+/*
+-------------------------------------------------------------------------------
+ =========         | dictionary
+ \\      /         |
+  \\    /          | Name: adaptiveProperties 
+   \\  /           | Family: Data file
+    \\/            |
+    F ield         | FOAM version: 1.9.6
+    O peration     | Product of Nabla Ltd.
+    A and          |
+    M anipulation  | Email: Enquiries@Nabla.co.uk
+-------------------------------------------------------------------------------
+*/
+
+version  0.5;
+format   ascii;
+
+root     "/home/larson/franjo/foam/run";
+case     "thetaTest";
+instance "system";
+local    "";
+
+note     "fvSchemes for Foam";
+
+class    dictionary;
+object   adaptiveProperties;
+>>>>>>> parent of aee3c13... Removed Fan from tutorials
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -23,6 +53,7 @@ maxCellSize 40;
 
 boundaryCellSize 10;
 
+<<<<<<< HEAD
 minCellSize 1.25;
 
 localRefinement
@@ -128,6 +159,55 @@ keepCellsIntersectingPatches
         keepCells 1;
     }
 }
+=======
+patchCellSize
+19
+(
+    // outer rim
+    patch0 5
+    // blade seat edge
+    patch5 1.25
+
+    // shaft
+    patch6 10
+
+    // thin edges at blade ends
+    patch37 0.625
+    patch55 0.625
+    patch72 0.625
+    patch89 0.625
+    patch86 0.625
+    patch114 0.625
+    patch138 0.625
+    patch157 0.625
+
+    // blades
+    patch8   5
+    patch11  5
+        patch12  5
+    patch16  5
+    patch19  5
+    patch24  5
+    patch27  5
+    patch30  5
+);
+
+subsetFileName  "Fan1.sftr";
+
+subsetCellSize
+1
+(
+    _refine_1 2.5
+);
+
+keepCellsIntersectingPatches
+3
+(
+    patch0
+    patch1
+    patch2
+);
+>>>>>>> parent of aee3c13... Removed Fan from tutorials
 
 keepCellsIntersectingBoundary 1;
 checkForGluedMesh 1;
