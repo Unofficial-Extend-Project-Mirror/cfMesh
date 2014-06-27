@@ -1,0 +1,135 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version   2.0;
+    format    ascii;
+    class     dictionary;
+    location  "system";
+    object    meshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+surfaceFile "Fan1.ftr";
+
+maxCellSize 40;
+
+boundaryCellSize 10;
+
+minCellSize 1.25;
+
+localRefinement
+{
+    // outer rim
+    patch0
+    {
+        cellSize 5;
+    }
+    // blade seat edge
+    patch5
+    {
+        cellSize 1.25;
+    }
+
+    // shaft
+    patch6
+    {
+        cellSize 10;
+    }
+
+    // thin edges at blade ends
+    patch37
+    {
+        cellSize 0.625;
+    }
+    patch55
+    {
+        cellSize 0.625;
+    }
+    patch72
+    {
+        cellSize 0.625;
+    }
+    patch89
+    {
+        cellSize 0.625;
+    }
+    patch86
+    {
+        cellSize 0.625;
+    }
+    patch114
+    {
+        cellSize 0.625;
+    }
+    patch138
+    {
+        cellSize 0.625;
+    }
+    patch157
+    {
+        cellSize 0.625;
+    }
+
+    // blades
+    patch8
+    {
+        cellSize 5;
+    }
+    patch11
+    {
+        cellSize 5;
+    }
+    patch12
+    {
+        cellSize 5;
+    }
+    patch16
+    {
+        cellSize 5;
+    }
+    patch19
+    {
+        cellSize 5;
+    }
+    patch24
+    {
+        cellSize 5;
+    }
+    patch27
+    {
+        cellSize 5;
+    }
+    patch30
+    {
+        cellSize 5;
+    }
+);
+
+keepCellsIntersectingPatches
+{
+    patch0
+    {
+        keepCells 1;
+    }
+    patch1
+    {
+        keepCells 1;
+    }
+    patch2
+    {
+        keepCells 1;
+    }
+}
+
+keepCellsIntersectingBoundary 1;
+checkForGluedMesh 1;
+ 
+// ************************************************************************* //
