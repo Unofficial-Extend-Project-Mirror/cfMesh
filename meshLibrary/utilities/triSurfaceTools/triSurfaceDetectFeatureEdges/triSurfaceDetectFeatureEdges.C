@@ -52,6 +52,10 @@ triSurfaceDetectFeatureEdges::triSurfaceDetectFeatureEdges
             << exit(FatalError);
 
     detectFeatureEdgesAngleCriterion();
+
+    detectFeatureEdgesPointAngleCriterion();
+
+    //detectOuterBoundariesOfPlanarRegions();
 }
 
 triSurfaceDetectFeatureEdges::~triSurfaceDetectFeatureEdges()

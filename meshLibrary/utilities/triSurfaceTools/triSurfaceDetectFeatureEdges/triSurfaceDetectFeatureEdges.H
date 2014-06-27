@@ -65,6 +65,13 @@ class triSurfaceDetectFeatureEdges
         //- of the two neighbouring facets
         void detectFeatureEdgesAngleCriterion();
 
+        //- detect feature edges by checking the angle between
+        //- the point normals in the vicinity of an edge
+        void detectFeatureEdgesPointAngleCriterion();
+
+        //- detect feature edges at the boundaries of planar regions
+        void detectOuterBoundariesOfPlanarRegions();
+
         //- Disallow default bitwise copy construct
         triSurfaceDetectFeatureEdges(const triSurfaceDetectFeatureEdges&);
 

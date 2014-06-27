@@ -27,6 +27,7 @@ Description
 
 #include "triSurfaceDetectFeatureEdges.H"
 #include "helperFunctions.H"
+#include "triSurfaceDetectPlanarRegions.H"
 #include "demandDrivenData.H"
 #include "labelPair.H"
 
@@ -98,6 +99,41 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 
         if( cosAngle < tol )
             featureEdges_[edgeI] |= 1;
+    }
+}
+
+void triSurfaceDetectFeatureEdges::detectFeatureEdgesPointAngleCriterion()
+{
+
+}
+
+void triSurfaceDetectFeatureEdges::detectOuterBoundariesOfPlanarRegions()
+{
+    triSurfaceDetectPlanarRegions dpr(surf_, 0.1);
+
+    VRWGraph planarRegions;
+    dpr.detectedRegions(planarRegions);
+
+    labelLongList facetInPlanarRegion(surf_.size(), -1);
+
+    forAll(planarRegions, regionI)
+        forAllRow(planarRegions, regionI, rfI)
+            facetInPlanarRegion[planarRegions(regionI, rfI)] = regionI;
+
+    const VRWGraph& edgeFaces = surf_.edgeFacets();
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 40)
+    # endif
+    forAll(edgeFaces, edgeI)
+    {
+        const constRow eFaces = edgeFaces[edgeI];
+
+        if( eFaces.size() != 2 )
+            continue;
+
+        if( facetInPlanarRegion[eFaces[0]] != facetInPlanarRegion[eFaces[1]] )
+            featureEdges_[edgeI] |= 4;
     }
 }
 
