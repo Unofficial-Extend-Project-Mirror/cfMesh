@@ -386,4 +386,4 @@ $(tetMeshGenerator)/tetMeshGenerator.C
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C
 
-LIB = $(FOAM_LIBBIN)/libmeshLibrary
+LIB = $(FOAM_USER_LIBBIN)/libmeshLibrary
