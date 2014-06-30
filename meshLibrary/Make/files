@@ -87,6 +87,7 @@ triSurfaceDetectMaterials = $(triSurfaceTools)/triSurfaceDetectMaterials
 triSurfaceDetectPlanarRegions = $(triSurfaceTools)/triSurfaceDetectPlanarRegions
 triSurfaceDetectFeatureEdges = $(triSurfaceTools)/triSurfaceDetectFeatureEdges
 triSurfaceClassifyEdges = $(triSurfaceTools)/triSurfaceClassifyEdges
+triSurfaceImportSurfaceAsSubset = $(triSurfaceTools)/triSurfaceImportSurfaceAsSubset
 triSurfacePatchManipulator = $(triSurfaceTools)/triSurfacePatchManipulator
 triSurfaceRemoveFacets = $(triSurfaceTools)/triSurfaceRemoveFacets
 triSurfaceExtrude2DEdges = $(triSurfaceTools)/triSurfaceExtrude2DEdges
@@ -453,6 +454,8 @@ $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdgesFunctions.C
 
 $(triSurfaceClassifyEdges)/triSurfaceClassifyEdges.C
 $(triSurfaceClassifyEdges)/triSurfaceClassifyEdgesFunctions.C
+
+$(triSurfaceImportSurfaceAsSubset)/triSurfaceImportSurfaceAsSubset.C
 
 $(triSurfacePatchManipulator)/triSurfacePatchManipulator.C
 $(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C
