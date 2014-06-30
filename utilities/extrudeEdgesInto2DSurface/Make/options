@@ -4,4 +4,7 @@ EXE_INC = \
     -I$(LIB_SRC)/meshTools/lnInclude
 
 EXE_LIBS = \
-    -ltriSurface -lmeshLibrary -lmeshTools
+    -ltriSurface \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshLibrary \
+    -lmeshTools
