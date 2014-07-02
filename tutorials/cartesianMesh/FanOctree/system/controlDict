@@ -5,45 +5,23 @@
 |  \\    /   O peration     |                                                |
 |   \\  /    A nd           | Author: Franjo Juretic                         | 
 |    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
-=======
-/*---------------------------------------------------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.0                                   |
-|   \\  /    A nd           | Web:      http://www.openfoam.org               |
-|    \\/     M anipulation  |                                                 |
->>>>>>> parent of aee3c13... Removed Fan from tutorials
 \*---------------------------------------------------------------------------*/
 
 FoamFile
 {
-<<<<<<< HEAD
     version   2.0;
     format    ascii;
     class     dictionary;
     location  "system";
     object    meshDict;
-=======
-    version         2.0;
-    format          ascii;
-
-    root            "";
-    case            "";
-    instance        "";
-    local           "";
 
     class           dictionary;
     object          controlDict;
->>>>>>> parent of aee3c13... Removed Fan from tutorials
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-<<<<<<< HEAD
 application     ;
-=======
-application icoFoam;
->>>>>>> parent of aee3c13... Removed Fan from tutorials
 
 startFrom       latestTime;
 
@@ -65,7 +43,7 @@ writeFormat     binary;
 
 writePrecision  6;
 
-writeCompression uncompressed;
+writeCompression compressed;
 
 timeFormat      general;
 
