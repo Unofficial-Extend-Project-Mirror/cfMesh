@@ -3,4 +3,7 @@ EXE_INC = \
     -I$(FOAM_SRC)/triSurface/lnInclude
 
 EXE_LIBS = \
-    -ltriSurface -lmeshLibrary -lmeshTools
+    -ltriSurface \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshLibrary \
+    -lmeshTools
