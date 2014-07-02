@@ -226,6 +226,85 @@ void checkMeshDict::checkObjectRefinements() const
     }
 }
 
+void checkMeshDict::checkSurfaceRefinements() const
+{
+    if( meshDict_.found("surfaceMeshRefinement") )
+    {
+        const dictionary& surfaces = meshDict_.subDict("surfaceMeshRefinement");
+
+        const wordList surfaceSources = surfaces.toc();
+
+        forAll(surfaceSources, surfI)
+        {
+            if( surfaces.isDict(surfaceSources[surfI]) )
+            {
+                const dictionary& dict = surfaces.subDict(surfaceSources[surfI]);
+
+                if( dict.found("surfaceFile") )
+                {
+                    const fileName fName(dict.lookup("surfaceFile"));
+
+                    if( !isFile(fName) )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::checkSurfaceRefinements() const"
+                        ) << "Surface file " << fName
+                          << " does not exist or is not readable!!"
+                          << exit(FatalError);
+
+                    if( dict.found("cellSize") )
+                    {
+                        const scalar cs = readScalar(dict.lookup("cellSize"));
+
+                        if( cs < VSMALL )
+                            FatalErrorIn
+                            (
+                                "void checkMeshDict::"
+                                "checkSurfaceRefinements() const"
+                            ) << "Cell size for surface " << fName
+                              << " is extremely small or negative!!"
+                              << exit(FatalError);
+                    }
+                    else if( dict.found("additionalRefinementLevels") )
+                    {
+                        const label nLev =
+                            readLabel(dict.lookup("additionalRefinementLevels"));
+
+                        if( nLev < 0 )
+                        {
+                            FatalErrorIn
+                            (
+                                "void checkMeshDict::"
+                                "checkSurfaceRefinements() const"
+                            ) << "Number refinement levels for surface " << fName
+                              << " is negative!!"
+                              << exit(FatalError);
+                        }
+                    }
+                    else
+                    {
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::checkSurfaceRefinements() const"
+                        ) << "Missing cellSize or additionalRefinementLevels"
+                          << " for surface " << fName
+                          << exit(FatalError);
+                    }
+                }
+            }
+            else
+            {
+                FatalErrorIn
+                (
+                    "void checkMeshDict::checkSurfaceRefinements() const"
+                ) << "Dictionary " << surfaceSources[surfI]
+                  << " does not exist!!"
+                  << exit(FatalError);
+            }
+        }
+    }
+}
+
 void checkMeshDict::checkBoundaryLayers() const
 {
     if( meshDict_.found("boundaryLayers") )
@@ -355,6 +434,8 @@ void checkMeshDict::checkEntries() const
     checkPatchCellSize();
 
     checkSubsetCellSize();
+
+    checkSurfaceRefinements();
 
     checkKeepCellsIntersectingPatches();
 

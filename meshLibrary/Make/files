@@ -87,6 +87,7 @@ triSurfaceDetectMaterials = $(triSurfaceTools)/triSurfaceDetectMaterials
 triSurfaceDetectPlanarRegions = $(triSurfaceTools)/triSurfaceDetectPlanarRegions
 triSurfaceDetectFeatureEdges = $(triSurfaceTools)/triSurfaceDetectFeatureEdges
 triSurfaceClassifyEdges = $(triSurfaceTools)/triSurfaceClassifyEdges
+triSurfaceImportSurfaceAsSubset = $(triSurfaceTools)/triSurfaceImportSurfaceAsSubset
 triSurfacePatchManipulator = $(triSurfaceTools)/triSurfacePatchManipulator
 triSurfaceRemoveFacets = $(triSurfaceTools)/triSurfaceRemoveFacets
 triSurfaceExtrude2DEdges = $(triSurfaceTools)/triSurfaceExtrude2DEdges
@@ -454,6 +455,8 @@ $(triSurfaceDetectFeatureEdges)/triSurfaceDetectFeatureEdgesFunctions.C
 $(triSurfaceClassifyEdges)/triSurfaceClassifyEdges.C
 $(triSurfaceClassifyEdges)/triSurfaceClassifyEdgesFunctions.C
 
+$(triSurfaceImportSurfaceAsSubset)/triSurfaceImportSurfaceAsSubset.C
+
 $(triSurfacePatchManipulator)/triSurfacePatchManipulator.C
 $(triSurfacePatchManipulator)/triSurfacePatchManipulatorFunctions.C
 
@@ -494,4 +497,4 @@ $(voronoiMeshGenerator)/voronoiMeshGenerator.C
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C
 
-LIB = $(FOAM_LIBBIN)/libmeshLibrary
+LIB = $(FOAM_USER_LIBBIN)/libmeshLibrary

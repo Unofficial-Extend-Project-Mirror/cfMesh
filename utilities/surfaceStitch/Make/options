@@ -1,4 +1,10 @@
-EXE_INC = -I../../meshLibrary/lnInclude \
-    -I$(LIB_SRC)/triSurface/lnInclude
+EXE_INC = \
+    -I../../meshLibrary/lnInclude \
+    -I$(FOAM_SRC)/meshTools/lnInclude \
+    -I$(FOAM_SRC)/triSurface/lnInclude
 
-EXE_LIBS = -ltriSurface -lmeshTools -lmeshLibrary
+EXE_LIBS = \
+    -ltriSurface \
+    -lmeshTools \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshLibrary
