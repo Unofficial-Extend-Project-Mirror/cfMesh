@@ -1,4 +1,4 @@
 
 printCellsInSet.C
 
-EXE = $(FOAM_USER)APPBIN)/printCellsInSet
+EXE = $(FOAM_USER_APPBIN)/printCellsInSet
