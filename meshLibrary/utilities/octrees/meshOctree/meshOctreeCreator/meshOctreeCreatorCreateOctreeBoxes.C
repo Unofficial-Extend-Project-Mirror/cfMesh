@@ -418,6 +418,9 @@ void meshOctreeCreator::createOctreeBoxes()
     Info << "Refining boundary" << endl;
     refineBoundary();
 
+    //- refine parts intersected with surface mesh serving as refinement sources
+    refineBoxesIntersectingSurfaces();
+
     //- perform automatic octree refinement
     if( !Pstream::parRun() )
     {

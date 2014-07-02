@@ -80,6 +80,9 @@ private:
         //- refine boxes contained inside the objects for refinement
         void refineBoxesContainedInObjects();
 
+        //- refine boxes intersected by surface meshes used as refinement sources
+        void refineBoxesIntersectingSurfaces();
+
         //- refine boxes near DATA boxes to get a nice smooth surface
         void refineBoxesNearDataBoxes(const direction nLayers = 1);
 
