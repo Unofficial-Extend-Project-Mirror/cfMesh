@@ -364,7 +364,7 @@ void meshOctreeAddressing::findUsedBoxes() const
             else
             {
                 wordHashSet patchesToRemoveCopy
-                (
+                 (
                     meshDict_.lookup("removeCellsIntersectingPatches")
                 );
                 patchesToRemove.transfer(patchesToRemoveCopy);
@@ -374,13 +374,15 @@ void meshOctreeAddressing::findUsedBoxes() const
             boolList removeFacets(ts.size(), false);
 
             //- remove facets in patches
-            forAll(ts.patches(), patchI)
+            forAllConstIter(HashSet<word>, patchesToRemove, it)
             {
-                if( patchesToRemove.found(ts.patches()[patchI].name()) )
+                labelList matchedPatches = ts.findPatches(it.key());
+
+                forAll(matchedPatches, matchI)
                 {
                     forAll(ts, triI)
                     {
-                        if( ts[triI].region() == patchI )
+                        if(ts[triI].region() == matchedPatches[matchI])
                             removeFacets[triI] = true;
                     }
                 }
@@ -441,20 +443,22 @@ void meshOctreeAddressing::findUsedBoxes() const
         const triSurf& ts = octree_.surface();
         boolList keepFacets(ts.size(), false);
 
-        //- remove facets in patches
-        forAll(ts.patches(), patchI)
+        //- keep facets in patches
+        forAllConstIter(HashSet<word>, patchesToKeep, it)
         {
-            if( patchesToKeep.found(ts.patches()[patchI].name()) )
+            labelList matchedPatches = ts.findPatches(it.key());
+
+            forAll(matchedPatches, matchI)
             {
                 forAll(ts, triI)
                 {
-                    if( ts[triI].region() == patchI )
+                    if(ts[triI].region() == matchedPatches[matchI])
                         keepFacets[triI] = true;
                 }
             }
         }
 
-        //- remove facets in subsets
+        //- keep facets in subsets
         forAllConstIter(wordHashSet, patchesToKeep, it)
         {
             const label subsetID = ts.facetSubsetIndex(it.key());

@@ -29,6 +29,7 @@ Description
 #include "pointIOField.H"
 #include "IOobjectList.H"
 #include "pointSet.H"
+#include "stringListOps.H"
 
 namespace Foam
 {
@@ -71,6 +72,33 @@ triSurfFacets::~triSurfFacets()
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+wordList triSurfFacets::patchNames() const
+{
+    wordList t(patches_.size());
+
+    forAll(patches_, patchI)
+    {
+        t[patchI] = patches_[patchI].name();
+    }
+
+    return t;
+}
+
+labelList triSurfFacets::findPatches(const word& patchName) const
+{
+    wordList allPatches = patchNames();
+
+    labelList patchIDs = findStrings(patchName, allPatches);
+
+    if(patchIDs.empty())
+    {
+        WarningIn("triSurfFacets::findPatches(const word&)")
+            << "Cannot find any patch names matching " << patchName << endl;
+    }
+
+    return patchIDs;
+}
 
 label triSurfFacets::addFacetSubset(const word& subsetName)
 {

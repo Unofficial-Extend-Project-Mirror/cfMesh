@@ -178,8 +178,9 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
             const wordList patchNames = dict.toc();
+            const wordList allPatches = surface.patchNames();
 
-            refPatches.setSize(patchNames.size());
+            refPatches.setSize(allPatches.size());
             label counter(0);
 
             forAll(patchNames, patchI)
@@ -190,8 +191,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 const dictionary& patchDict = dict.subDict(patchNames[patchI]);
                 const scalar cs = readScalar(patchDict.lookup("cellSize"));
 
-                refPatches[counter] = patchRefinement(patchNames[patchI], cs);
-                ++counter;
+                labelList matchedIDs = surface.findPatches(patchNames[patchI]);
+                forAll(matchedIDs, matchI)
+                {
+                    refPatches[counter] = patchRefinement(allPatches[matchedIDs[matchI]], cs);
+                    ++counter;
+                }
             }
 
             refPatches.setSize(counter);
@@ -327,11 +332,6 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             const dictionary& dict = meshDictPtr_->subDict("localRefinement");
             const wordList entries = dict.toc();
 
-            //- map patch name to its index
-            std::map<word, label> patchToIndex;
-            forAll(surface.patches(), patchI)
-                patchToIndex[surface.patches()[patchI].name()] = patchI;
-
             //- map a facet subset name to its index
             std::map<word, label> setToIndex;
             DynList<label> setIDs;
@@ -386,10 +386,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const direction level = globalRefLevel_ + nLevel;
 
-                if( patchToIndex.find(pName) != patchToIndex.end() )
+                labelList matchedPatches = surface.findPatches(pName);
+
+                forAll(matchedPatches, matchI)
                 {
                     //- patch-based refinement
-                    const label patchI = patchToIndex[pName];
+                    const label patchI = matchedPatches[matchI];
 
                     forAll(surface, triI)
                     {
