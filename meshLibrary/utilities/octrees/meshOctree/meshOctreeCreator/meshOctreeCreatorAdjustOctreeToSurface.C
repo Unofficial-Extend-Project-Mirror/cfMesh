@@ -32,6 +32,7 @@ Description
 #include "objectRefinementList.H"
 #include "VRWGraph.H"
 #include "meshOctreeModifier.H"
+#include "helperFunctions.H"
 #include "HashSet.H"
 
 # ifdef USE_OMP
@@ -147,7 +148,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     Info << "Refining boxes inside objects" << endl;
     objectRefinementList refObjects;
 
-    // Read polyPatchList
+    // Read objects
     if( meshDictPtr_->isDict("objectRefinements") )
     {
         const dictionary& dict = meshDictPtr_->subDict("objectRefinements");
@@ -307,6 +308,182 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
 
     //- set up inside-outside information
     createInsideOutsideInformation();
+}
+
+void meshOctreeCreator::refineBoxesIntersectingSurfaces()
+{
+    if( !meshDictPtr_ || !meshDictPtr_->found("surfaceMeshRefinement") )
+    {
+        return;
+    }
+
+    Info << "Refining boxes intersecting surface meshes" << endl;
+
+    label nMarked;
+
+    //- read surface meshes and calculate the refinement level for each
+    //- surface mesh
+    const dictionary& surfDict = meshDictPtr_->subDict("surfaceMeshRefinement");
+    const wordList surfaces = surfDict.toc();
+    PtrList<triSurf> surfaceMeshesPtr(surfaces.size());
+    List<direction> refLevels(surfaces.size(), globalRefLevel_);
+
+    //- load surface meshes into memory
+    forAll(surfaceMeshesPtr, surfI)
+    {
+        const dictionary& dict = surfDict.subDict(surfaces[surfI]);
+
+        const fileName fName(dict.lookup("surfaceFile"));
+
+        surfaceMeshesPtr.set
+        (
+            surfI,
+            new triSurf(fName)
+        );
+
+        direction addLevel(0);
+        if( dict.found("cellSize") )
+        {
+            scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
+
+            const scalar cs = readScalar(dict.lookup("cellSize"));
+
+            do
+            {
+                nMarked = 0;
+                if( cs <= s * (1.+SMALL) )
+                {
+                    ++nMarked;
+                    ++addLevel;
+                }
+
+                s /= 2.0;
+
+            } while( nMarked != 0 );
+        }
+        else if( dict.found("additionalRefinementLevels") )
+        {
+            addLevel =
+                readLabel(dict.lookup("additionalRefinementLevels"));
+        }
+
+        //- set the refinement level for the current surface
+        refLevels[surfI] += addLevel;
+    }
+
+    if( octree_.neiProcs().size() )
+        forAll(refLevels, oI)
+        {
+            label l = refLevels[oI];
+            reduce(l, maxOp<label>());
+            refLevels[oI] = l;
+        }
+
+    //- start refining boxes intersecting triangles in each refinement surface
+    const boundBox& rootBox = octree_.rootBox();
+    const vector tol = SMALL * rootBox.span();
+    meshOctreeModifier octreeModifier(octree_);
+    const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
+    DynList<label> leavesInBox;
+
+    do
+    {
+        # ifdef OCTREETiming
+        const scalar startIter = omp_get_wtime();
+        # endif
+
+        nMarked = 0;
+
+        List<direction> refineCubes(leaves.size(), direction(0));
+
+        //- select boxes which need to be refined
+        forAll(surfaceMeshesPtr, surfI)
+        {
+            const triSurf& surf = surfaceMeshesPtr[surfI];
+            const pointField& points = surf.points();
+
+            # ifdef USE_OMP
+            # pragma omp parallel for \
+            reduction( + : nMarked) schedule(dynamic, 10) private(leavesInBox)
+            # endif
+            forAll(surf, triI)
+            {
+                //- find the bounding box of the current triangle
+                const labelledTri& tri = surf[triI];
+                boundBox triBB(points[tri[0]], points[tri[0]]);
+                for(label pI=1;pI<3;++pI)
+                {
+                    triBB.min() = Foam::min(triBB.min(), points[tri[pI]]);
+                    triBB.max() = Foam::max(triBB.max(), points[tri[pI]]);
+                }
+
+                triBB.min() -= tol;
+                triBB.max() += tol;
+
+                //- find octree leaves inside the bounding box
+                leavesInBox.clear();
+                octree_.findLeavesContainedInBox(triBB, leavesInBox);
+
+                //- check which of the leaves are intersected by the triangle
+                forAll(leavesInBox, i)
+                {
+                    const label leafI = leavesInBox[i];
+
+                    if( refineCubes[leafI] )
+                        continue;
+
+                    const meshOctreeCube& oc = *leaves[leafI];
+
+                    if(
+                        (oc.level() < refLevels[surfI]) &&
+                        oc.intersectsTriangleExact(surf, rootBox, triI)
+                    )
+                    {
+                        # ifdef DEBUGSearch
+                        Info << "Marking leaf " << leafI
+                            << " with coordinates " << oc
+                            << " for refinement" << endl;
+                        # endif
+
+                        ++nMarked;
+                        refineCubes[leafI] = 1;
+                    }
+                }
+            }
+        }
+
+        //- refine boxes
+        octreeModifier.refineSelectedBoxes(refineCubes, hexRefinement_);
+
+        # ifdef OCTREETiming
+        const scalar refTime = omp_get_wtime();
+        Info << "Time for refinement " << (refTime-startIter) << endl;
+        # endif
+
+        if( octree_.neiProcs().size() != 0 )
+        {
+            reduce(nMarked, sumOp<label>());
+            if( nMarked )
+            {
+                octreeModifier.distributeLeavesToProcessors();
+
+                # ifdef OCTREETiming
+                const scalar distTime = omp_get_wtime();
+                Info << "Time for distributing data to processors "
+                << (distTime-refTime) << endl;
+                # endif
+
+                loadDistribution(false);
+
+                # ifdef OCTREETiming
+                Info << "Time for load distribution "
+                << (omp_get_wtime()-distTime) << endl;
+                # endif
+            }
+        }
+    } while( nMarked != 0 );
+
+    Info << "Finished refinement of boxes intersecting surface meshes" << endl;
 }
 
 void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
