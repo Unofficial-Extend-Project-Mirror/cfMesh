@@ -1,0 +1,4 @@
+
+cellSetIntersectedByPlane.C
+
+EXE = $(FOAM_APPBIN)/cellSetIntersectedByPlane

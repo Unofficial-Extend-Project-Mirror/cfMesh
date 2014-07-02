@@ -1,0 +1,3 @@
+starSurfaceToSTL.C
+
+EXE = $(FOAM_APPBIN)/starSurfaceToSTL

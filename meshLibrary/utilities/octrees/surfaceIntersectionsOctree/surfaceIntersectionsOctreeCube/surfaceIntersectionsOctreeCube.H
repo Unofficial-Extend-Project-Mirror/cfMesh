@@ -1,0 +1,168 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | cfMesh: A library for mesh generation
+   \\    /   O peration     |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+-------------------------------------------------------------------------------
+License
+    This file is part of cfMesh.
+
+    cfMesh is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+
+Class
+    surfaceIntersectionsOctreeCube
+
+Description
+    A cube for octree needed for evaluating surface intersections
+
+SourceFiles
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef surfaceIntersectionsOctreeCube_H
+#define surfaceIntersectionsOctreeCube_H
+
+#include "SLList.H"
+#include "boolList.H"
+#include "pointIndexHit.H"
+#include "boundBox.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+// Class forward declarations
+class triSurf;
+
+/*---------------------------------------------------------------------------*\
+                Class surfaceIntersectionsOctreeCube Declaration
+\*---------------------------------------------------------------------------*/
+
+class surfaceIntersectionsOctreeCube
+{
+    // Private data
+
+        //- Reference to surface to work on
+        const triSurf& surface_;
+
+        //- cube level in the octree structure
+        direction level_;
+
+        //- Bound box of the cube
+        boundBox cubeBox_;
+
+        //- labels of elements contained within this surfaceIntersectionsOctreeCube
+        SLList<label> containedElements_;
+
+        //- list of cube created from the current one
+        //- if the size of the list is not zero than the number of contained
+        //- elements is zero
+        FixedList<surfaceIntersectionsOctreeCube*, 8>* subCubesPtr_;
+
+        //- is the cube outside, data or outside of the domain
+        direction cubeType_;
+
+        //- returns cube's edges
+        List< List<point> > edges() const;
+
+        //- Disallow default bitwise copy construct
+        surfaceIntersectionsOctreeCube(const surfaceIntersectionsOctreeCube&);
+
+        //- Disallow default bitwise assignment
+        void operator=(const surfaceIntersectionsOctreeCube&);
+
+public:
+    // Constructors
+
+        //- Construct from surface. Holds reference to surface!
+        surfaceIntersectionsOctreeCube(const triSurf&, const boundBox&, const direction&);
+
+    // Destructor
+
+        ~surfaceIntersectionsOctreeCube();
+
+    // Enumerators
+        enum cubeTypes
+        {
+            OUTSIDE = 0,
+            DATA = 1,
+            INSIDE = 2
+        };
+
+    // Member Functions
+        //- subdivide the octree cube
+        void refineTree(const short, const direction);
+
+        //- is cube a leaf
+        inline bool isLeaf() const;
+
+        //- return and set cube type
+        direction cubeType() const
+        {
+            return cubeType_;
+        };
+        void setCubeType(const direction t)
+        {
+            cubeType_ = t;
+        }
+
+        //- vertices
+        FixedList<point, 8> vertices() const;
+
+        //- sub cubes
+        inline FixedList<surfaceIntersectionsOctreeCube*, 8>* subCubes() const;
+
+        //- check if the triangle intersects the cube
+        bool intersectsTriangle(const label) const;
+
+        //- return boundBox
+        inline const boundBox& bb() const;
+
+        //- add a triangle into the cube
+        inline void append(const label);
+
+        //- check if the cube intersects a line
+        bool intersectsLine(const point&, const point&) const;
+
+        //- return contained elements
+        inline const SLList<label>& containedElements() const;
+
+        //- add labels of triangles contained within the cube
+        void intersectionCandidates
+        (
+            SLList<pointIndexHit>&,
+            const point&,
+            const point&
+        ) const;
+
+        //- is a vertex inside the cube
+        bool isVertexInside(const point&) const;
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "surfaceIntersectionsOctreeCubeI.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
+
+// ************************************************************************* //

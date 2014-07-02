@@ -26,6 +26,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "tetCreatorOctree.H"
+#include "tetTessellation.H"
 #include "meshOctree.H"
 #include "triSurface.H"
 

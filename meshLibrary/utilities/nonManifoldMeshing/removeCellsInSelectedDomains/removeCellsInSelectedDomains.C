@@ -1,0 +1,596 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | cfMesh: A library for mesh generation
+   \\    /   O peration     |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+-------------------------------------------------------------------------------
+License
+    This file is part of cfMesh.
+
+    cfMesh is free software; you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by the
+    Free Software Foundation; either version 3 of the License, or (at your
+    option) any later version.
+
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+
+Description
+
+\*---------------------------------------------------------------------------*/
+
+#include "removeCellsInSelectedDomains.H"
+#include "meshOctree.H"
+#include "findCellsIntersectingSurface.H"
+#include "triSurf.H"
+#include "demandDrivenData.H"
+
+#include "helperFunctions.H"
+
+# ifdef USE_OMP
+#include <omp.h>
+# endif
+
+//#define DEBUGRemoveDomains
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+class meshNeighbourOperator
+{
+    const polyMeshGen& mesh_;
+
+public:
+
+    meshNeighbourOperator(const polyMeshGen& mesh)
+    :
+        mesh_(mesh)
+    {}
+
+    label size() const
+    {
+        return mesh_.cells().size();
+    }
+
+    void operator()(const label cellI, DynList<label>& neighbourCells) const
+    {
+        neighbourCells.clear();
+
+        const labelList& owner = mesh_.owner();
+        const labelList& neighbour = mesh_.neighbour();
+
+        const cell& c = mesh_.cells()[cellI];
+
+        forAll(c, fI)
+        {
+            label nei = owner[c[fI]];
+
+            if( nei == cellI )
+                nei = neighbour[c[fI]];
+
+            if( nei >= 0 )
+                neighbourCells.append(nei);
+        }
+    }
+
+    template<class labelListType>
+    void collectGroups
+    (
+        std::map<label, DynList<label> >& neiGroups,
+        const labelListType& elementInGroup,
+        const DynList<label>& localGroupLabel
+    ) const
+    {
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh_.procBoundaries();
+        const labelList& owner = mesh_.owner();
+
+        //- send the data to other processors
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+            const label size = procBoundaries[patchI].patchSize();
+
+            labelList groupOwner(procBoundaries[patchI].patchSize());
+            for(label faceI=0;faceI<size;++faceI)
+            {
+                const label groupI = elementInGroup[owner[start+faceI]];
+
+                if( groupI < 0 )
+                {
+                    groupOwner[faceI] = -1;
+                    continue;
+                }
+
+                groupOwner[faceI] = localGroupLabel[groupI];
+            }
+
+            OPstream toOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                groupOwner.byteSize()
+            );
+
+            toOtherProc << groupOwner;
+        }
+
+        //- receive data from other processors
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+
+            labelList receivedData;
+
+            IPstream fromOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+
+            fromOtherProc >> receivedData;
+
+            forAll(receivedData, faceI)
+            {
+                if( receivedData[faceI] < 0 )
+                    continue;
+
+                const label groupI = elementInGroup[owner[start+faceI]];
+
+                if( groupI < 0 )
+                    continue;
+
+                DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
+
+                //- store the connection over the inter-processor boundary
+                ng.appendIfNotIn(receivedData[faceI]);
+            }
+        }
+    }
+};
+
+class meshSelectorOperator
+{
+    const LongList<DynList<label, 2> >& intersectedCells_;
+
+public:
+
+    meshSelectorOperator(const LongList<DynList<label, 2> >& intersectedCells)
+    :
+        intersectedCells_(intersectedCells)
+    {}
+
+    bool operator()(const label cellI) const
+    {
+        if( intersectedCells_[cellI].size() )
+            return false;
+
+        return true;
+    }
+};
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+const VRWGraph& removeCellsInSelectedDomains::cellsIntersectedBySurfaceFacets()
+{
+    if( !surfIntersectionPtr_ )
+        surfIntersectionPtr_ = new findCellsIntersectingSurface(mesh_, octree_);
+
+    return surfIntersectionPtr_->facetsIntersectingCells();
+}
+
+void removeCellsInSelectedDomains::markSelectedFacets()
+{
+    const triSurf& surf = octree_.surface();
+    const geometricSurfacePatchList& patches = surf.patches();
+
+    VRWGraph usedPatch(patches.size(), 0);
+
+    selectedFacets_.setSize(surf.size());
+    forAll(selectedFacets_, rowI)
+        selectedFacets_.setRowSize(rowI, 0);
+
+    forAll(domains_, domainI)
+    {
+        const DynList<word, 4>& domain = domains_[domainI];
+
+        forAll(domain, subsetI)
+        {
+            const word& sName = domain[subsetI];
+
+            label index = surf.facetSubsetIndex(sName);
+
+            if( index >= 0 )
+            {
+                //- it is a subset
+                labelLongList facetsInSubset;
+                surf.facetsInSubset(index, facetsInSubset);
+
+                forAll(facetsInSubset, i)
+                    selectedFacets_[facetsInSubset[i]].append(domainI);
+            }
+            else
+            {
+                //- check if it is a patch
+                forAll(patches, i)
+                {
+                    if( patches[i].name() == sName )
+                    {
+                        usedPatch.append(i, domainI);
+                    }
+                }
+            }
+        }
+    }
+
+    //- selected facets in used patches
+    forAll(surf, triI)
+    {
+        const labelledTri& tri = surf[triI];
+
+        forAllRow(usedPatch, tri.region(), i)
+            selectedFacets_[triI].append(usedPatch(tri.region(), i));
+    }
+}
+
+void removeCellsInSelectedDomains::findLeavesInsideRegions()
+{
+    insideLeaves_.setSize(octree_.numberOfLeaves());
+    insideLeaves_ = false;
+
+    //- find octree leaves intersected by the selected domains
+    boolList intersectedLeaves(insideLeaves_.size(), false);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 40)
+    # endif
+    forAll(intersectedLeaves, leafI)
+    {
+        DynList<label> trianglesInLeaf;
+        octree_.containedTriangles(leafI, trianglesInLeaf);
+
+        forAll(trianglesInLeaf, i)
+        {
+            if( selectedFacets_[trianglesInLeaf[i]].size() )
+            {
+                intersectedLeaves[leafI] = true;
+                break;
+            }
+        }
+    }
+
+    //- find islands of octree leaves which are not intersected by
+    //- the selected domains
+
+    //- select the islands which do not have contact with the outer bondary
+}
+
+void removeCellsInSelectedDomains::findAndRemoveCells()
+{
+    //- find the cells which are intersected by the selected domains
+    LongList<DynList<label, 2> > intersectedCells(mesh_.cells().size());
+
+    const VRWGraph& facetsIntersectingCell = cellsIntersectedBySurfaceFacets();
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 40)
+    # endif
+    forAll(facetsIntersectingCell, cellI)
+    {
+        forAllRow(facetsIntersectingCell, cellI, triI)
+        {
+            const label fI = facetsIntersectingCell(cellI, triI);
+
+            forAllRow(selectedFacets_, fI, domainI)
+                intersectedCells[cellI].append(selectedFacets_(fI, domainI));
+        }
+    }
+
+    # ifdef DEBUGRemoveDomains
+    labelList domainIds(domains_.size());
+    forAll(domainIds, i)
+    {
+        domainIds[i] =
+            mesh_.addCellSubset("intersectingDomain_"+help::scalarToText(i));
+    }
+
+    forAll(intersectedCells, i)
+    {
+        const DynList<label, 2>& doms = intersectedCells[i];
+
+        forAll(doms, ii)
+            mesh_.addCellToSubset(domainIds[doms[i]], i);
+    };
+    # endif
+
+    //- find islands of cells which are not intersected by the selected domains
+    //const cellListPMG& cells = mesh_.cells();
+    labelLongList findCellGroups;
+
+    const label nGroups =
+        help::groupMarking
+        (
+            findCellGroups,
+            meshNeighbourOperator(mesh_),
+            meshSelectorOperator(intersectedCells)
+        );
+
+    # ifdef DEBUGRemoveDomains
+    Info << "Number of groups " << nGroups << endl;
+    Info << "2.1 Here" << endl;
+    labelList groupToId(nGroups);
+    for(label i=0;i<nGroups;++i)
+        groupToId[i] = mesh_.addCellSubset("group_"+help::scalarToText(i));
+
+    forAll(findCellGroups, i)
+    {
+        if( findCellGroups[i] != -1 )
+            mesh_.addCellToSubset(groupToId[findCellGroups[i]], i);
+    }
+    # endif
+
+    //- collect which domains are assigned to facets neighbouring
+    //- groups
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
+
+    List<DynList<label> > neiDomains(nGroups);
+    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    {
+        const label own = owner[faceI];
+        const label nei = neighbour[faceI];
+
+        if( intersectedCells[own].size() && (findCellGroups[nei] != -1) )
+        {
+            forAll(intersectedCells[own], domainI)
+                neiDomains[findCellGroups[nei]].appendIfNotIn
+                (
+                    intersectedCells[own][domainI]
+                );
+        }
+        else if( intersectedCells[nei].size() && (findCellGroups[own] != -1) )
+        {
+            forAll(intersectedCells[nei], domainI)
+                neiDomains[findCellGroups[own]].appendIfNotIn
+                (
+                    intersectedCells[nei][domainI]
+                );
+        }
+    }
+
+    if( Pstream::parRun() )
+    {
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh_.procBoundaries();
+
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+            const label size = procBoundaries[patchI].patchSize();
+
+            labelList sendGroup(size);
+            for(label fI=0;fI<size;++fI)
+                sendGroup[fI] = findCellGroups[owner[start+fI]];
+
+            OPstream toOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                sendGroup.byteSize()
+            );
+
+            toOtherProc << sendGroup;
+        }
+
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+
+            labelList receivedGroup;
+
+            IPstream fromOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+
+            fromOtherProc >> receivedGroup;
+
+            forAll(receivedGroup, fI)
+            {
+                const label own = owner[start+fI];
+
+                if( intersectedCells[own].size() && (receivedGroup[fI] != -1) )
+                {
+                    forAll(intersectedCells[own], domainI)
+                        neiDomains[receivedGroup[fI]].appendIfNotIn
+                        (
+                            intersectedCells[own][domainI]
+                        );
+                }
+            }
+        }
+    }
+
+    # ifdef DEBUGRemoveDomains
+    Info << "1. Nei domains " << neiDomains << endl;
+    # endif
+
+    //- find a common group for all cell neighbours of a group
+    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    {
+        const label own = owner[faceI];
+        const label nei = neighbour[faceI];
+
+        if( intersectedCells[own].size() && (findCellGroups[nei] != -1) )
+        {
+            const label groupI = findCellGroups[nei];
+            forAllReverse(neiDomains[groupI], domainI)
+            {
+                const label neiDomain = neiDomains[groupI][domainI];
+                if( !intersectedCells[own].contains(neiDomain) )
+                    neiDomains[groupI].removeElement(domainI);
+            }
+        }
+        else if( intersectedCells[nei].size() && (findCellGroups[own] != -1) )
+        {
+            const label groupI = findCellGroups[own];
+            forAllReverse(neiDomains[groupI], domainI)
+            {
+                const label neiDomain = neiDomains[groupI][domainI];
+                if( !intersectedCells[nei].contains(neiDomain) )
+                    neiDomains[groupI].removeElement(domainI);
+            }
+        }
+    }
+
+    if( Pstream::parRun() )
+    {
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh_.procBoundaries();
+
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+            const label size = procBoundaries[patchI].patchSize();
+
+            labelList sendGroup(size);
+            for(label fI=0;fI<size;++fI)
+                sendGroup[fI] = findCellGroups[owner[start+fI]];
+
+            OPstream toOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                sendGroup.byteSize()
+            );
+
+            toOtherProc << sendGroup;
+        }
+
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+
+            labelList receivedGroup;
+
+            IPstream fromOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+
+            fromOtherProc >> receivedGroup;
+
+            forAll(receivedGroup, fI)
+            {
+                const label own = owner[start+fI];
+
+                const label groupI = receivedGroup[fI];
+                if( intersectedCells[own].size() && (groupI != -1) )
+                {
+                    forAllReverse(neiDomains[groupI], domainI)
+                    {
+                        const label neiDomain = neiDomains[groupI][domainI];
+                        if( !intersectedCells[own].contains(neiDomain) )
+                            neiDomains[groupI].removeElement(domainI);
+                    }
+                }
+            }
+        }
+    }
+
+    # ifdef DEBUGRemoveDomains
+    Info << "2. Nei domains " << neiDomains << endl;
+    # endif
+
+    //- check which islands of cells correspond to octree boxes
+    //- marked as internal boxes
+    boolList internalCells(intersectedCells.size(), false);
+
+    forAll(findCellGroups, cellI)
+    {
+        const label groupI = findCellGroups[cellI];
+
+        //- do not remove cells which are not assigned to a domain
+        if( groupI < 0 )
+            continue;
+
+        //- do not remove cells intersected by the selected surface elements
+        if( intersectedCells[cellI].size() )
+            continue;
+
+        //- remove domains surrounded by facets in a single user-selected domain
+        if( neiDomains[groupI].size() != 1 )
+            continue;
+
+        //- mark cell for removal
+        internalCells[cellI] = true;
+    }
+
+    //- remove cells inside the selected domains
+    polyMeshGenModifier(mesh_).removeCells(internalCells);
+}
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+removeCellsInSelectedDomains::removeCellsInSelectedDomains
+(
+    polyMeshGen& mesh,
+    const meshOctree& octree
+)
+:
+    mesh_(mesh),
+    octree_(octree),
+    domains_(),
+    selectedFacets_(),
+    surfIntersectionPtr_(NULL),
+    insideLeaves_(octree_.numberOfLeaves(), false)
+{}
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+removeCellsInSelectedDomains::~removeCellsInSelectedDomains()
+{
+    deleteDemandDrivenData(surfIntersectionPtr_);
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void removeCellsInSelectedDomains::selectCellsInDomain(const wordList& domain)
+{
+    const label s = domains_.size();
+
+    domains_.setSize(s+1);
+
+    domains_[s] = domain;
+}
+
+void removeCellsInSelectedDomains::removeCells()
+{
+    Info << "Starting removing cells in user-selected domains" << endl;
+
+    markSelectedFacets();
+
+    //findLeavesInsideRegions();
+
+    findAndRemoveCells();
+
+    Info << "Finished removing cells in user-selected domains" << endl;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// ************************************************************************* //

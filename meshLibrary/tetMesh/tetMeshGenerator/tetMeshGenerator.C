@@ -32,6 +32,8 @@ Description
 #include "meshOctreeCreator.H"
 #include "meshOctreeAutomaticRefinement.H"
 #include "tetMeshExtractorOctree.H"
+#include "delaunayTessellation.H"
+#include "subdivisionTessellation.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"

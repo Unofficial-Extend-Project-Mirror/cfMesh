@@ -1,0 +1,3 @@
+surfaceClosedness.C
+
+EXE = $(FOAM_APPBIN)/surfaceClosedness

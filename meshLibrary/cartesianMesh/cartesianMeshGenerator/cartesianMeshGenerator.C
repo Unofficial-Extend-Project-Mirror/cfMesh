@@ -47,6 +47,7 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
+#include "removeCellsInSelectedDomains.H"
 
 //#define DEBUG
 
@@ -78,6 +79,37 @@ void cartesianMeshGenerator::createCartesianMesh()
 
 void cartesianMeshGenerator::surfacePreparation()
 {
+    //- remove cells inside the domains specified by the user
+    if( meshDict_.found("removeDomains") )
+    {
+        if( Pstream::parRun() )
+        {
+            WarningIn
+            (
+                "void cartesianMeshGenerator::surfacePreparation()"
+            ) << "The feature removeDomains is not availabel for MPI runs"
+              << exit(FatalError);
+        }
+
+        const dictionary& dict = meshDict_.subDict("removeDomains");
+
+        const wordList domainNames = dict.toc();
+
+        mesh_.clearAddressingData();
+        removeCellsInSelectedDomains rCells(mesh_, *octreePtr_);
+
+        //- read the patches/subsets forming this domain
+        forAll(domainNames, domainI)
+        {
+            wordList domainParts(dict.lookup(domainNames[domainI]));
+
+            rCells.selectCellsInDomain(domainParts);
+        }
+
+        rCells.removeCells();
+    }
+
+
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
