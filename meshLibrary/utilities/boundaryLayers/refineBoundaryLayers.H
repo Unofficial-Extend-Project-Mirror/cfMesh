@@ -124,23 +124,7 @@ class refineBoundaryLayers
         const meshSurfaceEngine& surfaceEngine() const;
 
         //- analyse layers to check their topology
-        void analyseLayers();
-
-        //- calculate addressing for a boundary cell
-        void calculateAddressing
-        (
-            const label bfI,
-            label& baseFace,
-            DynList<edge, 48>& edges,
-            DynList<DynList<label, 2>, 48>& edgeFaces,
-            DynList<DynList<label, 10>, 24>& faceEdges
-        ) const;
-
-        //- find bnd layer hairs for a boundary face
-        bool findHairsForFace(const label, DynList<edge>&) const;
-
-        //- find edges which shall be split due to refinement
-        bool findSplitEdges();
+        bool analyseLayers();
 
         //- generate new points on edges, faces and in cells
         void generateNewVertices();

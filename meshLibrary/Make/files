@@ -277,6 +277,8 @@ $(boundaryLayers)/boundaryLayerCells.C
 $(boundaryLayers)/boundaryLayersCheckTopologyOfBndFaces.C
 $(boundaryLayers)/boundaryLayersWrapperLayer.C
 $(boundaryLayers)/extrudeLayer.C
+$(boundaryLayers)/detectBoundaryLayers.C
+$(boundaryLayers)/detectBoundaryLayersFunctions.C
 $(boundaryLayers)/refineBoundaryLayers.C
 $(boundaryLayers)/refineBoundaryLayersFunctions.C
 $(boundaryLayers)/refineBoundaryLayersFaces.C

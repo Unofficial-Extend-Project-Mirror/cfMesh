@@ -52,8 +52,8 @@ namespace Foam
 class polyMeshGen2DEngine
 {
     // Private data
-        //- reference to the mesh
-        polyMeshGen& mesh_;
+        //- const reference to the mesh
+        const polyMeshGen& mesh_;
 
         //- bounding box
         boundBox bb_;
@@ -116,8 +116,8 @@ class polyMeshGen2DEngine
 public:
 
     // Constructors
-        //- Construct from the reference to the mesh
-        polyMeshGen2DEngine(polyMeshGen& mesh);
+        //- Construct from the const reference to the mesh
+        polyMeshGen2DEngine(const polyMeshGen& mesh);
 
     // Destructor
         ~polyMeshGen2DEngine();

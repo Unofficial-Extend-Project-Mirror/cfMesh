@@ -233,9 +233,7 @@ void refineBoundaryLayers::refineLayers()
         return;
     }
 
-    analyseLayers();
-
-    if( !findSplitEdges() )
+    if( !analyseLayers() )
     {
         WarningIn
         (

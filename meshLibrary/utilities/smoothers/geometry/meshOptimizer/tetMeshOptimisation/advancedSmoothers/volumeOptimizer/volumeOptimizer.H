@@ -55,6 +55,9 @@ class volumeOptimizer
 :
     public simplexSmoother
 {
+    // Private static data
+        static const vector dirVecs[8];
+
     // Private member functions
         //- evaluate functional
         scalar evaluateFunc() const;
