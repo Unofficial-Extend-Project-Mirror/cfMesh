@@ -177,6 +177,62 @@ meshOptimizer::~meshOptimizer()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+void meshOptimizer::lockPoints(const word& subsetName)
+{
+    const cellListPMG& cells = mesh_.cells();
+    const faceListPMG& faces = mesh_.faces();
+
+    //- lock the points in the cell subset with the given name
+    label subsetI = mesh_.cellSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList cellsInSubset;
+        mesh_.cellsInSubset(subsetI, cellsInSubset);
+
+        forAll(cellsInSubset, cI)
+        {
+            const cell& c = cells[cellsInSubset[cI]];
+
+            forAll(c, fI)
+            {
+                const face& f = faces[c[fI]];
+
+                forAll(f, pI)
+                    vertexLocation_[f[pI]] |= LOCKED;
+            }
+        }
+    }
+
+    //- lock the points in the face subset with the given name
+    subsetI = mesh_.faceSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList facesInSubset;
+        mesh_.facesInSubset(subsetI, facesInSubset);
+
+        forAll(facesInSubset, fI)
+        {
+            const face& f = faces[facesInSubset[fI]];
+
+            forAll(f, pI)
+                vertexLocation_[f[pI]] |= LOCKED;
+        }
+    }
+
+    //- lock points in the point subset with the given name
+    subsetI = mesh_.pointSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList pointsInSubset;
+        mesh_.pointsInSubset(subsetI, pointsInSubset);
+
+        forAll(pointsInSubset, pI)
+            vertexLocation_[pointsInSubset[pI]] |= LOCKED;
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 } // End namespace Foam
 
 // ************************************************************************* //

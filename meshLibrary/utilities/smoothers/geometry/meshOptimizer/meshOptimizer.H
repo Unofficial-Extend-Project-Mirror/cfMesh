@@ -63,10 +63,10 @@ class meshOptimizer
     // Private data
         //- reference to the mesh
         polyMeshGen& mesh_;
-    
+
         //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
-    
+
         //- mesh surface
         mutable meshSurfaceEngine* msePtr_;
 
@@ -74,66 +74,66 @@ class meshOptimizer
         //- return mesh surface
         const meshSurfaceEngine& meshSurface() const;
         void clearSurface();
-    
+
         //- find problematic faces
         label findBadFaces(labelHashSet&, const boolList&) const;
         label findLowQualityFaces(labelHashSet&, const boolList&) const;
-    
+
     // Nested classes
-    
+
         class laplaceSmoother
         {
             // Private data
                 //- reference to the mesh
                 polyMeshGen& mesh_;
-            
+
                 //- location of vertex (internal, boundary, edge, corner)
                 const List<direction>& vertexLocation_;
-            
+
             // Private member functions
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the neighbouring vertices
                 void laplacian(const labelLongList&, const label);
                 void laplacianSurface(const labelLongList&, const label);
-            
+
                 void laplacianParallel
                 (
                     const labelLongList& procPoints,
                     const bool smoothOnlySurfaceNodes = false
                 );
-                
+
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
                 void laplacianPC(const labelLongList&, const label);
                 void laplacianPCParallel(const labelLongList& procPoints);
-                
+
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the centres of faces attached
                 //- to the vertex
                 void laplacianWPC(const labelLongList&, const label);
                 void laplacianWPCParallel(const labelLongList& procPoints);
-                
+
                 //- update geometry after smoothing
                 void updateMeshGeometry(const labelLongList& smoothPoints);
-                
+
                 //- Disallow default bitwise copy construct
                 laplaceSmoother(const laplaceSmoother&);
 
                 //- Disallow default bitwise assignment
                 void operator=(const laplaceSmoother&);
-    
+
         public:
-                
+
             // Constructor
-        
+
                 //- Construct from mesh and vertex locations
                 laplaceSmoother(polyMeshGen&, const List<direction>&);
-        
+
             // Destructor
-        
+
                 ~laplaceSmoother();
-        
+
             // Member Functions
                 //- new position is the average of the neighbouring vertices
                 void optimizeLaplacian(const label nIterations = 1);
@@ -142,7 +142,7 @@ class meshOptimizer
                     const labelHashSet& badFaces,
                     const label nIterations = 1
                 );
-        
+
                 //- new position of surface point is the average of
                 //- the neighbouring surface vertices
                 void optimizeSurfaceLaplacian
@@ -150,7 +150,7 @@ class meshOptimizer
                     const labelHashSet& badFaces,
                     const label nIterations = 1
                 );
-                
+
                 //- new positions are the average of the centres of the cells
                 //- adjacent to the vertex
                 void optimizeLaplacianPC(const label nIterations = 1);
@@ -159,7 +159,7 @@ class meshOptimizer
                     const labelHashSet& badFaces,
                     const label nIterations = 1
                 );
-                
+
                 //- new positions are the average of the centres of the cells
                 //- adjacent to the vertex weighted by cell volumes
                 void optimizeLaplacianWPC(const label nIterations = 1);
@@ -169,13 +169,13 @@ class meshOptimizer
                     const label nIterations = 1
                 );
         };
-        
+
         //- Disallow default bitwise copy construct
         meshOptimizer(const meshOptimizer&);
 
         //- Disallow default bitwise assignment
         void operator=(const meshOptimizer&);
-        
+
     // enumerators
         enum vertexType_
         {
@@ -183,7 +183,8 @@ class meshOptimizer
             BOUNDARY = 2,
             EDGE = 4,
             CORNER = 8,
-            PARALLELBOUNDARY = 16
+            PARALLELBOUNDARY = 16,
+            LOCKED = 32
         };
 
 public:
@@ -199,6 +200,17 @@ public:
         ~meshOptimizer();
 
     // Member Functions
+        //- lock the points which shall not be moved
+        template<class labelListType>
+        void lockPoints(const labelListType& l)
+        {
+            forAll(l, i)
+                vertexLocation_[l[i]] |= LOCKED;
+        }
+
+        //- lock points contained inside the specified subset
+        void lockPoints(const word& subsetName);
+
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);
 

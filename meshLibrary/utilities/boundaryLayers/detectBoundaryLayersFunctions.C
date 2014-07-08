@@ -326,6 +326,8 @@ void detectBoundaryLayers::analyseLayers()
     Info << "Analysing mesh for bnd layer existence" << endl;
 
     const meshSurfaceEngine& mse = meshSurface_.surfaceEngine();
+    const polyMeshGen& mesh = mse.mesh();
+    const PtrList<boundaryPatch>& boundaries = mesh.boundaries();
 
     //- allocate data needed in parallel loops
     mse.faceOwners();
@@ -378,10 +380,12 @@ void detectBoundaryLayers::analyseLayers()
     const labelList& facePatch = meshSurface_.boundaryFacePatches();
 
     forAll(facePatch, bfI)
-       patchToLayer[facePatch[bfI]].appendIfNotIn(layerAtBndFace_[bfI]);
+    {
+        patchToLayer[facePatch[bfI]].appendIfNotIn(layerAtBndFace_[bfI]);
+    }
 
     //- all faces of a patch must be in the same layer
-    layerAtPatch_.setSize(patchToLayer.size());
+    layerAtPatch_.setSize(boundaries.size());
 
     for
     (

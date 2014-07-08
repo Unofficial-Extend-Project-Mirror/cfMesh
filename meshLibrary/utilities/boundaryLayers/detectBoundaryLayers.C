@@ -50,9 +50,13 @@ detectBoundaryLayers::detectBoundaryLayers
     hairEdgesAtBoundaryPoint_(),
     is2DMesh_(is2DMesh)
 {
+    Info << "Detecting layers" << endl;
     analyseLayers();
 
+    Info << "Generating hair edges" << endl;
     generateHairEdges();
+
+    Info << "Finished with bnd layer detection" << endl;
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
