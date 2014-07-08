@@ -56,6 +56,7 @@ class volumeOptimizer
     public simplexSmoother
 {
     // Private static data
+        //- direction vectors for divide and conquer algorithm
         static const vector dirVecs[8];
 
     // Private member functions
