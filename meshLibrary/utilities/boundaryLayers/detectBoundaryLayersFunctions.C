@@ -138,7 +138,8 @@ public:
         const labelList& faceOwner = mse_.faceOwners();
         const VRWGraph& edgeFaces = mse_.edgeFaces();
         const Map<label>& otherProc = mse_.otherEdgeFaceAtProc();
-        const Map<label>& globalToLocal = mse_.globalToLocalBndEdgeAddressing();
+        const Map<label>& globalToLocal =
+            mse_.globalToLocalBndEdgeAddressing();
 
         std::map<label, LongList<labelPair> > exchangeData;
         forAll(mse_.beNeiProcs(), procI)
@@ -162,7 +163,11 @@ public:
                 {
                     const edge fe = f.faceEdge(eI);
 
-                    if( fe == edges[beI] && mesh.faceIsInProcPatch(c[fI]) >= 0 )
+                    if
+                    (
+                        (fe == edges[beI]) &&
+                        (mesh.faceIsInProcPatch(c[fI]) >= 0)
+                    )
                     {
                         validCell = true;
                         break;
@@ -208,7 +213,11 @@ public:
                 {
                     const edge fe = f.faceEdge(eI);
 
-                    if( fe == edges[beI] && mesh.faceIsInProcPatch(c[fI]) >= 0 )
+                    if
+                    (
+                        (fe == edges[beI]) &&
+                        (mesh.faceIsInProcPatch(c[fI]) >= 0)
+                    )
                     {
                         validCell = true;
                         break;
@@ -375,7 +384,8 @@ void detectBoundaryLayers::analyseLayers()
     }
 
     //- check the number of layer found at a patch
-    std::map<label, DynList<label> > patchToLayer;
+    typedef std::map<label, DynList<label> > patchToLayerType;
+    patchToLayerType patchToLayer;
 
     const labelList& facePatch = meshSurface_.boundaryFacePatches();
 
@@ -389,7 +399,7 @@ void detectBoundaryLayers::analyseLayers()
 
     for
     (
-        std::map<label, DynList<label> >::const_iterator it=patchToLayer.begin();
+        patchToLayerType::const_iterator it=patchToLayer.begin();
         it!=patchToLayer.end();
         ++it
     )

@@ -1341,6 +1341,23 @@ void refineBoundaryLayers::generateNewCells()
             ++refType[cellI];
     }
 
+    //- add cells which shall be refined in a subset
+    if( cellSubsetName_ != "" )
+    {
+        label subsetI = mesh_.cellSubsetIndex(cellSubsetName_);
+        if( subsetI >= 0 )
+            Warning << "The subset with name " << cellSubsetName_
+                    << " already exists. Skipping generation of a new subset"
+                    << endl;
+
+        subsetI = mesh_.addCellSubset(cellSubsetName_);
+
+        forAll(nCellsFromCell, cI)
+            if( nCellsFromCell[cI] > 1 )
+                mesh_.addCellToSubset(subsetI, cI);
+    }
+
+    //- check the number of cells which will be generated
     label nNewCells(0);
     forAll(nCellsFromCell, cellI)
         nNewCells += (nCellsFromCell[cellI] - 1);
@@ -1779,8 +1796,6 @@ void refineBoundaryLayers::generateNewCells()
 
     //- update face subsets
     mesh_.updateFaceSubsets(facesFromFace_);
-    facesFromFace_.setSize(0);
-    newFaces_.setSize(0);
 
     //- update cells to match the faces
     # ifdef DEBUGLayer

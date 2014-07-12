@@ -216,8 +216,8 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
-        optimizer.untangleMeshFV();
+        //meshOptimizer optimizer(mesh_);
+        //optimizer.untangleMeshFV();
     }
 }
 
@@ -231,7 +231,8 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     //- final optimisation
     meshOptimizer optimizer(mesh_);
     optimizer.optimizeMeshFV();
-    optimizer.optimizeLowQualityFaces();
+    //optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer();
     optimizer.untangleMeshFV();
 
     # ifdef DEBUG

@@ -91,8 +91,6 @@ class detectBoundaryLayers
         //- generate hair edges for all boundary points
         void generateHairEdges();
 
-    // Private member functions
-
         //- Disallow bitwise copy construct
         detectBoundaryLayers(const detectBoundaryLayers&);
 

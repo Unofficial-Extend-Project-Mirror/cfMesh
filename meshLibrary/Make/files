@@ -39,6 +39,7 @@ removeCellsInSelectedDomains = $(nonManifoldMeshing)/removeCellsInSelectedDomain
 
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
+boundaryLayerOptimisation = $(meshOptimizer)/boundaryLayerOptimisation
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
 knuppMetric = $(tetMeshOptimisation)/advancedSmoothers/knuppMetric
 meshUntangler = $(tetMeshOptimisation)/advancedSmoothers/meshUntangler
@@ -357,6 +358,9 @@ $(meshOptimizer)/optimizeMeshFV.C
 
 $(tetMeshOptimisation)/tetMeshOptimisation.C
 $(tetMeshOptimisation)/tetMeshOptimisationParallel.C
+
+$(boundaryLayerOptimisation)/boundaryLayerOptimisation.C
+$(boundaryLayerOptimisation)/boundaryLayerOptimisationFunctions.C
 
 $(simplexSmoother)/simplexSmoother.C
 

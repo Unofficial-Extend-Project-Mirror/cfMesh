@@ -32,6 +32,7 @@ Description
 #include "HashSet.H"
 
 #include "tetMeshOptimisation.H"
+#include "boundaryLayerOptimisation.H"
 
 //#define DEBUGSmooth
 
@@ -182,6 +183,28 @@ void meshOptimizer::untangleMeshFV()
     while( nBadFaces );
 
     Info << "Finished untangling the mesh" << endl;
+}
+
+void meshOptimizer::optimizeBoundaryLayer()
+{
+    boundaryLayerOptimisation optimiser(mesh_, meshSurface());
+
+    optimiser.optimiseHairNormals();
+
+    optimiser.optimiseThicknessVariation();
+
+    const edgeLongList& hairEdges = optimiser.hairEdges();
+
+    labelLongList lockedPoints;
+    forAll(hairEdges, heI)
+    {
+        lockedPoints.append(hairEdges[heI][0]);
+        lockedPoints.append(hairEdges[heI][1]);
+    }
+
+    lockPoints(lockedPoints);
+
+    untangleMeshFV();
 }
 
 void meshOptimizer::optimizeLowQualityFaces()

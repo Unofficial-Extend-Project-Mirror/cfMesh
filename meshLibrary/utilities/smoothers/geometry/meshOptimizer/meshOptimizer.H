@@ -217,6 +217,10 @@ public:
         //- performs mesh untangling based on detected negative normals
         void untangleMeshFV();
 
+        //- performs optimisation of boundary layer cells
+        //- it is applied to the first boundary layer, only
+        void optimizeBoundaryLayer();
+
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
         void optimizeLowQualityFaces();

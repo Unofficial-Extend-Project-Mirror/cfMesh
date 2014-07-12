@@ -86,6 +86,10 @@ class refineBoundaryLayers
         //- allow discontinuous layers for patch
         std::set<word> discontinuousLayersForPatch_;
 
+        //- the name of a subset which shall contain the indices
+        //- of the cells in the boundary layer
+        word cellSubsetName_;
+
         //- check whether the refinement is already executed
         bool done_;
 
@@ -372,9 +376,18 @@ public:
         //- sheet
         void setInteruptForPatch(const word& patchName);
 
+        //- set the flag to store the boundatry layer cells in a subset
+        void setCellSubset(const word subsetName = "layerCells");
+
         //- performs refinement based on the given settings
         void refineLayers();
 
+        //- get the indices of cells in the boundary layer
+        //- this function shall be called after
+        //- the refinement is already performed
+        void getIndicesOfBndLayerCells(labelLongList&) const;
+
+    // Static member functions
         //- read the settings from dictionary
         static void readSettings(const dictionary&, refineBoundaryLayers&);
 };
