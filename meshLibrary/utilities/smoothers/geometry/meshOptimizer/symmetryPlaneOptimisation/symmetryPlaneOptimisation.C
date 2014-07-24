@@ -54,8 +54,7 @@ void symmetryPlaneOptimisation::detectSymmetryPlanes()
 
     forAll(boundaries, patchI)
     {
-        Info << "Patch " << patchI << " is of type " << boundaries[patchI].type() << endl;
-        if( boundaries[patchI].type() == "symmetryPlane" )
+        if( boundaries[patchI].patchType() == "symmetryPlane" )
         {
             std::pair<vector, label>& cs = centreSum[patchI];
             cs = std::pair<vector, label>(vector::zero, 0);
@@ -114,7 +113,7 @@ void symmetryPlaneOptimisation::pointInPlanes(VRWGraph& pointInPlanes) const
 
     forAll(boundaries, patchI)
     {
-        if( boundaries[patchI].type() == "symmetryPlane" )
+        if( boundaries[patchI].patchType() == "symmetryPlane" )
         {
             const label start = boundaries[patchI].patchStart();
             const label end = start + boundaries[patchI].patchSize();
@@ -197,8 +196,6 @@ symmetryPlaneOptimisation::~symmetryPlaneOptimisation()
 void symmetryPlaneOptimisation::optimizeSymmetryPlanes()
 {
     pointFieldPMG& points = mesh_.points();
-
-    Info << "Detected " << label(symmetryPlanes_.size()) << " symmetry planes in the mesh" << endl;
 
     VRWGraph pointInPlane;
     pointInPlanes(pointInPlane);
