@@ -61,7 +61,7 @@ class symmetryPlaneOptimisation
         polyMeshGen& mesh_;
 
         //- symmetry planes in the mesh
-        std::map<word, plane> symmetryPlanes_;
+        std::map<label, plane> symmetryPlanes_;
 
     // Private member functions
         //- detect symmetry planes

@@ -44,8 +44,10 @@ int main(int argc, char *argv[])
     polyMeshGen pmg(runTime);
     pmg.read();
 
+    Info << "Starting optimisation of symmetry planes" << endl;
     symmetryPlaneOptimisation(pmg).optimizeSymmetryPlanes();
 
+    Info << "Writing mesh" << endl;
     pmg.write();
 
     Info << "End\n" << endl;
