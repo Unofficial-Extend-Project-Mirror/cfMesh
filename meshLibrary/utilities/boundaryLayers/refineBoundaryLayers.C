@@ -318,7 +318,8 @@ void refineBoundaryLayers::refineLayers()
         WarningIn
         (
             "void refineBoundaryLayers::refineLayers()"
-        ) << "Boundary layers are already refined! Stopping refinement" << endl;
+        ) << "Boundary layers are already refined! "
+          << "Stopping refinement" << endl;
 
         return;
     }
@@ -403,7 +404,8 @@ void refineBoundaryLayers::readSettings
         }
         if( bndLayers.found("thicknessRatio") )
         {
-            const scalar ratio = readScalar(bndLayers.lookup("thicknessRatio"));
+            const scalar ratio =
+                readScalar(bndLayers.lookup("thicknessRatio"));
             refLayers.setGlobalThicknessRatio(ratio);
         }
         if( bndLayers.found("maxFirstLayerThickness") )

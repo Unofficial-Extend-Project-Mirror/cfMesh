@@ -738,6 +738,69 @@ inline bool pointInsideFace
     return true;
 }
 
+inline bool isFaceConvexAndOk
+(
+    const face& f,
+    const pointField& fp,
+    DynList<bool>& OkPoints
+)
+{
+    bool valid(true);
+
+    vector normal = f.normal(fp);
+    const scalar magN = mag(normal);
+
+    //- face has zero area. All points are inverted
+    if( magN < VSMALL )
+    {
+        OkPoints.setSize(f.size());
+        OkPoints = false;
+
+        return false;
+    }
+
+    normal /= (magN + VSMALL);
+
+    //- project points into the plane formed by the face centre
+    //- and the face normal
+    plane pl(f.centre(fp), normal);
+
+    DynList<point> projFace(f.size());
+    forAll(f, pI)
+        projFace[pI] = pl.nearestPoint(fp[f[pI]]);
+
+    //- calculate normalised edge vectors
+    DynList<vector> edgeVecs(f.size());
+    forAll(f, eI)
+    {
+        vector& v = edgeVecs[eI];
+
+        const edge e = f.faceEdge(eI);
+        v = e.vec(fp);
+        v /= (mag(v) + VSMALL);
+    }
+
+    //- check if the face is convex
+    OkPoints.setSize(f.size());
+    forAll(f, pI)
+    {
+        const vector& pv = edgeVecs[f.rcIndex(pI)];
+        const vector& nv = edgeVecs[pI];
+
+        if( ((pv ^ nv) & normal) >= -0.05 )
+        {
+            OkPoints[pI] = true;
+        }
+        else
+        {
+            OkPoints[pI] = false;
+            valid = false;
+        }
+    }
+
+    return valid;
+}
+
 inline point nearestPointOnTheEdge
 (
     const point& edgePoint0,

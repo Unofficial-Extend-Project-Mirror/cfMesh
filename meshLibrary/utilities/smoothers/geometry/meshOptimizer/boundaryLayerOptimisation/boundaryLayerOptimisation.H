@@ -74,6 +74,12 @@ class boundaryLayerOptimisation
         //- hair edge to other hair edges
         VRWGraph hairEdgesNearHairEdge_;
 
+        //- is boundary face a base for a prism in the bnd layer
+        boolList isBndLayerBase_;
+
+        //- is boundary face part of a layer where a layer exits
+        boolList isExitFace_;
+
         //- classification of hair edges
         List<direction> hairEdgeType_;
 
@@ -127,11 +133,24 @@ public:
             return hairEdgesAtBndPoint_;
         }
 
+        //- boundary faces which serve as base faces of a boundary layer
+        //- are set to true
+        inline const boolList& isBaseFace() const
+        {
+            return isBndLayerBase_;
+        }
+
+        //- boundary faces where the layers exit at the boundary
+        inline const boolList& isExitFace() const
+        {
+            return isExitFace_;
+        }
+
         //- optimise hair normals to improve quality of layer cells
         void optimiseHairNormals(const label nIterations=10);
 
         //- optimise thickness variation
-        void optimiseThicknessVariation(const scalar tangentTol=0.2);
+        void optimiseThicknessVariation(const scalar tangentTol=0.15);
 };
 
 

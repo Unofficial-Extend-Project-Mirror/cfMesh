@@ -50,7 +50,7 @@ namespace Foam
 
 namespace polyMeshGenChecks
 {
-    
+
 // Check geometry
 //- Check boundary closedness
 bool checkClosedBoundary(const polyMeshGen&, const bool report = false);
@@ -152,7 +152,7 @@ bool checkFaceFlatness
     const polyMeshGen&,
     const bool report,
     const scalar warnFlatness,  // When to include in set.
-    labelHashSet* setPtr,
+    labelHashSet* setPtr = NULL,
     const boolList* changedFacePtr = NULL
 );
 
@@ -193,12 +193,30 @@ bool checkFaceVertices
 //- Check mesh topology for correctness. Returns false for no error.
 bool checkTopology(const polyMeshGen&, const bool report = false);
 
-//- Check mesh geometry (& implicitly topology) for correctness. 
+//- Check mesh geometry (& implicitly topology) for correctness.
 //  Returns false for no error.
 bool checkGeometry(const polyMeshGen&, const bool report = false);
 
 //- Check mesh for correctness. Returns false for no error.
 bool checkMesh(const polyMeshGen&, const bool report = false);
+
+//- Check mesh for bad faces which make the mesh invalid
+label findBadFaces
+(
+    const polyMeshGen&,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
+label findLowQualityFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

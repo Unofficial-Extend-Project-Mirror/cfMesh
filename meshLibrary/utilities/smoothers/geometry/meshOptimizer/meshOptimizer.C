@@ -30,9 +30,8 @@ Description
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
 #include "polyMeshGenAddressing.H"
-#include "polyMeshGenChecks.H"
 
-// #define DEBUGSearch
+// #define DEBUGSmoothing
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,84 +53,6 @@ void meshOptimizer::clearSurface()
     deleteDemandDrivenData(msePtr_);
 }
 
-label meshOptimizer::findBadFaces
-(
-    labelHashSet& badFaces,
-    const boolList& changedFace
-) const
-{
-    badFaces.clear();
-
-    polyMeshGenChecks::checkFacePyramids
-    (
-        mesh_,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    polyMeshGenChecks::checkFaceFlatness
-    (
-        mesh_,
-        false,
-        0.8,
-        &badFaces,
-        &changedFace
-    );
-
-    polyMeshGenChecks::checkCellPartTetrahedra
-    (
-        mesh_,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    polyMeshGenChecks::checkFaceAreas
-    (
-        mesh_,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-
-    return nBadFaces;
-}
-
-label meshOptimizer::findLowQualityFaces
-(
-    labelHashSet& badFaces,
-    const boolList& changedFace
-) const
-{
-    badFaces.clear();
-
-    polyMeshGenChecks::checkFaceDotProduct
-    (
-        mesh_,
-        false,
-        70.0,
-        &badFaces
-    );
-
-    polyMeshGenChecks::checkFaceSkewness
-    (
-        mesh_,
-        false,
-        2.0,
-        &badFaces
-    );
-
-    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-
-    return nBadFaces;
-}
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from mesh
@@ -139,6 +60,7 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 :
     mesh_(mesh),
     vertexLocation_(mesh.points().size(), INSIDE),
+    lockedFaces_(),
     msePtr_(NULL)
 {
     const meshSurfaceEngine& mse = meshSurface();
@@ -177,57 +99,121 @@ meshOptimizer::~meshOptimizer()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOptimizer::lockPoints(const word& subsetName)
+void meshOptimizer::lockCells(const labelLongList& l)
 {
+    boolList lockedFace(mesh_.faces().size(), false);
     const cellListPMG& cells = mesh_.cells();
-    const faceListPMG& faces = mesh_.faces();
-
-    //- lock the points in the cell subset with the given name
-    label subsetI = mesh_.cellSubsetIndex(subsetName);
-    if( subsetI >= 0 )
+    forAll(l, lcI)
     {
-        labelLongList cellsInSubset;
-        mesh_.cellsInSubset(subsetI, cellsInSubset);
+        const cell& c = cells[l[lcI]];
 
-        forAll(cellsInSubset, cI)
+        forAll(c, fI)
+            lockedFace[c[fI]] = true;
+    }
+
+    if( Pstream::parRun() )
+    {
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh_.procBoundaries();
+
+        forAll(procBoundaries, patchI)
         {
-            const cell& c = cells[cellsInSubset[cI]];
+            labelLongList dataToSend;
 
-            forAll(c, fI)
-            {
-                const face& f = faces[c[fI]];
+            const label start = procBoundaries[patchI].patchStart();
+            const label end = start+procBoundaries[patchI].patchSize();
 
-                forAll(f, pI)
-                    vertexLocation_[f[pI]] |= LOCKED;
-            }
+            for(label faceI=start;faceI<end;++faceI)
+                if( lockedFace[faceI] )
+                    dataToSend.append(faceI-start);
+
+            OPstream toOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                dataToSend.byteSize()
+            );
+
+            toOtherProc << dataToSend;
+        }
+
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+
+            IPstream fromOtherProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+
+            labelList receivedData;
+            fromOtherProc >> receivedData;
+
+            forAll(receivedData, i)
+                lockedFace[start+receivedData[i]];
         }
     }
 
-    //- lock the points in the face subset with the given name
-    subsetI = mesh_.faceSubsetIndex(subsetName);
-    if( subsetI >= 0 )
+    //- Finally, mark locked points and faces
+    const faceListPMG& faces = mesh_.faces();
+    forAll(lockedFace, faceI)
     {
-        labelLongList facesInSubset;
-        mesh_.facesInSubset(subsetI, facesInSubset);
-
-        forAll(facesInSubset, fI)
+        if( lockedFace[faceI] )
         {
-            const face& f = faces[facesInSubset[fI]];
+            lockedFaces_.append(faceI);
+
+            const face& f = faces[faceI];
 
             forAll(f, pI)
                 vertexLocation_[f[pI]] |= LOCKED;
         }
     }
 
-    //- lock points in the point subset with the given name
-    subsetI = mesh_.pointSubsetIndex(subsetName);
+    # ifdef DEBUGSmoothing
+    const label lockedFacesI = mesh_.addFaceSubset("lockedFaces");
+    forAll(lockedFaces_, lfI)
+        mesh_.addFaceToSubset(lockedFacesI, lockedFaces_[lfI]);
+
+    const label lockPointsI = mesh_.addPointSubset("lockedPoints");
+    forAll(vertexLocation_, pointI)
+        if( vertexLocation_[pointI] & LOCKED )
+            mesh_.addPointToSubset(lockPointsI, pointI);
+    # endif
+}
+
+void meshOptimizer::lockCells(const word& subsetName)
+{
+    //- lock the points in the cell subset with the given name
+    label subsetI = mesh_.cellSubsetIndex(subsetName);
     if( subsetI >= 0 )
     {
-        labelLongList pointsInSubset;
-        mesh_.pointsInSubset(subsetI, pointsInSubset);
+        labelLongList lc;
+        mesh_.cellsInSubset(subsetI, lc);
 
-        forAll(pointsInSubset, pI)
-            vertexLocation_[pointsInSubset[pI]] |= LOCKED;
+        lockCells(lc);
+
+        return;
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a cell subset!"
+            << " Cannot lock cells!" << endl;
+    }
+}
+
+void meshOptimizer::removeUserConstraints()
+{
+    lockedFaces_.setSize(0);
+
+    //- unlock points
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(vertexLocation_, i)
+    {
+        if( vertexLocation_[i] & LOCKED )
+            vertexLocation_[i] ^= LOCKED;
     }
 }
 

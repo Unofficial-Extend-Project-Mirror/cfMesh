@@ -35,7 +35,13 @@ Description
 #include "refLabelledPointScalar.H"
 #include "polyMeshGenAddressing.H"
 
+# ifdef DEBUGLayer
 #include "OFstream.H"
+# endif
+
+# ifdef USE_OMP
+#include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -47,7 +53,10 @@ namespace Foam
 void boundaryLayerOptimisation::calculateHairEdges()
 {
     const edgeList& edges = meshSurface_.edges();
+    const VRWGraph& edgeFaces = meshSurface_.edgeFaces();
     const VRWGraph& bpEdges = meshSurface_.boundaryPointEdges();
+    const labelList& faceOwner = meshSurface_.faceOwners();
+    const faceList::subList& bFaces = meshSurface_.boundaryFaces();
     const labelList& bp = meshSurface_.bp();
 
     //- create information about feature edges and corners at the surface
@@ -58,6 +67,54 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
     hairEdges_ = detectLayers.hairEdges();
     hairEdgesAtBndPoint_ = detectLayers.hairEdgesAtBndPoint();
+
+    //- mark boundary faces which are base face for the boundary layer
+    const labelList& layerAtBndFace = detectLayers.faceInLayer();
+    isBndLayerBase_.setSize(bFaces.size());
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(layerAtBndFace, bfI)
+    {
+        if( layerAtBndFace[bfI] < 0 )
+        {
+            isBndLayerBase_[bfI] = false;
+        }
+        else
+        {
+            isBndLayerBase_[bfI] = true;
+        }
+    }
+
+    //- check if a face is an exiting face for a bnd layer
+    isExitFace_.setSize(isBndLayerBase_.size());
+    isExitFace_ = false;
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(edgeFaces, edgeI)
+    {
+        //- avoid edges at inter-processor boundaries
+        if( edgeFaces.sizeOfRow(edgeI) != 2 )
+            continue;
+
+        const label f0 = edgeFaces(edgeI, 0);
+        const label f1 = edgeFaces(edgeI, 1);
+
+        //- both faces have to be part of the same cell
+        if( faceOwner[f0] != faceOwner[f1] )
+            continue;
+
+        if( isBndLayerBase_[f0] && (bFaces[f1].size() == 4) )
+        {
+            isExitFace_[f1] = true;
+        }
+        else if( isBndLayerBase_[f1] && (bFaces[f0].size() == 4) )
+        {
+            isExitFace_[f0] = true;
+        }
+    }
 
     hairEdgeType_.setSize(hairEdges_.size());
     hairEdgeType_ = INSIDE;
@@ -105,7 +162,6 @@ void boundaryLayerOptimisation::calculateHairEdges()
     //- and store it in a graph
     hairEdgesNearHairEdge_.setSize(hairEdges_.size());
 
-    const labelList& faceOwner = meshSurface_.faceOwners();
     const cellListPMG& cells = mesh_.cells();
     const faceList& faces = mesh_.faces();
 
@@ -182,153 +238,6 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
         hairEdgesNearHairEdge_.setRow(hairEdgeI, neiHairEdges);
     }
-/*
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-        {
-            Pout << "Hair edges near edge " << hairEdgesNearHairEdge_ << endl;
-        }
-
-        returnReduce(1, sumOp<label>());
-    }
-
-    //- write hair edges to file
-    if( true )
-    {
-        fileName fName("hairEdges_");
-        fName += help::scalarToText(Pstream::myProcNo());
-        fName += ".vtk";
-        OFstream file(fName);
-
-        //- write the header
-        file << "# vtk DataFile Version 3.0\n";
-        file << "vtk output\n";
-        file << "ASCII\n";
-        file << "DATASET POLYDATA\n";
-
-        //- write points
-        const pointFieldPMG& points = mesh_.points();
-        file << "POINTS " << 2*hairEdges_.size() << " float\n";
-        forAll(hairEdges_, eI)
-        {
-            const point& p0 = points[hairEdges_[eI][0]];
-            file << p0.x() << ' ' << p0.y() << ' ' << p0.z() << '\n';
-            const point& p1 = points[hairEdges_[eI][1]];
-            file << p1.x() << ' ' << p1.y() << ' ' << p1.z() << '\n';
-        }
-
-        file << "\nLINES " << hairEdges_.size()
-             << ' ' << 3*hairEdges_.size() << nl;
-        forAll(hairEdges_, edgeI)
-        {
-            file << "2 " << (2*edgeI)
-                 << token::SPACE << (2*edgeI+1) << nl;
-        }
-        file << nl;
-
-        if( !file )
-            FatalErrorIn
-            (
-                "void exportFeatureEdges(const triSurf&, const fileName&)"
-            ) << "Writting of feature edges failed!" << exit(FatalError);
-    }
-
-    //- write hair edges near hair edge
-    forAll(hairEdgesNearHairEdge_, eI)
-    {
-        //- write hair edges to file
-        fileName fName("hairEdges_");
-        fName += help::scalarToText(Pstream::myProcNo());
-        fName += "_point_";
-        fName += help::scalarToText(eI);
-        fName += ".vtk";
-        OFstream file(fName);
-
-        //- write the header
-        file << "# vtk DataFile Version 3.0\n";
-        file << "vtk output\n";
-        file << "ASCII\n";
-        file << "DATASET POLYDATA\n";
-
-        DynList<label> nearEdges;
-        nearEdges.append(eI);
-        forAllRow(hairEdgesNearHairEdge_, eI, i)
-            nearEdges.append(hairEdgesNearHairEdge_(eI, i));
-
-        //- write points
-        const pointFieldPMG& points = mesh_.points();
-        file << "POINTS " << 2*nearEdges.size() << " float\n";
-        forAll(nearEdges, i)
-        {
-            const edge& e = hairEdges_[nearEdges[i]];
-            const point& p0 = points[e[0]];
-            file << p0.x() << ' ' << p0.y() << ' ' << p0.z() << '\n';
-            const point& p1 = points[e[1]];
-            file << p1.x() << ' ' << p1.y() << ' ' << p1.z() << '\n';
-        }
-
-        file << "\nLINES " << nearEdges.size()
-             << ' ' << 3*nearEdges.size() << nl;
-        forAll(nearEdges, edgeI)
-        {
-            file << "2 " << (2*edgeI)
-                 << token::SPACE << (2*edgeI+1) << nl;
-        }
-        file << nl;
-    }
-
-    if( true )
-    {
-        //- write hair edges to file
-        fileName fName("hairEdgesAtBnd_");
-        fName += help::scalarToText(Pstream::myProcNo());
-        fName += ".vtk";
-        OFstream file(fName);
-
-        label nBndEdges(0);
-        forAll(hairEdgeType_, eI)
-            if( hairEdgeType_[eI] & BOUNDARY )
-                ++nBndEdges;
-        Pout << "Number of bnd edges " << nBndEdges << endl;
-
-        //- write the header
-        file << "# vtk DataFile Version 3.0\n";
-        file << "vtk output\n";
-        file << "ASCII\n";
-        file << "DATASET POLYDATA\n";
-
-        //- write points
-        const pointFieldPMG& points = mesh_.points();
-        file << "POINTS " << 2*nBndEdges << " float\n";
-        forAll(hairEdges_, i)
-        {
-            if( !(hairEdgeType_[i] & BOUNDARY) )
-                continue;
-
-            const edge& e = hairEdges_[i];
-
-            const point& p0 = points[e[0]];
-            file << p0.x() << ' ' << p0.y() << ' ' << p0.z() << '\n';
-            const point& p1 = points[e[1]];
-            file << p1.x() << ' ' << p1.y() << ' ' << p1.z() << '\n';
-        }
-
-        file << "\nLINES " << nBndEdges
-             << ' ' << 3*nBndEdges << nl;
-        nBndEdges = 0;
-        forAll(hairEdges_, i)
-        {
-            if( !(hairEdgeType_[i] & BOUNDARY) )
-                continue;
-
-            file << "2 " << (2*nBndEdges)
-                 << token::SPACE << (2*nBndEdges+1) << nl;
-            ++nBndEdges;
-        }
-        file << nl;
-    }
-    */
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -483,6 +392,10 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
         }
         else if( hairType & BOUNDARY )
         {
+            hv = hairEdges_[hairEdgeI].vec(points);
+            hv /= (mag(hv)+VSMALL);
+            continue;
+
             if( hairType & FEATUREEDGE )
             {
                 hv = hairEdges_[hairEdgeI].vec(points);
@@ -551,12 +464,48 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
         }
     }
 
+    # ifdef DEBUGLayer
+    //- write hair vectors as a VTK file
+    if( true )
+    {
+        OFstream file("hairVectors.vtk");
+
+        //- write the header
+        file << "# vtk DataFile Version 3.0\n";
+        file << "vtk output\n";
+        file << "ASCII\n";
+        file << "DATASET POLYDATA\n";
+
+        //- write points
+        file << "POINTS " << 2*hairEdges_.size() << " float\n";
+        forAll(hairEdges_, heI)
+        {
+            const point& p = points[hairEdges_[heI][0]];
+
+            file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
+
+            const point op = p + (hairVecs[heI]/mag(hairVecs[heI])) * hairEdges_[heI].mag(points);
+
+            file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
+        }
+
+        //- write triangles
+        file << "\nLINES " << hairEdges_.size()
+             << " " << 3*hairEdges_.size() << nl;
+        forAll(hairEdges_, heI)
+        {
+            file << 2 << " " << 2*heI << " " << (2*heI+1) << nl;
+        }
+
+        file << "\n";
+    }
+    # endif
+
     //- smooth the variation of normals to reduce the twisting of faces
     label nIter(0);
     do
     {
         vectorField newNormals(hairEdges_.size());
-        labelList nNeighbours(hairEdges_.size());
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
@@ -567,8 +516,6 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
 
             vector& newNormal = newNormals[hairEdgeI];
             newNormal = vector::zero;
-            label& nNei = nNeighbours[hairEdgeI];
-            nNei = 0;
 
             const direction eType = hairEdgeType_[hairEdgeI];
 
@@ -597,14 +544,15 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
                             //- project the hair vector into the plane
                             //- detemined by the starting poins of the hair
                             //- edge and the normal n
-                            const vector hairProj
+                            vector hairProj
                             (
                                 hairVecs[hairEdgeI] -
                                 (hairVecs[hairEdgeI] & n) * n
                             );
 
-                            newNormal += hairProj;
-                            ++nNei;
+                            hairProj /= (mag(hairProj) + VSMALL);
+                            //newNormal += hairProj;
+                            newNormal += hairVecs[hairEdgeJ];
                         }
                     }
                 }
@@ -629,20 +577,20 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
                         //- project the hair vector into the plane detemined
                         //- by the starting poins of the hair edge and
                         //- the normal n
-                        const vector hairProj
+                        vector hairProj
                         (
                             hairVecs[hairEdgeI] -
                             (hairVecs[hairEdgeI] & n) * n
                         );
 
-                        newNormal += hairProj;
-                        ++nNei;
+                        hairProj /= (mag(hairProj) + VSMALL);
+                        //newNormal += hairProj;
+                        newNormal += hairVecs[hairEdgeJ];
                     }
                 }
                 else
                 {
                     newNormal += hairVecs[hairEdgeI];
-                    ++nNei;
                 }
             }
             else if( eType & BOUNDARY )
@@ -651,7 +599,6 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
                 {
                     //- hair vectors at feature edges must not be modified
                     newNormal += hairVecs[hairEdgeI];
-                    ++nNei;
                 }
                 else
                 {
@@ -679,14 +626,15 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
                         //- project the hair vector into the plane detemined
                         //- by the starting points of the hair edge and
                         //- the normal n
-                        const vector hairProj
+                        vector hairProj
                         (
                             hairVecs[hairEdgeI] -
                             (hairVecs[hairEdgeI] & n) * n
                         );
 
-                        newNormal += hairProj;
-                        ++nNei;
+                        hairProj /= (mag(hairProj) + VSMALL);
+                        //newNormal += hairProj;
+                        newNormal += hairVecs[hairEdgeJ];
                     }
                 }
             }
@@ -709,7 +657,7 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
             const DynList<label>& eNeiProcs =
                 mesh_.addressingData().edgeNeiProcs();
 
-            std::map<label, LongList<refLabelledPoint> > exchangeData;
+            std::map<label, LongList<labelledPoint> > exchangeData;
             forAll(eNeiProcs, i)
                 exchangeData[eNeiProcs[i]].clear();
 
@@ -728,14 +676,10 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
 
                         if( he == edges[edgeI] )
                         {
-                            refLabelledPoint rlp
+                            labelledPoint lp
                             (
                                 globalEdgeLabel[edgeI],
-                                labelledPoint
-                                (
-                                    nNeighbours[hairEdgeI],
-                                    hairVecs[hairEdgeI]
-                                )
+                                hairVecs[hairEdgeI]
                             );
 
                             forAllRow(edgesAtProcs, edgeI, j)
@@ -745,23 +689,23 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
                                 if( neiProc == Pstream::myProcNo() )
                                     continue;
 
-                                LongList<refLabelledPoint>& dts =
+                                LongList<labelledPoint>& dts =
                                     exchangeData[neiProc];
 
-                                dts.append(rlp);
+                                dts.append(lp);
                             }
                         }
                     }
                 }
             }
 
-            LongList<refLabelledPoint> receivedData;
+            LongList<labelledPoint> receivedData;
             help::exchangeMap(exchangeData, receivedData);
 
             forAll(receivedData, i)
             {
-                const refLabelledPoint& rlp = receivedData[i];
-                const label edgeI = globalToLocalEdge[rlp.objectLabel()];
+                const labelledPoint& lp = receivedData[i];
+                const label edgeI = globalToLocalEdge[lp.pointLabel()];
                 const edge& e = edges[edgeI];
 
                 bool found(false);
@@ -778,9 +722,7 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
 
                         if( hairEdges_[hairEdgeI] == e )
                         {
-                            hairVecs[hairEdgeI] += rlp.lPoint().coordinates();
-                            nNeighbours[hairEdgeI] +=
-                                rlp.lPoint().pointLabel();
+                            hairVecs[hairEdgeI] += lp.coordinates();
 
                             found = true;
                             break;
@@ -798,20 +740,46 @@ void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
         # pragma omp parallel for schedule(dynamic, 100)
         # endif
         forAll(newNormals, hairEdgeI)
-        {
-            if( nNeighbours[hairEdgeI] == 0 )
-            {
-                bool isBnd(false);
-                if( hairEdgeType_[hairEdgeI] & BOUNDARY )
-                    isBnd = true;
-                FatalError << isBnd << " Edge " << hairEdgeI << " at proc "
-                    << Pstream::myProcNo() << " failed" << abort(FatalError);
-            }
-            newNormals[hairEdgeI] /= nNeighbours[hairEdgeI];
-        }
+            newNormals[hairEdgeI] /= (mag(newNormals[hairEdgeI]) + VSMALL);
 
         //- transfer new hair vectors to the hairVecs list
         hairVecs.transfer(newNormals);
+
+        # ifdef DEBUGLayer
+        if( true )
+        {
+            OFstream file("hairVectors_"+help::scalarToText(nIter)+".vtk");
+
+            //- write the header
+            file << "# vtk DataFile Version 3.0\n";
+            file << "vtk output\n";
+            file << "ASCII\n";
+            file << "DATASET POLYDATA\n";
+
+            //- write points
+            file << "POINTS " << 2*hairEdges_.size() << " float\n";
+            forAll(hairEdges_, heI)
+            {
+                const point& p = points[hairEdges_[heI][0]];
+
+                file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
+
+                const point op = p + hairVecs[heI] * hairEdges_[heI].mag(points);
+
+                file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
+            }
+
+            //- write triangles
+            file << "\nLINES " << hairEdges_.size()
+                 << " " << 3*hairEdges_.size() << nl;
+            forAll(hairEdges_, heI)
+            {
+                file << 2 << " " << 2*heI << " " << (2*heI+1) << nl;
+            }
+
+            file << "\n";
+        }
+        # endif
     } while( nIter++ < nIterations );
 
     //- move vertices to the new locations
@@ -988,7 +956,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                         {
                             if( lScalar.value() < hairLength[hairEdgeI] )
                             {
-                                hairLength[hairEdgeI] = lScalar.value();
+                                newLength[hairEdgeI] = lScalar.value();
                                 changed = true;
                             }
 
@@ -1008,6 +976,10 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
 
         if( !changed )
             break;
+
+        forAll(newLength, i)
+            if( newLength[i] < SMALL )
+                FatalError << "Bad length for edge " << i << exit(FatalError);
 
         //- move boundary vertices to the new positions
         # ifdef USE_OMP

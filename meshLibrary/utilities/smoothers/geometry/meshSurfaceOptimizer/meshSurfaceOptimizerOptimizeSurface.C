@@ -183,7 +183,7 @@ void meshSurfaceOptimizer::smoothEdgePoints
         {
             const label bpI = edgePoints[i];
 
-            if( vertexType_[bpI] & PROCBND )
+            if( vertexType_[bpI] & (PROCBND | LOCKED) )
                 continue;
 
             newPos.append(labelledPoint(bpI, newEdgePositionLaplacian(bpI)));
@@ -239,7 +239,7 @@ void meshSurfaceOptimizer::smoothLaplacianFC
         {
             const label bpI = selectedPoints[i];
 
-            if( vertexType_[bpI] & PROCBND )
+            if( vertexType_[bpI] & (PROCBND | LOCKED) )
                 continue;
 
             newPos.append
@@ -345,7 +345,12 @@ bool meshSurfaceOptimizer::untangleSurface
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(selectedBoundaryPoints, i)
+    {
+        if( vertexType_[selectedBoundaryPoints[i]] & LOCKED )
+            continue;
+
         smoothVertex[selectedBoundaryPoints[i]] = true;
+    }
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);

@@ -73,6 +73,9 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     {
         const label bpI = nodesToSmooth[pI];
 
+        if( vertexType_[bpI] & LOCKED )
+            continue;
+
         if( magSqr(pNormals[bpI]) < VSMALL )
             continue;
 
@@ -192,6 +195,9 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
     {
         const label bpI = nodesToSmooth[pI];
 
+        if( vertexType_[bpI] & LOCKED )
+            continue;
+
         if( magSqr(pNormals[bpI]) < VSMALL )
             continue;
 
@@ -307,6 +313,12 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizerParallel
     {
         const label bpI = nodesToSmooth[pI];
 
+        if( vertexType_[bpI] & LOCKED )
+        {
+            newPositions[pI] = points[bPoints[bpI]];
+            continue;
+        }
+
         if( magSqr(pNormals[bpI]) < VSMALL )
         {
             newPositions[pI] = points[bPoints[bpI]];
@@ -391,6 +403,10 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
     forAll(nodesToSmooth, nI)
     {
         const label bpI = nodesToSmooth[nI];
+
+        if( vertexType_[bpI] & LOCKED)
+            continue;
+
         DynList<labelledPoint, 2>& neiPoints = mPts[globalPointLabel[bpI]];
 
         forAllRow(bpEdges, bpI, epI)

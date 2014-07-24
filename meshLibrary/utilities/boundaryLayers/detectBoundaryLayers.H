@@ -101,8 +101,8 @@ public:
 
     // Constructors
 
-        //- Construct from meshSurfacePartitioner and a bool providing information
-        //- whether a mesh is a 2D mesh. The default is false.
+        //- Construct from meshSurfacePartitioner and a bool providing
+        //- information whether the mesh is a 2D mesh. The default is false.
         detectBoundaryLayers
         (
             const meshSurfacePartitioner& meshSurface,

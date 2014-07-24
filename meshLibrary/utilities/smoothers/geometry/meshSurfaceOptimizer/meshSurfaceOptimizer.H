@@ -72,6 +72,9 @@ class meshSurfaceOptimizer
         //- type of surface vertex
         List<direction> vertexType_;
 
+        //- locked faces which shall not be changed
+        labelLongList lockedSurfaceFaces_;
+
         //- surface partitioner
         const meshSurfacePartitioner* partitionerPtr_;
         const bool deletePartitioner_;
@@ -252,7 +255,8 @@ class meshSurfaceOptimizer
             PARTITION = 1,
             EDGE = 2,
             CORNER = 4,
-            PROCBND = 8
+            PROCBND = 8,
+            LOCKED = 16
         };
 
 public:
@@ -263,7 +267,11 @@ public:
         meshSurfaceOptimizer(const meshSurfaceEngine&, const meshOctree&);
 
         //- Construct from partitioner and octree
-        meshSurfaceOptimizer(const meshSurfacePartitioner&, const meshOctree&);
+        meshSurfaceOptimizer
+        (
+            const meshSurfacePartitioner&,
+            const meshOctree&
+        );
 
 
     // Destructor
@@ -271,6 +279,13 @@ public:
         ~meshSurfaceOptimizer();
 
     // Member Functions
+        //- lock the boundary faces which shall not be modified
+        template<class labelListType>
+        inline void lockBoundaryFaces(const labelListType&);
+
+        //- reset to default constraints
+        void removeUserConstraints();
+
         //- runs a surface smoother on the selected boundary points
         bool untangleSurface
         (

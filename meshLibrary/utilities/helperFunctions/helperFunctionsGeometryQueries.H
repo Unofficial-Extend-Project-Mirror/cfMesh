@@ -205,6 +205,14 @@ namespace help
         const pointField& fp
     );
 
+    //- check if the face is convex. Concave points are flagged false
+    inline bool isFaceConvexAndOk
+    (
+        const face& f,
+        const pointField& fp,
+        DynList<bool>& OkPoints
+    );
+
     //- check if the vertex is on the positive side of the face plane
     inline bool isVertexVisible(const point& p, const plane& pl);
 

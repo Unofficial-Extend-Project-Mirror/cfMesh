@@ -57,6 +57,7 @@ partTetMesh::partTetMesh(polyMeshGen& mesh)
     pointTets_(),
     internalPointsOrderPtr_(NULL),
     boundaryPointsOrderPtr_(NULL),
+    globalPointLabelPtr_(NULL),
     pAtProcsPtr_(NULL),
     globalToLocalPointAddressingPtr_(NULL),
     neiProcsPtr_(NULL),

@@ -49,6 +49,8 @@ Description
 #include "triSurfaceMetaData.H"
 #include "removeCellsInSelectedDomains.H"
 
+#include "polyMeshGenChecks.H"
+
 //#define DEBUG
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -216,8 +218,24 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        //meshOptimizer optimizer(mesh_);
-        //optimizer.untangleMeshFV();
+        labelHashSet badFaces;
+        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
+
+        if( badFaces.size() != 0 )
+        {
+            Warning << "Bad bnd layer cells found!!" << endl;
+
+            const labelList& owner = mesh_.owner();
+            const labelList& nei = mesh_.neighbour();
+
+            const label subsetI = mesh_.addCellSubset("invertedCells");
+            forAllConstIter(labelHashSet, badFaces, it)
+            {
+                mesh_.addCellToSubset(subsetI, owner[it.key()]);
+                if( nei[it.key()] >= 0 )
+                    mesh_.addCellToSubset(subsetI, nei[it.key()]);
+            }
+        }
     }
 }
 
@@ -231,9 +249,12 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     //- final optimisation
     meshOptimizer optimizer(mesh_);
     optimizer.optimizeMeshFV();
-    //optimizer.optimizeLowQualityFaces();
+
+    optimizer.optimizeLowQualityFaces();
     optimizer.optimizeBoundaryLayer();
     optimizer.untangleMeshFV();
+
+    mesh_.clearAddressingData();
 
     # ifdef DEBUG
     mesh_.write();

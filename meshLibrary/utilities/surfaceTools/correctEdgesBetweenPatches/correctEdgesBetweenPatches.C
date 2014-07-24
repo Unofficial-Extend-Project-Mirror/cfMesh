@@ -97,6 +97,8 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
 
     decomposeProblematicFaces();
 
+    decomposeConcaveFaces();
+
     patchCorrection();
 
     decomposeCorrectedCells();

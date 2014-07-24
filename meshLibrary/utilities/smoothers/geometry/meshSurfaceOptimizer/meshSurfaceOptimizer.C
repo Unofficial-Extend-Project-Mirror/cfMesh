@@ -159,6 +159,15 @@ meshSurfaceOptimizer::~meshSurfaceOptimizer()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+void meshSurfaceOptimizer::removeUserConstraints()
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(vertexType_, bpI)
+        if( vertexType_[bpI] & LOCKED )
+            vertexType_[bpI] ^= LOCKED;
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

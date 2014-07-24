@@ -278,6 +278,9 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
                 if( !negativeNode[nodeI] )
                     continue;
 
+                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                    continue;
+
                 if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
@@ -358,6 +361,10 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
             # pragma omp for schedule(dynamic, 10)
             # endif
             forAll(smoothVertex, nodeI)
+            {
+                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                    continue;
+
                 if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
@@ -367,6 +374,7 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
 
                     np.append(labelledPoint(nodeI, simplex.centrePoint()));
                 }
+            }
         }
 
         //- update mesh vertices
@@ -415,6 +423,10 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
             # pragma omp for schedule(dynamic, 5)
             # endif
             forAll(smoothVertex, nodeI)
+            {
+                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                    continue;
+
                 if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
@@ -466,9 +478,6 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 
                             vector n = tri.normal();
                             n /= (mag(n) + VSMALL);
-                            for(direction i=0;i<vector::nComponents;++i)
-                                if( Foam::mag(n[i]) < (100. * SMALL) )
-                                    n[i] = 0.0;
 
                             nt += symm(n * n);
                         }
@@ -513,6 +522,7 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                         np.append(labelledPoint(nodeI, simplex.centrePoint()));
                     }
                 }
+            }
         }
 
         //- update tetMesh
@@ -559,6 +569,9 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace()
             # endif
             forAll(smoothVertex, nodeI)
             {
+                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                    continue;
+
                 if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);

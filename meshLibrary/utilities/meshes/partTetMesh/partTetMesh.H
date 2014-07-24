@@ -149,7 +149,8 @@ public:
             FACECENTRE = 2,
             CELLCENTRE = 4,
             PARALLELBOUNDARY = 8,
-            BOUNDARY = 16
+            BOUNDARY = 16,
+            LOCKED = 32
         };
 
     // Destructor
@@ -255,6 +256,14 @@ public:
 
         //- creates polyMeshGen from this partTetMesh
         void createPolyMesh(polyMeshGen& pmg) const;
+
+        //- add the LOCKED flag to mesh points which shall not move
+        template<class labelListType>
+        void lockPoints(const labelListType& l)
+        {
+            forAll(l, pI)
+                smoothVertex_[l[pI]] |= LOCKED;
+        }
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -67,6 +67,9 @@ class meshOptimizer
         //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
 
+        //- locked faces which shall not be changed
+        labelLongList lockedFaces_;
+
         //- mesh surface
         mutable meshSurfaceEngine* msePtr_;
 
@@ -74,10 +77,6 @@ class meshOptimizer
         //- return mesh surface
         const meshSurfaceEngine& meshSurface() const;
         void clearSurface();
-
-        //- find problematic faces
-        label findBadFaces(labelHashSet&, const boolList&) const;
-        label findLowQualityFaces(labelHashSet&, const boolList&) const;
 
     // Nested classes
 
@@ -200,16 +199,15 @@ public:
         ~meshOptimizer();
 
     // Member Functions
-        //- lock the points which shall not be moved
-        template<class labelListType>
-        void lockPoints(const labelListType& l)
-        {
-            forAll(l, i)
-                vertexLocation_[l[i]] |= LOCKED;
-        }
+        //- lock the cells which shall not be modified
+        void lockCells(const labelLongList&);
 
-        //- lock points contained inside the specified subset
-        void lockPoints(const word& subsetName);
+        //- lock cells which shall not be modified
+        //- contained inside the specified subset
+        void lockCells(const word& subsetName);
+
+        //- reset to default constraints
+        void removeUserConstraints();
 
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);

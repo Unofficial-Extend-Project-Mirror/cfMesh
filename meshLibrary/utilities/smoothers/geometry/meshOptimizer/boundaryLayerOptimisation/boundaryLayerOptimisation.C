@@ -26,13 +26,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "boundaryLayerOptimisation.H"
-#include "polyMeshGen.H"
-#include "meshSurfaceEngine.H"
-#include "meshSurfaceEngineModifier.H"
-
-# ifdef USE_OMP
-#include <omp.h>
-# endif
 
 // #define DEBUGSearch
 
@@ -54,6 +47,8 @@ boundaryLayerOptimisation::boundaryLayerOptimisation
     hairEdges_(),
     hairEdgesAtBndPoint_(),
     hairEdgesNearHairEdge_(),
+    isBndLayerBase_(),
+    isExitFace_(),
     hairEdgeType_()
 {
     calculateHairEdges();

@@ -57,7 +57,7 @@ bool refineBoundaryLayers::analyseLayers()
     const labelList& facePatch = mse.boundaryFacePatches();
 
     meshSurfacePartitioner mPart(mse);
-    detectBoundaryLayers dbl(mPart);
+    detectBoundaryLayers dbl(mPart, is2DMesh_);
 
     const label nGroups = dbl.nDistinctLayers();
     const labelList& faceInLayer = dbl.faceInLayer();

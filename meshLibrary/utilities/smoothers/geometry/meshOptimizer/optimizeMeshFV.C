@@ -28,11 +28,13 @@ Description
 #include "demandDrivenData.H"
 #include "meshOptimizer.H"
 #include "polyMeshGenAddressing.H"
+#include "polyMeshGenChecks.H"
 #include "partTetMesh.H"
 #include "HashSet.H"
 
 #include "tetMeshOptimisation.H"
 #include "boundaryLayerOptimisation.H"
+#include "meshSurfaceEngine.H"
 
 //#define DEBUGSmooth
 
@@ -97,10 +99,22 @@ void meshOptimizer::untangleMeshFV()
     # endif
 
     label nBadFaces, nGlobalIter(0), nIter;
-    const label maxNumGlobalIterations(10);
+    label maxNumGlobalIterations(10);
+
+    //- reduce the time in case if some parts of the mesh are locked
+    if( returnReduce(lockedFaces_.size(), sumOp<label>()) != 0 )
+        maxNumGlobalIterations = 2;
 
     const faceListPMG& faces = mesh_.faces();
+
     boolList changedFace(faces.size(), true);
+
+    //- deactivate faces which have all of their points locked
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(lockedFaces_, lfI)
+        changedFace[lockedFaces_[lfI]] = false;
 
     labelHashSet badFaces;
 
@@ -111,7 +125,14 @@ void meshOptimizer::untangleMeshFV()
         label minNumBadFaces(10 * faces.size()), minIter(-1);
         do
         {
-            nBadFaces = findBadFaces(badFaces, changedFace);
+            nBadFaces =
+                polyMeshGenChecks::findBadFaces
+                (
+                    mesh_,
+                    badFaces,
+                    false,
+                    &changedFace
+                );
 
             Info << "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
@@ -126,8 +147,27 @@ void meshOptimizer::untangleMeshFV()
                 minIter = nIter;
             }
 
-            partTetMesh tetMesh(mesh_, badFaces, (nGlobalIter / 5) + 1);
+            //- create a tet mesh from the mesh and the labels of bad faces
+            partTetMesh tetMesh(mesh_, badFaces, (nGlobalIter / 2) + 1);
 
+            //- check if any points in the tet mesh shall not move
+            const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
+            labelLongList lockPoints;
+            forAll(origLabel, i)
+            {
+                const label pointI = origLabel[i];
+
+                if( pointI < 0 )
+                    continue;
+
+                if( vertexLocation_[pointI] & LOCKED )
+                    lockPoints.append(i);
+            }
+
+            tetMesh.lockPoints(lockPoints);
+
+            //- construct tetMeshOptimisation and improve positions of
+            //- points in the tet mesh
             tetMeshOptimisation tmo(tetMesh);
 
             tmo.optimiseUsingKnuppMetric();
@@ -136,6 +176,7 @@ void meshOptimizer::untangleMeshFV()
 
             tmo.optimiseUsingVolumeOptimizer();
 
+            //- update points in the mesh from the coordinates in the tet mesh
             tetMesh.updateOrigMesh(&changedFace);
 
         } while( (nIter < minIter+5) && (++nIter < 50) );
@@ -148,7 +189,14 @@ void meshOptimizer::untangleMeshFV()
 
         do
         {
-            nBadFaces = findBadFaces(badFaces, changedFace);
+            nBadFaces =
+                polyMeshGenChecks::findBadFaces
+                (
+                    mesh_,
+                    badFaces,
+                    false,
+                    &changedFace
+                );
 
             Info << "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
@@ -158,6 +206,24 @@ void meshOptimizer::untangleMeshFV()
                 break;
 
             partTetMesh tetMesh(mesh_, badFaces, 0);
+
+            //- check if any points in the tet mesh shall not move
+            const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
+            labelLongList lockPoints;
+            forAll(origLabel, i)
+            {
+                const label pointI = origLabel[i];
+
+                if( pointI < 0 )
+                    continue;
+
+                if( vertexLocation_[pointI] & LOCKED )
+                    lockPoints.append(i);
+            }
+
+            tetMesh.lockPoints(lockPoints);
+
+            //- contruct tetMeshOptimisation
             tetMeshOptimisation tmo(tetMesh);
 
             if( nGlobalIter < 2 )
@@ -179,32 +245,52 @@ void meshOptimizer::untangleMeshFV()
             tetMesh.updateOrigMesh(&changedFace);
 
         } while( ++nIter < 2 );
-    }
-    while( nBadFaces );
+
+    } while( nBadFaces );
 
     Info << "Finished untangling the mesh" << endl;
 }
 
 void meshOptimizer::optimizeBoundaryLayer()
 {
-    boundaryLayerOptimisation optimiser(mesh_, meshSurface());
+    Info << "Optimising boundary layer" << endl;
+
+    const meshSurfaceEngine& mse = meshSurface();
+    const labelList& faceOwner = mse.faceOwners();
+
+    boundaryLayerOptimisation optimiser(mesh_, mse);
 
     optimiser.optimiseHairNormals();
 
     optimiser.optimiseThicknessVariation();
 
-    const edgeLongList& hairEdges = optimiser.hairEdges();
-
-    labelLongList lockedPoints;
-    forAll(hairEdges, heI)
+    //- check if the bnd layer is tangled somewhere
+    boolList layerCell(mesh_.cells().size(), false);
+    const boolList& isBaseFace = optimiser.isBaseFace();
+    forAll(isBaseFace, bfI)
     {
-        lockedPoints.append(hairEdges[heI][0]);
-        lockedPoints.append(hairEdges[heI][1]);
+        if( isBaseFace[bfI] )
+            layerCell[faceOwner[bfI]] = true;
     }
 
-    lockPoints(lockedPoints);
+    clearSurface();
+    mesh_.clearAddressingData();
 
+    //- lock boundary layer points, faces and cells
+    labelLongList bndLayerCells;
+    forAll(layerCell, cellI)
+        if( layerCell[cellI] )
+            bndLayerCells.append(cellI);
+
+    lockCells(bndLayerCells);
+
+    //- untangle remaining faces and lock the boundary layer cells
     untangleMeshFV();
+
+    //- unlock bnd layer points
+    removeUserConstraints();
+
+    Info << "Finished optimising boundary layer" << endl;
 }
 
 void meshOptimizer::optimizeLowQualityFaces()
@@ -214,15 +300,29 @@ void meshOptimizer::optimizeLowQualityFaces()
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
+    //- deactivate faces which have all of their points locked
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(lockedFaces_, lfI)
+        changedFace[lockedFaces_[lfI]] = false;
+
     label minNumBadFaces(10 * faces.size()), minIter(-1);
     do
     {
         labelHashSet lowQualityFaces;
-        nBadFaces = findLowQualityFaces(lowQualityFaces, changedFace);
+        nBadFaces =
+            polyMeshGenChecks::findLowQualityFaces
+            (
+                mesh_,
+                lowQualityFaces,
+                false,
+                &changedFace
+            );
 
         changedFace = false;
         forAllConstIter(labelHashSet, lowQualityFaces, it)
-        changedFace[it.key()] = true;
+            changedFace[it.key()] = true;
 
         Info << "Iteration " << nIter
             << ". Number of bad faces is " << nBadFaces << endl;
@@ -239,6 +339,24 @@ void meshOptimizer::optimizeLowQualityFaces()
 
         partTetMesh tetMesh(mesh_, lowQualityFaces, 2);
 
+        //- check if any points in the tet mesh shall not move
+        const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
+        labelLongList lockPoints;
+        forAll(origLabel, i)
+        {
+            const label pointI = origLabel[i];
+
+            if( pointI < 0 )
+                continue;
+
+            if( vertexLocation_[pointI] & LOCKED )
+                lockPoints.append(i);
+        }
+
+        tetMesh.lockPoints(lockPoints);
+
+        //- construct tetMeshOptimisation and improve positions
+        //- of points in the tet mesh
         tetMeshOptimisation tmo(tetMesh);
 
         tmo.optimiseUsingKnuppMetric();
@@ -247,6 +365,7 @@ void meshOptimizer::optimizeLowQualityFaces()
 
         tmo.optimiseUsingVolumeOptimizer();
 
+        //- update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
     } while( (nIter < minIter+2) && (++nIter < 10) );
