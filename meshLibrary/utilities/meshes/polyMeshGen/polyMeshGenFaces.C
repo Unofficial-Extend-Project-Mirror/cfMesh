@@ -31,6 +31,7 @@ Description
 #include "IOobjectList.H"
 #include "faceSet.H"
 #include "demandDrivenData.H"
+#include "stringListOps.H"
 
 namespace Foam
 {
@@ -199,6 +200,51 @@ label polyMeshGenFaces::faceIsInPatch(const label faceLabel) const
             return patchI;
 
     return -1;
+}
+
+wordList polyMeshGenFaces::patchNames() const
+{
+    wordList t(boundaries_.size());
+
+    forAll(boundaries_, patchI)
+    {
+        t[patchI] = boundaries_[patchI].patchName();
+    }
+
+    return t;
+}
+
+label polyMeshGenFaces::findPatchID(const word& patchName) const
+{
+    forAll(boundaries_, patchI)
+    {
+        if(boundaries_.set(patchI))
+        {
+            if(boundaries_[patchI].patchName() == patchName)
+            {
+                return patchI;
+            }
+        }
+    }
+
+    // If the code gets here, it implies that the patch was not found.
+    // return a -1 in this case
+    return -1;
+}
+
+labelList polyMeshGenFaces::findPatches(const word& patchName) const
+{
+    wordList allPatches = patchNames();
+
+    labelList patchIDs = findStrings(patchName, allPatches);
+
+    if(patchIDs.empty())
+    {
+        WarningIn("polyMeshGenFaces::findPatches(const word&)")
+            << "Cannot find any patch names matching " << patchName << endl;
+    }
+
+    return patchIDs;
 }
 
 label polyMeshGenFaces::addFaceSubset(const word& setName)

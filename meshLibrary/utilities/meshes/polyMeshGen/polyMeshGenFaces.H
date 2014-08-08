@@ -142,7 +142,17 @@ public:
         
         //- return patch label for the given face label
         label faceIsInPatch(const label faceLabel) const;
-    
+
+        //- return list of patches in the boundary
+        wordList patchNames() const;
+
+        //- return the index of a patch given its name
+        label findPatchID(const word& patchName) const;
+        
+        //- return a list of patch indices corresponding to the given 
+        // name, expanding regular expressions
+        labelList findPatches(const word& patchName) const;
+
     // Subsets
     
         label addFaceSubset(const word&);
