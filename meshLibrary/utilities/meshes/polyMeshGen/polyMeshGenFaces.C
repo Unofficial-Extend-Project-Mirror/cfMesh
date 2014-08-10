@@ -214,7 +214,7 @@ wordList polyMeshGenFaces::patchNames() const
     return t;
 }
 
-label polyMeshGenFaces::findPatchID(const word& patchName) const
+label polyMeshGenFaces::getPatchID(const word& patchName) const
 {
     forAll(boundaries_, patchI)
     {
@@ -230,6 +230,20 @@ label polyMeshGenFaces::findPatchID(const word& patchName) const
     // If the code gets here, it implies that the patch was not found.
     // return a -1 in this case
     return -1;
+}
+
+word polyMeshGenFaces::getPatchName(const label patchID) const
+{
+    if((patchID < 0) || (patchID >= boundaries_.size()))
+    {
+         FatalErrorIn
+         (
+             "polyMeshGenFaces::getPatchName(const label patchID) const"
+         )   << "invalid patch ID supplied"
+             << abort(FatalError);
+    }
+
+    return boundaries_[patchID].patchName();
 }
 
 labelList polyMeshGenFaces::findPatches(const word& patchName) const
