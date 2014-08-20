@@ -184,7 +184,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 labelList matchedIDs = surface.findPatches(patchNames[patchI]);
                 forAll(matchedIDs, matchI)
                 {
-                    refPatches[counter] = patchRefinement(allPatches[matchI], cs);
+                    refPatches[counter] = patchRefinement(allPatches[matchedIDs[matchI]], cs);
                     ++counter;
                 }
             }
