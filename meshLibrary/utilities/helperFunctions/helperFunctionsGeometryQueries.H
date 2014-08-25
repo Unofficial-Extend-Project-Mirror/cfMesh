@@ -66,7 +66,15 @@ namespace help
     bool isinf(const ListType&);
 
     //- check if the faces share a convex edge
-    bool isSharedEdgeConvex
+    inline bool isSharedEdgeConvex
+    (
+        const pointField& points,
+        const face& f1,
+        const face& f2
+    );
+
+    //- angle between the two faces in radians
+    inline scalar angleBetweenFaces
     (
         const pointField& points,
         const face& f1,

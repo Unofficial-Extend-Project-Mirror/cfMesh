@@ -81,6 +81,7 @@ checkNonMappableCellConnections = $(topology)/checkNonMappableCellConnections
 
 triSurfaceTools = utilities/triSurfaceTools
 triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
+triSurfaceCleanupDuplicateTriangles = $(triSurfaceTools)/triSurfaceCleanupDuplicateTriangles
 triSurfaceCopyParts = $(triSurfaceTools)/triSurfaceCopyParts
 triSurfaceCurvatureEstimator = $(triSurfaceTools)/triSurfaceCurvatureEstimator
 triSurfacePartitioner = $(triSurfaceTools)/triSurfacePartitioner
@@ -438,6 +439,9 @@ $(surfaceIntersectionsOctree)/surfaceIntersectionsOctreeIntersections.C
 
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicates.C
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicatesFunctions.C
+
+$(triSurfaceCleanupDuplicateTriangles)/triSurfaceCleanupDuplicateTriangles.C
+$(triSurfaceCleanupDuplicateTriangles)/triSurfaceCleanupDuplicateTrianglesFunctions.C
 
 $(triSurfaceCopyParts)/triSurfaceCopyParts.C
 
