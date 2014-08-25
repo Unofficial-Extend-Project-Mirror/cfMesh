@@ -93,7 +93,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     {
         const label bpI = it.key();
 
-        if( mPart.numberOfFeatureEdgesAtPoint(bpI) != 3 )
+        if( mPart.numberOfFeatureEdgesAtPoint(bpI) > 3 )
         {
             labelHashSet commonPatches;
             DynList<label> allPatches;
@@ -144,7 +144,11 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
         //- check if the any of the face vertices is tangled
         const edge& e = edges[eI];
-        if( invertedVertices.found(e[0]) || invertedVertices.found(e[1]) )
+        if
+        (
+            !is2DMesh_ &&
+            (invertedVertices.found(e[0]) || invertedVertices.found(e[1]))
+        )
             continue;
 
         const label patch0 = boundaryFacePatches[eFaces(eI, 0)];
@@ -164,7 +168,11 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
             const face& f1 = bFaces[eFaces(eI, 0)];
             const face& f2 = bFaces[eFaces(eI, 1)];
-            if( !help::isSharedEdgeConvex(points, f1, f2) )
+            if
+            (
+                !help::isSharedEdgeConvex(points, f1, f2) ||
+                (help::angleBetweenFaces(points, f1, f2) > 1.5 * M_PI)
+            )
             {
                 ++edgeClassification[pp].second();
             }
@@ -210,7 +218,11 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 continue;
 
             const edge& e = edges[beI];
-            if( invertedVertices.found(e[0]) || invertedVertices.found(e[1]) )
+            if
+            (
+                !is2DMesh_ &&
+                (invertedVertices.found(e[0]) || invertedVertices.found(e[1]))
+            )
                 continue;
 
             //- do not send data if the face on other processor
@@ -287,6 +299,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 }
             }
 
+            const face& bf = bFaces[eFaces(beI, 0)];
             const label patch0 = boundaryFacePatches[eFaces(beI, 0)];
             const label patch1 = otherProcPatches[beI];
 
@@ -303,7 +316,10 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
             if(
                 (otherFaceProc[beI] > Pstream::myProcNo()) &&
-                !help::isSharedEdgeConvex(points, bFaces[eFaces(beI, 0)], f)
+                (
+                    !help::isSharedEdgeConvex(points, bf, f) ||
+                    (help::angleBetweenFaces(points, bf, f) > 1.5 * M_PI)
+                )
             )
             {
                 ++edgeClassification[pp].second();
@@ -443,6 +459,34 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
     Info << "Patch names " << patchNames_ << endl;
     Info << "Treat patches with patch " << treatPatchesWithPatch_ << endl;
+
+    label layerI(0), subsetId;
+    boolList usedPatch(treatPatchesWithPatch_.size(), false);
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
+
+    forAll(treatPatchesWithPatch_, patchI)
+    {
+        if( usedPatch[patchI] || (boundaries[patchI].patchSize() == 0) )
+            continue;
+
+        Info << "Adding layer subset " << layerI << " for patch " << patchI << endl;
+        usedPatch[patchI] = true;
+        subsetId = mesh_.addFaceSubset("layer_"+help::scalarToText(layerI));
+        ++layerI;
+
+        forAll(treatPatchesWithPatch_[patchI], i)
+        {
+            const label cPatch = treatPatchesWithPatch_[patchI][i];
+            usedPatch[cPatch] = true;
+
+            label start = boundaries[cPatch].patchStart();
+            const label size = boundaries[cPatch].patchSize();
+            for(label i=0;i<size;++i)
+                mesh_.addFaceToSubset(subsetId, start++);
+        }
+    }
+
+    mesh_.write();
     # endif
 
     geometryAnalysed_ = true;
@@ -498,6 +542,7 @@ boundaryLayers::boundaryLayers
     meshPartitionerPtr_(NULL),
     patchWiseLayers_(true),
     terminateLayersAtConcaveEdges_(false),
+    is2DMesh_(false),
     patchNames_(),
     treatedPatch_(),
     treatPatchesWithPatch_(),
@@ -597,6 +642,8 @@ void boundaryLayers::activate2DMode()
             if( treatedPatch_[patches[i]] )
                 patches.removeElement(i);
     }
+
+    is2DMesh_ = true;
 }
 
 void boundaryLayers::addLayerForAllPatches()
