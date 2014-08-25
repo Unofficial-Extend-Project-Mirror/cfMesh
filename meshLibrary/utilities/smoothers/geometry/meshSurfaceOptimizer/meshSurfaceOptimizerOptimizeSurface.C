@@ -700,7 +700,8 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     {
         Info << "." << flush;
 
-        smoothLaplacianFC(movedPoints, procBndPoints, false);
+        //smoothLaplacianFC(movedPoints, procBndPoints, false);
+        smoothSurfaceOptimizer(movedPoints);
 
         //- move the points which are not at minimum z coordinate
         mesh2DEngine.correctPoints();

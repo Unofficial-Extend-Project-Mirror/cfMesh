@@ -29,6 +29,7 @@ Description
 #include "polyMeshGen2DEngine.H"
 #include "triSurf.H"
 #include "triSurfacePatchManipulator.H"
+#include "triSurfaceCleanupDuplicateTriangles.H"
 #include "demandDrivenData.H"
 #include "Time.H"
 #include "meshOctreeCreator.H"
@@ -277,6 +278,9 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
     if( surfacePtr_->featureEdges().size() != 0 )
     {
+        //- get rid of duplicate triangles as they cause strange problems
+        triSurfaceCleanupDuplicateTriangles(const_cast<triSurf&>(*surfacePtr_));
+
         //- create surface patches based on the feature edges
         //- and update the meshDict based on the given data
         triSurfacePatchManipulator manipulator(*surfacePtr_);
@@ -287,6 +291,8 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         //- delete the old surface and assign the new one
         deleteDemandDrivenData(surfacePtr_);
         surfacePtr_ = surfaceWithPatches;
+
+        surfacePtr_->writeSurface("surfWithPatches.fms");
     }
 
     octreePtr_ = new meshOctree(*surfacePtr_, true);
