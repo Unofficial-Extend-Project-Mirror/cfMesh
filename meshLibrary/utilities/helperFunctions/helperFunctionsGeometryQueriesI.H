@@ -70,11 +70,12 @@ bool isinf(const ListType& l)
     return false;
 }
 
+template<class Face1, class Face2>
 inline bool isSharedEdgeConvex
 (
     const pointField& points,
-    const face& f1,
-    const face& f2
+    const Face1& f1,
+    const Face2& f2
 )
 {
     DynList<label, 3> triOwn(3);
@@ -82,17 +83,24 @@ inline bool isSharedEdgeConvex
 
     forAll(f1, pI)
     {
-        label pos = f2.which(f1[pI]);
-        if( pos == -1 )
+        label pos(-1);
+        forAll(f2, pJ)
+            if( f2[pJ] == f1[pI] )
+            {
+                pos = pJ;
+                break;
+            }
+
+        if( pos < 0 )
             continue;
 
         triNei[0] = f2[pos];
-        triNei[1] = f2.nextLabel(pos);
-        triNei[2] = f2.prevLabel(pos);
+        triNei[1] = f2[f2.fcIndex(pos)];
+        triNei[2] = f2[f2.rcIndex(pos)];
 
         triOwn[0] = f1[pI];
-        triOwn[1] = f1.nextLabel(pI);
-        triOwn[2] = f1.prevLabel(pI);
+        triOwn[1] = f1[f1.fcIndex(pI)];
+        triOwn[2] = f1[f1.rcIndex(pI)];
 
         scalar vol(0.0);
 
@@ -120,11 +128,12 @@ inline bool isSharedEdgeConvex
     return true;
 }
 
+template<class Face1, class Face2>
 inline scalar angleBetweenFaces
 (
     const pointField& points,
-    const face& f1,
-    const face& f2
+    const Face1& f1,
+    const Face2& f2
 )
 {
     DynList<label, 3> triOwn(3);
@@ -135,17 +144,24 @@ inline scalar angleBetweenFaces
 
     forAll(f1, pI)
     {
-        label pos = f2.which(f1[pI]);
-        if( pos == -1 )
+        label pos(-1);
+        forAll(f2, pJ)
+            if( f2[pJ] == f1[pI] )
+            {
+                pos = pJ;
+                break;
+            }
+
+        if( pos < 0 )
             continue;
 
         triNei[0] = f2[pos];
-        triNei[1] = f2.nextLabel(pos);
-        triNei[2] = f2.prevLabel(pos);
+        triNei[1] = f2[f2.fcIndex(pos)];
+        triNei[2] = f2[f2.rcIndex(pos)];
 
         triOwn[0] = f1[pI];
-        triOwn[1] = f1.nextLabel(pI);
-        triOwn[2] = f1.prevLabel(pI);
+        triOwn[1] = f1[f1.fcIndex(pI)];
+        triOwn[2] = f1[f1.rcIndex(pI)];
 
         scalar vol(0.0);
 
@@ -206,7 +222,8 @@ inline scalar angleBetweenFaces
         (
             "scalar angleBetweenFaces"
             "(const pointField&, const face&, const face&)"
-        ) << "Faces do no share an edge" << abort(FatalError);
+        ) << "Faces " << f1 << " and " << f2
+          << " do no share an edge" << abort(FatalError);
     }
 
     return angle / counter;
