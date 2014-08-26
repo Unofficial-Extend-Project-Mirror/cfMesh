@@ -133,14 +133,10 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     const labelHashSet& invertedVertices = vertexCheck.invertedVertices();
 
     std::map<std::pair<label, label>, Pair<label> > edgeClassification;
-    labelLongList procEdges;
     forAll(eFaces, eI)
     {
         if( eFaces.sizeOfRow(eI) != 2 )
-        {
-            procEdges.append(eI);
             continue;
-        }
 
         //- check if the any of the face vertices is tangled
         const edge& e = edges[eI];
@@ -185,9 +181,10 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
     if( Pstream::parRun() )
     {
+        const labelList& bPoints = mse.boundaryPoints();
+
         //- check faces over processor edges
         const labelList& globalEdgeLabel = mse.globalBoundaryEdgeLabel();
-        const VRWGraph& beAtProcs = mse.beAtProcs();
         const Map<label>& globalToLocal = mse.globalToLocalBndEdgeAddressing();
 
         const DynList<label>& neiProcs = mse.beNeiProcs();
@@ -211,9 +208,10 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         }
 
         //- store faces for sending
-        forAll(procEdges, eI)
+        forAllConstIter(Map<label>, otherFaceProc, it)
         {
-            const label beI = procEdges[eI];
+            const label beI = it.key();
+
             if( eFaces.sizeOfRow(beI) == 0 )
                 continue;
 
@@ -232,30 +230,25 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
             const face& f = bFaces[eFaces(beI, 0)];
 
-            forAllRow(beAtProcs, beI, procI)
-            {
-                const label neiProc = beAtProcs(beI, procI);
-                if( neiProc == Pstream::myProcNo() )
-                    continue;
+            const label neiProc = it();
 
-                //- each face is sent as follows
-                //- 1. global edge label
-                //- 2. number of face nodes
-                //- 3. faces nodes and vertex coordinates
-                LongList<labelledPoint>& dps = exchangePoints[neiProc];
-                dps.append(labelledPoint(globalEdgeLabel[beI], point()));
-                dps.append(labelledPoint(f.size(), point()));
-                forAll(f, pI)
-                {
-                    dps.append
+            //- each face is sent as follows
+            //- 1. global edge label
+            //- 2. number of face nodes
+            //- 3. faces nodes and vertex coordinates
+            LongList<labelledPoint>& dps = exchangePoints[neiProc];
+            dps.append(labelledPoint(globalEdgeLabel[beI], point()));
+            dps.append(labelledPoint(f.size(), point()));
+            forAll(f, pI)
+            {
+                dps.append
+                (
+                    labelledPoint
                     (
-                        labelledPoint
-                        (
-                            globalPointLabel[bp[f[pI]]],
-                            points[f[pI]]
-                        )
-                    );
-                }
+                        globalPointLabel[bp[f[pI]]],
+                        points[f[pI]]
+                    )
+                );
             }
         }
 
@@ -270,14 +263,15 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         {
             const label beI =
                 globalToLocal[receivedData[counter++].pointLabel()];
-            face f(receivedData[counter++].pointLabel());
+            DynList<label> f(receivedData[counter++].pointLabel());
             forAll(f, pI)
             {
                 const labelledPoint& lp = receivedData[counter++];
+
                 if( globalPointToLocal.found(lp.pointLabel()) )
                 {
                     //- this point already exist on this processor
-                    f[pI] = globalPointToLocal[lp.pointLabel()];
+                    f[pI] = bPoints[globalPointToLocal[lp.pointLabel()]];
                 }
                 else
                 {
