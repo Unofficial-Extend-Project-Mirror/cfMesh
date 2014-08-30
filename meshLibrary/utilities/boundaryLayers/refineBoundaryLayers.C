@@ -156,7 +156,12 @@ void refineBoundaryLayers::setNumberOfLayersForPatch
         return;
     }
 
-    numLayersForPatch_[patchName] = nLayers;
+    labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        numLayersForPatch_[mesh_.getPatchName(matchedIDs[matchI])] = nLayers;
+    }
 }
 
 void refineBoundaryLayers::setThicknessRatioForPatch
@@ -177,7 +182,12 @@ void refineBoundaryLayers::setThicknessRatioForPatch
         return;
     }
 
-    thicknessRatioForPatch_[patchName] = thicknessRatio;
+    labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        thicknessRatioForPatch_[mesh_.getPatchName(matchedIDs[matchI])] = thicknessRatio;
+    }
 }
 
 void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
@@ -198,12 +208,22 @@ void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
         return;
     }
 
-    maxThicknessForPatch_[patchName] = maxThickness;
+    labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        maxThicknessForPatch_[mesh_.getPatchName(matchedIDs[matchI])] = maxThickness;
+    }
 }
 
 void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
 {
-    discontinuousLayersForPatch_.insert(patchName);
+    labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        discontinuousLayersForPatch_.insert(mesh_.getPatchName(matchedIDs[matchI]));
+    }
 }
 
 void refineBoundaryLayers::refineLayers()
