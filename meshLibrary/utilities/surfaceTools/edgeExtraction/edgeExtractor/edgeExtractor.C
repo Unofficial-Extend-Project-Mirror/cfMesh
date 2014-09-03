@@ -2391,6 +2391,9 @@ void edgeExtractor::extractEdges()
 
     distributeBoundaryFacesNormalAlignment();
 
+    Pout << "aaaabbcc" << endl;
+    returnReduce(1, sumOp<label>());
+
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();
     sPtr->writeSurface("initialDistributionOfPatches.stl");

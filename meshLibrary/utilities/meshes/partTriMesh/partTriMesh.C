@@ -387,6 +387,13 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
 
     List<direction> updateType(pts.size(), direction(0));
 
+    for(label i=0;i<Pstream::nProcs();++i)
+    {
+        if( i == Pstream::myProcNo() )
+            Pout << "Creating FACECEntre flags" << endl;
+        returnReduce(1, sumOp<label>());
+    }
+
     //- update coordinates of vertices which exist in the surface
     //- of the volume mesh
     # ifdef USE_OMP
@@ -398,6 +405,9 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
         const label pointI = bPoints[bpI];
         const label triPointI = meshSurfacePointLabelInTriMesh_[bpI];
 
+        if( triPointI < 0 )
+            continue;
+
         pts[triPointI] = points[pointI];
         updateType[triPointI] |= SMOOTH;
 
@@ -408,6 +418,13 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
             if( pointType_[tri[2]] & FACECENTRE )
                 updateType[tri[2]] |= FACECENTRE;
         }
+    }
+
+    for(label i=0;i<Pstream::nProcs();++i)
+    {
+        if( i == Pstream::myProcNo() )
+            Pout << "Created FACECEntre flags" << endl;
+        returnReduce(1, sumOp<label>());
     }
 
     //- update coordinates of buffer layer points
@@ -467,6 +484,13 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
                     updateType[tri[2]] |= FACECENTRE;
             }
         }
+    }
+
+    for(label i=0;i<Pstream::nProcs();++i)
+    {
+        if( i == Pstream::myProcNo() )
+            Pout << "Updating coordinates" << endl;
+        returnReduce(1, sumOp<label>());
     }
 
     //- update coordinates of FACECENTRE vertices
