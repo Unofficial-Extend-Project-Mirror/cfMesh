@@ -165,10 +165,10 @@ void cartesianMeshGenerator::mapMeshToSurface()
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
-    # ifdef DEBUG
+    //# ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
+    ::exit(EXIT_SUCCESS);
+    //# endif
 
     deleteDemandDrivenData(msePtr);
 }
