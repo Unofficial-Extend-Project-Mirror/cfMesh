@@ -364,7 +364,7 @@ void meshOctreeAddressing::findUsedBoxes() const
             else
             {
                 wordHashSet patchesToRemoveCopy
-                 (
+                (
                     meshDict_.lookup("removeCellsIntersectingPatches")
                 );
                 patchesToRemove.transfer(patchesToRemoveCopy);
@@ -376,15 +376,15 @@ void meshOctreeAddressing::findUsedBoxes() const
             //- remove facets in patches
             forAllConstIter(HashSet<word>, patchesToRemove, it)
             {
-                labelList matchedPatches = ts.findPatches(it.key());
+                const labelList matchedPatches = ts.findPatches(it.key());
+                boolList activePatch(ts.patches().size(), false);
+                forAll(matchedPatches, ptchI)
+                    activePatch[matchedPatches[ptchI]] = true;
 
-                forAll(matchedPatches, matchI)
+                forAll(ts, triI)
                 {
-                    forAll(ts, triI)
-                    {
-                        if(ts[triI].region() == matchedPatches[matchI])
-                            removeFacets[triI] = true;
-                    }
+                    if( activePatch[ts[triI].region()] )
+                        removeFacets[triI] = true;
                 }
             }
 
@@ -446,15 +446,15 @@ void meshOctreeAddressing::findUsedBoxes() const
         //- keep facets in patches
         forAllConstIter(HashSet<word>, patchesToKeep, it)
         {
-            labelList matchedPatches = ts.findPatches(it.key());
+            const labelList matchedPatches = ts.findPatches(it.key());
+            boolList activePatch(ts.patches().size(), false);
+            forAll(matchedPatches, ptchI)
+                activePatch[matchedPatches[ptchI]] = true;
 
-            forAll(matchedPatches, matchI)
+            forAll(ts, triI)
             {
-                forAll(ts, triI)
-                {
-                    if(ts[triI].region() == matchedPatches[matchI])
-                        keepFacets[triI] = true;
-                }
+                if( activePatch[ts[triI].region()] )
+                    keepFacets[triI] = true;
             }
         }
 
