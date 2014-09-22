@@ -2391,9 +2391,6 @@ void edgeExtractor::extractEdges()
 
     distributeBoundaryFacesNormalAlignment();
 
-    Pout << "aaaabbcc" << endl;
-    returnReduce(1, sumOp<label>());
-
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();
     sPtr->writeSurface("initialDistributionOfPatches.stl");
@@ -2427,11 +2424,6 @@ void edgeExtractor::extractEdges()
     {
         Info << "No geometrical adjustment was needed" << endl;
     }
-
-//    updateMeshPatches();
-//    mesh_.write();
-//    returnReduce(1, sumOp<label>());
-//    ::exit(0);
 
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();

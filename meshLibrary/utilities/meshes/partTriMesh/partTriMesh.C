@@ -362,6 +362,9 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
             pts[pI] = centre / faceArea;
         }
     }
+
+    if( Pstream::parRun() )
+        updateBufferLayers();
 }
 
 void partTriMesh::updateVertices()
@@ -387,13 +390,6 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
 
     List<direction> updateType(pts.size(), direction(0));
 
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Creating FACECEntre flags" << endl;
-        returnReduce(1, sumOp<label>());
-    }
-
     //- update coordinates of vertices which exist in the surface
     //- of the volume mesh
     # ifdef USE_OMP
@@ -418,13 +414,6 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
             if( pointType_[tri[2]] & FACECENTRE )
                 updateType[tri[2]] |= FACECENTRE;
         }
-    }
-
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Created FACECEntre flags" << endl;
-        returnReduce(1, sumOp<label>());
     }
 
     //- update coordinates of buffer layer points
@@ -486,13 +475,6 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
         }
     }
 
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Updating coordinates" << endl;
-        returnReduce(1, sumOp<label>());
-    }
-
     //- update coordinates of FACECENTRE vertices
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
@@ -519,6 +501,9 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
             pts[pI] = centre / faceArea;
         }
     }
+
+    if( Pstream::parRun() )
+        updateBufferLayers();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -282,30 +282,11 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
     const labelLongList& selectedPoints
 )
 {
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Starting optimizer" << endl;
-        returnReduce(1, sumOp<label>());
-    }
-
+    //- create partTriMesh is it is not yet present
     this->triMesh();
 
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Updating tri mesh" << endl;
-        returnReduce(1, sumOp<label>());
-    }
-
+    //- update coordinates of the triangulation
     updateTriMesh(selectedPoints);
-
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Created triMesh" << endl;
-        returnReduce(1, sumOp<label>());
-    }
 
     pointField newPositions(selectedPoints.size());
 
@@ -317,13 +298,6 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
         const label bpI = selectedPoints[i];
 
         newPositions[i] = newPositionSurfaceOptimizer(bpI);
-    }
-
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Calculated new posiions" << endl;
-        returnReduce(1, sumOp<label>());
     }
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
@@ -339,20 +313,7 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
     }
 
     //- update geometry addressing for moved points
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Updating geometry" << endl;
-        returnReduce(1, sumOp<label>());
-    }
     surfaceModifier.updateGeometry(selectedPoints);
-
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "Updated geometry" << endl;
-        returnReduce(1, sumOp<label>());
-    }
 }
 
 bool meshSurfaceOptimizer::untangleSurface
@@ -362,13 +323,6 @@ bool meshSurfaceOptimizer::untangleSurface
 )
 {
     Info << "Starting untangling the surface of the volume mesh" << endl;
-
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "0.Here" << endl;
-        returnReduce(1, sumOp<label>());
-    }
 
     bool changed(false);
 
@@ -396,13 +350,6 @@ bool meshSurfaceOptimizer::untangleSurface
     forAll(selectedBoundaryPoints, i)
         smoothVertex[selectedBoundaryPoints[i]] = true;
 
-    for(label i=0;i<Pstream::nProcs();++i)
-    {
-        if( i == Pstream::myProcNo() )
-            Pout << "1.Here" << endl;
-        returnReduce(1, sumOp<label>());
-    }
-
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);
 
@@ -425,17 +372,6 @@ bool meshSurfaceOptimizer::untangleSurface
         {
             nInvertedTria =
                 findInvertedVertices(smoothVertex, nAdditionalLayers);
-
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Num inverted points " << nInvertedTria << endl;
-                    Pout << "Min num inverted " << minNumInverted << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
 
             if( nInvertedTria == 0 ) break;
 
@@ -502,78 +438,25 @@ bool meshSurfaceOptimizer::untangleSurface
             }
 
             //- smooth edge vertices
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Smoothing edges" << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
             smoothEdgePoints(movedEdgePoints, procEdgePoints);
             if( remapVertex )
                 mapper.mapEdgeNodes(movedEdgePoints);
             surfaceModifier.updateGeometry(movedEdgePoints);
 
             //- use laplacian smoothing
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Smoothing using laplace" << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
             smoothLaplacianFC(movedPoints, procBndPoints);
             surfaceModifier.updateGeometry(movedPoints);
 
             //- use surface optimizer
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Smoothing surface optimizer" << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
             smoothSurfaceOptimizer(movedPoints);
-
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Remapping vertices" << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
 
             if( remapVertex )
                 mapper.mapVerticesOntoSurface(movedPoints);
 
             //- update normals and other geometric data
-            for(label i=0;i<Pstream::nProcs();++i)
-            {
-                if( i == Pstream::myProcNo() )
-                {
-                    Pout << "Updating points" << endl;
-                }
-
-                returnReduce(1, sumOp<label>());
-            }
             surfaceModifier.updateGeometry(movedPoints);
 
         } while( nInvertedTria && (++nIter < 20) );
-
-        for(label i=0;i<Pstream::nProcs();++i)
-        {
-            if( i == Pstream::myProcNo() )
-                Pout << "2.Here" << endl;
-            returnReduce(1, sumOp<label>());
-        }
 
         if( nInvertedTria > 0 )
         {
@@ -621,7 +504,6 @@ bool meshSurfaceOptimizer::untangleSurface
 
 bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
 {
-    Pout << "Selecting all points " << endl;
     returnReduce(1, sumOp<label>());
 
     labelLongList selectedPts(surfaceEngine_.boundaryPoints().size());
