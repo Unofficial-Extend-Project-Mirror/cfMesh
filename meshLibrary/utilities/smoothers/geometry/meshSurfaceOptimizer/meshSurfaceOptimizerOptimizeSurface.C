@@ -282,7 +282,10 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
     const labelLongList& selectedPoints
 )
 {
+    //- create partTriMesh is it is not yet present
     this->triMesh();
+
+    //- update coordinates of the triangulation
     updateTriMesh(selectedPoints);
 
     pointField newPositions(selectedPoints.size());
@@ -501,6 +504,8 @@ bool meshSurfaceOptimizer::untangleSurface
 
 bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
 {
+    returnReduce(1, sumOp<label>());
+
     labelLongList selectedPts(surfaceEngine_.boundaryPoints().size());
     forAll(selectedPts, i)
         selectedPts[i] = i;

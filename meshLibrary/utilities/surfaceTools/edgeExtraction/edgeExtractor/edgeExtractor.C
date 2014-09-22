@@ -2425,11 +2425,6 @@ void edgeExtractor::extractEdges()
         Info << "No geometrical adjustment was needed" << endl;
     }
 
-//    updateMeshPatches();
-//    mesh_.write();
-//    returnReduce(1, sumOp<label>());
-//    ::exit(0);
-
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();
     sPtr->writeSurface("finalDistributionOfPatches.stl");

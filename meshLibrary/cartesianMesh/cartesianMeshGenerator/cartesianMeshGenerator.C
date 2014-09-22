@@ -167,7 +167,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 
     deleteDemandDrivenData(msePtr);

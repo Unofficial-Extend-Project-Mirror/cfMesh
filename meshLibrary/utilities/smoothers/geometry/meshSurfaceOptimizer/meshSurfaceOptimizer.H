@@ -108,18 +108,6 @@ class meshSurfaceOptimizer
             DynList<triFace>& trias
         ) const;
 
-        //- transform into a 2D space in plane for parallel boundaries
-        inline bool transformIntoPlaneParallel
-        (
-            const label bpI,
-            const plane& pl,
-            const std::map<label, DynList<parTriFace> >& m,
-            vector& vecX,
-            vector& vecY,
-            DynList<point>& pts,
-            DynList<triFace>& trias
-        ) const;
-
         //- new position of a node after laplacian smoothing
         //- the position is the average of neighbouring vertex positions
         inline point newPositionLaplacian
@@ -223,12 +211,6 @@ class meshSurfaceOptimizer
         (
             const labelLongList& nodesToSmooth,
             const bool transformIntoPlane = true
-        );
-
-        //- smooth nodes at processor boundaries using surface optimizer
-        void nodeDisplacementSurfaceOptimizerParallel
-        (
-            const labelLongList& nodesToSmooth
         );
 
         //- smooth edge nodes at processor boundaries
