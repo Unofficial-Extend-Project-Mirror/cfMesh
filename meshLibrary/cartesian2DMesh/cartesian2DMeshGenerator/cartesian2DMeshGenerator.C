@@ -26,6 +26,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "cartesian2DMeshGenerator.H"
+#include "triSurface2DCheck.H"
 #include "polyMeshGen2DEngine.H"
 #include "triSurf.H"
 #include "triSurfacePatchManipulator.H"
@@ -274,6 +275,16 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
         mesh_.metaData().add("surfaceFile", surfaceFile);
         mesh_.metaData().add("surfaceMeta", surfMetaDict);
+
+        triSurface2DCheck surfCheck(*surfacePtr_);
+        if( !surfCheck.is2DSurface() )
+        {
+            surfCheck.createSubsets();
+
+            Info << "Writting surface with subsets to file "
+                 << "badSurfaceWithSubsets.fms" << endl;
+            surfacePtr_->writeSurface("badSurfaceWithSubsets.fms");
+        }
     }
 
     if( surfacePtr_->featureEdges().size() != 0 )
