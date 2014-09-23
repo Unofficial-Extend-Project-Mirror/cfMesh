@@ -80,6 +80,7 @@ checkIrregularSurfaceConnections = $(topology)/checkIrregularSurfaceConnections
 checkNonMappableCellConnections = $(topology)/checkNonMappableCellConnections
 
 triSurfaceTools = utilities/triSurfaceTools
+triSurface2DCheck = $(triSurfaceTools)/triSurface2DCheck
 triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
 triSurfaceCleanupDuplicateTriangles = $(triSurfaceTools)/triSurfaceCleanupDuplicateTriangles
 triSurfaceCopyParts = $(triSurfaceTools)/triSurfaceCopyParts
@@ -436,6 +437,8 @@ $(surfaceIntersectionsOctreeCube)/surfaceIntersectionsOctreeCubeIntersections.C
 $(surfaceIntersectionsOctreeCube)/surfaceIntersectionsOctreeCubeRefine.C
 $(surfaceIntersectionsOctree)/surfaceIntersectionsOctree.C
 $(surfaceIntersectionsOctree)/surfaceIntersectionsOctreeIntersections.C
+
+$(triSurface2DCheck)/triSurface2DCheck.C
 
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicates.C
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicatesFunctions.C
