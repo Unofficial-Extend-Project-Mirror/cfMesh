@@ -156,6 +156,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         Info << "Requested boundary cell size corresponds to octree level "
             << label(boundaryRefLevel_) << endl;
 
+        if( meshDictPtr_->found("boundaryCellSizeRefinementThickness") )
+        {
+            const scalar s =
+                readScalar
+                (
+                    meshDictPtr_->lookup("boundaryCellSizeRefinementThickness")
+                );
+            surfRefThickness_ = mag(s);
+        }
+
         surfRefLevel_ = boundaryRefLevel_;
     }
 
@@ -367,6 +377,13 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     } while( !finished );
                 }
 
+                scalar refinementThickness(0.0);
+                if( patchDict.found("refinementThickness") )
+                {
+                    refinementThickness =
+                        readScalar(patchDict.lookup("refinementThickness"));
+                }
+
                 const direction level = globalRefLevel_ + nLevel;
 
                 if( patchToIndex.find(pName) != patchToIndex.end() )
@@ -377,8 +394,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     forAll(surface, triI)
                     {
                         if( surface[triI].region() == patchI )
+                        {
                             surfRefLevel_[triI] =
                                 Foam::max(surfRefLevel_[triI], level);
+                            surfRefThickness_[triI] =
+                                Foam::max
+                                (
+                                    surfRefThickness_[triI],
+                                    refinementThickness
+                                );
+                        }
                     }
                 }
                 if( setToIndex.find(pName) != setToIndex.end() )
@@ -394,6 +419,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                         const label triI = facetsInSubset[i];
                         surfRefLevel_[triI] =
                             Foam::max(surfRefLevel_[triI], level);
+                        surfRefThickness_[triI] =
+                            Foam::max
+                            (
+                                surfRefThickness_[triI],
+                                refinementThickness
+                            );
                     }
                 }
             }
@@ -444,7 +475,8 @@ void meshOctreeCreator::createOctreeBoxes()
 
     //- make sure that INSIDE and UNKNOWN neighbours of DATA boxes
     //- have the same or higher refinement level
-    refineBoxesNearDataBoxes(1);
+    //if( !refineBoxesRefinementDistance() )
+        refineBoxesNearDataBoxes(1);
 
     //- distribute octree such that each processor has the same number
     //- of leaf boxes which will be used as mesh cells
