@@ -31,7 +31,7 @@ License
 
 namespace Foam
 {
-    
+
 defineTypeNameAndDebug(objectRefinement, 0);
 defineRunTimeSelectionTable(objectRefinement, dictionary);
 
@@ -40,7 +40,8 @@ defineRunTimeSelectionTable(objectRefinement, dictionary);
 objectRefinement::objectRefinement()
 :
     name_(),
-    cellSize_()
+    cellSize_(),
+    refThickness_(0.0)
 {}
 
 
@@ -51,8 +52,11 @@ objectRefinement::objectRefinement
 )
 :
     name_(name),
-    cellSize_(readScalar(dict.lookup("cellSize")))
+    cellSize_(readScalar(dict.lookup("cellSize"))),
+    refThickness_(0.0)
 {
+    if( dict.found("refinementThickness") )
+        refThickness_ = readScalar(dict.lookup("refinementThickness"));
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

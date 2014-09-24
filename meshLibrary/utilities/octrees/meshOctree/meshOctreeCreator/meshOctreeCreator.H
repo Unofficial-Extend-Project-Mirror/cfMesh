@@ -80,11 +80,15 @@ private:
         //- refine boxes contained inside the objects for refinement
         void refineBoxesContainedInObjects();
 
-        //- refine boxes intersected by surface meshes used as refinement sources
+        //- refine boxes intersected by surface meshes
+        //- used as refinement sources
         void refineBoxesIntersectingSurfaces();
 
         //- refine boxes near DATA boxes to get a nice smooth surface
         void refineBoxesNearDataBoxes(const direction nLayers = 1);
+
+        //- refine boxes to satisfy distance requirements
+        bool refineBoxesRefinementDistance();
 
         //- refine boxes of the given flag to the given size
         void refineBoxes(const direction refLevel, const direction cubeType);
@@ -107,6 +111,9 @@ private:
         //- this list contains ref level for each surface triangle
         List<direction> surfRefLevel_;
 
+        //- refinement thickness for each surface triangle
+        scalarList surfRefThickness_;
+
         //- set the boundBox such that maxCellSize is achieved
         void setRootCubeSizeAndRefParameters();
 
@@ -126,15 +133,6 @@ public:
 
         //- Construct from meshOctree and dictionary
         meshOctreeCreator(meshOctree& mo, const IOdictionary& dict);
-
-        //- Construct from surface, dictionary and cell sizes
-        /*        meshOctreeCreator
-                (
-                    meshOctree& mo,
-                    const IOdictionary& dict,
-                    const volScalarField& localCellSize
-                );
-        */
 
     // Destructor
 
