@@ -87,9 +87,6 @@ private:
         //- refine boxes near DATA boxes to get a nice smooth surface
         void refineBoxesNearDataBoxes(const direction nLayers = 1);
 
-        //- refine boxes to satisfy distance requirements
-        bool refineBoxesRefinementDistance();
-
         //- refine boxes of the given flag to the given size
         void refineBoxes(const direction refLevel, const direction cubeType);
 

@@ -185,11 +185,6 @@ label meshOctreeModifier::markAdditionalLayers
     {
         currentLayer[leafI] = targetRefLevel[leafI] ? 1 : 0;
     }
-    //Info << "Current layer " << currentLayer << endl;
-
-    List<direction> targetRefLevelBefore = targetRefLevel;
-
-    Info << "Max nLayers" << max(nLayers) << endl;
 
     bool changed;
     label i(0), nMarked(0);
@@ -197,9 +192,6 @@ label meshOctreeModifier::markAdditionalLayers
     {
         ++i;
         changed = false;
-
-        Info << "Iteration " << i << endl;
-        Info << "Max current layer " << max(currentLayer) << endl;
 
         labelList newNLayers = nLayers;
         labelList newCurrentLayer = currentLayer;
