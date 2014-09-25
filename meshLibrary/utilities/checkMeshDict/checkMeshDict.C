@@ -109,6 +109,12 @@ void checkMeshDict::checkBasicSettings() const
             readBool(meshDict_.lookup("checkForGluedMesh"));
         }
     }
+
+    //- check if enforceConstraints is available
+    if( meshDict_.found("enforceGeometryConstraints") )
+    {
+        readBool(meshDict_.lookup("enforceGeometryConstraints"));
+    }
 }
 
 void checkMeshDict::checkPatchCellSize() const
