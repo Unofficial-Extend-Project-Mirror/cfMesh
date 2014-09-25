@@ -40,6 +40,7 @@ Description
 #include "FIFOStack.H"
 
 #include <map>
+#include <stdexcept>
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -373,7 +374,40 @@ bool meshSurfaceOptimizer::untangleSurface
             nInvertedTria =
                 findInvertedVertices(smoothVertex, nAdditionalLayers);
 
-            if( nInvertedTria == 0 ) break;
+            if( nInvertedTria == 0 )
+            {
+                break;
+            }
+            else if( enforceConstraints_ && !remapVertex )
+            {
+                polyMeshGen& mesh =
+                    const_cast<polyMeshGen&>(surfaceEngine_.mesh());
+
+                const label subsetId =
+                    mesh.addPointSubset(badPointsSubsetName_);
+
+                forAll(smoothVertex, bpI)
+                    if( smoothVertex[bpI] )
+                        mesh.addPointToSubset(subsetId, bPoints[bpI]);
+
+                WarningIn
+                (
+                    "bool meshSurfaceOptimizer::untangleSurface"
+                    "(const labelLongList&, const label)"
+                ) << "Writing mesh with " << badPointsSubsetName_
+                  << " subset. These points cannot be untangled"
+                  << " without sacrificing geometry constraints. Exitting.."
+                  << endl;
+
+                returnReduce(1, sumOp<label>());
+
+                throw std::logic_error
+                (
+                    "bool meshSurfaceOptimizer::untangleSurface"
+                    "(const labelLongList&, const label)"
+                    "Cannot untangle mesh!!"
+                );
+            }
 
             //- find the min number of inverted points and
             //- add the last number to the stack
@@ -491,7 +525,7 @@ bool meshSurfaceOptimizer::untangleSurface
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
 
-            if( nGlobalIter > 3 )
+            if( nGlobalIter > 5 )
                 remapVertex = false;
         }
 

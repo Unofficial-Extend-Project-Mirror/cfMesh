@@ -214,25 +214,35 @@ void cartesian2DMeshGenerator::renumberMesh()
 
 void cartesian2DMeshGenerator::generateMesh()
 {
-    createCartesianMesh();
+    try
+    {
+        createCartesianMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    mapEdgesAndCorners();
+        mapEdgesAndCorners();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoundaryLayers();
+        generateBoundaryLayers();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    refBoundaryLayers();
+        refBoundaryLayers();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void cartesian2DMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

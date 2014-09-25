@@ -223,7 +223,16 @@ void voronoiMeshGenerator::refBoundaryLayers()
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
+    bool enforceConstraints(false);
+    if( meshDict_.found("enforceGeometryConstraints") )
+    {
+        enforceConstraints =
+            readBool(meshDict_.lookup("enforceGeometryConstraints"));
+    }
+
     meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
 
     optimizer.optimizeSurface(*octreePtr_);
 
@@ -259,25 +268,35 @@ void voronoiMeshGenerator::renumberMesh()
 
 void voronoiMeshGenerator::generateMesh()
 {
-    createVoronoiMesh();
+    try
+    {
+        createVoronoiMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    mapEdgesAndCorners();
+        mapEdgesAndCorners();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoudaryLayers();
+        generateBoudaryLayers();
 
-    optimiseFinalMesh();
+        optimiseFinalMesh();
 
-    refBoundaryLayers();
+        refBoundaryLayers();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void voronoiMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

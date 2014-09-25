@@ -179,8 +179,17 @@ void hexMeshGenerator::refBoundaryLayers()
 
 void hexMeshGenerator::optimiseFinalMesh()
 {
-    //- final optimisation
+    //- check if strict enforcing of constraints is active
+    bool enforceConstraints(false);
+    if( meshDict_.found("enforceGeometryConstraints") )
+    {
+        enforceConstraints =
+            readBool(meshDict_.lookup("enforceGeometryConstraints"));
+    }
+
     meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
 
     optimizer.optimizeSurface(*octreePtr_);
 
@@ -216,21 +225,31 @@ void hexMeshGenerator::renumberMesh()
 
 void hexMeshGenerator::generateMesh()
 {
-    generateDualMesh();
+    try
+    {
+        generateDualMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoundaryLayers();
+        generateBoundaryLayers();
 
-    optimiseFinalMesh();
+        optimiseFinalMesh();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void hexMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
