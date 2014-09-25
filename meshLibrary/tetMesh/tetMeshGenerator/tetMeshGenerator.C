@@ -169,7 +169,16 @@ void tetMeshGenerator::generateBoudaryLayers()
 void tetMeshGenerator::optimiseFinalMesh()
 {
     //- final optimisation
+    bool enforceConstraints(false);
+    if( meshDict_.found("enforceGeometryConstraints") )
+    {
+        enforceConstraints =
+            readBool(meshDict_.lookup("enforceGeometryConstraints"));
+    }
+
     meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
 
     optimizer.optimizeSurface(*octreePtr_);
 
@@ -223,25 +232,35 @@ void tetMeshGenerator::renumberMesh()
 
 void tetMeshGenerator::generateMesh()
 {
-    createTetMesh();
+    try
+    {
+        createTetMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    mapEdgesAndCorners();
+        mapEdgesAndCorners();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoudaryLayers();
+        generateBoudaryLayers();
 
-    optimiseFinalMesh();
+        optimiseFinalMesh();
 
-    refBoundaryLayers();
+        refBoundaryLayers();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void tetMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

@@ -79,6 +79,12 @@ class meshSurfaceOptimizer
         //- mesh of surface triangles needed for some smoothers
         mutable partTriMesh* triMeshPtr_;
 
+        //- enforce constraints
+        bool enforceConstraints_;
+
+        //- name of the subset contaning tangled points
+        word badPointsSubsetName_;
+
     // Private member functions
         //- classify surface vertices as PARTITION, EDGE, CORNER
         void classifySurfaceVertices();
@@ -253,6 +259,12 @@ public:
         ~meshSurfaceOptimizer();
 
     // Member Functions
+        //- Flag stopping the meshing process if it is not possible
+        //- to untangle the surface without sacrificing geometry constraints
+        //- Points which must be moved away from the required position are
+        //- stored into a point subset
+        void enforceConstraints(const word subsetName="badPoints");
+
         //- runs a surface smoother on the selected boundary points
         bool untangleSurface
         (
