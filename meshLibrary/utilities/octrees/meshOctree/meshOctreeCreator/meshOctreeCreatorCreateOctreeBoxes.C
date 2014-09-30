@@ -179,7 +179,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
             const wordList patchNames = dict.toc();
 
-            refPatches.setSize(patchNames.size());
+            const wordList allPatches = surface.patchNames();
+
+            refPatches.setSize(allPatches.size());
+
             label counter(0);
 
             forAll(patchNames, patchI)
@@ -190,8 +193,13 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 const dictionary& patchDict = dict.subDict(patchNames[patchI]);
                 const scalar cs = readScalar(patchDict.lookup("cellSize"));
 
-                refPatches[counter] = patchRefinement(patchNames[patchI], cs);
-                ++counter;
+                labelList matchedIDs = surface.findPatches(patchNames[patchI]);
+                forAll(matchedIDs, matchI)
+                {
+                    refPatches[counter] =
+                        patchRefinement(allPatches[matchedIDs[matchI]], cs);
+                    ++counter;
+                }
             }
 
             refPatches.setSize(counter);
@@ -386,10 +394,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const direction level = globalRefLevel_ + nLevel;
 
-                if( patchToIndex.find(pName) != patchToIndex.end() )
+                labelList matchedPatches = surface.findPatches(pName);
+
+                forAll(matchedPatches, matchI)
                 {
                     //- patch-based refinement
-                    const label patchI = patchToIndex[pName];
+                    const label patchI = matchedPatches[matchI];
 
                     forAll(surface, triI)
                     {
@@ -419,6 +429,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                         const label triI = facetsInSubset[i];
                         surfRefLevel_[triI] =
                             Foam::max(surfRefLevel_[triI], level);
+
                         surfRefThickness_[triI] =
                             Foam::max
                             (
@@ -475,8 +486,7 @@ void meshOctreeCreator::createOctreeBoxes()
 
     //- make sure that INSIDE and UNKNOWN neighbours of DATA boxes
     //- have the same or higher refinement level
-    //if( !refineBoxesRefinementDistance() )
-        refineBoxesNearDataBoxes(1);
+    refineBoxesNearDataBoxes(1);
 
     //- distribute octree such that each processor has the same number
     //- of leaf boxes which will be used as mesh cells

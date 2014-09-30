@@ -27,10 +27,11 @@ Description
 
 #include "triSurfacePatchManipulator.H"
 #include "helperFunctions.H"
-#include "triSurfaceDetectPlanarRegions.H"
 #include "demandDrivenData.H"
 
+# ifdef USE_OMP
 #include <omp.h>
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

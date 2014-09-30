@@ -109,7 +109,6 @@ void cartesianMeshGenerator::surfacePreparation()
         rCells.removeCells();
     }
 
-
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed

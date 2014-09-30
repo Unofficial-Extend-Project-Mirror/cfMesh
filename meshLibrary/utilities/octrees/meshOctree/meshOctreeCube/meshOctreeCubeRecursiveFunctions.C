@@ -73,8 +73,10 @@ void meshOctreeCube::leavesInBox
                 else if( Pstream::parRun() )
                 {
                     meshOctreeCubeCoordinates cc = refineForPosition(scI);
+
                     boundBox bb;
                     cc.cubeBox(rootBox, bb.min(), bb.max());
+
                     if( bb.overlaps(searchingBox) )
                         leaves.append(this);
                 }

@@ -164,6 +164,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
             const face& f1 = bFaces[eFaces(eI, 0)];
             const face& f2 = bFaces[eFaces(eI, 1)];
+
             if
             (
                 !help::isSharedEdgeConvex(points, f1, f2) ||
@@ -216,6 +217,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 continue;
 
             const edge& e = edges[beI];
+
             if
             (
                 !is2DMesh_ &&
@@ -263,6 +265,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         {
             const label beI =
                 globalToLocal[receivedData[counter++].pointLabel()];
+
             DynList<label> f(receivedData[counter++].pointLabel());
             forAll(f, pI)
             {
@@ -294,6 +297,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
             }
 
             const face& bf = bFaces[eFaces(beI, 0)];
+
             const label patch0 = boundaryFacePatches[eFaces(beI, 0)];
             const label patch1 = otherProcPatches[beI];
 
@@ -463,7 +467,8 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         if( usedPatch[patchI] || (boundaries[patchI].patchSize() == 0) )
             continue;
 
-        Info << "Adding layer subset " << layerI << " for patch " << patchI << endl;
+        Info << "Adding layer subset " << layerI
+             << " for patch " << patchI << endl;
         usedPatch[patchI] = true;
         subsetId = mesh_.addFaceSubset("layer_"+help::scalarToText(layerI));
         ++layerI;

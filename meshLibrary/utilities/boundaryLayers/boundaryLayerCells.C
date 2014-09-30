@@ -641,6 +641,10 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     //- delete meshSurfaceEngine
     this->clearOut();
 
+    # ifdef DEBUGLayer
+    mesh_.addressingData().checkMesh(true);
+    # endif
+
     Info << "Finished creating layer cells" << endl;
 }
 

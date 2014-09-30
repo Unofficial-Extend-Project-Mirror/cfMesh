@@ -312,8 +312,6 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         //- delete the old surface and assign the new one
         deleteDemandDrivenData(surfacePtr_);
         surfacePtr_ = surfaceWithPatches;
-
-        surfacePtr_->writeSurface("surfWithPatches.fms");
     }
 
     octreePtr_ = new meshOctree(*surfacePtr_, true);

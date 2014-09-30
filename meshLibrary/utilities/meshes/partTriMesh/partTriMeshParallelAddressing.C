@@ -278,7 +278,7 @@ void partTriMesh::createBufferLayers()
             std::make_pair(neiProcs[procI], LongList<parTriFace>())
         );
 
-    //- lop over triangles and add the ones having vertices at parallel
+    //- loop over triangles and add the ones having vertices at parallel
     //- boundaries for sending
     forAll(surf_, triI)
     {
@@ -440,8 +440,6 @@ void partTriMesh::createBufferLayers()
 
 void partTriMesh::updateBufferLayers()
 {
-    returnReduce(1, sumOp<label>());
-
     const pointField& points = surf_.points();
     const labelLongList& bufferLayerPoints = this->bufferLayerPoints();
     const VRWGraph& pProcs = this->pointAtProcs();
@@ -489,8 +487,6 @@ void partTriMesh::updateBufferLayers()
             lp.coordinates()
         );
     }
-
-    returnReduce(1, sumOp<label>());
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
