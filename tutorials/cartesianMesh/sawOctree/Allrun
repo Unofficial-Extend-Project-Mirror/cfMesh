@@ -5,9 +5,13 @@
 runApplication preparePar
 runParallel cartesianMesh 4
 runParallel checkMesh 4
+<<<<<<< HEAD
 if [ "$WM_PROJECT" = "OpenFOAM" ]
 then
 runApplication reconstructParMesh -constant -fullMatch
 else
 runApplication reconstructParMesh -zeroTime
 fi
+=======
+runApplication reconstructParMesh -zeroTime
+>>>>>>> e0f8dbd... Initial commit

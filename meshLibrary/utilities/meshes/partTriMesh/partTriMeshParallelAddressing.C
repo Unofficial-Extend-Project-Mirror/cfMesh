@@ -440,8 +440,6 @@ void partTriMesh::createBufferLayers()
 
 void partTriMesh::updateBufferLayers()
 {
-    returnReduce(1, sumOp<label>());
-
     const pointField& points = surf_.points();
     const labelLongList& bufferLayerPoints = this->bufferLayerPoints();
     const VRWGraph& pProcs = this->pointAtProcs();
@@ -489,8 +487,6 @@ void partTriMesh::updateBufferLayers()
             lp.coordinates()
         );
     }
-
-    returnReduce(1, sumOp<label>());
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -47,7 +47,6 @@ label boundaryLayers::findNewNodeLabel
 
     if( it != otherVrts_.end() )
     {
-
         const std::map<std::pair<label, label>, label>& m = it->second;
 
         std::map<std::pair<label, label>, label>::const_iterator mit;

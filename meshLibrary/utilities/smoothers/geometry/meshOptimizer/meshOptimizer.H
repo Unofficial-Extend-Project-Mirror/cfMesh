@@ -101,7 +101,6 @@ class meshOptimizer
                 //- new position is the average of the neighbouring vertices
                 void laplacian(const labelLongList&, const label);
                 void laplacianSurface(const labelLongList&, const label);
-
                 void laplacianParallel
                 (
                     const labelLongList& procPoints,

@@ -538,8 +538,6 @@ bool meshSurfaceOptimizer::untangleSurface
 
 bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
 {
-    returnReduce(1, sumOp<label>());
-
     labelLongList selectedPts(surfaceEngine_.boundaryPoints().size());
     forAll(selectedPts, i)
         selectedPts[i] = i;
@@ -739,7 +737,6 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     {
         Info << "." << flush;
 
-        //smoothLaplacianFC(movedPoints, procBndPoints, false);
         smoothSurfaceOptimizer(movedPoints);
 
         //- move the points which are not at minimum z coordinate

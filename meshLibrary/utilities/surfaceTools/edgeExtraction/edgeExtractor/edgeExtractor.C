@@ -1806,7 +1806,6 @@ bool edgeExtractor::checkFacePatchesTopology()
             facePatch_.transfer(newBoundaryPatches);
         }
 
-
     } while( nCorrected != 0 && (nIter++ < 3) );
 
     return changed;

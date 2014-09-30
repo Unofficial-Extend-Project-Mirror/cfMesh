@@ -130,6 +130,7 @@ public:
             const direction nLayers = 1
         ) const;
 
+<<<<<<< HEAD
         //- mark additional layers around the leaves selected for refinement
         //- given on a box-by-box basis
         //- returns the number of boxes selected for refinement
@@ -140,6 +141,8 @@ public:
             List<direction>& targetRefLevel
         ) const;
 
+=======
+>>>>>>> e0f8dbd... Initial commit
         //- refine leaves marked for refinement
         //- hexRefinement is activated when it is required to refine all
         //- sons of the same father, if a single son gets marked for refinement

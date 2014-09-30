@@ -475,8 +475,7 @@ void meshOctreeCreator::createOctreeBoxes()
 
     //- make sure that INSIDE and UNKNOWN neighbours of DATA boxes
     //- have the same or higher refinement level
-    //if( !refineBoxesRefinementDistance() )
-        refineBoxesNearDataBoxes(1);
+    refineBoxesNearDataBoxes(1);
 
     //- distribute octree such that each processor has the same number
     //- of leaf boxes which will be used as mesh cells
