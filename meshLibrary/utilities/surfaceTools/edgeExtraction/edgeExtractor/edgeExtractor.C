@@ -1776,7 +1776,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             }
         }
 
-        //- eavluate the new situation and ensure that no oscillation occur
+        //- evaluate the new situation and ensure that no oscillation occur
         reduce(nCorrected, sumOp<label>());
         if( nCorrected )
         {
@@ -1806,7 +1806,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             facePatch_.transfer(newBoundaryPatches);
         }
 
-    } while( nCorrected != 0 && (nIter++ < 30) );
+    } while( nCorrected != 0 && (nIter++ < 3) );
 
     return changed;
 }
@@ -2423,11 +2423,6 @@ void edgeExtractor::extractEdges()
     {
         Info << "No geometrical adjustment was needed" << endl;
     }
-
-//    updateMeshPatches();
-//    mesh_.write();
-//    returnReduce(1, sumOp<label>());
-//    ::exit(0);
 
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();

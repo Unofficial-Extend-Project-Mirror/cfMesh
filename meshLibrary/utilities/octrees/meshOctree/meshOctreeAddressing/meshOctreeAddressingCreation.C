@@ -904,7 +904,10 @@ void meshOctreeAddressing::createOctreeFaces() const
 
     forAll(sum, lfI)
     {
-        if( Pstream::parRun() && octree_.returnLeaf(lfI).procNo() != Pstream::myProcNo() )
+        if(
+            Pstream::parRun() &&
+            octree_.returnLeaf(lfI).procNo() != Pstream::myProcNo()
+        )
             continue;
         if( (boxType[lfI] & MESHCELL) && (mag(sum[lfI]) > SMALL) )
             Info << "Leaf " << lfI << " is not closed " << sum[lfI] << endl;
