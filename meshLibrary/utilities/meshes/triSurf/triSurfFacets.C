@@ -87,9 +87,9 @@ wordList triSurfFacets::patchNames() const
 
 labelList triSurfFacets::findPatches(const word& patchName) const
 {
-    wordList allPatches = patchNames();
+    const wordList allPatches = patchNames();
 
-    labelList patchIDs = findStrings(patchName, allPatches);
+    const labelList patchIDs = findStrings(patchName, allPatches);
 
     if(patchIDs.empty())
     {

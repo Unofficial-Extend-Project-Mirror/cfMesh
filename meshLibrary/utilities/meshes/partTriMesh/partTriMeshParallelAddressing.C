@@ -278,7 +278,7 @@ void partTriMesh::createBufferLayers()
             std::make_pair(neiProcs[procI], LongList<parTriFace>())
         );
 
-    //- lop over triangles and add the ones having vertices at parallel
+    //- loop over triangles and add the ones having vertices at parallel
     //- boundaries for sending
     forAll(surf_, triI)
     {

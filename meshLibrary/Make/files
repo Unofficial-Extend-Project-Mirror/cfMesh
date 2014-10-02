@@ -25,6 +25,7 @@ findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
 symmetryPlaneOptimisation = $(meshOptimizer)/symmetryPlaneOptimisation
+
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
 knuppMetric = $(tetMeshOptimisation)/advancedSmoothers/knuppMetric
 meshUntangler = $(tetMeshOptimisation)/advancedSmoothers/meshUntangler

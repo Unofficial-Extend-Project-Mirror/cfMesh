@@ -275,7 +275,6 @@ inline void boundaryLayers::createNewCellFromNode
     const label p12 = m.find(pr)->second;
 
     //- create the cell and append it
-
     //- F0
     cellFaces[0][0] = pointI;
     cellFaces[0][1] = p02;

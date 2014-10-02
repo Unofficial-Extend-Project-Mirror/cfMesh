@@ -178,9 +178,11 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
             const wordList patchNames = dict.toc();
+
             const wordList allPatches = surface.patchNames();
 
             refPatches.setSize(allPatches.size());
+
             label counter(0);
 
             forAll(patchNames, patchI)
@@ -194,7 +196,8 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 labelList matchedIDs = surface.findPatches(patchNames[patchI]);
                 forAll(matchedIDs, matchI)
                 {
-                    refPatches[counter] = patchRefinement(allPatches[matchedIDs[matchI]], cs);
+                    refPatches[counter] =
+                        patchRefinement(allPatches[matchedIDs[matchI]], cs);
                     ++counter;
                 }
             }
@@ -386,7 +389,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const direction level = globalRefLevel_ + nLevel;
 
-                labelList matchedPatches = surface.findPatches(pName);
+                const labelList matchedPatches = surface.findPatches(pName);
 
                 forAll(matchedPatches, matchI)
                 {
@@ -421,6 +424,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                         const label triI = facetsInSubset[i];
                         surfRefLevel_[triI] =
                             Foam::max(surfRefLevel_[triI], level);
+
                         surfRefThickness_[triI] =
                             Foam::max
                             (

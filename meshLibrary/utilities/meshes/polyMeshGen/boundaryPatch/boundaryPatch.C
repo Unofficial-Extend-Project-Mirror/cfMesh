@@ -56,8 +56,7 @@ boundaryPatch::boundaryPatch
 boundaryPatch::boundaryPatch(const word& name, const dictionary& dict)
 :
     boundaryPatchBase(name, dict)
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -80,7 +79,7 @@ void boundaryPatch::write(Ostream& os) const
 
 void boundaryPatch::writeDict(Ostream& os) const
 {
-
+    this->operator<<(os);
 }
 
 Ostream& boundaryPatch::operator<<(Ostream& os) const
