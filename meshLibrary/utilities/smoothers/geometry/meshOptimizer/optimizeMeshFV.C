@@ -25,6 +25,8 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+#include <stdexcept>
+
 #include "demandDrivenData.H"
 #include "meshOptimizer.H"
 #include "polyMeshGenAddressing.H"
