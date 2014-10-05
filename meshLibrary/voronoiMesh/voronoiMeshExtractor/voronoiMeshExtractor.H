@@ -54,37 +54,37 @@ class voronoiMeshExtractor
     // Private data
         //- create tets
         tetCreatorOctree tetCreator_;
-    
+
         //- reference to the mesh
         polyMeshGen& mesh_;
-    
+
         //- edges connected to a vertex in the tet mesh
         mutable VRWGraph* pointEdgesPtr_;
-    
+
         //- edges of the tetrahedrization
         mutable LongList<edge>* edgesPtr_;
-    
+
         //- tets around each edge
         mutable VRWGraph* edgeTetsPtr_;
-    
+
         //- is edge at the boundary
         mutable boolList* boundaryEdgePtr_;
-        
+
     // Private member functions
         //- create and return addressing
         void createAddressing() const;
-        
+
         const VRWGraph& pointEdges() const;
         const LongList<edge>& edges() const;
         const VRWGraph& edgeTets() const;
         const boolList& boundaryEdge() const;
-        
+
         //- create points of the voronoi mesh
         void createPoints();
 
         //- create mesh data
         void createPolyMesh();
-        
+
         //- delete all pointer data
         void clearOut();
 
@@ -94,6 +94,13 @@ class voronoiMeshExtractor
 
         //- Disallow default bitwise assignment
         void operator=(const voronoiMeshExtractor&);
+
+    // Private static data
+        //- positive orientation
+        static label sameOrientation_[6];
+
+        //- opposite orientation
+        static label oppositeOrientation_[6];
 
 public:
 

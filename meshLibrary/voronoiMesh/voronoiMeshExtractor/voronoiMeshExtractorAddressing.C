@@ -29,156 +29,164 @@ Description
 #include "tessellationElement.H"
 #include "demandDrivenData.H"
 
-#define DEBUGVoronoi
+# ifdef USE_OMP
+#include <omp.h>
+# endif
+
+//#define DEBUGVoronoi
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::createAddressing() const
 {
-    if( pointEdgesPtr_ )
-        return;    
+    if( pointEdgesPtr_ || edgeTetsPtr_ || boundaryEdgePtr_ || edgesPtr_ )
+        return;
+
     pointEdgesPtr_ = new VRWGraph(tetCreator_.tetPoints().size());
     VRWGraph& pointEdges = *pointEdgesPtr_;
-    
-    if( edgeTetsPtr_ )
-        return;
+
     edgeTetsPtr_ = new VRWGraph();
     VRWGraph& edgeTets = *edgeTetsPtr_;
-    
-    if( boundaryEdgePtr_ )
-        return;
+
     boundaryEdgePtr_ = new boolList();
     boolList& boundaryEdges = *boundaryEdgePtr_;
-    
-    if( edgesPtr_ )
-        return;
+
     edgesPtr_ = new LongList<edge>();
     LongList<edge>& edges = *edgesPtr_;
-    
-    //- create edges, pointEdges and edgeTets
+
+    //- create edges and edgeTets
     const LongList<partTet>& tets = tetCreator_.tets();
+
+    VRWGraph pointTets;
+    pointTets.reverseAddressing(tets);
+
     forAll(tets, tetI)
     {
-        const edgeList tetEdges = tets[tetI].edges();
-        
+        const FixedList<edge, 6> tetEdges = tets[tetI].edges();
+
         forAll(tetEdges, eI)
         {
             const edge& e = tetEdges[eI];
             const label start = e.start();
-            
+
+            const row endTets = pointTets[e.end()];
+
             bool store(true);
-            
-            forAllRow(pointEdges, start, peI)
+
+            DynList<label> eTets;
+            forAllRow(pointTets, start, ptI)
             {
-                const label edgeI = pointEdges(start, peI);
-                
-                if( edges[edgeI] == e )
+                const label tetJ = pointTets(start, ptI);
+
+                if( !endTets.contains(tetJ) )
+                    continue;
+
+                if( tetJ < tetI )
                 {
                     store = false;
-                    
-                    edgeTets.append(edgeI, tetI);
+                    break;
                 }
+
+                eTets.append(tetJ);
             }
-            
+
             if( store )
             {
-                pointEdges.append(start, edges.size());
-                pointEdges.append(e.end(), edges.size());
-            
-                FixedList<label, 1> helper;
-                helper[0] = tetI;
-                edgeTets.appendList(helper);
-                
+                edgeTets.appendList(eTets);
+
                 edges.append(e);
             }
         }
     }
-    
-    pointEdges.optimizeMemoryUsage();
-    edgeTets.optimizeMemoryUsage();
-    
+
+    # ifdef DEBUGVoronoi
+    Info << "Edge tets " << edgeTets << endl;
+    # endif
+
+    //- calculate point-edges addressing
+    pointEdges.reverseAddressing(edges);
+
     //- sort edge-tets in circular order
     boundaryEdges.setSize(edgeTets.size());
     boundaryEdges = false;
-    
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
     forAll(edgeTets, edgeI)
     {
-        labelList eTets(edgeTets.sizeOfRow(edgeI));
-        forAll(eTets, etI)
-            eTets[etI] = edgeTets(edgeI, etI);
-        
-        labelList nFound(eTets.size(), 0);
-        List<FixedList<label, 2> > elNeighbours(eTets.size());
-        forAll(elNeighbours, tetI)
-            elNeighbours[tetI] = -1;
-        
+        const edge& e = edges[edgeI];
+        row eTets = edgeTets[edgeI];
+
+        # ifdef DEBUGVoronoi
+        Info << "Edge " << edgeI << " has points " << e << endl;
+        # endif
+
         forAll(eTets, tetI)
         {
-            if( nFound[tetI] == 2 )
-                continue;
-            
             const partTet& pt = tets[eTets[tetI]];
-            
-            for(label i=tetI+1;i<eTets.size();++i)
+
+            # ifdef DEBUGVoronoi
+            Info << "Checking tet " << eTets[tetI] << " points " << pt << endl;
+            # endif
+
+            //- find the face shared with the neighbour
+            const FixedList<edge, 6> tetEdges = pt.edges();
+
+            label searchPoint(-1);
+            forAll(tetEdges, eI)
             {
-                const partTet& ptNei = tets[eTets[i]];
-                
-                label nShared(0);
-                for(label j=0;j<4;++j)
-                    for(label k=0;k<4;++k)
-                        if( pt[j] == ptNei[k] )
-                        {
-                            ++nShared;
-                            break;
-                        }
-                
-                if( nShared == 3 )
+                if( tetEdges[eI] == e )
                 {
-                    elNeighbours[tetI][nFound[tetI]++] = i;
-                    elNeighbours[i][nFound[i]++] = tetI;
+                    if( tetEdges[eI].start() == e.start() )
+                    {
+                        searchPoint = pt[sameOrientation_[eI]];
+                    }
+                    else
+                    {
+                        searchPoint = pt[oppositeOrientation_[eI]];
+                    }
+
+                    break;
                 }
             }
-        }
-        
-        bool sort(true);
-        forAll(nFound, tetI)
-            if( nFound[tetI] != 2 )
+
+            if( searchPoint < 0 )
+                FatalErrorIn
+                (
+                    "void voronoiMeshExtractor::createAddressing() const"
+                ) << " invalid search point " << abort(FatalError);
+
+            bool found(false);
+            forAll(eTets, i)
             {
-                boundaryEdges[edgeI] = true;
-                sort = false;
+                if( tetI == i )
+                    continue;
+
+                const partTet& ptNei = tets[eTets[i]];
+
+                const label pos = ptNei.whichPosition(searchPoint);
+
+                if( pos < 0 )
+                    continue;
+
+                if( tetI < eTets.size()-1 )
+                {
+                    const label add  = eTets[tetI+1];
+                    eTets[tetI+1] = eTets[i];
+                    eTets[i] = add;
+                }
+                found = true;
                 break;
             }
 
-        if( sort )
-        {
-            labelList sortedTets(eTets.size());
-            
-            label currI(0), nextI(elNeighbours[0][0]), counter(0);
-            sortedTets[counter++] = eTets[currI];
-
-            do
-            {
-                sortedTets[counter++] = eTets[nextI];
-                
-                //- find the next element
-                if( elNeighbours[nextI][0] == currI )
-                {
-                    currI = nextI;
-                    nextI = elNeighbours[nextI][1];
-                }
-                else
-                {
-                    currI = nextI;
-                    nextI = elNeighbours[nextI][0];
-                }
-            } while( counter < eTets.size() );
-            
-            edgeTets.setRow(edgeI, sortedTets);
+            if( !found )
+                boundaryEdges[edgeI] = true;
         }
     }
 }
@@ -187,7 +195,7 @@ const VRWGraph& voronoiMeshExtractor::pointEdges() const
 {
     if( !pointEdgesPtr_ )
         createAddressing();
-    
+
     return *pointEdgesPtr_;
 }
 
@@ -195,7 +203,7 @@ const LongList<edge>& voronoiMeshExtractor::edges() const
 {
     if( !edgesPtr_ )
         createAddressing();
-    
+
     return *edgesPtr_;
 }
 
@@ -203,7 +211,7 @@ const VRWGraph& voronoiMeshExtractor::edgeTets() const
 {
     if( !edgeTetsPtr_ )
         createAddressing();
-    
+
     return *edgeTetsPtr_;
 }
 
@@ -211,7 +219,7 @@ const boolList& voronoiMeshExtractor::boundaryEdge() const
 {
     if( !boundaryEdgePtr_ )
         createAddressing();
-    
+
     return *boundaryEdgePtr_;
 }
 

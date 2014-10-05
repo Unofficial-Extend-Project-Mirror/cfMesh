@@ -26,10 +26,12 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "voronoiMeshExtractor.H"
-#include "polyMeshGenModifierAddCellByCell.H"
 #include "tessellationElement.H"
-#include "helperFunctions.H"
 #include "demandDrivenData.H"
+
+# ifdef USE_OMP
+#include <omp.h>
+# endif
 
 //#define DEBUGVoronoi
 
@@ -37,25 +39,28 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::createPoints()
 {
     const LongList<point>& tetPoints = tetCreator_.tetPoints();
     const LongList<partTet>& tets = tetCreator_.tets();
-    
+
     pointFieldPMG& points = mesh_.points();
     points.setSize(tets.size());
-    
+
     # ifdef DEBUGVoronoi
     Info << "Number of tets " << tets.size() << endl;
     # endif
-    
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
     forAll(tets, tetI)
     {
         points[tetI] = tets[tetI].centroid(tetPoints);
-        
+
         # ifdef DEBUGVoronoi
         Info << "Point " << tetI << " has coordinates "
             << points[tetI] << endl;
@@ -71,10 +76,15 @@ void voronoiMeshExtractor::createPolyMesh()
     const VRWGraph& edgeTets = this->edgeTets();
     const boolList& boundaryEdge = this->boundaryEdge();
     const LongList<edge>& edges = this->edges();
-    const LongList<partTet>& tets = tetCreator_.tets();
-    
-    polyMeshGenModifierAddCellByCell meshModifier(mesh_);
-    
+
+    polyMeshGenModifier meshModifier(mesh_);
+    faceListPMG& faces = meshModifier.facesAccess();
+    cellListPMG& cells = meshModifier.cellsAccess();
+
+    //- count the number of cells
+    label nCells(0);
+    labelList cellLabel(pointEdges.size(), -1);
+
     forAll(pointEdges, pointI)
     {
         bool create(true);
@@ -84,60 +94,114 @@ void voronoiMeshExtractor::createPolyMesh()
                 create = false;
                 break;
             }
-        
+
         if( !create || (pointEdges.sizeOfRow(pointI) == 0) )
             continue;
-        
-        faceList cellFaces(pointEdges.sizeOfRow(pointI));
-        
-        forAllRow(pointEdges, pointI, faceI)
-        {
-            const label edgeI = pointEdges(pointI, faceI);
-            
-            //- check if the face orientation needs to be changed
-            bool flip(false);
-            const partTet& tet = tets[edgeTets(edgeI, 0)];
-            const partTet& tet1 = tets[edgeTets(edgeI, 1)];
-            tessellationElement tEl(tet[0], tet[1], tet[2], tet[3]);
-            for(label i=0;i<4;++i)
-            {
-                const triFace tf = tEl.face(i);
-                label nShared(0);
-                for(label j=0;j<3;++j)
-                    if( tet1.whichPosition(tf[j]) != -1 )
-                        ++nShared;
-                
-                if( nShared == 3 )
-                {
-                    const edge& e = edges[edgeI];
-                    
-                    const edgeList tEdges = tf.edges();
-                    forAll(tEdges, teI)
-                        if( tEdges[teI] == e )
-                        {
-                            if( pointI == tEdges[teI].start() )
-                                flip = true;
-                            
-                            break;
-                        }
-                    
-                    break;
-                }
-            }
-            
-            face& f = cellFaces[faceI];
-            f.setSize(edgeTets.sizeOfRow(edgeI));
-            
-            //- fill the faces with the node labels
-            forAll(f, pI)
-                f[pI] = edgeTets(edgeI, pI);
-            
-            if( flip )
-                f = f.reverseFace();
-        }
-        
-        meshModifier.addCell(cellFaces);
+
+        cellLabel[pointI] = nCells;
+        ++nCells;
     }
+
+    # ifdef DEBUGVoronoi
+    Info << "Number of cells " << nCells << endl;
+    # endif
+
+    //- count the number of faces
+    label nFaces(0);
+    labelList faceLabel(edges.size(), -1);
+
+    forAll(boundaryEdge, edgeI)
+    {
+        if( boundaryEdge[edgeI] )
+            continue;
+
+        const edge& e = edges[edgeI];
+        if( cellLabel[e[0]] < 0 && cellLabel[e[1]] < 0 )
+            continue;
+
+        faceLabel[edgeI] = nFaces;
+        ++nFaces;
+    }
+
+    # ifdef DEBUGVoronoi
+    Info << "Number of mesh faces " << nFaces << endl;
+    # endif
+
+    //- create faces
+    Info << "Creating faces " << endl;
+    faces.setSize(nFaces);
+    labelList nFacesInCell(nCells, 0);
+
+    forAll(edges, edgeI)
+    {
+        if( faceLabel[edgeI] < 0 )
+            continue;
+
+        const label faceI = faceLabel[edgeI];
+
+        face& f = faces[faceI];
+        f.setSize(edgeTets.sizeOfRow(edgeI));
+
+        //- fill the faces with the node labels
+        forAllRow(edgeTets, edgeI, pI)
+            f[pI] = edgeTets(edgeI, pI);
+
+        const edge& e = edges[edgeI];
+        const label cOwn = cellLabel[e[0]];
+        const label cNei = cellLabel[e[1]];
+
+        if( cOwn < 0 || ((cOwn > cNei) && (cNei != -1)) )
+        {
+            # ifdef DEBUGVoronoi
+            Info << "Reversing face " << cOwn << " " << cNei << endl;
+            # endif
+
+            f = f.reverseFace();
+        }
+
+        if( cOwn >= 0 )
+            ++nFacesInCell[cOwn];
+        if( cNei >= 0 )
+            ++nFacesInCell[cNei];
+    }
+
+    //- create cells
+    # ifdef DEBUGVoronoi
+    Info << "Setting cell sizes" << endl;
+    # endif
+
+    cells.setSize(nCells);
+    forAll(nFacesInCell, cellI)
+    {
+        cells[cellI].setSize(nFacesInCell[cellI]);
+        nFacesInCell[cellI] = 0;
+    }
+
+    # ifdef DEBUGVoronoi
+    Info << "Filling cells" << endl;
+    # endif
+
+    forAll(edges, edgeI)
+    {
+        if( faceLabel[edgeI] < 0 )
+            continue;
+
+        const label faceI = faceLabel[edgeI];
+        const edge& e = edges[edgeI];
+        const label cOwn = cellLabel[e[0]];
+        const label cNei = cellLabel[e[1]];
+
+        if( cOwn >= 0 )
+            cells[cOwn][nFacesInCell[cOwn]++] = faceI;
+        if( cNei >= 0 )
+            cells[cNei][nFacesInCell[cNei]++] = faceI;
+    }
+
+    # ifdef DEBUGVoronoi
+    Info << "Finished generating cells" << endl;
+    # endif
+
+    mesh_.clearAddressingData();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

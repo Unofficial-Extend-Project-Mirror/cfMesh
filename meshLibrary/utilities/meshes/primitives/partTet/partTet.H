@@ -35,9 +35,9 @@ SourceFiles
 #ifndef partTet_H
 #define partTet_H
 
-#include "label.H"
 #include "pointField.H"
-#include "edgeList.H"
+#include "edge.H"
+#include "FixedList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,7 +54,7 @@ class Ostream;
 class partTet
 {
 protected:
-    
+
     // Protected data
         label data_[4];
 
@@ -89,9 +89,9 @@ public:
             inline label c() const;
 
             inline label d() const;
-            
+
             inline label size() const;
-            
+
         // Searches
             //- find position of the node in the partTet
             inline label whichPosition(const label) const;
@@ -115,25 +115,28 @@ public:
             //- Return volume
             template<class PointField>
             inline scalar mag(const PointField&) const;
-            
+
             //- Return circum-centre
             template<class PointField>
             inline point crcmCentre(const PointField&) const;
-            
+
             template<class PointField>
             inline scalar crcmRadius(const PointField&) const;
-            
+
             //- Return centroid of the tetrahedron
             template<class PointField>
             inline point centroid(const PointField&) const;
-            
+
             //- Return edges
-            edgeList edges() const;
-            
+            inline FixedList<edge, 6> edges() const;
+
+            //- Return edge
+            inline edge getEdge(const label) const;
+
     // Member operators
-    
+
             inline label operator[](const label) const;
-            
+
             inline void operator=(const partTet&);
 
     // IOstream operators
