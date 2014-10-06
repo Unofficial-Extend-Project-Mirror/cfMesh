@@ -67,8 +67,7 @@ polyMeshGenFaces::polyMeshGenFaces(const Time& runTime)
     nIntFaces_(0),
     ownerPtr_(NULL),
     neighbourPtr_(NULL)
-{
-}
+{}
 
 //- Construct from components without the boundary
 polyMeshGenFaces::polyMeshGenFaces
@@ -96,8 +95,7 @@ polyMeshGenFaces::polyMeshGenFaces
     nIntFaces_(0),
     ownerPtr_(NULL),
     neighbourPtr_(NULL)
-{
-}
+{}
 
 //- Construct from components with the boundary
 polyMeshGenFaces::polyMeshGenFaces
@@ -373,7 +371,7 @@ void polyMeshGenFaces::read()
     if( neighbourPtr_->size() != ownerPtr_->size() )
         neighbourPtr_->setSize(ownerPtr_->size(), -1);
 
-        //- read boundary information
+    //- read boundary information
     IOPtrList<boundaryPatchBase> patches
     (
         IOobject

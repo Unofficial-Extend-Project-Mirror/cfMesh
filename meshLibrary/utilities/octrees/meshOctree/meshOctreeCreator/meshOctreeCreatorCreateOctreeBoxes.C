@@ -394,7 +394,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 const direction level = globalRefLevel_ + nLevel;
 
-                labelList matchedPatches = surface.findPatches(pName);
+                const labelList matchedPatches = surface.findPatches(pName);
 
                 forAll(matchedPatches, matchI)
                 {

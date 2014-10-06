@@ -904,7 +904,8 @@ void meshOctreeAddressing::createOctreeFaces() const
 
     forAll(sum, lfI)
     {
-        if(
+        if
+        (
             Pstream::parRun() &&
             octree_.returnLeaf(lfI).procNo() != Pstream::myProcNo()
         )

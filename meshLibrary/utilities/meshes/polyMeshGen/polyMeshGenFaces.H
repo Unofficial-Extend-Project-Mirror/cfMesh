@@ -49,7 +49,7 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class polyMeshGenFaces
-    : public polyMeshGenPoints
+: public polyMeshGenPoints
 {
 protected:
 
