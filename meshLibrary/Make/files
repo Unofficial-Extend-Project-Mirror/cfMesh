@@ -24,6 +24,7 @@ findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
 
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
+
 symmetryPlaneOptimisation = $(meshOptimizer)/symmetryPlaneOptimisation
 
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
@@ -64,6 +65,7 @@ checkIrregularSurfaceConnections = $(topology)/checkIrregularSurfaceConnections
 checkNonMappableCellConnections = $(topology)/checkNonMappableCellConnections
 
 triSurfaceTools = utilities/triSurfaceTools
+
 triSurface2DCheck = $(triSurfaceTools)/triSurface2DCheck
 triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
 triSurfaceCleanupDuplicateTriangles = $(triSurfaceTools)/triSurfaceCleanupDuplicateTriangles
