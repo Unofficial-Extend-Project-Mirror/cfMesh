@@ -106,7 +106,7 @@ inline bool isSharedEdgeConvex
 
         forAll(triOwn, pJ)
         {
-            if( triNei.contains(triOwn[pJ]) )
+            if( !triNei.contains(triOwn[pJ]) )
             {
                 tetrahedron<point, point> tet
                 (
@@ -167,7 +167,7 @@ inline scalar angleBetweenFaces
 
         forAll(triOwn, pJ)
         {
-            if( triNei.contains(triOwn[pJ]) )
+            if( !triNei.contains(triOwn[pJ]) )
             {
                 tetrahedron<point, point> tet
                 (
