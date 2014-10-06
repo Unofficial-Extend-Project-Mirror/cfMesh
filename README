@@ -37,5 +37,7 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   + cd $FOAM_RUN/tutorials/asmoOctree
   + cartesianMesh
 
+  All cases have Allrun and Allclean scripts shoeing the commands which shall be executed.
+
 * Documentation
   http://www.c-fields.com
