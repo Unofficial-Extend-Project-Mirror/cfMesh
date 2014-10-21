@@ -2087,7 +2087,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
         );
 
         //- stop after a certain number of iterations
-        if( iter++ > 20 )
+        if( iter++ > 3 )
             break;
 
         //- check if there exist any inverted faces
