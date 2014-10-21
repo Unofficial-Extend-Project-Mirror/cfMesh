@@ -300,6 +300,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     const labelLongList& nodesToMap
 )
 {
+    Info << "Mapping " << nodesToMap.size() << " points" << endl;
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
     const labelHashSet& edgePoints = mPart.edgePoints();
@@ -334,6 +335,8 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
     LongList<parMapperHelper> parallelBndNodes;
 
+    Info << "Number of selected corners " << selectedCorners.size() << endl;
+    Info << "Number of selected edges " << selectedEdges.size() << endl;
     # ifdef USE_OMP
     const label size = nodesToMap.size();
     # pragma omp parallel for if( size > 1000 ) shared(parallelBndNodes) \
@@ -383,17 +386,23 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
         # endif
     }
 
+    Info << "Mapping parallel nodes to smallest distance " << parallelBndNodes.size() << endl;
+
     //- map vertices at inter-processor boundaries to the nearest location
     //- on the surface
     mapToSmallestDistance(parallelBndNodes);
 
     //- update face normals, point normals, etc.
+    Info << "Updating geometry" << endl;
     surfaceModifier.updateGeometry(nodesToMap);
 
     //- map edge nodes
+    surfaceEngine_.mesh().write();
+    Info << "Mapping edge nodes " << selectedEdges.size() << endl;
     mapEdgeNodes(selectedEdges);
 
     //- map corner vertices
+    Info << "Mapping corner nodes " << selectedCorners.size() << endl;
     mapCorners(selectedCorners);
 }
 
