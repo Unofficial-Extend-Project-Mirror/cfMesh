@@ -260,7 +260,6 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
     const VRWGraph& pPatches = mPart.pointPatches();
 
     //- find mapping distance for selected vertices
-    Info << "Finding mapping distance" << endl;
     scalarList mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
 
@@ -273,7 +272,6 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
     meshSurfaceEngineModifier sMod(surfaceEngine_);
 
     //- map point to the nearest vertex on the triSurface
-    Info << "Mapping edge points " << nodesToMap.size() << endl;
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50) shared(parallelBndNodes)
     # endif
@@ -362,13 +360,9 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         }
     }
 
-    Info << "Updating geometry after mapping" << endl;
     sMod.updateGeometry(nodesToMap);
 
-    Info << "Mapping to smallest distance" << endl;
     mapToSmallestDistance(parallelBndNodes);
-
-    Info << "Finished mapping edges" << endl;
 }
 
 void meshSurfaceMapper::mapCornersAndEdges()
