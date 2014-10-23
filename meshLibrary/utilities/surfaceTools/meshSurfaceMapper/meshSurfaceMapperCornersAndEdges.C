@@ -271,9 +271,9 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
 
     meshSurfaceEngineModifier sMod(surfaceEngine_);
 
-    //- map point to the nearest vertex on the triSurface
+    //- map point to the nearest vertex on the surface mesh
     # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50) shared(parallelBndNodes)
+    # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(nodesToMap, i)
     {
@@ -281,7 +281,7 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         const point& p = points[bPoints[bpI]];
 
         //- find patches at this edge point
-        DynList<label> patches = pPatches[bpI];
+        const DynList<label> patches = pPatches[bpI];
 
         const scalar maxDist = mappingDistance[i];
 
@@ -317,8 +317,8 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         distSqApprox = magSqr(mapPointApprox - p);
 
         //- find the nearest vertex on the triSurface feature edge
-        point mapPoint;
-        scalar distSq;
+        point mapPoint(mapPointApprox);
+        scalar distSq(distSqApprox);
         label nse;
         meshOctree_.findNearestEdgePoint(mapPoint, distSq, nse, p, patches);
 
@@ -347,16 +347,18 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
             # ifdef USE_OMP
             # pragma omp critical
             # endif
-            parallelBndNodes.append
-            (
-                parMapperHelper
+            {
+                parallelBndNodes.append
                 (
-                    mapPoint,
-                    distSq,
-                    bpI,
-                    -1
-                )
-            );
+                    parMapperHelper
+                    (
+                        mapPoint,
+                        distSq,
+                        bpI,
+                        -1
+                    )
+                );
+            }
         }
     }
 

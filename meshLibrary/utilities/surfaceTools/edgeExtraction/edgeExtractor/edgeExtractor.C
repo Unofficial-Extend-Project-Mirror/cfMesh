@@ -2202,7 +2202,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
 
         //- compare face patches before and after
         //- disallow modification which may trigger oscillating behaviour
-        labelHashSet changedFaces;
+        labelLongList changedFaces;
         forAll(newBoundaryPatches, bfI)
         {
             if( newBoundaryPatches[bfI] != facePatch_[bfI] )
@@ -2212,7 +2212,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
                 newBoundaryPatches[bfI] = patchI;
 
                 if( patchI != facePatch_[bfI] )
-                    changedFaces.insert(bfI);
+                    changedFaces.append(bfI);
             }
         }
 
