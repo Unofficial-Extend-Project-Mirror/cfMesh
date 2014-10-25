@@ -363,6 +363,8 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
             # ifdef DEBUGCurvatureEstimator
             Info << "Point " << pointI << " in patch " << regionI
+                << " normal " << normals[it.key()]
+                << " number of evalution points " << op.size()
                 << " has max curvature " << qfit.maxCurvature()
                 << " and min curvature " << qfit.minCurvature() << endl;
             # endif
