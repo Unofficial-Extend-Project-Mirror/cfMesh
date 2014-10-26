@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-    
+
     IOdictionary meshDict
     (
         IOobject
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-    
+
     IOdictionary decomposeParDict
     (
         IOobject
@@ -68,12 +68,12 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
-    
+
     const label nProcessors
     (
         readLabel(decomposeParDict.lookup("numberOfSubdomains"))
     );
-    
+
     for(label procI=0;procI<nProcessors;++procI)
     {
         fileName file("processor");
@@ -81,17 +81,17 @@ int main(int argc, char *argv[])
         ss << procI;
         file += ss.str();
         Info << "Creating " << file << endl;
-        
+
         //- create a directory for processor data
         mkDir(runTime.path()/file);
-        
+
         //- copy the contents of the const directory into processor*
         cp(runTime.path()/"constant", runTime.path()/file);
 
         //- generate 0 directories for
-	mkDir(runTime.path()/file/"0");
+        mkDir(runTime.path()/file/"0");
     }
-    
+
     Info << "End\n" << endl;
     return 0;
 }
