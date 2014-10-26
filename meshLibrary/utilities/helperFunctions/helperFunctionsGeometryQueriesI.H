@@ -878,7 +878,7 @@ inline point nearestPointOnTheEdgeExact
     if( d < VSMALL )
         return edgePoint0;
 
-    const scalar t = (e & k) / (d * d);
+    const scalar t = (e & k) / (d * d + VSMALL);
     if( t > 1.0 )
     {
         return edgePoint1;

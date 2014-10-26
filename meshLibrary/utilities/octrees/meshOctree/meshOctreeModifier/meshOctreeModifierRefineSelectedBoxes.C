@@ -199,7 +199,7 @@ label meshOctreeModifier::markAdditionalLayers
 
         LongList<meshOctreeCubeCoordinates> processorChecks;
         labelLongList processorNLayers;
-        LongList<direction> processorTargetLevels;
+        labelLongList processorTargetLevels;
 
         forAll(leaves, leafI)
         {
@@ -266,7 +266,7 @@ label meshOctreeModifier::markAdditionalLayers
         {
             std::map<label, LongList<meshOctreeCubeCoordinates> > eCoords;
             std::map<label, labelLongList > eNLayers;
-            std::map<label, LongList<direction> > eTargetLevels;
+            std::map<label, labelLongList > eTargetLevels;
 
             forAll(octree_.neiProcs(), neiI)
             {
@@ -282,7 +282,7 @@ label meshOctreeModifier::markAdditionalLayers
             labelLongList receivedNLayers;
             help::exchangeMap(eNLayers, receivedNLayers);
 
-            LongList<direction> receivedTargetLevels;
+            labelLongList receivedTargetLevels;
             help::exchangeMap(eTargetLevels, receivedTargetLevels);
 
             if( receivedCoords.size() != receivedNLayers.size() )
@@ -327,7 +327,7 @@ label meshOctreeModifier::markAdditionalLayers
                             Foam::max
                             (
                                 targetRefLevel[nei->cubeLabel()],
-                                receivedTargetLevels[ccI]
+                                direction(receivedTargetLevels[ccI])
                             );
 
                         changed = true;
