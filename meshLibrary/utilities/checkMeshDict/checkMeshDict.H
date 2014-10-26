@@ -54,6 +54,9 @@ class checkMeshDict
         IOdictionary& meshDict_;
 
     // Private member functions
+        //- check settings for cell size in meshDict
+        void checkBasicSettings() const;
+
         //- check patchCellSize entry
         void checkPatchCellSize() const;
 
@@ -71,6 +74,9 @@ class checkMeshDict
 
         //- check objectRefinements entry
         void checkObjectRefinements() const;
+
+        //- check surfaceRefinements entry
+        void checkSurfaceRefinements() const;
 
         //- check entry for boundary layers
         void checkBoundaryLayers() const;
