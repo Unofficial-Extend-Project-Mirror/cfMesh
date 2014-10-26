@@ -168,7 +168,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
             if
             (
                 !help::isSharedEdgeConvex(points, f1, f2) ||
-                (help::angleBetweenFaces(points, f1, f2) > 1.5 * M_PI)
+                (help::angleBetweenFaces(points, f1, f2) > 0.75 * M_PI)
             )
             {
                 ++edgeClassification[pp].second();
@@ -316,7 +316,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 (otherFaceProc[beI] > Pstream::myProcNo()) &&
                 (
                     !help::isSharedEdgeConvex(points, bf, f) ||
-                    (help::angleBetweenFaces(points, bf, f) > 1.5 * M_PI)
+                    (help::angleBetweenFaces(points, bf, f) > 0.75 * M_PI)
                 )
             )
             {
