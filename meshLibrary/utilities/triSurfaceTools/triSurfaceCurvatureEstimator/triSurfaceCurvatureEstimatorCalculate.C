@@ -273,17 +273,15 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
             {
                 //- calculate the curvature and store it in the map
                 vector e1 = edges[features[0]].vec(points);
-                const scalar d1 = mag(e1);
-                if( d1 > VSMALL )
-                    e1 /= d1;
+                const scalar d1 = mag(e1) + VSMALL;
+                e1 /= d1;
                 vector e2 = edges[features[1]].vec(points);
-                const scalar d2 = mag(e2);
-                if( d2 > VSMALL )
-                    e2 /= d2;
+                const scalar d2 = mag(e2) + VSMALL;
+                e2 /= d2;
 
                 scalar cs = e1 & e2;
                 cs = Foam::min(1.0, cs);
-                cs = Foam::max(1.0, cs);
+                cs = Foam::max(-1.0, cs);
 
                 const scalar curv = Foam::acos(cs) / (0.5 * (d1+d2+VSMALL));
                 edgePointCurvature_[pI] = Foam::mag(curv);
