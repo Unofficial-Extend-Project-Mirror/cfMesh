@@ -22,7 +22,7 @@ surfaceFile "5415Joined3.ftr";
 maxCellSize 100;
 
 boundaryCellSize    50;
-boundaryCellSizeRefinementThickness 50;
+//boundaryCellSizeRefinementThickness 50;
 
 surfaceMeshRefinement
 {
@@ -30,7 +30,7 @@ surfaceMeshRefinement
     {
         additionalRefinementLevels  3;
         surfaceFile "5415Joined1.stl";
-        refinementThickness 5;
+        refinementThickness 50;
     }
 }
 

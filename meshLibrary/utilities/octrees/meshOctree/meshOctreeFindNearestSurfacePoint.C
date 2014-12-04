@@ -73,7 +73,7 @@ void meshOctree::findNearestSurfacePoint
 
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -236,12 +236,17 @@ bool meshOctree::findNearestEdgePoint
     distSq = VGREAT;
     nearestEdge = -1;
 
+//    Info << "Finding nearest point for " << p << " size vec " << sizeVec << endl;
+
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
+
+//        Info << "Iteration " << iterationI << " nu found boxes "
+//             << neighbours.size() << endl;
 
         forAll(neighbours, neiI)
         {
@@ -252,6 +257,10 @@ bool meshOctree::findNearestEdgePoint
                 neighbours[neiI]->slotPtr()->containedEdges_;
             const constRow ce =
                 containedEdges[neighbours[neiI]->containedEdges()];
+
+//            Info << "Number of contained edges in box "
+//                 << neighbours[neiI]->cubeLabel()
+//                 << " are " << ce.size() << endl;
 
             forAll(ce, eI)
             {
@@ -293,7 +302,7 @@ bool meshOctree::findNearestEdgePoint
         if( !foundAnEdge )
             sizeVec *= 2.0;
 
-    } while( !foundAnEdge && (++iterationI < 5) );
+    } while( !foundAnEdge && (++iterationI < 3) );
 
     return foundAnEdge;
 }
@@ -419,7 +428,7 @@ bool meshOctree::findNearestCorner
 
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -507,7 +516,7 @@ bool meshOctree::findNearestCorner
         if( !found )
             sizeVec *= 2.0;
 
-    } while( !found && (iterationI++ < 5) );
+    } while( !found && (iterationI++ < 3) );
 
     return found;
 }
