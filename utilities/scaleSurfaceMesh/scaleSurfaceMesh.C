@@ -33,6 +33,7 @@ Description
 #include "triSurfModifier.H"
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
+#include "coordinateModifier.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -40,39 +41,55 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-    argList::noParallel();
-    argList::validArgs.clear();
-    argList::validArgs.append("input surface file");
-    argList::validArgs.append("output surface file");
+#   include "setRootCase.H"
+#   include "createTime.H"
 
-    argList::validArgs.append("scale x-direction");
-    argList::validArgs.append("scale y-direction");
-    argList::validArgs.append("scale z-direction");
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
 
-    argList args(argc, argv);
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
+    if( Pstream::parRun() )
+        surfaceFile = ".."/surfaceFile;
 
-    const fileName inFileName(args.args()[1]);
-    const fileName outFileName(args.args()[2]);
-    const scalar scaleX = help::textToScalar(args.args()[3]);
-    const scalar scaleY = help::textToScalar(args.args()[4]);
-    const scalar scaleZ = help::textToScalar(args.args()[5]);
+    triSurf surface(runTime.path()/surfaceFile);
 
-    if( inFileName.ext() == outFileName )
-        FatalError << "trying to convert a file to itself"
-            << exit(FatalError);
+//    argList::noParallel();
+//    argList::validArgs.clear();
+//    argList::validArgs.append("output surface file");
 
-    triSurf surface(inFileName);
+//    argList args(argc, argv);
 
-    pointField& points = triSurfModifier(surface).pointsAccess();
-    forAll(points, pointI)
+    //const fileName outFileName(args.args()[1]);
+
+    triSurfModifier sMod(surface);
+    pointField& pts = sMod.pointsAccess();
+
+    coordinateModifier cMod(meshDict.subDict("geometryModification"));
+
+    //- transform points
+    forAll(pts, i)
     {
-        point& p = points[pointI];
-        p.x() *= scaleX;
-        p.y() *= scaleY;
-        p.z() *= scaleZ;
+        pts[i] = cMod.modifiedPoint(pts[i]);
     }
 
-    surface.writeSurface(outFileName);
+    Info << "Writting transformed surface" << endl;
+    surface.writeSurface("transformedSurf.fms");
+
+    //- apply backward transformation
+    forAll(pts, i)
+        pts[i] = cMod.backwardModifiedPoint(pts[i]);
+
+    Info << "Writting backward transformed surface" << endl;
+    surface.writeSurface("backwardTransformedPoints.fms");
 
     Info << "End\n" << endl;
 

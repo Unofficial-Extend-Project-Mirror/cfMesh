@@ -4,6 +4,9 @@ meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
 boundaryLayers = utilities/boundaryLayers
 checkMeshDict = utilities/checkMeshDict
 
+anisotropicMeshing = utilities/anisotropicMeshing
+coordinateModification = $(anisotropicMeshing)/coordinateModification
+
 meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvertedVertices
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
 meshSurfaceCutter  =  utilities/surfaceTools/meshSurfaceCutter
@@ -135,6 +138,13 @@ $(polyMeshGen)/polyMeshGenFaces.C
 $(polyMeshGen)/polyMeshGenCells.C
 
 $(polyMeshGen2DEngine)/polyMeshGen2DEngine.C
+
+$(coordinateModification)/coordinateModification.C
+$(coordinateModification)/newCoordinateModification.C
+$(coordinateModification)/planeTranslation.C
+$(coordinateModification)/boxScaling.C
+
+$(coordinateModification)/coordinateModifier.C
 
 $(boundaryPatch)/boundaryPatchBase.C
 $(boundaryPatch)/boundaryPatch.C
