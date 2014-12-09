@@ -27,12 +27,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "IFstream.H"
-#include "fileName.H"
-#include "triSurf.H"
-#include "triSurfModifier.H"
-#include "helperFunctions.H"
-#include "demandDrivenData.H"
+#include "polyMeshGen.H"
 #include "coordinateModifier.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -56,40 +51,23 @@ int main(int argc, char *argv[])
         )
     );
 
-    fileName surfaceFile = meshDict.lookup("surfaceFile");
-    if( Pstream::parRun() )
-        surfaceFile = ".."/surfaceFile;
+    polyMeshGen pmg(runTime);
+    pmg.read();
 
-    triSurf surface(runTime.path()/surfaceFile);
+    pointFieldPMG& pts = pmg.points();
 
-//    argList::noParallel();
-//    argList::validArgs.clear();
-//    argList::validArgs.append("output surface file");
-
-//    argList args(argc, argv);
-
-    //const fileName outFileName(args.args()[1]);
-
-    triSurfModifier sMod(surface);
-    pointField& pts = sMod.pointsAccess();
+    if( !meshDict.found("geometryModification") )
+        FatalError << "Cannot backward scale mesh. geometryModification"
+                   << " does not exist in meshDict" << exit(FatalError);
 
     coordinateModifier cMod(meshDict.subDict("geometryModification"));
-
-    //- transform points
-    forAll(pts, i)
-    {
-        pts[i] = cMod.modifiedPoint(pts[i]);
-    }
-
-    Info << "Writting transformed surface" << endl;
-    surface.writeSurface("transformedSurf.fms");
 
     //- apply backward transformation
     forAll(pts, i)
         pts[i] = cMod.backwardModifiedPoint(pts[i]);
 
-    Info << "Writting backward transformed surface" << endl;
-    surface.writeSurface("backwardTransformedPoints.fms");
+    Info << "Writting mesh with backward transformed points" << endl;
+    pmg.write();
 
     Info << "End\n" << endl;
 
