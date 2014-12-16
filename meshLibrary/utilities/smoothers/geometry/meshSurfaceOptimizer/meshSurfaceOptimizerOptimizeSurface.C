@@ -558,7 +558,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.pointNormals();
     surfaceEngine_.boundaryPointEdges();
 
-    labelLongList procBndPoints, edgePoints;
+    labelLongList procBndPoints, edgePoints, partitionPoints;
     forAll(bPoints, bpI)
     {
         if( vertexType_[bpI] & EDGE )
@@ -567,6 +567,10 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 
             if( vertexType_[bpI] & PROCBND )
                 procBndPoints.append(bpI);
+        }
+        else if( vertexType_[bpI] & PARTITION )
+        {
+            partitionPoints.append(bpI);
         }
     }
 
@@ -594,15 +598,18 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     Info << "Optimizing surface vertices. Iteration:";
     for(label i=0;i<nIterations;++i)
     {
-        procBndPoints.clear();
+        smoothSurfaceOptimizer(partitionPoints);
+
+        Info << "." << flush;
+/*        procBndPoints.clear();
 
         pointField newPositions(bPoints.size());
 
-        Info << "." << flush;
+
 
         meshSurfaceEngineModifier bMod(surfaceEngine_);
         # ifdef USE_OMP
-        # pragma omp parallel if( vertexType_.size() > 100 )
+        # pragma omp parallel //if( vertexType_.size() > 100 )
         # endif
         {
             # ifdef USE_OMP
@@ -624,7 +631,8 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
                         continue;
                     }
 
-                    newPositions[bpI] = newPositionLaplacianFC(bpI, true);
+                    //newPositions[bpI] = newPositionLaplacianFC(bpI, true);
+                    newPositions[bpI] = newPositionSurfaceOptimizer(bpI, 1e-5);
                 }
             }
         }
@@ -645,9 +653,19 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 
         //- update fields calculated from points
         bMod.updateGeometry();
+
+        Info << "Updating surface" << endl;
+        triMeshPtr_->updateVertices();
+        Info << "Saving data" << endl;
+        //triMeshPtr_->getTriSurf().writeSurface("surfIteration_"+help::scalarToText(i)+".stl");
+        //Info << "Finished saving data" << endl;
+        */
     }
 
     Info << endl;
+
+    //surfaceEngine_.mesh().write();
+    //::exit(0);
 
     untangleSurface(0);
 }
