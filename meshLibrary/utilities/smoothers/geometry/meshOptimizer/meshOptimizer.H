@@ -215,11 +215,28 @@ public:
         void optimizeSurface(const meshOctree&);
 
         //- performs mesh untangling based on detected negative normals
-        void untangleMeshFV();
+        //- a global iteration consists of maxNumIterations iterations when
+        //- only internal points are moved and maxNumSurfaceIterations when
+        //- surface points are moved
+        void untangleMeshFV
+        (
+            const label maxNumGlobalIterations = 10,
+            const label maxNumIterations = 50,
+            const label maxNumSurfaceIterations = 2
+        );
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
-        void optimizeLowQualityFaces();
+        void optimizeLowQualityFaces(const label maxNumIterations = 10);
+
+        //- perform optimization of cells near the boundary
+        //- the use shall specify the number of iterations and the number
+        //- of cell layers which shall be taken into account
+        void optimizeMeshNearBoundaries
+        (
+            const label maxNumIterations = 10,
+            const label numLayersOfCells = 2
+        );
 
         //- final optimisation
         void optimizeMeshFV();
