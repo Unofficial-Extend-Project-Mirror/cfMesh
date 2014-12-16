@@ -198,6 +198,15 @@ namespace help
         const point&
     );
 
+    //- find the minimiser point from a point and the given planes
+    //- returns true if the minimizer exists
+    inline bool findMinimizerPoint
+    (
+        const DynList<point>& origins,
+        const DynList<vector>& normals,
+        point& pMin
+    );
+
     //- check if the point is inside or outside the face
     inline bool pointInsideFace
     (
