@@ -601,71 +601,9 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         smoothSurfaceOptimizer(partitionPoints);
 
         Info << "." << flush;
-/*        procBndPoints.clear();
-
-        pointField newPositions(bPoints.size());
-
-
-
-        meshSurfaceEngineModifier bMod(surfaceEngine_);
-        # ifdef USE_OMP
-        # pragma omp parallel //if( vertexType_.size() > 100 )
-        # endif
-        {
-            # ifdef USE_OMP
-            # pragma omp for schedule(dynamic, 10)
-            # endif
-            forAll(bPoints, bpI)
-            {
-                if( vertexType_[bpI] & PARTITION )
-                {
-                    if( vertexType_[bpI] & PROCBND )
-                    {
-                        # ifdef USE_OMP
-                        # pragma omp critical
-                        # endif
-                        {
-                            procBndPoints.append(bpI);
-                        }
-
-                        continue;
-                    }
-
-                    //newPositions[bpI] = newPositionLaplacianFC(bpI, true);
-                    newPositions[bpI] = newPositionSurfaceOptimizer(bpI, 1e-5);
-                }
-            }
-        }
-
-        if( Pstream::parRun() )
-        {
-            nodeDisplacementLaplacianFCParallel(procBndPoints, true);
-        }
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(newPositions, bpI)
-        {
-            if( vertexType_[bpI] == PARTITION )
-                bMod.moveBoundaryVertexNoUpdate(bpI, newPositions[bpI]);
-        }
-
-        //- update fields calculated from points
-        bMod.updateGeometry();
-
-        Info << "Updating surface" << endl;
-        triMeshPtr_->updateVertices();
-        Info << "Saving data" << endl;
-        //triMeshPtr_->getTriSurf().writeSurface("surfIteration_"+help::scalarToText(i)+".stl");
-        //Info << "Finished saving data" << endl;
-        */
     }
 
     Info << endl;
-
-    //surfaceEngine_.mesh().write();
-    //::exit(0);
 
     untangleSurface(0);
 }
