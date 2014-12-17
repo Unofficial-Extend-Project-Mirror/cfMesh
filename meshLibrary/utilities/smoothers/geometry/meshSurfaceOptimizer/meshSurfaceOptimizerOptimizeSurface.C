@@ -558,7 +558,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.pointNormals();
     surfaceEngine_.boundaryPointEdges();
 
-    labelLongList procBndPoints, edgePoints;
+    labelLongList procBndPoints, edgePoints, partitionPoints;
     forAll(bPoints, bpI)
     {
         if( vertexType_[bpI] & EDGE )
@@ -567,6 +567,10 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 
             if( vertexType_[bpI] & PROCBND )
                 procBndPoints.append(bpI);
+        }
+        else if( vertexType_[bpI] & PARTITION )
+        {
+            partitionPoints.append(bpI);
         }
     }
 
@@ -594,57 +598,9 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     Info << "Optimizing surface vertices. Iteration:";
     for(label i=0;i<nIterations;++i)
     {
-        procBndPoints.clear();
-
-        pointField newPositions(bPoints.size());
+        smoothSurfaceOptimizer(partitionPoints);
 
         Info << "." << flush;
-
-        meshSurfaceEngineModifier bMod(surfaceEngine_);
-        # ifdef USE_OMP
-        # pragma omp parallel if( vertexType_.size() > 100 )
-        # endif
-        {
-            # ifdef USE_OMP
-            # pragma omp for schedule(dynamic, 10)
-            # endif
-            forAll(bPoints, bpI)
-            {
-                if( vertexType_[bpI] & PARTITION )
-                {
-                    if( vertexType_[bpI] & PROCBND )
-                    {
-                        # ifdef USE_OMP
-                        # pragma omp critical
-                        # endif
-                        {
-                            procBndPoints.append(bpI);
-                        }
-
-                        continue;
-                    }
-
-                    newPositions[bpI] = newPositionLaplacianFC(bpI, true);
-                }
-            }
-        }
-
-        if( Pstream::parRun() )
-        {
-            nodeDisplacementLaplacianFCParallel(procBndPoints, true);
-        }
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(newPositions, bpI)
-        {
-            if( vertexType_[bpI] == PARTITION )
-                bMod.moveBoundaryVertexNoUpdate(bpI, newPositions[bpI]);
-        }
-
-        //- update fields calculated from points
-        bMod.updateGeometry();
     }
 
     Info << endl;
