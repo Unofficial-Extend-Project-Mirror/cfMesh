@@ -143,6 +143,8 @@ $(coordinateModification)/coordinateModification.C
 $(coordinateModification)/newCoordinateModification.C
 $(coordinateModification)/planeTranslation.C
 $(coordinateModification)/boxScaling.C
+$(coordinateModification)/coneScaling.C
+$(coordinateModification)/sphereScaling.C
 
 $(coordinateModification)/coordinateModifier.C
 

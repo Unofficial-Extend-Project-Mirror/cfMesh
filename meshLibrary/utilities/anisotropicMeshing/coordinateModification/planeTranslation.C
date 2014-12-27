@@ -126,8 +126,7 @@ vector planeTranslation::backwardDisplacement(const point& p) const
     const scalar dist = (p - origin_) & normal_;
 
     const vector translationVec =
-        normal_ * translationDistance_ *
-        ((1.0/scalingFactor_) - 1.0) * scalingFactor_;
+        normal_ * translationDistance_ * (1.0 - scalingFactor_);
 
     if( dist >= translationDistance_ )
     {

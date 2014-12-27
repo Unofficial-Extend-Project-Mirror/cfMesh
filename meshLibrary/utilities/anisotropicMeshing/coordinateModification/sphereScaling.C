@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "boxRefinement.H"
+#include "sphereScaling.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
 
@@ -32,98 +32,132 @@ License
 namespace Foam
 {
 
-defineTypeNameAndDebug(boxRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, boxRefinement, dictionary);
+defineTypeNameAndDebug(sphereScaling, 0);
+addToRunTimeSelectionTable(coordinateModification, sphereScaling, dictionary);
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boxRefinement::boxRefinement()
+sphereScaling::sphereScaling()
 :
-    objectRefinement(),
-    centre_(),
-    lengthX_(-1.0),
-    lengthY_(-1.0),
-    lengthZ_(-1.0)
+    coordinateModification(),
+    centre_(vector::zero),
+    radius_(0.0),
+    radialScaling_(1.0)
 {}
 
-boxRefinement::boxRefinement
+sphereScaling::sphereScaling
 (
     const word& name,
-    const scalar cellSize,
     const point& centre,
-    const scalar lengthX,
-    const scalar lengthY,
-    const scalar lengthZ
+    const scalar radius,
+    const scalar radialScaling
 )
 :
-    objectRefinement(),
+    coordinateModification(),
     centre_(centre),
-    lengthX_(lengthX),
-    lengthY_(lengthY),
-    lengthZ_(lengthZ)
+    radius_(radius),
+    radialScaling_(radialScaling)
 {
     setName(name);
-    setCellSize(cellSize);
 }
 
-boxRefinement::boxRefinement
+sphereScaling::sphereScaling
 (
     const word& name,
     const dictionary& dict
 )
 :
-    objectRefinement(name, dict)
+    coordinateModification(name, dict)
 {
     this->operator=(dict);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool boxRefinement::intersectsObject(const boundBox& bb) const
+point sphereScaling::origin() const
 {
-    vector v(0.5*lengthX_, 0.5*lengthY_, 0.5*lengthZ_);
-    boundBox box(centre_ - v, centre_ + v);
+    return centre_;
+}
 
-    if( box.overlaps(bb) )
-        return true;
+void sphereScaling::translateAndModifyObject(const vector& disp)
+{
+    centre_ += disp;
 
-    return false;
+    radius_ /= radialScaling_;
+
+    if( radius_ < VSMALL )
+    {
+        FatalErrorIn
+        (
+            "void sphereScaling::translateAndModifyObject(const vector&)"
+        ) << "Radius of the sphere is zero " << *this << exit(FatalError);
+    }
+}
+
+vector sphereScaling::displacement(const point& p) const
+{
+    vector disp(vector::zero);
+
+    const vector rVec = p - centre_;
+    const scalar r = mag(rVec);
+
+    disp = (rVec / (r + VSMALL)) * radius_ * ((1.0/radialScaling_) - 1.0);
+    if( r < radius_ )
+    {
+        disp *= (r / radius_);
+    }
+
+    return disp;
+}
+
+vector sphereScaling::backwardDisplacement(const point& p) const
+{
+    vector disp(vector::zero);
+
+    const vector rVec = p - centre_;
+    const scalar r = mag(rVec);
+
+    disp -= (rVec / (r + VSMALL)) * radius_ * (1.0 - radialScaling_);
+    if( r < radius_ )
+    {
+        disp *= (r / radius_);
+    }
+
+
+    return disp;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary boxRefinement::dict(bool ignoreType) const
+dictionary sphereScaling::dict(bool ignoreType) const
 {
     dictionary dict;
 
-    dict.add("cellSize", cellSize());
     dict.add("type", type());
 
     dict.add("centre", centre_);
-    dict.add("lengthX", lengthX_);
-    dict.add("lengthY", lengthY_);
-    dict.add("lengthZ", lengthZ_);
+    dict.add("radius", radius_);
+
+    dict.add("radialScaling", radialScaling_);
 
     return dict;
 }
 
-void boxRefinement::write(Ostream& os) const
+void sphereScaling::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " centre: " << centre_
-        << " lengthX: " << lengthX_
-        << " lengthY: " << lengthY_
-        << " lengthZ: " << lengthZ_;
+        << " radius:  " << radius_
+        << " radialScaling:  " << radialScaling_
+        << endl;
 }
 
-void boxRefinement::writeDict(Ostream& os, bool subDict) const
+void sphereScaling::writeDict(Ostream& os, bool subDict) const
 {
     if( subDict )
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-
-    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -132,9 +166,9 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
     }
 
     os.writeKeyword("centre") << centre_ << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthX") << lengthX_ << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthY") << lengthY_ << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthZ") << lengthZ_ << token::END_STATEMENT << nl;
+    os.writeKeyword("radius") << radius_ << token::END_STATEMENT << nl;
+    os.writeKeyword("radialScaling") << radialScaling_
+                                     << token::END_STATEMENT << nl;
 
     if( subDict )
     {
@@ -142,7 +176,7 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
     }
 }
 
-void boxRefinement::operator=(const dictionary& d)
+void sphereScaling::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -161,60 +195,47 @@ void boxRefinement::operator=(const dictionary& d)
     {
         FatalErrorIn
         (
-            "void boxRefinement::operator=(const dictionary& d)"
+            "void sphereScaling::operator=(const dictionary& d)"
         ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
-    // specify lengthX
-    if( dict.found("lengthX") )
+    // specify radius
+    if( dict.found("radius") )
     {
-        lengthX_ = readScalar(dict.lookup("lengthX"));
+        radius_ = readScalar(dict.lookup("radius"));
     }
     else
     {
         FatalErrorIn
         (
-            "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthX is not specified!" << exit(FatalError);
-        lengthX_ = -1.0;
+            "void sphereScaling::operator=(const dictionary& d)"
+        ) << "Entry radius is not specified!" << exit(FatalError);
+
+        radius_ = 0.0;
     }
 
-    // specify lengthY
-    if( dict.found("lengthY") )
+    // specify radialScaling
+    if( dict.found("radialScaling") )
     {
-        lengthY_ = readScalar(dict.lookup("lengthY"));
+        radialScaling_ = readScalar(dict.lookup("radialScaling"));
     }
     else
     {
         FatalErrorIn
         (
-            "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthY is not specified!" << exit(FatalError);
-        lengthY_ = -1.0;
-    }
+            "void sphereScaling::operator=(const dictionary& d)"
+        ) << "Entry radialScaling is not specified!" << exit(FatalError);
 
-    // specify lengthZ
-    if( dict.found("lengthZ") )
-    {
-        lengthZ_ = readScalar(dict.lookup("lengthZ"));
-    }
-    else
-    {
-        FatalErrorIn
-        (
-            "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthZ is not specified!" << exit(FatalError);
-        lengthZ_ = -1.0;
+        radialScaling_ = 0.0;
     }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& boxRefinement::operator<<(Ostream& os) const
+Ostream& sphereScaling::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
-    os << "cell size " << cellSize() << nl;
     write(os);
     return os;
 }

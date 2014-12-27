@@ -140,7 +140,7 @@ vector boxScaling::backwardDisplacement(const point& p) const
     for(direction i=0;i<vector::nComponents;++i)
     {
         const scalar dispVec =
-            lengthVec_[i] * ((1.0/scaleVec_[i]) - 1.0) * scaleVec_[i];
+            lengthVec_[i] * (1.0 - scaleVec_[i]);
 
         if( p[i] < pMin_[i] )
         {
@@ -239,7 +239,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry centre is not sopecified!" << exit(FatalError);
+        ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
@@ -253,7 +253,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthX is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthX is not specified!" << exit(FatalError);
         lengthVec_.x() = 0.0;
     }
 
@@ -267,7 +267,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthY is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthY is not specified!" << exit(FatalError);
         lengthVec_.y() = 0.0;
     }
 
@@ -281,7 +281,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthZ is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthZ is not specified!" << exit(FatalError);
         lengthVec_.z() = 0.0;
     }
 
