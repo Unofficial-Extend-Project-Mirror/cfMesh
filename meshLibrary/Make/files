@@ -6,6 +6,8 @@ checkMeshDict = utilities/checkMeshDict
 
 anisotropicMeshing = utilities/anisotropicMeshing
 coordinateModification = $(anisotropicMeshing)/coordinateModification
+surfaceMeshGeometryModification = $(anisotropicMeshing)/surfaceMeshGeometryModification
+polyMeshGenGeometryModification = $(anisotropicMeshing)/polyMeshGenGeometryModification
 
 meshSurfaceCheckInvertedVertices = utilities/surfaceTools/meshSurfaceCheckInvertedVertices
 meshSurfaceCheckEdgeTypes = utilities/surfaceTools/meshSurfaceCheckEdgeTypes
@@ -145,6 +147,9 @@ $(coordinateModification)/planeTranslation.C
 $(coordinateModification)/boxScaling.C
 $(coordinateModification)/coneScaling.C
 $(coordinateModification)/sphereScaling.C
+
+$(surfaceMeshGeometryModification)/surfaceMeshGeometryModification.C
+$(polyMeshGenGeometryModification)/polyMeshGenGeometryModification.C
 
 $(coordinateModification)/coordinateModifier.C
 

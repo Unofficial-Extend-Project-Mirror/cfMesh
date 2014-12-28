@@ -30,6 +30,7 @@ Description
 #include "PtrList.H"
 #include "LongList.H"
 #include "objectRefinement.H"
+#include "coordinateModification.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -341,6 +342,38 @@ void checkMeshDict::checkObjectRefinements() const
     }
 }
 
+void checkMeshDict::checkAnisotropicSources() const
+{
+    if( meshDict_.found("anisotropicSources") )
+    {
+        PtrList<coordinateModification> anisotropicObjects;
+
+        if( meshDict_.isDict("anisotropicSources") )
+        {
+            const dictionary& dict = meshDict_.subDict("anisotropicSources");
+            const wordList objectNames = dict.toc();
+
+            anisotropicObjects.setSize(objectNames.size());
+
+            forAll(anisotropicObjects, objectI)
+            {
+                const entry& objectEntry =
+                    dict.lookupEntry(objectNames[objectI], false, false);
+
+                anisotropicObjects.set
+                (
+                    objectI,
+                    coordinateModification::New
+                    (
+                        objectEntry.keyword(),
+                        objectEntry.dict()
+                    )
+                );
+            }
+        }
+    }
+}
+
 void checkMeshDict::checkSurfaceRefinements() const
 {
     if( meshDict_.found("surfaceMeshRefinement") )
@@ -583,6 +616,8 @@ void checkMeshDict::checkEntries() const
     checkRemoveCellsIntersectingPatches();
 
     checkObjectRefinements();
+
+    checkAnisotropicSources();
 
     checkBoundaryLayers();
 
