@@ -101,10 +101,14 @@ vector sphereScaling::displacement(const point& p) const
     const vector rVec = p - centre_;
     const scalar r = mag(rVec);
 
-    disp = (rVec / (r + VSMALL)) * radius_ * ((1.0/radialScaling_) - 1.0);
-    if( r < radius_ )
+    if( r > VSMALL )
     {
-        disp *= (r / radius_);
+        disp = (rVec / r) * radius_ * ((1.0/radialScaling_) - 1.0);
+
+        if( r < radius_ )
+        {
+            disp *= (r / radius_);
+        }
     }
 
     return disp;
@@ -117,12 +121,15 @@ vector sphereScaling::backwardDisplacement(const point& p) const
     const vector rVec = p - centre_;
     const scalar r = mag(rVec);
 
-    disp -= (rVec / (r + VSMALL)) * radius_ * (1.0 - radialScaling_);
-    if( r < radius_ )
+    if( r > VSMALL )
     {
-        disp *= (r / radius_);
-    }
+        disp -= (rVec / r) * radius_ * (1.0 - radialScaling_);
 
+        if( r < radius_ )
+        {
+            disp *= (r / radius_);
+        }
+    }
 
     return disp;
 }

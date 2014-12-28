@@ -86,8 +86,8 @@ coneScaling::coneScaling
     r1_(r1),
     radialScaling_(radialScaling),
     axialScaling_(axialScaling),
-    axialVec_(vector::zero),
-    axialVecLengthSq_(0.0)
+    axialVec_(),
+    axialVecLengthSq_()
 {
     setName(name);
     calculateAxialVector();
@@ -113,8 +113,9 @@ point coneScaling::origin() const
 
 void coneScaling::translateAndModifyObject(const vector& disp)
 {
+    const vector vec = p1_ - p0_;
     p0_ += disp;
-    p1_ += disp;
+    p1_ = p0_ + vec / axialScaling_;
 
     r0_ /= radialScaling_;
     r1_ /= radialScaling_;
@@ -127,7 +128,7 @@ vector coneScaling::displacement(const point& p) const
     vector disp(vector::zero);
 
     //- calculate point position in the axial direction
-    const scalar t = ((p - p0_) & axialVec_) / (axialVecLengthSq_ + VSMALL);
+    const scalar t = ((p - p0_) & axialVec_) / axialVecLengthSq_;
 
     //- calculate point position in the radial direction
     const vector rVec = p - (p0_ + t * axialVec_);
@@ -150,15 +151,20 @@ vector coneScaling::displacement(const point& p) const
     }
 
     //- calculate displacement in the radial direction
-    if( r > rCone )
+    if( r > VSMALL )
     {
-        //- translate in the radial direction
-        disp += rVec * ((1.0/radialScaling_) - 1.0);
-    }
-    else
-    {
-        //- scale the distance in the radial direction
-        disp += (r / rCone) * rVec * ((1.0/radialScaling_) - 1.0);
+        const scalar rScale = (1.0/radialScaling_) - 1.0;
+        const vector dispRadial = rCone * (rVec / r) * rScale;
+        if( r > rCone )
+        {
+            //- translate in the radial direction
+            disp += dispRadial;
+        }
+        else
+        {
+            //- scale the distance in the radial direction
+            disp += (r / rCone) * dispRadial;
+        }
     }
 
     return disp;
@@ -169,7 +175,7 @@ vector coneScaling::backwardDisplacement(const point& p) const
     vector disp(vector::zero);
 
     //- calculate point position in the axial direction
-    const scalar t = ((p - p0_) & axialVec_) / (axialVecLengthSq_ + VSMALL);
+    const scalar t = ((p - p0_) & axialVec_) / axialVecLengthSq_;
 
     //- calculate point position in the radial direction
     const vector rVec = p - (p0_ + t * axialVec_);
@@ -193,16 +199,20 @@ vector coneScaling::backwardDisplacement(const point& p) const
     }
 
     //- calculate displacement in the radial direction
-    const scalar rScale = 1.0 - radialScaling_;
-    if( r > rCone )
+    if( r > VSMALL )
     {
-        //- translate in the radial direction
-        disp -= rVec * rScale;
-    }
-    else
-    {
-        //- scale the distance in the radial direction
-        disp -= (r / rCone) * rVec * rScale;
+        const scalar rScale = 1.0 - radialScaling_;
+        const vector dispRadial = rCone * (rVec / r) * rScale;
+        if( r > rCone )
+        {
+            //- translate in the radial direction
+            disp -= dispRadial;
+        }
+        else
+        {
+            //- scale the distance in the radial direction
+            disp -= (r / rCone) * dispRadial;
+        }
     }
 
     return disp;
