@@ -49,6 +49,8 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 //#define DEBUG
 
@@ -167,6 +169,24 @@ void cartesian2DMeshGenerator::generateBoundaryLayers()
 
     bl.addLayerForAllPatches();
 
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+
+        //- delete the octree
+        deleteDemandDrivenData(octreePtr_);
+
+        //- contruct a new octree from the input surface
+        octreePtr_ = new meshOctree(*surfacePtr_, true);
+        meshOctreeCreator(*octreePtr_).createOctreeWithRefinedBoundary(20);
+    }
+
     # ifdef DEBUG
     mesh_.write();
     //::exit(0);
@@ -252,6 +272,7 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -314,7 +335,18 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_, true);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
+
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_, true);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_, true);
+    }
 
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
@@ -326,6 +358,7 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 cartesian2DMeshGenerator::~cartesian2DMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
 }
 

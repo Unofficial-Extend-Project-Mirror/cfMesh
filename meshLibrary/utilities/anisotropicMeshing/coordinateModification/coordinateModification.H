@@ -38,6 +38,7 @@ SourceFiles
 #include "word.H"
 #include "point.H"
 #include "dictionary.H"
+#include "PtrList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,6 +47,7 @@ namespace Foam
 
 // Forward declarations
 class boundBox;
+class plane;
 
 /*---------------------------------------------------------------------------*\
                    Class coordinateModification Declaration
@@ -114,6 +116,13 @@ public:
 
         //- calculate the displacement vector for the backward modification
         virtual vector backwardDisplacement(const point&) const = 0;
+
+        //- can this modification object be combined with other ones
+        virtual bool combiningPossible() const = 0;
+
+        //- return that "bounding planes" of the scaling region for
+        //- the given object
+        virtual void boundingPlanes(PtrList<plane>&) const = 0;
 
 
       // Access

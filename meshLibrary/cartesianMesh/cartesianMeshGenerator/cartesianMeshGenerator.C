@@ -47,6 +47,8 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 //#define DEBUG
 
@@ -72,7 +74,7 @@ void cartesianMeshGenerator::createCartesianMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -220,6 +222,17 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeLowQualityFaces();
     optimizer.untangleMeshFV();
 
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
+
     # ifdef DEBUG
     mesh_.write();
     //::exit(EXIT_SUCCESS);
@@ -286,6 +299,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -335,7 +349,18 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
+
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
 
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
@@ -347,6 +372,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 cartesianMeshGenerator::~cartesianMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
 }
 

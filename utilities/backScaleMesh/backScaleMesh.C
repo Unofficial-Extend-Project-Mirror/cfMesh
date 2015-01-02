@@ -56,11 +56,11 @@ int main(int argc, char *argv[])
 
     pointFieldPMG& pts = pmg.points();
 
-    if( !meshDict.found("geometryModification") )
-        FatalError << "Cannot backward scale mesh. geometryModification"
+    if( !meshDict.found("anisotropicSources") )
+        FatalError << "Cannot backward scale mesh. anisotropicSources"
                    << " does not exist in meshDict" << exit(FatalError);
 
-    coordinateModifier cMod(meshDict.subDict("geometryModification"));
+    coordinateModifier cMod(meshDict.subDict("anisotropicSources"));
 
     //- apply backward transformation
     forAll(pts, i)

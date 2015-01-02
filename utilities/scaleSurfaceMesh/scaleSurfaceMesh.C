@@ -34,6 +34,8 @@ Description
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
 #include "coordinateModifier.H"
+#include "checkMeshDict.H"
+#include "surfaceMeshGeometryModification.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -56,40 +58,64 @@ int main(int argc, char *argv[])
         )
     );
 
+    checkMeshDict cmd(meshDict);
+
     fileName surfaceFile = meshDict.lookup("surfaceFile");
     if( Pstream::parRun() )
         surfaceFile = ".."/surfaceFile;
 
     triSurf surface(runTime.path()/surfaceFile);
 
-//    argList::noParallel();
-//    argList::validArgs.clear();
-//    argList::validArgs.append("output surface file");
+    surfaceMeshGeometryModification gMod(surface, meshDict);
 
-//    argList args(argc, argv);
+    //- modify points
+    const triSurf* modSurfPtr = gMod.modifyGeometry();
 
-    //const fileName outFileName(args.args()[1]);
+    Info << "Writting modified surface" << endl;
+    modSurfPtr->writeSurface("modifiedSurf.stl");
 
-    triSurfModifier sMod(surface);
-    pointField& pts = sMod.pointsAccess();
-
-    coordinateModifier cMod(meshDict.subDict("geometryModification"));
-
-    //- transform points
-    forAll(pts, i)
+    # ifdef DEBUGScaling
+    //- apply backward modification
+    Info << "Here" << endl;
+    coordinateModifier cMod(meshDict.subDict("anisotropicSources"));
+    Info << "Starting modifications" << endl;
+    forAll(surface.points(), i)
     {
-        pts[i] = cMod.modifiedPoint(pts[i]);
+        Info << "\nOrig point " << i << " coordinates " << surface.points()[i]
+             << " modified point " << modSurfPtr->points()[i] << endl;
+        const point p = cMod.backwardModifiedPoint(modSurfPtr->points()[i]);
+
+        if( mag(p - surface.points()[i]) > 1e-14 )
+        {
+            Warning << "Point " << i << " is different "
+                    << p
+                    << " from original " << surface.points()[i]
+                    << " modified point "
+                    << cMod.modifiedPoint(surface.points()[i]) << endl;
+            ::exit(0);
+        }
     }
 
-    Info << "Writting transformed surface" << endl;
-    surface.writeSurface("transformedSurf.fms");
+    Info << "Backscaling Ok" << endl;
+    ::exit(0);
+    # endif
 
-    //- apply backward transformation
-    forAll(pts, i)
-        pts[i] = cMod.backwardModifiedPoint(pts[i]);
+    surfaceMeshGeometryModification bgMod(*modSurfPtr, meshDict);
+    const triSurf* backModSurfPtr = bgMod.revertGeometryModification();
 
     Info << "Writting backward transformed surface" << endl;
-    surface.writeSurface("backwardTransformedPoints.fms");
+    backModSurfPtr->writeSurface("backwardModifiedSurf.stl");
+
+    # ifdef DEBUGScaling
+    forAll(backModSurfPtr->points(), pI)
+        if( mag(backModSurfPtr->points()[pI] - surface.points()[pI]) > 1e-14 )
+            Warning << "Point " << pI << " is different "
+                    << backModSurfPtr->points()[pI]
+                    << " from original " << surface.points()[pI] << endl;
+    # endif
+
+    deleteDemandDrivenData(modSurfPtr);
+    deleteDemandDrivenData(backModSurfPtr);
 
     Info << "End\n" << endl;
 

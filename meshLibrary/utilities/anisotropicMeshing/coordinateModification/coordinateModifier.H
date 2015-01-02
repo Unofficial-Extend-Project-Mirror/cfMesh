@@ -66,6 +66,10 @@ class coordinateModifier
         //- list of backward coordinate modifiers
         coordinateModificationList backwardModifiers_;
 
+    // Private member functions
+        //- check if the comibination of modifiers has a valid inverse
+        void checkForValidInverse() const;
+
 public:
 
     // Constructors

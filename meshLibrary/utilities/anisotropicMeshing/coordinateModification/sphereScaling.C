@@ -26,6 +26,7 @@ License
 #include "sphereScaling.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
+#include "plane.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -103,12 +104,14 @@ vector sphereScaling::displacement(const point& p) const
 
     if( r > VSMALL )
     {
-        disp = (rVec / r) * radius_ * ((1.0/radialScaling_) - 1.0);
+        const scalar tRadial = r / radius_;
+        const scalar tRadialBnd = Foam::max(0.0, Foam::min(1.0, tRadial));
 
-        if( r < radius_ )
-        {
-            disp *= (r / radius_);
-        }
+        const scalar rScale = (1.0/radialScaling_) - 1.0;
+        const vector dispRadial = radius_ * (rVec / r) * rScale;
+
+        //- calculate displacements in th radial direction
+        disp += tRadialBnd * dispRadial;
     }
 
     return disp;
@@ -123,15 +126,32 @@ vector sphereScaling::backwardDisplacement(const point& p) const
 
     if( r > VSMALL )
     {
-        disp -= (rVec / r) * radius_ * (1.0 - radialScaling_);
+        const scalar tRadial = r / radius_;
+        const scalar tRadialBnd = Foam::max(0.0, Foam::min(1.0, tRadial));
 
-        if( r < radius_ )
-        {
-            disp *= (r / radius_);
-        }
+        const scalar rScale = radialScaling_ - 1.0;
+        const vector dispRadial = radius_ * (rVec / r) * rScale;
+
+        //- scale the distance in the radial direction
+        disp += tRadialBnd * dispRadial;
     }
 
     return disp;
+}
+
+bool sphereScaling::combiningPossible() const
+{
+    if( Foam::mag(radialScaling_ - 1.0) > VSMALL )
+        return false;
+
+    return true;
+}
+
+void sphereScaling::boundingPlanes(PtrList<plane>& pl) const
+{
+    pl.clear();
+
+    return;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -196,7 +216,7 @@ void sphereScaling::operator=(const dictionary& d)
     // unspecified centre is (0 0 0)
     if( dict.found("centre") )
     {
-        dict.lookup("centre") >> centre_;
+        centre_ = vector(dict.lookup("centre"));
     }
     else
     {
@@ -229,12 +249,12 @@ void sphereScaling::operator=(const dictionary& d)
     }
     else
     {
-        FatalErrorIn
+        WarningIn
         (
             "void sphereScaling::operator=(const dictionary& d)"
-        ) << "Entry radialScaling is not specified!" << exit(FatalError);
+        ) << "Entry radialScaling is not specified!" << endl;
 
-        radialScaling_ = 0.0;
+        radialScaling_ = 1.0;
     }
 }
 

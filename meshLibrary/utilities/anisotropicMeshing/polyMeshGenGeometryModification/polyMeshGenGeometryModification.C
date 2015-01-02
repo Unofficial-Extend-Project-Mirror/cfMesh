@@ -85,7 +85,7 @@ void polyMeshGenGeometryModification::modifyGeometry()
         return;
     }
 
-    pointField& pts = mesh_.points();
+    pointFieldPMG& pts = mesh_.points();
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
@@ -107,7 +107,7 @@ void polyMeshGenGeometryModification::revertGeometryModification()
         return;
     }
 
-    pointField& pts = mesh_.points();
+    pointFieldPMG& pts = mesh_.points();
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)

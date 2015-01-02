@@ -96,6 +96,9 @@ public:
 
         //- modify coordinates
         const triSurf* modifyGeometry() const;
+
+        //- revert geometry modification
+        const triSurf* revertGeometryModification() const;
 };
 
 

@@ -26,6 +26,7 @@ License
 #include "coneScaling.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
+#include "plane.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -139,32 +140,21 @@ vector coneScaling::displacement(const point& p) const
     const scalar rCone = (1.0 - tBnd) * r0_ + tBnd * r1_;
 
     //- calculate displacement in the axial direction
-    if( t > 1.0 )
-    {
-        //- translate in the axial direction
-        disp += axialVec_ * ((1.0/axialScaling_) - 1.0);
-    }
-    else if( t > 0.0 )
-    {
-        //- scale the distance in the axial direction
-        disp += t * axialVec_ * ((1.0/axialScaling_) - 1.0);
-    }
+    disp += tBnd * axialVec_ * ((1.0/axialScaling_) - 1.0);
+
 
     //- calculate displacement in the radial direction
+
     if( r > VSMALL )
     {
+        const scalar tRadial = r / rCone;
+        const scalar tRadialBnd = Foam::min(1.0, tRadial);
+
         const scalar rScale = (1.0/radialScaling_) - 1.0;
         const vector dispRadial = rCone * (rVec / r) * rScale;
-        if( r > rCone )
-        {
-            //- translate in the radial direction
-            disp += dispRadial;
-        }
-        else
-        {
-            //- scale the distance in the radial direction
-            disp += (r / rCone) * dispRadial;
-        }
+
+        //- scale the distance in the radial direction
+        disp += tRadialBnd * dispRadial;
     }
 
     return disp;
@@ -186,36 +176,48 @@ vector coneScaling::backwardDisplacement(const point& p) const
     const scalar rCone = (1.0 - tBnd) * r0_ + tBnd * r1_;
 
     //- calculate displacement in the axial direction
-    const scalar aScale = 1.0 - axialScaling_;
-    if( t > 1.0 )
-    {
-        //- translate in the axial direction
-        disp -= axialVec_ * aScale;
-    }
-    else if( t > 0.0 )
-    {
-        //- scale the distance in the axial direction
-        disp -= t * axialVec_ * aScale;
-    }
+    const scalar aScale = axialScaling_ - 1.0;
+    disp += tBnd * axialVec_ * aScale;
 
     //- calculate displacement in the radial direction
     if( r > VSMALL )
     {
-        const scalar rScale = 1.0 - radialScaling_;
+        const scalar tRadial = r / rCone;
+        const scalar tRadialBnd = Foam::min(1.0, tRadial);
+
+        const scalar rScale = radialScaling_ - 1.0;
         const vector dispRadial = rCone * (rVec / r) * rScale;
-        if( r > rCone )
-        {
-            //- translate in the radial direction
-            disp -= dispRadial;
-        }
-        else
-        {
-            //- scale the distance in the radial direction
-            disp -= (r / rCone) * dispRadial;
-        }
+
+        //- scale the distance in the radial direction
+        disp += tRadialBnd * dispRadial;
     }
 
     return disp;
+}
+
+bool coneScaling::combiningPossible() const
+{
+    if( Foam::mag(radialScaling_ - 1.0) > VSMALL )
+        return false;
+
+    return true;
+}
+
+void coneScaling::boundingPlanes(PtrList<plane>& pl) const
+{
+    vector n = axialVec_ / (mag(axialVec_) + VSMALL);
+
+    if( Foam::mag(axialScaling_ - 1.0) > VSMALL )
+    {
+        pl.setSize(2);
+
+        pl.set(0, new plane(p0_, n));
+        pl.set(1, new plane(p1_, n));
+    }
+    else
+    {
+        pl.clear();
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -350,6 +352,11 @@ void coneScaling::operator=(const dictionary& d)
     }
     else
     {
+        WarningIn
+        (
+            "void coneScaling::operator=(const dictionary& d)"
+        ) << "Entry radialScaling is not specified!" << endl;
+
         radialScaling_ = 1.0;
     }
 
@@ -360,6 +367,11 @@ void coneScaling::operator=(const dictionary& d)
     }
     else
     {
+        WarningIn
+        (
+            "void coneScaling::operator=(const dictionary& d)"
+        ) << "Entry axialScaling is not specified!" << endl;
+
         axialScaling_ = 1.0;
     }
 

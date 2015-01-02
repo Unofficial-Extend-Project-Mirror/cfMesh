@@ -140,6 +140,13 @@ public:
         //- calculate the displacement vector for box scaling
         virtual vector backwardDisplacement(const point&) const;
 
+        //- can this modification object be combined with other ones
+        virtual bool combiningPossible() const;
+
+        //- return that "bounding planes" of the scaling region for
+        //- the given object
+        virtual void boundingPlanes(PtrList<plane>&) const;
+
     //- Return as dictionary of entries
         dictionary dict(bool ignoreType = false) const;
 
