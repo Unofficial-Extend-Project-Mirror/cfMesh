@@ -34,7 +34,7 @@ Description
 #include "meshSurfacePartitioner.H"
 #include "labelledScalar.H"
 
-#include "helperFunctionsPar.H"
+#include "helperFunctions.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -142,7 +142,6 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
-    const pointField& sPoints = meshOctree_.surface().points();
     const List<DynList<label> >& cornerPatches = sPartitioner.cornerPatches();
 
     const meshSurfacePartitioner& mPart = meshPartitioner();
@@ -151,6 +150,9 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
+
+    const triSurf& surf = meshOctree_.surface();
+    const pointField& sPoints = surf.points();
 
     //std::map<label, scalar> mappingDistance;
     scalarList mappingDistance;
@@ -185,6 +187,9 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
         label iter(0);
         while( iter++ < 20 )
         {
+            DynList<point> origins;
+            DynList<vector> normals;
+
             point newP(vector::zero);
             forAll(patches, patchI)
             {
@@ -199,10 +204,31 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
                     mapPointApprox
                 );
 
+                vector fn = np - mapPointApprox;
+                if( nt >= 0 )
+                {
+                    const vector sn = surf[nt].normal(sPoints);
+
+                    if( magSqr(sn) > magSqr(fn) )
+                        fn = sn;
+                }
+
+                origins.append(np);
+                normals.append(fn);
+
                 newP += np;
             }
 
-            newP /= patches.size();
+            point pMin;
+            if( help::findMinimizerPoint(origins, normals, pMin) )
+            {
+                newP = pMin;
+            }
+            else
+            {
+                newP /= patches.size();
+            }
+
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
 
@@ -259,6 +285,9 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const VRWGraph& pPatches = mPart.pointPatches();
 
+    const triSurf& surf = meshOctree_.surface();
+    const pointField& sPoints = surf.points();
+
     //- find mapping distance for selected vertices
     scalarList mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
@@ -292,6 +321,10 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         while( iter++ < 20 )
         {
             point newP(vector::zero);
+
+            DynList<point> origins;
+            DynList<vector> normals;
+
             forAll(patches, patchI)
             {
                 point np;
@@ -305,10 +338,37 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
                     mapPointApprox
                 );
 
+                vector fn = np - mapPointApprox;
+                if( nt >= 0 )
+                {
+                    const vector sn = surf[nt].normal(sPoints);
+
+                    if( magSqr(sn) > magSqr(fn) )
+                        fn = sn;
+                }
+
+                origins.append(np);
+                normals.append(fn);
+
                 newP += np;
             }
 
-            newP /= patches.size();
+            if( normals.size() < 3 )
+            {
+                normals.append(normals[0] ^ normals[1]);
+                origins.append(mapPointApprox);
+            }
+
+            point pMin;
+            if( help::findMinimizerPoint(origins, normals, pMin) )
+            {
+                newP = pMin;
+            }
+            else
+            {
+                newP /= patches.size();
+            }
+
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
 

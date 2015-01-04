@@ -593,6 +593,45 @@ inline point nearestPointOnTheTriangle
     return pProj;
 }
 
+inline bool findMinimizerPoint
+(
+    const DynList<point>& origins,
+    const DynList<vector>& normals,
+    point& pMin
+)
+{
+    if( origins.size() != normals.size() )
+        FatalErrorIn
+        (
+            "inline bool findMinimizerPoint"
+            "(const DynList<point>&, const DynList<vector>&, point&)"
+        ) << "Size of normals and origins do not match" << abort(FatalError);
+
+    tensor mat(tensor::zero);
+    vector source(vector::zero);
+
+    forAll(origins, i)
+    {
+        //- use the normalized vector
+        vector n = normals[i];
+        n /= (mag(n) + VSMALL);
+
+        const tensor t = n * n;
+
+        mat += t;
+
+        source += (origins[i] & n) * n;
+    }
+
+    const scalar determinant = Foam::mag(Foam::det(mat));
+    if( determinant < SMALL )
+        return false;
+
+    pMin = (inv(mat, determinant) & source);
+
+    return true;
+}
+
 inline bool triLineIntersection
 (
     const triangle<point, point>& tria,
