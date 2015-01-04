@@ -77,6 +77,9 @@ class checkMeshDict
         //- check objectRefinements entry
         void checkObjectRefinements() const;
 
+        //- check anisotropic sources
+        void checkAnisotropicSources() const;
+
         //- check surfaceRefinements entry
         void checkSurfaceRefinements() const;
 

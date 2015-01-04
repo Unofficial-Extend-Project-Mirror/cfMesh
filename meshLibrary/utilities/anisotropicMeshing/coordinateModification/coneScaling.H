@@ -22,20 +22,23 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    planeTranslation
+    coneScaling
 
 Description
-    Applies translation to points on the positive side of the plane.
+    Scales coordinates inside the cone and translates points
+    outside of the cone
 
 SourceFiles
-    planeTranslation.C
+    coneScaling.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef planeTranslation_H
-#define planeTranslation_H
+#ifndef coneScaling_H
+#define coneScaling_H
 
 #include "coordinateModification.H"
+#include "point.H"
+#include "typeInfo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,82 +46,98 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class planeTranslation Declaration
+                        Class coneScaling Declaration
 \*---------------------------------------------------------------------------*/
 
-class planeTranslation
+class coneScaling
 :
     public coordinateModification
 {
     // Private data
-        //- origin of the plane
-        point origin_;
+        //- starting point and the radius
+        point p0_;
+        scalar r0_;
 
-        //- normal vector
-        vector normal_;
+        //- end point and the radius
+        point p1_;
+        scalar r1_;
 
-        //- translation distance
-        scalar translationDistance_;
+        //- scaling factor in the radial direction
+        scalar radialScaling_;
 
-        //- scaling factor
-        scalar scalingFactor_;
+        //- scaling factor in the axial direction
+        scalar axialScaling_;
+
+        //- axial vector
+        vector axialVec_;
+
+        //- squared length of the axial vector
+        scalar axialVecLengthSq_;
+
+    // Private member functions
+        //- calculate axial vector
+        void calculateAxialVector();
 
 public:
 
     //- Runtime type information
-    TypeName("planeTranslation");
+    TypeName("coneScaling");
 
 
     // Constructors
 
         //- Null construct
-        planeTranslation();
+        coneScaling();
 
-        //- Construct from name, origin, normal, translation distance and scale
-        planeTranslation
+        //- Construct from components
+        coneScaling
         (
             const word& name,
-            const point& original,
-            const vector& normal,
-            const scalar translationDistance,
-            const scalar scalingFactor
+            const point& p0,
+            const scalar& r0,
+            const point& p1,
+            const scalar& r1,
+            const scalar radialScaling = 1.0,
+            const scalar axialScaling = 1.0
         );
 
         //- Construct from dictionary
-        planeTranslation(const word& name, const dictionary& dict);
+        coneScaling(const word& name, const dictionary& dict);
 
         //- Construct and return a clone
         virtual autoPtr<coordinateModification> clone
         (
-            const planeTranslation& pt
+            const coneScaling& cs
         ) const
         {
             return autoPtr<coordinateModification>
             (
-                new planeTranslation
+                new coneScaling
                 (
-                    pt.name(),
-                    pt.origin_,
-                    pt.normal_,
-                    pt.translationDistance_,
-                    pt.scalingFactor_
+                    cs.name(),
+                    cs.p0_,
+                    cs.r0_,
+                    cs.p1_,
+                    cs.r1_,
+                    cs.radialScaling_,
+                    cs.axialScaling_
                 )
             );
         }
 
     // Member Functions
 
-        //- return the origin of the plane
+        //- return the centre of the box
         virtual point origin() const;
 
         //- translate the object to the modified coordinates
         //- this is needed for backward transformation
         virtual void translateAndModifyObject(const vector&);
 
-        //- calculate the displacement vector for plane translation
+        //- calculate the displacement vector for box scaling
         virtual vector displacement(const point&) const;
 
-        //- calculate the displacement vector for plane translation
+        //- calculate the displacement vector for box scaling
         virtual vector backwardDisplacement(const point&) const;
 
         //- can this modification object be combined with other ones

@@ -26,6 +26,7 @@ License
 #include "boxScaling.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
+#include "plane.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -115,19 +116,11 @@ vector boxScaling::displacement(const point& p) const
     for(direction i=0;i<vector::nComponents;++i)
     {
         const scalar dispVec = lengthVec_[i] * ((1.0/scaleVec_[i]) - 1.0);
+        const scalar t = ((p[i] - pMin_[i]) / lengthVec_[i]);
 
-        if( p[i] < pMin_[i] )
-        {
-            disp[i] = 0.0;
-        }
-        else if( (p[i] >= pMin_[i]) && (p[i] < pMax_[i]) )
-        {
-            disp[i] = ((p[i] - pMin_[i]) / lengthVec_[i]) * dispVec;
-        }
-        else
-        {
-            disp[i] = dispVec;
-        }
+        const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
+
+        disp[i] = tBnd * dispVec;
     }
 
     return disp;
@@ -139,24 +132,46 @@ vector boxScaling::backwardDisplacement(const point& p) const
 
     for(direction i=0;i<vector::nComponents;++i)
     {
-        const scalar dispVec =
-            lengthVec_[i] * ((1.0/scaleVec_[i]) - 1.0) * scaleVec_[i];
+        const scalar dispVec = lengthVec_[i] * (scaleVec_[i] - 1.0);
 
-        if( p[i] < pMin_[i] )
-        {
-            disp[i] = 0.0;
-        }
-        else if( (p[i] >= pMin_[i]) && (p[i] < pMax_[i]) )
-        {
-            disp[i] = -((p[i] - pMin_[i]) / lengthVec_[i]) * dispVec;
-        }
-        else
-        {
-            disp[i] = -dispVec;
-        }
+        const scalar t = ((p[i] - pMin_[i]) / lengthVec_[i]);
+
+        const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
+
+        disp[i] = tBnd * dispVec;
     }
 
     return disp;
+}
+
+bool boxScaling::combiningPossible() const
+{
+    return true;
+}
+
+void boxScaling::boundingPlanes(PtrList<plane>&pl) const
+{
+    pl.setSize(6);
+    label counter(0);
+    if( Foam::mag(scaleVec_.x() - 1.0) > VSMALL )
+    {
+        pl.set(counter++, new plane(pMin_, vector(1, 0, 0)));
+        pl.set(counter++, new plane(pMax_, vector(1, 0, 1)));
+    }
+
+    if( Foam::mag(scaleVec_.y() - 1.0) > VSMALL )
+    {
+        pl.set(counter++, new plane(pMin_, vector(0, 1, 0)));
+        pl.set(counter++, new plane(pMax_, vector(0, 1, 0)));
+    }
+
+    if( Foam::mag(scaleVec_.z() - 1.0) > VSMALL )
+    {
+        pl.set(counter++, new plane(pMin_, vector(0, 0, 1)));
+        pl.set(counter++, new plane(pMax_, vector(0, 0, 1)));
+    }
+
+    pl.setSize(counter);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -239,7 +254,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry centre is not sopecified!" << exit(FatalError);
+        ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
@@ -253,7 +268,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthX is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthX is not specified!" << exit(FatalError);
         lengthVec_.x() = 0.0;
     }
 
@@ -267,7 +282,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthY is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthY is not specified!" << exit(FatalError);
         lengthVec_.y() = 0.0;
     }
 
@@ -281,7 +296,7 @@ void boxScaling::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthZ is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthZ is not specified!" << exit(FatalError);
         lengthVec_.z() = 0.0;
     }
 

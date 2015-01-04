@@ -22,74 +22,81 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    coordinateModifier
+    polyMeshGenGeometryModification
 
 Description
-    Base class for modification of point coordinates
-    in surface and volume meshes.
+    Modifies coordinates of points in the mesh to achieve anistropy
 
 SourceFiles
-    coordinateModifier.C
+    polyMeshGenGeometryModification.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef coordinateModifier_H
-#define coordinateModifier_H
+#ifndef polyMeshGenGeometryModification_H
+#define polyMeshGenGeometryModification_H
 
-#include "word.H"
-#include "point.H"
-#include "coordinateModificationList.H"
-#include "Time.H"
+#include "coordinateModification.H"
+#include "polyMeshGenModifier.H"
+#include "typeInfo.H"
+#include "coordinateModifier.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-// Forward declarations
-class boundBox;
+class dictionary;
 
 /*---------------------------------------------------------------------------*\
-                   Class coordinateModifier Declaration
+                Class polyMeshGenGeometryModification Declaration
 \*---------------------------------------------------------------------------*/
 
-class coordinateModifier
+class polyMeshGenGeometryModification
 {
     // Private data
+        //- reference to polyMeshGen
+        polyMeshGen& mesh_;
 
-        //- Reference to dictionary
-        const dictionary& modificationDict_;
+        //- length of box sides
+        const dictionary& meshDict_;
 
-        //- list of coordinate modification objects
-        coordinateModificationList modifiers_;
+        //- contruct coordinate modification
+        coordinateModifier* coordinateModifierPtr_;
 
-        //- list of backward coordinate modifiers
-        coordinateModificationList backwardModifiers_;
+        //- is mofdification active
+        bool modificationActive_;
+
 
     // Private member functions
-        //- check if the comibination of modifiers has a valid inverse
-        void checkForValidInverse() const;
+        //- check existence of geometry modifiers
+        void checkModification();
+
+        //- disable bitwise copy construct
+        polyMeshGenGeometryModification(const polyMeshGenGeometryModification&);
+
+        //- disable bitwise assignment
+        void operator=(const polyMeshGenGeometryModification&);
 
 public:
 
     // Constructors
 
-        //- Construct from dictionary
-        coordinateModifier(const dictionary&);
+        //- Construct from polyMeshGen and dictionary
+        polyMeshGenGeometryModification(polyMeshGen&, const dictionary&);
 
     // Destructor
-
-        ~coordinateModifier();
-
+        ~polyMeshGenGeometryModification();
 
     // Member Functions
 
-        //- calculate the modified coordinate of the point
-        point modifiedPoint(const point&) const;
+        //- is geometry modification active
+        bool activeModification() const;
 
-        //- calculate the displacement vector for the backward modification
-        point backwardModifiedPoint(const point&) const;
+        //- modify coordinates
+        void modifyGeometry();
 
+        //- revert modification of coorinates
+        void revertGeometryModification();
 };
 
 

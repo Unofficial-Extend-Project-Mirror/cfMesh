@@ -22,20 +22,22 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    planeTranslation
+    sphereScaling
 
 Description
-    Applies translation to points on the positive side of the plane.
+    Scales distances inside the sphere and translates points outside
 
 SourceFiles
-    planeTranslation.C
+    sphereScaling.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef planeTranslation_H
-#define planeTranslation_H
+#ifndef sphereScaling_H
+#define sphereScaling_H
 
 #include "coordinateModification.H"
+#include "point.H"
+#include "typeInfo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,82 +45,77 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class planeTranslation Declaration
+                        Class sphereScaling Declaration
 \*---------------------------------------------------------------------------*/
 
-class planeTranslation
+class sphereScaling
 :
     public coordinateModification
 {
     // Private data
-        //- origin of the plane
-        point origin_;
+        //- centre of the sphere
+        point centre_;
 
-        //- normal vector
-        vector normal_;
+        //- radius of the sphere
+        scalar radius_;
 
-        //- translation distance
-        scalar translationDistance_;
-
-        //- scaling factor
-        scalar scalingFactor_;
+        //- scaling factor in the radial direction
+        scalar radialScaling_;
 
 public:
 
     //- Runtime type information
-    TypeName("planeTranslation");
+    TypeName("sphereScaling");
 
 
     // Constructors
 
         //- Null construct
-        planeTranslation();
+        sphereScaling();
 
-        //- Construct from name, origin, normal, translation distance and scale
-        planeTranslation
+        //- Construct from name, centre, radius and scaling factor
+        sphereScaling
         (
             const word& name,
-            const point& original,
-            const vector& normal,
-            const scalar translationDistance,
-            const scalar scalingFactor
+            const point& centre,
+            const scalar radius,
+            const scalar radialScaling = 1.0
         );
 
         //- Construct from dictionary
-        planeTranslation(const word& name, const dictionary& dict);
+        sphereScaling(const word& name, const dictionary& dict);
 
         //- Construct and return a clone
         virtual autoPtr<coordinateModification> clone
         (
-            const planeTranslation& pt
+            const sphereScaling& ss
         ) const
         {
             return autoPtr<coordinateModification>
             (
-                new planeTranslation
+                new sphereScaling
                 (
-                    pt.name(),
-                    pt.origin_,
-                    pt.normal_,
-                    pt.translationDistance_,
-                    pt.scalingFactor_
+                    ss.name(),
+                    ss.centre_,
+                    ss.radius_,
+                    ss.radialScaling_
                 )
             );
         }
 
     // Member Functions
 
-        //- return the origin of the plane
+        //- return the centre of the box
         virtual point origin() const;
 
         //- translate the object to the modified coordinates
         //- this is needed for backward transformation
         virtual void translateAndModifyObject(const vector&);
 
-        //- calculate the displacement vector for plane translation
+        //- calculate the displacement vector for box scaling
         virtual vector displacement(const point&) const;
 
-        //- calculate the displacement vector for plane translation
+        //- calculate the displacement vector for box scaling
         virtual vector backwardDisplacement(const point&) const;
 
         //- can this modification object be combined with other ones

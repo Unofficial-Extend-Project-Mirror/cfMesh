@@ -911,13 +911,13 @@ inline point nearestPointOnTheEdgeExact
 )
 {
     const vector e = edgePoint1 - edgePoint0;
-    const scalar d = mag(e);
+    const scalar dSq = magSqr(e);
     const vector k = p - edgePoint0;
 
-    if( d < VSMALL )
+    if( dSq < VSMALL )
         return edgePoint0;
 
-    const scalar t = (e & k) / (d * d + VSMALL);
+    const scalar t = (e & k) / (dSq + VSMALL);
     if( t > 1.0 )
     {
         return edgePoint1;

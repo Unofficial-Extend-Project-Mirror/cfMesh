@@ -26,6 +26,7 @@ License
 #include "planeTranslation.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
+#include "plane.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -109,16 +110,11 @@ vector planeTranslation::displacement(const point& p) const
     const vector translationVec =
         normal_ * translationDistance_ * ((1.0/scalingFactor_) - 1.0);
 
-    if( dist >= translationDistance_ )
-    {
-        return translationVec;
-    }
-    else if( dist >= 0.0 )
-    {
-        return (dist / translationDistance_) * translationVec;
-    }
+    const scalar t = dist / translationDistance_;
 
-    return vector::zero;
+    const scalar tBnd = Foam::max(0.0, Foam::min(1.0, t));
+
+    return tBnd * translationVec;
 }
 
 vector planeTranslation::backwardDisplacement(const point& p) const
@@ -126,19 +122,33 @@ vector planeTranslation::backwardDisplacement(const point& p) const
     const scalar dist = (p - origin_) & normal_;
 
     const vector translationVec =
-        normal_ * translationDistance_ *
-        ((1.0/scalingFactor_) - 1.0) * scalingFactor_;
+        normal_ * translationDistance_ * (scalingFactor_ - 1.0);
 
-    if( dist >= translationDistance_ )
-    {
-        return -translationVec;
-    }
-    else if( dist >= 0.0 )
-    {
-        return -(dist / translationDistance_) * translationVec;
-    }
+    const scalar t = dist / translationDistance_;
 
-    return vector::zero;
+    const scalar tBnd = Foam::max(0.0, Foam::min(1.0, t));
+
+    return tBnd * translationVec;
+}
+
+bool planeTranslation::combiningPossible() const
+{
+    return true;
+}
+
+void planeTranslation::boundingPlanes(PtrList<plane>& pl) const
+{
+    if( Foam::mag(scalingFactor_ - 1.0) > VSMALL )
+    {
+        pl.setSize(2);
+
+        pl.set(0, new plane(origin_, normal_));
+        pl.set(1, new plane(origin_ + translationDistance_ * normal_, normal_));
+    }
+    else
+    {
+        pl.clear();
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -254,10 +264,10 @@ void planeTranslation::operator=(const dictionary& d)
     }
     else
     {
-        FatalErrorIn
+        WarningIn
         (
             "void planeTranslation::operator=(const dictionary& d)"
-        ) << "Entry scalingFactor is not specified!" << exit(FatalError);
+        ) << "Entry scalingFactor is not specified!" << endl;
 
         scalingFactor_ = 1.0;
     }
