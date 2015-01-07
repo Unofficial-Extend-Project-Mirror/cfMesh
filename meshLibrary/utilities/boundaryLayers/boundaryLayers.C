@@ -543,6 +543,7 @@ boundaryLayers::boundaryLayers
     terminateLayersAtConcaveEdges_(false),
     is2DMesh_(false),
     patchNames_(),
+    patchTypes_(),
     treatedPatch_(),
     treatPatchesWithPatch_(),
     newLabelForVertex_(),
@@ -553,8 +554,12 @@ boundaryLayers::boundaryLayers
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     patchNames_.setSize(boundaries.size());
+    patchTypes_.setSize(boundaries.size());
     forAll(boundaries, patchI)
+    {
         patchNames_[patchI] = boundaries[patchI].patchName();
+        patchTypes_[patchI] = boundaries[patchI].patchType();
+    }
 
     treatedPatch_.setSize(boundaries.size());
     treatedPatch_ = false;
