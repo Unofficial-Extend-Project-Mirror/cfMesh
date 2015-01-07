@@ -61,6 +61,9 @@ class cartesian2DMeshGenerator
         //- pointer to the surface
         const triSurf* surfacePtr_;
 
+        //- pointer to the modified surface mesh
+        const triSurf* modSurfacePtr_;
+
         //- IOdictionary containing information about cell sizes, etc..
         IOdictionary meshDict_;
 

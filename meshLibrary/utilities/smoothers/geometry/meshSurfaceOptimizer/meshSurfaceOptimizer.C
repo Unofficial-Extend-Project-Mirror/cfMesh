@@ -126,7 +126,9 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     vertexType_(surface.boundaryPoints().size()),
     partitionerPtr_(new meshSurfacePartitioner(surface)),
     deletePartitioner_(true),
-    triMeshPtr_(NULL)
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
 {
     classifySurfaceVertices();
 }
@@ -142,7 +144,9 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     vertexType_(surfaceEngine_.boundaryPoints().size()),
     partitionerPtr_(&partitioner),
     deletePartitioner_(false),
-    triMeshPtr_(NULL)
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
 {
     classifySurfaceVertices();
 }
@@ -167,6 +171,13 @@ void meshSurfaceOptimizer::removeUserConstraints()
     forAll(vertexType_, bpI)
         if( vertexType_[bpI] & LOCKED )
             vertexType_[bpI] ^= LOCKED;
+}
+
+void meshSurfaceOptimizer::enforceConstraints(const word subsetName)
+{
+    enforceConstraints_ = true;
+
+    badPointsSubsetName_ = subsetName;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

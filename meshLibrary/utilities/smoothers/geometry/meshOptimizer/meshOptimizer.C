@@ -30,6 +30,7 @@ Description
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
 #include "polyMeshGenAddressing.H"
+#include "polyMeshGenChecks.H"
 
 // #define DEBUGSmoothing
 
@@ -53,6 +54,84 @@ void meshOptimizer::clearSurface()
     deleteDemandDrivenData(msePtr_);
 }
 
+label meshOptimizer::findBadFaces
+(
+    labelHashSet& badFaces,
+    const boolList& changedFace
+) const
+{
+    badFaces.clear();
+
+    polyMeshGenChecks::checkFacePyramids
+    (
+        mesh_,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    polyMeshGenChecks::checkFaceFlatness
+    (
+        mesh_,
+        false,
+        0.8,
+        &badFaces,
+        &changedFace
+    );
+
+    polyMeshGenChecks::checkCellPartTetrahedra
+    (
+        mesh_,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    polyMeshGenChecks::checkFaceAreas
+    (
+        mesh_,
+        false,
+        VSMALL,
+        &badFaces,
+        &changedFace
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
+label meshOptimizer::findLowQualityFaces
+(
+    labelHashSet& badFaces,
+    const boolList& changedFace
+) const
+{
+    badFaces.clear();
+
+    polyMeshGenChecks::checkFaceDotProduct
+    (
+        mesh_,
+        false,
+        70.0,
+        &badFaces
+    );
+
+    polyMeshGenChecks::checkFaceSkewness
+    (
+        mesh_,
+        false,
+        2.0,
+        &badFaces
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 // Construct from mesh
@@ -61,7 +140,9 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
     mesh_(mesh),
     vertexLocation_(mesh.points().size(), INSIDE),
     lockedFaces_(),
-    msePtr_(NULL)
+    msePtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
 {
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bPoints = mse.boundaryPoints();
@@ -98,6 +179,14 @@ meshOptimizer::~meshOptimizer()
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void meshOptimizer::enforceConstraints(const word subsetName)
+{
+    enforceConstraints_ = true;
+
+    badPointsSubsetName_ = subsetName;
+}
+
 
 void meshOptimizer::lockCells(const labelLongList& l)
 {

@@ -73,10 +73,20 @@ class meshOptimizer
         //- mesh surface
         mutable meshSurfaceEngine* msePtr_;
 
+        //- enforce constraints
+        bool enforceConstraints_;
+
+        //- name of the subset contaning tangled points
+        word badPointsSubsetName_;
+
     // Private member functions
         //- return mesh surface
         const meshSurfaceEngine& meshSurface() const;
         void clearSurface();
+
+        //- find problematic faces
+        label findBadFaces(labelHashSet&, const boolList&) const;
+        label findLowQualityFaces(labelHashSet&, const boolList&) const;
 
     // Nested classes
 
@@ -199,6 +209,12 @@ public:
         ~meshOptimizer();
 
     // Member Functions
+        //- Flag stopping the meshing process if it is not possible
+        //- to untangle the surface without sacrificing geometry constraints
+        //- Points which must be moved away from the required position are
+        //- stored into a point subset
+        void enforceConstraints(const word subsetName="badPoints");
+
         //- lock the cells which shall not be modified
         void lockCells(const labelLongList&);
 
@@ -213,7 +229,15 @@ public:
         void optimizeSurface(const meshOctree&);
 
         //- performs mesh untangling based on detected negative normals
-        void untangleMeshFV();
+        //- a global iteration consists of maxNumIterations iterations when
+        //- only internal points are moved and maxNumSurfaceIterations when
+        //- surface points are moved
+        void untangleMeshFV
+        (
+            const label maxNumGlobalIterations = 10,
+            const label maxNumIterations = 50,
+            const label maxNumSurfaceIterations = 2
+        );
 
         //- performs optimisation of boundary layer cells
         //- it is applied to the first boundary layer, only
@@ -221,7 +245,16 @@ public:
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
-        void optimizeLowQualityFaces();
+        void optimizeLowQualityFaces(const label maxNumIterations = 10);
+
+        //- perform optimization of cells near the boundary
+        //- the use shall specify the number of iterations and the number
+        //- of cell layers which shall be taken into account
+        void optimizeMeshNearBoundaries
+        (
+            const label maxNumIterations = 10,
+            const label numLayersOfCells = 2
+        );
 
         //- final optimisation
         void optimizeMeshFV();

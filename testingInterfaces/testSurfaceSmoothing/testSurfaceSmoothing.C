@@ -1,64 +1,60 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+  \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2005-2007 Franjo Juretic
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of OpenFOAM.
+    This file is part of cfMesh.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
+    cfMesh is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
+    Free Software Foundation; either version 3 of the License, or (at your
     option) any later version.
 
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    cfMesh is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-
-Application
-    Test of surface smoother
+    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-
+    Writes the mesh in fpma format readable by AVL's CfdWM
 
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "meshSurfaceOptimizer.H"
-#include "meshSurfaceEngine.H"
 #include "Time.H"
-#include "objectRegistry.H"
-#include "meshOctreeCreator.H"
+#include "polyMeshGenModifier.H"
+#include "meshSurfaceOptimizer.H"
 #include "triSurf.H"
-#include "polyMeshGen.H"
+#include "meshOctree.H"
+#include "meshOctreeCreator.H"
+#include "meshSurfaceEngine.H"
+#include "labelledTri.H"
 
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// Main program:
 
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    objectRegistry registry(runTime);
+    polyMeshGen pmg(runTime);
+    pmg.read();
 
     IOdictionary meshDict
     (
         IOobject
         (
             "meshDict",
-            registry.time().system(),
-            registry,
+            runTime.system(),
+            runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
@@ -68,24 +64,21 @@ int main(int argc, char *argv[])
     if( Pstream::parRun() )
         surfaceFile = ".."/surfaceFile;
 
-    triSurf surf(registry.path()/surfaceFile);
+    triSurf surf(runTime.path()/surfaceFile);
 
-    // construct the octree
-    meshOctree moc(surf);
-    meshOctreeCreator(moc, meshDict).createOctreeBoxes();
+    meshOctree mo(surf);
 
-    polyMeshGen pmg(registry);
-    pmg.read();
+    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
 
+    meshSurfaceEngine mse(pmg);
+    meshSurfaceOptimizer surfOpt(mse, mo);
 
-    mo.optimizeSurface();
-    mo.untangleSurface();
+    surfOpt.optimizeSurface(10);
 
     pmg.write();
 
     Info << "End\n" << endl;
     return 0;
 }
-
 
 // ************************************************************************* //

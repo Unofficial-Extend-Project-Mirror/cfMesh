@@ -26,9 +26,11 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "cartesian2DMeshGenerator.H"
+#include "triSurface2DCheck.H"
 #include "polyMeshGen2DEngine.H"
 #include "triSurf.H"
 #include "triSurfacePatchManipulator.H"
+#include "triSurfaceCleanupDuplicateTriangles.H"
 #include "demandDrivenData.H"
 #include "Time.H"
 #include "meshOctreeCreator.H"
@@ -47,6 +49,8 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 //#define DEBUG
 
@@ -165,6 +169,24 @@ void cartesian2DMeshGenerator::generateBoundaryLayers()
 
     bl.addLayerForAllPatches();
 
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+
+        //- delete the octree
+        deleteDemandDrivenData(octreePtr_);
+
+        //- contruct a new octree from the input surface
+        octreePtr_ = new meshOctree(*surfacePtr_, true);
+        meshOctreeCreator(*octreePtr_).createOctreeWithRefinedBoundary(20);
+    }
+
     # ifdef DEBUG
     mesh_.write();
     //::exit(0);
@@ -212,25 +234,35 @@ void cartesian2DMeshGenerator::renumberMesh()
 
 void cartesian2DMeshGenerator::generateMesh()
 {
-    createCartesianMesh();
+    try
+    {
+        createCartesianMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    mapEdgesAndCorners();
+        mapEdgesAndCorners();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoundaryLayers();
+        generateBoundaryLayers();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    refBoundaryLayers();
+        refBoundaryLayers();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void cartesian2DMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -240,6 +272,7 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -273,10 +306,23 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
         mesh_.metaData().add("surfaceFile", surfaceFile);
         mesh_.metaData().add("surfaceMeta", surfMetaDict);
+
+        triSurface2DCheck surfCheck(*surfacePtr_);
+        if( !surfCheck.is2DSurface() )
+        {
+            surfCheck.createSubsets();
+
+            Info << "Writting surface with subsets to file "
+                 << "badSurfaceWithSubsets.fms" << endl;
+            surfacePtr_->writeSurface("badSurfaceWithSubsets.fms");
+        }
     }
 
     if( surfacePtr_->featureEdges().size() != 0 )
     {
+        //- get rid of duplicate triangles as they cause strange problems
+        triSurfaceCleanupDuplicateTriangles(const_cast<triSurf&>(*surfacePtr_));
+
         //- create surface patches based on the feature edges
         //- and update the meshDict based on the given data
         triSurfacePatchManipulator manipulator(*surfacePtr_);
@@ -289,7 +335,18 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_, true);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
+
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_, true);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_, true);
+    }
 
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
@@ -301,6 +358,7 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 cartesian2DMeshGenerator::~cartesian2DMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
 }
 

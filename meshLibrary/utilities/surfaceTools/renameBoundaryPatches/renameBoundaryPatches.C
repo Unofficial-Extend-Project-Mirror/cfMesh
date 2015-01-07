@@ -100,9 +100,11 @@ void renameBoundaryPatches::calculateNewBoundary()
         {
             const word patchName = patchesToRename[patchI].keyword();
 
-            if( patchToLabel.find(patchName) == patchToLabel.end() )
+            const labelList matchedPatches = mesh_.findPatches(patchName);
+
+            if(matchedPatches.empty())
             {
-                Info << "Patch " << patchName << " does not exist!!" << endl;
+                Warning << "No matches for " << patchName << " found!!" << endl;
                 continue;
             }
 
@@ -116,32 +118,36 @@ void renameBoundaryPatches::calculateNewBoundary()
 
             const dictionary pDict = patchesToRename[patchI].dict();
 
-            word newName(patchName);
-            if( pDict.found("newName") )
-                newName = word(pDict.lookup("newName"));
-
-            if( newNameToPos.find(newName) != newNameToPos.end() )
+            forAll(matchedPatches, matchI)
             {
-                //- patch with the same name already exists
-                patchToNew[patchToLabel[patchName]] = newNameToPos[newName];
-                continue;
-            }
+                word newName(mesh_.getPatchName(matchedPatches[matchI]));
 
-            //- add a new patch
-            newNameToPos.insert(std::pair<word, label>(newName, newPatchI));
-            newPatchNames[newPatchI] = newName;
-            if( pDict.found("type") )
-            {
-                const word newType(pDict.lookup("type"));
-                newPatchTypes[newPatchI] = newType;
-            }
-            else
-            {
-                newPatchTypes[newPatchI] = "wall";
-            }
+                if( pDict.found("newName") )
+                    newName = word(pDict.lookup("newName"));
 
-            patchToNew[patchToLabel[patchName]] = newPatchI;
-            ++newPatchI;
+                if( newNameToPos.find(newName) != newNameToPos.end() )
+                {
+                    //- patch with the same name already exists
+                    patchToNew[matchedPatches[matchI]] = newNameToPos[newName];
+                    continue;
+                }
+
+                //- add a new patch
+                newNameToPos.insert(std::pair<word, label>(newName, newPatchI));
+                newPatchNames[newPatchI] = newName;
+                if( pDict.found("type") )
+                {
+                    const word newType(pDict.lookup("type"));
+                    newPatchTypes[newPatchI] = newType;
+                }
+                else
+                {
+                    newPatchTypes[newPatchI] = "wall";
+                }
+
+                patchToNew[matchedPatches[matchI]] = newPatchI;
+                ++newPatchI;
+            }
         }
     }
 

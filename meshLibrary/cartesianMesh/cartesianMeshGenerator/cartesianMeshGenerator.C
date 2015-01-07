@@ -47,7 +47,8 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
-#include "removeCellsInSelectedDomains.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 #include "polyMeshGenChecks.H"
 
@@ -75,43 +76,12 @@ void cartesianMeshGenerator::createCartesianMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 
 void cartesianMeshGenerator::surfacePreparation()
 {
-    //- remove cells inside the domains specified by the user
-    if( meshDict_.found("removeDomains") )
-    {
-        if( Pstream::parRun() )
-        {
-            WarningIn
-            (
-                "void cartesianMeshGenerator::surfacePreparation()"
-            ) << "The feature removeDomains is not availabel for MPI runs"
-              << exit(FatalError);
-        }
-
-        const dictionary& dict = meshDict_.subDict("removeDomains");
-
-        const wordList domainNames = dict.toc();
-
-        mesh_.clearAddressingData();
-        removeCellsInSelectedDomains rCells(mesh_, *octreePtr_);
-
-        //- read the patches/subsets forming this domain
-        forAll(domainNames, domainI)
-        {
-            wordList domainParts(dict.lookup(domainNames[domainI]));
-
-            rCells.selectCellsInDomain(domainParts);
-        }
-
-        rCells.removeCells();
-    }
-
-
     //- removes unnecessary cells and morph the boundary
     //- such that there is only one boundary face per cell
     //- It also checks topology of cells after morphing is performed
@@ -169,7 +139,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 
     deleteDemandDrivenData(msePtr);
@@ -242,12 +212,30 @@ void cartesianMeshGenerator::refBoundaryLayers()
 void cartesianMeshGenerator::optimiseFinalMesh()
 {
     //- untangle the surface if needed
-    meshSurfaceEngine mse(mesh_);
-    meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
+    bool enforceConstraints(false);
+    if( meshDict_.found("enforceGeometryConstraints") )
+    {
+        enforceConstraints =
+            readBool(meshDict_.lookup("enforceGeometryConstraints"));
+    }
+
+    if( true )
+    {
+        meshSurfaceEngine mse(mesh_);
+        meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
+
+        if( enforceConstraints )
+            surfOpt.enforceConstraints();
+
+        surfOpt.optimizeSurface();
+    }
+
     deleteDemandDrivenData(octreePtr_);
 
     //- final optimisation
     meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
 
     optimizer.optimizeLowQualityFaces();
@@ -255,6 +243,17 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     optimizer.untangleMeshFV();
 
     mesh_.clearAddressingData();
+
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
 
     # ifdef DEBUG
     mesh_.write();
@@ -284,25 +283,35 @@ void cartesianMeshGenerator::renumberMesh()
 
 void cartesianMeshGenerator::generateMesh()
 {
-    createCartesianMesh();
+    try
+    {
+        createCartesianMesh();
 
-    surfacePreparation();
+        surfacePreparation();
 
-    mapMeshToSurface();
+        mapMeshToSurface();
 
-    mapEdgesAndCorners();
+        mapEdgesAndCorners();
 
-    optimiseMeshSurface();
+        optimiseMeshSurface();
 
-    generateBoundaryLayers();
+        generateBoundaryLayers();
 
-    optimiseFinalMesh();
+        optimiseFinalMesh();
 
-    refBoundaryLayers();
+        refBoundaryLayers();
 
-    renumberMesh();
+        renumberMesh();
 
-    replaceBoundaries();
+        replaceBoundaries();
+    }
+    catch(...)
+    {
+        WarningIn
+        (
+            "void cartesianMeshGenerator::generateMesh()"
+        ) << "Meshing process terminated!" << endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -312,6 +321,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -361,7 +371,18 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
+
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
 
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
@@ -373,6 +394,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 cartesianMeshGenerator::~cartesianMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
 }
 

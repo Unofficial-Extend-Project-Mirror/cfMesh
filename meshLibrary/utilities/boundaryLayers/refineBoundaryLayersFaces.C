@@ -150,8 +150,8 @@ void refineBoundaryLayers::refineFace
             {
                 FatalErrorIn
                 (
-                    "void refineBoundaryLayers::refineFace(const face&, "
-                    "const FixedList<label, 2>&, DynList<DynList<label, 4> >&)"
+                    "void refineBoundaryLayers::refineFace(const face&,"
+                    " const FixedList<label, 2>&, DynList<DynList<label, 4> >&)"
                 ) << "More than two split directions for a face"
                   << abort(FatalError);
             }
@@ -1232,4 +1232,3 @@ void refineBoundaryLayers::generateNewFaces()
 } // End namespace Foam
 
 // ************************************************************************* //
-

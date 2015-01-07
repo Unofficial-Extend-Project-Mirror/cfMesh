@@ -1796,6 +1796,8 @@ void refineBoundaryLayers::generateNewCells()
 
     //- update face subsets
     mesh_.updateFaceSubsets(facesFromFace_);
+    facesFromFace_.setSize(0);
+    newFaces_.setSize(0);
 
     //- update cells to match the faces
     # ifdef DEBUGLayer
@@ -1917,4 +1919,3 @@ void refineBoundaryLayers::generateNewCells()
 } // End namespace Foam
 
 // ************************************************************************* //
-

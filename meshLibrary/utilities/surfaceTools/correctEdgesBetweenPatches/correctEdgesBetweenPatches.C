@@ -95,7 +95,7 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
     forAll(boundaries, patchI)
         patchNames_[patchI] = boundaries[patchI].patchName();
 
-    decomposeProblematicFaces();
+    //decomposeProblematicFaces();
 
     decomposeConcaveFaces();
 

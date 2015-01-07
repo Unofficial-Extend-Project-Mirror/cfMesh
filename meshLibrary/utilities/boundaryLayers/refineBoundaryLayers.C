@@ -202,12 +202,15 @@ void refineBoundaryLayers::setNumberOfLayersForPatch
             "void refineBoundaryLayers::setNumberOfLayersForPatch"
             "(const word&, const label)"
         ) << "The specified number of boundary layers for patch " << patchName
-          << " is less than 2" << endl;
-
-        return;
+          << " is less than 2... boundary layers disabled for this patch!" << endl;
     }
 
-    numLayersForPatch_[patchName] = nLayers;
+    const labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        numLayersForPatch_[mesh_.getPatchName(matchedIDs[matchI])] = nLayers;
+    }
 }
 
 void refineBoundaryLayers::setThicknessRatioForPatch
@@ -237,7 +240,13 @@ void refineBoundaryLayers::setThicknessRatioForPatch
         return;
     }
 
-    thicknessRatioForPatch_[patchName] = thicknessRatio;
+    const labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        const word pName = mesh_.getPatchName(matchedIDs[matchI]);
+        thicknessRatioForPatch_[pName] = thicknessRatio;
+    }
 }
 
 void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
@@ -267,7 +276,13 @@ void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
         return;
     }
 
-    maxThicknessForPatch_[patchName] = maxThickness;
+    const labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        const word pName = mesh_.getPatchName(matchedIDs[matchI]);
+        maxThicknessForPatch_[pName] = maxThickness;
+    }
 }
 
 void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
@@ -280,7 +295,13 @@ void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
         ) << "refineLayers is already executed" << exit(FatalError);
     }
 
-    discontinuousLayersForPatch_.insert(patchName);
+    const labelList matchedIDs = mesh_.findPatches(patchName);
+
+    forAll(matchedIDs, matchI)
+    {
+        const word pName = mesh_.getPatchName(matchedIDs[matchI]);
+        discontinuousLayersForPatch_.insert(pName);
+    }
 }
 
 void refineBoundaryLayers::setCellSubset(const word subsetName)
@@ -413,6 +434,20 @@ void refineBoundaryLayers::readSettings
             const scalar maxFirstThickness =
                 readScalar(bndLayers.lookup("maxFirstLayerThickness"));
             refLayers.setGlobalMaxThicknessOfFirstLayer(maxFirstThickness);
+        }
+
+        //- consider specified patches for exclusion from boundary layer creation
+        //- implemented by setting the number of layers to 1
+        if( bndLayers.found("excludedPatches") )
+        {
+            const wordList patchNames(bndLayers.lookup("excludedPatches"));
+            
+            forAll(patchNames, patchI)
+            {
+                const word pName = patchNames[patchI];
+
+                refLayers.setNumberOfLayersForPatch(pName, 1);
+            }
         }
 
         //- patch-based properties

@@ -69,6 +69,124 @@ partTetMesh::partTetMesh(polyMeshGen& mesh)
     createPointsAndTets(useCell);
 }
 
+partTetMesh::partTetMesh(polyMeshGen& mesh, const direction nLayers)
+    :
+        origMesh_(mesh),
+        points_(),
+        tets_(),
+        nodeLabelInOrigMesh_(),
+        smoothVertex_(),
+        pointTets_(),
+        internalPointsOrderPtr_(NULL),
+        boundaryPointsOrderPtr_(NULL),
+        globalPointLabelPtr_(NULL),
+        pAtProcsPtr_(NULL),
+        globalToLocalPointAddressingPtr_(NULL),
+        neiProcsPtr_(NULL),
+        pAtParallelBoundariesPtr_(NULL),
+        pAtBufferLayersPtr_(NULL)
+    {
+        const faceListPMG& faces = mesh.faces();
+        const cellListPMG& cells = mesh.cells();
+        const labelList& owner = mesh.owner();
+        const PtrList<boundaryPatch>& boundaries = mesh.boundaries();
+        const VRWGraph& pointCells = mesh.addressingData().pointCells();
+
+        List<direction> useCell(cells.size(), direction(0));
+
+        //- select cells containing at least one vertex of the bad faces
+        forAll(boundaries, patchI)
+        {
+            const label start = boundaries[patchI].patchStart();
+            const label size = boundaries[patchI].patchSize();
+
+            for(label fI=0;fI<size;++fI)
+            {
+                useCell[owner[start+fI]] = 1;
+            }
+        }
+
+        //- add additional layer of cells
+        for(direction layerI=1;layerI<(nLayers+1);++layerI)
+        {
+            forAll(useCell, cI)
+                if( useCell[cI] == layerI )
+                {
+                    const cell& c = cells[cI];
+
+                    forAll(c, fI)
+                    {
+                        const face& f = faces[c[fI]];
+
+                        forAll(f, pI)
+                        {
+                            forAllRow(pointCells, f[pI], pcI)
+                            {
+                                const label cLabel = pointCells(f[pI], pcI);
+                                if( !useCell[cLabel] )
+                                    useCell[cLabel] = layerI + 1;
+                            }
+                        }
+                    }
+                }
+
+            if( Pstream::parRun() )
+            {
+                const labelLongList& globalPointLabel =
+                    mesh.addressingData().globalPointLabel();
+                const VRWGraph& pProcs = mesh.addressingData().pointAtProcs();
+                const Map<label>& globalToLocal =
+                    mesh.addressingData().globalToLocalPointAddressing();
+
+                std::map<label, LongList<label> > eData;
+                forAllConstIter(Map<label>, globalToLocal, iter)
+                {
+                    const label pointI = iter();
+
+                    forAllRow(pProcs, pointI, procI)
+                    {
+                        const label neiProc = pProcs(pointI, procI);
+                        if( neiProc == Pstream::myProcNo() )
+                            continue;
+
+                        if( eData.find(neiProc) == eData.end() )
+                        {
+                            eData.insert
+                            (
+                                std::make_pair(neiProc, LongList<label>())
+                            );
+                        }
+
+                        forAllRow(pointCells, pointI, pcI)
+                            if( useCell[pointCells(pointI, pcI)] == layerI )
+                            {
+                                eData[neiProc].append(globalPointLabel[pointI]);
+                                break;
+                            }
+                    }
+                }
+
+                //- exchange data with other processors
+                labelLongList receivedData;
+                help::exchangeMap(eData, receivedData);
+
+                forAll(receivedData, i)
+                {
+                    const label pointI = globalToLocal[receivedData[i]];
+
+                    forAllRow(pointCells, pointI, pcI)
+                    {
+                        const label cLabel = pointCells(pointI, pcI);
+                        if( !useCell[cLabel] )
+                            useCell[cLabel] = layerI + 1;
+                    }
+                }
+            }
+        }
+
+        createPointsAndTets(useCell);
+    }
+
 partTetMesh::partTetMesh
 (
     polyMeshGen& mesh,

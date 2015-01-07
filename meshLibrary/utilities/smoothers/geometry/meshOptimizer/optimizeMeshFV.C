@@ -25,6 +25,8 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+#include <stdexcept>
+
 #include "demandDrivenData.H"
 #include "meshOptimizer.H"
 #include "polyMeshGenAddressing.H"
@@ -50,7 +52,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOptimizer::untangleMeshFV()
+void meshOptimizer::untangleMeshFV
+(
+    const label maxNumGlobalIterations,
+    const label maxNumIterations,
+    const label maxNumSurfaceIterations
+)
 {
     Info << "Starting untangling the mesh" << endl;
 
@@ -99,11 +106,10 @@ void meshOptimizer::untangleMeshFV()
     # endif
 
     label nBadFaces, nGlobalIter(0), nIter;
-    label maxNumGlobalIterations(10);
 
     //- reduce the time in case if some parts of the mesh are locked
-    if( returnReduce(lockedFaces_.size(), sumOp<label>()) != 0 )
-        maxNumGlobalIterations = 2;
+    //if( returnReduce(lockedFaces_.size(), sumOp<label>()) != 0 )
+    //    maxNumGlobalIterations = 2;
 
     const faceListPMG& faces = mesh_.faces();
 
@@ -179,7 +185,7 @@ void meshOptimizer::untangleMeshFV()
             //- update points in the mesh from the coordinates in the tet mesh
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( (nIter < minIter+5) && (++nIter < 50) );
+        } while( (nIter < minIter+5) && (++nIter < maxNumIterations) );
 
         if( (nBadFaces == 0) || (++nGlobalIter >= maxNumGlobalIterations) )
             break;
@@ -203,7 +209,36 @@ void meshOptimizer::untangleMeshFV()
 
             //- perform optimisation
             if( nBadFaces == 0 )
+            {
                 break;
+            }
+            else if( enforceConstraints_ )
+            {
+                const label subsetId =
+                    mesh_.addPointSubset(badPointsSubsetName_);
+
+                forAllConstIter(labelHashSet, badFaces, it)
+                {
+                    const face& f = faces[it.key()];
+                    forAll(f, pI)
+                        mesh_.addPointToSubset(subsetId, f[pI]);
+                }
+
+                WarningIn
+                (
+                    "void meshOptimizer::untangleMeshFV()"
+                ) << "Writing mesh with " << badPointsSubsetName_
+                  << " subset. These points cannot be untangled"
+                  << " without sacrificing geometry constraints. Exitting.."
+                  << endl;
+
+                returnReduce(1, sumOp<label>());
+                throw std::logic_error
+                (
+                    "void meshOptimizer::untangleMeshFV()"
+                    "Cannot untangle mesh!!"
+                );
+            }
 
             partTetMesh tetMesh(mesh_, badFaces, 0);
 
@@ -244,7 +279,7 @@ void meshOptimizer::untangleMeshFV()
 
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( ++nIter < 2 );
+        } while( ++nIter < maxNumSurfaceIterations );
 
     } while( nBadFaces );
 
@@ -293,7 +328,7 @@ void meshOptimizer::optimizeBoundaryLayer()
     Info << "Finished optimising boundary layer" << endl;
 }
 
-void meshOptimizer::optimizeLowQualityFaces()
+void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
 {
     label nBadFaces, nIter(0);
 
@@ -368,7 +403,34 @@ void meshOptimizer::optimizeLowQualityFaces()
         //- update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( (nIter < minIter+2) && (++nIter < 10) );
+    } while( (nIter < minIter+2) && (++nIter < maxNumIterations) );
+}
+
+void meshOptimizer::optimizeMeshNearBoundaries
+(
+    const label maxNumIterations,
+    const label numLayersOfCells
+)
+{
+    label nIter(0);
+
+    const faceListPMG& faces = mesh_.faces();
+    boolList changedFace(faces.size(), true);
+
+    partTetMesh tetMesh(mesh_, numLayersOfCells);
+    tetMeshOptimisation tmo(tetMesh);
+    Info << "Iteration:" << flush;
+    do
+    {
+        tmo.optimiseUsingVolumeOptimizer();
+
+        tetMesh.updateOrigMesh(&changedFace);
+
+        Info << "." << flush;
+
+    } while( ++nIter < maxNumIterations );
+
+    Info << endl;
 }
 
 void meshOptimizer::optimizeMeshFV()

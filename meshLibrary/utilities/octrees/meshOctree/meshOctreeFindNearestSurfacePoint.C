@@ -73,7 +73,7 @@ void meshOctree::findNearestSurfacePoint
 
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -225,7 +225,7 @@ bool meshOctree::findNearestEdgePoint
 
     DynList<const meshOctreeCube*, 256> neighbours;
 
-    const pointField& sp = surface_.points();
+    const pointField& sPoints = surface_.points();
     const edgeLongList& edges = surface_.edges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
@@ -236,12 +236,17 @@ bool meshOctree::findNearestEdgePoint
     distSq = VGREAT;
     nearestEdge = -1;
 
+//    Info << "Finding nearest point for " << p << " size vec " << sizeVec << endl;
+
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
+
+//        Info << "Iteration " << iterationI << " nu found boxes "
+//             << neighbours.size() << endl;
 
         forAll(neighbours, neiI)
         {
@@ -253,14 +258,20 @@ bool meshOctree::findNearestEdgePoint
             const constRow ce =
                 containedEdges[neighbours[neiI]->containedEdges()];
 
+//            Info << "Number of contained edges in box "
+//                 << neighbours[neiI]->cubeLabel()
+//                 << " are " << ce.size() << endl;
+
             forAll(ce, eI)
             {
+                const label edgeI = ce[eI];
+
                 //- find if the edge is in correct patches
                 bool correctPatches(true);
 
-                forAllRow(edgeFaces, ce[eI], efI)
+                forAllRow(edgeFaces, edgeI, efI)
                 {
-                    const label facetI = edgeFaces(ce[eI], efI);
+                    const label facetI = edgeFaces(edgeI, efI);
 
                     if( !regions.contains(surface_[facetI].region()) )
                     {
@@ -272,9 +283,10 @@ bool meshOctree::findNearestEdgePoint
                 if( !correctPatches )
                     continue;
 
-                const point s = sp[edges[ce[eI]].start()];
-                const point e = sp[edges[ce[eI]].end()];
-                const point np = help::nearestPointOnTheEdgeExact(s, e, p);
+                const edge& e = edges[edgeI];
+                const point& sp = sPoints[e.start()];
+                const point& ep = sPoints[e.end()];
+                const point np = help::nearestPointOnTheEdgeExact(sp, ep, p);
                 const scalar dSq = Foam::magSqr(np - p);
 
                 if( dSq < distSq )
@@ -290,7 +302,7 @@ bool meshOctree::findNearestEdgePoint
         if( !foundAnEdge )
             sizeVec *= 2.0;
 
-    } while( !foundAnEdge && (++iterationI < 5) );
+    } while( !foundAnEdge && (++iterationI < 3) );
 
     return foundAnEdge;
 }
@@ -416,7 +428,7 @@ bool meshOctree::findNearestCorner
 
     do
     {
-        boundBox bb(p - sizeVec, p + sizeVec);
+        const boundBox bb(p - sizeVec, p + sizeVec);
 
         neighbours.clear();
         findLeavesContainedInBox(bb, neighbours);
@@ -504,7 +516,7 @@ bool meshOctree::findNearestCorner
         if( !found )
             sizeVec *= 2.0;
 
-    } while( !found && (iterationI++ < 5) );
+    } while( !found && (iterationI++ < 3) );
 
     return found;
 }

@@ -55,7 +55,7 @@ void meshOctreeCreator::refineBoundary()
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
     //- refine DATA boxes to the given level
-    Info << "Refining data boxes to the given size" << endl;
+    Info << "Refining boundary boxes to the given size" << endl;
 
     label nMarked;
     do
@@ -67,6 +67,9 @@ void meshOctreeCreator::refineBoundary()
         # endif
 
         List<direction> refineCubes(leaves.size(), direction(0));
+        labelList nLayers(leaves.size(), 0);
+        List<direction> targetLevel(leaves.size(), direction(0));
+        bool useNLayers(false);
 
         //- select boxes which need to be refined
         # ifdef USE_OMP
@@ -87,18 +90,54 @@ void meshOctreeCreator::refineBoundary()
                 const VRWGraph& containedTriangles =
                     oc.slotPtr()->containedTriangles_;
 
+                const scalar cs = oc.size(octree_.rootBox());
+
+                bool refine(false);
                 forAllRow(containedTriangles, elRowI, tI)
                 {
                     const label triI = containedTriangles(elRowI, tI);
 
                     if( surfRefLevel_[triI] > oc.level() )
                     {
-                        ++nMarked;
-                        refineCubes[leafI] = 1;
-                        break;
+                        refine = true;
+                    }
+
+                    if( surfRefThickness_[triI] > VSMALL )
+                    {
+                        useNLayers = true;
+
+                        nLayers[leafI] =
+                            Foam::max
+                            (
+                                nLayers[leafI],
+                                Foam::max(label(surfRefThickness_[triI]/cs), 1)
+                            );
+
+                        targetLevel[leafI] =
+                            Foam::max(targetLevel[leafI], surfRefLevel_[triI]);
                     }
                 }
+
+                if( refine )
+                {
+                    refineCubes[leafI] = 1;
+                    ++nMarked;
+                }
             }
+        }
+
+        //- mark additional boxes for refinement to achieve
+        //- correct refinement distance
+        reduce(useNLayers, maxOp<label>());
+        if( useNLayers )
+        {
+            nMarked +=
+                octreeModifier.markAdditionalLayers
+                (
+                    refineCubes,
+                    nLayers,
+                    targetLevel
+                );
         }
 
         //- refine boxes
@@ -133,7 +172,7 @@ void meshOctreeCreator::refineBoundary()
 
     } while( nMarked );
 
-    Info << "Finished refining data boxes" << endl;
+    Info << "Finished refining boundary boxes" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -198,16 +237,23 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
 
     List<direction> refLevels(refObjects.size(), globalRefLevel_);
+    scalarList refThickness(refObjects.size(), 0.0);
+
+    forAll(refThickness, oI)
+        refThickness[oI] = refObjects[oI].refinementThickness();
+
     label nMarked;
     do
     {
         nMarked = 0;
         forAll(refObjects, oI)
+        {
             if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
             {
                 ++nMarked;
                 ++refLevels[oI];
             }
+        }
 
         s /= 2.0;
 
@@ -239,6 +285,9 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
         nMarked = 0;
 
         List<direction> refineCubes(leaves.size(), direction(0));
+        labelList nLayers(leaves.size(), 0);
+        List<direction> targetRefLevel(leaves.size(), direction(0));
+        bool useNLayers(false);
 
         //- select boxes which need to be refined
         # ifdef USE_OMP
@@ -255,21 +304,55 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
             boundBox bb;
             oc.cubeBox(rootBox, bb.min(), bb.max());
 
+            bool refine(false);
             forAll(refObjects, oI)
-                if(
-                    (oc.level() < refLevels[oI]) &&
-                    refObjects[oI].intersectsObject(bb)
-                )
+            {
+                if( refObjects[oI].intersectsObject(bb) )
                 {
                     # ifdef DEBUGSearch
                     Info << "Marking leaf " << leafI
                         << " for refinement" << endl;
                     # endif
 
-                    ++nMarked;
-                    refineCubes[leafI] = 1;
-                    break;
+                    if( oc.level() < refLevels[oI] )
+                        refine = true;
+
+                    if( refThickness[oI] > VSMALL )
+                    {
+                        const scalar cs = bb.max().x() - bb.min().x();
+                        nLayers[leafI] =
+                            Foam::max
+                            (
+                                nLayers[leafI],
+                                Foam::max(label(refThickness[oI]/cs), 1)
+                            );
+
+                        targetRefLevel[leafI] =
+                            Foam::max(targetRefLevel[leafI], refLevels[oI]);
+                        useNLayers = true;
+                    }
                 }
+            }
+
+            if( refine )
+            {
+                refineCubes[leafI] = 1;
+                ++nMarked;
+            }
+        }
+
+        //- mark additional boxes for refinement to achieve
+        //- correct refinement distance
+        reduce(useNLayers, maxOp<label>());
+        if( useNLayers )
+        {
+            nMarked +=
+                octreeModifier.markAdditionalLayers
+                (
+                    refineCubes,
+                    nLayers,
+                    targetRefLevel
+                );
         }
 
         //- refine boxes
@@ -327,6 +410,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
     const wordList surfaces = surfDict.toc();
     PtrList<triSurf> surfaceMeshesPtr(surfaces.size());
     List<direction> refLevels(surfaces.size(), globalRefLevel_);
+    scalarList refThickness(surfaces.size());
 
     //- load surface meshes into memory
     forAll(surfaceMeshesPtr, surfI)
@@ -367,6 +451,12 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                 readLabel(dict.lookup("additionalRefinementLevels"));
         }
 
+        if( dict.found("refinementThickness") )
+        {
+            refThickness[surfI] =
+                readScalar(dict.lookup("refinementThickness"));
+        }
+
         //- set the refinement level for the current surface
         refLevels[surfI] += addLevel;
     }
@@ -384,7 +474,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
     const vector tol = SMALL * rootBox.span();
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
-    DynList<label> leavesInBox;
+    DynList<label> leavesInBox, intersectedLeaves;
 
     do
     {
@@ -395,6 +485,9 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
         nMarked = 0;
 
         List<direction> refineCubes(leaves.size(), direction(0));
+        labelList nLayers(leaves.size(), 0);
+        List<direction> targetRefLevel(leaves.size(), direction(0));
+        bool useNLayers(false);
 
         //- select boxes which need to be refined
         forAll(surfaceMeshesPtr, surfI)
@@ -404,7 +497,8 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
             # ifdef USE_OMP
             # pragma omp parallel for \
-            reduction( + : nMarked) schedule(dynamic, 10) private(leavesInBox)
+            reduction( + : nMarked) schedule(dynamic, 10) \
+            private(leavesInBox,intersectedLeaves)
             # endif
             forAll(surf, triI)
             {
@@ -425,31 +519,72 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                 octree_.findLeavesContainedInBox(triBB, leavesInBox);
 
                 //- check which of the leaves are intersected by the triangle
+                intersectedLeaves.clear();
                 forAll(leavesInBox, i)
                 {
                     const label leafI = leavesInBox[i];
 
-                    if( refineCubes[leafI] )
-                        continue;
-
                     const meshOctreeCube& oc = *leaves[leafI];
 
-                    if(
-                        (oc.level() < refLevels[surfI]) &&
-                        oc.intersectsTriangleExact(surf, rootBox, triI)
-                    )
+                    if( oc.intersectsTriangleExact(surf, rootBox, triI) )
                     {
-                        # ifdef DEBUGSearch
-                        Info << "Marking leaf " << leafI
-                            << " with coordinates " << oc
-                            << " for refinement" << endl;
-                        # endif
+                        intersectedLeaves.append(leafI);
 
-                        ++nMarked;
-                        refineCubes[leafI] = 1;
+                        if( oc.level() < refLevels[surfI] )
+                        {
+                            # ifdef DEBUGSearch
+                            Info << "Marking leaf " << leafI
+                                << " with coordinates " << oc
+                                << " for refinement" << endl;
+                            # endif
+
+                            if( !refineCubes[leafI] )
+                                ++nMarked;
+                            refineCubes[leafI] = 1;
+                        }
+                    }
+                }
+
+                if( refThickness[surfI] > VSMALL )
+                {
+                    useNLayers = true;
+
+                    forAll(intersectedLeaves, i)
+                    {
+                        const label leafI = intersectedLeaves[i];
+                        const meshOctreeCube& oc = *leaves[leafI];
+                        const scalar cs = oc.size(rootBox);
+
+                        nLayers[leafI] =
+                            Foam::max
+                            (
+                                nLayers[leafI],
+                                max(label(refThickness[surfI]/cs), 1)
+                            );
+
+                        targetRefLevel[leafI] =
+                            Foam::max
+                            (
+                                targetRefLevel[leafI],
+                                refLevels[surfI]
+                            );
                     }
                 }
             }
+        }
+
+        //- mark additional boxes for refinement to achieve
+        //- correct refinement distance
+        reduce(useNLayers, maxOp<label>());
+        if( useNLayers )
+        {
+            nMarked +=
+                octreeModifier.markAdditionalLayers
+                (
+                    refineCubes,
+                    nLayers,
+                    targetRefLevel
+                );
         }
 
         //- refine boxes

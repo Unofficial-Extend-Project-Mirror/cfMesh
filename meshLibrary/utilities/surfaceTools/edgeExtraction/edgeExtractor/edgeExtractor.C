@@ -26,6 +26,8 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "error.H"
+#include "objectRegistry.H"
+#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "edgeExtractor.H"
 #include "meshSurfaceEngine.H"
@@ -1776,7 +1778,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             }
         }
 
-        //- eavluate the new situation and ensure that no oscillation occur
+        //- evaluate the new situation and ensure that no oscillation occur
         reduce(nCorrected, sumOp<label>());
         if( nCorrected )
         {
@@ -1806,7 +1808,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             facePatch_.transfer(newBoundaryPatches);
         }
 
-    } while( nCorrected != 0 && (nIter++ < 30) );
+    } while( nCorrected != 0 && (nIter++ < 3) );
 
     return changed;
 }
@@ -2087,7 +2089,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
         );
 
         //- stop after a certain number of iterations
-        if( iter++ > 20 )
+        if( iter++ > 3 )
             break;
 
         //- check if there exist any inverted faces
@@ -2202,7 +2204,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
 
         //- compare face patches before and after
         //- disallow modification which may trigger oscillating behaviour
-        labelHashSet changedFaces;
+        labelLongList changedFaces;
         forAll(newBoundaryPatches, bfI)
         {
             if( newBoundaryPatches[bfI] != facePatch_[bfI] )
@@ -2212,7 +2214,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
                 newBoundaryPatches[bfI] = patchI;
 
                 if( patchI != facePatch_[bfI] )
-                    changedFaces.insert(bfI);
+                    changedFaces.append(bfI);
             }
         }
 
@@ -2423,11 +2425,6 @@ void edgeExtractor::extractEdges()
     {
         Info << "No geometrical adjustment was needed" << endl;
     }
-
-//    updateMeshPatches();
-//    mesh_.write();
-//    returnReduce(1, sumOp<label>());
-//    ::exit(0);
 
     # ifdef DEBUGEdgeExtractor
     const triSurf* sPtr = surfaceWithPatches();

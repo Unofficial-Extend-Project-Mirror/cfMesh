@@ -131,6 +131,10 @@ public:
         //- construct from polyMeshGen
         partTetMesh(polyMeshGen& mesh);
 
+        //- construct from polyMeshGen and the number of layers
+        //- from the boundary
+        partTetMesh(polyMeshGen& mesh, const direction nLayers = 2);
+
         //- construct from polyMeshGen, bad faces and the number
         //- of additional layers
         partTetMesh

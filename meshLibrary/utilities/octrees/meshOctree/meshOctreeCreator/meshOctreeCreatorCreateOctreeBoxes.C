@@ -156,6 +156,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         Info << "Requested boundary cell size corresponds to octree level "
             << label(boundaryRefLevel_) << endl;
 
+        if( meshDictPtr_->found("boundaryCellSizeRefinementThickness") )
+        {
+            const scalar s =
+                readScalar
+                (
+                    meshDictPtr_->lookup("boundaryCellSizeRefinementThickness")
+                );
+            surfRefThickness_ = mag(s);
+        }
+
         surfRefLevel_ = boundaryRefLevel_;
     }
 
@@ -169,7 +179,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
             const wordList patchNames = dict.toc();
 
-            refPatches.setSize(patchNames.size());
+            const wordList allPatches = surface.patchNames();
+
+            refPatches.setSize(allPatches.size());
+
             label counter(0);
 
             forAll(patchNames, patchI)
@@ -180,8 +193,13 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 const dictionary& patchDict = dict.subDict(patchNames[patchI]);
                 const scalar cs = readScalar(patchDict.lookup("cellSize"));
 
-                refPatches[counter] = patchRefinement(patchNames[patchI], cs);
-                ++counter;
+                labelList matchedIDs = surface.findPatches(patchNames[patchI]);
+                forAll(matchedIDs, matchI)
+                {
+                    refPatches[counter] =
+                        patchRefinement(allPatches[matchedIDs[matchI]], cs);
+                    ++counter;
+                }
             }
 
             refPatches.setSize(counter);
@@ -367,18 +385,35 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     } while( !finished );
                 }
 
+                scalar refinementThickness(0.0);
+                if( patchDict.found("refinementThickness") )
+                {
+                    refinementThickness =
+                        readScalar(patchDict.lookup("refinementThickness"));
+                }
+
                 const direction level = globalRefLevel_ + nLevel;
 
-                if( patchToIndex.find(pName) != patchToIndex.end() )
+                const labelList matchedPatches = surface.findPatches(pName);
+
+                forAll(matchedPatches, matchI)
                 {
                     //- patch-based refinement
-                    const label patchI = patchToIndex[pName];
+                    const label patchI = matchedPatches[matchI];
 
                     forAll(surface, triI)
                     {
                         if( surface[triI].region() == patchI )
+                        {
                             surfRefLevel_[triI] =
                                 Foam::max(surfRefLevel_[triI], level);
+                            surfRefThickness_[triI] =
+                                Foam::max
+                                (
+                                    surfRefThickness_[triI],
+                                    refinementThickness
+                                );
+                        }
                     }
                 }
                 if( setToIndex.find(pName) != setToIndex.end() )
@@ -394,6 +429,13 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                         const label triI = facetsInSubset[i];
                         surfRefLevel_[triI] =
                             Foam::max(surfRefLevel_[triI], level);
+
+                        surfRefThickness_[triI] =
+                            Foam::max
+                            (
+                                surfRefThickness_[triI],
+                                refinementThickness
+                            );
                     }
                 }
             }
