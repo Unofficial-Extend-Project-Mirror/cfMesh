@@ -1221,8 +1221,12 @@ void extrudeLayer::createLayerCells()
 void extrudeLayer::updateBoundary()
 {
     wordList patchNames(mesh_.boundaries().size());
+    wordList patchTypes(mesh_.boundaries().size());
     forAll(patchNames, patchI)
+    {
         patchNames[patchI] = mesh_.boundaries()[patchI].patchName();
+        patchTypes[patchI] = mesh_.boundaries()[patchI].patchType();
+    }
 
     VRWGraph newBoundaryFaces;
     labelLongList newBoundaryOwners;
@@ -1327,14 +1331,19 @@ void extrudeLayer::updateBoundary()
         }
     }
 
-    polyMeshGenModifier(mesh_).reorderBoundaryFaces();
-    polyMeshGenModifier(mesh_).replaceBoundary
+    polyMeshGenModifier meshModifier(mesh_);
+    meshModifier.reorderBoundaryFaces();
+    meshModifier.replaceBoundary
     (
         patchNames,
         newBoundaryFaces,
         newBoundaryOwners,
         newBoundaryPatches
     );
+
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
+    forAll(boundaries, patchI)
+        boundaries[patchI].patchType() = patchTypes[patchI];
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

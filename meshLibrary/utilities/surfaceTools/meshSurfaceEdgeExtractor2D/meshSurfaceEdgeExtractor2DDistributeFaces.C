@@ -132,13 +132,20 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
     }
 
     //- replace the boundary
-    polyMeshGenModifier(mesh_).replaceBoundary
+    polyMeshGenModifier meshModifier(mesh_);
+
+    meshModifier.replaceBoundary
     (
         patchNames,
         bndFaces,
         bndFaceOwner,
         bndFacePatch
     );
+
+    //- set coorect patch types
+    PtrList<boundaryPatch>& modBnd = meshModifier.boundariesAccess();
+    forAll(surfPatches, patchI)
+        modBnd[patchI].patchType() = surfPatches[patchI].geometricType();
 }
 
 void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()

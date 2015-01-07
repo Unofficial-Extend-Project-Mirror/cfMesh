@@ -249,6 +249,11 @@ void decomposeCells::addNewCells()
 
     polyMeshGenModifier(mesh_).removeUnusedVertices();
     polyMeshGenModifier(mesh_).clearAll();
+
+    PtrList<boundaryPatch>& boundaries =
+        polyMeshGenModifier(mesh_).boundariesAccess();
+    forAll(boundaries, patchI)
+        boundaries[patchI].patchType() = patchTypes_[patchI];
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

@@ -64,6 +64,7 @@ class correctEdgesBetweenPatches
 
         //- boundary data
         wordList patchNames_;
+        wordList patchTypes_;
         VRWGraph newBoundaryFaces_;
         labelLongList newBoundaryOwners_;
         labelLongList newBoundaryPatches_;
