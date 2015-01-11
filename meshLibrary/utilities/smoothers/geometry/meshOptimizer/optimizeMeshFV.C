@@ -295,9 +295,7 @@ void meshOptimizer::optimizeBoundaryLayer()
 
     boundaryLayerOptimisation optimiser(mesh_, mse);
 
-    optimiser.optimiseHairNormals();
-
-    optimiser.optimiseThicknessVariation();
+    optimiser.optimiseLayer();
 
     //- check if the bnd layer is tangled somewhere
     boolList layerCell(mesh_.cells().size(), false);

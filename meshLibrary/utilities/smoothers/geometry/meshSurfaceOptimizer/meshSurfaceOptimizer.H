@@ -54,6 +54,7 @@ namespace Foam
 
 // Forward declarations
 class meshOctree;
+class meshSurfaceMapper;
 class plane;
 
 /*---------------------------------------------------------------------------*\
@@ -66,8 +67,8 @@ class meshSurfaceOptimizer
         //- const reference to the mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
-        //- const reference to the octree
-        const meshOctree& meshOctree_;
+        //- pointer to mesh mapper
+        meshSurfaceMapper* mapperPtr_;
 
         //- type of surface vertex
         List<direction> vertexType_;
@@ -251,6 +252,12 @@ public:
 
     // Constructors
 
+        //- Construct from mesh surface
+        meshSurfaceOptimizer(const meshSurfaceEngine&);
+
+        //- Construct from partitioner
+        meshSurfaceOptimizer(const meshSurfacePartitioner&);
+
         //- Construct from mesh surface and octree
         meshSurfaceOptimizer(const meshSurfaceEngine&, const meshOctree&);
 
@@ -270,6 +277,13 @@ public:
         //- lock the boundary faces which shall not be modified
         template<class labelListType>
         inline void lockBoundaryFaces(const labelListType&);
+
+        //- lock boundary points. They are not be moved.
+        template<class labelListType>
+        inline void lockBoundaryPoints(const labelListType&);
+
+        //- lock edge points
+        inline void lockFeatureEdges();
 
         //- reset to default constraints
         void removeUserConstraints();

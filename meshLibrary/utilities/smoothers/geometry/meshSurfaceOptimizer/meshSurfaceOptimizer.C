@@ -29,6 +29,7 @@ Description
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
+#include "meshSurfaceMapper.H"
 #include "polyMeshGenChecks.H"
 
 #include <map>
@@ -115,6 +116,34 @@ label meshSurfaceOptimizer::findBadFaces
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
+meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
+:
+    surfaceEngine_(surface),
+    mapperPtr_(NULL),
+    vertexType_(surface.boundaryPoints().size()),
+    partitionerPtr_(new meshSurfacePartitioner(surface)),
+    deletePartitioner_(true),
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
+{
+    classifySurfaceVertices();
+}
+
+meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
+:
+    surfaceEngine_(mPart.surfaceEngine()),
+    mapperPtr_(NULL),
+    vertexType_(surfaceEngine_.boundaryPoints().size()),
+    partitionerPtr_(&mPart),
+    deletePartitioner_(true),
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
+{
+    classifySurfaceVertices();
+}
+
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
     const meshSurfaceEngine& surface,
@@ -122,7 +151,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 )
 :
     surfaceEngine_(surface),
-    meshOctree_(octree),
+    mapperPtr_(new meshSurfaceMapper(surfaceEngine_, octree)),
     vertexType_(surface.boundaryPoints().size()),
     partitionerPtr_(new meshSurfacePartitioner(surface)),
     deletePartitioner_(true),
@@ -140,7 +169,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 )
 :
     surfaceEngine_(partitioner.surfaceEngine()),
-    meshOctree_(octree),
+    mapperPtr_(new meshSurfaceMapper(surfaceEngine_, octree)),
     vertexType_(surfaceEngine_.boundaryPoints().size()),
     partitionerPtr_(&partitioner),
     deletePartitioner_(false),
@@ -156,6 +185,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
     deleteDemandDrivenData(triMeshPtr_);
+    deleteDemandDrivenData(mapperPtr_);
 
     if( deletePartitioner_ )
         deleteDemandDrivenData(partitionerPtr_);

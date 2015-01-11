@@ -357,7 +357,6 @@ bool meshSurfaceOptimizer::untangleSurface
     }
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
-    meshSurfaceMapper mapper(surfaceEngine_, meshOctree_);
 
     bool remapVertex(true);
     label nInvertedTria;
@@ -478,8 +477,8 @@ bool meshSurfaceOptimizer::untangleSurface
 
             //- smooth edge vertices
             smoothEdgePoints(movedEdgePoints, procEdgePoints);
-            if( remapVertex )
-                mapper.mapEdgeNodes(movedEdgePoints);
+            if( remapVertex && mapperPtr_ )
+                mapperPtr_->mapEdgeNodes(movedEdgePoints);
             surfaceModifier.updateGeometry(movedEdgePoints);
 
             //- use laplacian smoothing
@@ -489,8 +488,8 @@ bool meshSurfaceOptimizer::untangleSurface
             //- use surface optimizer
             smoothSurfaceOptimizer(movedPoints);
 
-            if( remapVertex )
-                mapper.mapVerticesOntoSurface(movedPoints);
+            if( remapVertex && mapperPtr_ )
+                mapperPtr_->mapVerticesOntoSurface(movedPoints);
 
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
@@ -524,8 +523,8 @@ bool meshSurfaceOptimizer::untangleSurface
 
             smoothLaplacianFC(movedPoints, procBndPoints, false);
 
-            if( remapVertex )
-                mapper.mapVerticesOntoSurface(movedPoints);
+            if( remapVertex && mapperPtr_ )
+                mapperPtr_->mapVerticesOntoSurface(movedPoints);
 
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
@@ -566,6 +565,9 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     labelLongList procBndPoints, edgePoints, partitionPoints;
     forAll(bPoints, bpI)
     {
+        if( vertexType_[bpI] & LOCKED )
+            continue;
+
         if( vertexType_[bpI] & EDGE )
         {
             edgePoints.append(bpI);
@@ -579,8 +581,6 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         }
     }
 
-    meshSurfaceMapper mapper(*partitionerPtr_, meshOctree_);
-
     //- optimize edge vertices
     Info << "Optimizing edges. Iteration:" << flush;
     for(label i=0;i<nIterations;++i)
@@ -592,7 +592,8 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         smoothEdgePoints(edgePoints, procBndPoints);
 
         //- project vertices back onto the boundary
-        mapper.mapEdgeNodes(edgePoints);
+        if( mapperPtr_ )
+            mapperPtr_->mapEdgeNodes(edgePoints);
 
         //- update the geometry information
         bMod.updateGeometry(edgePoints);
@@ -659,7 +660,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
         }
     }
 
-    meshSurfaceMapper2D mapper(surfaceEngine_, meshOctree_);
+    //meshSurfaceMapper2D mapper(surfaceEngine_, meshOctree_);
 
     //- optimize edge vertices
     meshSurfaceEngineModifier bMod(surfaceEngine_);
@@ -675,7 +676,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
         mesh2DEngine.correctPoints();
 
         //- map boundary edges to the surface
-        mapper.mapVerticesOntoSurfacePatches(activeEdges);
+        //mapper.mapVerticesOntoSurfacePatches(activeEdges);
 
         //- update normal, centres, etc, after the surface has been modified
         bMod.updateGeometry(updatePoints);

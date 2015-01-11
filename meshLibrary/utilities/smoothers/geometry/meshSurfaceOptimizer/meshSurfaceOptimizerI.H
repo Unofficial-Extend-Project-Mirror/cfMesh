@@ -498,6 +498,72 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
     }
 }
 
+template<class labelListType>
+inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(l, i)
+    {
+        const label bpI = l[i];
+
+        vertexType_[bpI] |= LOCKED;
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal =
+            surfaceEngine_.globalToLocalBndPointAddressing();
+        const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+        const DynList<label>& bpNeiProcs = surfaceEngine_.bpNeiProcs();
+
+        std::map<label, labelLongList> exchangeData;
+        forAll(bpNeiProcs, i)
+            exchangeData[bpNeiProcs[i]].clear();
+
+        //- prepare data which will be sent to other processors
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            if( vertexType_[bpI] & LOCKED )
+            {
+                forAllRow(bpAtProcs, bpI, i)
+                {
+                    const label neiProc = bpAtProcs(bpI, i);
+
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    exchangeData[neiProc].append(it.key());
+                }
+            }
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
+        {
+            const label bpI = globalToLocal[receivedData[i]];
+
+            vertexType_[bpI] |= LOCKED;
+        }
+    }
+}
+
+//- lock edge points
+inline void meshSurfaceOptimizer::lockFeatureEdges()
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(vertexType_, bpI)
+        if( vertexType_[bpI] & (EDGE | CORNER) )
+            vertexType_[bpI] |= LOCKED;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

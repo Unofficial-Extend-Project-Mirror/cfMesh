@@ -43,6 +43,8 @@ SourceFiles
 #include "boolList.H"
 #include "edgeLongList.H"
 
+#include <map>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -51,6 +53,8 @@ namespace Foam
 // Forward declarations
 class polyMeshGen;
 class meshSurfaceEngine;
+class meshSurfacePartitioner;
+class dictionary;
 
 /*---------------------------------------------------------------------------*\
                 Class boundaryLayerOptimisation Declaration
@@ -62,8 +66,12 @@ class boundaryLayerOptimisation
         //- reference to polyMeshGen
         polyMeshGen& mesh_;
 
-        //- const reference to meshSurfaceEngine
-        const meshSurfaceEngine& meshSurface_;
+        //- const pointer to meshSurfaceEngine
+        mutable const meshSurfaceEngine* meshSurfacePtr_;
+        const bool deleteMeshSurface_;
+
+        //- mesh surface partitioner
+        mutable const meshSurfacePartitioner* partitionerPtr_;
 
         //- boundary layer hairs
         edgeLongList hairEdges_;
@@ -83,9 +91,95 @@ class boundaryLayerOptimisation
         //- classification of hair edges
         List<direction> hairEdgeType_;
 
+        //- stores information where boundary hairs are made thinner
+        boolList thinnedHairEdge_;
+
     // Private member functions
+        //- access to mesh surface
+        const meshSurfaceEngine& meshSurface() const;
+
+        //- access to meshSurfacePartitioner
+        const meshSurfacePartitioner& surfacePartitioner() const;
+
+        //- calculate tangent vectors for points at feature edges
+        //- points can be filtered by a type of hair edges
+        typedef std::map<label, vector> labelToVectorType;
+        void calculateTangentVectors
+        (
+            const direction eType,
+            labelToVectorType&
+        ) const;
+
+        //- calculate normal vector for all patches at a point
+        //- points can be filtered by a type of hair edges
+        typedef std::map<label, std::pair<point, scalar> > patchNormalType;
+        typedef std::map<label, patchNormalType> pointNormalsType;
+        void calculateNormalVectors
+        (
+            const direction eType,
+            pointNormalsType&
+        ) const;
+
         //- calculate hairEdges
         void calculateHairEdges();
+
+        //- calculate hair vectors at the boundary
+        void calculateHairVectorsAtTheBoundary(vectorField&);
+
+        //- optimise hair normals at the boundary
+        //- these are the regions where boundary layers exit the domain
+        void optimiseHairNormalsAtTheBoundary(const label nIterations);
+
+        //- optimise hair normals inside the mesh
+        void optimiseHairNormalsInside(const label nIterations);
+
+        //- calculate the thickness of the layer for edge heI
+        //- respective to the height of edge heJ
+        scalar calculateThickness
+        (
+            const label heI,
+            const label heJ,
+            const scalar tangentTol,
+            const scalar featureSizeFactor
+        ) const;
+
+        //- optimise thickness variation at the boundary
+        void optimiseThicknessVariationAtTheBoundary
+        (
+            const label nIterations,
+            const scalar tangentTol,
+            const scalar featureSizeFactor
+        );
+
+        //- optimise thickness variation inside the mesh
+        void optimiseThicknessVariationInside
+        (
+            const label nIterations,
+            const scalar tangentTol,
+            const scalar featureSizeFactor
+        );
+
+        //- optimise layers at exitting faces due to requests from the inside
+        bool optimiseLayersAtExittingFaces();
+
+        //- write vectors into a VTK file. Helper for debugging
+        static void writeVTK
+        (
+            const fileName& fName,
+            const pointField& origin,
+            const vectorField& vecs
+        );
+
+        //- write vector correcposing to hair edges. Helper for debugging
+        void writeHairEdges
+        (
+            const fileName& fName,
+            const direction eType,
+            const vectorField& vecs
+        ) const;
+
+        //- write selected hair edges into a file
+        void writeHairEdges(const fileName& fName, const direction eType) const;
 
         //- Disallow default bitwise copy construct
         boundaryLayerOptimisation(const boundaryLayerOptimisation&);
@@ -95,18 +189,21 @@ class boundaryLayerOptimisation
 
     // Private enumerators
 
-        enum hairEdgeType_
+        enum hairEdgeTypes_
         {
-            INSIDE = 1,
-            ATEDGE = 2,
-            ATCORNER = 4,
-            BOUNDARY = 8,
+            NONE = 0,
+            ATEDGE = 1,
+            ATCORNER = 2,
+            BOUNDARY = 4,
+            INSIDE = 8,
             FEATUREEDGE = 16
         };
 
 public:
 
     // Constructors
+        //- construct from polyMeshGen
+        boundaryLayerOptimisation(polyMeshGen& mesh);
 
         //- Construct from polyMeshGen and meshSurfaceEngine
         boundaryLayerOptimisation
@@ -146,11 +243,32 @@ public:
             return isExitFace_;
         }
 
-        //- optimise hair normals to improve quality of layer cells
-        void optimiseHairNormals(const label nIterations=10);
+//        //- optimise hair normals to improve quality of layer cells
+//        void optimiseHairNormals(const label nIterations = 10);
 
-        //- optimise thickness variation
-        void optimiseThicknessVariation(const scalar tangentTol=0.15);
+//        //- optimise thickness variation
+//        void optimiseThicknessVariation
+//        (
+//            const label nIterations = 10,
+//            const scalar tangentTol = 0.15,
+//            const scalar featureSizeFactor = 0.3
+//        );
+
+        //- optimise boundary layer
+        void optimiseLayer
+        (
+            const label nIterations = 10,
+            const scalar thicknessTol = 0.15,
+            const scalar featureSizeFactor = 0.3
+        );
+
+    // Static member functions
+        //- read the settings from dictionary and run the smoother
+        static void optimiseLayer
+        (
+            const dictionary&,
+            boundaryLayerOptimisation&
+        );
 };
 
 

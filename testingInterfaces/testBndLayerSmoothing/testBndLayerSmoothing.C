@@ -36,6 +36,7 @@ Description
 #include "Time.H"
 #include "polyMeshGen.H"
 #include "meshSurfaceEngine.H"
+#include "helperFunctions.H"
 
 using namespace Foam;
 
@@ -57,15 +58,17 @@ int main(int argc, char *argv[])
     {
         const point& p = pmg.points()[pointI];
 
-        if( isnan(p.x()) || isnan(p.y()) || isnan(p.z()) )
+        if( help::isnan(p) )
             Info << "Vertex " << pointI << " is invalid " << p << endl;
     }
 
     meshSurfaceEngine mse(pmg);
     boundaryLayerOptimisation blOpt(pmg, mse);
-   
-    Info << "Optimising hair vectors" << endl;
-    blOpt.optimiseHairNormals();
+
+    blOpt.optimiseLayer(30, 0.15, 0.4);
+
+    //Info << "Optimising hair vectors" << endl;
+    //blOpt.optimiseHairNormals();
 
     //Info << "Optimising thickness variation" << endl;
     //blOpt.optimiseThicknessVariation();
@@ -74,7 +77,7 @@ int main(int argc, char *argv[])
     {
         const point& p = pmg.points()[pointI];
 
-        if( isnan(p.x()) || isnan(p.y()) || isnan(p.z()) )
+        if( help::isnan(p) )
             Info << "Vertex " << pointI << " is invalid " << p << endl;
     }
 
