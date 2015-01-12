@@ -143,20 +143,13 @@ class boundaryLayerOptimisation
             const scalar featureSizeFactor
         ) const;
 
-        //- optimise thickness variation at the boundary
-        void optimiseThicknessVariationAtTheBoundary
+        //- optimise thickness variation
+        void optimiseThicknessVariation
         (
             const label nIterations,
             const scalar tangentTol,
-            const scalar featureSizeFactor
-        );
-
-        //- optimise thickness variation inside the mesh
-        void optimiseThicknessVariationInside
-        (
-            const label nIterations,
-            const scalar tangentTol,
-            const scalar featureSizeFactor
+            const scalar featureSizeFactor,
+            const direction edgeType = (INSIDE|BOUNDARY)
         );
 
         //- optimise layers at exitting faces due to requests from the inside
@@ -242,17 +235,6 @@ public:
         {
             return isExitFace_;
         }
-
-//        //- optimise hair normals to improve quality of layer cells
-//        void optimiseHairNormals(const label nIterations = 10);
-
-//        //- optimise thickness variation
-//        void optimiseThicknessVariation
-//        (
-//            const label nIterations = 10,
-//            const scalar tangentTol = 0.15,
-//            const scalar featureSizeFactor = 0.3
-//        );
 
         //- optimise boundary layer
         void optimiseLayer

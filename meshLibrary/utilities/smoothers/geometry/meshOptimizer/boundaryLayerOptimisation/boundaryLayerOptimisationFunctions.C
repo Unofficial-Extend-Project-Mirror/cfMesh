@@ -518,7 +518,6 @@ void boundaryLayerOptimisation::calculateHairEdges()
     const meshSurfacePartitioner& mPart = surfacePartitioner();
 
     //- detect layers in the mesh
-    Info << "Constructing layer detector" << endl;
     const detectBoundaryLayers detectLayers(mPart);
 
     hairEdges_ = detectLayers.hairEdges();
@@ -570,6 +569,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
         if( faceOwner[f0] != faceOwner[f1] )
             continue;
 
+        //- check if the feature edge is attachd to exittin faces
         if
         (
             (isBndLayerBase_[f0] && (bFaces[f1].size() == 4)) &&
@@ -588,13 +588,14 @@ void boundaryLayerOptimisation::calculateHairEdges()
             mesh_.addFaceToSubset(exittingFaceId, startBndFaceI+bfI);
     # endif
 
+    //- classify hair edges as they require different tretment
+    //- in the smoothing procedure
     hairEdgeType_.setSize(hairEdges_.size());
 
     const labelHashSet& corners = mPart.corners();
     const labelHashSet& edgePoints = mPart.edgePoints();
     const labelHashSet& featureEdges = mPart.featureEdges();
 
-    //- classify hair edges
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100)
     # endif
@@ -672,6 +673,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
         DynList<label> neiHairEdges;
 
+        /*
         const direction eType = hairEdgeType_[hairEdgeI];
 
         if( eType & (FEATUREEDGE | ATCORNER) )
@@ -747,6 +749,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
         }
         else
         {
+            */
             //- find mesh faces comprising of the current hair edge
             forAllRow(bpFacesHelper, bpI, pfI)
             {
@@ -788,7 +791,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
                     }
                 }
             }
-        }
+        //}
 
         hairEdgesNearHairEdge_.setRow(hairEdgeI, neiHairEdges);
     }
@@ -947,6 +950,107 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
         }
     }
 
+    if( Pstream::parRun() )
+    {
+        //- collect data at inter-processor boundaries
+        const Map<label>& globalToLocal =
+            mse.globalToLocalBndPointAddressing();
+
+        const edgeList& edges = mesh_.addressingData().edges();
+        const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
+        const VRWGraph& edgesAtProcs =
+            mesh_.addressingData().edgeAtProcs();
+        const labelLongList& globalEdgeLabel =
+            mesh_.addressingData().globalEdgeLabel();
+        const Map<label>& globalToLocalEdge =
+            mesh_.addressingData().globalToLocalEdgeAddressing();
+        const DynList<label>& eNeiProcs =
+            mesh_.addressingData().edgeNeiProcs();
+
+        std::map<label, LongList<labelledPoint> > exchangeData;
+        forAll(eNeiProcs, i)
+            exchangeData[eNeiProcs[i]].clear();
+
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            forAllRow(hairEdgesAtBndPoint_, bpI, i)
+            {
+                const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
+                const edge& he = hairEdges_[hairEdgeI];
+
+                const direction eType = hairEdgeType_[hairEdgeI];
+
+                //- filte out edges which are not relevant
+                if( !(eType & BOUNDARY) )
+                    continue;
+
+                forAllRow(pointEdges, he.start(), peI)
+                {
+                    const label edgeI = pointEdges(he.start(), peI);
+
+                    if( he == edges[edgeI] )
+                    {
+                        labelledPoint lp
+                        (
+                            globalEdgeLabel[edgeI],
+                            hairVecs[hairEdgeI]
+                        );
+
+                        forAllRow(edgesAtProcs, edgeI, j)
+                        {
+                            const label neiProc = edgesAtProcs(edgeI, j);
+
+                            if( neiProc == Pstream::myProcNo() )
+                                continue;
+
+                            LongList<labelledPoint>& dts =
+                                exchangeData[neiProc];
+
+                            dts.append(lp);
+                        }
+                    }
+                }
+            }
+        }
+
+        LongList<labelledPoint> receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
+        {
+            const labelledPoint& lp = receivedData[i];
+            const label edgeI = globalToLocalEdge[lp.pointLabel()];
+            const edge& e = edges[edgeI];
+
+            bool found(false);
+            for(label pI=0;pI<2;++pI)
+            {
+                const label bpI = bp[e[pI]];
+
+                if( bpI < 0 )
+                    continue;
+
+                forAllRow(hairEdgesAtBndPoint_, bpI, i)
+                {
+                    const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
+
+                    if( hairEdges_[hairEdgeI] == e )
+                    {
+                        hairVecs[hairEdgeI] += lp.coordinates();
+
+                        found = true;
+                        break;
+                    }
+                }
+
+                if( found )
+                    break;
+            }
+        }
+    }
+
     //- calculate new normal vectors
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100)
@@ -973,6 +1077,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
     //- calculate direction of hair vector based on the surface normal
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bp = mse.bp();
+    const VRWGraph& pFaces = mse.pointFaces();
+    const faceList::subList& bFaces = mse.boundaryFaces();
 
     //- calculate hair vectors
     //- they point in the normal direction to the surface
@@ -1006,6 +1112,24 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
                 }
                 else if( eType & ATEDGE )
                 {
+                    const edge& he = hairEdges_[hairEdgeI];
+
+                    DynList<label, 2> edgeFaces;
+                    const label bps = bp[he.start()];
+                    forAllRow(pFaces, bps, pfI)
+                    {
+                        const label bfI = pFaces(bps, pfI);
+                        const face& bf = bFaces[bfI];
+
+                        forAll(bf, eI)
+                        {
+                            if( bf.faceEdge(eI) == he )
+                            {
+                                edgeFaces.append(bfI);
+                            }
+                        }
+                    }
+
                     //- find the best fitting vector
                     //- at the surface of the mesh
                     forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
@@ -1013,7 +1137,26 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
                         const label hairEdgeJ =
                             hairEdgesNearHairEdge_(hairEdgeI, nheI);
 
-                        newNormal += hairVecs[hairEdgeJ];
+                        //- check if the neighbour hair edge shares a boundary
+                        //- face with the current hair edge
+                        bool useNeighbour(false);
+                        const edge& nhe = hairEdges_[hairEdgeJ];
+                        forAll(edgeFaces, efI)
+                        {
+                            const face& bf = bFaces[edgeFaces[efI]];
+
+                            forAll(bf, eI)
+                            {
+                                if( bf.faceEdge(eI) == nhe )
+                                {
+                                    useNeighbour = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if( useNeighbour )
+                            newNormal += hairVecs[hairEdgeJ];
                     }
                 }
                 else
@@ -1143,6 +1286,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
             {
                 newNormals[heI] /= (mag(newNormals[heI]) + VSMALL);
                 newNormals[heI] = 0.5 * (newNormals[heI] + hairVecs[heI]);
+                newNormals[heI] /= (mag(newNormals[heI]) + VSMALL);
             }
         }
 
@@ -1236,7 +1380,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                   << bp[hairEdges_[hairEdgeI].start()] << abort(FatalError);
             }
 
-            hv /= counter;
             hv /= (mag(hv) + VSMALL);
         }
     }
@@ -1532,11 +1675,12 @@ scalar boundaryLayerOptimisation::calculateThickness
     return retThickness;
 }
 
-void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
+void boundaryLayerOptimisation::optimiseThicknessVariation
 (
     const label nIterations,
     const scalar tangentTol,
-    const scalar featureSizeFactor
+    const scalar featureSizeFactor,
+    const direction edgeType
 )
 {
     pointFieldPMG& points = mesh_.points();
@@ -1546,7 +1690,8 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
     //- reduce thickness of the layer
     //- such that the variation of layer thickness
     //- It is an iterative process where the layer is thinned in the regions
-    //- where the tangent is greater than the tolerance value.
+    //- where the tangent is greater than the tolerance value or the curvature
+    //- permits thicker boundary layers.
     vectorField hairDirections(hairEdges_.size());
     scalarField hairLength(hairEdges_.size());
 
@@ -1561,11 +1706,14 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
         hairDirections[hairEdgeI] = n / hairLength[hairEdgeI];
     }
 
+    boolList activeHairEdge(hairEdges_.size(), true);
     bool changed;
     label nIter(0);
     do
     {
         changed = false;
+
+        boolList modifiedHairEdge(hairEdges_.size(), false);
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
@@ -1575,16 +1723,22 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
             const scalar magN = hairLength[hairEdgeI];
 
             if( magN < VSMALL )
-                continue;
+                FatalErrorIn
+                (
+                    "void boundaryLayerOptimisation::optimiseThicknessVariation"
+                    "(const direction, const label, const scalar, const scalar)"
+                ) << "Zero layer thickness at hair edge " << hairEdgeI
+                  << ". Exitting..." << exit(FatalError);
 
-            const direction eType = hairEdgeType_[hairEdgeI];
-
-            if( eType & BOUNDARY )
+            if( hairEdgeType_[hairEdgeI] & edgeType )
             {
                 forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
                 {
                     const label hairEdgeJ =
                         hairEdgesNearHairEdge_(hairEdgeI, nheI);
+
+                    if( !activeHairEdge[hairEdgeJ] )
+                        continue;
 
                     const scalar maxThickness =
                         calculateThickness
@@ -1602,6 +1756,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
 
                         changed = true;
                         thinnedHairEdge_[hairEdgeI] = true;
+                        modifiedHairEdge[hairEdgeI] = true;
                     }
                 }
             }
@@ -1637,9 +1792,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
                 {
                     const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
 
-                    const direction eType = hairEdgeType_[hairEdgeI];
-
-                    if( !(eType & BOUNDARY) )
+                    if( !(hairEdgeType_[hairEdgeI] & edgeType) )
                         continue;
 
                     const edge& he = hairEdges_[hairEdgeI];
@@ -1701,6 +1854,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
                                 hairLength[hairEdgeI] = lScalar.value();
                                 changed = true;
                                 thinnedHairEdge_[hairEdgeI] = true;
+                                modifiedHairEdge[hairEdgeI] = true;
                             }
 
                             found = true;
@@ -1726,235 +1880,17 @@ void boundaryLayerOptimisation::optimiseThicknessVariationAtTheBoundary
         # endif
         forAll(hairEdges_, hairEdgeI)
         {
-            if( hairEdgeType_[hairEdgeI] & BOUNDARY )
+            if( hairEdgeType_[hairEdgeI] & edgeType )
             {
                 const edge& he = hairEdges_[hairEdgeI];
                 const vector& hv = hairDirections[hairEdgeI];
                 const point& s = points[he.start()];
 
                 points[he.end()] = s + hairLength[hairEdgeI] * hv;
+
+                activeHairEdge[hairEdgeI] = modifiedHairEdge[hairEdgeI];
             }
         }
-    } while( changed && (++nIter < nIterations) );
-}
-
-void boundaryLayerOptimisation::optimiseThicknessVariationInside
-(
-    const label nIterations,
-    const scalar tangentTol,
-    const scalar featureSizeFactor
-)
-{
-    pointFieldPMG& points = mesh_.points();
-
-    const meshSurfaceEngine& mse = meshSurface();
-
-    //- reduce thickness of the layer
-    //- such that the variation of layer thickness
-    //- It is an iterative process where the layer is thinned in the regions
-    //- where the tangent is greater than the tolerance value.
-    vectorField hairDirections(hairEdges_.size());
-    scalarField hairLength(hairEdges_.size());
-
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
-    {
-        vector n = hairEdges_[hairEdgeI].vec(points);
-
-        hairLength[hairEdgeI] = Foam::max(VSMALL, Foam::mag(n));
-        hairDirections[hairEdgeI] = n / hairLength[hairEdgeI];
-    }
-
-    bool changed;
-    label nIter(0);
-    do
-    {
-        Info << "Smoothing thickness inside. Iteration " << nIter << endl;
-        changed = false;
-
-        scalarField newLength(hairLength);
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 50)
-        # endif
-        forAll(hairEdgesNearHairEdge_, hairEdgeI)
-        {
-            const scalar magN = hairLength[hairEdgeI];
-
-            if( magN < VSMALL )
-                continue;
-
-            const direction eType = hairEdgeType_[hairEdgeI];
-
-            if( eType & INSIDE )
-            {
-                forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
-                {
-                    const label hairEdgeJ =
-                        hairEdgesNearHairEdge_(hairEdgeI, nheI);
-
-                    const scalar maxThickness =
-                        calculateThickness
-                        (
-                            hairEdgeI,
-                            hairEdgeJ,
-                            tangentTol,
-                            featureSizeFactor
-                        );
-
-                    if( newLength[hairEdgeI] > maxThickness )
-                    {
-                        //- make the hair edge shorter
-                        newLength[hairEdgeI] = maxThickness;
-
-                        changed = true;
-                        thinnedHairEdge_[hairEdgeI] = true;
-                    }
-                }
-            }
-        }
-
-        Info << "Finished smoothing inner hair edges" << endl;
-
-        if( Pstream::parRun() )
-        {
-            //- collect data at inter-processor boundaries
-            const Map<label>& globalToLocal =
-                mse.globalToLocalBndPointAddressing();
-            const labelList& bp = mse.bp();
-
-            const edgeList& edges = mesh_.addressingData().edges();
-            const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
-            const VRWGraph& edgesAtProcs =
-                mesh_.addressingData().edgeAtProcs();
-            const labelLongList& globalEdgeLabel =
-                mesh_.addressingData().globalEdgeLabel();
-            const Map<label>& globalToLocalEdge =
-                mesh_.addressingData().globalToLocalEdgeAddressing();
-            const DynList<label>& eNeiProcs =
-                mesh_.addressingData().edgeNeiProcs();
-
-            std::map<label, LongList<labelledScalar> > exchangeData;
-            forAll(eNeiProcs, i)
-                exchangeData[eNeiProcs[i]].clear();
-
-            forAllConstIter(Map<label>, globalToLocal, it)
-            {
-                const label bpI = it();
-
-                forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                {
-                    const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-
-                    const direction eType = hairEdgeType_[hairEdgeI];
-
-                    if( !(eType & INSIDE) )
-                        continue;
-
-                    const edge& he = hairEdges_[hairEdgeI];
-
-                    forAllRow(pointEdges, he.start(), peI)
-                    {
-                        const label edgeI = pointEdges(he.start(), peI);
-
-                        if( he == edges[edgeI] )
-                        {
-                            labelledScalar lScalar
-                            (
-                                globalEdgeLabel[edgeI],
-                                hairLength[hairEdgeI]
-                            );
-
-                            forAllRow(edgesAtProcs, edgeI, j)
-                            {
-                                const label neiProc = edgesAtProcs(edgeI, j);
-
-                                if( neiProc == Pstream::myProcNo() )
-                                    continue;
-
-                                LongList<labelledScalar>& dts =
-                                    exchangeData[neiProc];
-
-                                dts.append(lScalar);
-                            }
-                        }
-                    }
-                }
-            }
-
-            LongList<labelledScalar> receivedData;
-            help::exchangeMap(exchangeData, receivedData);
-
-            forAll(receivedData, i)
-            {
-                const labelledScalar& lScalar = receivedData[i];
-                const label edgeI = globalToLocalEdge[lScalar.scalarLabel()];
-                const edge& e = edges[edgeI];
-
-                bool found(false);
-                for(label pI=0;pI<2;++pI)
-                {
-                    const label bpI = bp[e[pI]];
-
-                    if( bpI < 0 )
-                        continue;
-
-                    forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                    {
-                        const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-
-                        if( hairEdges_[hairEdgeI] == e )
-                        {
-                            if( lScalar.value() < hairLength[hairEdgeI] )
-                            {
-                                newLength[hairEdgeI] = lScalar.value();
-                                changed = true;
-                                thinnedHairEdge_[hairEdgeI] = true;
-                            }
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if( found )
-                        break;
-                }
-            }
-        }
-
-        //- reduce the information over all processors
-        reduce(changed, maxOp<bool>());
-
-        if( !changed )
-            break;
-
-        //- move boundary vertices to the new positions
-        Info << "Finalising lengths of inner hairs" << endl;
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(hairEdges_, hairEdgeI)
-        {
-            if( hairEdgeType_[hairEdgeI] & INSIDE )
-            {
-                const edge& he = hairEdges_[hairEdgeI];
-                const vector& hv = hairDirections[hairEdgeI];
-                const point& s = points[he.start()];
-
-                points[he.end()] = s + newLength[hairEdgeI] * hv;
-            }
-        }
-
-        Info << "Transferring lengths of inner hairs" << endl;
-
-        //- update hairLength
-        hairLength.transfer(newLength);
-
-        Info << "Finished iteration " << nIter << endl;
-
     } while( changed && (++nIter < nIterations) );
 }
 
@@ -2009,661 +1945,6 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-/*
-void boundaryLayerOptimisation::optimiseHairNormals(const label nIterations)
-{
-    pointFieldPMG& points = mesh_.points();
-
-    //- calculate direction of hair vector based on the surface normal
-    const meshSurfaceEngine& mse = meshSurface();
-    const labelList& facePatch = mse.boundaryFacePatches();
-    const labelList& bp = mse.bp();
-    const VRWGraph& pointFaces = mse.pointFaces();
-    const vectorField& fNormals = mse.faceNormals();
-    const edgeList& edges = mse.edges();
-    const VRWGraph& bpEdges = mse.boundaryPointEdges();
-    const VRWGraph& edgeFaces = mse.edgeFaces();
-
-    //- calculate point normals with respect to all patches at a point
-    typedef std::map<label, std::pair<point, scalar> > ltvMap;
-    typedef std::map<label, ltvMap> lltvMap;
-    lltvMap pointPatchNormal;
-
-    forAll(hairEdges_, hairEdgeI)
-    {
-        const label bpI = bp[hairEdges_[hairEdgeI][0]];
-
-        ltvMap& patchNormal = pointPatchNormal[bpI];
-
-        forAllRow(pointFaces, bpI, pfI)
-        {
-            const label bfI = pointFaces(bpI, pfI);
-            const label patchI = facePatch[bfI];
-
-            if( patchNormal.find(patchI) == patchNormal.end() )
-            {
-                patchNormal[patchI].first = fNormals[bfI];
-                patchNormal[patchI].second = mag(fNormals[bfI]);
-            }
-            else
-            {
-                patchNormal[patchI].first += fNormals[bfI];
-                patchNormal[patchI].second += mag(fNormals[bfI]);
-            }
-        }
-    }
-
-    if( Pstream::parRun() )
-    {
-        const Map<label>& globalToLocal =
-            mse.globalToLocalBndPointAddressing();
-        const DynList<label>& neiProcs = mse.bpNeiProcs();
-        const VRWGraph& bpAtProcs = mse.bpAtProcs();
-
-        std::map<label, LongList<refLabelledPointScalar> > exchangeData;
-        forAll(neiProcs, i)
-            exchangeData[neiProcs[i]].clear();
-
-        forAllConstIter(Map<label>, globalToLocal, it)
-        {
-            const label bpI = it();
-
-            if( pointPatchNormal.find(bpI) != pointPatchNormal.end() )
-            {
-                const ltvMap& patchNormal = pointPatchNormal[bpI];
-
-                forAllRow(bpAtProcs, bpI, i)
-                {
-                    const label neiProc = bpAtProcs(bpI, i);
-
-                    if( neiProc == Pstream::myProcNo() )
-                        continue;
-
-                    forAllConstIter(ltvMap, patchNormal, pIt)
-                        exchangeData[neiProc].append
-                        (
-                            refLabelledPointScalar
-                            (
-                                it.key(),
-                                labelledPointScalar
-                                (
-                                    pIt->first,
-                                    pIt->second.first,
-                                    pIt->second.second
-                                )
-                            )
-                        );
-                }
-            }
-        }
-
-        LongList<refLabelledPointScalar> receivedData;
-        help::exchangeMap(exchangeData, receivedData);
-
-        forAll(receivedData, i)
-        {
-            const refLabelledPointScalar& rlps = receivedData[i];
-            const label bpI = globalToLocal[rlps.objectLabel()];
-
-            ltvMap& patchNormal = pointPatchNormal[bpI];
-
-            const labelledPointScalar& lps = rlps.lps();
-            patchNormal[lps.pointLabel()].first += lps.coordinates();
-            patchNormal[lps.pointLabel()].second += lps.scalarValue();
-        }
-    }
-
-    forAllIter(lltvMap, pointPatchNormal, it)
-    {
-        ltvMap& patchNormal = it->second;
-
-        forAllIter(ltvMap, patchNormal, pIt)
-            pIt->second.first /= pIt->second.second;
-    }
-
-    //- calculate hair vectors
-    //- they point in the normal direction to the surface
-    vectorField hairVecs(hairEdges_.size());
-
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
-    {
-        const direction hairType = hairEdgeType_[hairEdgeI];
-        const label bpI = bp[hairEdges_[hairEdgeI][0]];
-
-        vector& hv = hairVecs[hairEdgeI];
-
-        const ltvMap& patchNormals = pointPatchNormal[bpI];
-
-        if( !(hairType & BOUNDARY) )
-        {
-            hv = vector::zero;
-            label counter(0);
-            forAllConstIter(ltvMap, patchNormals, pIt)
-            {
-                hv -= pIt->second.first;
-                ++counter;
-            }
-
-            if( counter == 0 )
-            {
-                FatalErrorIn
-                (
-                    "void boundaryLayerOptimisation::optimiseHairNormals()"
-                ) << "No valid patches for boundary point "
-                  << bpI << abort(FatalError);
-            }
-
-            hv /= counter;
-            hv /= (mag(hv) + VSMALL);
-        }
-        else if( hairType & BOUNDARY )
-        {
-            hv = hairEdges_[hairEdgeI].vec(points);
-            hv /= (mag(hv)+VSMALL);
-        }
-    }
-
-    # ifdef DEBUGLayer
-    //- write hair vectors as a VTK file
-    if( true )
-    {
-        OFstream file("hairVectors.vtk");
-
-        //- write the header
-        file << "# vtk DataFile Version 3.0\n";
-        file << "vtk output\n";
-        file << "ASCII\n";
-        file << "DATASET POLYDATA\n";
-
-        //- write points
-        file << "POINTS " << 2*hairEdges_.size() << " float\n";
-        forAll(hairEdges_, heI)
-        {
-            const point& p = points[hairEdges_[heI][0]];
-
-            file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
-
-            const point op = p + (hairVecs[heI]/mag(hairVecs[heI])) * hairEdges_[heI].mag(points);
-
-            file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
-        }
-
-        //- write triangles
-        file << "\nLINES " << hairEdges_.size()
-             << " " << 3*hairEdges_.size() << nl;
-        forAll(hairEdges_, heI)
-        {
-            file << 2 << " " << 2*heI << " " << (2*heI+1) << nl;
-        }
-
-        file << "\n";
-    }
-    # endif
-
-    //- smooth the variation of normals to reduce the twisting of faces
-    label nIter(0);
-    do
-    {
-        vectorField newNormals(hairVecs.size());
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 50)
-        # endif
-        forAll(hairEdgesNearHairEdge_, hairEdgeI)
-        {
-            //const edge& e = hairEdges_[hairEdgeI];
-
-            vector& newNormal = newNormals[hairEdgeI];
-            newNormal = vector::zero;
-
-            const direction eType = hairEdgeType_[hairEdgeI];
-
-            if( !(eType & BOUNDARY) )
-            {
-                if( eType & ATEDGE )
-                {
-                    //- this is a hair edge at a concave feature edge
-                    forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
-                    {
-                        const label hairEdgeJ =
-                            hairEdgesNearHairEdge_(hairEdgeI, nheI);
-
-                        if( hairEdgeType_[hairEdgeJ] & (ATEDGE | ATCORNER) )
-                            newNormal += hairVecs[hairEdgeJ];
-                    }
-                }
-                else if( eType & ATCORNER )
-                {
-                    //- this is a hair edge at a concave corner
-                    newNormal += hairVecs[hairEdgeI];
-                }
-                else if( eType & INSIDE )
-                {
-                    //- this is a hai edge at a point inside a patch
-                    forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
-                    {
-                        const label hairEdgeJ =
-                            hairEdgesNearHairEdge_(hairEdgeI, nheI);
-
-                        newNormal += hairVecs[hairEdgeJ];
-                    }
-                }
-                else
-                {
-                    newNormal += hairVecs[hairEdgeI];
-                }
-            }
-            else
-            {
-                if( eType & FEATUREEDGE )
-                {
-                    //- hair vectors at feature edges must not be modified
-                    newNormal += hairVecs[hairEdgeI];
-                }
-                else
-                {
-                    //- find the best fitting vector
-                    //- at the surface of the mesh
-                    forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
-                    {
-                        const label hairEdgeJ =
-                            hairEdgesNearHairEdge_(hairEdgeI, nheI);
-
-                        newNormal += hairVecs[hairEdgeJ];
-                    }
-                }
-            }
-        }
-
-        if( Pstream::parRun() )
-        {
-            //- collect data at inter-processor boundaries
-            const Map<label>& globalToLocal =
-                mse.globalToLocalBndPointAddressing();
-
-            const edgeList& edges = mesh_.addressingData().edges();
-            const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
-            const VRWGraph& edgesAtProcs =
-                mesh_.addressingData().edgeAtProcs();
-            const labelLongList& globalEdgeLabel =
-                mesh_.addressingData().globalEdgeLabel();
-            const Map<label>& globalToLocalEdge =
-                mesh_.addressingData().globalToLocalEdgeAddressing();
-            const DynList<label>& eNeiProcs =
-                mesh_.addressingData().edgeNeiProcs();
-
-            std::map<label, LongList<labelledPoint> > exchangeData;
-            forAll(eNeiProcs, i)
-                exchangeData[eNeiProcs[i]].clear();
-
-            forAllConstIter(Map<label>, globalToLocal, it)
-            {
-                const label bpI = it();
-
-                forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                {
-                    const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-                    const edge& he = hairEdges_[hairEdgeI];
-
-                    forAllRow(pointEdges, he.start(), peI)
-                    {
-                        const label edgeI = pointEdges(he.start(), peI);
-
-                        if( he == edges[edgeI] )
-                        {
-                            labelledPoint lp
-                            (
-                                globalEdgeLabel[edgeI],
-                                hairVecs[hairEdgeI]
-                            );
-
-                            forAllRow(edgesAtProcs, edgeI, j)
-                            {
-                                const label neiProc = edgesAtProcs(edgeI, j);
-
-                                if( neiProc == Pstream::myProcNo() )
-                                    continue;
-
-                                LongList<labelledPoint>& dts =
-                                    exchangeData[neiProc];
-
-                                dts.append(lp);
-                            }
-                        }
-                    }
-                }
-            }
-
-            LongList<labelledPoint> receivedData;
-            help::exchangeMap(exchangeData, receivedData);
-
-            forAll(receivedData, i)
-            {
-                const labelledPoint& lp = receivedData[i];
-                const label edgeI = globalToLocalEdge[lp.pointLabel()];
-                const edge& e = edges[edgeI];
-
-                bool found(false);
-                for(label pI=0;pI<2;++pI)
-                {
-                    const label bpI = bp[e[pI]];
-
-                    if( bpI < 0 )
-                        continue;
-
-                    forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                    {
-                        const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-
-                        if( hairEdges_[hairEdgeI] == e )
-                        {
-                            hairVecs[hairEdgeI] += lp.coordinates();
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if( found )
-                        break;
-                }
-            }
-        }
-
-        //- calculate new normal vectors
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(newNormals, hairEdgeI)
-            newNormals[hairEdgeI] /= (mag(newNormals[hairEdgeI]) + VSMALL);
-
-        //- transfer new hair vectors to the hairVecs list
-        hairVecs.transfer(newNormals);
-
-        # ifdef DEBUGLayer
-        if( true )
-        {
-            OFstream file("hairVectors_"+help::scalarToText(nIter)+".vtk");
-
-            //- write the header
-            file << "# vtk DataFile Version 3.0\n";
-            file << "vtk output\n";
-            file << "ASCII\n";
-            file << "DATASET POLYDATA\n";
-
-            //- write points
-            file << "POINTS " << 2*hairEdges_.size() << " float\n";
-            forAll(hairEdges_, heI)
-            {
-                const point& p = points[hairEdges_[heI][0]];
-
-                file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
-
-                const point op = p + hairVecs[heI] * hairEdges_[heI].mag(points);
-
-                file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
-            }
-
-            //- write triangles
-            file << "\nLINES " << hairEdges_.size()
-                 << " " << 3*hairEdges_.size() << nl;
-            forAll(hairEdges_, heI)
-            {
-                file << 2 << " " << 2*heI << " " << (2*heI+1) << nl;
-            }
-
-            file << "\n";
-        }
-        # endif
-    } while( nIter++ < nIterations );
-
-    //- move vertices to the new locations
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 100)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
-    {
-        const edge& he = hairEdges_[hairEdgeI];
-
-        const vector hv = (hairVecs[hairEdgeI] / mag(hairVecs[hairEdgeI]));
-
-        points[he.end()] = points[he.start()] + hv * he.mag(points);
-    }
-
-    mesh_.write();
-    ::exit(0);
-}
-
-void boundaryLayerOptimisation::optimiseThicknessVariation
-(
-    const label nIterations,
-    const scalar tangentTol,
-    const scalar featureSizeFactor
-)
-{
-    pointFieldPMG& points = mesh_.points();
-
-    const meshSurfaceEngine& mse = meshSurface();
-
-    //- reduce thickness of the layer
-    //- such that the variation of layer thickness
-    //- It is an iterative process where the layer is thinned in the regions
-    //- where the tangent is greater than the tolerance value.
-    vectorField hairDirections(hairEdges_.size());
-    scalarField hairLength(hairEdges_.size());
-
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
-    {
-        vector n = hairEdges_[hairEdgeI].vec(points);
-
-        hairLength[hairEdgeI] = Foam::max(VSMALL, Foam::mag(n));
-        hairDirections[hairEdgeI] = n / hairLength[hairEdgeI];
-    }
-
-    bool changed;
-    label nIter(0);
-    do
-    {
-        changed = false;
-
-        scalarField newLength(hairLength);
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 50)
-        # endif
-        forAll(hairEdgesNearHairEdge_, hairEdgeI)
-        {
-            const scalar magN = hairLength[hairEdgeI];
-
-            if( magN < VSMALL )
-                continue;
-
-            forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
-            {
-                const label hairEdgeJ =
-                    hairEdgesNearHairEdge_(hairEdgeI, nheI);
-
-                const scalar magNeiNormal = hairLength[hairEdgeJ];
-
-                const vector distVec
-                (
-                    points[hairEdges_[hairEdgeI][0]] -
-                    points[hairEdges_[hairEdgeJ][0]]
-                );
-
-                const scalar magDistVec = mag(distVec);
-
-                const scalar tanVec
-                (
-                    (magN - magNeiNormal) /
-                    (magDistVec + VSMALL)
-                );
-
-                if( tanVec > tangentTol )
-                {
-                    //- make the hair edge shorter
-                    newLength[hairEdgeI] =
-                        hairLength[hairEdgeJ] + magDistVec * tangentTol;
-
-                    changed = true;
-                }
-            }
-        }
-
-        if( Pstream::parRun() )
-        {
-            //- collect data at inter-processor boundaries
-            const Map<label>& globalToLocal =
-                mse.globalToLocalBndPointAddressing();
-            const labelList& bp = mse.bp();
-
-            const edgeList& edges = mesh_.addressingData().edges();
-            const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
-            const VRWGraph& edgesAtProcs =
-                mesh_.addressingData().edgeAtProcs();
-            const labelLongList& globalEdgeLabel =
-                mesh_.addressingData().globalEdgeLabel();
-            const Map<label>& globalToLocalEdge =
-                mesh_.addressingData().globalToLocalEdgeAddressing();
-            const DynList<label>& eNeiProcs =
-                mesh_.addressingData().edgeNeiProcs();
-
-            std::map<label, LongList<labelledScalar> > exchangeData;
-            forAll(eNeiProcs, i)
-                exchangeData[eNeiProcs[i]].clear();
-
-            forAllConstIter(Map<label>, globalToLocal, it)
-            {
-                const label bpI = it();
-
-                forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                {
-                    const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-                    const edge& he = hairEdges_[hairEdgeI];
-
-                    forAllRow(pointEdges, he.start(), peI)
-                    {
-                        const label edgeI = pointEdges(he.start(), peI);
-
-                        if( he == edges[edgeI] )
-                        {
-                            labelledScalar lScalar
-                            (
-                                globalEdgeLabel[edgeI],
-                                hairLength[hairEdgeI]
-                            );
-
-                            forAllRow(edgesAtProcs, edgeI, j)
-                            {
-                                const label neiProc = edgesAtProcs(edgeI, j);
-
-                                if( neiProc == Pstream::myProcNo() )
-                                    continue;
-
-                                LongList<labelledScalar>& dts =
-                                    exchangeData[neiProc];
-
-                                dts.append(lScalar);
-                            }
-                        }
-                    }
-                }
-            }
-
-            LongList<labelledScalar> receivedData;
-            help::exchangeMap(exchangeData, receivedData);
-
-            forAll(receivedData, i)
-            {
-                const labelledScalar& lScalar = receivedData[i];
-                const label edgeI = globalToLocalEdge[lScalar.scalarLabel()];
-                const edge& e = edges[edgeI];
-
-                bool found(false);
-                for(label pI=0;pI<2;++pI)
-                {
-                    const label bpI = bp[e[pI]];
-
-                    if( bpI < 0 )
-                        continue;
-
-                    forAllRow(hairEdgesAtBndPoint_, bpI, i)
-                    {
-                        const label hairEdgeI = hairEdgesAtBndPoint_(bpI, i);
-
-                        if( hairEdges_[hairEdgeI] == e )
-                        {
-                            if( lScalar.value() < hairLength[hairEdgeI] )
-                            {
-                                newLength[hairEdgeI] = lScalar.value();
-                                changed = true;
-                            }
-
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if( found )
-                        break;
-                }
-            }
-        }
-
-        //- reduce the information over all processors
-        reduce(changed, maxOp<bool>());
-
-        if( !changed )
-            break;
-
-        forAll(newLength, i)
-            if( newLength[i] < SMALL )
-                FatalError << "Bad length for edge " << i << exit(FatalError);
-
-        //- move boundary vertices to the new positions
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(hairEdges_, hairEdgeI)
-        {
-            if( hairEdgeType_[hairEdgeI] & BOUNDARY )
-            {
-                const edge& he = hairEdges_[hairEdgeI];
-                const vector& hv = hairDirections[hairEdgeI];
-                const point& s = points[he.start()];
-
-                points[he.end()] = s + newLength[hairEdgeI] * hv;
-            }
-        }
-
-        //- move intenal vertices to the new positions
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 100)
-        # endif
-        forAll(hairEdges_, hairEdgeI)
-        {
-            if( hairEdgeType_[hairEdgeI] & INSIDE )
-            {
-                const edge& he = hairEdges_[hairEdgeI];
-                const vector& hv = hairDirections[hairEdgeI];
-                const point& s = points[he.start()];
-
-                points[he.end()] = s + newLength[hairEdgeI] * hv;
-            }
-        }
-
-        //- update hairLength
-        hairLength.transfer(newLength);
-
-    } while( changed && (++nIter < nIterations) );
-}
-*/
 
 void boundaryLayerOptimisation::optimiseLayer
 (
@@ -2695,11 +1976,12 @@ void boundaryLayerOptimisation::optimiseLayer
 
         //- smoothing thickness variation of boundary hairs
         Info << "Smoothing bnd thickness" << endl;
-        optimiseThicknessVariationAtTheBoundary
+        optimiseThicknessVariation
         (
             nIterations,
             tangentTol,
-            featureSizeFactor
+            featureSizeFactor,
+            BOUNDARY
         );
 
         if( true )
@@ -2707,11 +1989,8 @@ void boundaryLayerOptimisation::optimiseLayer
             meshSurfaceEngineModifier bMod(meshSurface());
             bMod.updateGeometry();
 
-            surfOpt.optimizeSurface(1);
+            surfOpt.optimizeSurface(2);
         }
-
-        mesh_.write();
-        ::exit(0);
 
         # ifdef DEBUGLayer
         label counter(0);
@@ -2728,12 +2007,14 @@ void boundaryLayerOptimisation::optimiseLayer
 
         //- optimise thickness variation inside the mesh
         Info << "Smothing thickness variation inside" << endl;
-        optimiseThicknessVariationInside
+        optimiseThicknessVariation
         (
             nIterations,
             tangentTol,
-            featureSizeFactor
+            featureSizeFactor,
+            INSIDE
         );
+        Info << "Finished smothing thickness inside" << endl;
 
         # ifdef DEBUGLayer
         label intCounter = 0;
