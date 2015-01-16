@@ -101,15 +101,6 @@ class boundaryLayerOptimisation
         //- access to meshSurfacePartitioner
         const meshSurfacePartitioner& surfacePartitioner() const;
 
-        //- calculate tangent vectors for points at feature edges
-        //- points can be filtered by a type of hair edges
-        typedef std::map<label, vector> labelToVectorType;
-        void calculateTangentVectors
-        (
-            const direction eType,
-            labelToVectorType&
-        ) const;
-
         //- calculate normal vector for all patches at a point
         //- points can be filtered by a type of hair edges
         typedef std::map<label, std::pair<point, scalar> > patchNormalType;
@@ -212,29 +203,17 @@ public:
 
     // Member Functions
         //- return hair edges
-        inline const edgeLongList& hairEdges() const
-        {
-            return hairEdges_;
-        }
+        const edgeLongList& hairEdges() const;
 
         //- hair edges attached to a boundary point
-        inline const VRWGraph& hairEdgesAtBndPoint() const
-        {
-            return hairEdgesAtBndPoint_;
-        }
+        const VRWGraph& hairEdgesAtBndPoint() const;
 
         //- boundary faces which serve as base faces of a boundary layer
         //- are set to true
-        inline const boolList& isBaseFace() const
-        {
-            return isBndLayerBase_;
-        }
+        const boolList& isBaseFace() const;
 
         //- boundary faces where the layers exit at the boundary
-        inline const boolList& isExitFace() const
-        {
-            return isExitFace_;
-        }
+        const boolList& isExitFace() const;
 
         //- optimise boundary layer
         void optimiseLayer

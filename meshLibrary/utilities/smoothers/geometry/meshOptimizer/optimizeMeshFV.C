@@ -115,12 +115,13 @@ void meshOptimizer::untangleMeshFV
 
     boolList changedFace(faces.size(), true);
 
-    //- deactivate faces which have all of their points locked
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 100)
-    # endif
-    forAll(lockedFaces_, lfI)
-        changedFace[lockedFaces_[lfI]] = false;
+    //- check if any points in the tet mesh shall not move
+    labelLongList lockedPoints;
+    forAll(vertexLocation_, pointI)
+    {
+        if( vertexLocation_[pointI] & LOCKED )
+            lockedPoints.append(pointI);
+    }
 
     labelHashSet badFaces;
 
@@ -154,23 +155,13 @@ void meshOptimizer::untangleMeshFV
             }
 
             //- create a tet mesh from the mesh and the labels of bad faces
-            partTetMesh tetMesh(mesh_, badFaces, (nGlobalIter / 2) + 1);
-
-            //- check if any points in the tet mesh shall not move
-            const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
-            labelLongList lockPoints;
-            forAll(origLabel, i)
-            {
-                const label pointI = origLabel[i];
-
-                if( pointI < 0 )
-                    continue;
-
-                if( vertexLocation_[pointI] & LOCKED )
-                    lockPoints.append(i);
-            }
-
-            tetMesh.lockPoints(lockPoints);
+            partTetMesh tetMesh
+            (
+                mesh_,
+                lockedPoints,
+                badFaces,
+                (nGlobalIter / 2) + 1
+            );
 
             //- construct tetMeshOptimisation and improve positions of
             //- points in the tet mesh
@@ -193,7 +184,7 @@ void meshOptimizer::untangleMeshFV
         // move boundary vertices
         nIter = 0;
 
-        do
+        while( nIter++ < maxNumSurfaceIterations );
         {
             nBadFaces =
                 polyMeshGenChecks::findBadFaces
@@ -240,23 +231,8 @@ void meshOptimizer::untangleMeshFV
                 );
             }
 
-            partTetMesh tetMesh(mesh_, badFaces, 0);
-
-            //- check if any points in the tet mesh shall not move
-            const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
-            labelLongList lockPoints;
-            forAll(origLabel, i)
-            {
-                const label pointI = origLabel[i];
-
-                if( pointI < 0 )
-                    continue;
-
-                if( vertexLocation_[pointI] & LOCKED )
-                    lockPoints.append(i);
-            }
-
-            tetMesh.lockPoints(lockPoints);
+            //- create tethrahedral mesh from the cells which shall be smoothed
+            partTetMesh tetMesh(mesh_, lockedPoints, badFaces, 0);
 
             //- contruct tetMeshOptimisation
             tetMeshOptimisation tmo(tetMesh);
@@ -279,7 +255,7 @@ void meshOptimizer::untangleMeshFV
 
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( ++nIter < maxNumSurfaceIterations );
+        }
 
     } while( nBadFaces );
 
@@ -299,10 +275,11 @@ void meshOptimizer::optimizeBoundaryLayer()
 
     //- check if the bnd layer is tangled somewhere
     boolList layerCell(mesh_.cells().size(), false);
-    const boolList& isBaseFace = optimiser.isBaseFace();
-    forAll(isBaseFace, bfI)
+    const boolList& baseFace = optimiser.isBaseFace();
+
+    forAll(baseFace, bfI)
     {
-        if( isBaseFace[bfI] )
+        if( baseFace[bfI] )
             layerCell[faceOwner[bfI]] = true;
     }
 
@@ -310,15 +287,25 @@ void meshOptimizer::optimizeBoundaryLayer()
     mesh_.clearAddressingData();
 
     //- lock boundary layer points, faces and cells
+    const label bndLayerId = mesh_.addCellSubset("boundaryLayerCells");
     labelLongList bndLayerCells;
     forAll(layerCell, cellI)
+    {
         if( layerCell[cellI] )
+        {
             bndLayerCells.append(cellI);
+            mesh_.addCellToSubset(bndLayerId, cellI);
+        }
+    }
 
     lockCells(bndLayerCells);
 
+    optimizeLowQualityFaces(10);
+
     //- untangle remaining faces and lock the boundary layer cells
-    untangleMeshFV();
+    untangleMeshFV(2, 50, 0);
+
+    //optimizeMeshNearBoundaries(5, 3);
 
     //- unlock bnd layer points
     removeUserConstraints();
@@ -333,12 +320,13 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
-    //- deactivate faces which have all of their points locked
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 100)
-    # endif
-    forAll(lockedFaces_, lfI)
-        changedFace[lockedFaces_[lfI]] = false;
+    //- check if any points in the tet mesh shall not move
+    labelLongList lockedPoints;
+    forAll(vertexLocation_, pointI)
+    {
+        if( vertexLocation_[pointI] & LOCKED )
+            lockedPoints.append(pointI);
+    }
 
     label minNumBadFaces(10 * faces.size()), minIter(-1);
     do
@@ -370,23 +358,7 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
             minIter = nIter;
         }
 
-        partTetMesh tetMesh(mesh_, lowQualityFaces, 2);
-
-        //- check if any points in the tet mesh shall not move
-        const labelLongList& origLabel = tetMesh.nodeLabelInOrigMesh();
-        labelLongList lockPoints;
-        forAll(origLabel, i)
-        {
-            const label pointI = origLabel[i];
-
-            if( pointI < 0 )
-                continue;
-
-            if( vertexLocation_[pointI] & LOCKED )
-                lockPoints.append(i);
-        }
-
-        tetMesh.lockPoints(lockPoints);
+        partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
 
         //- construct tetMeshOptimisation and improve positions
         //- of points in the tet mesh
@@ -415,12 +387,20 @@ void meshOptimizer::optimizeMeshNearBoundaries
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
-    partTetMesh tetMesh(mesh_, numLayersOfCells);
+    //- check if any points in the tet mesh shall not move
+    labelLongList lockedPoints;
+    forAll(vertexLocation_, pointI)
+    {
+        if( vertexLocation_[pointI] & LOCKED )
+            lockedPoints.append(pointI);
+    }
+
+    partTetMesh tetMesh(mesh_, lockedPoints, numLayersOfCells);
     tetMeshOptimisation tmo(tetMesh);
     Info << "Iteration:" << flush;
     do
     {
-        tmo.optimiseUsingVolumeOptimizer();
+        tmo.optimiseUsingVolumeOptimizer(5);
 
         tetMesh.updateOrigMesh(&changedFace);
 

@@ -32,11 +32,15 @@ Description
 
 #include "argList.H"
 #include "meshOptimizer.H"
-#include "boundaryLayerOptimisation.H"
+#include "boundaryLayers.H"
 #include "Time.H"
 #include "polyMeshGen.H"
 #include "meshSurfaceEngine.H"
 #include "helperFunctions.H"
+#include "meshOptimizer.H"
+#include "boolList.H"
+
+#include "boundaryLayerOptimisation.H"
 
 using namespace Foam;
 
@@ -62,16 +66,79 @@ int main(int argc, char *argv[])
             Info << "Vertex " << pointI << " is invalid " << p << endl;
     }
 
+    //boundaryLayers(pmg).addLayerForAllPatches();
+    //pmg.clearAddressingData();
+
     meshSurfaceEngine mse(pmg);
     boundaryLayerOptimisation blOpt(pmg, mse);
 
-    blOpt.optimiseLayer(30, 0.15, 0.4);
+    const labelList& faceCell = mse.faceOwners();
+    const boolList& isBaseFace = blOpt.isBaseFace();
 
-    //Info << "Optimising hair vectors" << endl;
-    //blOpt.optimiseHairNormals();
+    labelLongList layerCells;
+    boolList layerCell(pmg.cells().size(), false);
+    const label blCellsId = pmg.addCellSubset("boundaryLayerCells");
+    forAll(isBaseFace, bfI)
+    {
+        pmg.addCellToSubset(blCellsId, faceCell[bfI]);
+        layerCell[faceCell[bfI]] = true;
+        layerCells.append(faceCell[bfI]);
+    }
 
-    //Info << "Optimising thickness variation" << endl;
-    //blOpt.optimiseThicknessVariation();
+    //- find points in boundary layer
+    boolList pointInBoundaryLayer(pmg.points().size(), false);
+    const cellListPMG& cells = pmg.cells();
+    const faceListPMG& faces = pmg.faces();
+    forAll(cells, cellI)
+    {
+        if( layerCell[cellI] )
+        {
+            const cell& c = cells[cellI];
+            forAll(c, fI)
+            {
+                const face& f = faces[c[fI]];
+
+                forAll(f, pI)
+                    pointInBoundaryLayer[f[pI]] = true;
+            }
+        }
+    }
+
+    //- check if there exist faces with all vertices in the boundary layer
+    const label allPointsInLayerId = pmg.addCellSubset("allPointsInLayer");
+    forAll(cells, cellI)
+    {
+        if( !layerCell[cellI] )
+        {
+            bool allInBndLayer(true);
+
+            const cell& c = cells[cellI];
+            forAll(c, fI)
+            {
+                const face& f = faces[c[fI]];
+
+                forAll(f, pI)
+                    allInBndLayer = false;
+            }
+
+            if( allInBndLayer )
+            {
+                Info << "Cell " << cellI
+                     << " has all points in the layer" << endl;
+                pmg.addCellToSubset(allPointsInLayerId, cellI);
+            }
+        }
+    }
+
+    blOpt.optimiseLayer(5, 0.15, 0.4);
+
+    pmg.clearAddressingData();
+
+    meshOptimizer mOpt(pmg);
+    mOpt.lockCellsInSubset("boundaryLayerCells");
+    mOpt.untangleMeshFV(5, 50, 0);
+    //meshOptimizer mOpt(pmg);
+    //mOpt.optimizeBoundaryLayer();
 
     forAll(pmg.points(), pointI)
     {

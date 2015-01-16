@@ -106,7 +106,11 @@ class partTetMesh
     // Private member functions
 
         //- create points and tets
-        void createPointsAndTets(const List<direction>&);
+        void createPointsAndTets
+        (
+            const List<direction>& usedCells,
+            const boolList& lockedPoints
+        );
 
         //- create parallel addressing
         void createParallelAddressing
@@ -128,18 +132,24 @@ class partTetMesh
 public:
 
     // Constructors
-        //- construct from polyMeshGen
-        partTetMesh(polyMeshGen& mesh);
+        //- construct from polyMeshGen and locked points
+        partTetMesh(polyMeshGen& mesh, const labelLongList& lockedPoints);
 
-        //- construct from polyMeshGen and the number of layers
+        //- construct from polyMeshGen, locked points and the number of layers
         //- from the boundary
-        partTetMesh(polyMeshGen& mesh, const direction nLayers = 2);
+        partTetMesh
+        (
+            polyMeshGen& mesh,
+            const labelLongList& lockedPoints,
+            const direction nLayers = 2
+        );
 
         //- construct from polyMeshGen, bad faces and the number
         //- of additional layers
         partTetMesh
         (
             polyMeshGen& mesh,
+            const labelLongList& lockedPoints,
             labelHashSet& badFaces,
             const direction additionalLayers = 0
         );

@@ -87,6 +87,26 @@ boundaryLayerOptimisation::~boundaryLayerOptimisation()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+const edgeLongList& boundaryLayerOptimisation::hairEdges() const
+{
+    return hairEdges_;
+}
+
+const VRWGraph& boundaryLayerOptimisation::hairEdgesAtBndPoint() const
+{
+    return hairEdgesAtBndPoint_;
+}
+
+const boolList& boundaryLayerOptimisation::isBaseFace() const
+{
+    return isBndLayerBase_;
+}
+
+const boolList& boundaryLayerOptimisation::isExitFace() const
+{
+    return isExitFace_;
+}
+
 void boundaryLayerOptimisation::optimiseLayer
 (
     const dictionary& meshDict,

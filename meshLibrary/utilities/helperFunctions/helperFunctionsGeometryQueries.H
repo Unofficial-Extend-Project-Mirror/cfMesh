@@ -41,10 +41,10 @@ SourceFiles
 #include "triSurf.H"
 #include "triangle.H"
 #include "tetrahedron.H"
+#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class boolList;
 class labelHashSet;
 class boundBox;
 

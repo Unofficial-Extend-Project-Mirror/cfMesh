@@ -216,11 +216,28 @@ public:
         void enforceConstraints(const word subsetName="badPoints");
 
         //- lock the cells which shall not be modified
-        void lockCells(const labelLongList&);
+        template<class labelListType>
+        inline void lockCells(const labelListType&);
 
         //- lock cells which shall not be modified
         //- contained inside the specified subset
-        void lockCells(const word& subsetName);
+        void lockCellsInSubset(const word& subsetName);
+
+        //- lock the faces whih shall not be modified
+        template<class labelListType>
+        inline void lockFaces(const labelListType&);
+
+        //- lock faces which shall not be modified
+        //- stored in a face subset
+        void lockFacesInSubset(const word& subsetName);
+
+        //- lock points which shall not be moved
+        template<class labelListType>
+        inline void lockPoints(const labelListType&);
+
+        //- lock points which shall not be modified
+        //- given as a point subset
+        void lockPointsInSubset(const word& subsetName);
 
         //- reset to default constraints
         void removeUserConstraints();
@@ -264,6 +281,10 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "meshOptimizerI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

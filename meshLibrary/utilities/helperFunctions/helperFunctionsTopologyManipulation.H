@@ -36,11 +36,10 @@ SourceFiles
 
 #include "DynList.H"
 #include "face.H"
-
+#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class boolList;
 class cellList;
 class labelHashSet;
 

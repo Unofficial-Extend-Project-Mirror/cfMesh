@@ -220,150 +220,6 @@ boundaryLayerOptimisation::surfacePartitioner() const
     return *partitionerPtr_;
 }
 
-void boundaryLayerOptimisation::calculateTangentVectors
-(
-    const direction eType,
-    labelToVectorType& tangents
-) const
-{
-    const pointFieldPMG& points = mesh_.points();
-
-    const meshSurfaceEngine& mse = meshSurface();
-    const labelList& bp = mse.bp();
-    const edgeList& edges = mse.edges();
-    const VRWGraph& bpEdges = mse.boundaryPointEdges();
-
-    const meshSurfacePartitioner& mPart = surfacePartitioner();
-    const labelHashSet& featureEdge = mPart.featureEdges();
-
-    typedef std::map<label, scalar> labelToScalarType;
-    labelToScalarType tangentSum;
-
-    //- find points on edges
-    tangents.clear();
-    forAll(hairEdges_, hairEdgeI)
-    {
-        const direction currType = hairEdgeType_[hairEdgeI];
-        if
-        (
-            !(currType & eType) ||
-            !(currType & (ATEDGE|ATCORNER)) ||
-            (currType & FEATUREEDGE)
-        )
-            continue;
-
-        tangents.insert(std::make_pair(hairEdgeI, vector::zero));
-        tangentSum.insert(std::make_pair(hairEdgeI, 0.0));
-    }
-
-    //- calculate edge vectors and calculate the tangent as the average
-    forAllIter(labelToVectorType, tangents, it)
-    {
-        const label hairEdgeI = it->first;
-
-        const label bpI = bp[hairEdges_[hairEdgeI].start()];
-
-        forAllRow(bpEdges, bpI, bpeI)
-        {
-            const label beI = bpEdges(bpI, bpeI);
-
-            if( !featureEdge.found(beI) )
-                continue;
-
-            const edge& e = edges[beI];
-
-            vector ev = e.vec(points);
-
-            if( (ev & it->second) >= 0.0 )
-            {
-                it->second += ev;
-            }
-            else
-            {
-                it->second -= ev;
-            }
-
-            tangentSum[bpI] += mag(ev);
-        }
-    }
-
-    if( Pstream::parRun() )
-    {
-        //- gather information about tangents to other processors
-        const Map<label>& globalToLocal =
-            mse.globalToLocalBndPointAddressing();
-        const DynList<label>& neiProcs = mse.bpNeiProcs();
-        const VRWGraph& bpAtProcs = mse.bpAtProcs();
-
-        std::map<label, LongList<labelledPointScalar> > exchangeData;
-        forAll(neiProcs, i)
-            exchangeData[neiProcs[i]].clear();
-
-        forAllConstIter(Map<label>, globalToLocal, it)
-        {
-            const label bpI = it();
-
-            labelToVectorType::const_iterator tangentIt = tangents.find(bpI);
-
-            if( tangentIt != tangents.end() )
-            {
-                const vector& pointTangent = tangentIt->second;
-                const scalar tangentLength = tangentSum[bpI];
-
-                forAllRow(bpAtProcs, bpI, i)
-                {
-                    const label neiProc = bpAtProcs(bpI, i);
-
-                    if( neiProc == Pstream::myProcNo() )
-                        continue;
-
-                    exchangeData[neiProc].append
-                    (
-                        labelledPointScalar
-                        (
-                            it.key(),
-                            pointTangent,
-                            tangentLength
-                        )
-                    );
-                }
-            }
-        }
-
-        LongList<labelledPointScalar> receivedData;
-        help::exchangeMap(exchangeData, receivedData);
-
-        forAll(receivedData, i)
-        {
-            const labelledPointScalar& lps = receivedData[i];
-            const label bpI = globalToLocal[lps.pointLabel()];
-
-            vector& tangent = tangents[bpI];
-
-            if( (tangent & lps.coordinates()) >= 0.0 )
-            {
-                tangent += lps.coordinates();
-            }
-            else
-            {
-                tangent -= lps.coordinates();
-            }
-
-            tangentSum[bpI] += lps.scalarValue();
-        }
-    }
-
-    forAllIter(labelToVectorType, tangents, it)
-    {
-
-        vector& tangent = it->second;
-        const scalar tangentLength = tangentSum[it->first];
-
-        tangent /= (tangentLength + VSMALL);
-        tangent /= (mag(tangent) + VSMALL);
-    }
-}
-
 void boundaryLayerOptimisation::calculateNormalVectors
 (
     const direction eType,
@@ -1082,7 +938,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
 
     //- calculate hair vectors
     //- they point in the normal direction to the surface
-    Info << "Calculating hair vectors for bnd edge hairs" << endl;
     vectorField hairVecs(hairEdges_.size());
     calculateHairVectorsAtTheBoundary(hairVecs);
 
@@ -1090,7 +945,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
     label nIter(0);
     do
     {
-        Info << "Iteration " << nIter << endl;
         vectorField newNormals(hairVecs.size());
 
         # ifdef USE_OMP
@@ -1293,8 +1147,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
         //- transfer new hair vectors to the hairVecs list
         hairVecs.transfer(newNormals);
 
-        Info << "Finished iteration " << nIter << endl;
-
         # ifdef DEBUGLayer
         if( true )
         {
@@ -1323,8 +1175,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
             points[he.end()] = points[he.start()] + hv * he.mag(points);
         }
     }
-
-    Info << "Finished optimising boundary normals" << endl;
 }
 
 void boundaryLayerOptimisation::optimiseHairNormalsInside
@@ -1339,13 +1189,11 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     const labelList& bp = mse.bp();
 
     //- calculate point normals with respect to all patches at a point
-    Info << "Calculating normals for inner hairs" << endl;
     pointNormalsType pointPatchNormal;
     calculateNormalVectors(INSIDE, pointPatchNormal);
 
     //- calculate hair vectors
     //- they point in the normal direction to the surface
-    Info << "Calculating hair vectors for inner hairs" << endl;
     vectorField hairVecs(hairEdges_.size());
 
     # ifdef USE_OMP
@@ -1389,12 +1237,9 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     # endif
 
     //- smooth the variation of normals to reduce the twisting of faces
-    Info << "Smoothing variation of inner hairs" << endl;
     label nIter(0);
     do
     {
-        Info << "Iteration " << nIter << endl;
-
         vectorField newNormals(hairVecs.size());
 
         # ifdef USE_OMP
@@ -1557,7 +1402,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     } while( nIter++ < nIterations );
 
     //- move vertices to the new locations
-    Info << "Finalising smoothing of normals for inner hairs" << endl;
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100)
     # endif
@@ -1572,7 +1416,6 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
             points[he.end()] = points[he.start()] + hv * he.mag(points);
         }
     }
-    Info << "Finished smoothing of normals for inner hairs" << endl;
 }
 
 scalar boundaryLayerOptimisation::calculateThickness
@@ -1925,10 +1768,9 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
         if
         (
             thinnedHairEdge_[heI] &&
-            (nEdgesAtPoint[hairEdges_[heI].end()] > 1)
+            (nEdgesAtPoint[hairEdges_[heI].end()] > 2)
         )
         {
-            Info << "Hair edge " << heI << " was modified " << endl;
             modified = true;
             thinnedPoints[hairEdges_[heI].end()] = true;
         }
@@ -1939,7 +1781,8 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
     if( !modified )
         return false;
 
-    Info << "Hair edges at exitting faces shall be modified due to inner constraints" << endl;
+    Info << "Hair edges at exitting faces shall "
+         << "be modified due to inner constraints" << endl;
 
     return true;
 }
@@ -1961,7 +1804,6 @@ void boundaryLayerOptimisation::optimiseLayer
     forAll(isExitFace_, bfI)
         if( isExitFace_[bfI] )
             lockedFaces.append(bfI);
-    Info << "Number of locked faces is " << lockedFaces << endl;
     surfOpt.lockBoundaryFaces(lockedFaces);
     surfOpt.lockFeatureEdges();
 
@@ -1970,15 +1812,13 @@ void boundaryLayerOptimisation::optimiseLayer
     {
         thinnedHairEdge_ = false;
 
-        Info << "Optimising bnd normals" << endl;
         //- calculate normals at the boundary
         optimiseHairNormalsAtTheBoundary(nIterations);
 
         //- smoothing thickness variation of boundary hairs
-        Info << "Smoothing bnd thickness" << endl;
         optimiseThicknessVariation
         (
-            nIterations,
+            1000,
             tangentTol,
             featureSizeFactor,
             BOUNDARY
@@ -1990,6 +1830,7 @@ void boundaryLayerOptimisation::optimiseLayer
             bMod.updateGeometry();
 
             surfOpt.optimizeSurface(2);
+            bMod.updateGeometry();
         }
 
         # ifdef DEBUGLayer
@@ -2002,19 +1843,16 @@ void boundaryLayerOptimisation::optimiseLayer
         # endif
 
         //- optimise normals inside the mesh
-        Info << "Smoothing normals inside" << endl;
         optimiseHairNormalsInside(nIterations);
 
         //- optimise thickness variation inside the mesh
-        Info << "Smothing thickness variation inside" << endl;
         optimiseThicknessVariation
         (
-            nIterations,
+            1000,
             tangentTol,
             featureSizeFactor,
             INSIDE
         );
-        Info << "Finished smothing thickness inside" << endl;
 
         # ifdef DEBUGLayer
         label intCounter = 0;
@@ -2024,7 +1862,6 @@ void boundaryLayerOptimisation::optimiseLayer
         Info << "Thinned " << (intCounter - counter)
              << " inner hair edges" << endl;
         # endif
-        return;
     } while( optimiseLayersAtExittingFaces() && (++nIter < nIterations) );
 }
 

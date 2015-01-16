@@ -64,7 +64,7 @@ tetMeshOptimisation::~tetMeshOptimisation()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void tetMeshOptimisation::optimiseUsingKnuppMetric()
+void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
 {
     const LongList<point>& points = tetMesh_.points();
     const LongList<partTet>& tets = tetMesh_.tets();
@@ -143,7 +143,11 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
             # endif
             forAll(smoothVertex, nodeI)
             {
-                if( !negativeNode[nodeI] )
+                if
+                (
+                    !negativeNode[nodeI] ||
+                    (smoothVertex[nodeI] & partTetMesh::LOCKED)
+                )
                     continue;
 
                 if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
@@ -194,10 +198,10 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric()
         if( nNegative == 0 )
             return;
 
-    } while( (nNegative < nNegativeBefore) || (++nIter < 5) );
+    } while( (nNegative < nNegativeBefore) || (++nIter < nIterations) );
 }
 
-void tetMeshOptimisation::optimiseUsingMeshUntangler()
+void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
 {
     const LongList<point>& points = tetMesh_.points();
     const LongList<partTet>& tets = tetMesh_.tets();
@@ -327,15 +331,15 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler()
             return;
         invertedTets.transfer(helper);
 
-    } while( (nNegative < nNegativeBefore) || (++nIter < 5) );
+    } while( (nNegative < nNegativeBefore) || (++nIter < nIterations) );
 }
 
-void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
+void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
 {
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
     //- use mesh optimizer to improve the result
-    for(label i=0;i<2;++i)
+    for(label i=0;i<nIterations;++i)
     {
         List<LongList<labelledPoint> > newPositions;
 
@@ -391,6 +395,7 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer()
 
 void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 (
+    const label nIterations,
     const bool nonShrinking
 )
 {
@@ -405,7 +410,7 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
     const label nThreads(1);
     # endif
 
-    for(label i=0;i<3;++i)
+    for(label i=0;i<nIterations;++i)
     {
         List<LongList<labelledPoint> > newPositions(nThreads);
 
@@ -537,7 +542,10 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
     }
 }
 
-void tetMeshOptimisation::optimiseBoundarySurfaceLaplace()
+void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
+(
+    const label nIterations
+)
 {
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
@@ -549,7 +557,7 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace()
     const label nThreads(1);
     # endif
 
-    for(label i=0;i<3;++i)
+    for(label i=0;i<nIterations;++i)
     {
         List<LongList<labelledPoint> > newPositions(nThreads);
 

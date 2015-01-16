@@ -31,6 +31,7 @@ Description
 #include "meshSurfacePartitioner.H"
 #include "polyMeshGenAddressing.H"
 #include "polyMeshGenChecks.H"
+#include "labelLongList.H"
 
 // #define DEBUGSmoothing
 
@@ -187,91 +188,7 @@ void meshOptimizer::enforceConstraints(const word subsetName)
     badPointsSubsetName_ = subsetName;
 }
 
-
-void meshOptimizer::lockCells(const labelLongList& l)
-{
-    boolList lockedFace(mesh_.faces().size(), false);
-    const cellListPMG& cells = mesh_.cells();
-    forAll(l, lcI)
-    {
-        const cell& c = cells[l[lcI]];
-
-        forAll(c, fI)
-            lockedFace[c[fI]] = true;
-    }
-
-    if( Pstream::parRun() )
-    {
-        const PtrList<processorBoundaryPatch>& procBoundaries =
-            mesh_.procBoundaries();
-
-        forAll(procBoundaries, patchI)
-        {
-            labelLongList dataToSend;
-
-            const label start = procBoundaries[patchI].patchStart();
-            const label end = start+procBoundaries[patchI].patchSize();
-
-            for(label faceI=start;faceI<end;++faceI)
-                if( lockedFace[faceI] )
-                    dataToSend.append(faceI-start);
-
-            OPstream toOtherProc
-            (
-                Pstream::blocking,
-                procBoundaries[patchI].neiProcNo(),
-                dataToSend.byteSize()
-            );
-
-            toOtherProc << dataToSend;
-        }
-
-        forAll(procBoundaries, patchI)
-        {
-            const label start = procBoundaries[patchI].patchStart();
-
-            IPstream fromOtherProc
-            (
-                Pstream::blocking,
-                procBoundaries[patchI].neiProcNo()
-            );
-
-            labelList receivedData;
-            fromOtherProc >> receivedData;
-
-            forAll(receivedData, i)
-                lockedFace[start+receivedData[i]];
-        }
-    }
-
-    //- Finally, mark locked points and faces
-    const faceListPMG& faces = mesh_.faces();
-    forAll(lockedFace, faceI)
-    {
-        if( lockedFace[faceI] )
-        {
-            lockedFaces_.append(faceI);
-
-            const face& f = faces[faceI];
-
-            forAll(f, pI)
-                vertexLocation_[f[pI]] |= LOCKED;
-        }
-    }
-
-    # ifdef DEBUGSmoothing
-    const label lockedFacesI = mesh_.addFaceSubset("lockedFaces");
-    forAll(lockedFaces_, lfI)
-        mesh_.addFaceToSubset(lockedFacesI, lockedFaces_[lfI]);
-
-    const label lockPointsI = mesh_.addPointSubset("lockedPoints");
-    forAll(vertexLocation_, pointI)
-        if( vertexLocation_[pointI] & LOCKED )
-            mesh_.addPointToSubset(lockPointsI, pointI);
-    # endif
-}
-
-void meshOptimizer::lockCells(const word& subsetName)
+void meshOptimizer::lockCellsInSubset(const word& subsetName)
 {
     //- lock the points in the cell subset with the given name
     label subsetI = mesh_.cellSubsetIndex(subsetName);
@@ -281,13 +198,47 @@ void meshOptimizer::lockCells(const word& subsetName)
         mesh_.cellsInSubset(subsetI, lc);
 
         lockCells(lc);
-
-        return;
     }
     else
     {
         Warning << "Subset " << subsetName << " is not a cell subset!"
             << " Cannot lock cells!" << endl;
+    }
+}
+
+void meshOptimizer::lockFacesInSubset(const word& subsetName)
+{
+    //- lock the points in the face subset with the given name
+    label subsetI = mesh_.faceSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList lf;
+        mesh_.facesInSubset(subsetI, lf);
+
+        lockFaces(lf);
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a face subset!"
+            << " Cannot lock faces!" << endl;
+    }
+}
+
+void meshOptimizer::lockPointsInSubset(const word& subsetName)
+{
+    //- lock the points in the point subset with the given name
+    label subsetI = mesh_.pointSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList lp;
+        mesh_.pointsInSubset(subsetI, lp);
+
+        lockCells(lp);
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a point subset!"
+            << " Cannot lock points!" << endl;
     }
 }
 
