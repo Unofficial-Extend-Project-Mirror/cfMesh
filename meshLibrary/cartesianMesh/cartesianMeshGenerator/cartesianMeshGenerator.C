@@ -188,6 +188,33 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
+        labelHashSet badFaces;
+        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
+
+        if( returnReduce(badFaces.size(), sumOp<label>()) != 0 )
+        {
+            Warning << "Bad bnd layer cells found!!" << endl;
+
+            const labelList& owner = mesh_.owner();
+            const labelList& nei = mesh_.neighbour();
+
+            const label subsetI = mesh_.addCellSubset("invertedCells");
+            forAllConstIter(labelHashSet, badFaces, it)
+            {
+                mesh_.addCellToSubset(subsetI, owner[it.key()]);
+                if( nei[it.key()] >= 0 )
+                    mesh_.addCellToSubset(subsetI, nei[it.key()]);
+            }
+
+            mesh_.write();
+            returnReduce(1, sumOp<label>());
+            FatalErrorIn
+            (
+                "void cartesianMeshGenerator::refBoundaryLayers()"
+            ) << "Inverted cells present in the boundary layer"
+              << exit(FatalError);
+        }
+
         meshOptimizer(mesh_).untangleMeshFV();
     }
 }
@@ -240,7 +267,7 @@ void cartesianMeshGenerator::optimiseFinalMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 

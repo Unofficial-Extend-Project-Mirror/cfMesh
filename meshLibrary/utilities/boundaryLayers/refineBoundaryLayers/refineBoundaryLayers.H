@@ -169,8 +169,8 @@ class refineBoundaryLayers
         void generateNewCellsPrism
         (
             const label cellI,
-            DynList<DynList<DynList<label, 8>, 10> >& cellsFromCell
-        );
+            DynList<DynList<DynList<label, 8>, 10>, 64>& cellsFromCell
+        ) const;
 
         //- a helper function which stores faces generated from
         //- an existing face into new cells
@@ -205,8 +205,8 @@ class refineBoundaryLayers
                 //- container for new cells
                 DynList<DynList<DynList<label, 4>, 6>, 256> cellsFromCell_;
 
-                //- reference to the boundary layer class
-                refineBoundaryLayers& bndLayers_;
+                //- const reference to the boundary layer class
+                const refineBoundaryLayers& bndLayers_;
 
                 //- faces sorted into directions of a hex shape
                 FixedList<label, 6> faceInDirection_;
@@ -234,7 +234,11 @@ class refineBoundaryLayers
 
             // Constructor
                 //- construct from cell label and the refineBoundaryLayers
-                refineEdgeHexCell(const label cellI, refineBoundaryLayers& ref);
+                refineEdgeHexCell
+                (
+                    const label cellI,
+                    const refineBoundaryLayers& ref
+                );
 
             // Public member functions
                 inline const DynList<DynList<DynList<label, 4>, 6>, 256>&
@@ -266,7 +270,7 @@ class refineBoundaryLayers
                 DynList<DynList<DynList<label, 4>, 6>, 256> cellsFromCell_;
 
                 //- reference to the boundary layer class
-                refineBoundaryLayers& bndLayers_;
+                const refineBoundaryLayers& bndLayers_;
 
                 //- faces sorted into directions of a hex shape
                 FixedList<label, 6> faceInDirection_;
@@ -303,7 +307,7 @@ class refineBoundaryLayers
                 refineCornerHexCell
                 (
                     const label cellI,
-                    refineBoundaryLayers& ref
+                    const refineBoundaryLayers& ref
                 );
 
             // Public member functions
@@ -333,6 +337,8 @@ public:
         ~refineBoundaryLayers();
 
     // Public member functions
+
+        // Settings
         //- set no refinement flag
         void avoidRefinement();
 
@@ -381,13 +387,9 @@ public:
         //- set the flag to store the boundatry layer cells in a subset
         void setCellSubset(const word subsetName = "layerCells");
 
+    // Worker
         //- performs refinement based on the given settings
         void refineLayers();
-
-        //- get the indices of cells in the boundary layer
-        //- this function shall be called after
-        //- the refinement is already performed
-        void getIndicesOfBndLayerCells(labelLongList&) const;
 
     // Static member functions
         //- read the settings from dictionary

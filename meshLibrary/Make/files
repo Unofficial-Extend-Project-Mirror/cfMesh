@@ -1,7 +1,12 @@
 
 meshSurfaceEngine  =  utilities/surfaceTools/meshSurfaceEngine
 meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
-boundaryLayers = utilities/boundaryLayers
+bndLayers = utilities/boundaryLayers
+boundaryLayers = $(bndLayers)/boundaryLayers
+detectBoundaryLayers = $(bndLayers)/detectBoundaryLayers
+extrudeLayer = $(bndLayers)/extrudeLayer
+refineBoundaryLayers = $(bndLayers)/refineBoundaryLayers
+
 checkMeshDict = utilities/checkMeshDict
 
 anisotropicMeshing = utilities/anisotropicMeshing
@@ -248,13 +253,13 @@ $(boundaryLayers)/boundaryLayersFacesAndCells.C
 $(boundaryLayers)/boundaryLayerCells.C
 $(boundaryLayers)/boundaryLayersCheckTopologyOfBndFaces.C
 $(boundaryLayers)/boundaryLayersWrapperLayer.C
-$(boundaryLayers)/extrudeLayer.C
-$(boundaryLayers)/detectBoundaryLayers.C
-$(boundaryLayers)/detectBoundaryLayersFunctions.C
-$(boundaryLayers)/refineBoundaryLayers.C
-$(boundaryLayers)/refineBoundaryLayersFunctions.C
-$(boundaryLayers)/refineBoundaryLayersFaces.C
-$(boundaryLayers)/refineBoundaryLayersCells.C
+$(extrudeLayer)/extrudeLayer.C
+$(detectBoundaryLayers)/detectBoundaryLayers.C
+$(detectBoundaryLayers)/detectBoundaryLayersFunctions.C
+$(refineBoundaryLayers)/refineBoundaryLayers.C
+$(refineBoundaryLayers)/refineBoundaryLayersFunctions.C
+$(refineBoundaryLayers)/refineBoundaryLayersFaces.C
+$(refineBoundaryLayers)/refineBoundaryLayersCells.C
 
 $(meshSurfaceEngine)/meshSurfaceEngine.C
 $(meshSurfaceEngine)/meshSurfaceEngineCalculateBoundaryNodesAndFaces.C

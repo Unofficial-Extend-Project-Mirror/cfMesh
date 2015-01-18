@@ -776,7 +776,10 @@ void checkMeshDict::updateKeepCellsIntersectingPatches
                     patchesFromPatch.find(pName);
 
                 if( it == patchesFromPatch.end() )
+                {
                     updatedPatchNames.append(pName);
+                    continue;
+                }
 
                 const wordList& newPatchNames = it->second;
 
@@ -832,7 +835,10 @@ void checkMeshDict::updateRemoveCellsIntersectingPatches
                     patchesFromPatch.find(pName);
 
                 if( it == patchesFromPatch.end() )
+                {
                     updatedPatchNames.append(pName);
+                    continue;
+                }
 
                 const wordList& newPatchNames = it->second;
 

@@ -287,14 +287,12 @@ void meshOptimizer::optimizeBoundaryLayer()
     mesh_.clearAddressingData();
 
     //- lock boundary layer points, faces and cells
-    const label bndLayerId = mesh_.addCellSubset("boundaryLayerCells");
     labelLongList bndLayerCells;
     forAll(layerCell, cellI)
     {
         if( layerCell[cellI] )
         {
             bndLayerCells.append(cellI);
-            mesh_.addCellToSubset(bndLayerId, cellI);
         }
     }
 
@@ -304,8 +302,6 @@ void meshOptimizer::optimizeBoundaryLayer()
 
     //- untangle remaining faces and lock the boundary layer cells
     untangleMeshFV(2, 50, 0);
-
-    //optimizeMeshNearBoundaries(5, 3);
 
     //- unlock bnd layer points
     removeUserConstraints();
