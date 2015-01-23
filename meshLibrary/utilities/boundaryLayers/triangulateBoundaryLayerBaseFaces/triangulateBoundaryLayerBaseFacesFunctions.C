@@ -25,17 +25,9 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "refineBoundaryLayers.H"
-#include "meshSurfaceEngine.H"
+#include "triangulateBoundaryLayerBaseFaces.H"
+#include "decomposeFaces.H"
 #include "helperFunctions.H"
-#include "polyMeshGenAddressing.H"
-#include "polyMeshGen2DEngine.H"
-#include "VRWGraphList.H"
-#include "meshSurfacePartitioner.H"
-#include "detectBoundaryLayers.H"
-
-#include "labelledPair.H"
-#include "labelledScalar.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -50,633 +42,419 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool refineBoundaryLayers::analyseLayers()
+void triangulateBoundaryLayerBaseFaces::classifyMeshFaces()
 {
-    const meshSurfaceEngine& mse = surfaceEngine();
-    const faceList::subList& bFaces = mse.boundaryFaces();
-    const labelList& facePatch = mse.boundaryFacePatches();
+    const faceListPMG& faces = mesh_.faces();
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
 
-    meshSurfacePartitioner mPart(mse);
-    detectBoundaryLayers dbl(mPart, is2DMesh_);
+    faceType_.setSize(faces.size());
+    ownerInColumn_.setSize(faces.size());
+    neiInColumn_.setSize(faces.size());
 
-    const label nGroups = dbl.nDistinctLayers();
-    const labelList& faceInLayer = dbl.faceInLayer();
-
-    //- get the hair edges
-    splitEdges_ = dbl.hairEdges();
-
-    //- create point to split edges addressing
-    splitEdgesAtPoint_.reverseAddressing(splitEdges_);
-
-    //- check if the layer is valid
-    bool validLayer(true);
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 40)
-    # endif
-    forAll(faceInLayer, bfI)
-    {
-        if( faceInLayer[bfI] < 0 )
-            continue;
-
-        const face& bf = bFaces[bfI];
-
-        forAll(bf, pI)
-            if( splitEdgesAtPoint_.sizeOfRow(bf[pI]) == 0 )
-                validLayer = false;
-    }
-
-    # ifdef DEBUGLayer
-    Info << "Number of independent layers in the mesh is " << nGroups << endl;
-    Info << "Is valid layer " << validLayer << endl;
-    # endif
-
-    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
-
-    //- create patch name to index addressing
-    std::map<word, label> patchNameToIndex;
-    forAll(boundaries, patchI)
-        patchNameToIndex[boundaries[patchI].patchName()] = patchI;
-
-    //- check layer labels over a patch
-    List<DynList<label> > groupsAtPatch(boundaries.size());
-    forAll(faceInLayer, bfI)
-    {
-        if( faceInLayer[bfI] < 0 )
-            continue;
-
-        groupsAtPatch[facePatch[bfI]].appendIfNotIn(faceInLayer[bfI]);
-    }
-
-    //- set the information which patches have an extruded layer
-    labelList groupIDs(nGroups, -1);
-
-    layerAtPatch_.setSize(boundaries.size());
-    layerAtPatch_ = -1;
-
-    label nValidLayers(0);
-    forAll(groupsAtPatch, patchI)
-    {
-        if( groupsAtPatch[patchI].size() == 1 )
-        {
-            const label groupI = groupsAtPatch[patchI][0];
-
-            if( groupIDs[groupI] == -1 )
-                groupIDs[groupI] = nValidLayers++;
-
-            layerAtPatch_[patchI] = groupIDs[groupI];
-        }
-    }
-
-    # ifdef DEBUGLayer
-    Info << "Layer at patch " << layerAtPatch_ << endl;
-    # endif
-
-    //- set the information which patches are a single boundary layer face
-    patchesInLayer_.setSize(nValidLayers);
-    forAll(layerAtPatch_, patchI)
-    {
-        if( layerAtPatch_[patchI] < 0 )
-            continue;
-
-        patchesInLayer_[layerAtPatch_[patchI]].append
-        (
-            boundaries[patchI].patchName()
-        );
-    }
-
-    # ifdef DEBUGLayer
-    Info << "Patches in layer " << patchesInLayer_ << endl;
-
-    //- write layers to a subset
-    std::map<label, label> layerId;
-    for(label i=0;i<nValidLayers;++i)
-        layerId[i] = mesh_.addFaceSubset("layerFaces_"+help::scalarToText(i));
-
-    forAll(layerAtPatch_, i)
-    {
-        if( layerAtPatch_[i] < 0 )
-            continue;
-
-        const label start = boundaries[i].patchStart();
-        const label end = start + boundaries[i].patchSize();
-
-        for(label faceI=start;faceI<end;++faceI)
-            mesh_.addFaceToSubset(layerId[layerAtPatch_[i]], faceI);
-    }
-    mesh_.write();
-    # endif
-
-    //- set the number of boundary layers for each patch
-    labelList nLayersAtPatch(layerAtPatch_.size(), -1);
-    boolList protectedValue(layerAtPatch_.size(), false);
-
-    forAll(patchesInLayer_, layerI)
-    {
-        const DynList<word>& layerPatches = patchesInLayer_[layerI];
-
-        label maxNumLayers(1);
-        bool hasLocalValue(false);
-
-        //- find the maximum requested number of layers over the layer
-        forAll(layerPatches, lpI)
-        {
-            const word pName = layerPatches[lpI];
-
-            std::map<word, label>::const_iterator it =
-                numLayersForPatch_.find(pName);
-
-            if( it != numLayersForPatch_.end() )
-            {
-                //- check if the layer is interrupted at this patch
-                if(
-                    discontinuousLayersForPatch_.find(pName) !=
-                    discontinuousLayersForPatch_.end()
-                )
-                {
-                    //- set the number of layers and lock this location
-                    nLayersAtPatch[patchNameToIndex[pName]] = it->second;
-                    protectedValue[patchNameToIndex[pName]] = true;
-                    hasLocalValue = true;
-                }
-                else
-                {
-                    //- take the maximum number of layers
-                    maxNumLayers = Foam::max(maxNumLayers, it->second);
-                    hasLocalValue = true;
-                }
-            }
-        }
-
-        //- apply the global value if no local values exist
-        if( !hasLocalValue )
-            maxNumLayers = globalNumLayers_;
-
-        //- apply the maximum number of ayer of all unprotected patches
-        forAll(layerPatches, lpI)
-        {
-            const label ptchI = patchNameToIndex[layerPatches[lpI]];
-
-            if( !protectedValue[ptchI] )
-                nLayersAtPatch[ptchI] = maxNumLayers;
-        }
-    }
-
-    if( is2DMesh_ )
-    {
-        polyMeshGen2DEngine mesh2DEngine(mesh_);
-        const boolList& zMinPoint = mesh2DEngine.zMinPoints();
-        const boolList& zMaxPoint = mesh2DEngine.zMaxPoints();
-
-        const faceList::subList& bFaces = mse.boundaryFaces();
-
-        boolList allZMax(mesh_.boundaries().size(), true);
-        boolList allZMin(mesh_.boundaries().size(), true);
-
-        # ifdef USE_OMP
-        # pragma omp parallel for schedule(dynamic, 50)
-        # endif
-        forAll(bFaces, bfI)
-        {
-            const face& bf = bFaces[bfI];
-
-            forAll(bf, pI)
-            {
-                if( !zMinPoint[bf[pI]] )
-                    allZMin[facePatch[bfI]] = false;
-                if( !zMaxPoint[bf[pI]] )
-                    allZMax[facePatch[bfI]] = false;
-            }
-        }
-
-        //- mark empty patches as already used
-        forAll(allZMin, patchI)
-        {
-            if( allZMin[patchI] ^ allZMax[patchI] )
-            {
-                nLayersAtPatch[patchI] = -1;
-                layerAtPatch_[patchI] = -1;
-            }
-        }
-    }
-
-    # ifdef DEBUGLayer
-    Pout << "nLayersAtPatch " << nLayersAtPatch << endl;
-    # endif
-
-    //- set the number of boundary layers which shall be generated above
-    //- each boundary face
-    nLayersAtBndFace_.setSize(facePatch.size());
-    nLayersAtBndFace_ = globalNumLayers_;
+    //- find cells in column
+    labelList cellInColumn(mesh_.cells().size(), -1);
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
-    forAll(nLayersAtBndFace_, bfI)
+    forAll(layerCellsInColumn_, scI)
     {
-        const label patchI = facePatch[bfI];
+        forAllRow(layerCellsInColumn_, scI, ccI)
+            cellInColumn[layerCellsInColumn_(scI, ccI)] = scI;
+    }
 
-        if( nLayersAtPatch[patchI] < 0 )
+    //- analyse internal faces
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    {
+        const label colOwn = cellInColumn[owner[faceI]];
+        const label colNei = cellInColumn[neighbour[faceI]];
+
+        ownerInColumn_[faceI] = colOwn;
+        neiInColumn_[faceI] = colNei;
+
+        direction fType(NONE);
+
+        if( (colOwn != -1) && (colOwn == colNei) )
         {
-            nLayersAtBndFace_[bfI] = 1;
+            fType |= BASEFACE;
+            fType |= FACEINCOLUMN;
         }
-        else
+        else if( (colOwn != -1) && (colNei != -1) && (colOwn != colNei) )
         {
-            nLayersAtBndFace_[bfI] = nLayersAtPatch[patchI];
+            fType |= FACEBETWEENCOLUMNS;
+        }
+        else if
+        (
+            ((colOwn != -1) && (colNei == -1)) ||
+            ((colOwn == -1) && (colNei != -1))
+        )
+        {
+            fType |= BASEFACE;
+            fType |= BASEFACEINSIDEBND;
         }
     }
 
-    # ifdef DEBUGLayer
-    forAll(nLayersAtBndFace_, bfI)
-    Pout << "Boundary face " << bfI << " in patch "
-        << facePatch[bfI] << " num layers " << nLayersAtBndFace_[bfI] << endl;
-    //::exit(1);
-    # endif
+    //- analyse boundary faces
+    label startFace = mesh_.nInternalFaces();
+    label endFace = faces.size();
+    if( Pstream::parRun() )
+        endFace = mesh_.procBoundaries()[0].patchStart();
 
-    return validLayer;
-}
-
-void refineBoundaryLayers::generateNewVertices()
-{
-    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
-    pointFieldPMG& points = mesh_.points();
-
-    const meshSurfaceEngine& mse = surfaceEngine();
-    const faceList::subList& bFaces = mse.boundaryFaces();
-    const VRWGraph& pointFaces = mse.pointFaces();
-    const labelList& facePatch = mse.boundaryFacePatches();
-    const labelList& bp = mse.bp();
-
-    //- allocate the data from storing parameters applying to a split edge
-    LongList<scalar> firstLayerThickness(splitEdges_.size());
-    LongList<scalar> thicknessRatio(splitEdges_.size());
-    labelLongList nNodesAtEdge(splitEdges_.size());
-
-    //- count the number of vertices for each split edge
-    # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
-    # else
-    const label nThreads = 1;
-    # endif
-
-    # ifdef USE_OMP
-    # pragma omp parallel num_threads(nThreads)
-    # endif
+    for(label faceI=startFace;faceI<endFace;++faceI)
     {
-        //- start counting vertices at each thread
-        # ifdef USE_OMP
-        # pragma omp for schedule(static, 1)
-        # endif
-        forAll(splitEdges_, seI)
+        const label colOwn = cellInColumn[owner[faceI]];
+        ownerInColumn_[faceI] = colOwn;
+        neiInColumn_[faceI] = -1;
+
+        direction fType(NONE);
+
+        if( colOwn != -1 )
         {
-            const edge& e = splitEdges_[seI];
-
-            //- get the requested number of boundary layers
-            label nLayers(1);
-            scalar ratio(globalThicknessRatio_);
-            scalar thickness(globalMaxThicknessFirstLayer_);
-            bool overridenThickness(false);
-
-            const label bpI = bp[e.start()];
-
-            forAllRow(pointFaces, bpI, pfI)
-            {
-                const label bfI = pointFaces(bpI, pfI);
-                const label pos = help::positionOfEdgeInFace(e, bFaces[bfI]);
-                if( pos >= 0 )
-                    continue;
-
-                const word& patchName =
-                    boundaries[facePatch[bfI]].patchName();
-
-                //- overrride the global value with the maximum number of layers
-                //- at this edge
-                nLayers = Foam::max(nLayers, nLayersAtBndFace_[bfI]);
-
-                //- override with the maximum ratio
-                const std::map<word, scalar>::const_iterator rIt =
-                    thicknessRatioForPatch_.find(patchName);
-                if( rIt != thicknessRatioForPatch_.end() )
-                {
-                    ratio = rIt->second;
-                }
-
-                //- override with the minimum thickness set for this edge
-                const std::map<word, scalar>::const_iterator tIt =
-                    maxThicknessForPatch_.find(patchName);
-                if( tIt != maxThicknessForPatch_.end() )
-                {
-                    if( overridenThickness )
-                    {
-                        thickness = Foam::min(thickness, tIt->second);
-                    }
-                    else
-                    {
-                        thickness = tIt->second;
-                        overridenThickness = true;
-                    }
-                }
-            }
-
-            //- store the information
-            firstLayerThickness[seI] = thickness;
-            thicknessRatio[seI] = ratio;
-            nNodesAtEdge[seI] = nLayers + 1;
+            fType |= BASEFACE;
+            fType |= BASEFACEATBND;
         }
+
+        faceType_[faceI] = fType;
     }
 
+    //- analse faces at inter-processor boundaries
     if( Pstream::parRun() )
     {
-        //- transfer the information over all processor for edges
-        //- at inter-processor boundaries
-        const labelLongList& globalEdgeLabel =
-            mesh_.addressingData().globalEdgeLabel();
-        const VRWGraph& edgeAtProcs = mesh_.addressingData().edgeAtProcs();
-        const Map<label>& globalToLocal =
-            mesh_.addressingData().globalToLocalEdgeAddressing();
-        const DynList<label>& neiProcs = mesh_.addressingData().edgeNeiProcs();
-        const edgeList& edges = mesh_.addressingData().edges();
-        const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh_.procBoundaries();
 
-        //- exchange point number of layers
-        std::map<label, LongList<labelPair> > exchangeNumLayers;
-        std::map<label, LongList<labelledScalar> > exchangeThickness;
-        std::map<label, LongList<labelledScalar> > exchangeRatio;
-        forAll(neiProcs, i)
+        forAll(procBoundaries, patchI)
         {
-            exchangeNumLayers.insert
+            labelList patchNeiColumn(procBoundaries[patchI].patchSize());
+
+            const label start = procBoundaries[patchI].patchStart();
+
+            forAll(patchNeiColumn, fI)
+                patchNeiColumn[fI] = cellInColumn[owner[start+fI]];
+
+            OPstream toOtherProc
             (
-                std::make_pair(neiProcs[i], LongList<labelPair>())
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                patchNeiColumn.byteSize()
             );
-            exchangeThickness.insert
+
+            toOtherProc << patchNeiColumn;
+        }
+
+        forAll(procBoundaries, patchI)
+        {
+            IPstream fromOtherProc
             (
-                std::make_pair(neiProcs[i], LongList<labelledScalar>())
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
             );
-            exchangeRatio.insert
-            (
-                std::make_pair(neiProcs[i], LongList<labelledScalar>())
-            );
-        }
 
-        //- exchange the number of layers
-        forAll(splitEdges_, seI)
-        {
-            const edge& se = splitEdges_[seI];
+            labelList neiColumn;
+            fromOtherProc >> neiColumn;
 
-            const label s = se.start();
-            label edgeI(-1);
-            forAllRow(pointEdges, s, peI)
+            const label start = procBoundaries[patchI].patchStart();
+            forAll(neiColumn, fI)
             {
-                const label eI = pointEdges(s, peI);
+                const label faceI = start + fI;
 
-                if( edges[eI] == se )
+                const label colOwn = cellInColumn[owner[faceI]];
+                const label colNei = neiColumn[fI];
+
+                ownerInColumn_[faceI] = colOwn;
+                neiInColumn_[faceI] = colNei;
+
+                direction fType(NONE);
+
+                if( (colOwn != -1) && (colOwn == colNei) )
                 {
-                    edgeI = eI;
-                    break;
+                    fType |= BASEFACE;
+                    fType |= FACEINCOLUMN;
                 }
-            }
-
-            const label geI = globalEdgeLabel[edgeI];
-
-            if( globalToLocal.found(geI) )
-            {
-                forAllRow(edgeAtProcs, edgeI, i)
-                {
-                    const label neiProc = edgeAtProcs(edgeI, i);
-
-                    if( neiProc == Pstream::myProcNo() )
-                        continue;
-
-                    exchangeNumLayers[neiProc].append
-                    (
-                        labelPair(geI, nNodesAtEdge[seI])
-                    );
-                    exchangeThickness[neiProc].append
-                    (
-                        labelledScalar(geI, firstLayerThickness[seI])
-                    );
-                    exchangeRatio[neiProc].append
-                    (
-                        labelledScalar(geI, thicknessRatio[seI])
-                    );
-                }
-            }
-        }
-
-        //- exchange number of layers
-        LongList<labelPair> receivedNumLayers;
-        help::exchangeMap(exchangeNumLayers, receivedNumLayers);
-
-        forAll(receivedNumLayers, i)
-        {
-            const labelPair& lp = receivedNumLayers[i];
-            const label eI = globalToLocal[lp.first()];
-            const edge& e = edges[eI];
-            label seI(-1);
-            forAllRow(splitEdgesAtPoint_, e.start(), i)
-            {
-                const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
-                {
-                    seI = seJ;
-                    break;
-                }
-            }
-            nNodesAtEdge[seI] = std::max(nNodesAtEdge[seI], lp.second());
-        }
-
-        //- exchange thickness ratio
-        LongList<labelledScalar> receivedScalar;
-        help::exchangeMap(exchangeRatio, receivedScalar);
-
-        forAll(receivedScalar, i)
-        {
-            const labelledScalar& ls = receivedScalar[i];
-            const label eI = globalToLocal[ls.scalarLabel()];
-            const edge& e = edges[eI];
-            label seI(-1);
-            forAllRow(splitEdgesAtPoint_, e.start(), i)
-            {
-                const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
-                {
-                    seI = seJ;
-                    break;
-                }
-            }
-            thicknessRatio[seI] = std::max(thicknessRatio[seI], ls.value());
-        }
-
-        //- exchange maximum thickness of the first layer
-        receivedScalar.clear();
-        help::exchangeMap(exchangeThickness, receivedScalar);
-
-        forAll(receivedScalar, i)
-        {
-            const labelledScalar& ls = receivedScalar[i];
-            const label eI = globalToLocal[ls.scalarLabel()];
-            const edge& e = edges[eI];
-            label seI(-1);
-            forAllRow(splitEdgesAtPoint_, e.start(), i)
-            {
-                const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
-                {
-                    seI = seJ;
-                    break;
-                }
-            }
-            firstLayerThickness[seI] =
-                std::min(firstLayerThickness[seI], ls.value());
-        }
-    }
-
-    //- calculate the number of additional vertices which will be generated
-    //- on edges of the mesh
-    DynList<label> numPointsAtThread;
-    numPointsAtThread.setSize(nThreads);
-    numPointsAtThread = 0;
-
-    # ifdef USE_OMP
-    # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
-    # endif
-    forAll(nNodesAtEdge, seI)
-    {
-        # ifdef USE_OMP
-        const label threadI = omp_get_thread_num();
-        # else
-        const label threadI(0);
-        # endif
-
-        numPointsAtThread[threadI] += nNodesAtEdge[seI] - 2;
-    }
-
-    //- allocate the space in a graph storing ids of points on a split edge
-    newVerticesForSplitEdge_.setSizeAndRowSize(nNodesAtEdge);
-
-    //- calculate the number of points which will be generated
-    //- on split edges
-    label numPoints = points.size();
-    forAll(numPointsAtThread, threadI)
-    {
-        const label nPts = numPointsAtThread[threadI];
-        numPointsAtThread[threadI] = numPoints;
-        numPoints += nPts;
-    }
-
-    points.setSize(numPoints);
-
-    # ifdef DEBUGLayer
-    Info << "Generating split vertices" << endl;
-    # endif
-
-    //- generate vertices on split edges
-    # ifdef USE_OMP
-    # pragma omp parallel num_threads(nThreads)
-    # endif
-    {
-        # ifdef USE_OMP
-        const label threadI = omp_get_thread_num();
-        # else
-        const label threadI(0);
-        # endif
-
-        label& nPoints = numPointsAtThread[threadI];
-
-        # ifdef USE_OMP
-        # pragma omp for schedule(static, 1)
-        # endif
-        forAll(splitEdges_, seI)
-        {
-            const edge& e = splitEdges_[seI];
-
-            const vector v = e.vec(points);
-            const scalar magv = mag(v);
-
-            const label nLayers = newVerticesForSplitEdge_.sizeOfRow(seI) - 1;
-
-            scalar firstThickness = magv / nLayers;
-            if( thicknessRatio[seI] > (1. + SMALL) )
-            {
-                firstThickness =
-                    magv /
-                    (
-                        (1 - Foam::pow(thicknessRatio[seI], nLayers)) /
-                        (1.0 - thicknessRatio[seI])
-                    );
-
-                # ifdef DEBUGLayer
-                Pout << "Thread " << threadI << endl;
-                Pout << "Generating vertices at split edge "
-                     << " start point " << points[e.start()]
-                     << " end point " << points[e.end()] << endl;
-                Pout << "Edge length " << magv << endl;
-                Pout << "Thickness of the first layer "
-                     << firstThickness << endl;
-                # endif
-            }
-
-            firstThickness =
-                Foam::min
+                else if
                 (
-                    Foam::max(firstLayerThickness[seI], SMALL),
-                    firstThickness
-                );
-
-            //- generate vertices for this edge
-            newVerticesForSplitEdge_(seI, 0) = e.start();
-
-            scalar param = firstThickness;
-            const vector vec = v / (magv + VSMALL);
-
-            for(label pI=1;pI<nLayers;++pI)
-            {
-                //- generate the new vertex
-                const point newP = points[e.start()] + param * vec;
-
-                # ifdef DEBUGLayer
-                Pout << "Split edge " << seI << " edge points " << e
-                    << " start point " << points[e.start()]
-                    << " end point " << points[e.end()]
-                    << " param " << param
-                    << " new point " << nPoints
-                    << " has coordinates " << newP << endl;
-                # endif
-
-                param += firstThickness * Foam::pow(thicknessRatio[seI], pI);
-
-                newVerticesForSplitEdge_(seI, pI) = nPoints;
-                points[nPoints++] = newP;
-            }
-
-            newVerticesForSplitEdge_(seI, nLayers) = e.end();
-        }
-    }
-
-    # ifdef DEBUGLayer
-    for(label procI=0;procI<Pstream::nProcs();++procI)
-    {
-        if( procI == Pstream::myProcNo() )
-        {
-            forAll(splitEdges_, seI)
-            {
-                Pout << "\nSplit edge " << seI << " nodes " << splitEdges_[seI]
-                    << " coordinates " << points[splitEdges_[seI][0]]
-                    << " " << points[splitEdges_[seI][1]]
-                    << " has new points "
-                    << newVerticesForSplitEdge_[seI] << endl;
-
-                forAllRow(newVerticesForSplitEdge_, seI, i)
-                    Pout << "Point " << i << " on edge ha coordinates "
-                         << points[newVerticesForSplitEdge_(seI, i)] << endl;
+                    (colOwn != -1) && (colNei != -1) && (colOwn != colNei)
+                )
+                {
+                    fType |= FACEBETWEENCOLUMNS;
+                }
+                else if
+                (
+                    ((colOwn != -1) && (colNei == -1)) ||
+                    ((colOwn == -1) && (colNei != -1))
+                )
+                {
+                    fType |= BASEFACE;
+                    fType |= BASEFACEINSIDEBND;
+                }
             }
         }
-
-        returnReduce(1, sumOp<label>());
     }
+}
 
-    Info << "Finished generating vertices at split edges" << endl;
-    //::exit(1);
+bool triangulateBoundaryLayerBaseFaces::createNewPoints()
+{
+    boolList splitColumn(layerCellsInColumn_.size(), false);
+    label nInvalidColumns(0);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50) \
+    reduction(+:nInvalidColumns)
     # endif
+    forAll(layerCellsInColumn_, colI)
+    {
+        forAllRow(layerCellsInColumn_, colI, i)
+        {
+            if( invertedCell_[layerCellsInColumn_(colI, i)] )
+            {
+                ++nInvalidColumns;
+                splitColumn[colI] = true;
+                break;
+            }
+        }
+    }
+
+    //- check if there exist invalid cells in the boundary layer
+    if( nInvalidColumns == 0 )
+        return false;
+
+    //- find faces requiring new points
+    const labelList& owner = mesh_.owner();
+    const labelList& neighbour = mesh_.neighbour();
+    const faceListPMG& faces = mesh_.faces();
+    const cellListPMG& cells = mesh_.cells();
+
+    //- mark layer
+    boolList decomposeFace(owner.size(), false);
+    List<DynList<label> > baseFacesInColumns(layerCellsInColumn_.size());
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(splitColumn, scI)
+    {
+        if( splitColumn[scI] )
+        {
+            //- find faces in this column which shall be triangulated
+            labelHashSet cellsInColumn(layerCellsInColumn_.sizeOfRow(scI));
+
+            forAllRow(layerCellsInColumn_, scI, ccI)
+                cellsInColumn.insert(layerCellsInColumn_(scI, ccI));
+
+            //- select faces shared between two column cells
+            forAllConstIter(labelHashSet, cellsInColumn, it)
+            {
+                const cell& c = cells[it.key()];
+
+                forAll(c, fI)
+                {
+                    if( faceType_[c[fI]] & BASEFACE )
+                    {
+                        decomposeFace[c[fI]] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(splitColumn, scI)
+    {
+        if( splitColumn[scI] )
+        {
+            //- find faces in this column which shall be triangulated
+            labelHashSet cellsInColumn(layerCellsInColumn_.sizeOfRow(scI));
+
+            DynList<label>& basesInColumn = baseFacesInColumns[scI];
+            basesInColumn.clear();
+
+            forAllRow(layerCellsInColumn_, scI, ccI)
+                cellsInColumn.insert(layerCellsInColumn_(scI, ccI));
+
+            //- select faces shared between two column cells
+            bool validDecomposition(true);
+            forAllConstIter(labelHashSet, cellsInColumn, it)
+            {
+                label nSelectedFaces(0);
+
+                const cell& c = cells[it.key()];
+
+                forAll(c, fI)
+                {
+                    if( decomposeFace[c[fI]] )
+                    {
+                        ++nSelectedFaces;
+
+                        if( faceType_[c[fI]] & BASEFACEATBND )
+                            basesInColumn.append(c[fI]);
+                    }
+                }
+
+                if( nSelectedFaces > 2 )
+                {
+                    //- the cell shall be split in more than one direction
+                    //- this situation is not allowed
+                    validDecomposition = false;
+                }
+            }
+
+            if( validDecomposition )
+            {
+                //- find and sort all base faces
+                labelHashSet processedCell(cellsInColumn.size());
+
+                bool found;
+                do
+                {
+                    found = false;
+
+                    const label currBaseFace = basesInColumn.lastElement();
+
+                    //- find the cell in the boundary layer attached to
+                    //- the current base face. Do not select previously
+                    //- processed cells
+                    label cLabel(-1);
+                    if( !processedCell.found(owner[currBaseFace]) )
+                    {
+                        cLabel = owner[currBaseFace];
+                    }
+                    else if
+                    (
+                        neighbour[currBaseFace] >= 0 &&
+                        !processedCell.found(neighbour[currBaseFace])
+                    )
+                    {
+                        cLabel = neighbour[currBaseFace];
+                    }
+
+                    if( cellsInColumn.found(cLabel) )
+                    {
+                        //- find other face marked for decomposition
+                        const cell& c = cells[cLabel];
+
+                        forAll(c, fI)
+                        {
+                            if( c[fI] != currBaseFace )
+                                continue;
+
+                            if( faceType_[c[fI]] & BASEFACE  )
+                            {
+                                basesInColumn.append(c[fI]);
+                                processedCell.insert(cLabel);
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+                } while( found );
+            }
+            else
+            {
+                //- do not decompose the cells assigned to this column
+                //- it is not a column after all. It is a matrix of cells
+                //- at exitting faces and/or corners
+                forAllConstIter(labelHashSet, cellsInColumn, it)
+                {
+                    const cell& c = cells[it.key()];
+
+                    forAll(c, fI)
+                        decomposeFace[c[fI]] = false;
+                }
+
+                splitColumn[scI] = false;
+            }
+        }
+    }
+
+    //- create points located at face centres
+    pointFieldPMG& points = mesh_.points();
+    faceCentreLabel_.setSize(faces.size());
+    faceCentreLabel_ = -1;
+
+    forAll(decomposeFace, faceI)
+    {
+        if( decomposeFace[faceI] )
+        {
+            const point newP = faces[faceI].centre(points);
+
+            faceCentreLabel_[faceI] = points.size();
+            points.append(newP);
+        }
+    }
+
+    //- smooth variation of face-centre points
+
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(baseFacesInColumns, scI)
+    {
+        const DynList<label>& basesInColumn = baseFacesInColumns[scI];
+
+        if( basesInColumn.size() < 2 )
+            continue;
+
+        DynList<point> faceCentres(basesInColumn.size());
+
+        //- get face centres
+        forAll(basesInColumn, baseI)
+        {
+            faceCentres[baseI] = points[faceCentreLabel_[basesInColumn[baseI]]];
+        }
+
+        //- find the thickness of each layer
+        DynList<scalar> layerThickness(layerCellsInColumn_.sizeOfRow(scI));
+        for(label layerI=1;layerI<layerThickness.size();++layerI)
+        {
+            layerThickness[layerI] =
+                mag(faceCentres[layerI] - faceCentres[0]);
+        }
+
+        //- position all new vertices on a line
+        const vector vec = faceCentres.lastElement() - faceCentres[0];
+        const scalar magVec = mag(vec) + VSMALL;
+
+        for(label layerI=1;layerI<layerThickness.size();++layerI)
+        {
+            const point newP =
+                faceCentres[0] + layerThickness[layerI]/magVec * vec;
+
+//            const face& bf = faces[facesFromFace(basesInColumn[layerI], 0)];
+//            points[bf[2]] = newP;
+        }
+    }
+
+    //- create missing quad faces as they are internal faces
+
+    //- start by counting the number of new faces in each cell
+//    label nNewFaces(0);
+//    label nNewCells(0);
+
+//    # ifdef USE_OMP
+//    # pragma omp parallel for schedule(dynamic, 50) \
+    reduction(+:nNewCells) reduction(+:nNewFacess)
+//    # endif
+//    forAll(splitColumn, scI)
+//    {
+//        if( splitColumn[scI] )
+//        {
+
+//        }
+//    }
+
+    return true;
+}
+
+void triangulateBoundaryLayerBaseFaces::createNewFacesAndCells()
+{
+
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

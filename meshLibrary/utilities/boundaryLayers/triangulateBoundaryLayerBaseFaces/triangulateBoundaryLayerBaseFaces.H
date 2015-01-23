@@ -65,11 +65,34 @@ class triangulateBoundaryLayerBaseFaces
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
-        //- boolean list indicating boundary layer cells
-        boolList isBndLayerCell_;
+        //- layers of boundary layer cells belonging to a single column
+        const VRWGraph& layerCellsInColumn_;
+
+        //- boolean list containing information about inverted cells
+        boolList invertedCell_;
+
+        //- layer column for owner face
+        labelList ownerInColumn_;
+
+        //- layer column for neighbour face
+        labelList neiInColumn_;
+
+        //- classification of faces in the mesh
+        List<direction> faceType_;
+
+        //- label of new point generated at the face centre
+        labelList faceCentreLabel_;
 
 
     // Private member functions
+        //- classify faces in the mesh
+        void classifyMeshFaces();
+
+        //- create new points in the mesh
+        bool createNewPoints();
+
+        //- create new cells
+        void createNewFacesAndCells();
 
         //- Disallow bitwise copy construct
         triangulateBoundaryLayerBaseFaces
@@ -80,12 +103,28 @@ class triangulateBoundaryLayerBaseFaces
         //- Disallow bitwise assignment
         void operator=(const triangulateBoundaryLayerBaseFaces&);
 
+    // Enumerators
+
+        enum faceTypes_
+        {
+            NONE = 0,
+            FACEINCOLUMN = 1,
+            FACEBETWEENCOLUMNS = 2,
+            BASEFACEATBND = 4,
+            BASEFACEINSIDEBND = 8,
+            BASEFACE = 16
+        };
+
 public:
 
     // Constructors
 
         //- Construct from mesh
-        triangulateBoundaryLayerBaseFaces(polyMeshGen& mesh);
+        triangulateBoundaryLayerBaseFaces
+        (
+            polyMeshGen& mesh,
+            const VRWGraph& layerCellsInColumn
+        );
 
     // Destructor
         ~triangulateBoundaryLayerBaseFaces();
@@ -93,8 +132,20 @@ public:
     // Public member functions
 
         // Settings
-        //- set no refinement flag
+        //- set invalid cells
+        void setBadCells(const labelHashSet&);
 
+        //- set invalid cells
+        template<class labelListType>
+        void setBadCells(const labelListType& l)
+        {
+            forAll(l, i)
+                invertedCell_[l[i]] = true;
+        }
+
+    // Worker
+        //- splits inverted boundary layer prisms into triangular prisms
+        void triangulateLayers();
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

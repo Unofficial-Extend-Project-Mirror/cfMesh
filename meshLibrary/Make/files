@@ -1,11 +1,13 @@
 
 meshSurfaceEngine  =  utilities/surfaceTools/meshSurfaceEngine
 meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
+
 bndLayers = utilities/boundaryLayers
 boundaryLayers = $(bndLayers)/boundaryLayers
 detectBoundaryLayers = $(bndLayers)/detectBoundaryLayers
 extrudeLayer = $(bndLayers)/extrudeLayer
 refineBoundaryLayers = $(bndLayers)/refineBoundaryLayers
+triangulateBoundaryLayerBaseFaces = $(bndLayers)/triangulateBoundaryLayerBaseFaces
 
 checkMeshDict = utilities/checkMeshDict
 
@@ -260,6 +262,8 @@ $(refineBoundaryLayers)/refineBoundaryLayers.C
 $(refineBoundaryLayers)/refineBoundaryLayersFunctions.C
 $(refineBoundaryLayers)/refineBoundaryLayersFaces.C
 $(refineBoundaryLayers)/refineBoundaryLayersCells.C
+$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFaces.C
+$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFacesFunctions.C
 
 $(meshSurfaceEngine)/meshSurfaceEngine.C
 $(meshSurfaceEngine)/meshSurfaceEngineCalculateBoundaryNodesAndFaces.C
