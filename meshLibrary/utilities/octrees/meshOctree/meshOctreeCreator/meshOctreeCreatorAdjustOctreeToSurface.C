@@ -35,6 +35,8 @@ Description
 #include "helperFunctions.H"
 #include "HashSet.H"
 
+#include "coordinateModifier.H"
+
 # ifdef USE_OMP
 #include <omp.h>
 # endif
@@ -234,6 +236,17 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
         objectEntries.clear();
     }
 
+    coordinateModifier* cModPtr = NULL;
+
+    if( meshDictPtr_->found("anisotropicSources") )
+    {
+        cModPtr =
+            new coordinateModifier
+            (
+                meshDictPtr_->subDict("anisotropicSources")
+            );
+    }
+
     scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
 
     List<direction> refLevels(refObjects.size(), globalRefLevel_);
@@ -303,6 +316,13 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
 
             boundBox bb;
             oc.cubeBox(rootBox, bb.min(), bb.max());
+
+            if( cModPtr )
+            {
+                //- transform bounding boxes into non-modified coordinates
+                bb.min() = cModPtr->backwardModifiedPoint(bb.min());
+                bb.max() = cModPtr->backwardModifiedPoint(bb.max());
+            }
 
             bool refine(false);
             forAll(refObjects, oI)
@@ -386,6 +406,9 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
         }
 
     } while( nMarked != 0 );
+
+    //- delete coordinate modifier if it exists
+    deleteDemandDrivenData(cModPtr);
 
     Info << "Finished refinement of boxes inside objects" << endl;
 
