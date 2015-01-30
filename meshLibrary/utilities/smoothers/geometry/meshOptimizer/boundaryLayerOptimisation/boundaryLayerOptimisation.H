@@ -218,7 +218,7 @@ public:
         //- optimise boundary layer
         void optimiseLayer
         (
-            const label nIterations = 10,
+            const label nIterations = 5,
             const scalar thicknessTol = 0.15,
             const scalar featureSizeFactor = 0.3
         );
