@@ -37,11 +37,9 @@ SourceFiles
 #include "DynList.H"
 #include "face.H"
 #include "boolList.H"
+#include "HashSet.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-class cellList;
-class labelHashSet;
 
 namespace Foam
 {

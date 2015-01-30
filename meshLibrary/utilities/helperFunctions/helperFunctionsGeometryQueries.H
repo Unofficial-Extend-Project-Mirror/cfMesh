@@ -42,10 +42,10 @@ SourceFiles
 #include "triangle.H"
 #include "tetrahedron.H"
 #include "boolList.H"
+#include "HashSet.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class labelHashSet;
 class boundBox;
 
 namespace Foam
