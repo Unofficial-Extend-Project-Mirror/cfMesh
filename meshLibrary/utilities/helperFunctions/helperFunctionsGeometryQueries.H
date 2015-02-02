@@ -181,6 +181,16 @@ namespace help
         const boundBox&
     );
 
+    //- check if the line and the face intersect
+    inline bool lineFaceIntersection
+    (
+        const point&,
+        const point&,
+        const face&,
+        const pointField& fp,
+        point& intersection
+    );
+
     //- check if the surface triangle and the face intersect
     inline bool doFaceAndTriangleIntersect
     (
@@ -188,6 +198,13 @@ namespace help
         const label triI,
         const face& f,
         const pointField& facePoints
+    );
+
+    //- find the nearest point on the triangle to the given point
+    inline point nearestPointOnTheTriangle
+    (
+        const triangle<point, point>& tri,
+        const point&
     );
 
     //- find the nearest vertex on the surface triangle to the given point
@@ -213,7 +230,8 @@ namespace help
         const point& p,
         const face& f,
         const vector& n,
-        const pointField& fp
+        const pointField& fp,
+        const scalar distTol = SMALL
     );
 
     //- check if the point is inside or outside the face
@@ -221,7 +239,8 @@ namespace help
     (
         const point& p,
         const face& f,
-        const pointField& fp
+        const pointField& fp,
+        const scalar distTol = SMALL
     );
 
     //- check if the face is convex. Concave points are flagged false
