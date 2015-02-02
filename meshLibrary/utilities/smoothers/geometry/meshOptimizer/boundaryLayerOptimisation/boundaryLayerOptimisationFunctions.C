@@ -1252,12 +1252,34 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
 
             const direction eType = hairEdgeType_[hairEdgeI];
 
+            const edge& he = hairEdges_[hairEdgeI];
+            const vector heVec = he.vec(points);
+
             if( eType & INSIDE )
             {
                 if( eType & ATCORNER )
                 {
                     //- hair vectors at feature edges must not be modified
-                    newNormal += hairVecs[hairEdgeI];
+                    newNormal = hairVecs[hairEdgeI];
+                }
+                else if( eType & ATEDGE )
+                {
+                    forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
+                    {
+                        const label hairEdgeJ =
+                            hairEdgesNearHairEdge_(hairEdgeI, nheI);
+
+                        const edge& nhe = hairEdges_[hairEdgeJ];
+
+                        vector n =
+                            nhe.vec(points) ^ (points[nhe[0]] - points[he[0]]);
+                        n /= (mag(n) + VSMALL);
+
+                        vector newVec = heVec - (heVec & n) * n;
+                        newVec /= (mag(newVec) + VSMALL);
+
+                        newNormal += newVec;
+                    }
                 }
                 else
                 {
@@ -1388,7 +1410,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
         //- transfer new hair vectors to the hairVecs list
         hairVecs.transfer(newNormals);
 
-        # ifdef DEBUGLayer
+        //# ifdef DEBUGLayer
         if( true )
         {
             writeHairEdges
@@ -1398,7 +1420,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                 hairVecs
             );
         }
-        # endif
+        //# endif
     } while( nIter++ < nIterations );
 
     //- move vertices to the new locations
@@ -1518,6 +1540,58 @@ scalar boundaryLayerOptimisation::calculateThickness
     return retThickness;
 }
 
+scalar boundaryLayerOptimisation::calculateThicknessOverCell
+(
+    const label heI,
+    const label cellI,
+    const label baseFaceI,
+    const scalar featureSizeFactor
+) const
+{
+    const pointFieldPMG& points = mesh_.points();
+    const faceListPMG& faces = mesh_.faces();
+
+    const cell& c = mesh_.cells()[cellI];
+
+    const face& bf = faces[baseFaceI];
+
+    const edge& he = hairEdges_[heI];
+
+    const point& sp = points[he[0]];
+    const point& ep = points[he[1]];
+
+    scalar maxThickness = he.mag(points);
+
+    //- the base face must not contain the hair edge
+    //- this is the case at exitting layers
+    forAll(bf, eI)
+        if( bf.faceEdge(eI) == he )
+            return maxThickness;
+
+    forAll(c, fI)
+    {
+        if( c[fI] == baseFaceI )
+            continue;
+
+        const face& f = faces[c[fI]];
+
+        if( help::shareAnEdge(bf, f) && (f.which(he.start()) == -1) )
+        {
+            point intersection;
+
+            if( !help::lineFaceIntersection(sp, ep, f, points, intersection) )
+                continue;
+
+            const scalar maxDist = featureSizeFactor * mag(intersection - sp);
+
+            maxThickness =
+                Foam::min(maxThickness, maxDist);
+        }
+    }
+
+    return maxThickness;
+}
+
 void boundaryLayerOptimisation::optimiseThicknessVariation
 (
     const label nIterations,
@@ -1529,12 +1603,11 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
     pointFieldPMG& points = mesh_.points();
 
     const meshSurfaceEngine& mse = meshSurface();
+    const labelList& bp = mse.bp();
+    const VRWGraph& pFaces = mse.pointFaces();
+    const label start = mesh_.nInternalFaces();
+    const labelList& faceOwner = mse.faceOwners();
 
-    //- reduce thickness of the layer
-    //- such that the variation of layer thickness
-    //- It is an iterative process where the layer is thinned in the regions
-    //- where the tangent is greater than the tolerance value or the curvature
-    //- permits thicker boundary layers.
     vectorField hairDirections(hairEdges_.size());
     scalarField hairLength(hairEdges_.size());
 
@@ -1549,6 +1622,49 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
         hairDirections[hairEdgeI] = n / hairLength[hairEdgeI];
     }
 
+    //- check if the hair edge intersects some other face in the cells
+    //- attached to the hair edge
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(hairEdges_, hairEdgeI)
+    {
+        if( hairEdgeType_[hairEdgeI] & edgeType )
+        {
+            const label bpI = bp[hairEdges_[hairEdgeI].start()];
+
+            forAllRow(pFaces, bpI, pfI)
+            {
+                const label bfI = pFaces(bpI, pfI);
+                const label baseFaceI = start + bfI;
+                const label cOwn = faceOwner[bfI];
+
+                const scalar maxThickness =
+                    calculateThicknessOverCell
+                    (
+                        hairEdgeI,
+                        cOwn,
+                        baseFaceI,
+                        featureSizeFactor
+                    );
+
+                if( hairLength[hairEdgeI] > maxThickness )
+                {
+                    Info << "Here " << hairEdgeI << endl;
+                    //- make the hair edge shorter
+                    hairLength[hairEdgeI] = maxThickness;
+
+                    thinnedHairEdge_[hairEdgeI] = true;
+                }
+            }
+        }
+    }
+
+    //- reduce thickness of the layer
+    //- such that the variation of layer thickness
+    //- It is an iterative process where the layer is thinned in the regions
+    //- where the tangent is greater than the tolerance value or the curvature
+    //- permits thicker boundary layers.
     boolList activeHairEdge(hairEdges_.size(), true);
     bool changed;
     label nIter(0);
@@ -1610,7 +1726,6 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
             //- collect data at inter-processor boundaries
             const Map<label>& globalToLocal =
                 mse.globalToLocalBndPointAddressing();
-            const labelList& bp = mse.bp();
 
             const edgeList& edges = mesh_.addressingData().edges();
             const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();

@@ -134,6 +134,17 @@ class boundaryLayerOptimisation
             const scalar featureSizeFactor
         ) const;
 
+        //- calculate thickness of the layer by checking intersections
+        //- between the hair edge and the quad faces extruded from
+        //- nighbouring faces
+        scalar calculateThicknessOverCell
+        (
+            const label heI,
+            const label cellI,
+            const label baseFaceI,
+            const scalar featureSizeFactor
+        ) const;
+
         //- optimise thickness variation
         void optimiseThicknessVariation
         (
