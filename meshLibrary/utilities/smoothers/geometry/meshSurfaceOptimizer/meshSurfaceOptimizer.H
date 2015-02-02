@@ -67,9 +67,6 @@ class meshSurfaceOptimizer
         //- const reference to the mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
-        //- pointer to mesh mapper
-        meshSurfaceMapper* mapperPtr_;
-
         //- type of surface vertex
         List<direction> vertexType_;
 
@@ -79,6 +76,9 @@ class meshSurfaceOptimizer
         //- surface partitioner
         const meshSurfacePartitioner* partitionerPtr_;
         const bool deletePartitioner_;
+
+        //- pointer to mesh octree
+        const meshOctree* octreePtr_;
 
         //- mesh of surface triangles needed for some smoothers
         mutable partTriMesh* triMeshPtr_;
@@ -228,9 +228,6 @@ class meshSurfaceOptimizer
         (
             const labelLongList& nodesToSmooth
         );
-
-        //- find invalid faces in the mesh
-        label findBadFaces(labelHashSet&, boolList&) const;
 
         //- Disallow default bitwise copy construct
         meshSurfaceOptimizer(const meshSurfaceOptimizer&);

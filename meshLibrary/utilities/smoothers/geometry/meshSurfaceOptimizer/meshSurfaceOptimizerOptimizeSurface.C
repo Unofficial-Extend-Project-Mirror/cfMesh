@@ -36,6 +36,7 @@ Description
 #include "meshSurfaceMapper2D.H"
 #include "polyMeshGen2DEngine.H"
 #include "polyMeshGenAddressing.H"
+#include "polyMeshGenChecks.H"
 #include "labelledPoint.H"
 #include "FIFOStack.H"
 
@@ -74,7 +75,7 @@ label meshSurfaceOptimizer::findInvertedVertices
 
     //- check the vertices at the surface
     //- mark the ones where the mesh is tangled
-    meshSurfaceCheckInvertedVertices vrtCheck(surfaceEngine_, smoothVertex);
+    meshSurfaceCheckInvertedVertices vrtCheck(*partitionerPtr_, smoothVertex);
     const labelHashSet& inverted = vrtCheck.invertedVertices();
 
     smoothVertex = false;
@@ -358,6 +359,10 @@ bool meshSurfaceOptimizer::untangleSurface
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
+    meshSurfaceMapper* mapperPtr = NULL;
+    if( octreePtr_ )
+        mapperPtr = new meshSurfaceMapper(*partitionerPtr_, *octreePtr_);
+
     bool remapVertex(true);
     label nInvertedTria;
     label nGlobalIter(0);
@@ -477,8 +482,8 @@ bool meshSurfaceOptimizer::untangleSurface
 
             //- smooth edge vertices
             smoothEdgePoints(movedEdgePoints, procEdgePoints);
-            if( remapVertex && mapperPtr_ )
-                mapperPtr_->mapEdgeNodes(movedEdgePoints);
+            if( remapVertex && mapperPtr )
+                mapperPtr->mapEdgeNodes(movedEdgePoints);
             surfaceModifier.updateGeometry(movedEdgePoints);
 
             //- use laplacian smoothing
@@ -488,8 +493,8 @@ bool meshSurfaceOptimizer::untangleSurface
             //- use surface optimizer
             smoothSurfaceOptimizer(movedPoints);
 
-            if( remapVertex && mapperPtr_ )
-                mapperPtr_->mapVerticesOntoSurface(movedPoints);
+            if( remapVertex && mapperPtr )
+                mapperPtr->mapVerticesOntoSurface(movedPoints);
 
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
@@ -523,8 +528,8 @@ bool meshSurfaceOptimizer::untangleSurface
 
             smoothLaplacianFC(movedPoints, procBndPoints, false);
 
-            if( remapVertex && mapperPtr_ )
-                mapperPtr_->mapVerticesOntoSurface(movedPoints);
+            if( remapVertex && mapperPtr )
+                mapperPtr->mapVerticesOntoSurface(movedPoints);
 
             //- update normals and other geometric data
             surfaceModifier.updateGeometry(movedPoints);
@@ -534,6 +539,8 @@ bool meshSurfaceOptimizer::untangleSurface
         }
 
     } while( nInvertedTria && (++nGlobalIter < 10) );
+
+    deleteDemandDrivenData(mapperPtr);
 
     Info << "Finished untangling the surface of the volume mesh" << endl;
 
@@ -561,6 +568,10 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     surfaceEngine_.boundaryFacePatches();
     surfaceEngine_.pointNormals();
     surfaceEngine_.boundaryPointEdges();
+
+    meshSurfaceMapper* mapperPtr = NULL;
+    if( octreePtr_ )
+        mapperPtr = new meshSurfaceMapper(*partitionerPtr_, *octreePtr_);
 
     labelLongList procBndPoints, edgePoints, partitionPoints;
     forAll(bPoints, bpI)
@@ -592,13 +603,16 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         smoothEdgePoints(edgePoints, procBndPoints);
 
         //- project vertices back onto the boundary
-        if( mapperPtr_ )
-            mapperPtr_->mapEdgeNodes(edgePoints);
+        if( mapperPtr )
+            mapperPtr->mapEdgeNodes(edgePoints);
 
         //- update the geometry information
         bMod.updateGeometry(edgePoints);
     }
     Info << endl;
+
+    //- delete the mapper
+    deleteDemandDrivenData(mapperPtr);
 
     //- optimize positions of surface vertices which are not on surface edges
     Info << "Optimizing surface vertices. Iteration:";
@@ -660,7 +674,9 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
         }
     }
 
-    //meshSurfaceMapper2D mapper(surfaceEngine_, meshOctree_);
+    meshSurfaceMapper2D* mapperPtr = NULL;
+    if( octreePtr_ )
+        mapperPtr = new meshSurfaceMapper2D(surfaceEngine_, *octreePtr_);
 
     //- optimize edge vertices
     meshSurfaceEngineModifier bMod(surfaceEngine_);
@@ -676,7 +692,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
         mesh2DEngine.correctPoints();
 
         //- map boundary edges to the surface
-        //mapper.mapVerticesOntoSurfacePatches(activeEdges);
+        mapperPtr->mapVerticesOntoSurfacePatches(activeEdges);
 
         //- update normal, centres, etc, after the surface has been modified
         bMod.updateGeometry(updatePoints);
@@ -709,6 +725,8 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     }
 
     Info << endl;
+
+    deleteDemandDrivenData(mapperPtr);
 }
 
 void meshSurfaceOptimizer::untangleSurface2D()
@@ -739,7 +757,14 @@ void meshSurfaceOptimizer::untangleSurface2D()
     do
     {
         labelHashSet badFaces;
-        const label nBadFaces = findBadFaces(badFaces, changedFace);
+        const label nBadFaces =
+            polyMeshGenChecks::findBadFaces
+            (
+                mesh,
+                badFaces,
+                false,
+                &changedFace
+            );
 
         Info << "Iteration " << iterationI
              << ". Number of bad faces " << nBadFaces << endl;
