@@ -84,6 +84,9 @@ class boundaryLayers
         //- patch names
         wordList patchNames_;
 
+        //- patch types
+        wordList patchTypes_;
+
         //- helper which contains information if a boundary layer
         //- has already been extruded for a given patch
         boolList treatedPatch_;

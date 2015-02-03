@@ -85,6 +85,7 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
     mesh_(mesh),
     msePtr_(NULL),
     patchNames_(mesh.boundaries().size()),
+    patchTypes_(mesh.boundaries().size()),
     newBoundaryFaces_(),
     newBoundaryOwners_(),
     newBoundaryPatches_(),
@@ -93,7 +94,10 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
+    {
         patchNames_[patchI] = boundaries[patchI].patchName();
+        patchTypes_[patchI] = boundaries[patchI].patchType();
+    }
 
     decomposeProblematicFaces();
 
