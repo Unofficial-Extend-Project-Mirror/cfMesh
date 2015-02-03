@@ -83,14 +83,20 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
 
     //- project face centres onto their nearest location on the surface mesh
     wordList patchNames(surfPatches.size()+2);
+    wordList patchTypes(surfPatches.size()+2);
     forAll(surfPatches, ptchI)
+    {
         patchNames[ptchI] = surfPatches[ptchI].name();
+        patchTypes[ptchI] = surfPatches[ptchI].geometricType();
+    }
 
     const label bottomEmptyId = patchNames.size() - 2;
     const label topEmptyId = patchNames.size() - 1;
 
     patchNames[bottomEmptyId] = "bottomEmptyFaces";
+    patchTypes[bottomEmptyId] = "empty";
     patchNames[topEmptyId] = "topEmptyFaces";
+    patchTypes[topEmptyId] = "empty";
 
     labelLongList bndFaceOwner(bndFaces.size());
     labelLongList bndFacePatch(bndFaces.size());
@@ -132,13 +138,18 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
     }
 
     //- replace the boundary
-    polyMeshGenModifier(mesh_).replaceBoundary
+    polyMeshGenModifier meshModifier(mesh_);
+    meshModifier.replaceBoundary
     (
         patchNames,
         bndFaces,
         bndFaceOwner,
         bndFacePatch
     );
+
+    PtrList<boundaryPatch>& patches = meshModifier.boundariesAccess();
+    forAll(patches, patchI)
+        patches[patchI].patchType() = patchTypes[patchI];
 }
 
 void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
