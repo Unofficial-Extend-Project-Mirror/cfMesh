@@ -529,125 +529,47 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
         DynList<label> neiHairEdges;
 
-        /*
-        const direction eType = hairEdgeType_[hairEdgeI];
-
-        if( eType & (FEATUREEDGE | ATCORNER) )
+        //- find mesh faces comprising of the current hair edge
+        forAllRow(bpFacesHelper, bpI, pfI)
         {
-            //- this edge is on a feature edge or a corner
-            //- it cannot be adjusted
-            hairEdgesNearHairEdge_.setRow(hairEdgeI, neiHairEdges);
-        }
-        if( eType & ATEDGE )
-        {
-            //- this edge is at a feature edge
-            //- there shall be exactly two neighbouring hair edges
-            forAllRow(bpFacesHelper, bpI, pfI)
-            {
-                const face& f = faces[bpFacesHelper(bpI, pfI)];
+            const face& f = faces[bpFacesHelper(bpI, pfI)];
 
-                //- face must be a quad
-                if( f.size() != 4 )
-                    continue;
+            //- face must be a quad
+            if( f.size() != 4 )
+                continue;
 
-                //- check if the current face comprises of the hair edge
-                bool containsFeatureEdge(false);
-                label faceEdge(-1);
-                forAll(f, eI)
+            //- check if the current face comprises of the hair edge
+            label faceEdge(-1);
+            forAll(f, eI)
+                if( f.faceEdge(eI) == e )
                 {
-                    const edge fe = f.faceEdge(eI);
-
-                    if( fe == e )
-                    {
-                        //- found a face edge
-                        faceEdge = eI;
-                    }
-
-                    //- chck if the face contains a feature edge connected
-                    //- to the boundary point
-                    forAllRow(bpEdges, bpI, bpeI)
-                    {
-                        const label beI = bpEdges(bpI, bpeI);
-
-                        if( !featureEdges.found(beI) )
-                            continue;
-
-                        const edge& be = edges[beI];
-
-                        if( fe == be )
-                            containsFeatureEdge = true;
-                    }
+                    faceEdge = eI;
+                    break;
                 }
 
-                if( faceEdge != -1 && containsFeatureEdge )
+            if( faceEdge != -1 )
+            {
+                //- check if the opposite edge is also a hair edge
+                const label eJ = (faceEdge+2) % 4;
+
+                const edge fe = f.faceEdge(eJ);
+
+                for(label i=0;i<2;++i)
                 {
-                    //- check if the opposite edge is also a hair edge
-                    const label eJ = (faceEdge+2) % 4;
+                    const label bpJ = bp[fe[i]];
 
-                    const edge fe = f.faceEdge(eJ);
-
-                    for(label i=0;i<2;++i)
+                    if( bpJ >= 0 )
                     {
-                        const label bpJ = bp[fe[i]];
-
-                        if( bpJ >= 0 )
+                        forAllRow(hairEdgesAtBndPoint_, bpJ, pI)
                         {
-                            forAllRow(hairEdgesAtBndPoint_, bpJ, pI)
-                            {
-                                const label heJ = hairEdgesAtBndPoint_(bpJ, pI);
-                                if( hairEdges_[heJ] == fe )
-                                    neiHairEdges.append(heJ);
-                            }
+                            const label heJ = hairEdgesAtBndPoint_(bpJ, pI);
+                            if( hairEdges_[heJ] == fe )
+                                neiHairEdges.append(heJ);
                         }
                     }
                 }
             }
         }
-        else
-        {
-            */
-            //- find mesh faces comprising of the current hair edge
-            forAllRow(bpFacesHelper, bpI, pfI)
-            {
-                const face& f = faces[bpFacesHelper(bpI, pfI)];
-
-                //- face must be a quad
-                if( f.size() != 4 )
-                    continue;
-
-                //- check if the current face comprises of the hair edge
-                label faceEdge(-1);
-                forAll(f, eI)
-                    if( f.faceEdge(eI) == e )
-                    {
-                        faceEdge = eI;
-                        break;
-                    }
-
-                if( faceEdge != -1 )
-                {
-                    //- check if the opposite edge is also a hair edge
-                    const label eJ = (faceEdge+2) % 4;
-
-                    const edge fe = f.faceEdge(eJ);
-
-                    for(label i=0;i<2;++i)
-                    {
-                        const label bpJ = bp[fe[i]];
-
-                        if( bpJ >= 0 )
-                        {
-                            forAllRow(hairEdgesAtBndPoint_, bpJ, pI)
-                            {
-                                const label heJ = hairEdgesAtBndPoint_(bpJ, pI);
-                                if( hairEdges_[heJ] == fe )
-                                    neiHairEdges.append(heJ);
-                            }
-                        }
-                    }
-                }
-            }
-        //}
 
         hairEdgesNearHairEdge_.setRow(hairEdgeI, neiHairEdges);
     }
@@ -722,6 +644,7 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
         {
             const edge& he = hairEdges_[hairEdgeI];
             vector& hv = hairVecs[hairEdgeI];
+            hv = vector::zero;
 
             if( hairType & FEATUREEDGE )
             {
@@ -1230,10 +1153,18 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
 
             hv /= (mag(hv) + VSMALL);
         }
+        else if( hairType & BOUNDARY )
+        {
+            //- initialise boundary hair vectors. They influence internal
+            //- hairs conneted to them
+            vector hvec = hairEdges_[hairEdgeI].vec(points);
+            hvec /= (mag(hvec) + VSMALL);
+            hairVecs[hairEdgeI] = hvec;
+        }
     }
 
     # ifdef DEBUGLayer
-    writeHairEdges("insideHairVectors.vtk", INSIDE, hairVecs);
+    writeHairEdges("insideHairVectors.vtk", (INSIDE|BOUNDARY), hairVecs);
     # endif
 
     //- smooth the variation of normals to reduce the twisting of faces
@@ -1253,7 +1184,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
             const direction eType = hairEdgeType_[hairEdgeI];
 
             const edge& he = hairEdges_[hairEdgeI];
-            const vector heVec = he.vec(points);
+            const vector& heVec = hairVecs[hairEdgeI];
 
             if( eType & INSIDE )
             {
@@ -1270,9 +1201,9 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                             hairEdgesNearHairEdge_(hairEdgeI, nheI);
 
                         const edge& nhe = hairEdges_[hairEdgeJ];
+                        const vector& nhVec = hairVecs[hairEdgeJ];
 
-                        vector n =
-                            nhe.vec(points) ^ (points[nhe[0]] - points[he[0]]);
+                        vector n = nhVec ^ (points[nhe[0]] - points[he[0]]);
                         n /= (mag(n) + VSMALL);
 
                         vector newVec = heVec - (heVec & n) * n;
@@ -1293,6 +1224,11 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                         newNormal += hairVecs[hairEdgeJ];
                     }
                 }
+            }
+            else
+            {
+                //- copy the existing hair vector
+                newNormal = hairVecs[hairEdgeI];
             }
         }
 
@@ -1410,7 +1346,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
         //- transfer new hair vectors to the hairVecs list
         hairVecs.transfer(newNormals);
 
-        //# ifdef DEBUGLayer
+        # ifdef DEBUGLayer
         if( true )
         {
             writeHairEdges
@@ -1420,7 +1356,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                 hairVecs
             );
         }
-        //# endif
+        # endif
     } while( nIter++ < nIterations );
 
     //- move vertices to the new locations
