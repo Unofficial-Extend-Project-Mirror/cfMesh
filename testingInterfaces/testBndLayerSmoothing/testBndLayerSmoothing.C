@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
     labelHashSet badFaces;
     polyMeshGenChecks::findBadFaces(pmg, badFaces, true, &activeFace);
 
-    if( badFaces.size() )
+    if( returnReduce(badFaces.size(), sumOp<label>()) )
     {
         const labelList& own = pmg.owner();
         const labelList& nei = pmg.neighbour();
@@ -227,10 +227,11 @@ int main(int argc, char *argv[])
                 pmg.addCellToSubset(badCellId, nei[it.key()]);
         }
 
-        if( pmg.cellSubsetIndex("badBlCells") >= 0 )
+        if( returnReduce(pmg.cellSubsetIndex("badBlCells")>=0, maxOp<bool>()) )
         {
             Info << "Found bad quality bl cells" << endl;
             pmg.write();
+            returnReduce(1, sumOp<label>());
             ::exit(0);
         }
     }

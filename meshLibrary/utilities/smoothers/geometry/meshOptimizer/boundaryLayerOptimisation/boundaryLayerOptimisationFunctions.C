@@ -1110,6 +1110,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     //- calculate direction of hair vector based on the surface normal
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bp = mse.bp();
+    const VRWGraph& bpEdges = mse.boundaryPointEdges();
+    const edgeList& edges = mse.edges();
 
     //- calculate point normals with respect to all patches at a point
     pointNormalsType pointPatchNormal;
@@ -1153,7 +1155,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
 
             hv /= (mag(hv) + VSMALL);
         }
-        else if( hairType & BOUNDARY )
+        else
         {
             //- initialise boundary hair vectors. They influence internal
             //- hairs conneted to them
@@ -1209,7 +1211,28 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                         vector newVec = heVec - (heVec & n) * n;
                         newVec /= (mag(newVec) + VSMALL);
 
-                        newNormal += newVec;
+                        scalar weight = 1.0;
+
+                        if( Pstream::parRun() )
+                        {
+                            //- edges at inter-processor boundaries contribute
+                            //- at two sides are given weight 0.5
+                            const edge be(he[0], nhe[0]);
+                            const label bpI = bp[he[0]];
+
+                            forAllRow(bpEdges, bpI, bpeI)
+                            {
+                                const edge& bndEdge = edges[bpEdges(bpI, bpeI)];
+
+                                if( bndEdge == be )
+                                {
+                                    weight = 0.5;
+                                    break;
+                                }
+                            }
+                        }
+
+                        newNormal += weight * newVec;
                     }
                 }
                 else
@@ -1221,7 +1244,29 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
                         const label hairEdgeJ =
                             hairEdgesNearHairEdge_(hairEdgeI, nheI);
 
-                        newNormal += hairVecs[hairEdgeJ];
+                        scalar weight = 1.0;
+
+                        if( Pstream::parRun() )
+                        {
+                            //- edges at inter-processor boundaries contribute
+                            //- at two sides are given weight 0.5
+                            const edge& nhe = hairEdges_[hairEdgeJ];
+                            const edge be(he[0], nhe[0]);
+                            const label bpI = bp[he[0]];
+
+                            forAllRow(bpEdges, bpI, bpeI)
+                            {
+                                const edge& bndEdge = edges[bpEdges(bpI, bpeI)];
+
+                                if( bndEdge == be )
+                                {
+                                    weight = 0.5;
+                                    break;
+                                }
+                            }
+                        }
+
+                        newNormal += weight * hairVecs[hairEdgeJ];
                     }
                 }
             }
