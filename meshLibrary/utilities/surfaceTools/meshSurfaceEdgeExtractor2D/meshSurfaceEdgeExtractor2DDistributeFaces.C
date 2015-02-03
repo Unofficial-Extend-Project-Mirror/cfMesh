@@ -148,10 +148,10 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
         bndFacePatch
     );
 
-    //- set coorect patch types
+    //- set correct patch types
     PtrList<boundaryPatch>& modBnd = meshModifier.boundariesAccess();
-    forAll(surfPatches, patchI)
-        modBnd[patchI].patchType() = surfPatches[patchI].geometricType();
+    forAll(patchTypes, patchI)
+        modBnd[patchI].patchType() = patchTypes[patchI];
 }
 
 void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
