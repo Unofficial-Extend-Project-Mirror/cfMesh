@@ -314,24 +314,31 @@ void meshOctreeAddressing::findUsedBoxes() const
             boxType[leafI] |= MESHCELL;
     }
 
-    if( meshDict_.found("nonManifoldMeshing") )
-    {
-        const bool nonManifoldMesh
-        (
-            readBool(meshDict_.lookup("nonManifoldMeshing"))
-        );
+    //- activate non-manifold meshing, if requested
+    bool nonManifoldMesh(false);
+    if
+    (
+        meshDict_.found("nonManifoldMeshing") &&
+        readBool(meshDict_.lookup("nonManifoldMeshing"))
+    )
+        nonManifoldMesh = true;
+    if
+    (
+        meshDict_.found("allowDisconnectedDomains") &&
+        readBool(meshDict_.lookup("allowDisconnectedDomains"))
+    )
+            nonManifoldMesh = true;
 
-        if( nonManifoldMesh )
+    if( nonManifoldMesh )
+    {
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 40)
+        # endif
+        forAll(boxType, leafI)
         {
-            # ifdef USE_OMP
-            # pragma omp parallel for schedule(dynamic, 40)
-            # endif
-            forAll(boxType, leafI)
-            {
-                const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
-                    if( leaf.cubeType() & meshOctreeCubeBasic::UNKNOWN )
-                        boxType[leafI] |= MESHCELL;
-            }
+            const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
+                if( leaf.cubeType() & meshOctreeCubeBasic::UNKNOWN )
+                    boxType[leafI] |= MESHCELL;
         }
     }
 

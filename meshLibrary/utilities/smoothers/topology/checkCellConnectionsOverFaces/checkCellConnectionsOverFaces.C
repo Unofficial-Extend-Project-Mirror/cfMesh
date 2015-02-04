@@ -245,13 +245,48 @@ bool checkCellConnectionsOverFaces::checkCellGroups()
             nGroups_ = groupI;
         }
 
-    //- remove cells which are not in the group which has max num of cells
-    boolList removeCell(mesh_.cells().size(), false);
-    forAll(cellGroup_, cellI)
-        if( cellGroup_[cellI] != nGroups_ )
-            removeCell[cellI] = true;
+    const dictionary& meshDict =
+        mesh_.returnTime().lookupObject<dictionary>("meshDict");
+    bool removeDisconnected(true);
+    if( meshDict.found("allowDisconnectedDomains") )
+    {
+        removeDisconnected =
+            !readBool(meshDict.lookup("allowDisconnectedDomains"));
+    }
 
-    polyMeshGenModifier(mesh_).removeCells(removeCell);
+    if( removeDisconnected )
+    {
+        //- remove cells which are not in the group which has max num of cells
+        boolList removeCell(mesh_.cells().size(), false);
+        forAll(cellGroup_, cellI)
+            if( cellGroup_[cellI] != nGroups_ )
+                removeCell[cellI] = true;
+
+        polyMeshGenModifier(mesh_).removeCells(removeCell);
+
+        return true;
+    }
+    else
+    {
+        //- generate subsets containing cells in each domain
+        labelList domainId(nCellsInGroup.size());
+        forAll(nCellsInGroup, groupI)
+        {
+            const word domainName = "domain_"+help::scalarToText(groupI);
+            const label id = mesh_.cellSubsetIndex(domainName);
+            if( id >= 0 )
+            {
+                mesh_.removeCellSubset(id);
+            }
+
+            domainId[groupI] = mesh_.addCellSubset(domainName);
+        }
+
+        forAll(cellGroup_, cellI)
+            mesh_.addCellToSubset(domainId[cellGroup_[cellI]], cellI);
+
+        return false;
+    }
 
     return true;
 }
