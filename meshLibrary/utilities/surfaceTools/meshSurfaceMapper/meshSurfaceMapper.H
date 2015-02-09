@@ -108,6 +108,9 @@ class meshSurfaceMapper
             scalarList & mappingDistance
         ) const;
 
+        //- calculate face metric
+        scalar faceMetricInPatch(const label bfI, const label patchI) const;
+
     // Private member functions needed for parallel execution
 
         //- check if nodes at parallel boundaries are selected at all processors

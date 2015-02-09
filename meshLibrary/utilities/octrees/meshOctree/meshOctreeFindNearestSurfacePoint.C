@@ -533,25 +533,10 @@ bool meshOctree::findNearestPointToPatches
     if( patches.size() == 0 )
         return false;
 
-    point mapPoint(p);
-    scalar dSq(VGREAT);
-
-    bool found(false);
-    if( patches.size() == 2 )
-    {
-        label nse;
-        found = findNearestEdgePoint(mapPoint, dSq, nse, p, patches);
-    }
-    else if( patches.size() > 2 )
-    {
-        label nsp;
-        found = findNearestCorner(mapPoint, dSq, nsp, p, patches);
-    }
-
-    point mapPointApprox(p);
+    nearest = p;
     scalar distSqApprox;
     label iter(0);
-    while( iter++ < 20 )
+    while( iter++ < 40 )
     {
         point newP(vector::zero);
         forAll(patches, patchI)
@@ -564,26 +549,19 @@ bool meshOctree::findNearestPointToPatches
                 distSqApprox,
                 nearestTri,
                 patches[patchI],
-                mapPointApprox
+                nearest
             );
 
             newP += np;
         }
 
         newP /= patches.size();
-        if( Foam::magSqr(newP - mapPointApprox) < tol * dSq )
+        distSq = magSqr(newP - p);
+
+        if( Foam::magSqr(newP - nearest) < tol * distSq )
             break;
 
-        mapPointApprox = newP;
-    }
-
-    distSq = Foam::magSqr(mapPointApprox - p);
-    nearest = mapPointApprox;
-
-    if( found && (dSq < 1.5 * distSq) )
-    {
-        nearest = mapPoint;
-        distSq = dSq;
+        nearest = newP;
     }
 
     return true;
