@@ -181,14 +181,15 @@ scalar meshSurfaceMapper::faceMetricInPatch
     forAll(bf, pI)
     {
         projArea +=
-            0.5 *
+            triPointRef
             (
-                (projPoints[bf.fcIndex(pI)] - projPoints[pI]) ^
-                (projCentre - projPoints[pI])
-            );
+                projPoints[pI],
+                projPoints[bf.fcIndex(pI)],
+                projCentre
+            ).normal();
     }
 
-    return magSqr(centre - projCentre) + mag(projArea - area);
+    return magSqr(centre - projCentre) + mag(mag(projArea) - mag(area));
 }
 
 void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)

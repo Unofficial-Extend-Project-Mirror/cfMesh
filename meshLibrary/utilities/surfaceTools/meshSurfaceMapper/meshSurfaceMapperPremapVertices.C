@@ -50,7 +50,7 @@ namespace Foam
 
 void meshSurfaceMapper::preMapVertices(const label nIterations)
 {
-    Info << "Smoothing mesh surface before mapping. Iteration:" << flush;
+    Info << "Smoothing mesh surface before mapping." << flush;
 
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -61,8 +61,6 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
     const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
 
     const triSurf& surf = meshOctree_.surface();
-    surf.pointEdges();
-    surf.edgeFacets();
 
     List<labelledPointScalar> preMapPositions(boundaryPoints.size());
     List<DynList<scalar, 6> > faceCentreDistances(bFaces.size());
@@ -139,8 +137,6 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             forAll(bf, pI)
                 boundaryPointPatches[bp[bf[pI]]].appendIfNotIn(bestPatch);
         }
-
-        Info << "Boundary point patches " << boundaryPointPatches << endl;
 
         //- use the shrinking laplace first
         # ifdef USE_OMP
@@ -274,7 +270,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 );
             }
 
-            const point newP = p + 0.9 * (pMap - p);
+            const point newP = p + 0.5 * (pMap - p);
 
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
 
@@ -303,49 +299,13 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         //- update the surface geometry of the
         surfaceModifier.updateGeometry();
 
-        meshSurfaceOptimizer(surfaceEngine_, meshOctree_).untangleSurface();
+        //meshSurfaceOptimizer(surfaceEngine_, meshOctree_).untangleSurface();
+        meshSurfaceOptimizer(surfaceEngine_, meshOctree_).optimizeSurface();
 
         surfaceModifier.updateGeometry();
-
-        Info << "." << flush;
     }
 
-    wordList pNames(surf.patches().size());
-    forAll(pNames, patchI)
-        pNames[patchI] = surf.patches()[patchI].name();
-    VRWGraph newBndFaces;
-    labelLongList newOwner;
-    labelLongList newPatch;
-    forAll(bFaces, bfI)
-    {
-        label patchI;
-        point np;
-        scalar dSq;
-        label nt;
-
-        const point c = bFaces[bfI].centre(points);
-        meshOctree_.findNearestSurfacePoint(np, dSq, nt, patchI, c);
-
-        newBndFaces.appendList(bFaces[bfI]);
-        newOwner.append(surfaceEngine_.faceOwners()[bfI]);
-        newPatch.append(patchI);
-    }
-
-    polyMeshGenModifier
-    (
-        const_cast<polyMeshGen&>(surfaceEngine_.mesh())
-    ).replaceBoundary
-    (
-        pNames,
-        newBndFaces,
-        newOwner,
-        newPatch
-    );
-
-    surfaceEngine_.mesh().write();
-    ::exit(0);
-
-    Info << endl;
+    Info << "Finished smoothing mesh surface before mapping." << flush;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
