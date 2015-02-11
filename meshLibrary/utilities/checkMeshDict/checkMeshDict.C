@@ -945,20 +945,12 @@ void checkMeshDict::updateRenameBoundary
             const word name(dict.lookup("defaultName"));
             newDict.add("defaultName", name);
         }
-        else
-        {
-            newDict.add("defaultName", "walls");
-        }
 
         //- transfer or generate the defaultType entry
         if( dict.found("defaultType") )
         {
             const word type(dict.lookup("defaultType"));
             newDict.add("defaultType", type);
-        }
-        else
-        {
-            newDict.add("defaultType", "wall");
         }
 
         if( dict.found("newPatchNames") )
@@ -1093,9 +1085,6 @@ void checkMeshDict::updateRenameBoundary
     else
     {
         //- create the dictionary if it has not existed before
-        newDict.add("defaultName", "walls");
-        newDict.add("defaultType", "wall");
-
         dictionary& newPatchesDict = newDict.subDict("newPatchNames");
 
         std::map<word, wordList>::const_iterator it;
