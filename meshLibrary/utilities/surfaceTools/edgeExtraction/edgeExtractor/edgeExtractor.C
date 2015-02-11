@@ -26,6 +26,8 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "error.H"
+#include "objectRegistry.H"
+#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "edgeExtractor.H"
 #include "meshSurfaceEngine.H"
@@ -2087,7 +2089,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
         );
 
         //- stop after a certain number of iterations
-        if( iter++ > 20 )
+        if( iter++ > 3 )
             break;
 
         //- check if there exist any inverted faces
@@ -2202,7 +2204,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
 
         //- compare face patches before and after
         //- disallow modification which may trigger oscillating behaviour
-        labelHashSet changedFaces;
+        labelLongList changedFaces;
         forAll(newBoundaryPatches, bfI)
         {
             if( newBoundaryPatches[bfI] != facePatch_[bfI] )
@@ -2212,7 +2214,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
                 newBoundaryPatches[bfI] = patchI;
 
                 if( patchI != facePatch_[bfI] )
-                    changedFaces.insert(bfI);
+                    changedFaces.append(bfI);
             }
         }
 
@@ -2533,7 +2535,8 @@ const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
 void edgeExtractor::updateMeshPatches()
 {
     const triSurf& surface = meshOctree_.surface();
-    const label nPatches = surface.patches().size();
+    const geometricSurfacePatchList& surfPatches = surface.patches();
+    const label nPatches = surfPatches.size();
 
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -2557,13 +2560,20 @@ void edgeExtractor::updateMeshPatches()
     }
 
     //- replace the boundary with the new patches
-    polyMeshGenModifier(mesh_).replaceBoundary
+    polyMeshGenModifier meshModifier(mesh_);
+    meshModifier.replaceBoundary
     (
         patchNames,
         newBoundaryFaces,
         newBoundaryOwners,
         newBoundaryPatches
     );
+
+    //- set the new patch types
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
+
+    forAll(surfPatches, patchI)
+        boundaries[patchI].patchType() = surfPatches[patchI].geometricType();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

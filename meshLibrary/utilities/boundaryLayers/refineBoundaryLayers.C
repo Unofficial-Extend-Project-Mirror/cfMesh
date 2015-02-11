@@ -151,9 +151,7 @@ void refineBoundaryLayers::setNumberOfLayersForPatch
             "void refineBoundaryLayers::setNumberOfLayersForPatch"
             "(const word&, const label)"
         ) << "The specified number of boundary layers for patch " << patchName
-          << " is less than 2" << endl;
-
-        return;
+          << " is less than 2... boundary layers disabled for this patch!" << endl;
     }
 
     const labelList matchedIDs = mesh_.findPatches(patchName);
@@ -305,6 +303,20 @@ void refineBoundaryLayers::readSettings
             const scalar maxFirstThickness =
                 readScalar(bndLayers.lookup("maxFirstLayerThickness"));
             refLayers.setGlobalMaxThicknessOfFirstLayer(maxFirstThickness);
+        }
+
+        //- consider specified patches for exclusion from boundary layer creation
+        //- implemented by setting the number of layers to 1
+        if( bndLayers.found("excludedPatches") )
+        {
+            const wordList patchNames(bndLayers.lookup("excludedPatches"));
+            
+            forAll(patchNames, patchI)
+            {
+                const word pName = patchNames[patchI];
+
+                refLayers.setNumberOfLayersForPatch(pName, 1);
+            }
         }
 
         //- patch-based properties

@@ -49,7 +49,12 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOptimizer::untangleMeshFV()
+void meshOptimizer::untangleMeshFV
+(
+    const label maxNumGlobalIterations,
+    const label maxNumIterations,
+    const label maxNumSurfaceIterations
+)
 {
     Info << "Starting untangling the mesh" << endl;
 
@@ -98,7 +103,6 @@ void meshOptimizer::untangleMeshFV()
     # endif
 
     label nBadFaces, nGlobalIter(0), nIter;
-    const label maxNumGlobalIterations(10);
 
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
@@ -139,7 +143,7 @@ void meshOptimizer::untangleMeshFV()
 
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( (nIter < minIter+5) && (++nIter < 50) );
+        } while( (nIter < minIter+5) && (++nIter < maxNumIterations) );
 
         if( (nBadFaces == 0) || (++nGlobalIter >= maxNumGlobalIterations) )
             break;
@@ -208,14 +212,14 @@ void meshOptimizer::untangleMeshFV()
 
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( ++nIter < 2 );
+        } while( ++nIter < maxNumSurfaceIterations );
     }
     while( nBadFaces );
 
     Info << "Finished untangling the mesh" << endl;
 }
 
-void meshOptimizer::optimizeLowQualityFaces()
+void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
 {
     label nBadFaces, nIter(0);
 
@@ -257,7 +261,34 @@ void meshOptimizer::optimizeLowQualityFaces()
 
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( (nIter < minIter+2) && (++nIter < 10) );
+    } while( (nIter < minIter+2) && (++nIter < maxNumIterations) );
+}
+
+void meshOptimizer::optimizeMeshNearBoundaries
+(
+    const label maxNumIterations,
+    const label numLayersOfCells
+)
+{
+    label nIter(0);
+
+    const faceListPMG& faces = mesh_.faces();
+    boolList changedFace(faces.size(), true);
+
+    partTetMesh tetMesh(mesh_, numLayersOfCells);
+    tetMeshOptimisation tmo(tetMesh);
+    Info << "Iteration:" << flush;
+    do
+    {
+        tmo.optimiseUsingVolumeOptimizer();
+
+        tetMesh.updateOrigMesh(&changedFace);
+
+        Info << "." << flush;
+
+    } while( ++nIter < maxNumIterations );
+
+    Info << endl;
 }
 
 void meshOptimizer::optimizeMeshFV()

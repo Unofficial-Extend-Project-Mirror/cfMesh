@@ -168,7 +168,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
             if
             (
                 !help::isSharedEdgeConvex(points, f1, f2) ||
-                (help::angleBetweenFaces(points, f1, f2) > 1.5 * M_PI)
+                (help::angleBetweenFaces(points, f1, f2) > 0.75 * M_PI)
             )
             {
                 ++edgeClassification[pp].second();
@@ -316,7 +316,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
                 (otherFaceProc[beI] > Pstream::myProcNo()) &&
                 (
                     !help::isSharedEdgeConvex(points, bf, f) ||
-                    (help::angleBetweenFaces(points, bf, f) > 1.5 * M_PI)
+                    (help::angleBetweenFaces(points, bf, f) > 0.75 * M_PI)
                 )
             )
             {
@@ -543,6 +543,7 @@ boundaryLayers::boundaryLayers
     terminateLayersAtConcaveEdges_(false),
     is2DMesh_(false),
     patchNames_(),
+    patchTypes_(),
     treatedPatch_(),
     treatPatchesWithPatch_(),
     newLabelForVertex_(),
@@ -553,8 +554,12 @@ boundaryLayers::boundaryLayers
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     patchNames_.setSize(boundaries.size());
+    patchTypes_.setSize(boundaries.size());
     forAll(boundaries, patchI)
+    {
         patchNames_[patchI] = boundaries[patchI].patchName();
+        patchTypes_[patchI] = boundaries[patchI].patchType();
+    }
 
     treatedPatch_.setSize(boundaries.size());
     treatedPatch_ = false;
