@@ -50,6 +50,8 @@ Description
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
 
+#include "polyMeshGenChecks.H"
+
 //#define DEBUG
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -149,7 +151,7 @@ void cartesianMeshGenerator::mapEdgesAndCorners()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 
@@ -186,8 +188,34 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
-        optimizer.untangleMeshFV();
+        labelHashSet badFaces;
+        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
+
+        if( returnReduce(badFaces.size(), sumOp<label>()) != 0 )
+        {
+            Warning << "Bad bnd layer cells found!!" << endl;
+
+            const labelList& owner = mesh_.owner();
+            const labelList& nei = mesh_.neighbour();
+
+            const label subsetI = mesh_.addCellSubset("invertedCells");
+            forAllConstIter(labelHashSet, badFaces, it)
+            {
+                mesh_.addCellToSubset(subsetI, owner[it.key()]);
+                if( nei[it.key()] >= 0 )
+                    mesh_.addCellToSubset(subsetI, nei[it.key()]);
+            }
+
+            mesh_.write();
+            returnReduce(1, sumOp<label>());
+            FatalErrorIn
+            (
+                "void cartesianMeshGenerator::refBoundaryLayers()"
+            ) << "Inverted cells present in the boundary layer"
+              << exit(FatalError);
+        }
+
+        meshOptimizer(mesh_).untangleMeshFV();
     }
 }
 
@@ -219,8 +247,12 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     if( enforceConstraints )
         optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
+
     optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer();
     optimizer.untangleMeshFV();
+
+    mesh_.clearAddressingData();
 
     if( modSurfacePtr_ )
     {
@@ -235,7 +267,7 @@ void cartesianMeshGenerator::optimiseFinalMesh()
 
     # ifdef DEBUG
     mesh_.write();
-    //::exit(EXIT_SUCCESS);
+    ::exit(EXIT_SUCCESS);
     # endif
 }
 

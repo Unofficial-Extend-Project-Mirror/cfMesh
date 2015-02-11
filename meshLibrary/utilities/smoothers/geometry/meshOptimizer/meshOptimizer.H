@@ -67,6 +67,9 @@ class meshOptimizer
         //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
 
+        //- locked faces which shall not be changed
+        labelLongList lockedFaces_;
+
         //- mesh surface
         mutable meshSurfaceEngine* msePtr_;
 
@@ -189,7 +192,8 @@ class meshOptimizer
             BOUNDARY = 2,
             EDGE = 4,
             CORNER = 8,
-            PARALLELBOUNDARY = 16
+            PARALLELBOUNDARY = 16,
+            LOCKED = 32
         };
 
 public:
@@ -211,6 +215,33 @@ public:
         //- stored into a point subset
         void enforceConstraints(const word subsetName="badPoints");
 
+        //- lock the cells which shall not be modified
+        template<class labelListType>
+        inline void lockCells(const labelListType&);
+
+        //- lock cells which shall not be modified
+        //- contained inside the specified subset
+        void lockCellsInSubset(const word& subsetName);
+
+        //- lock the faces whih shall not be modified
+        template<class labelListType>
+        inline void lockFaces(const labelListType&);
+
+        //- lock faces which shall not be modified
+        //- stored in a face subset
+        void lockFacesInSubset(const word& subsetName);
+
+        //- lock points which shall not be moved
+        template<class labelListType>
+        inline void lockPoints(const labelListType&);
+
+        //- lock points which shall not be modified
+        //- given as a point subset
+        void lockPointsInSubset(const word& subsetName);
+
+        //- reset to default constraints
+        void removeUserConstraints();
+
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);
 
@@ -224,6 +255,10 @@ public:
             const label maxNumIterations = 50,
             const label maxNumSurfaceIterations = 2
         );
+
+        //- performs optimisation of boundary layer cells
+        //- it is applied to the first boundary layer, only
+        void optimizeBoundaryLayer();
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
@@ -246,6 +281,10 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "meshOptimizerI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

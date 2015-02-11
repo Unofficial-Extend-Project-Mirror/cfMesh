@@ -50,6 +50,10 @@ namespace Foam
 
 class surfaceOptimizer
 {
+    // Private static data
+        //- direction vectors for divide and conquer algorithm
+        static const vector dirVecs[4];
+
     // Private data
         //- reference to the simplex points
         DynList<point>& pts_;

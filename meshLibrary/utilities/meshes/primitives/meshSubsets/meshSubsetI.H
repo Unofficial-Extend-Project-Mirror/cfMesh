@@ -126,7 +126,7 @@ inline void meshSubset::removeElement(const label elmt)
 template<class ListType>
 inline void meshSubset::updateSubset(const ListType& newLabels)
 {
-    HashSet<label> newData;
+    HashSet<label> newData(newLabels.size());
 
     forAllConstIter(HashSet<label>, data_, it)
     {
@@ -136,14 +136,12 @@ inline void meshSubset::updateSubset(const ListType& newLabels)
         newData.insert(newLabels[it.key()]);
     }
 
-    data_.clear();
-    forAllConstIter(HashSet<label>, newData, it)
-        data_.insert(it.key());
+    data_.transfer(newData);
 }
 
 inline void meshSubset::updateSubset(const VRWGraph& newLabels)
 {
-    HashSet<label> newData;
+    HashSet<label> newData(newLabels.size());
 
     forAllConstIter(HashSet<label>, data_, it)
     {
@@ -151,9 +149,7 @@ inline void meshSubset::updateSubset(const VRWGraph& newLabels)
             newData.insert(newLabels(it.key(), i));
     }
 
-    data_.clear();
-    forAllConstIter(HashSet<label>, newData, it)
-        data_.insert(it.key());
+    data_.transfer(newData);
 }
 
 inline bool meshSubset::contains(const label elmt) const
@@ -167,6 +163,8 @@ inline void meshSubset::operator=(const meshSubset& ms)
     type_ = ms.type_;
 
     data_.clear();
+    data_.resize(ms.data_.size());
+
     forAllConstIter(HashSet<label>, ms.data_, it)
         data_.insert(it.key());
 }

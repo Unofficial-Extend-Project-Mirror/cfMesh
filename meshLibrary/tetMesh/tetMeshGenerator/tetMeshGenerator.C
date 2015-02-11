@@ -30,7 +30,6 @@ Description
 #include "demandDrivenData.H"
 #include "Time.H"
 #include "meshOctreeCreator.H"
-#include "meshOctreeAutomaticRefinement.H"
 #include "tetMeshExtractorOctree.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
@@ -45,6 +44,7 @@ Description
 #include "triSurfacePatchManipulator.H"
 #include "refineBoundaryLayers.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenChecks.H"
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
 
@@ -186,6 +186,7 @@ void tetMeshGenerator::optimiseFinalMesh()
 
     optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer();
     optimizer.optimizeMeshFV();
 
     if( modSurfacePtr_ )
@@ -215,9 +216,24 @@ void tetMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
+        labelHashSet badFaces;
+        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
 
-        optimizer.untangleMeshFV();
+        if( badFaces.size() != 0 )
+        {
+            Warning << "Bad bnd layer cells found!!" << endl;
+
+            const labelList& owner = mesh_.owner();
+            const labelList& nei = mesh_.neighbour();
+
+            const label subsetI = mesh_.addCellSubset("invertedCells");
+            forAllConstIter(labelHashSet, badFaces, it)
+            {
+                mesh_.addCellToSubset(subsetI, owner[it.key()]);
+                if( nei[it.key()] >= 0 )
+                    mesh_.addCellToSubset(subsetI, nei[it.key()]);
+            }
+        }
     }
 }
 

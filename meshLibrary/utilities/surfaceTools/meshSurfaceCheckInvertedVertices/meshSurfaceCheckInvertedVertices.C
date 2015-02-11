@@ -30,7 +30,7 @@ Description
 #include "boolList.H"
 #include "demandDrivenData.H"
 #include "refLabelledPoint.H"
-#include "helperFunctionsPar.H"
+#include "helperFunctions.H"
 
 #include <map>
 
@@ -50,6 +50,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     const labelList& facePatch = surfacePartitioner_.boundaryFacePatches();
     const meshSurfaceEngine& mse = surfacePartitioner_.surfaceEngine();
     const pointFieldPMG& points = mse.points();
+    const labelList& bp = mse.bp();
     const VRWGraph& pointFaces = mse.pointFaces();
     const VRWGraph& pointInFaces = mse.pointInFaces();
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -335,7 +336,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         //- exchange global labels of inverted points
         const labelList& bPoints = mse.boundaryPoints();
         const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
-        const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
+        const Map<label>& globalToLocal =
+            mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
 
@@ -369,6 +371,28 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         {
             const label bpI = globalToLocal[receivedData[i]];
             invertedVertices_.insert(bPoints[bpI]);
+        }
+    }
+
+    //- check if there exist concave faces
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(bFaces, bfI)
+    {
+        const face& bf = bFaces[bfI];
+
+        DynList<bool> OkPoints;
+        if( !help::isFaceConvexAndOk(bf, points, OkPoints) )
+        {
+            forAll(OkPoints, pI)
+            {
+                if( activePointsPtr_ && !(*activePointsPtr_)[bp[bf[pI]]] )
+                    continue;
+
+                if( !OkPoints[pI] )
+                    invertedVertices_.insert(bf[pI]);
+            }
         }
     }
 }

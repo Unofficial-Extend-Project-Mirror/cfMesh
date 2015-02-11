@@ -25,73 +25,60 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+#include "triangulateBoundaryLayerBaseFaces.H"
+#include "meshSurfaceEngine.H"
 #include "demandDrivenData.H"
-#include "volumeOptimizer.H"
-#include "tetrahedron.H"
-#include "partTetMeshSimplex.H"
-
-//#define DEBUGSmooth
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-const vector volumeOptimizer::dirVecs[8] =
-    {
-        vector(-1.0, -1.0, -1.0),
-        vector(1.0, -1.0, -1.0),
-        vector(-1.0, 1.0, -1.0),
-        vector(1.0, 1.0, -1.0),
-        vector(-1.0, -1.0, 1.0),
-        vector(1.0, -1.0, 1.0),
-        vector(-1.0, 1.0, 1.0),
-        vector(1.0, 1.0, 1.0)
-    };
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-volumeOptimizer::volumeOptimizer(partTetMeshSimplex& simplex)
+triangulateBoundaryLayerBaseFaces::triangulateBoundaryLayerBaseFaces
+(
+    polyMeshGen& mesh,
+    const VRWGraph& layerCellsInColumn
+)
 :
-    simplexSmoother(simplex)
+    mesh_(mesh),
+    layerCellsInColumn_(layerCellsInColumn),
+    invertedCell_(mesh_.cells().size(), false),
+    ownerInColumn_(),
+    neiInColumn_(),
+    faceType_(),
+    faceCentreLabel_()
 {}
 
-volumeOptimizer::~volumeOptimizer()
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+triangulateBoundaryLayerBaseFaces::~triangulateBoundaryLayerBaseFaces()
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Member functions
 
-void volumeOptimizer::optimizeNodePosition(const scalar tol)
+void triangulateBoundaryLayerBaseFaces::setBadCells(const labelHashSet& s)
 {
-    point& p = points_[pointI_];
+    forAllConstIter(labelHashSet, s, it)
+        invertedCell_[it.key()] = true;
+}
 
-    if( !bb_.contains(p) )
-        p = 0.5 * (bb_.max() + bb_.min());
+void triangulateBoundaryLayerBaseFaces::triangulateLayers()
+{
+    classifyMeshFaces();
 
-    const scalar scale = 1.0 / bb_.mag();
-    forAll(points_, pI)
-        points_[pI] *= scale;
-    bb_.min() *= scale;
-    bb_.max() *= scale;
+    if( !createNewPoints() )
+    {
+        WarningIn
+        (
+            "void triangulateBoundaryLayerBaseFaces::triangulateLayers()"
+        ) << "Boundary layer is not modified" << endl;
 
-    //- find the optimum using divide and conquer
-    const scalar func = optimiseDivideAndConquer(tol);
-    const point copyP = p;
+        return;
+    }
 
-    //- check if the location can be improved using the steepest descent
-    const scalar funcAfter = optimiseSteepestDescent(tol);
-
-    if( funcAfter > func )
-        p = copyP;
-
-    //- scale back to the original size
-    forAll(points_, pI)
-        points_[pI] /= scale;
-    bb_.min() /= scale;
-    bb_.max() /= scale;
+    createNewFacesAndCells();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

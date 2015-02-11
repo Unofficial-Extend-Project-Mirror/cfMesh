@@ -1,7 +1,14 @@
 
 meshSurfaceEngine  =  utilities/surfaceTools/meshSurfaceEngine
 meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
-boundaryLayers = utilities/boundaryLayers
+
+bndLayers = utilities/boundaryLayers
+boundaryLayers = $(bndLayers)/boundaryLayers
+detectBoundaryLayers = $(bndLayers)/detectBoundaryLayers
+extrudeLayer = $(bndLayers)/extrudeLayer
+refineBoundaryLayers = $(bndLayers)/refineBoundaryLayers
+triangulateBoundaryLayerBaseFaces = $(bndLayers)/triangulateBoundaryLayerBaseFaces
+
 checkMeshDict = utilities/checkMeshDict
 
 anisotropicMeshing = utilities/anisotropicMeshing
@@ -29,9 +36,9 @@ findCellsIntersectingSurface = $(intersectionTools)/findCellsIntersectingSurface
 
 meshOptimizer = utilities/smoothers/geometry/meshOptimizer
 tetMeshOptimisation = $(meshOptimizer)/tetMeshOptimisation
+boundaryLayerOptimisation = $(meshOptimizer)/boundaryLayerOptimisation
 
 symmetryPlaneOptimisation = $(meshOptimizer)/symmetryPlaneOptimisation
-
 simplexSmoother = $(tetMeshOptimisation)/advancedSmoothers/simplexSmoother
 knuppMetric = $(tetMeshOptimisation)/advancedSmoothers/knuppMetric
 meshUntangler = $(tetMeshOptimisation)/advancedSmoothers/meshUntangler
@@ -248,11 +255,15 @@ $(boundaryLayers)/boundaryLayersFacesAndCells.C
 $(boundaryLayers)/boundaryLayerCells.C
 $(boundaryLayers)/boundaryLayersCheckTopologyOfBndFaces.C
 $(boundaryLayers)/boundaryLayersWrapperLayer.C
-$(boundaryLayers)/extrudeLayer.C
-$(boundaryLayers)/refineBoundaryLayers.C
-$(boundaryLayers)/refineBoundaryLayersFunctions.C
-$(boundaryLayers)/refineBoundaryLayersFaces.C
-$(boundaryLayers)/refineBoundaryLayersCells.C
+$(extrudeLayer)/extrudeLayer.C
+$(detectBoundaryLayers)/detectBoundaryLayers.C
+$(detectBoundaryLayers)/detectBoundaryLayersFunctions.C
+$(refineBoundaryLayers)/refineBoundaryLayers.C
+$(refineBoundaryLayers)/refineBoundaryLayersFunctions.C
+$(refineBoundaryLayers)/refineBoundaryLayersFaces.C
+$(refineBoundaryLayers)/refineBoundaryLayersCells.C
+$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFaces.C
+$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFacesFunctions.C
 
 $(meshSurfaceEngine)/meshSurfaceEngine.C
 $(meshSurfaceEngine)/meshSurfaceEngineCalculateBoundaryNodesAndFaces.C
@@ -299,6 +310,9 @@ $(tetMeshOptimisation)/tetMeshOptimisation.C
 $(tetMeshOptimisation)/tetMeshOptimisationParallel.C
 
 $(symmetryPlaneOptimisation)/symmetryPlaneOptimisation.C
+
+$(boundaryLayerOptimisation)/boundaryLayerOptimisation.C
+$(boundaryLayerOptimisation)/boundaryLayerOptimisationFunctions.C
 
 $(simplexSmoother)/simplexSmoother.C
 

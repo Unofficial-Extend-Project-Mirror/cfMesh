@@ -29,6 +29,7 @@ Description
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
+#include "meshSurfaceMapper.H"
 #include "polyMeshGenChecks.H"
 
 #include <map>
@@ -71,49 +72,35 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
     }
 }
 
-label meshSurfaceOptimizer::findBadFaces
-(
-    labelHashSet& badFaces,
-    boolList& changedFace
-) const
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
+:
+    surfaceEngine_(surface),
+    vertexType_(surface.boundaryPoints().size()),
+    partitionerPtr_(new meshSurfacePartitioner(surface)),
+    deletePartitioner_(true),
+    octreePtr_(NULL),
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
 {
-    badFaces.clear();
-
-    const polyMeshGen& mesh = surfaceEngine_.mesh();
-
-    polyMeshGenChecks::checkFacePyramids
-    (
-        mesh,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    polyMeshGenChecks::checkCellPartTetrahedra
-    (
-        mesh,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    polyMeshGenChecks::checkFaceAreas
-    (
-        mesh,
-        false,
-        VSMALL,
-        &badFaces,
-        &changedFace
-    );
-
-    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
-
-    return nBadFaces;
+    classifySurfaceVertices();
 }
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
+:
+    surfaceEngine_(mPart.surfaceEngine()),
+    vertexType_(surfaceEngine_.boundaryPoints().size()),
+    partitionerPtr_(&mPart),
+    deletePartitioner_(true),
+    octreePtr_(NULL),
+    triMeshPtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
+{
+    classifySurfaceVertices();
+}
 
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
@@ -122,10 +109,10 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 )
 :
     surfaceEngine_(surface),
-    meshOctree_(octree),
     vertexType_(surface.boundaryPoints().size()),
     partitionerPtr_(new meshSurfacePartitioner(surface)),
     deletePartitioner_(true),
+    octreePtr_(&octree),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
     badPointsSubsetName_()
@@ -140,10 +127,10 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 )
 :
     surfaceEngine_(partitioner.surfaceEngine()),
-    meshOctree_(octree),
     vertexType_(surfaceEngine_.boundaryPoints().size()),
     partitionerPtr_(&partitioner),
     deletePartitioner_(false),
+    octreePtr_(&octree),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
     badPointsSubsetName_()
@@ -162,6 +149,16 @@ meshSurfaceOptimizer::~meshSurfaceOptimizer()
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void meshSurfaceOptimizer::removeUserConstraints()
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(vertexType_, bpI)
+        if( vertexType_[bpI] & LOCKED )
+            vertexType_[bpI] ^= LOCKED;
+}
 
 void meshSurfaceOptimizer::enforceConstraints(const word subsetName)
 {

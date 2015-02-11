@@ -187,9 +187,6 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
         label iter(0);
         while( iter++ < 20 )
         {
-            DynList<point> origins;
-            DynList<vector> normals;
-
             point newP(vector::zero);
             forAll(patches, patchI)
             {
@@ -204,30 +201,10 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
                     mapPointApprox
                 );
 
-                vector fn = np - mapPointApprox;
-                if( nt >= 0 )
-                {
-                    const vector sn = surf[nt].normal(sPoints);
-
-                    if( magSqr(sn) > magSqr(fn) )
-                        fn = sn;
-                }
-
-                origins.append(np);
-                normals.append(fn);
-
                 newP += np;
             }
 
-            point pMin;
-            if( help::findMinimizerPoint(origins, normals, pMin) )
-            {
-                newP = pMin;
-            }
-            else
-            {
-                newP /= patches.size();
-            }
+            newP /= patches.size();
 
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
@@ -322,9 +299,6 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         {
             point newP(vector::zero);
 
-            DynList<point> origins;
-            DynList<vector> normals;
-
             forAll(patches, patchI)
             {
                 point np;
@@ -338,36 +312,10 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
                     mapPointApprox
                 );
 
-                vector fn = np - mapPointApprox;
-                if( nt >= 0 )
-                {
-                    const vector sn = surf[nt].normal(sPoints);
-
-                    if( magSqr(sn) > magSqr(fn) )
-                        fn = sn;
-                }
-
-                origins.append(np);
-                normals.append(fn);
-
                 newP += np;
             }
 
-            if( normals.size() < 3 )
-            {
-                normals.append(normals[0] ^ normals[1]);
-                origins.append(mapPointApprox);
-            }
-
-            point pMin;
-            if( help::findMinimizerPoint(origins, normals, pMin) )
-            {
-                newP = pMin;
-            }
-            else
-            {
-                newP /= patches.size();
-            }
+            newP /= patches.size();
 
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;

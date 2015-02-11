@@ -36,13 +36,10 @@ SourceFiles
 
 #include "DynList.H"
 #include "face.H"
-
+#include "boolList.H"
+#include "HashSet.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-class boolList;
-class cellList;
-class labelHashSet;
 
 namespace Foam
 {
