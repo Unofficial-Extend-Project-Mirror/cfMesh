@@ -33,6 +33,9 @@ Description
 #include "triSurfModifier.H"
 #include "helperFunctions.H"
 #include "demandDrivenData.H"
+#include "coordinateModifier.H"
+#include "checkMeshDict.H"
+#include "surfaceMeshGeometryModification.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -40,39 +43,79 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-    argList::noParallel();
-    argList::validArgs.clear();
-    argList::validArgs.append("input surface file");
-    argList::validArgs.append("output surface file");
+#   include "setRootCase.H"
+#   include "createTime.H"
 
-    argList::validArgs.append("scale x-direction");
-    argList::validArgs.append("scale y-direction");
-    argList::validArgs.append("scale z-direction");
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
 
-    argList args(argc, argv);
+    checkMeshDict cmd(meshDict);
 
-    const fileName inFileName(args.args()[1]);
-    const fileName outFileName(args.args()[2]);
-    const scalar scaleX = help::textToScalar(args.args()[3]);
-    const scalar scaleY = help::textToScalar(args.args()[4]);
-    const scalar scaleZ = help::textToScalar(args.args()[5]);
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
+    if( Pstream::parRun() )
+        surfaceFile = ".."/surfaceFile;
 
-    if( inFileName.ext() == outFileName )
-        FatalError << "trying to convert a file to itself"
-            << exit(FatalError);
+    triSurf surface(runTime.path()/surfaceFile);
 
-    triSurf surface(inFileName);
+    surfaceMeshGeometryModification gMod(surface, meshDict);
 
-    pointField& points = triSurfModifier(surface).pointsAccess();
-    forAll(points, pointI)
+    //- modify points
+    const triSurf* modSurfPtr = gMod.modifyGeometry();
+
+    Info << "Writting modified surface" << endl;
+    modSurfPtr->writeSurface("modifiedSurf.stl");
+
+    # ifdef DEBUGScaling
+    //- apply backward modification
+    Info << "Here" << endl;
+    coordinateModifier cMod(meshDict.subDict("anisotropicSources"));
+    Info << "Starting modifications" << endl;
+    forAll(surface.points(), i)
     {
-        point& p = points[pointI];
-        p.x() *= scaleX;
-        p.y() *= scaleY;
-        p.z() *= scaleZ;
+        Info << "\nOrig point " << i << " coordinates " << surface.points()[i]
+             << " modified point " << modSurfPtr->points()[i] << endl;
+        const point p = cMod.backwardModifiedPoint(modSurfPtr->points()[i]);
+
+        if( mag(p - surface.points()[i]) > 1e-14 )
+        {
+            Warning << "Point " << i << " is different "
+                    << p
+                    << " from original " << surface.points()[i]
+                    << " modified point "
+                    << cMod.modifiedPoint(surface.points()[i]) << endl;
+            ::exit(0);
+        }
     }
 
-    surface.writeSurface(outFileName);
+    Info << "Backscaling Ok" << endl;
+    ::exit(0);
+    # endif
+
+    surfaceMeshGeometryModification bgMod(*modSurfPtr, meshDict);
+    const triSurf* backModSurfPtr = bgMod.revertGeometryModification();
+
+    Info << "Writting backward transformed surface" << endl;
+    backModSurfPtr->writeSurface("backwardModifiedSurf.stl");
+
+    # ifdef DEBUGScaling
+    forAll(backModSurfPtr->points(), pI)
+        if( mag(backModSurfPtr->points()[pI] - surface.points()[pI]) > 1e-14 )
+            Warning << "Point " << pI << " is different "
+                    << backModSurfPtr->points()[pI]
+                    << " from original " << surface.points()[pI] << endl;
+    # endif
+
+    deleteDemandDrivenData(modSurfPtr);
+    deleteDemandDrivenData(backModSurfPtr);
 
     Info << "End\n" << endl;
 

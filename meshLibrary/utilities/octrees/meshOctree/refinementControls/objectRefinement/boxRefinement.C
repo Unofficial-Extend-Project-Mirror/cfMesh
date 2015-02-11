@@ -44,9 +44,6 @@ boxRefinement::boxRefinement()
     lengthX_(-1.0),
     lengthY_(-1.0),
     lengthZ_(-1.0)
-    //angleX_(0.0),
-    //angleY_(0.0),
-    //angleZ_(0.0)
 {}
 
 boxRefinement::boxRefinement
@@ -57,9 +54,6 @@ boxRefinement::boxRefinement
     const scalar lengthX,
     const scalar lengthY,
     const scalar lengthZ
-    //const scalar angleX,
-    //const scalar angleY,
-    //const scalar angleZ
 )
 :
     objectRefinement(),
@@ -67,9 +61,6 @@ boxRefinement::boxRefinement
     lengthX_(lengthX),
     lengthY_(lengthY),
     lengthZ_(lengthZ)
-    //angleX_(angleX),
-    //angleY_(angleY),
-    //angleZ_(angleZ)
 {
     setName(name);
     setCellSize(cellSize);
@@ -92,10 +83,10 @@ bool boxRefinement::intersectsObject(const boundBox& bb) const
 {
     vector v(0.5*lengthX_, 0.5*lengthY_, 0.5*lengthZ_);
     boundBox box(centre_ - v, centre_ + v);
-    
+
     if( box.overlaps(bb) )
         return true;
-    
+
     return false;
 }
 
@@ -112,10 +103,6 @@ dictionary boxRefinement::dict(bool ignoreType) const
     dict.add("lengthX", lengthX_);
     dict.add("lengthY", lengthY_);
     dict.add("lengthZ", lengthZ_);
-    
-    //dict.add("angleX", angleX_);
-    //dict.add("angleY", angleY_);
-    //dict.add("angleZ", angleZ_);
 
     return dict;
 }
@@ -127,9 +114,6 @@ void boxRefinement::write(Ostream& os) const
         << " lengthX: " << lengthX_
         << " lengthY: " << lengthY_
         << " lengthZ: " << lengthZ_;
-        //<< " angleX:  " << angleX_
-        //<< " angleY:  " << angleY_
-        //<< " angleZ:  " << angleZ_;
 }
 
 void boxRefinement::writeDict(Ostream& os, bool subDict) const
@@ -138,7 +122,7 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-    
+
     os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
 
     // only write type for derived types
@@ -148,12 +132,9 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
     }
 
     os.writeKeyword("centre") << centre_ << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthX") << lengthX_ << token::END_STATEMENT << nl; 
+    os.writeKeyword("lengthX") << lengthX_ << token::END_STATEMENT << nl;
     os.writeKeyword("lengthY") << lengthY_ << token::END_STATEMENT << nl;
     os.writeKeyword("lengthZ") << lengthZ_ << token::END_STATEMENT << nl;
-    //os.writeKeyword("angleX") << angleX_ << token::END_STATEMENT << nl;
-    //os.writeKeyword("angleY") << angleY_ << token::END_STATEMENT << nl;
-    //os.writeKeyword("angleZ") << angleZ_ << token::END_STATEMENT << nl;
 
     if( subDict )
     {
@@ -181,7 +162,7 @@ void boxRefinement::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry centre is not sopecified!" << exit(FatalError);
+        ) << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
@@ -195,10 +176,10 @@ void boxRefinement::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthX is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthX is not specified!" << exit(FatalError);
         lengthX_ = -1.0;
     }
-    
+
     // specify lengthY
     if( dict.found("lengthY") )
     {
@@ -209,10 +190,10 @@ void boxRefinement::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthY is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthY is not specified!" << exit(FatalError);
         lengthY_ = -1.0;
     }
-    
+
     // specify lengthZ
     if( dict.found("lengthZ") )
     {
@@ -223,40 +204,9 @@ void boxRefinement::operator=(const dictionary& d)
         FatalErrorIn
         (
             "void boxRefinement::operator=(const dictionary& d)"
-        ) << "Entry lengthZ is not sopecified!" << exit(FatalError);
+        ) << "Entry lengthZ is not specified!" << exit(FatalError);
         lengthZ_ = -1.0;
     }
-    
-    // specify angleX
-/*    if( dict.found("angleX") )
-    {
-        angleX_ = readScalar(dict.lookup("angleX"));
-    }
-    else
-    {
-        angleX_ = -1.0;
-    }
-    
-    // specify angleY
-    if( dict.found("angleY") )
-    {
-        angleY_ = readScalar(dict.lookup("angleY"));
-    }
-    else
-    {
-        angleY_ = -1.0;
-    }
-    
-    // specify angleX
-    if( dict.found("angleZ") )
-    {
-        angleZ_ = readScalar(dict.lookup("angleZ"));
-    }
-    else
-    {
-        angleZ_ = -1.0;
-    }
-*/
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -268,9 +218,9 @@ Ostream& boxRefinement::operator<<(Ostream& os) const
     write(os);
     return os;
 }
-        
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-        
+
 } // End namespace Foam
 
 // ************************************************************************* //

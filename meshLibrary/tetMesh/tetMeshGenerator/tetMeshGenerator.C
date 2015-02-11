@@ -45,6 +45,8 @@ Description
 #include "triSurfacePatchManipulator.H"
 #include "refineBoundaryLayers.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 //#define DEBUG
 
@@ -186,6 +188,17 @@ void tetMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeLowQualityFaces();
     optimizer.optimizeMeshFV();
 
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
+
     # ifdef DEBUG
     mesh_.write();
     //::exit(0);
@@ -268,6 +281,7 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -315,12 +329,20 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
 
-    meshOctreeCreator* octreeCreatorPtr =
-        new meshOctreeCreator(*octreePtr_, meshDict_);
-    octreeCreatorPtr->createOctreeBoxes();
-    deleteDemandDrivenData(octreeCreatorPtr);
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
+
+    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
 }
@@ -331,6 +353,7 @@ tetMeshGenerator::~tetMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(octreePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

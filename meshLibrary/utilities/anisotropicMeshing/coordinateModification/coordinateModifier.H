@@ -22,21 +22,24 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    cartesian2DMeshGenerator
+    coordinateModifier
 
 Description
-    Creates a 2D cartesian mesh from the quadtree
+    Base class for modification of point coordinates
+    in surface and volume meshes.
 
 SourceFiles
-    cartesian2DMeshGenerator.C
+    coordinateModifier.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef cartesian2DMeshGenerator_H
-#define cartesian2DMeshGenerator_H
+#ifndef coordinateModifier_H
+#define coordinateModifier_H
 
-#include "polyMeshGen.H"
-#include "IOdictionary.H"
+#include "word.H"
+#include "point.H"
+#include "coordinateModificationList.H"
+#include "Time.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,88 +47,49 @@ namespace Foam
 {
 
 // Forward declarations
-class triSurf;
-class meshOctree;
-class Time;
+class boundBox;
 
 /*---------------------------------------------------------------------------*\
-                    Class cartesian2DMeshGenerator Declaration
+                   Class coordinateModifier Declaration
 \*---------------------------------------------------------------------------*/
 
-class cartesian2DMeshGenerator
+class coordinateModifier
 {
     // Private data
-        //- reference to Time
-        const Time& db_;
 
-        //- pointer to the surface
-        const triSurf* surfacePtr_;
+        //- Reference to dictionary
+        const dictionary& modificationDict_;
 
-        //- pointer to the modified surface mesh
-        const triSurf* modSurfacePtr_;
+        //- list of coordinate modification objects
+        coordinateModificationList modifiers_;
 
-        //- IOdictionary containing information about cell sizes, etc..
-        IOdictionary meshDict_;
-
-        //- pointer to the octree
-        meshOctree* octreePtr_;
-
-        //- mesh
-        polyMeshGen mesh_;
+        //- list of backward coordinate modifiers
+        coordinateModificationList backwardModifiers_;
 
     // Private member functions
-        //- create cartesian mesh
-        void createCartesianMesh();
-
-        //- prepare mesh surface
-        void surfacePreparation();
-
-        //- map mesh to the surface and untangle surface
-        void mapMeshToSurface();
-
-        //- capture edges and corners
-        void mapEdgesAndCorners();
-
-        //- optimise surface mesh
-        void optimiseMeshSurface();
-
-        //- add boundary layers
-        void generateBoundaryLayers();
-
-        //- refine boundary layers
-        void refBoundaryLayers();
-
-        //- replace boundaries
-        void replaceBoundaries();
-
-        //- renumber the mesh
-        void renumberMesh();
-
-        //- generate mesh
-        void generateMesh();
-
-        //- Disallow default bitwise copy construct
-        cartesian2DMeshGenerator(const cartesian2DMeshGenerator&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const cartesian2DMeshGenerator&);
+        //- check if the comibination of modifiers has a valid inverse
+        void checkForValidInverse() const;
 
 public:
 
     // Constructors
 
-        //- Construct from time
-        cartesian2DMeshGenerator(const Time&);
+        //- Construct from dictionary
+        coordinateModifier(const dictionary&);
 
     // Destructor
 
-        ~cartesian2DMeshGenerator();
+        ~coordinateModifier();
 
 
     // Member Functions
 
-        //- write the mesh
-        void writeMesh() const;
+        //- calculate the modified coordinate of the point
+        point modifiedPoint(const point&) const;
+
+        //- calculate the displacement vector for the backward modification
+        point backwardModifiedPoint(const point&) const;
+
 };
 
 
