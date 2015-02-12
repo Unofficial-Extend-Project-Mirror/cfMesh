@@ -43,6 +43,10 @@ Description
 
 //#define DEBUGLayer
 
+# ifdef DEBUGLayer
+#include "OFstream.H"
+# endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -64,6 +68,39 @@ bool refineBoundaryLayers::analyseLayers()
 
     //- get the hair edges
     splitEdges_ = dbl.hairEdges();
+
+    # ifdef DEBUGLayer
+    OFstream file("hairEdges.vtk");
+
+    //- write the header
+    file << "# vtk DataFile Version 3.0\n";
+    file << "vtk output\n";
+    file << "ASCII\n";
+    file << "DATASET POLYDATA\n";
+
+    //- write points
+    file << "POINTS " << 2*splitEdges_.size() << " float\n";
+    forAll(splitEdges_, seI)
+    {
+        const point& p = mse.mesh().points()[splitEdges_[seI].start()];
+
+        file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
+
+        const point op = mse.mesh().points()[splitEdges_[seI].end()];
+
+        file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
+    }
+
+    //- write lines
+    file << "\nLINES " << splitEdges_.size()
+         << " " << 3*splitEdges_.size() << nl;
+    forAll(splitEdges_, eI)
+    {
+        file << 2 << " " << 2*eI << " " << (2*eI+1) << nl;
+    }
+
+    file << "\n";
+    # endif
 
     //- create point to split edges addressing
     splitEdgesAtPoint_.reverseAddressing(splitEdges_);
@@ -98,32 +135,29 @@ bool refineBoundaryLayers::analyseLayers()
         patchNameToIndex[boundaries[patchI].patchName()] = patchI;
 
     //- check layer labels over a patch
+    layerAtPatch_.setSize(boundaries.size());
+    forAll(layerAtPatch_, i)
+        layerAtPatch_[i].clear();
     List<DynList<label> > groupsAtPatch(boundaries.size());
     forAll(faceInLayer, bfI)
-    {
-        if( faceInLayer[bfI] < 0 )
-            continue;
-
         groupsAtPatch[facePatch[bfI]].appendIfNotIn(faceInLayer[bfI]);
-    }
 
     //- set the information which patches have an extruded layer
-    labelList groupIDs(nGroups, -1);
-
-    layerAtPatch_.setSize(boundaries.size());
-    layerAtPatch_ = -1;
-
-    label nValidLayers(0);
     forAll(groupsAtPatch, patchI)
     {
-        if( groupsAtPatch[patchI].size() == 1 )
+        const DynList<label>& layers = groupsAtPatch[patchI];
+
+        forAll(layers, i)
         {
-            const label groupI = groupsAtPatch[patchI][0];
-
-            if( groupIDs[groupI] == -1 )
-                groupIDs[groupI] = nValidLayers++;
-
-            layerAtPatch_[patchI] = groupIDs[groupI];
+            if( layers[i] < 0 )
+            {
+                layerAtPatch_[patchI].clear();
+                break;
+            }
+            else
+            {
+                layerAtPatch_[patchI].append(layers[i]);
+            }
         }
     }
 
@@ -132,38 +166,20 @@ bool refineBoundaryLayers::analyseLayers()
     # endif
 
     //- set the information which patches are a single boundary layer face
-    patchesInLayer_.setSize(nValidLayers);
+    patchesInLayer_.setSize(nGroups);
     forAll(layerAtPatch_, patchI)
     {
-        if( layerAtPatch_[patchI] < 0 )
-            continue;
+        const DynList<label>& layers = layerAtPatch_[patchI];
 
-        patchesInLayer_[layerAtPatch_[patchI]].append
-        (
-            boundaries[patchI].patchName()
-        );
+        forAll(layers, i)
+            patchesInLayer_[layers[i]].append
+            (
+                boundaries[patchI].patchName()
+            );
     }
 
     # ifdef DEBUGLayer
     Info << "Patches in layer " << patchesInLayer_ << endl;
-
-    //- write layers to a subset
-    std::map<label, label> layerId;
-    for(label i=0;i<nValidLayers;++i)
-        layerId[i] = mesh_.addFaceSubset("layerFaces_"+help::scalarToText(i));
-
-    forAll(layerAtPatch_, i)
-    {
-        if( layerAtPatch_[i] < 0 )
-            continue;
-
-        const label start = boundaries[i].patchStart();
-        const label end = start + boundaries[i].patchSize();
-
-        for(label faceI=start;faceI<end;++faceI)
-            mesh_.addFaceToSubset(layerId[layerAtPatch_[i]], faceI);
-    }
-    mesh_.write();
     # endif
 
     //- set the number of boundary layers for each patch
@@ -254,7 +270,7 @@ bool refineBoundaryLayers::analyseLayers()
             if( allZMin[patchI] ^ allZMax[patchI] )
             {
                 nLayersAtPatch[patchI] = -1;
-                layerAtPatch_[patchI] = -1;
+                layerAtPatch_[patchI].clear();
             }
         }
     }
