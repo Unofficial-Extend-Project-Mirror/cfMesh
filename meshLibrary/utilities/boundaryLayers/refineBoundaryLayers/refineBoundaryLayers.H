@@ -100,7 +100,7 @@ class refineBoundaryLayers
 
         //- information about existing boundary layers at patches
         //- only available layers
-        labelList layerAtPatch_;
+        List<DynList<label> > layerAtPatch_;
 
         //- which patches are part of a single layer
         List<DynList<word> > patchesInLayer_;

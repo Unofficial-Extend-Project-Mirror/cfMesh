@@ -921,20 +921,24 @@ void refineBoundaryLayers::generateNewFaces()
         {
             const label beI = bfEdges(bfI, eI);
 
-            //- get the neighbour face over the edge
-            label neiFace = beFaces(beI, 0);
-
             if( beFaces.sizeOfRow(beI) != 2 )
                 continue;
+
+            //- get the neighbour face over the edge
+            label neiFace = beFaces(beI, 0);
 
             if( neiFace == bfI )
                 neiFace = beFaces(beI, 1);
 
             //- faces cannot be in the same layer
-            if(
-                layerAtPatch_[facePatches[neiFace]] ==
-                layerAtPatch_[facePatches[bfI]]
-            )
+            const DynList<label>& neiLayers =
+                layerAtPatch_[facePatches[neiFace]];
+            const DynList<label>& currLayers = layerAtPatch_[facePatches[bfI]];
+            bool foundSame(false);
+            forAll(currLayers, i)
+                if( neiLayers.contains(currLayers[i]) )
+                    foundSame = true;
+            if( foundSame )
                 continue;
 
             //- set the refinement direction for this face
