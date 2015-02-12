@@ -354,6 +354,26 @@ void detectBoundaryLayers::analyseLayers()
             bndLayerOps::meshBndLayerSelectorOperator(mse)
         );
 
+    # ifdef DEBUGLayer
+    labelList layerSubsetId(nFirstLayers_);
+    polyMeshGen& pmg = const_cast<polyMeshGen&>(mesh);
+    forAll(layerSubsetId, i)
+        layerSubsetId[i] = pmg.addCellSubset("bndLayer"+help::scalarToText(i));
+
+
+    forAll(layerAtBndFace_, bfI)
+    {
+        if( layerAtBndFace_[bfI] < 0 )
+            continue;
+
+        pmg.addCellToSubset
+        (
+            layerSubsetId[layerAtBndFace_[bfI]],
+            mse.faceOwners()[bfI]
+        );
+    }
+    # endif
+
     if( is2DMesh_ )
     {
         polyMeshGen2DEngine mesh2DEngine(mse.mesh());
@@ -396,6 +416,8 @@ void detectBoundaryLayers::analyseLayers()
 
     //- all faces of a patch must be in the same layer
     layerAtPatch_.setSize(boundaries.size());
+    forAll(layerAtPatch_, i)
+        layerAtPatch_[i].clear();
 
     for
     (
@@ -406,21 +428,33 @@ void detectBoundaryLayers::analyseLayers()
     {
         const DynList<label>& layersAtPatch = it->second;
 
-        if( (layersAtPatch.size() != 1) || (layersAtPatch[0] < 0) )
+        forAll(layersAtPatch, i)
         {
-            layerAtPatch_[it->first] = -1;
-            continue;
+            if( layersAtPatch[i] < 0 )
+            {
+                layerAtPatch_[it->first].clear();
+                break;
+            }
+            else
+            {
+                layerAtPatch_[it->first].append(layersAtPatch[i]);
+            }
         }
-
-        layerAtPatch_[it->first] = layersAtPatch[0];
     }
 
     //- set the layer ID to -1 for all faces where the patch is set to -1
     forAll(facePatch, bfI)
     {
-        if( layerAtPatch_[facePatch[bfI]] < 0 )
+        if( layerAtPatch_[facePatch[bfI]].size() == 0 )
             layerAtBndFace_[bfI] = -1;
     }
+
+    # ifdef DEBUGLayer
+    Info << "Layer at patch " << layerAtPatch_ << endl;
+    forAll(layerAtBndFace_, bfI)
+        if( layerAtBndFace_[bfI] < 0 )
+            Info << "0.2 No layer at boundary face " << bfI << endl;
+    # endif
 }
 
 bool detectBoundaryLayers::findHairsForFace
@@ -473,6 +507,8 @@ bool detectBoundaryLayers::findHairsForFace
         }
     }
 
+    //- check does the base face exist and is the number of faces
+    //- in the cell corresponding to a prism cell
     if( (baseFace < 0) || ((c.size() - faces[c[baseFace]].size()) != 2) )
         return false;
 
@@ -480,10 +516,12 @@ bool detectBoundaryLayers::findHairsForFace
     bool isPrism(true);
 
     const face& bf = faces[c[baseFace]];
+    hairEdges.setSize(bf.size());
+
     forAll(bf, pI)
     {
         const label nextEdge = faceEdges[baseFace][pI];
-        const label prevEdge = faceEdges[baseFace][(pI+bf.size()-1)%bf.size()];
+        const label prevEdge = faceEdges[baseFace][bf.rcIndex(pI)];
 
         if( edgeFaces[nextEdge].size() != 2 || edgeFaces[prevEdge].size() != 2 )
         {
@@ -518,11 +556,11 @@ bool detectBoundaryLayers::findHairsForFace
         //- there exists a common edge which shall be used as a hair
         if( edges[commonEdge].start() == bf[pI] )
         {
-            hairEdges.append(edges[commonEdge]);
+            hairEdges[pI] = edges[commonEdge];
         }
         else
         {
-            hairEdges.append(edges[commonEdge].reverseEdge());
+            hairEdges[pI] = edges[commonEdge].reverseEdge();
         }
     }
 
@@ -560,33 +598,19 @@ void detectBoundaryLayers::generateHairEdges()
                 continue;
 
             const face& bf = bFaces[bfI];
+
             forAll(bf, pI)
             {
-                //- check if every the hair shall be store or not
-                //- only a hair edge from a face with the smallest label
-                //- out of all faces at a points is stored
-                const label bpI = bp[bf[pI]];
+                //- store hair edges in a list
+                const edge& he = hairEdges[pI];
 
-                bool store(true);
-                forAllRow(pFaces, bpI, pfI)
-                {
-                    const face& obf = bFaces[pFaces(bpI, pfI)];
+                if( he.start() != bf[pI] )
+                    FatalErrorIn
+                    (
+                        "void detectBoundaryLayers::generateHairEdges()"
+                    ) << "Wrong starting point" << abort(FatalError);
 
-                    if(
-                        (obf.which(hairEdges[pI].end()) < 0) &&
-                        (pFaces(bpI, pfI) < bfI)
-                    )
-                    {
-                        store = false;
-                        break;
-                    }
-                }
-
-                if( store )
-                {
-                    //- hair edge shall be stored
-                    localEdges.append(hairEdges[pI]);
-                }
+                localEdges.append(he);
             }
         }
 
@@ -609,15 +633,58 @@ void detectBoundaryLayers::generateHairEdges()
         # endif
     }
 
+    //- filter out duplicate edges
+    VRWGraph pHairEdges;
+    pHairEdges.reverseAddressing(hairEdges_);
+
+    boolList duplicateEdge(hairEdges_.size(), false);
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(pHairEdges, pointI)
+    {
+        forAllRow(pHairEdges, pointI, pheI)
+        {
+            const label heI = pHairEdges(pointI, pheI);
+            const edge& he = hairEdges_[heI];
+
+            for(label pheJ=pheI+1;pheJ<pHairEdges.sizeOfRow(pointI);++pheJ)
+            {
+                const label heJ = pHairEdges(pointI, pheJ);
+                const edge& nhe = hairEdges_[heJ];
+
+                if( he == nhe )
+                    duplicateEdge[heJ] = true;
+            }
+        }
+    }
+
+    label counter(0);
+    forAll(hairEdges_, heI)
+    {
+        if( !duplicateEdge[heI] )
+        {
+            if( heI > counter )
+            {
+                hairEdges_[counter++] = hairEdges_[heI];
+            }
+            else
+            {
+                ++counter;
+            }
+        }
+    }
+
+    hairEdges_.setSize(counter);
+
     //- create point to split edges addressing
     hairEdgesAtBoundaryPoint_.setSize(pFaces.size());
 
     forAll(hairEdges_, heI)
     {
-        const edge& e = hairEdges_[heI];
-        hairEdgesAtBoundaryPoint_.append(bp[e.start()], heI);
+        const edge& he = hairEdges_[heI];
+        hairEdgesAtBoundaryPoint_.append(bp[he.start()], heI);
     }
-
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
