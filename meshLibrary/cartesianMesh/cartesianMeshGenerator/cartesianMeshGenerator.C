@@ -268,25 +268,63 @@ void cartesianMeshGenerator::generateMesh()
 {
     try
     {
-        createCartesianMesh();
+        controller_.setCurrentStep("templateGeneration");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            createCartesianMesh();
 
-        surfacePreparation();
+            controller_.stopAfterCurrentStep();
+        }
 
-        mapMeshToSurface();
+        controller_.setCurrentStep("surfaceTopology");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            surfacePreparation();
+
+            controller_.stopAfterCurrentStep();
+        }
+
+        controller_.setCurrentStep("surfaceProjection");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            mapMeshToSurface();
+
+            controller_.stopAfterCurrentStep();
+        }
 
         mapEdgesAndCorners();
 
         optimiseMeshSurface();
 
-        generateBoundaryLayers();
+        controller_.setCurrentStep("boundaryLayerGeneration");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            generateBoundaryLayers();
 
-        optimiseFinalMesh();
+            controller_.stopAfterCurrentStep();
+        }
 
-        refBoundaryLayers();
+        controller_.setCurrentStep("meshOptimisation");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            optimiseFinalMesh();
+
+            controller_.stopAfterCurrentStep();
+        }
+
+        controller_.setCurrentStep("boundaryLayerRefinement");
+        if( !controller_.restartAfterCurrentStep() )
+        {
+            refBoundaryLayers();
+
+            controller_.stopAfterCurrentStep();
+        }
 
         renumberMesh();
 
         replaceBoundaries();
+
+        controller_.workflowCompleted();
     }
     catch(...)
     {
@@ -317,7 +355,8 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         )
     ),
     octreePtr_(NULL),
-    mesh_(time)
+    mesh_(time),
+    controller_(mesh_)
 {
     if( true )
     {

@@ -40,6 +40,7 @@ SourceFiles
 #include "objectRegistry.H"
 #include "Time.H"
 #include "IOdictionary.H"
+#include "DynList.H"
 
 #include <map>
 
@@ -55,6 +56,7 @@ class polyMeshGen;
 \*---------------------------------------------------------------------------*/
 
 class workflowControls
+: public objectRegistry
 {
     // Private data
         //- reference to the mesh
@@ -76,8 +78,17 @@ class workflowControls
         //- sets the current step to completed
         void setStepCompleted() const;
 
+        //- is the current step already completed
+        bool isStepCompleted() const;
+
         //- shall the procedure stop after the current step
         bool exitAfterCurrentStep() const;
+
+        //- return the latest completed step
+        word lastCompletedStep() const;
+
+        //- return the names of completed steps
+        DynList<word> completedSteps() const;
 
     // Static private member functions
         //- populate workflowSteps with values

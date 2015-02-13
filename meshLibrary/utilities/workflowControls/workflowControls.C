@@ -46,12 +46,39 @@ bool workflowControls::restartPossibleAfterCurrentStep() const
 void workflowControls::setStepCompleted() const
 {
     mesh_.metaData().add("lastStep", currentStep_);
+
+    DynList<word> completedSteps;
+    if( mesh_.metaData().found("completedSteps") )
+    {
+        completedSteps = wordList(mesh_.metaData().lookup("completedSteps"));
+
+        completedSteps.append(currentStep_);
+
+        mesh_.metaData().add("completedSteps", completedSteps);
+    }
+}
+
+bool workflowControls::isStepCompleted() const
+{
+    const word latestStep = lastCompletedStep();
+
+    if( latestStep.empty() )
+        return false;
+
+    const label currVal = workflowSteps_.find(currentStep_)->second;
+    const label latestVal = workflowSteps_.find(latestStep)->second;
+
+    if( latestVal == currVal )
+        return true;
+
+    return false;
 }
 
 bool workflowControls::exitAfterCurrentStep() const
 {
-    const IOdictionary& meshDict =
-        mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
+    Info << "Fetching meshDict" << endl;
+    const dictionary& meshDict =
+        mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
     const dictionary& workflowControls = meshDict.subDict("workflowControls");
 
@@ -66,6 +93,28 @@ bool workflowControls::exitAfterCurrentStep() const
     return false;
 }
 
+word workflowControls::lastCompletedStep() const
+{
+    if( mesh_.metaData().found("lastStep") )
+    {
+        const word latestStep(mesh_.metaData().lookup("lastStep"));
+
+        return latestStep;
+    }
+
+    return word();
+}
+
+DynList<word> workflowControls::completedSteps() const
+{
+    DynList<word> completedSteps;
+
+    if( mesh_.metaData().found("completedSteps") )
+        completedSteps = wordList(mesh_.metaData().lookup("completedSteps"));
+
+    return completedSteps;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 std::map<word, label> workflowControls::populateWorkflowSteps()
@@ -76,8 +125,9 @@ std::map<word, label> workflowControls::populateWorkflowSteps()
     workflowSteps.insert(std::make_pair(word("surfaceProjection"), 4));
     workflowSteps.insert(std::make_pair(word("patchAssignment"), 8));
     workflowSteps.insert(std::make_pair(word("edgeExtraction"), 16));
-    workflowSteps.insert(std::make_pair(word("boundaryLayerGeneration"), 32));
-    workflowSteps.insert(std::make_pair(word("boundaryLayerRefinement"), 64));
+    workflowSteps.insert(std::make_pair(word("meshOptimisation"), 32));
+    workflowSteps.insert(std::make_pair(word("boundaryLayerGeneration"), 64));
+    workflowSteps.insert(std::make_pair(word("boundaryLayerRefinement"), 128));
 
     return workflowSteps;
 }
@@ -86,6 +136,7 @@ std::map<word, label> workflowControls::populateWorkflowSteps()
 
 workflowControls::workflowControls(polyMeshGen& mesh)
 :
+    objectRegistry(mesh.returnTime()),
     mesh_(mesh),
     status_(0),
     currentStep_()
@@ -147,12 +198,36 @@ bool workflowControls::stopAfterCurrentStep() const
 
 bool workflowControls::restartAfterCurrentStep() const
 {
+    DynList<word> completedStep = completedSteps();
+
+    if
+    (
+        completedStep.contains(currentStep_) &&
+        (currentStep_ == lastCompletedStep())
+    )
+    {
+        try
+        {
+            mesh_.read();
+        }
+        catch(...)
+        {
+            FatalErrorIn
+            (
+                "bool workflowControls::restartAfterCurrentStep() const"
+            ) << "Mesh cannt be loaded. Exitting..." << exit(FatalError);
+        }
+
+        return true;
+    }
+
     return false;
 }
 
 void workflowControls::workflowCompleted()
 {
     mesh_.metaData().remove("lastStep");
+    mesh_.metaData().remove("completedSteps");
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

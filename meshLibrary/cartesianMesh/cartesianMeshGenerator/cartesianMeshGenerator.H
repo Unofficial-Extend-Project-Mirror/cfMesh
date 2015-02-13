@@ -37,6 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
+#include "workflowControls.H"
 //#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -73,6 +74,9 @@ class cartesianMeshGenerator
 
         //- mesh
         polyMeshGen mesh_;
+
+        //- workflow controller
+        workflowControls controller_;
 
     // Private member functions
         //- create cartesian mesh
