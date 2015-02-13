@@ -45,15 +45,27 @@ bool workflowControls::restartPossibleAfterCurrentStep() const
 
 void workflowControls::setStepCompleted() const
 {
-    mesh_.metaData().add("lastStep", currentStep_);
+    if( mesh_.metaData().found("lastStep") )
+    {
+        mesh_.metaData().set("lastStep", currentStep_);
+    }
+    else
+    {
+        mesh_.metaData().add("lastStep", currentStep_);
+    }
 
     DynList<word> completedSteps;
     if( mesh_.metaData().found("completedSteps") )
-    {
         completedSteps = wordList(mesh_.metaData().lookup("completedSteps"));
 
-        completedSteps.append(currentStep_);
+    completedSteps.append(currentStep_);
 
+    if( mesh_.metaData().found("completedSteps") )
+    {
+        mesh_.metaData().set("completedSteps", completedSteps);
+    }
+    else
+    {
         mesh_.metaData().add("completedSteps", completedSteps);
     }
 }
@@ -76,18 +88,25 @@ bool workflowControls::isStepCompleted() const
 
 bool workflowControls::exitAfterCurrentStep() const
 {
-    Info << "Fetching meshDict" << endl;
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
-    const dictionary& workflowControls = meshDict.subDict("workflowControls");
-
-    if( workflowControls.found("stopAfter") )
+    if
+    (
+        meshDict.found("workflowControls") &&
+        meshDict.isDict("workflowControls")
+    )
     {
-        const word exitStep(workflowControls.lookup("stopAfter"));
+        const dictionary& workflowControls =
+            meshDict.subDict("workflowControls");
 
-        if( exitStep == currentStep_ )
-            return true;
+        if( workflowControls.found("stopAfter") )
+        {
+            const word exitStep(workflowControls.lookup("stopAfter"));
+
+            if( exitStep == currentStep_ )
+                return true;
+        }
     }
 
     return false;
@@ -136,9 +155,7 @@ std::map<word, label> workflowControls::populateWorkflowSteps()
 
 workflowControls::workflowControls(polyMeshGen& mesh)
 :
-    objectRegistry(mesh.returnTime()),
     mesh_(mesh),
-    status_(0),
     currentStep_()
 {}
 
@@ -162,7 +179,6 @@ void workflowControls::setCurrentStep(const word& stepName)
     }
 
     currentStep_ = stepName;
-    status_ |= it->second;
 }
 
 bool workflowControls::stopAfterCurrentStep() const
@@ -175,6 +191,7 @@ bool workflowControls::stopAfterCurrentStep() const
 
         try
         {
+            Info << "Writing mesh " << mesh_.cells().size() << endl;
             mesh_.write();
         }
         catch(...)
@@ -182,13 +199,16 @@ bool workflowControls::stopAfterCurrentStep() const
             writeSuccess = false;
         }
 
+        Info << "Write success " << writeSuccess << endl;
         returnReduce(writeSuccess, minOp<bool>());
+
+        Info << "Write success " << writeSuccess << endl;
 
         if( !writeSuccess )
             FatalErrorIn
             (
                 "bool workflowControls::stopAfterCurrentStep() const"
-            ) << "Mes was not written on disk" << exit(FatalError);
+            ) << "Mesh was not written on disk" << exit(FatalError);
 
         return true;
     }
@@ -215,7 +235,7 @@ bool workflowControls::restartAfterCurrentStep() const
             FatalErrorIn
             (
                 "bool workflowControls::restartAfterCurrentStep() const"
-            ) << "Mesh cannt be loaded. Exitting..." << exit(FatalError);
+            ) << "Mesh cannot be loaded. Exitting..." << exit(FatalError);
         }
 
         return true;
@@ -226,8 +246,11 @@ bool workflowControls::restartAfterCurrentStep() const
 
 void workflowControls::workflowCompleted()
 {
-    mesh_.metaData().remove("lastStep");
-    mesh_.metaData().remove("completedSteps");
+    if( mesh_.metaData().found("lastStep") )
+        mesh_.metaData().remove("lastStep");
+
+    if( mesh_.metaData().found("completedSteps") )
+        mesh_.metaData().remove("completedSteps");
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

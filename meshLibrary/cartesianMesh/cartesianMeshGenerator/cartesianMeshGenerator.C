@@ -273,6 +273,8 @@ void cartesianMeshGenerator::generateMesh()
         {
             createCartesianMesh();
 
+            mesh_.write();
+            Info << "Sad ce sranje" << endl;
             controller_.stopAfterCurrentStep();
         }
 

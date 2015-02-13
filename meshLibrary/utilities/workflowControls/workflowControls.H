@@ -56,14 +56,10 @@ class polyMeshGen;
 \*---------------------------------------------------------------------------*/
 
 class workflowControls
-: public objectRegistry
 {
     // Private data
         //- reference to the mesh
         polyMeshGen& mesh_;
-
-        //- status of the workflow (sets bits to completed steps)
-        label status_;
 
         //- current step in the workflow
         word currentStep_;
