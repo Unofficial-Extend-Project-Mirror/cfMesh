@@ -33,6 +33,7 @@ Description
 #include "tetMeshExtractorOctree.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
+#include "edgeExtractor.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
 #include "surfaceMorpherCells.H"
 #include "meshOptimizer.H"
@@ -63,11 +64,6 @@ void tetMeshGenerator::createTetMesh()
     tetMeshExtractorOctree tme(*octreePtr_, meshDict_, mesh_);
 
     tme.createMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::surfacePreparation()
@@ -82,11 +78,6 @@ void tetMeshGenerator::surfacePreparation()
         deleteDemandDrivenData(cmPtr);
     }
     while( topologicalCleaner(mesh_).cleanTopology() );
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::mapMeshToSurface()
@@ -97,44 +88,34 @@ void tetMeshGenerator::mapMeshToSurface()
     //- map mesh surface on the geometry surface
     meshSurfaceMapper(*msePtr, *octreePtr_).mapVerticesOntoSurface();
 
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
-
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
-
     deleteDemandDrivenData(msePtr);
+}
+
+void tetMeshGenerator::extractPatches()
+{
+    edgeExtractor extractor(mesh_, *octreePtr_);
+
+    Info << "Extracting edges" << endl;
+    extractor.extractEdges();
+
+    extractor.updateMeshPatches();
 }
 
 void tetMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
-void tetMeshGenerator::generateBoudaryLayers()
+void tetMeshGenerator::generateBoundaryLayers()
 {
     if( meshDict_.found("boundaryLayers") )
     {
@@ -159,11 +140,6 @@ void tetMeshGenerator::generateBoudaryLayers()
                 bl.addLayerForPatch(createLayers[patchI]);
         }
     }
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::optimiseFinalMesh()
@@ -199,11 +175,6 @@ void tetMeshGenerator::optimiseFinalMesh()
         //- delete modified surface mesh
         deleteDemandDrivenData(modSurfacePtr_);
     }
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::refBoundaryLayers()
@@ -240,46 +211,61 @@ void tetMeshGenerator::refBoundaryLayers()
 void tetMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void tetMeshGenerator::generateMesh()
 {
     try
     {
-        createTetMesh();
+        if( controller_.runCurrentStep("templateGeneration") )
+        {
+            createTetMesh();
+        }
 
-        surfacePreparation();
+        if( controller_.runCurrentStep("surfaceTopology") )
+        {
+            surfacePreparation();
+        }
 
-        mapMeshToSurface();
+        if( controller_.runCurrentStep("surfaceProjection") )
+        {
+            mapMeshToSurface();
+        }
 
-        mapEdgesAndCorners();
+        if( controller_.runCurrentStep("patchAssignment") )
+        {
+            extractPatches();
+        }
 
-        optimiseMeshSurface();
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
+            mapEdgesAndCorners();
 
-        generateBoudaryLayers();
+            optimiseMeshSurface();
 
-        optimiseFinalMesh();
+            generateBoundaryLayers();
+        }
 
-        refBoundaryLayers();
+        if( controller_.runCurrentStep("meshOptimisation") )
+        {
+            optimiseFinalMesh();
+        }
+
+        if( controller_.runCurrentStep("boundaryLayerRefinement") )
+        {
+            refBoundaryLayers();
+        }
 
         renumberMesh();
 
         replaceBoundaries();
+
+        controller_.workflowCompleted();
     }
     catch(...)
     {
@@ -310,7 +296,8 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
         )
     ),
     octreePtr_(NULL),
-    mesh_(time)
+    mesh_(time),
+    controller_(mesh_)
 {
     if( true )
     {
@@ -327,8 +314,8 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
         triSurfaceMetaData sMetaData(*surfacePtr_);
         const dictionary& surfMetaDict = sMetaData.metaData();
 
-        mesh_.metaData().add("surfaceFile", surfaceFile);
-        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
     }
 
     if( surfacePtr_->featureEdges().size() != 0 )
