@@ -64,12 +64,21 @@ class workflowControls
         //- current step in the workflow
         word currentStep_;
 
+        //- step for restarting the workflow
+        word restartAfterStep_;
+
+        //- completed step before restart
+        DynList<word> completedStepsBeforeRestart_;
+
+        //- holds information whether the workflow has been restarted
+        mutable bool isRestarted_;
+
     // static private data
         static const std::map<word, label> workflowSteps_;
 
     // Private member functions
-        //- check if it is possible to restart after the current step
-        bool restartPossibleAfterCurrentStep() const;
+        //- check if restart is requested
+        bool restartRequested() const;
 
         //- sets the current step to completed
         void setStepCompleted() const;
@@ -85,6 +94,15 @@ class workflowControls
 
         //- return the names of completed steps
         DynList<word> completedSteps() const;
+
+        //- remove completedStep from the dictionary
+        void clearCompletedSteps();
+
+        //- shall the workflow stop after the current step
+        bool stopAfterCurrentStep() const;
+
+        //- shall the workflow run after the current step
+        bool runAfterCurrentStep() const;
 
     // Static private member functions
         //- populate workflowSteps with values
@@ -102,14 +120,8 @@ public:
 
     // Public member functions
 
-        //- set current step
-        void setCurrentStep(const word&);
-
-        //- shall the workflow stop after the current step
-        bool stopAfterCurrentStep() const;
-
-        //- shall the workflow restart after the current step
-        bool restartAfterCurrentStep() const;
+        //- shall the process run the current step
+        bool runCurrentStep(const word&);
 
         //- set the workflow completed flag
         void workflowCompleted();

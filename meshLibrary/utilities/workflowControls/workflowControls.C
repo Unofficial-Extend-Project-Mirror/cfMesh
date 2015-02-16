@@ -38,8 +38,29 @@ const std::map<word, label> workflowControls::workflowSteps_ =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool workflowControls::restartPossibleAfterCurrentStep() const
+bool workflowControls::restartRequested() const
 {
+    const dictionary& meshDict =
+        mesh_.returnTime().lookupObject<dictionary>("meshDict");
+
+    if
+    (
+        meshDict.found("workflowControls") &&
+        meshDict.isDict("workflowControls")
+    )
+    {
+        const dictionary& workflowControls =
+            meshDict.subDict("workflowControls");
+
+        if( workflowControls.found("restartFromLatestStep") )
+        {
+            const bool restart =
+                readBool(workflowControls.lookup("restartFromLatestStep"));
+
+            return restart;
+        }
+    }
+
     return false;
 }
 
@@ -134,11 +155,79 @@ DynList<word> workflowControls::completedSteps() const
     return completedSteps;
 }
 
+void workflowControls::clearCompletedSteps()
+{
+    mesh_.metaData().remove("completedSteps");
+    mesh_.metaData().remove("lastStep");
+}
+
+bool workflowControls::stopAfterCurrentStep() const
+{
+    setStepCompleted();
+
+    if( exitAfterCurrentStep() )
+    {
+        bool writeSuccess(true);
+
+        try
+        {
+            Info << "Saving mesh generated after step " << currentStep_ << endl;
+            mesh_.write();
+        }
+        catch(...)
+        {
+            writeSuccess = false;
+        }
+
+        returnReduce(writeSuccess, minOp<bool>());
+
+        if( !writeSuccess )
+            FatalErrorIn
+            (
+                "bool workflowControls::stopAfterCurrentStep() const"
+            ) << "Mesh was not written on disk" << exit(FatalError);
+
+        ::exit(0);
+
+        return true;
+    }
+
+    return false;
+}
+
+bool workflowControls::runAfterCurrentStep() const
+{
+    if( currentStep_ == restartAfterStep_ )
+    {
+        try
+        {
+            Info << "Reading mesh generated after step "
+                 << currentStep_ << endl;
+
+            mesh_.read();
+
+            isRestarted_ = true;
+
+            return true;
+        }
+        catch(...)
+        {
+            FatalErrorIn
+            (
+                "bool workflowControls::restartAfterCurrentStep() const"
+            ) << "Mesh cannot be loaded. Exitting..." << exit(FatalError);
+        }
+    }
+
+    return false;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 std::map<word, label> workflowControls::populateWorkflowSteps()
 {
     std::map<word, label> workflowSteps;
+    workflowSteps.insert(std::make_pair(word("start"), 0));
     workflowSteps.insert(std::make_pair(word("templateGeneration"), 1));
     workflowSteps.insert(std::make_pair(word("surfaceTopology"), 2));
     workflowSteps.insert(std::make_pair(word("surfaceProjection"), 4));
@@ -156,8 +245,22 @@ std::map<word, label> workflowControls::populateWorkflowSteps()
 workflowControls::workflowControls(polyMeshGen& mesh)
 :
     mesh_(mesh),
-    currentStep_()
-{}
+    currentStep_("start"),
+    restartAfterStep_(),
+    completedStepsBeforeRestart_(),
+    isRestarted_(false)
+{
+    if( restartRequested() )
+    {
+        restartAfterStep_ = lastCompletedStep();
+        completedStepsBeforeRestart_ = completedSteps();
+    }
+    else
+    {
+        clearCompletedSteps();
+
+    }
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -166,82 +269,51 @@ workflowControls::~workflowControls()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void workflowControls::setCurrentStep(const word& stepName)
+bool workflowControls::runCurrentStep(const word& stepName)
 {
+    if
+    (
+        completedStepsBeforeRestart_.size() &&
+        completedStepsBeforeRestart_.contains(currentStep_) &&
+        restartRequested() &&
+        !isRestarted_
+    )
+    {
+        Info << "Step " << currentStep_ << " has already been executed" << endl;
+
+        const bool retVal = runAfterCurrentStep();
+
+        //- this step has already been executed
+        setStepCompleted();
+        currentStep_ = stepName;
+
+        return retVal;
+    }
+    else if( stopAfterCurrentStep() )
+    {
+        //- the process shall exit within the stopAfterCurrentStep function
+        return false;
+    }
+
     //- check if the requested step exists in the database of steps
     std::map<word, label>::const_iterator it = workflowSteps_.find(stepName);
     if( it == workflowSteps_.end() )
     {
+        DynList<word> toc;
+        for(it=workflowSteps_.begin();it!=workflowSteps_.end();++it)
+            toc.append(it->first);
+
         FatalErrorIn
         (
             "void workflowControls::setCurrentStep(const word&)"
-        ) << "Step " << stepName << " is not a valid name." << exit(FatalError);
+        ) << "Step " << stepName << " is not a valid name."
+          << " Valid step names are " << toc << exit(FatalError);
     }
 
-    currentStep_ = stepName;
-}
-
-bool workflowControls::stopAfterCurrentStep() const
-{
     setStepCompleted();
+    currentStep_ = stepName;
 
-    if( exitAfterCurrentStep() )
-    {
-        bool writeSuccess(true);
-
-        try
-        {
-            Info << "Writing mesh " << mesh_.cells().size() << endl;
-            mesh_.write();
-        }
-        catch(...)
-        {
-            writeSuccess = false;
-        }
-
-        Info << "Write success " << writeSuccess << endl;
-        returnReduce(writeSuccess, minOp<bool>());
-
-        Info << "Write success " << writeSuccess << endl;
-
-        if( !writeSuccess )
-            FatalErrorIn
-            (
-                "bool workflowControls::stopAfterCurrentStep() const"
-            ) << "Mesh was not written on disk" << exit(FatalError);
-
-        return true;
-    }
-
-    return false;
-}
-
-bool workflowControls::restartAfterCurrentStep() const
-{
-    DynList<word> completedStep = completedSteps();
-
-    if
-    (
-        completedStep.contains(currentStep_) &&
-        (currentStep_ == lastCompletedStep())
-    )
-    {
-        try
-        {
-            mesh_.read();
-        }
-        catch(...)
-        {
-            FatalErrorIn
-            (
-                "bool workflowControls::restartAfterCurrentStep() const"
-            ) << "Mesh cannot be loaded. Exitting..." << exit(FatalError);
-        }
-
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 void workflowControls::workflowCompleted()
