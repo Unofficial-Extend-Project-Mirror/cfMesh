@@ -34,6 +34,7 @@ Description
 #include "cartesianMeshExtractor.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
+#include "edgeExtractor.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
@@ -49,8 +50,6 @@ Description
 #include "triSurfaceMetaData.H"
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
-
-#include "polyMeshGenChecks.H"
 
 //#define DEBUG
 
@@ -73,11 +72,6 @@ void cartesianMeshGenerator::createCartesianMesh()
     }
 
     cme.createMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    ::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::surfacePreparation()
@@ -103,12 +97,6 @@ void cartesianMeshGenerator::surfacePreparation()
     } while( changed );
 
     checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
-
-    # ifdef DEBUG
-    mesh_.write();
-    returnReduce(1, sumOp<label>());
-    ::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::mapMeshToSurface()
@@ -120,50 +108,34 @@ void cartesianMeshGenerator::mapMeshToSurface()
     meshSurfaceMapper mapper(*msePtr, *octreePtr_);
     mapper.preMapVertices();
 
-    # ifdef DEBUG
-    mesh_.write();
-    returnReduce(1, sumOp<label>());
-    //::exit(EXIT_SUCCESS);
-    # endif
-
     //- map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
-    # ifdef DEBUG
-    mesh_.write();
-    ::exit(EXIT_SUCCESS);
-    # endif
-
     deleteDemandDrivenData(msePtr);
+}
+
+void cartesianMeshGenerator::extractPatches()
+{
+    edgeExtractor extractor(mesh_, *octreePtr_);
+
+    Info << "Extracting edges" << endl;
+    extractor.extractEdges();
+
+    extractor.updateMeshPatches();
 }
 
 void cartesianMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    ::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::generateBoundaryLayers()
@@ -171,11 +143,6 @@ void cartesianMeshGenerator::generateBoundaryLayers()
     //- add boundary layers
     boundaryLayers bl(mesh_);
     bl.addLayerForAllPatches();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::refBoundaryLayers()
@@ -237,89 +204,59 @@ void cartesianMeshGenerator::optimiseFinalMesh()
         //- delete modified surface mesh
         deleteDemandDrivenData(modSurfacePtr_);
     }
-
-    # ifdef DEBUG
-    mesh_.write();
-    ::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::generateMesh()
 {
     try
     {
-        controller_.setCurrentStep("templateGeneration");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("templateGeneration") )
         {
             createCartesianMesh();
-
-            mesh_.write();
-            Info << "Sad ce sranje" << endl;
-            controller_.stopAfterCurrentStep();
         }
 
-        controller_.setCurrentStep("surfaceTopology");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("surfaceTopology") )
         {
             surfacePreparation();
-
-            controller_.stopAfterCurrentStep();
         }
 
-        controller_.setCurrentStep("surfaceProjection");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("surfaceProjection") )
         {
             mapMeshToSurface();
-
-            controller_.stopAfterCurrentStep();
         }
 
-        mapEdgesAndCorners();
-
-        optimiseMeshSurface();
-
-        controller_.setCurrentStep("boundaryLayerGeneration");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("patchAssignment") )
         {
-            generateBoundaryLayers();
-
-            controller_.stopAfterCurrentStep();
+            extractPatches();
         }
 
-        controller_.setCurrentStep("meshOptimisation");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
+            mapEdgesAndCorners();
+
+            optimiseMeshSurface();
+
+            generateBoundaryLayers();
+        }
+
+        if( controller_.runCurrentStep("meshOptimisation") )
         {
             optimiseFinalMesh();
-
-            controller_.stopAfterCurrentStep();
         }
 
-        controller_.setCurrentStep("boundaryLayerRefinement");
-        if( !controller_.restartAfterCurrentStep() )
+        if( controller_.runCurrentStep("boundaryLayerRefinement") )
         {
             refBoundaryLayers();
-
-            controller_.stopAfterCurrentStep();
         }
 
         renumberMesh();
@@ -339,7 +276,6 @@ void cartesianMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from objectRegistry
 cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 :
     db_(time),
@@ -377,8 +313,8 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         triSurfaceMetaData sMetaData(*surfacePtr_);
         const dictionary& surfMetaDict = sMetaData.metaData();
 
-        mesh_.metaData().add("surfaceFile", surfaceFile);
-        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
     }
 
     if( surfacePtr_->featureEdges().size() != 0 )

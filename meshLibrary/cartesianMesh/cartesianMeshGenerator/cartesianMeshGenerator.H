@@ -89,6 +89,9 @@ class cartesianMeshGenerator
         void mapMeshToSurface();
 
         //- capture edges and corners
+        void extractPatches();
+
+        //- map points at feature edges and corners
         void mapEdgesAndCorners();
 
         //- optimise surface mesh
