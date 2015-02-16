@@ -335,6 +335,11 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             const dictionary& dict = meshDictPtr_->subDict("localRefinement");
             const wordList entries = dict.toc();
 
+            //- map patch name to its index
+            std::map<word, label> patchToIndex;
+            forAll(surface.patches(), patchI)
+                patchToIndex[surface.patches()[patchI].name()] = patchI;
+
             //- map a facet subset name to its index
             std::map<word, label> setToIndex;
             DynList<label> setIDs;

@@ -31,8 +31,9 @@ Description
 #include "meshSurfacePartitioner.H"
 #include "polyMeshGenAddressing.H"
 #include "polyMeshGenChecks.H"
+#include "labelLongList.H"
 
-// #define DEBUGSearch
+// #define DEBUGSmoothing
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -139,6 +140,7 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 :
     mesh_(mesh),
     vertexLocation_(mesh.points().size(), INSIDE),
+    lockedFaces_(),
     msePtr_(NULL),
     enforceConstraints_(false),
     badPointsSubsetName_()
@@ -184,6 +186,75 @@ void meshOptimizer::enforceConstraints(const word subsetName)
     enforceConstraints_ = true;
 
     badPointsSubsetName_ = subsetName;
+}
+
+void meshOptimizer::lockCellsInSubset(const word& subsetName)
+{
+    //- lock the points in the cell subset with the given name
+    label subsetI = mesh_.cellSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList lc;
+        mesh_.cellsInSubset(subsetI, lc);
+
+        lockCells(lc);
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a cell subset!"
+            << " Cannot lock cells!" << endl;
+    }
+}
+
+void meshOptimizer::lockFacesInSubset(const word& subsetName)
+{
+    //- lock the points in the face subset with the given name
+    label subsetI = mesh_.faceSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList lf;
+        mesh_.facesInSubset(subsetI, lf);
+
+        lockFaces(lf);
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a face subset!"
+            << " Cannot lock faces!" << endl;
+    }
+}
+
+void meshOptimizer::lockPointsInSubset(const word& subsetName)
+{
+    //- lock the points in the point subset with the given name
+    label subsetI = mesh_.pointSubsetIndex(subsetName);
+    if( subsetI >= 0 )
+    {
+        labelLongList lp;
+        mesh_.pointsInSubset(subsetI, lp);
+
+        lockCells(lp);
+    }
+    else
+    {
+        Warning << "Subset " << subsetName << " is not a point subset!"
+            << " Cannot lock points!" << endl;
+    }
+}
+
+void meshOptimizer::removeUserConstraints()
+{
+    lockedFaces_.setSize(0);
+
+    //- unlock points
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(vertexLocation_, i)
+    {
+        if( vertexLocation_[i] & LOCKED )
+            vertexLocation_[i] ^= LOCKED;
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -46,6 +46,19 @@ void renameBoundaryPatches::calculateNewBoundary()
 
     const dictionary& dict = meshDict_.subDict("renameBoundary");
 
+    std::map<word, label> patchToLabel;
+    forAll(mesh_.boundaries(), patchI)
+    {
+        patchToLabel.insert
+        (
+            std::pair<word, label>
+            (
+                mesh_.boundaries()[patchI].patchName(),
+                patchI
+            )
+        );
+    }
+
     labelList patchToNew(mesh_.boundaries().size(), -1);
 
     wordList newPatchNames(patchToNew.size());
@@ -87,7 +100,7 @@ void renameBoundaryPatches::calculateNewBoundary()
         {
             const word patchName = patchesToRename[patchI].keyword();
 
-            labelList matchedPatches = mesh_.findPatches(patchName);
+            const labelList matchedPatches = mesh_.findPatches(patchName);
 
             if(matchedPatches.empty())
             {

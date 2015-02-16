@@ -36,9 +36,8 @@ Description
 #include "HashSet.H"
 #include "tetrahedron.H"
 #include "boundBox.H"
+#include "Pair.H"
 #include "Map.H"
-
-//#define DEBUG_pMesh
 
 namespace Foam
 {
@@ -474,17 +473,13 @@ inline bool nearestEdgePointToTheLine
 
 inline point nearestPointOnTheTriangle
 (
-    const label tI,
-    const triSurf& surface,
+    const triangle<point, point>& tri,
     const point& p
 )
 {
-    const labelledTri& ltri = surface[tI];
-    const pointField& points = surface.points();
-
-    const vector v0 = points[ltri[1]] - points[ltri[0]];
-    const vector v1 = points[ltri[2]] - points[ltri[0]];
-    const vector v2 = p - points[ltri[0]];
+    const vector v0 = tri.b() - tri.a();
+    const vector v1 = tri.c() - tri.a();
+    const vector v2 = p - tri.a();
 
     const scalar dot00 = (v0 & v0);
     const scalar dot01 = (v0 & v1);
@@ -499,15 +494,20 @@ inline point nearestPointOnTheTriangle
     {
         point nearest(p);
         scalar dist(VGREAT);
-        const edgeList edges = ltri.edges();
+
+        FixedList<Pair<point>, 3> edges;
+        edges[0] = Pair<point>(tri.a(), tri.b());
+        edges[1] = Pair<point>(tri.b(), tri.c());
+        edges[2] = Pair<point>(tri.c(), tri.a());
+
         forAll(edges, eI)
         {
-            const edge& e = edges[eI];
+            const Pair<point>& e = edges[eI];
             const point np =
                 nearestPointOnTheEdge
                 (
-                    points[e.start()],
-                    points[e.end()],
+                    e.first(),
+                    e.second(),
                     p
                 );
 
@@ -524,7 +524,7 @@ inline point nearestPointOnTheTriangle
     const scalar u = (dot11 * dot02 - dot01 * dot12) / det;
     const scalar v = (dot00 * dot12 - dot01 * dot02) / det;
 
-    const point pProj = points[ltri[0]] + u * v0 + v * v1;
+    const point pProj = tri.a() + u * v0 + v * v1;
 
     //- Check if point is in triangle
     if( (u >= -SMALL) && (v >= -SMALL) && ((u + v) <= (1.0+SMALL)) )
@@ -535,62 +535,118 @@ inline point nearestPointOnTheTriangle
     {
         if( u < -SMALL )
         {
-            const edge e(ltri[0], ltri[2]);
-            const scalar ed = ((pProj - points[e.start()]) & v1) / magSqr(v1);
+            const scalar ed = ((pProj - tri.a()) & v1) / (magSqr(v1) + VSMALL);
 
             if( ed > 1.0 )
             {
-                return points[e.end()];
+                return tri.c();
             }
             else if( ed < 0.0 )
             {
-                return points[e.start()];
+                return tri.a();
             }
             else
             {
-                return (points[e.start()] + v1 * ed);
+                return (tri.a() + v1 * ed);
             }
         }
         else if( v < -SMALL )
         {
-            const edge e(ltri[0], ltri[1]);
-            const scalar ed = ((pProj - points[e.start()]) & v0) / magSqr(v0);
+            const scalar ed = ((pProj - tri.a()) & v0) / (magSqr(v0) + VSMALL);
 
             if( ed > 1.0 )
             {
-                return points[e.end()];
+                return tri.b();
             }
             else if( ed < 0.0 )
             {
-                return points[e.start()];
+                return tri.a();
             }
             else
             {
-                return (points[e.start()] + v0 * ed);
+                return (tri.a() + v0 * ed);
             }
         }
         else
         {
-            const edge e(ltri[2], ltri[1]);
-            const vector ev = e.vec(points);
-            const scalar ed = ((pProj - points[e.start()]) & ev) / magSqr(ev);
+            const vector ev = tri.b() - tri.c();
+            const scalar ed = ((pProj - tri.c()) & ev) / (magSqr(ev) + VSMALL);
 
             if( ed > 1.0 )
             {
-                return points[e.end()];
+                return tri.b();
             }
             else if( ed < 0.0 )
             {
-                return points[e.start()];
+                return tri.c();
             }
             else
             {
-                return (points[e.start()] + ev * ed);
+                return (tri.c() + ev * ed);
             }
         }
     }
 
     return pProj;
+}
+
+inline point nearestPointOnTheTriangle
+(
+    const label tI,
+    const triSurf& surface,
+    const point& p
+)
+{
+    const labelledTri& ltri = surface[tI];
+    const pointField& points = surface.points();
+
+    const triangle<point, point> tri
+    (
+        points[ltri[0]],
+        points[ltri[1]],
+        points[ltri[2]]
+    );
+
+    return nearestPointOnTheTriangle(tri, p);
+}
+
+inline bool findMinimizerPoint
+(
+    const DynList<point>& origins,
+    const DynList<vector>& normals,
+    point& pMin
+)
+{
+    if( origins.size() != normals.size() )
+        FatalErrorIn
+        (
+            "inline bool findMinimizerPoint"
+            "(const DynList<point>&, const DynList<vector>&, point&)"
+        ) << "Size of normals and origins do not match" << abort(FatalError);
+
+    tensor mat(tensor::zero);
+    vector source(vector::zero);
+
+    forAll(origins, i)
+    {
+        //- use the normalized vector
+        vector n = normals[i];
+        n /= (mag(n) + VSMALL);
+
+        const tensor t = n * n;
+
+        mat += t;
+
+        source += (origins[i] & n) * n;
+    }
+
+    const scalar determinant = Foam::mag(Foam::det(mat));
+    if( determinant < SMALL )
+        return false;
+
+    pMin = (inv(mat, determinant) & source);
+
+    return true;
 }
 
 inline bool triLineIntersection
@@ -718,6 +774,33 @@ inline bool boundBoxLineIntersection
     return false;
 }
 
+inline bool lineFaceIntersection
+(
+    const point& sp,
+    const point& ep,
+    const face& f,
+    const pointField& fp,
+    point& intersection
+)
+{
+    const point c = f.centre(fp);
+
+    forAll(f, pI)
+    {
+        const triangle<point, point> tri
+        (
+            fp[f[pI]],
+            fp[f.nextLabel(pI)],
+            c
+        );
+
+        if( triLineIntersection(tri, sp, ep, intersection) )
+            return true;
+    }
+
+    return false;
+}
+
 inline bool doFaceAndTriangleIntersect
 (
     const triSurf& surface,
@@ -790,13 +873,14 @@ inline bool pointInsideFace
     const point& p,
     const face& f,
     const vector& n,
-    const pointField& fp
+    const pointField& fp,
+    const scalar distTol
 )
 {
     const edgeList fe = f.edges();
     forAll(f, pI)
     {
-        if( mag(p - fp[f[pI]]) < SMALL )
+        if( mag(p - fp[f[pI]]) < distTol )
             return true;
 
         vector pv = p - fp[f[pI]];
@@ -806,7 +890,7 @@ inline bool pointInsideFace
         lv /= mag(lv);
 
         const scalar d = pv & lv;
-        if( d < -SMALL )
+        if( d < -distTol )
         {
             return false;
         }
@@ -819,32 +903,94 @@ inline bool pointInsideFace
 (
     const point& p,
     const face& f,
-    const pointField& fp
+    const pointField& fp,
+    const scalar distTol
 )
 {
-    vector n = f.normal(fp);
-    n /= mag(n);
+    const point c = f.centre(fp);
+    const scalar tolSqr = sqr(distTol);
 
-    const edgeList fe = f.edges();
+    forAll(f, eI)
+    {
+        const edge fe = f.faceEdge(eI);
+
+        triangle<point, point> tri
+        (
+            fp[fe[0]],
+            fp[fe[1]],
+            c
+        );
+
+        const point np = nearestPointOnTheTriangle(tri, p);
+
+        if( magSqr(np - p) <= tolSqr )
+            return true;
+    }
+
+    return false;
+}
+
+inline bool isFaceConvexAndOk
+(
+    const face& f,
+    const pointField& fp,
+    DynList<bool>& OkPoints
+)
+{
+    bool valid(true);
+
+    vector normal = f.normal(fp);
+    const scalar magN = mag(normal);
+
+    //- face has zero area. All points are inverted
+    if( magN < VSMALL )
+    {
+        OkPoints.setSize(f.size());
+        OkPoints = false;
+
+        return false;
+    }
+
+    normal /= (magN + VSMALL);
+
+    //- project points into the plane formed by the face centre
+    //- and the face normal
+    plane pl(f.centre(fp), normal);
+
+    DynList<point> projFace(f.size());
+    forAll(f, pI)
+        projFace[pI] = pl.nearestPoint(fp[f[pI]]);
+
+    //- calculate normalised edge vectors
+    DynList<vector> edgeVecs(f.size());
+    forAll(f, eI)
+    {
+        vector& v = edgeVecs[eI];
+
+        const edge e = f.faceEdge(eI);
+        v = e.vec(fp);
+        v /= (mag(v) + VSMALL);
+    }
+
+    //- check if the face is convex
+    OkPoints.setSize(f.size());
     forAll(f, pI)
     {
-        if( mag(p - fp[f[pI]]) < SMALL )
-        return true;
+        const vector& pv = edgeVecs[f.rcIndex(pI)];
+        const vector& nv = edgeVecs[pI];
 
-        vector pv = p - fp[f[pI]];
-        pv /= mag(pv);
-
-        vector lv = n ^ fe[pI].vec(fp);
-        lv /= mag(lv);
-
-        const scalar d = pv & lv;
-        if( d < -SMALL )
+        if( ((pv ^ nv) & normal) >= -0.05 )
         {
-            return false;
+            OkPoints[pI] = true;
+        }
+        else
+        {
+            OkPoints[pI] = false;
+            valid = false;
         }
     }
 
-    return true;
+    return valid;
 }
 
 inline point nearestPointOnTheEdge
@@ -872,13 +1018,13 @@ inline point nearestPointOnTheEdgeExact
 )
 {
     const vector e = edgePoint1 - edgePoint0;
-    const scalar d = mag(e);
+    const scalar dSq = magSqr(e);
     const vector k = p - edgePoint0;
 
-    if( d < VSMALL )
+    if( dSq < VSMALL )
         return edgePoint0;
 
-    const scalar t = (e & k) / (d * d + VSMALL);
+    const scalar t = (e & k) / (dSq + VSMALL);
     if( t > 1.0 )
     {
         return edgePoint1;

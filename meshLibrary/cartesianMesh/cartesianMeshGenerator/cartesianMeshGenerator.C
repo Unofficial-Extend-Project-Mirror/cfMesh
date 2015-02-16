@@ -34,6 +34,7 @@ Description
 #include "cartesianMeshExtractor.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
+#include "edgeExtractor.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
 #include "meshOptimizer.H"
 #include "meshSurfaceOptimizer.H"
@@ -47,6 +48,8 @@ Description
 #include "checkNonMappableCellConnections.H"
 #include "checkBoundaryFacesSharingTwoEdges.H"
 #include "triSurfaceMetaData.H"
+#include "polyMeshGenGeometryModification.H"
+#include "surfaceMeshGeometryModification.H"
 
 //#define DEBUG
 
@@ -69,11 +72,6 @@ void cartesianMeshGenerator::createCartesianMesh()
     }
 
     cme.createMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::surfacePreparation()
@@ -99,12 +97,6 @@ void cartesianMeshGenerator::surfacePreparation()
     } while( changed );
 
     checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
-
-    # ifdef DEBUG
-    mesh_.write();
-    returnReduce(1, sumOp<label>());
-    ::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::mapMeshToSurface()
@@ -116,50 +108,34 @@ void cartesianMeshGenerator::mapMeshToSurface()
     meshSurfaceMapper mapper(*msePtr, *octreePtr_);
     mapper.preMapVertices();
 
-    # ifdef DEBUG
-    mesh_.write();
-    returnReduce(1, sumOp<label>());
-    //::exit(EXIT_SUCCESS);
-    # endif
-
     //- map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 
     //- untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
-    # ifdef DEBUG
-    mesh_.write();
-    ::exit(EXIT_SUCCESS);
-    # endif
-
     deleteDemandDrivenData(msePtr);
+}
+
+void cartesianMeshGenerator::extractPatches()
+{
+    edgeExtractor extractor(mesh_, *octreePtr_);
+
+    Info << "Extracting edges" << endl;
+    extractor.extractEdges();
+
+    extractor.updateMeshPatches();
 }
 
 void cartesianMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::generateBoundaryLayers()
@@ -167,11 +143,6 @@ void cartesianMeshGenerator::generateBoundaryLayers()
     //- add boundary layers
     boundaryLayers bl(mesh_);
     bl.addLayerForAllPatches();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::refBoundaryLayers()
@@ -184,8 +155,7 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
-        optimizer.untangleMeshFV();
+        meshOptimizer(mesh_).untangleMeshFV();
     }
 }
 
@@ -217,58 +187,83 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     if( enforceConstraints )
         optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
+
     optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer();
     optimizer.untangleMeshFV();
 
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
+    mesh_.clearAddressingData();
+
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
 }
 
 void cartesianMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 }
 
 void cartesianMeshGenerator::generateMesh()
 {
     try
     {
-        createCartesianMesh();
+        if( controller_.runCurrentStep("templateGeneration") )
+        {
+            createCartesianMesh();
+        }
 
-        surfacePreparation();
+        if( controller_.runCurrentStep("surfaceTopology") )
+        {
+            surfacePreparation();
+        }
 
-        mapMeshToSurface();
+        if( controller_.runCurrentStep("surfaceProjection") )
+        {
+            mapMeshToSurface();
+        }
 
-        mapEdgesAndCorners();
+        if( controller_.runCurrentStep("patchAssignment") )
+        {
+            extractPatches();
+        }
 
-        optimiseMeshSurface();
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
+            mapEdgesAndCorners();
 
-        generateBoundaryLayers();
+            optimiseMeshSurface();
 
-        optimiseFinalMesh();
+            generateBoundaryLayers();
+        }
 
-        refBoundaryLayers();
+        if( controller_.runCurrentStep("meshOptimisation") )
+        {
+            optimiseFinalMesh();
+        }
+
+        if( controller_.runCurrentStep("boundaryLayerRefinement") )
+        {
+            refBoundaryLayers();
+        }
 
         renumberMesh();
 
         replaceBoundaries();
+
+        controller_.workflowCompleted();
     }
     catch(...)
     {
@@ -281,11 +276,11 @@ void cartesianMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from objectRegistry
 cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     meshDict_
     (
         IOobject
@@ -298,7 +293,8 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         )
     ),
     octreePtr_(NULL),
-    mesh_(time)
+    mesh_(time),
+    controller_(mesh_)
 {
     if( true )
     {
@@ -317,8 +313,8 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         triSurfaceMetaData sMetaData(*surfacePtr_);
         const dictionary& surfMetaDict = sMetaData.metaData();
 
-        mesh_.metaData().add("surfaceFile", surfaceFile);
-        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
     }
 
     if( surfacePtr_->featureEdges().size() != 0 )
@@ -335,7 +331,18 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
+
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
 
     meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
@@ -347,6 +354,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 cartesianMeshGenerator::~cartesianMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
 }
 

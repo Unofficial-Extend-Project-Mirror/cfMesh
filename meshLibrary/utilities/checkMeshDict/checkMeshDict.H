@@ -35,6 +35,8 @@ SourceFiles
 #ifndef checkMeshDict_H
 #define checkMeshDict_H
 
+#include "objectRegistry.H"
+#include "Time.H"
 #include "IOdictionary.H"
 
 #include <map>
@@ -74,6 +76,9 @@ class checkMeshDict
 
         //- check objectRefinements entry
         void checkObjectRefinements() const;
+
+        //- check anisotropic sources
+        void checkAnisotropicSources() const;
 
         //- check surfaceRefinements entry
         void checkSurfaceRefinements() const;

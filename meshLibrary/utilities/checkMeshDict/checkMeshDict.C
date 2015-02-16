@@ -30,6 +30,7 @@ Description
 #include "PtrList.H"
 #include "LongList.H"
 #include "objectRefinement.H"
+#include "coordinateModification.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -341,6 +342,38 @@ void checkMeshDict::checkObjectRefinements() const
     }
 }
 
+void checkMeshDict::checkAnisotropicSources() const
+{
+    if( meshDict_.found("anisotropicSources") )
+    {
+        PtrList<coordinateModification> anisotropicObjects;
+
+        if( meshDict_.isDict("anisotropicSources") )
+        {
+            const dictionary& dict = meshDict_.subDict("anisotropicSources");
+            const wordList objectNames = dict.toc();
+
+            anisotropicObjects.setSize(objectNames.size());
+
+            forAll(anisotropicObjects, objectI)
+            {
+                const entry& objectEntry =
+                    dict.lookupEntry(objectNames[objectI], false, false);
+
+                anisotropicObjects.set
+                (
+                    objectI,
+                    coordinateModification::New
+                    (
+                        objectEntry.keyword(),
+                        objectEntry.dict()
+                    )
+                );
+            }
+        }
+    }
+}
+
 void checkMeshDict::checkSurfaceRefinements() const
 {
     if( meshDict_.found("surfaceMeshRefinement") )
@@ -584,6 +617,8 @@ void checkMeshDict::checkEntries() const
 
     checkObjectRefinements();
 
+    checkAnisotropicSources();
+
     checkBoundaryLayers();
 
     checkRenameBoundary();
@@ -741,7 +776,10 @@ void checkMeshDict::updateKeepCellsIntersectingPatches
                     patchesFromPatch.find(pName);
 
                 if( it == patchesFromPatch.end() )
+                {
                     updatedPatchNames.append(pName);
+                    continue;
+                }
 
                 const wordList& newPatchNames = it->second;
 
@@ -797,7 +835,10 @@ void checkMeshDict::updateRemoveCellsIntersectingPatches
                     patchesFromPatch.find(pName);
 
                 if( it == patchesFromPatch.end() )
+                {
                     updatedPatchNames.append(pName);
+                    continue;
+                }
 
                 const wordList& newPatchNames = it->second;
 
@@ -866,14 +907,19 @@ void checkMeshDict::updateBoundaryLayers
 
                 const std::map<word, wordList>::const_iterator it =
                     patchesFromPatch.find(pName);
-                const wordList& newNames = it->second;
 
-                forAll(newNames, i)
+                //- patch name may be a regex
+                if( it != patchesFromPatch.end() )
                 {
-                    patchBndLayers.add(newNames[i], dict);
-                }
+                    const wordList& newNames = it->second;
 
-                patchBndLayers.remove(pName);
+                    forAll(newNames, i)
+                    {
+                        patchBndLayers.add(newNames[i], dict);
+                    }
+
+                    patchBndLayers.remove(pName);
+                }
             }
         }
     }
@@ -899,20 +945,12 @@ void checkMeshDict::updateRenameBoundary
             const word name(dict.lookup("defaultName"));
             newDict.add("defaultName", name);
         }
-        else
-        {
-            newDict.add("defaultName", "walls");
-        }
 
         //- transfer or generate the defaultType entry
         if( dict.found("defaultType") )
         {
             const word type(dict.lookup("defaultType"));
             newDict.add("defaultType", type);
-        }
-        else
-        {
-            newDict.add("defaultType", "wall");
         }
 
         if( dict.found("newPatchNames") )
@@ -1047,9 +1085,6 @@ void checkMeshDict::updateRenameBoundary
     else
     {
         //- create the dictionary if it has not existed before
-        newDict.add("defaultName", "walls");
-        newDict.add("defaultType", "wall");
-
         dictionary& newPatchesDict = newDict.subDict("newPatchNames");
 
         std::map<word, wordList>::const_iterator it;

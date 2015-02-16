@@ -638,6 +638,10 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         newBoundaryPatches
     );
 
+    PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
+    forAll(boundaries, patchI)
+        boundaries[patchI].patchType() = patchTypes_[patchI];
+
     //- delete meshSurfaceEngine
     this->clearOut();
 

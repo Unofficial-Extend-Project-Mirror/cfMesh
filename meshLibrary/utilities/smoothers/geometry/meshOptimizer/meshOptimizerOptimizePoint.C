@@ -60,6 +60,9 @@ void meshOptimizer::laplaceSmoother::laplacian
         {
             const label pointI = smoothPoints[i];
 
+            if( vertexLocation_[pointI] & LOCKED )
+                continue;
+
             if( vertexLocation_[pointI] & PARALLELBOUNDARY )
             {
                 procPoints.append(pointI);
@@ -103,6 +106,9 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
         forAll(smoothPoints, i)
         {
             const label pointI = smoothPoints[i];
+
+            if( vertexLocation_[pointI] & LOCKED )
+                continue;
 
             if( vertexLocation_[pointI] & PARALLELBOUNDARY )
             {
@@ -158,6 +164,9 @@ void meshOptimizer::laplaceSmoother::laplacianPC
         {
             const label pointI = smoothPoints[i];
 
+            if( vertexLocation_[pointI] & LOCKED )
+                continue;
+
             if( pointCells.sizeOfRow(pointI) == 0 )
                 continue;
 
@@ -209,6 +218,9 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
         {
             const label pointI = smoothPoints[i];
 
+            if( vertexLocation_[pointI] & LOCKED )
+                continue;
+
             if( pointCells.sizeOfRow(pointI) == 0 )
                 continue;
 
@@ -259,6 +271,9 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
     forAll(smoothPoints, i)
     {
         const label pointI = smoothPoints[i];
+
+        if( vertexLocation_[pointI] & LOCKED )
+            continue;
 
         forAllRow(pointCells, pointI, pcI)
         {
@@ -343,8 +358,10 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
     labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
-    if( vertexLocation_[pointI] & INSIDE )
-        smoothPoints.append(pointI);
+    {
+        if( vertexLocation_[pointI] & INSIDE )
+            smoothPoints.append(pointI);
+    }
 
     laplacian(smoothPoints, nIterations);
 }
@@ -375,8 +392,10 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
     labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
-    if( vertexLocation_[pointI] & INSIDE )
-        smoothPoints.append(pointI);
+    {
+        if( vertexLocation_[pointI] & INSIDE )
+            smoothPoints.append(pointI);
+    }
 
     laplacianPC(smoothPoints, nIterations);
 }
@@ -398,8 +417,10 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
     labelLongList smoothPoints;
 
     forAll(vertexLocation_, pointI)
-    if( vertexLocation_[pointI] & INSIDE )
-        smoothPoints.append(pointI);
+    {
+        if( vertexLocation_[pointI] & INSIDE )
+            smoothPoints.append(pointI);
+    }
 
     laplacianWPC(smoothPoints, nIterations);
 }

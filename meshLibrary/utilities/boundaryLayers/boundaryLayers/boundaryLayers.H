@@ -35,6 +35,8 @@ SourceFiles
 #ifndef boundaryLayers_H
 #define boundaryLayers_H
 
+#include "objectRegistry.H"
+#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfacePartitioner.H"
@@ -81,6 +83,9 @@ class boundaryLayers
 
         //- patch names
         wordList patchNames_;
+
+        //- patch types
+        wordList patchTypes_;
 
         //- helper which contains information if a boundary layer
         //- has already been extruded for a given patch

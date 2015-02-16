@@ -193,6 +193,9 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
+    if( vertexType_[bpI] & LOCKED )
+        return points[bPoints[bpI]];
+
     vector newP(vector::zero);
     if( transformIntoPlane )
     {
@@ -235,6 +238,9 @@ inline point meshSurfaceOptimizer::newPositionLaplacianFC
     const pointFieldPMG& points = surfaceEngine_.points();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
+
+    if( vertexType_[bpI] & LOCKED )
+        return points[bPoints[bpI]];
 
     vector newP(vector::zero);
 
@@ -280,6 +286,9 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
     const vectorField& faceAreas = surfaceEngine_.faceNormals();
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
+
+    if( vertexType_[bpI] & LOCKED )
+        return points[bPoints[bpI]];
 
     vector newP(vector::zero);
 
@@ -334,6 +343,9 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
+
+    if( vertexType_[bpI] & LOCKED )
+        return points[bPoints[bpI]];
 
     # ifdef DEBUGSmooth
     Pout << "Smoothing boundary node " << bpI << endl;
@@ -392,6 +404,9 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
     const VRWGraph& bpEdges = surfaceEngine_.boundaryPointEdges();
     const pointFieldPMG& points = surfaceEngine_.points();
 
+    if( vertexType_[bpI] & LOCKED )
+        return points[bPoints[bpI]];
+
     const labelHashSet& featureEdges = partitionerPtr_->featureEdges();
 
     DynList<label> edgePoints;
@@ -420,6 +435,133 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
     pos /= edgePoints.size();
 
     return pos;
+}
+
+template<class labelListType>
+inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
+{
+    lockedSurfaceFaces_ = l;
+
+    const faceList::subList& bFaces = surfaceEngine_.boundaryFaces();
+    const labelList& bp = surfaceEngine_.bp();
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 20)
+    # endif
+    forAll(lockedSurfaceFaces_, lfI)
+    {
+        const face& bf = bFaces[lockedSurfaceFaces_[lfI]];
+
+        forAll(bf, pI)
+            vertexType_[bp[bf[pI]]] |= LOCKED;
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal =
+            surfaceEngine_.globalToLocalBndPointAddressing();
+        const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+        const DynList<label>& bpNeiProcs = surfaceEngine_.bpNeiProcs();
+
+        std::map<label, labelLongList> exchangeData;
+        forAll(bpNeiProcs, i)
+            exchangeData[bpNeiProcs[i]].clear();
+
+        //- prepare data which will be sent to other processors
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            if( vertexType_[bpI] & LOCKED )
+            {
+                forAllRow(bpAtProcs, bpI, i)
+                {
+                    const label neiProc = bpAtProcs(bpI, i);
+
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    exchangeData[neiProc].append(it.key());
+                }
+            }
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
+        {
+            const label bpI = globalToLocal[receivedData[i]];
+
+            vertexType_[bpI] |= LOCKED;
+        }
+    }
+}
+
+template<class labelListType>
+inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(l, i)
+    {
+        const label bpI = l[i];
+
+        vertexType_[bpI] |= LOCKED;
+    }
+
+    if( Pstream::parRun() )
+    {
+        const Map<label>& globalToLocal =
+            surfaceEngine_.globalToLocalBndPointAddressing();
+        const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
+        const DynList<label>& bpNeiProcs = surfaceEngine_.bpNeiProcs();
+
+        std::map<label, labelLongList> exchangeData;
+        forAll(bpNeiProcs, i)
+            exchangeData[bpNeiProcs[i]].clear();
+
+        //- prepare data which will be sent to other processors
+        forAllConstIter(Map<label>, globalToLocal, it)
+        {
+            const label bpI = it();
+
+            if( vertexType_[bpI] & LOCKED )
+            {
+                forAllRow(bpAtProcs, bpI, i)
+                {
+                    const label neiProc = bpAtProcs(bpI, i);
+
+                    if( neiProc == Pstream::myProcNo() )
+                        continue;
+
+                    exchangeData[neiProc].append(it.key());
+                }
+            }
+        }
+
+        labelLongList receivedData;
+        help::exchangeMap(exchangeData, receivedData);
+
+        forAll(receivedData, i)
+        {
+            const label bpI = globalToLocal[receivedData[i]];
+
+            vertexType_[bpI] |= LOCKED;
+        }
+    }
+}
+
+//- lock edge points
+inline void meshSurfaceOptimizer::lockFeatureEdges()
+{
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(vertexType_, bpI)
+        if( vertexType_[bpI] & (EDGE | CORNER) )
+            vertexType_[bpI] |= LOCKED;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

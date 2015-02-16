@@ -28,9 +28,6 @@ Description
 #include "meshSurfaceEdgeExtractorNonTopo.H"
 #include "demandDrivenData.H"
 
-#include "correctEdgesBetweenPatches.H"
-#include "meshSurfaceOptimizer.H"
-
 // #define DEBUGSearch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -40,7 +37,6 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
 meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 (
     polyMeshGen& mesh,
@@ -50,11 +46,9 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
     mesh_(mesh),
     meshOctree_(octree)
 {
-    distributeBoundaryFaces();
+    decomposeBoundaryFaces();
 
     remapBoundaryPoints();
-
-    correctEdgesBetweenPatches featureEdges(mesh);
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

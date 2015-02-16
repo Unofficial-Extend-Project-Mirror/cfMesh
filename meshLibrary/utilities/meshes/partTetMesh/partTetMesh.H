@@ -106,7 +106,11 @@ class partTetMesh
     // Private member functions
 
         //- create points and tets
-        void createPointsAndTets(const List<direction>&);
+        void createPointsAndTets
+        (
+            const List<direction>& usedCells,
+            const boolList& lockedPoints
+        );
 
         //- create parallel addressing
         void createParallelAddressing
@@ -128,14 +132,24 @@ class partTetMesh
 public:
 
     // Constructors
-        //- construct from polyMeshGen
-        partTetMesh(polyMeshGen& mesh);
+        //- construct from polyMeshGen and locked points
+        partTetMesh(polyMeshGen& mesh, const labelLongList& lockedPoints);
+
+        //- construct from polyMeshGen, locked points and the number of layers
+        //- from the boundary
+        partTetMesh
+        (
+            polyMeshGen& mesh,
+            const labelLongList& lockedPoints,
+            const direction nLayers = 2
+        );
 
         //- construct from polyMeshGen, bad faces and the number
         //- of additional layers
         partTetMesh
         (
             polyMeshGen& mesh,
+            const labelLongList& lockedPoints,
             labelHashSet& badFaces,
             const direction additionalLayers = 0
         );
@@ -149,7 +163,8 @@ public:
             FACECENTRE = 2,
             CELLCENTRE = 4,
             PARALLELBOUNDARY = 8,
-            BOUNDARY = 16
+            BOUNDARY = 16,
+            LOCKED = 32
         };
 
     // Destructor
@@ -255,6 +270,14 @@ public:
 
         //- creates polyMeshGen from this partTetMesh
         void createPolyMesh(polyMeshGen& pmg) const;
+
+        //- add the LOCKED flag to mesh points which shall not move
+        template<class labelListType>
+        void lockPoints(const labelListType& l)
+        {
+            forAll(l, pI)
+                smoothVertex_[l[pI]] |= LOCKED;
+        }
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

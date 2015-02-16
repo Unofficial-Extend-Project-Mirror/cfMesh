@@ -41,11 +41,11 @@ SourceFiles
 #include "triSurf.H"
 #include "triangle.H"
 #include "tetrahedron.H"
+#include "boolList.H"
+#include "HashSet.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-class boolList;
-class labelHashSet;
 class boundBox;
 
 namespace Foam
@@ -181,6 +181,16 @@ namespace help
         const boundBox&
     );
 
+    //- check if the line and the face intersect
+    inline bool lineFaceIntersection
+    (
+        const point&,
+        const point&,
+        const face&,
+        const pointField& fp,
+        point& intersection
+    );
+
     //- check if the surface triangle and the face intersect
     inline bool doFaceAndTriangleIntersect
     (
@@ -188,6 +198,13 @@ namespace help
         const label triI,
         const face& f,
         const pointField& facePoints
+    );
+
+    //- find the nearest point on the triangle to the given point
+    inline point nearestPointOnTheTriangle
+    (
+        const triangle<point, point>& tri,
+        const point&
     );
 
     //- find the nearest vertex on the surface triangle to the given point
@@ -198,13 +215,13 @@ namespace help
         const point&
     );
 
-    //- check if the point is inside or outside the face
-    inline bool pointInsideFace
+    //- find the minimiser point from a point and the given planes
+    //- returns true if the minimizer exists
+    inline bool findMinimizerPoint
     (
-        const point& p,
-        const face& f,
-        const vector& n,
-        const pointField& fp
+        const DynList<point>& origins,
+        const DynList<vector>& normals,
+        point& pMin
     );
 
     //- check if the point is inside or outside the face
@@ -212,7 +229,26 @@ namespace help
     (
         const point& p,
         const face& f,
-        const pointField& fp
+        const vector& n,
+        const pointField& fp,
+        const scalar distTol = SMALL
+    );
+
+    //- check if the point is inside or outside the face
+    inline bool pointInsideFace
+    (
+        const point& p,
+        const face& f,
+        const pointField& fp,
+        const scalar distTol = SMALL
+    );
+
+    //- check if the face is convex. Concave points are flagged false
+    inline bool isFaceConvexAndOk
+    (
+        const face& f,
+        const pointField& fp,
+        DynList<bool>& OkPoints
     );
 
     //- check if the vertex is on the positive side of the face plane

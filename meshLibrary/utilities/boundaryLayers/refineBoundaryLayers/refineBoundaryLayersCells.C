@@ -42,8 +42,8 @@ namespace Foam
 void refineBoundaryLayers::generateNewCellsPrism
 (
     const label cellI,
-    DynList<DynList<DynList<label, 8>, 10> >& cellsFromCell
-)
+    DynList<DynList<DynList<label, 8>, 10>, 64>& cellsFromCell
+) const
 {
     cellsFromCell.clear();
 
@@ -632,7 +632,7 @@ void refineBoundaryLayers::refineEdgeHexCell::generateMissingFaces()
 refineBoundaryLayers::refineEdgeHexCell::refineEdgeHexCell
 (
     const label cellI,
-    refineBoundaryLayers& ref
+    const refineBoundaryLayers& ref
 )
 :
     cellI_(cellI),
@@ -1296,7 +1296,7 @@ void refineBoundaryLayers::refineCornerHexCell::generateMissingFaces()
 refineBoundaryLayers::refineCornerHexCell::refineCornerHexCell
 (
     const label cellI,
-    refineBoundaryLayers& ref
+    const refineBoundaryLayers& ref
 )
 :
     cellI_(cellI),
@@ -1341,6 +1341,23 @@ void refineBoundaryLayers::generateNewCells()
             ++refType[cellI];
     }
 
+    //- add cells which shall be refined in a subset
+    if( cellSubsetName_ != "" )
+    {
+        label subsetI = mesh_.cellSubsetIndex(cellSubsetName_);
+        if( subsetI >= 0 )
+            Warning << "The subset with name " << cellSubsetName_
+                    << " already exists. Skipping generation of a new subset"
+                    << endl;
+
+        subsetI = mesh_.addCellSubset(cellSubsetName_);
+
+        forAll(nCellsFromCell, cI)
+            if( nCellsFromCell[cI] > 1 )
+                mesh_.addCellToSubset(subsetI, cI);
+    }
+
+    //- check the number of cells which will be generated
     label nNewCells(0);
     forAll(nCellsFromCell, cellI)
         nNewCells += (nCellsFromCell[cellI] - 1);
@@ -1402,7 +1419,7 @@ void refineBoundaryLayers::generateNewCells()
         else if( refType[cellI] == 1 )
         {
             //- generate new cells from this prism refined in one direction
-            DynList<DynList<DynList<label, 8>, 10> > cellsFromCell;
+            DynList<DynList<DynList<label, 8>, 10>, 64> cellsFromCell;
             generateNewCellsPrism(cellI, cellsFromCell);
 
             forAll(cellsFromCell, cI)
@@ -1902,4 +1919,3 @@ void refineBoundaryLayers::generateNewCells()
 } // End namespace Foam
 
 // ************************************************************************* //
-

@@ -1806,4 +1806,3 @@ bool edgeExtractor::checkCorners()
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-

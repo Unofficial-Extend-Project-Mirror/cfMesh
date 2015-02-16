@@ -37,6 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
+#include "workflowControls.H"
 //#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -62,6 +63,9 @@ class tetMeshGenerator
         //- pointer to the surface
         const triSurf* surfacePtr_;
 
+        //- pointer to the modified surface mesh
+        const triSurf* modSurfacePtr_;
+
         //- IOdictionary containing information about cell sizes, etc..
         IOdictionary meshDict_;
 
@@ -70,6 +74,9 @@ class tetMeshGenerator
 
         //- mesh
         polyMeshGen mesh_;
+
+        //- workflow controller
+        workflowControls controller_;
 
     // Private member functions
         //- create cartesian mesh
@@ -82,13 +89,16 @@ class tetMeshGenerator
         void mapMeshToSurface();
 
         //- capture edges and corners
+        void extractPatches();
+
+        //- capture edges and corners
         void mapEdgesAndCorners();
 
         //- optimise surface mesh
         void optimiseMeshSurface();
 
         //- add boundary layers
-        void generateBoudaryLayers();
+        void generateBoundaryLayers();
 
         //- mesh optimisation
         void optimiseFinalMesh();
