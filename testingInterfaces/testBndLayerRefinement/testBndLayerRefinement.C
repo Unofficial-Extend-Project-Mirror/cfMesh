@@ -31,18 +31,12 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "meshOptimizer.H"
-#include "boundaryLayers.H"
 #include "refineBoundaryLayers.H"
 #include "Time.H"
 #include "polyMeshGen.H"
-#include "meshSurfaceEngine.H"
 #include "helperFunctions.H"
-#include "meshOptimizer.H"
-#include "boolList.H"
+#include "triSurfacePatchManipulator.H"
 
-#include "boundaryLayerOptimisation.H"
-#include "extrudeLayer.H"
 #include "polyMeshGenChecks.H"
 #include "HashSet.H"
 
@@ -72,108 +66,6 @@ int main(int argc, char *argv[])
             Info << "Vertex " << pointI << " is invalid " << p << endl;
     }
 
-    //boundaryLayers(pmg).addLayerForAllPatches();
-    //pmg.clearAddressingData();
-
-    meshSurfaceEngine mse(pmg);
-    boundaryLayerOptimisation blOpt(pmg, mse);
-
-    const labelList& faceCell = mse.faceOwners();
-    const faceList::subList& bFaces = mse.boundaryFaces();
-    const boolList& isBaseFace = blOpt.isBaseFace();
-
-    const labelList& owner = pmg.owner();
-    const labelList& neighbour = pmg.neighbour();
-    const cellListPMG& cells = pmg.cells();
-    const faceListPMG& faces = pmg.faces();
-
-    Info << "Marking boundary layer cells" << endl;
-
-    labelLongList layerCells;
-    boolList layerCell(pmg.cells().size(), false);
-    const label blCellsId = pmg.addCellSubset("boundaryLayerCells");
-    forAll(isBaseFace, bfI)
-    {
-        pmg.addCellToSubset(blCellsId, faceCell[bfI]);
-        layerCell[faceCell[bfI]] = true;
-        layerCells.append(faceCell[bfI]);
-    }
-
-    //- marking faces at the inner boundary of the boundary layer
-    LongList<labelPair> front;
-
-    forAll(faceCell, bfI)
-    {
-        const cell& c = cells[faceCell[bfI]];
-
-        const face& bf = bFaces[bfI];
-
-        label faceOpposite(-1);
-
-        forAll(c, fI)
-            if( !help::shareAnEdge(faces[c[fI]], bf) )
-                faceOpposite = c[fI];
-
-        label cellI = owner[faceOpposite];
-        if( cellI == faceCell[bfI] )
-            cellI = neighbour[faceOpposite];
-
-        if( layerCell[cellI] )
-            continue;
-
-        front.append(labelPair(faceOpposite, cellI));
-    }
-
-    //- find points in boundary layer
-    boolList pointInBoundaryLayer(pmg.points().size(), false);
-
-    forAll(cells, cellI)
-    {
-        if( layerCell[cellI] )
-        {
-            const cell& c = cells[cellI];
-            forAll(c, fI)
-            {
-                const face& f = faces[c[fI]];
-
-                forAll(f, pI)
-                    pointInBoundaryLayer[f[pI]] = true;
-            }
-        }
-    }
-
-    //- check if there exist faces with all vertices in the boundary layer
-    const label allPointsInLayerId = pmg.addCellSubset("allPointsInLayer");
-    forAll(cells, cellI)
-    {
-        if( !layerCell[cellI] )
-        {
-            bool allInBndLayer(true);
-
-            const cell& c = cells[cellI];
-            forAll(c, fI)
-            {
-                const face& f = faces[c[fI]];
-
-                forAll(f, pI)
-                    allInBndLayer = false;
-            }
-
-            if( allInBndLayer )
-            {
-                Info << "Cell " << cellI
-                     << " has all points in the layer" << endl;
-                pmg.addCellToSubset(allPointsInLayerId, cellI);
-            }
-        }
-    }
-
-    Info << "Optimising boundary layer" << endl;
-    blOpt.optimiseLayer(5, 0.15, 0.4);
-
-    pmg.clearAddressingData();
-
-    //- refine boundary layers
     IOdictionary meshDict
     (
         IOobject
@@ -186,68 +78,25 @@ int main(int argc, char *argv[])
         )
     );
 
-    refineBoundaryLayers refLayers(pmg);
+    fileName surfaceFile = meshDict.lookup("surfaceFile");
+    if( Pstream::parRun() )
+        surfaceFile = ".."/surfaceFile;
 
-    refineBoundaryLayers::readSettings(meshDict, refLayers);
+    const triSurf* surfacePtr = new triSurf(runTime.path()/surfaceFile);
 
-    refLayers.refineLayers();
+    triSurfacePatchManipulator manipulator(*surfacePtr);
 
-    //- check bad quality cells in the layer
-    boolList activeFace(pmg.faces().size(), false);
-    if( blCellsId > -1 )
-    {
-        labelLongList cellsInLayer;
-        pmg.cellsInSubset(blCellsId, cellsInLayer);
+    const triSurf* surfaceWithPatches =
+        manipulator.surfaceWithPatches(&meshDict);
+    deleteDemandDrivenData(surfacePtr);
+    deleteDemandDrivenData(surfaceWithPatches);
 
-        forAll(cellsInLayer, i)
-        {
-            const cell& c = cells[cellsInLayer[i]];
+    //- refine boundary layers
+    refineBoundaryLayers blRefine(pmg);
 
-            forAll(c, fI)
-                activeFace[c[fI]] = true;
-        }
-    }
+    refineBoundaryLayers::readSettings(meshDict, blRefine);
 
-    labelHashSet badFaces;
-    polyMeshGenChecks::findBadFaces(pmg, badFaces, true, &activeFace);
-
-    if( returnReduce(badFaces.size(), sumOp<label>()) )
-    {
-        const labelList& own = pmg.owner();
-        const labelList& nei = pmg.neighbour();
-
-        label badCellId(-1);
-        forAllConstIter(labelHashSet, badFaces, it)
-        {
-            if( badCellId < 0 )
-                badCellId = pmg.addCellSubset("badBlCells");
-            pmg.addCellToSubset(badCellId, own[it.key()]);
-
-            if( nei[it.key()] >= 0 )
-                pmg.addCellToSubset(badCellId, nei[it.key()]);
-        }
-
-        if( returnReduce(pmg.cellSubsetIndex("badBlCells")>=0, maxOp<bool>()) )
-        {
-            Info << "Found bad quality bl cells" << endl;
-            pmg.write();
-            returnReduce(1, sumOp<label>());
-            ::exit(0);
-        }
-    }
-
-    //Info << "Extruding layer of cells" << endl;
-    //extrudeLayer(pmg, front);
-    //pmg.clearAddressingData();
-
-    Info << "Starting optimising mesh" << endl;
-//    meshOptimizer mOpt(pmg);
-//    mOpt.lockCellsInSubset("boundaryLayerCells");
-//    mOpt.optimizeLowQualityFaces(15);
-//    mOpt.untangleMeshFV(5, 50, 0);
-
-    //meshOptimizer mOpt(pmg);
-    //mOpt.optimizeBoundaryLayer();
+    blRefine.refineLayers();
 
     forAll(pmg.points(), pointI)
     {
