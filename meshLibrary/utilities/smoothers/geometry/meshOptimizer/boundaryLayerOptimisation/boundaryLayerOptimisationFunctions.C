@@ -1631,7 +1631,6 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
 
                 if( hairLength[hairEdgeI] > maxThickness )
                 {
-                    Info << "Here " << hairEdgeI << endl;
                     //- make the hair edge shorter
                     hairLength[hairEdgeI] = maxThickness;
 
