@@ -2089,11 +2089,14 @@ bool edgeExtractor::checkFacePatchesGeometry()
         );
 
         //- stop after a certain number of iterations
-        if( iter++ > 3 )
+        if( ++iter > 3 )
             break;
 
+        //- update surface geometry data
+        meshSurfaceEngineModifier(mse).updateGeometry();
+
         //- check if there exist any inverted faces
-        meshSurfaceCheckInvertedVertices surfCheck(mse, activePoints);
+        meshSurfaceCheckInvertedVertices surfCheck(mPart, activePoints);
         const labelHashSet& invertedPoints = surfCheck.invertedVertices();
 
         if( returnReduce(invertedPoints.size(), sumOp<label>()) == 0 )
@@ -2108,16 +2111,15 @@ bool edgeExtractor::checkFacePatchesGeometry()
 
         //- untangle the surface
         activePointLabel.clear();
-        forAllConstIter(labelHashSet, invertedPoints, it)
-            activePointLabel.append(bp[it.key()]);
-
-        //- update active points
         activePoints = false;
-        forAll(activePointLabel, i)
-            activePoints[activePointLabel[i]] = true;
+        forAllConstIter(labelHashSet, invertedPoints, it)
+        {
+            activePointLabel.append(bp[it.key()]);
+            activePoints[bp[it.key()]] = true;
+        }
 
         //- untangle the surface
-        meshSurfaceOptimizer mso(*surfaceEnginePtr_, meshOctree_);
+        meshSurfaceOptimizer mso(mPart, meshOctree_);
         mso.untangleSurface(activePointLabel, 1);
 
         nCorrected = 0;
