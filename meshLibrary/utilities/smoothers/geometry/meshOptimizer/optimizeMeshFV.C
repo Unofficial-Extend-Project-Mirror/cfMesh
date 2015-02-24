@@ -264,49 +264,71 @@ void meshOptimizer::untangleMeshFV
 
 void meshOptimizer::optimizeBoundaryLayer()
 {
-    Info << "Optimising boundary layer" << endl;
-
-    const meshSurfaceEngine& mse = meshSurface();
-    const labelList& faceOwner = mse.faceOwners();
-
-    boundaryLayerOptimisation optimiser(mesh_, mse);
-
-    optimiser.optimiseLayer();
-
-    //- check if the bnd layer is tangled somewhere
-    boolList layerCell(mesh_.cells().size(), false);
-    const boolList& baseFace = optimiser.isBaseFace();
-
-    forAll(baseFace, bfI)
+    if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
     {
-        if( baseFace[bfI] )
-            layerCell[faceOwner[bfI]] = true;
-    }
+        const dictionary& meshDict =
+            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
 
-    clearSurface();
-    mesh_.clearAddressingData();
-
-    //- lock boundary layer points, faces and cells
-    labelLongList bndLayerCells;
-    forAll(layerCell, cellI)
-    {
-        if( layerCell[cellI] )
+        if( meshDict.found("boundaryLayers") )
         {
-            bndLayerCells.append(cellI);
+            const dictionary& layersDict = meshDict.subDict("boundaryLayers");
+
+            if( layersDict.found("optimiseLayer") )
+            {
+                const bool smoothLayer =
+                    readBool(layersDict.lookup("optimiseLayer"));
+
+                if( !smoothLayer )
+                    return;
+            }
         }
+
+        Info << "Starting optimising boundary layer" << endl;
+
+        const meshSurfaceEngine& mse = meshSurface();
+        const labelList& faceOwner = mse.faceOwners();
+
+        boundaryLayerOptimisation optimiser(mesh_, mse);
+
+        boundaryLayerOptimisation::readSettings(meshDict, optimiser);
+
+        optimiser.optimiseLayer();
+
+        //- check if the bnd layer is tangled somewhere
+        boolList layerCell(mesh_.cells().size(), false);
+        const boolList& baseFace = optimiser.isBaseFace();
+
+        forAll(baseFace, bfI)
+        {
+            if( baseFace[bfI] )
+                layerCell[faceOwner[bfI]] = true;
+        }
+
+        clearSurface();
+        mesh_.clearAddressingData();
+
+        //- lock boundary layer points, faces and cells
+        labelLongList bndLayerCells;
+        forAll(layerCell, cellI)
+        {
+            if( layerCell[cellI] )
+            {
+                bndLayerCells.append(cellI);
+            }
+        }
+
+        lockCells(bndLayerCells);
+
+        optimizeLowQualityFaces(10);
+
+        //- untangle remaining faces and lock the boundary layer cells
+        untangleMeshFV(2, 50, 0);
+
+        //- unlock bnd layer points
+        removeUserConstraints();
+
+        Info << "Finished optimising boundary layer" << endl;
     }
-
-    lockCells(bndLayerCells);
-
-    optimizeLowQualityFaces(10);
-
-    //- untangle remaining faces and lock the boundary layer cells
-    untangleMeshFV(2, 50, 0);
-
-    //- unlock bnd layer points
-    removeUserConstraints();
-
-    Info << "Finished optimising boundary layer" << endl;
 }
 
 void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)

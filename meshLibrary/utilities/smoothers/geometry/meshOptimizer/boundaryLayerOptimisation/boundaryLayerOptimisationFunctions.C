@@ -846,11 +846,11 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
     # endif
 }
 
-void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
-(
-    const label nIterations
-)
+void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
 {
+    if( nSmoothNormals_ == 0 )
+        return;
+
     pointFieldPMG& points = mesh_.points();
 
     //- calculate direction of hair vector based on the surface normal
@@ -866,7 +866,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
 
     //- smooth the variation of normals to reduce the twisting of faces
     label nIter(0);
-    do
+
+    while( nIter++ < nSmoothNormals_ );
     {
         vectorField newNormals(hairVecs.size());
 
@@ -1081,7 +1082,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
             );
         }
         # endif
-    } while( ++nIter < nIterations );
+    }
 
     //- move vertices to the new locations
     # ifdef USE_OMP
@@ -1100,11 +1101,11 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary
     }
 }
 
-void boundaryLayerOptimisation::optimiseHairNormalsInside
-(
-    const label nIterations
-)
+void boundaryLayerOptimisation::optimiseHairNormalsInside()
 {
+    if( nSmoothNormals_ == 0 )
+        return;
+
     pointFieldPMG& points = mesh_.points();
 
     //- calculate direction of hair vector based on the surface normal
@@ -1113,52 +1114,67 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     const VRWGraph& bpEdges = mse.boundaryPointEdges();
     const edgeList& edges = mse.edges();
 
-    //- calculate point normals with respect to all patches at a point
-    pointNormalsType pointPatchNormal;
-    calculateNormalVectors(INSIDE, pointPatchNormal);
-
-    //- calculate hair vectors
     //- they point in the normal direction to the surface
     vectorField hairVecs(hairEdges_.size());
 
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
+    if( reCalculateNormals_ )
     {
-        const direction hairType = hairEdgeType_[hairEdgeI];
+        //- calculate point normals with respect to all patches at a point
+        pointNormalsType pointPatchNormal;
+        calculateNormalVectors(INSIDE, pointPatchNormal);
 
-        if( hairType & INSIDE )
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(hairEdges_, hairEdgeI)
         {
-            vector& hv = hairVecs[hairEdgeI];
-            hv = vector::zero;
+            const direction hairType = hairEdgeType_[hairEdgeI];
 
-            const label bpI = bp[hairEdges_[hairEdgeI].start()];
-
-            label counter(0);
-            const patchNormalType& patchNormals = pointPatchNormal[bpI];
-            forAllConstIter(patchNormalType, patchNormals, pIt)
+            if( hairType & INSIDE )
             {
-                hv -= pIt->second.first;
-                ++counter;
-            }
+                vector& hv = hairVecs[hairEdgeI];
+                hv = vector::zero;
 
-            if( counter == 0 )
+                const label bpI = bp[hairEdges_[hairEdgeI].start()];
+
+                label counter(0);
+                const patchNormalType& patchNormals = pointPatchNormal[bpI];
+                forAllConstIter(patchNormalType, patchNormals, pIt)
+                {
+                    hv -= pIt->second.first;
+                    ++counter;
+                }
+
+                if( counter == 0 )
+                {
+                    FatalErrorIn
+                    (
+                        "void boundaryLayerOptimisation::"
+                        "optimiseHairNormalsInside()"
+                    ) << "No valid patches for boundary point "
+                      << bp[hairEdges_[hairEdgeI].start()] << abort(FatalError);
+                }
+
+                hv /= (mag(hv) + VSMALL);
+            }
+            else
             {
-                FatalErrorIn
-                (
-                    "void boundaryLayerOptimisation::"
-                    "optimiseHairNormalsInside()"
-                ) << "No valid patches for boundary point "
-                  << bp[hairEdges_[hairEdgeI].start()] << abort(FatalError);
+                //- initialise boundary hair vectors. They influence internal
+                //- hairs connected to them
+                vector hvec = hairEdges_[hairEdgeI].vec(points);
+                hvec /= (mag(hvec) + VSMALL);
+                hairVecs[hairEdgeI] = hvec;
             }
-
-            hv /= (mag(hv) + VSMALL);
         }
-        else
+    }
+    else
+    {
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(hairEdges_, hairEdgeI)
         {
-            //- initialise boundary hair vectors. They influence internal
-            //- hairs conneted to them
+            //- initialise boundary hair vectors.
             vector hvec = hairEdges_[hairEdgeI].vec(points);
             hvec /= (mag(hvec) + VSMALL);
             hairVecs[hairEdgeI] = hvec;
@@ -1169,9 +1185,10 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
     writeHairEdges("insideHairVectors.vtk", (INSIDE|BOUNDARY), hairVecs);
     # endif
 
-    //- smooth the variation of normals to reduce the twisting of faces
+    //- smooth the variation of normals to reduce twisting of faces
     label nIter(0);
-    do
+
+    while( nIter++ < nSmoothNormals_ )
     {
         vectorField newNormals(hairVecs.size());
 
@@ -1402,7 +1419,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
             );
         }
         # endif
-    } while( nIter++ < nIterations );
+    }
 
     //- move vertices to the new locations
     # ifdef USE_OMP
@@ -1424,9 +1441,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside
 scalar boundaryLayerOptimisation::calculateThickness
 (
     const label heI,
-    const label heJ,
-    const scalar tangentTol,
-    const scalar featureSizeFactor
+    const label heJ
 ) const
 {
     const pointFieldPMG& points = mesh_.points();
@@ -1492,7 +1507,7 @@ scalar boundaryLayerOptimisation::calculateThickness
             Foam::min
             (
                 retThickness,
-                featureSizeFactor * magDv * sinBeta / sinGamma
+                featureSizeFactor_ * magDv * sinBeta / sinGamma
             );
         retHeight *= (retThickness / (currThickness + VSMALL));
 
@@ -1502,7 +1517,7 @@ scalar boundaryLayerOptimisation::calculateThickness
             Foam::min
             (
                 suggestedNeiThickness,
-                featureSizeFactor * magDv * sinAlpha / sinGamma
+                featureSizeFactor_ * magDv * sinAlpha / sinGamma
             );
         suggestedNeiHeight *=
             (suggestedNeiThickness / (currNeiThickness + VSMALL));
@@ -1511,9 +1526,9 @@ scalar boundaryLayerOptimisation::calculateThickness
     //- check the height variation
     const scalar tanVal = (retHeight - suggestedNeiHeight) / (magDv + VSMALL);
 
-    if( tanVal > tangentTol )
+    if( tanVal > relThicknessTol_ )
     {
-        retHeight = suggestedNeiHeight + tangentTol * magDv;
+        retHeight = suggestedNeiHeight + relThicknessTol_ * magDv;
 
         retThickness = (retHeight / currHeight) * currThickness;
     }
@@ -1525,8 +1540,7 @@ scalar boundaryLayerOptimisation::calculateThicknessOverCell
 (
     const label heI,
     const label cellI,
-    const label baseFaceI,
-    const scalar featureSizeFactor
+    const label baseFaceI
 ) const
 {
     const pointFieldPMG& points = mesh_.points();
@@ -1563,7 +1577,7 @@ scalar boundaryLayerOptimisation::calculateThicknessOverCell
             if( !help::lineFaceIntersection(sp, ep, f, points, intersection) )
                 continue;
 
-            const scalar maxDist = featureSizeFactor * mag(intersection - sp);
+            const scalar maxDist = featureSizeFactor_ * mag(intersection - sp);
 
             maxThickness =
                 Foam::min(maxThickness, maxDist);
@@ -1575,9 +1589,6 @@ scalar boundaryLayerOptimisation::calculateThicknessOverCell
 
 void boundaryLayerOptimisation::optimiseThicknessVariation
 (
-    const label nIterations,
-    const scalar tangentTol,
-    const scalar featureSizeFactor,
     const direction edgeType
 )
 {
@@ -1625,8 +1636,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                     (
                         hairEdgeI,
                         cOwn,
-                        baseFaceI,
-                        featureSizeFactor
+                        baseFaceI
                     );
 
                 if( hairLength[hairEdgeI] > maxThickness )
@@ -1683,9 +1693,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                         calculateThickness
                         (
                             hairEdgeI,
-                            hairEdgeJ,
-                            tangentTol,
-                            featureSizeFactor
+                            hairEdgeJ
                         );
 
                     if( hairLength[hairEdgeI] > maxThickness )
@@ -1829,7 +1837,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                 activeHairEdge[hairEdgeI] = modifiedHairEdge[hairEdgeI];
             }
         }
-    } while( changed && (++nIter < nIterations) );
+    } while( changed && (++nIter < 1000) );
 }
 
 bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
@@ -1884,12 +1892,7 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void boundaryLayerOptimisation::optimiseLayer
-(
-    const label nIterations,
-    const scalar tangentTol,
-    const scalar featureSizeFactor
-)
+void boundaryLayerOptimisation::optimiseLayer()
 {
     //- create surface smoother
     meshSurfaceOptimizer surfOpt(meshSurface());
@@ -1908,16 +1911,10 @@ void boundaryLayerOptimisation::optimiseLayer
         thinnedHairEdge_ = false;
 
         //- calculate normals at the boundary
-        optimiseHairNormalsAtTheBoundary(nIterations);
+        optimiseHairNormalsAtTheBoundary();
 
         //- smoothing thickness variation of boundary hairs
-        optimiseThicknessVariation
-        (
-            1000,
-            tangentTol,
-            featureSizeFactor,
-            BOUNDARY
-        );
+        optimiseThicknessVariation(BOUNDARY);
 
         if( true )
         {
@@ -1938,16 +1935,10 @@ void boundaryLayerOptimisation::optimiseLayer
         # endif
 
         //- optimise normals inside the mesh
-        optimiseHairNormalsInside(nIterations);
+        optimiseHairNormalsInside();
 
         //- optimise thickness variation inside the mesh
-        optimiseThicknessVariation
-        (
-            1000,
-            tangentTol,
-            featureSizeFactor,
-            INSIDE
-        );
+        optimiseThicknessVariation(INSIDE);
 
         # ifdef DEBUGLayer
         label intCounter = 0;
@@ -1957,7 +1948,7 @@ void boundaryLayerOptimisation::optimiseLayer
         Info << "Thinned " << (intCounter - counter)
              << " inner hair edges" << endl;
         # endif
-    } while( optimiseLayersAtExittingFaces() && (++nIter < nIterations) );
+    } while( optimiseLayersAtExittingFaces() && (++nIter < maxNumIterations_) );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -94,6 +94,21 @@ class boundaryLayerOptimisation
         //- stores information where boundary hairs are made thinner
         boolList thinnedHairEdge_;
 
+        //- maximum number of iterations
+        label maxNumIterations_;
+
+        //- number of iterations for smoothing of hairs
+        label nSmoothNormals_;
+
+        //- relative tolerance for thickness variation
+        scalar relThicknessTol_;
+
+        //- feature size factor used for curvature-based optimisation
+        scalar featureSizeFactor_;
+
+        //- activate calculation of normals
+        bool reCalculateNormals_;
+
     // Private member functions
         //- access to mesh surface
         const meshSurfaceEngine& meshSurface() const;
@@ -119,19 +134,17 @@ class boundaryLayerOptimisation
 
         //- optimise hair normals at the boundary
         //- these are the regions where boundary layers exit the domain
-        void optimiseHairNormalsAtTheBoundary(const label nIterations);
+        void optimiseHairNormalsAtTheBoundary();
 
         //- optimise hair normals inside the mesh
-        void optimiseHairNormalsInside(const label nIterations);
+        void optimiseHairNormalsInside();
 
         //- calculate the thickness of the layer for edge heI
         //- respective to the height of edge heJ
         scalar calculateThickness
         (
             const label heI,
-            const label heJ,
-            const scalar tangentTol,
-            const scalar featureSizeFactor
+            const label heJ
         ) const;
 
         //- calculate thickness of the layer by checking intersections
@@ -141,16 +154,12 @@ class boundaryLayerOptimisation
         (
             const label heI,
             const label cellI,
-            const label baseFaceI,
-            const scalar featureSizeFactor
+            const label baseFaceI
         ) const;
 
         //- optimise thickness variation
         void optimiseThicknessVariation
         (
-            const label nIterations,
-            const scalar tangentTol,
-            const scalar featureSizeFactor,
             const direction edgeType = (INSIDE|BOUNDARY)
         );
 
@@ -213,6 +222,21 @@ public:
         ~boundaryLayerOptimisation();
 
     // Member Functions
+        //- set the maximum number of iterations
+        void setMaxNumIterations(const label maxNumIterations);
+
+        //- set the number of normal smoothing iterations (default is 5)
+        void setNumNormalsSmoothingIterations(const label nSmoothNormal);
+
+        //- shall normals be re-calculated (default true)
+        void reCalculateNormals(const bool);
+
+        //- set the relative thickness tolerance (default 0.15)
+        void setRelativeThicknessTolerance(const scalar);
+
+        //- set the feature size factor (default 0.3)
+        void setFeatureSizeFactor(const scalar);
+
         //- return hair edges
         const edgeLongList& hairEdges() const;
 
@@ -226,17 +250,12 @@ public:
         //- boundary faces where the layers exit at the boundary
         const boolList& isExitFace() const;
 
-        //- optimise boundary layer
-        void optimiseLayer
-        (
-            const label nIterations = 5,
-            const scalar thicknessTol = 0.15,
-            const scalar featureSizeFactor = 0.3
-        );
+        //- performs boundary layer optimisation
+        void optimiseLayer();
 
     // Static member functions
-        //- read the settings from dictionary and run the smoother
-        static void optimiseLayer
+        //- read the settings from dictionary
+        static void readSettings
         (
             const dictionary&,
             boundaryLayerOptimisation&
