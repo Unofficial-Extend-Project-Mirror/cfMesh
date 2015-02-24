@@ -66,7 +66,7 @@ class planeTranslation
 public:
 
     //- Runtime type information
-    TypeName("planeTranslation");
+    TypeName("plane");
 
 
     // Constructors

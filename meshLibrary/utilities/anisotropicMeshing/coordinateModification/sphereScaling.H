@@ -65,7 +65,7 @@ class sphereScaling
 public:
 
     //- Runtime type information
-    TypeName("sphereScaling");
+    TypeName("sphere");
 
 
     // Constructors
