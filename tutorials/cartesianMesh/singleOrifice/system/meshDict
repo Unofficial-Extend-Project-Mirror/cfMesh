@@ -25,6 +25,20 @@ boundaryCellSize 1.0;
 
 minCellSize 0.50;
 
+anisotropicSources
+{
+    Cone
+    {
+        type cone;
+        p0 (0 0 -20);
+        radius0 10;
+        p1 (0 0 25);
+        radius1 10;
+        axialScaling 1;
+        radialScaling 0.5;
+    }
+}
+
 localRefinement
 {
     "orificeRegion.*"
