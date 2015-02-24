@@ -75,7 +75,7 @@ class boxScaling
 public:
 
     //- Runtime type information
-    TypeName("boxScaling");
+    TypeName("box");
 
 
     // Constructors

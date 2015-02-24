@@ -81,7 +81,7 @@ class coneScaling
 public:
 
     //- Runtime type information
-    TypeName("coneScaling");
+    TypeName("cone");
 
 
     // Constructors
