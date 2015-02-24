@@ -34,4 +34,40 @@ surfaceMeshRefinement
     }
 }
 
+anisotropicSources
+{
+    Box
+    {
+        type box;
+	centre (2800 0 250);
+	lengthX 6000;
+	lengthY 1000;
+	lengthZ 200;
+	scaleX 1;
+	scaleY 1;
+	scaleZ 0.3;
+    }
+    
+/*
+    planeUpper
+    {
+	type plane;
+	normal (0 0 1);
+	origin (0 0 250);
+	translationDistance 125;
+	scalingFactor 0.5;
+    }
+    
+    planeLower
+    {
+	type plane;
+	normal (0 0 -1);
+	origin (0 0 250);
+	translationDistance 125;
+	scalingFactor 0.5;
+    }
+*/
+}
+     
+
 // ************************************************************************* //

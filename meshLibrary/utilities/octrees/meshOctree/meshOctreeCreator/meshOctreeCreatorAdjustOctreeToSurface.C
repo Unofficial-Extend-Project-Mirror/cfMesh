@@ -36,6 +36,7 @@ Description
 #include "HashSet.H"
 
 #include "coordinateModifier.H"
+#include "surfaceMeshGeometryModification.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -431,7 +432,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
     //- surface mesh
     const dictionary& surfDict = meshDictPtr_->subDict("surfaceMeshRefinement");
     const wordList surfaces = surfDict.toc();
-    PtrList<triSurf> surfaceMeshesPtr(surfaces.size());
+    PtrList<const triSurf> surfaceMeshesPtr(surfaces.size());
     List<direction> refLevels(surfaces.size(), globalRefLevel_);
     scalarList refThickness(surfaces.size());
 
@@ -442,11 +443,17 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
         const fileName fName(dict.lookup("surfaceFile"));
 
-        surfaceMeshesPtr.set
-        (
-            surfI,
-            new triSurf(fName)
-        );
+        if( meshDictPtr_->found("anisotropicSources") )
+        {
+            triSurf origSurf(fName);
+            surfaceMeshGeometryModification surfMod(origSurf, *meshDictPtr_);
+
+            surfaceMeshesPtr.set(surfI, surfMod.modifyGeometry());
+        }
+        else
+        {
+            surfaceMeshesPtr.set(surfI, new triSurf(fName));
+        }
 
         direction addLevel(0);
         if( dict.found("cellSize") )

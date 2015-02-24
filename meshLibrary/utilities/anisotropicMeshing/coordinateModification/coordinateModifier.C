@@ -31,7 +31,7 @@ namespace Foam
 
 void coordinateModifier::checkForValidInverse() const
 {
-    if( modifiers_.size() >= 1 )
+    if( modifiers_.size() > 1 )
     {
         //- the if the modifiers allow combinations
         forAll(modifiers_, modI)
