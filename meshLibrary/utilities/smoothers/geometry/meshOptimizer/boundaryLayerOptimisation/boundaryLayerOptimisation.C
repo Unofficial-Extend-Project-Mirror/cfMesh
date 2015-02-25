@@ -113,7 +113,7 @@ void boundaryLayerOptimisation::setNumNormalsSmoothingIterations
     nSmoothNormals_ = nSmoothNormals;
 }
 
-void boundaryLayerOptimisation::reCalculateNormals(const bool shallRecalculate)
+void boundaryLayerOptimisation::recalculateNormals(const bool shallRecalculate)
 {
     reCalculateNormals_ = shallRecalculate;
 }
@@ -178,12 +178,12 @@ void boundaryLayerOptimisation::readSettings
             const dictionary& optParams =
                 layersDict.subDict("optimisationParameters");
 
-            if( optParams.found("reCalculateNormals") )
+            if( optParams.found("recalculateNormals") )
             {
-                const bool reCalculateNormals =
-                    readBool(optParams.lookup("reCalculateNormals"));
+                const bool recalculateNormals =
+                    readBool(optParams.lookup("recalculateNormals"));
 
-                blOptimisation.reCalculateNormals(reCalculateNormals);
+                blOptimisation.recalculateNormals(recalculateNormals);
             }
 
             if( optParams.found("nSmoothNormals") )

@@ -229,7 +229,7 @@ public:
         void setNumNormalsSmoothingIterations(const label nSmoothNormal);
 
         //- shall normals be re-calculated (default true)
-        void reCalculateNormals(const bool);
+        void recalculateNormals(const bool);
 
         //- set the relative thickness tolerance (default 0.15)
         void setRelativeThicknessTolerance(const scalar);
