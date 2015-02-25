@@ -37,7 +37,18 @@ namespace Foam
 polyMeshGen::polyMeshGen(const Time& t)
 :
     polyMeshGenCells(t),
-    metaDict_()
+    metaDict_
+    (
+        IOobject
+        (
+            "meshMetaDict",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    )
 {}
 
 //- Construct from components without the boundary
@@ -50,7 +61,18 @@ polyMeshGen::polyMeshGen
 )
 :
     polyMeshGenCells(t, points, faces, cells),
-    metaDict_()
+    metaDict_
+    (
+        IOobject
+        (
+            "meshMetaDict",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    )
 {}
 
 //- Construct from components with the boundary
@@ -75,7 +97,18 @@ polyMeshGen::polyMeshGen
         patchStart,
         nFacesInPatch
     ),
-    metaDict_()
+    metaDict_
+    (
+        IOobject
+        (
+            "meshMetaDict",
+            runTime_.constant(),
+            "polyMesh",
+            runTime_,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    )
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -88,20 +121,6 @@ polyMeshGen::~polyMeshGen()
 void polyMeshGen::read()
 {
     polyMeshGenCells::read();
-
-    metaDict_ =
-        IOdictionary
-        (
-            IOobject
-            (
-                "meshMetaDict",
-                runTime_.constant(),
-                "polyMesh",
-                runTime_,
-                IOobject::READ_IF_PRESENT,
-                IOobject::NO_WRITE
-            )
-        );
 }
 
 void polyMeshGen::write() const
@@ -133,22 +152,9 @@ void polyMeshGen::write() const
 
     //- write meta data
     OFstream fName(meshDir/"meshMetaDict");
-    IOdictionary writeMeta
-    (
-        IOobject
-        (
-            "meshMetaDict",
-            runTime_.constant(),
-            "polyMesh",
-            runTime_,
-            IOobject::NO_READ,
-            IOobject::AUTO_WRITE
-        ),
-        metaDict_
-    );
 
-    writeMeta.writeHeader(fName);
-    writeMeta.writeData(fName);
+    metaDict_.writeHeader(fName);
+    metaDict_.writeData(fName);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

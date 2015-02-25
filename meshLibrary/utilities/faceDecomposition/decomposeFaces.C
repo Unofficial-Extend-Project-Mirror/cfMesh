@@ -49,7 +49,8 @@ namespace Foam
 decomposeFaces::decomposeFaces(polyMeshGen& mesh)
 :
     mesh_(mesh),
-    newFacesForFace_(mesh_.faces().size())
+    newFacesForFace_(),
+    done_(false)
 {}
 
 //- Destructor
@@ -60,6 +61,12 @@ decomposeFaces::~decomposeFaces()
 
 void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
 {
+    done_ = false;
+
+    newFacesForFace_.setSize(mesh_.faces().size());
+    forAll(newFacesForFace_, fI)
+        newFacesForFace_.setRowSize(fI, 0);
+
     const label nIntFaces = mesh_.nInternalFaces();
     label nFaces(0), nPoints = mesh_.points().size();
     point p;
@@ -314,6 +321,8 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
 
     meshModifier.clearAll();
 
+    done_ = true;
+
     # ifdef DEBUGDec
     Info << "New cells are " << cells << endl;
     mesh_.write();
@@ -333,6 +342,12 @@ void decomposeFaces::decomposeConcaveInternalFaces
             "(const boolList& concaveVertex)"
         ) << "This procedure is not parallelised!" << exit(FatalError);
     }
+
+    done_ = false;
+
+    newFacesForFace_.setSize(mesh_.faces().size());
+    forAll(newFacesForFace_, fI)
+        newFacesForFace_.setRowSize(fI, 0);
 
     const label nIntFaces = mesh_.nInternalFaces();
 
@@ -499,6 +514,19 @@ void decomposeFaces::decomposeConcaveInternalFaces
     # endif
 
     meshModifier.removeUnusedVertices();
+
+    done_ = true;
+}
+
+const VRWGraph& decomposeFaces::newFacesForFace() const
+{
+    if( !done_ )
+        WarningIn
+        (
+            "const VRWGraph& decomposeFaces::newFacesForFace() const"
+        ) << "Decomposition is not yet performed!" << endl;
+
+    return newFacesForFace_;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//

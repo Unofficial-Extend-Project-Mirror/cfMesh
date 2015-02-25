@@ -73,11 +73,6 @@ void cartesian2DMeshGenerator::createCartesianMesh()
     }
 
     cme.createMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_FAILURE);
-    # endif
 }
 
 void cartesian2DMeshGenerator::surfacePreparation()
@@ -103,11 +98,6 @@ void cartesian2DMeshGenerator::surfacePreparation()
     } while( changed );
 
     checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_FAILURE);
-    # endif
 }
 
 void cartesian2DMeshGenerator::mapMeshToSurface()
@@ -122,30 +112,20 @@ void cartesian2DMeshGenerator::mapMeshToSurface()
 
     mapper.preMapVertices();
 
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_FAILURE);
-    # endif
-
     //- map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_SUCCESS);
-    # endif
 
     deleteDemandDrivenData(msePtr);
 }
 
+void cartesian2DMeshGenerator::extractPatches()
+{
+    meshSurfaceEdgeExtractor2D(mesh_, *octreePtr_).distributeBoundaryFaces();
+}
+
 void cartesian2DMeshGenerator::mapEdgesAndCorners()
 {
-    meshSurfaceEdgeExtractor2D(mesh_, *octreePtr_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
+    meshSurfaceEdgeExtractor2D(mesh_, *octreePtr_).remapBoundaryPoints();
 }
 
 void cartesian2DMeshGenerator::optimiseMeshSurface()
@@ -154,11 +134,6 @@ void cartesian2DMeshGenerator::optimiseMeshSurface()
     meshSurfaceOptimizer optimizer(mse, *octreePtr_);
     optimizer.optimizeSurface2D();
     optimizer.untangleSurface2D();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void cartesian2DMeshGenerator::generateBoundaryLayers()
@@ -186,11 +161,6 @@ void cartesian2DMeshGenerator::generateBoundaryLayers()
         octreePtr_ = new meshOctree(*surfacePtr_, true);
         meshOctreeCreator(*octreePtr_).createOctreeWithRefinedBoundary(20);
     }
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void cartesian2DMeshGenerator::refBoundaryLayers()
@@ -215,46 +185,61 @@ void cartesian2DMeshGenerator::refBoundaryLayers()
 void cartesian2DMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void cartesian2DMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(0);
-    # endif
 }
 
 void cartesian2DMeshGenerator::generateMesh()
 {
     try
     {
-        createCartesianMesh();
+        if( controller_.runCurrentStep("templateGeneration") )
+        {
+            createCartesianMesh();
+        }
 
-        surfacePreparation();
+        if( controller_.runCurrentStep("surfaceTopology") )
+        {
+            surfacePreparation();
+        }
 
-        mapMeshToSurface();
+        if( controller_.runCurrentStep("surfaceProjection") )
+        {
+            mapMeshToSurface();
+        }
 
-        mapEdgesAndCorners();
+        if( controller_.runCurrentStep("patchAssignment") )
+        {
+            extractPatches();
+        }
 
-        optimiseMeshSurface();
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
+            mapEdgesAndCorners();
 
-        generateBoundaryLayers();
+            optimiseMeshSurface();
 
-        optimiseMeshSurface();
+            generateBoundaryLayers();
+        }
 
-        refBoundaryLayers();
+        if( controller_.runCurrentStep("meshOptimisation") )
+        {
+            optimiseMeshSurface();
+        }
+
+        if( controller_.runCurrentStep("boundaryLayerRefinement") )
+        {
+            refBoundaryLayers();
+        }
 
         renumberMesh();
 
         replaceBoundaries();
+
+        controller_.workflowCompleted();
     }
     catch(...)
     {
@@ -267,7 +252,6 @@ void cartesian2DMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from objectRegistry
 cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 :
     db_(time),
@@ -285,7 +269,8 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         )
     ),
     octreePtr_(NULL),
-    mesh_(time)
+    mesh_(time),
+    controller_(mesh_)
 {
     if( true )
     {
@@ -304,8 +289,8 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
         triSurfaceMetaData sMetaData(*surfacePtr_);
         const dictionary& surfMetaDict = sMetaData.metaData();
 
-        mesh_.metaData().add("surfaceFile", surfaceFile);
-        mesh_.metaData().add("surfaceMeta", surfMetaDict);
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
 
         triSurface2DCheck surfCheck(*surfacePtr_);
         if( !surfCheck.is2DSurface() )

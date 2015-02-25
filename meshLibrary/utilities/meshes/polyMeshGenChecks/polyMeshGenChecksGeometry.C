@@ -1883,6 +1883,90 @@ bool checkFaceFlatness
     }
 }
 
+label findBadFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report,
+    const boolList* activeFacePtr
+)
+{
+   badFaces.clear();
+
+    polyMeshGenChecks::checkFacePyramids
+    (
+        mesh,
+        report,
+        VSMALL,
+        &badFaces,
+        activeFacePtr
+    );
+
+    polyMeshGenChecks::checkFaceFlatness
+    (
+        mesh,
+        report,
+        0.8,
+        &badFaces,
+        activeFacePtr
+    );
+
+    polyMeshGenChecks::checkCellPartTetrahedra
+    (
+        mesh,
+        report,
+        VSMALL,
+        &badFaces,
+        activeFacePtr
+    );
+
+    polyMeshGenChecks::checkFaceAreas
+    (
+        mesh,
+        report,
+        VSMALL,
+        &badFaces,
+        activeFacePtr
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
+label findLowQualityFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report,
+    const boolList* activeFacePtr
+)
+{
+    badFaces.clear();
+
+    polyMeshGenChecks::checkFaceDotProduct
+    (
+        mesh,
+        report,
+        70.0,
+        &badFaces,
+        activeFacePtr
+    );
+
+    polyMeshGenChecks::checkFaceSkewness
+    (
+        mesh,
+        report,
+        2.0,
+        &badFaces,
+        activeFacePtr
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace polyMeshGenChecks

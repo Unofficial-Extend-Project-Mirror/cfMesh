@@ -37,6 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
+#include "workflowControls.H"
 //#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -74,6 +75,9 @@ class tetMeshGenerator
         //- mesh
         polyMeshGen mesh_;
 
+        //- workflow controller
+        workflowControls controller_;
+
     // Private member functions
         //- create cartesian mesh
         void createTetMesh();
@@ -85,13 +89,16 @@ class tetMeshGenerator
         void mapMeshToSurface();
 
         //- capture edges and corners
+        void extractPatches();
+
+        //- capture edges and corners
         void mapEdgesAndCorners();
 
         //- optimise surface mesh
         void optimiseMeshSurface();
 
         //- add boundary layers
-        void generateBoudaryLayers();
+        void generateBoundaryLayers();
 
         //- mesh optimisation
         void optimiseFinalMesh();

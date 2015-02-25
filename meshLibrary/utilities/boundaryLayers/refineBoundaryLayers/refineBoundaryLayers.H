@@ -88,6 +88,10 @@ class refineBoundaryLayers
         //- allow discontinuous layers for patch
         std::set<word> discontinuousLayersForPatch_;
 
+        //- the name of a subset which shall contain the indices
+        //- of the cells in the boundary layer
+        word cellSubsetName_;
+
         //- check whether the refinement is already executed
         bool done_;
 
@@ -96,7 +100,7 @@ class refineBoundaryLayers
 
         //- information about existing boundary layers at patches
         //- only available layers
-        labelList layerAtPatch_;
+        List<DynList<label> > layerAtPatch_;
 
         //- which patches are part of a single layer
         List<DynList<word> > patchesInLayer_;
@@ -126,23 +130,7 @@ class refineBoundaryLayers
         const meshSurfaceEngine& surfaceEngine() const;
 
         //- analyse layers to check their topology
-        void analyseLayers();
-
-        //- calculate addressing for a boundary cell
-        void calculateAddressing
-        (
-            const label bfI,
-            label& baseFace,
-            DynList<edge, 48>& edges,
-            DynList<DynList<label, 2>, 48>& edgeFaces,
-            DynList<DynList<label, 10>, 24>& faceEdges
-        ) const;
-
-        //- find bnd layer hairs for a boundary face
-        bool findHairsForFace(const label, DynList<edge>&) const;
-
-        //- find edges which shall be split due to refinement
-        bool findSplitEdges();
+        bool analyseLayers();
 
         //- generate new points on edges, faces and in cells
         void generateNewVertices();
@@ -181,8 +169,8 @@ class refineBoundaryLayers
         void generateNewCellsPrism
         (
             const label cellI,
-            DynList<DynList<DynList<label, 8>, 10> >& cellsFromCell
-        );
+            DynList<DynList<DynList<label, 8>, 10>, 64>& cellsFromCell
+        ) const;
 
         //- a helper function which stores faces generated from
         //- an existing face into new cells
@@ -217,8 +205,8 @@ class refineBoundaryLayers
                 //- container for new cells
                 DynList<DynList<DynList<label, 4>, 6>, 256> cellsFromCell_;
 
-                //- reference to the boundary layer class
-                refineBoundaryLayers& bndLayers_;
+                //- const reference to the boundary layer class
+                const refineBoundaryLayers& bndLayers_;
 
                 //- faces sorted into directions of a hex shape
                 FixedList<label, 6> faceInDirection_;
@@ -246,7 +234,11 @@ class refineBoundaryLayers
 
             // Constructor
                 //- construct from cell label and the refineBoundaryLayers
-                refineEdgeHexCell(const label cellI, refineBoundaryLayers& ref);
+                refineEdgeHexCell
+                (
+                    const label cellI,
+                    const refineBoundaryLayers& ref
+                );
 
             // Public member functions
                 inline const DynList<DynList<DynList<label, 4>, 6>, 256>&
@@ -278,7 +270,7 @@ class refineBoundaryLayers
                 DynList<DynList<DynList<label, 4>, 6>, 256> cellsFromCell_;
 
                 //- reference to the boundary layer class
-                refineBoundaryLayers& bndLayers_;
+                const refineBoundaryLayers& bndLayers_;
 
                 //- faces sorted into directions of a hex shape
                 FixedList<label, 6> faceInDirection_;
@@ -315,7 +307,7 @@ class refineBoundaryLayers
                 refineCornerHexCell
                 (
                     const label cellI,
-                    refineBoundaryLayers& ref
+                    const refineBoundaryLayers& ref
                 );
 
             // Public member functions
@@ -345,6 +337,8 @@ public:
         ~refineBoundaryLayers();
 
     // Public member functions
+
+        // Settings
         //- set no refinement flag
         void avoidRefinement();
 
@@ -390,9 +384,14 @@ public:
         //- sheet
         void setInteruptForPatch(const word& patchName);
 
+        //- set the flag to store the boundatry layer cells in a subset
+        void setCellSubset(const word subsetName = "layerCells");
+
+    // Worker
         //- performs refinement based on the given settings
         void refineLayers();
 
+    // Static member functions
         //- read the settings from dictionary
         static void readSettings(const dictionary&, refineBoundaryLayers&);
 };

@@ -37,6 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
+#include "workflowControls.H"
 //#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -74,6 +75,9 @@ class cartesianMeshGenerator
         //- mesh
         polyMeshGen mesh_;
 
+        //- workflow controller
+        workflowControls controller_;
+
     // Private member functions
         //- create cartesian mesh
         void createCartesianMesh();
@@ -85,6 +89,9 @@ class cartesianMeshGenerator
         void mapMeshToSurface();
 
         //- capture edges and corners
+        void extractPatches();
+
+        //- map points at feature edges and corners
         void mapEdgesAndCorners();
 
         //- optimise surface mesh

@@ -270,7 +270,7 @@ void polyMeshGen2DEngine::findZMaxOffsetPoints() const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-polyMeshGen2DEngine::polyMeshGen2DEngine(polyMeshGen& mesh)
+polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
 :
     mesh_(mesh),
     bb_(),
@@ -329,7 +329,7 @@ polyMeshGen2DEngine::~polyMeshGen2DEngine()
 
 void polyMeshGen2DEngine::correctPoints()
 {
-    pointFieldPMG& points = mesh_.points();
+    pointFieldPMG& points = const_cast<pointFieldPMG&>(mesh_.points());
 
     const labelList& zMinPointLabels = this->zMinPointLabels();
     const labelList& zMinOffset = this->zMinToZMax();

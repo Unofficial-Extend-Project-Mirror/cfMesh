@@ -57,6 +57,7 @@ refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
     thicknessRatioForPatch_(),
     maxThicknessForPatch_(),
     discontinuousLayersForPatch_(),
+    cellSubsetName_(),
     done_(false),
     is2DMesh_(false),
     nLayersAtBndFace_(),
@@ -78,17 +79,41 @@ refineBoundaryLayers::~refineBoundaryLayers()
 
 void refineBoundaryLayers::avoidRefinement()
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::avoidRefinement()"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     globalNumLayers_ = 1;
     numLayersForPatch_.clear();
 }
 
 void refineBoundaryLayers::activate2DMode()
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::activate2DMode()"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     is2DMesh_ = true;
 }
 
 void refineBoundaryLayers::setGlobalNumberOfLayers(const label nLayers)
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setGlobalNumberOfLayers(const label)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( nLayers < 2 )
     {
         WarningIn
@@ -105,6 +130,14 @@ void refineBoundaryLayers::setGlobalNumberOfLayers(const label nLayers)
 
 void refineBoundaryLayers::setGlobalThicknessRatio(const scalar thicknessRatio)
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setGlobalThicknessRatio(const scalar)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( thicknessRatio < 1.0 )
     {
         WarningIn
@@ -123,6 +156,15 @@ void refineBoundaryLayers::setGlobalMaxThicknessOfFirstLayer
     const scalar maxThickness
 )
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setGlobalMaxThicknessOfFirstLayer"
+            "(const scalar)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( maxThickness <= 0.0 )
     {
         WarningIn
@@ -144,6 +186,15 @@ void refineBoundaryLayers::setNumberOfLayersForPatch
     const label nLayers
 )
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setNumberOfLayersForPatch"
+            "(const word&, const label)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( nLayers < 2 )
     {
         WarningIn
@@ -168,6 +219,15 @@ void refineBoundaryLayers::setThicknessRatioForPatch
     const scalar thicknessRatio
 )
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setThicknessRatioForPatch"
+            "(const word&, const scalar)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( thicknessRatio < 1.0 )
     {
         WarningIn
@@ -195,6 +255,15 @@ void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
     const scalar maxThickness
 )
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch"
+            "(const word&, const scalar)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     if( maxThickness <= 0.0 )
     {
         WarningIn
@@ -218,6 +287,14 @@ void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
 
 void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
 {
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setInteruptForPatch(const word&)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
     const labelList matchedIDs = mesh_.findPatches(patchName);
 
     forAll(matchedIDs, matchI)
@@ -225,6 +302,19 @@ void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
         const word pName = mesh_.getPatchName(matchedIDs[matchI]);
         discontinuousLayersForPatch_.insert(pName);
     }
+}
+
+void refineBoundaryLayers::setCellSubset(const word subsetName)
+{
+    if( done_ )
+    {
+        FatalErrorIn
+        (
+            "void refineBoundaryLayers::setCellSubset(const word)"
+        ) << "refineLayers is already executed" << exit(FatalError);
+    }
+
+    cellSubsetName_ = subsetName;
 }
 
 void refineBoundaryLayers::refineLayers()
@@ -249,14 +339,13 @@ void refineBoundaryLayers::refineLayers()
         WarningIn
         (
             "void refineBoundaryLayers::refineLayers()"
-        ) << "Boundary layers are already refined! Stopping refinement" << endl;
+        ) << "Boundary layers are already refined! "
+          << "Stopping refinement" << endl;
 
         return;
     }
 
-    analyseLayers();
-
-    if( !findSplitEdges() )
+    if( !analyseLayers() )
     {
         WarningIn
         (
@@ -295,7 +384,8 @@ void refineBoundaryLayers::readSettings
         }
         if( bndLayers.found("thicknessRatio") )
         {
-            const scalar ratio = readScalar(bndLayers.lookup("thicknessRatio"));
+            const scalar ratio =
+                readScalar(bndLayers.lookup("thicknessRatio"));
             refLayers.setGlobalThicknessRatio(ratio);
         }
         if( bndLayers.found("maxFirstLayerThickness") )
@@ -310,7 +400,7 @@ void refineBoundaryLayers::readSettings
         if( bndLayers.found("excludedPatches") )
         {
             const wordList patchNames(bndLayers.lookup("excludedPatches"));
-            
+
             forAll(patchNames, patchI)
             {
                 const word pName = patchNames[patchI];

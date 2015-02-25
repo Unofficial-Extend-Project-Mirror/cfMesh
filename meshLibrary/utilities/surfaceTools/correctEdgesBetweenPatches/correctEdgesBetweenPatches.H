@@ -92,6 +92,9 @@ class correctEdgesBetweenPatches
         //- edge at the boundary
         void decomposeProblematicFaces();
 
+        //- decompose cells with faces at concave boundary edges
+        void decomposeConcaveFaces();
+
         //- perform decompose remaining faces having more than one feature edge
         void patchCorrection();
 
