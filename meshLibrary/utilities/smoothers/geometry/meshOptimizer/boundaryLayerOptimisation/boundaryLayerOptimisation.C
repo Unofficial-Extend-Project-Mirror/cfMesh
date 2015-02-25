@@ -49,7 +49,12 @@ boundaryLayerOptimisation::boundaryLayerOptimisation(polyMeshGen& mesh)
     isBndLayerBase_(),
     isExitFace_(),
     hairEdgeType_(),
-    thinnedHairEdge_()
+    thinnedHairEdge_(),
+    maxNumIterations_(5),
+    nSmoothNormals_(5),
+    relThicknessTol_(0.15),
+    featureSizeFactor_(0.3),
+    reCalculateNormals_(true)
 {
     calculateHairEdges();
 }
@@ -70,7 +75,12 @@ boundaryLayerOptimisation::boundaryLayerOptimisation
     isBndLayerBase_(),
     isExitFace_(),
     hairEdgeType_(),
-    thinnedHairEdge_()
+    thinnedHairEdge_(),
+    maxNumIterations_(5),
+    nSmoothNormals_(5),
+    relThicknessTol_(0.15),
+    featureSizeFactor_(0.3),
+    reCalculateNormals_(true)
 {
     calculateHairEdges();
 }
@@ -86,6 +96,43 @@ boundaryLayerOptimisation::~boundaryLayerOptimisation()
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void boundaryLayerOptimisation::setMaxNumIterations
+(
+    const label maxNumIterations
+)
+{
+    maxNumIterations_ = maxNumIterations;
+}
+
+void boundaryLayerOptimisation::setNumNormalsSmoothingIterations
+(
+    const label nSmoothNormals
+)
+{
+    nSmoothNormals_ = nSmoothNormals;
+}
+
+void boundaryLayerOptimisation::recalculateNormals(const bool shallRecalculate)
+{
+    reCalculateNormals_ = shallRecalculate;
+}
+
+void boundaryLayerOptimisation::setRelativeThicknessTolerance
+(
+    const scalar relThicknessTol
+)
+{
+    relThicknessTol_ = relThicknessTol;
+}
+
+void boundaryLayerOptimisation::setFeatureSizeFactor
+(
+    const scalar featureSizeFactor
+)
+{
+    featureSizeFactor_ = featureSizeFactor;
+}
 
 const edgeLongList& boundaryLayerOptimisation::hairEdges() const
 {
@@ -107,56 +154,87 @@ const boolList& boundaryLayerOptimisation::isExitFace() const
     return isExitFace_;
 }
 
-void boundaryLayerOptimisation::optimiseLayer
+void boundaryLayerOptimisation::readSettings
 (
     const dictionary& meshDict,
     boundaryLayerOptimisation& blOptimisation
 )
 {
-    label nIterations(20);
-    scalar thicknessTol(0.15);
-    scalar featureSizeTol(0.3);
-
     if( meshDict.found("boundaryLayers") )
     {
-        const dictionary& blDict = meshDict.subDict("boundaryLayers");
+        const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-        if( blDict.found("boundaryLayerSmoother") )
+        if( layersDict.found("optimiseLayer") )
         {
-            const dictionary& smoothDict =
-                blDict.subDict("boundaryLayerSmoother");
+            const bool smoothLayers =
+                readBool(layersDict.lookup("optimiseLayer"));
 
-            if( smoothDict.found("nIterations") )
-                nIterations = readLabel(smoothDict.lookup("nIterations"));
+            if( !smoothLayers )
+                return;
+        }
 
-            if( smoothDict.found("thicknessAngle") )
+        if( layersDict.found("optimisationParameters") )
+        {
+            const dictionary& optParams =
+                layersDict.subDict("optimisationParameters");
+
+            if( optParams.found("recalculateNormals") )
             {
-                const scalar angle =
-                    readScalar(smoothDict.lookup("thicknessAngle"));
+                const bool recalculateNormals =
+                    readBool(optParams.lookup("recalculateNormals"));
 
-                thicknessTol = Foam::tan(angle * M_PI / 180.0);
+                blOptimisation.recalculateNormals(recalculateNormals);
             }
 
-            if( smoothDict.found("featureSizeTolerance") )
+            if( optParams.found("nSmoothNormals") )
             {
-                const scalar featureSize =
-                    readScalar(smoothDict.lookup("featureSizeTolerance"));
+                const label nSmoothNormals =
+                    readLabel(optParams.lookup("nSmoothNormals"));
 
-                if( featureSizeTol >= 1.0 || featureSizeTol < 0.0 )
+                blOptimisation.setNumNormalsSmoothingIterations(nSmoothNormals);
+            }
+
+            if( optParams.found("featureSizeFactor") )
+            {
+                const scalar featureSizeFactor =
+                    readScalar(optParams.lookup("featureSizeFactor"));
+
+                if( featureSizeFactor >= 1.0 || featureSizeFactor < 0.0 )
                     FatalErrorIn
                     (
                         "void boundaryLayerOptimisation::optimiseLayer"
                         "(const dictionary&, boundaryLayerOptimisation&)"
-                    ) << "Invalid feature size tolerance is out"
+                    ) << "Feature size factor is out"
                       << " of a valid range 0 to 1" << exit(FatalError);
 
-                featureSizeTol = featureSize;
+                blOptimisation.setFeatureSizeFactor(featureSizeFactor);
+            }
+
+            if( optParams.found("relThicknessTol") )
+            {
+                const scalar relThicknessTol =
+                    readScalar(optParams.lookup("relThicknessTol"));
+
+                if( relThicknessTol >= 1.0 || relThicknessTol < 0.0 )
+                    FatalErrorIn
+                    (
+                        "void boundaryLayerOptimisation::optimiseLayer"
+                        "(const dictionary&, boundaryLayerOptimisation&)"
+                    ) << "Relative thickness tolerance is out"
+                      << " of a valid range 0 to 1" << exit(FatalError);
+
+                blOptimisation.setRelativeThicknessTolerance(relThicknessTol);
+            }
+
+            if( optParams.found("maxNumIterations") )
+            {
+                const label maxNumIterations =
+                    readLabel(optParams.lookup("maxNumIterations"));
+
+                blOptimisation.setMaxNumIterations(maxNumIterations);
             }
         }
     }
-
-    //- optimise hair normals
-    blOptimisation.optimiseLayer(nIterations, thicknessTol, featureSizeTol);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

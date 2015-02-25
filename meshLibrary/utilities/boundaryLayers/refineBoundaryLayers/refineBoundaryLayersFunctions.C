@@ -275,6 +275,9 @@ bool refineBoundaryLayers::analyseLayers()
         }
     }
 
+    //- perform reduction over all processors
+    reduce(nLayersAtPatch, maxOp<labelList>());
+
     # ifdef DEBUGLayer
     Pout << "nLayersAtPatch " << nLayersAtPatch << endl;
     # endif

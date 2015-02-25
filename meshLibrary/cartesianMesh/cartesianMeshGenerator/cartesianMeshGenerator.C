@@ -155,7 +155,7 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer(mesh_).untangleMeshFV();
+        meshOptimizer(mesh_).untangleBoundaryLayer();
     }
 }
 

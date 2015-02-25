@@ -187,24 +187,7 @@ void tetMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        labelHashSet badFaces;
-        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
-
-        if( badFaces.size() != 0 )
-        {
-            Warning << "Bad bnd layer cells found!!" << endl;
-
-            const labelList& owner = mesh_.owner();
-            const labelList& nei = mesh_.neighbour();
-
-            const label subsetI = mesh_.addCellSubset("invertedCells");
-            forAllConstIter(labelHashSet, badFaces, it)
-            {
-                mesh_.addCellToSubset(subsetI, owner[it.key()]);
-                if( nei[it.key()] >= 0 )
-                    mesh_.addCellToSubset(subsetI, nei[it.key()]);
-            }
-        }
+        meshOptimizer(mesh_).untangleBoundaryLayer();
     }
 }
 

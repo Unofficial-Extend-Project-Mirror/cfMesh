@@ -70,4 +70,27 @@ anisotropicSources
 }
      
 
+boundaryLayers
+{
+    patchBoundaryLayers
+    {
+        HULL_AND_BOX_1
+        {
+            nLayers 5;
+            thicknessRatio 1.1;
+        }
+    }
+    
+    optimiseLayer 1;
+
+    optimisationParameters
+    {
+        nSmoothNormals 3;
+        maxNumIterations 5;
+        featureSizeFactor 0.4;
+        reCalculateNormals 1;
+        relThicknessTol 0.1;
+    }
+}
+
 // ************************************************************************* //

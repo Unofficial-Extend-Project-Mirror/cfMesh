@@ -331,11 +331,39 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
+    //- check if there exist concave faces
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(bFaces, bfI)
+    {
+        const face& bf = bFaces[bfI];
+
+        DynList<bool> OkPoints;
+        if( !help::isFaceConvexAndOk(bf, points, OkPoints) )
+        {
+            forAll(OkPoints, pI)
+            {
+                if( activePointsPtr_ && !(*activePointsPtr_)[bp[bf[pI]]] )
+                    continue;
+
+                if( !OkPoints[pI] )
+                {
+                    # ifdef USE_OMP
+                    # pragma omp critical
+                    # endif
+                    {
+                        invertedVertices_.insert(bf[pI]);
+                    }
+                }
+            }
+        }
+    }
+
     if( Pstream::parRun() )
     {
         //- exchange global labels of inverted points
         const labelList& bPoints = mse.boundaryPoints();
-        const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
         const Map<label>& globalToLocal =
             mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
@@ -359,7 +387,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 if( neiProc == Pstream::myProcNo() )
                     continue;
 
-                shareData[neiProc].append(globalPointLabel[bpI]);
+                shareData[neiProc].append(iter.key());
             }
         }
 
@@ -371,28 +399,6 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         {
             const label bpI = globalToLocal[receivedData[i]];
             invertedVertices_.insert(bPoints[bpI]);
-        }
-    }
-
-    //- check if there exist concave faces
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(bFaces, bfI)
-    {
-        const face& bf = bFaces[bfI];
-
-        DynList<bool> OkPoints;
-        if( !help::isFaceConvexAndOk(bf, points, OkPoints) )
-        {
-            forAll(OkPoints, pI)
-            {
-                if( activePointsPtr_ && !(*activePointsPtr_)[bp[bf[pI]]] )
-                    continue;
-
-                if( !OkPoints[pI] )
-                    invertedVertices_.insert(bf[pI]);
-            }
         }
     }
 }
