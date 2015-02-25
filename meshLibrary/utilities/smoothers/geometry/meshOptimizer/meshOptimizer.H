@@ -260,6 +260,10 @@ public:
         //- it is applied to the first boundary layer, only
         void optimizeBoundaryLayer();
 
+        //- performs untangling of boundary layer cells
+        //- if the user requests for it
+        void untangleBoundaryLayer();
+
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
         void optimizeLowQualityFaces(const label maxNumIterations = 10);

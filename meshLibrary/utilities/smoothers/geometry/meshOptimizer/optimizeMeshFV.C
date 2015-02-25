@@ -331,6 +331,68 @@ void meshOptimizer::optimizeBoundaryLayer()
     }
 }
 
+void meshOptimizer::untangleBoundaryLayer()
+{
+    bool untangleLayer(true);
+    if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
+    {
+        const dictionary& meshDict =
+            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
+
+        if( meshDict.found("boundaryLayers") )
+        {
+            const dictionary& layersDict = meshDict.subDict("boundaryLayers");
+
+            if( layersDict.found("untangleLayers") )
+            {
+                untangleLayer =
+                    readBool(layersDict.lookup("untangleLayers"));
+            }
+        }
+    }
+
+    if( !untangleLayer )
+    {
+        labelHashSet badFaces;
+        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
+
+        const label nInvalidFaces =
+            returnReduce(badFaces.size(), sumOp<label>());
+
+        if( nInvalidFaces != 0 )
+        {
+            const labelList& owner = mesh_.owner();
+            const labelList& neighbour = mesh_.neighbour();
+
+            const label badBlCellsId =
+                mesh_.addCellSubset("invalidBoundaryLayerCells");
+
+            forAllConstIter(labelHashSet, badFaces, it)
+            {
+                mesh_.addCellToSubset(badBlCellsId, owner[it.key()]);
+
+                if( neighbour[it.key()] < 0 )
+                    continue;
+
+                mesh_.addCellToSubset(badBlCellsId, neighbour[it.key()]);
+            }
+
+            mesh_.write();
+
+            returnReduce(1, sumOp<label>());
+            FatalErrorIn
+            (
+                "void meshOptimizer::untangleBoundaryLayer()"
+            ) << "Found " << nInvalidFaces << " invalid faces. Exitting"
+              << exit(FatalError);
+        }
+    }
+    else
+    {
+        untangleMeshFV();
+    }
+}
+
 void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
 {
     label nBadFaces, nIter(0);
