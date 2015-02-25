@@ -537,6 +537,75 @@ void checkMeshDict::checkBoundaryLayers() const
                 }
             }
         }
+
+        //- check for existence of boundary layer smoothing
+        if( bndLayers.found("optimiseLayer") )
+        {
+            readBool(bndLayers.lookup("optimiseLayer"));
+        }
+
+        if( bndLayers.found("optimisationParameters") )
+        {
+            const dictionary& optParams =
+                bndLayers.subDict("optimisationParameters");
+
+            if( optParams.found("reCalculateNormals") )
+            {
+                readBool(optParams.lookup("reCalculateNormals"));
+            }
+
+            if( optParams.found("nSmoothNormals") )
+            {
+                const label nSmoothNormals =
+                    readLabel(optParams.lookup("nSmoothNormals"));
+
+                if( nSmoothNormals < 0 )
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkBoundaryLayers() const"
+                    ) << "nSmoothNormals must not be negative!"
+                      << exit(FatalError);
+            }
+
+            if( optParams.found("featureSizeFactor") )
+            {
+                const scalar featureSizeFactor =
+                    readScalar(optParams.lookup("featureSizeFactor"));
+
+                if( featureSizeFactor >= 1.0 || featureSizeFactor < 0.0 )
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkBoundaryLayers() const"
+                    ) << "Feature size factor is out"
+                      << " of a valid range 0 to 1" << exit(FatalError);
+            }
+
+            if( optParams.found("relThicknessTol") )
+            {
+                const scalar relThicknessTol =
+                    readScalar(optParams.lookup("relThicknessTol"));
+
+                if( relThicknessTol >= 1.0 || relThicknessTol < 0.0 )
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkBoundaryLayers() const"
+                    ) << "Relative thickness tolerance is out"
+                      << " of a valid range 0 to 1" << exit(FatalError);
+            }
+
+            if( optParams.found("maxNumIterations") )
+            {
+                const label maxNumIterations =
+                    readLabel(optParams.lookup("maxNumIterations"));
+
+                if( maxNumIterations < 0 )
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkBoundaryLayers() const"
+                    ) << "maxNumIterations must not be negative!"
+                      << exit(FatalError);
+            }
+        }
     }
 }
 
