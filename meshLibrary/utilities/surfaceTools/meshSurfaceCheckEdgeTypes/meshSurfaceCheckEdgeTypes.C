@@ -202,12 +202,15 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
         LongList<labelledPoint> receiveCentres;
         help::exchangeMap(exchangeFaceCentres, receiveCentres);
 
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 20)
+        # endif
         forAll(receiveCentres, i)
         {
             const labelledPoint& lp = receiveCentres[i];
             const label edgeI = globalToLocalEdge[lp.pointLabel()];
 
-            // TODO: this is valid fo manifold meshes, only
+            // TODO: this is valid for manifold meshes, only
             if( edgeFaces.sizeOfRow(edgeI) != 1 )
                 continue;
 
