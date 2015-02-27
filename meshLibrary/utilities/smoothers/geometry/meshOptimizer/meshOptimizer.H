@@ -278,7 +278,13 @@ public:
         );
 
         //- final optimisation
-        void optimizeMeshFV();
+        void optimizeMeshFV
+        (
+            const label numLaplaceIterations = 5,
+            const label maxNumGlobalIterations = 10,
+            const label maxNumIterations = 50,
+            const label maxNumSurfaceIterations = 2
+        );
 };
 
 
