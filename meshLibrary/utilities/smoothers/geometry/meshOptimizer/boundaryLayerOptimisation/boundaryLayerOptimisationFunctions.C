@@ -28,6 +28,7 @@ Description
 #include "demandDrivenData.H"
 #include "boundaryLayerOptimisation.H"
 #include "meshSurfacePartitioner.H"
+#include "meshSurfaceEngine.H"
 #include "detectBoundaryLayers.H"
 #include "helperFunctions.H"
 #include "labelledScalar.H"
@@ -36,6 +37,8 @@ Description
 #include "polyMeshGenAddressing.H"
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceEngineModifier.H"
+#include "partTetMeshSimplex.H"
+#include "volumeOptimizer.H"
 #include "OFstream.H"
 
 //#define DEBUGLayer
@@ -352,13 +355,140 @@ void boundaryLayerOptimisation::calculateNormalVectors
         forAllIter(patchNormalType, patchNormal, pIt)
         {
             pIt->second.first /= pIt->second.second;
-            pIt->second.first /= (mag(pIt->second.first) + VSMALL);
+            //pIt->second.first /= (mag(pIt->second.first) + VSMALL);
         }
 
         # ifdef USE_OMP
         }
         # endif
     }
+}
+
+void boundaryLayerOptimisation::calculateNormalVectorsSmother
+(
+    const direction eType,
+    pointNormalsType& pointPatchNormal
+)
+{
+    const meshSurfacePartitioner& mPart = surfacePartitioner();
+    const meshSurfaceEngine& mse = mPart.surfaceEngine();
+    const pointFieldPMG& points = mse.points();
+    const labelList& bp = mse.bp();
+
+    partTriMesh triMesh(mPart);
+
+    const pointField& triMeshPoints = triMesh.points();
+    const VRWGraph& pTriangles = triMesh.pointTriangles();
+    const LongList<labelledTri>& triangles = triMesh.triangles();
+    const labelList& triPointLabel = triMesh.meshSurfacePointLabelInTriMesh();
+    const labelLongList& surfPointLabel = triMesh.pointLabelInMeshSurface();
+
+    Info << "Calculating normals using smoother " << endl;
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(hairEdgeType_, heI)
+    {
+        if( !(hairEdgeType_[heI] & eType) )
+            continue;
+
+        const edge& he = hairEdges_[heI];
+        const label bpI = bp[he.start()];
+
+        const label triPointI = triPointLabel[bpI];
+
+        //- create an entry in a map
+        patchNormalType* patchNormalPtr(NULL);
+        # ifdef USE_OMP
+        # pragma omp critical
+            patchNormalPtr = &pointPatchNormal[bpI];
+        # else
+        patchNormalPtr = &pointPatchNormal[bpI];
+        # endif
+
+        patchNormalType& patchNormal = *patchNormalPtr;
+
+        //- find patches at this point
+        DynList<label> patchesAtPoint;
+        forAllRow(pTriangles, triPointI, ptI)
+        {
+            patchesAtPoint.appendIfNotIn
+            (
+                triangles[pTriangles(triPointI, ptI)].region()
+            );
+        }
+
+        forAll(patchesAtPoint, ptchI)
+        {
+            const label patchI = patchesAtPoint[ptchI];
+
+            DynList<point, 128> pts(2);
+            DynList<partTet, 128> tets;
+
+            //- create points
+            pts[0] = points[he.start()];
+            pts[1] = points[he.end()];
+
+            Map<label> bpToSimplex;
+            bpToSimplex.insert(bpI, 0);
+
+            forAllRow(pTriangles, triPointI, ptI)
+            {
+                const labelledTri& tri = triangles[pTriangles(triPointI, ptI)];
+
+                if( tri.region() == patchI )
+                {
+                    //- create points originating from triangles
+                    FixedList<label, 3> triLabels;
+                    forAll(tri, pI)
+                    {
+                        const label spLabel = tri[pI];
+                        const label bpLabel = surfPointLabel[spLabel];
+
+                        if( bpLabel < 0 )
+                        {
+                            triLabels[pI] = pts.size();
+                            pts.append(triMeshPoints[spLabel]);
+                            continue;
+                        }
+
+                        if( !bpToSimplex.found(bpLabel) )
+                        {
+                            bpToSimplex.insert(bpLabel, pts.size());
+                            pts.append(triMeshPoints[spLabel]);
+                        }
+
+                        triLabels[pI] = bpToSimplex[bpLabel];
+                    }
+
+                    //- create a new tetrahedron
+                    tets.append
+                    (
+                        partTet(triLabels[2], triLabels[1], triLabels[0], 1)
+                    );
+                }
+            }
+
+            //- create partTeMeshSimplex
+            partTetMeshSimplex simplex(pts, tets, 1);
+
+            //- activate volume optimizer
+            volumeOptimizer vOpt(simplex);
+
+            vOpt.optimizeNodePosition();
+
+            const point newP = simplex.centrePoint();
+
+            vector n = -1.0 * (newP - pts[0]);
+            const scalar magN = (mag(n) + VSMALL);
+
+            patchNormal[patchI].first = (n / magN);
+            patchNormal[patchI].second = magN;
+        }
+    }
+
+    Info << "Finished calculating normals using smoother " << endl;
 }
 
 void boundaryLayerOptimisation::calculateHairEdges()
@@ -848,9 +978,6 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
 
 void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
 {
-    if( nSmoothNormals_ == 0 )
-        return;
-
     pointFieldPMG& points = mesh_.points();
 
     //- calculate direction of hair vector based on the surface normal
@@ -862,12 +989,31 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
     //- calculate hair vectors
     //- they point in the normal direction to the surface
     vectorField hairVecs(hairEdges_.size());
-    calculateHairVectorsAtTheBoundary(hairVecs);
+
+    if( reCalculateNormals_ )
+    {
+        //- calulate new normal vectors
+        calculateHairVectorsAtTheBoundary(hairVecs);
+    }
+    else
+    {
+        if( nSmoothNormals_ == 0 )
+            return;
+
+        //- keep existing hair vectors
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(hairEdges_, heI)
+            hairVecs[heI] = hairEdges_[heI].vec(points);
+    }
+
+    Info << "Smoothing boundary hair vectors" << endl;
 
     //- smooth the variation of normals to reduce the twisting of faces
     label nIter(0);
 
-    while( nIter++ < nSmoothNormals_ );
+    while( nIter++ < nSmoothNormals_ )
     {
         vectorField newNormals(hairVecs.size());
 
@@ -1099,13 +1245,12 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
             points[he.end()] = points[he.start()] + hv * he.mag(points);
         }
     }
+
+    Info << "Finished smoothing boundary hair vectors" << endl;
 }
 
 void boundaryLayerOptimisation::optimiseHairNormalsInside()
 {
-    if( nSmoothNormals_ == 0 )
-        return;
-
     pointFieldPMG& points = mesh_.points();
 
     //- calculate direction of hair vector based on the surface normal
@@ -1121,7 +1266,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
     {
         //- calculate point normals with respect to all patches at a point
         pointNormalsType pointPatchNormal;
-        calculateNormalVectors(INSIDE, pointPatchNormal);
+        //calculateNormalVectors(INSIDE, pointPatchNormal);
+        calculateNormalVectorsSmother(INSIDE, pointPatchNormal);
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
@@ -1169,6 +1315,11 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
     }
     else
     {
+        if( nSmoothNormals_ == 0 )
+            return;
+
+        Info << "Using existing hair vectors" << endl;
+
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
@@ -1184,6 +1335,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
     # ifdef DEBUGLayer
     writeHairEdges("insideHairVectors.vtk", (INSIDE|BOUNDARY), hairVecs);
     # endif
+
+    Info << "Smoothing internal hair vectors" << endl;
 
     //- smooth the variation of normals to reduce twisting of faces
     label nIter(0);
@@ -1436,6 +1589,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
             points[he.end()] = points[he.start()] + hv * he.mag(points);
         }
     }
+
+    Info << "Finished smoothing internal hair vectors" << endl;
 }
 
 scalar boundaryLayerOptimisation::calculateThickness
