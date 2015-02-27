@@ -228,6 +228,25 @@ inline void partTet::operator=(const partTet& tet)
         data_[i] = tet.data_[i];
 }
 
+inline bool partTet::operator==(const partTet& tet) const
+{
+    if( this->a() != tet.a() )
+        return false;
+    if( this->b() != tet.b() )
+        return false;
+    if( this->c() != tet.c() )
+        return false;
+    if( this->d() != tet.d() )
+        return false;
+
+    return true;
+}
+
+inline bool partTet::operator!=(const partTet& tet) const
+{
+    return !this->operator==(tet);
+}
+
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
 inline Ostream& operator<<(Ostream& os, const partTet& t)
@@ -240,7 +259,6 @@ inline Ostream& operator<<(Ostream& os, const partTet& t)
 
     return os;
 }
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

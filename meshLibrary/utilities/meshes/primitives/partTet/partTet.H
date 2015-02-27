@@ -136,6 +136,9 @@ public:
             
             inline void operator=(const partTet&);
 
+            inline bool operator==(const partTet&) const;
+            inline bool operator!=(const partTet&) const;
+
     // IOstream operators
 
             friend Ostream& operator<<(Ostream&, const partTet&);
