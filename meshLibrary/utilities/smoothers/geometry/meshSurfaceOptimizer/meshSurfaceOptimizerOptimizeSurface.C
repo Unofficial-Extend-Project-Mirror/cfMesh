@@ -573,7 +573,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     if( octreePtr_ )
         mapperPtr = new meshSurfaceMapper(*partitionerPtr_, *octreePtr_);
 
-    labelLongList procBndPoints, edgePoints, partitionPoints;
+    labelLongList procBndPoints, edgePoints, partitionPoints, procPoints;
     forAll(bPoints, bpI)
     {
         if( vertexType_[bpI] & LOCKED )
@@ -589,6 +589,9 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
         else if( vertexType_[bpI] & PARTITION )
         {
             partitionPoints.append(bpI);
+
+            if( vertexType_[bpI] & PROCBND )
+                procPoints.append(bpI);
         }
     }
 
@@ -618,6 +621,8 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     Info << "Optimizing surface vertices. Iteration:";
     for(label i=0;i<nIterations;++i)
     {
+        smoothLaplacianFC(partitionPoints, procPoints, true);
+
         smoothSurfaceOptimizer(partitionPoints);
 
         Info << "." << flush;
