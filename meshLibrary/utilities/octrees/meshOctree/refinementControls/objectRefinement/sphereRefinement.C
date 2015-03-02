@@ -48,6 +48,7 @@ sphereRefinement::sphereRefinement
 (
     const word& name,
     const scalar cellSize,
+    const direction additionalRefLevels,
     const point& centre,
     const scalar radius
 )
@@ -58,6 +59,7 @@ sphereRefinement::sphereRefinement
 {
     setName(name);
     setCellSize(cellSize);
+    setAdditionalRefinementLevels(additionalRefLevels);
 }
 
 sphereRefinement::sphereRefinement
@@ -89,7 +91,15 @@ dictionary sphereRefinement::dict(bool ignoreType) const
 {
     dictionary dict;
 
-    dict.add("cellSize", cellSize());
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        dict.add("cellSize", cellSize());
+    }
+    else
+    {
+        dict.add("additionalRefinementLevels", additionalRefinementLevels());
+    }
+
     dict.add("type", type());
 
     dict.add("centre", centre_);
@@ -112,7 +122,16 @@ void sphereRefinement::writeDict(Ostream& os, bool subDict) const
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
     
-    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    }
+    else
+    {
+        os.writeKeyword("additionalRefinementLevels")
+                << additionalRefinementLevels()
+                << token::END_STATEMENT << nl;
+    }
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -174,6 +193,8 @@ Ostream& sphereRefinement::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
+    os << "additionalRefinementLevels " << additionalRefinementLevels() << endl;
+
     write(os);
     return os;
 }

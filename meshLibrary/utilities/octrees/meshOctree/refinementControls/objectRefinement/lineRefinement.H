@@ -75,6 +75,7 @@ public:
         (
             const word& name,
             const scalar cellSize,
+            const direction additionalRefLevels,
             const point& p0,
             const point& p1
         );
@@ -94,6 +95,7 @@ public:
                 (
                     sr.name(),
                     sr.cellSize(),
+                    sr.additionalRefinementLevels(),
                     sr.p0_,
                     sr.p1_
                 )

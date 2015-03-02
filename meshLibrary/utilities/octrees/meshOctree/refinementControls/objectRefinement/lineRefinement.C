@@ -48,6 +48,7 @@ lineRefinement::lineRefinement
 (
     const word& name,
     const scalar cellSize,
+    const direction additionalRefLevels,
     const point& p0,
     const point& p1
 )
@@ -58,6 +59,7 @@ lineRefinement::lineRefinement
 {
     setName(name);
     setCellSize(cellSize);
+    setAdditionalRefinementLevels(additionalRefLevels);
 }
 
 lineRefinement::lineRefinement
@@ -208,7 +210,15 @@ dictionary lineRefinement::dict(bool ignoreType) const
 {
     dictionary dict;
 
-    dict.add("cellSize", cellSize());
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        dict.add("cellSize", cellSize());
+    }
+    else
+    {
+        dict.add("additionalRefinementLevels", additionalRefinementLevels());
+    }
+
     dict.add("type", type());
 
     dict.add("p0", p0_);
@@ -231,7 +241,16 @@ void lineRefinement::writeDict(Ostream& os, bool subDict) const
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
     
-    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    }
+    else
+    {
+        os.writeKeyword("additionalRefinementLevels")
+                << additionalRefinementLevels()
+                << token::END_STATEMENT << nl;
+    }
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -293,6 +312,8 @@ Ostream& lineRefinement::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
+    os << "additionalRefinementLevels " << additionalRefinementLevels() << endl;
+
     write(os);
     return os;
 }

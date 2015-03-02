@@ -60,11 +60,6 @@ class boxRefinement
         scalar lengthX_;
         scalar lengthY_;
         scalar lengthZ_;
-    
-        //- angles to the global coordinate system
-        //scalar angleX_;
-        //scalar angleY_;
-        //scalar angleZ_;
 
 public:
 
@@ -82,13 +77,11 @@ public:
         (
             const word& name,
             const scalar cellSize,
+            const direction additionalRefLevels,
             const point& centre,
             const scalar lengthX,
             const scalar lengthY,
             const scalar lengthZ
-            //const scalar angleX = 0.,
-            //const scalar angleY = 0.,
-            //const scalar angleZ = 0.
         );
 
         //- Construct from dictionary
@@ -106,13 +99,11 @@ public:
                 (
                     sr.name(),
                     sr.cellSize(),
+                    sr.additionalRefinementLevels(),
                     sr.centre_,
                     sr.lengthX_,
                     sr.lengthY_,
                     sr.lengthZ_
-                    //sr.angleX_,
-                    //sr.angleY_,
-                    //sr.angleZ_
                 )
             );
         }
