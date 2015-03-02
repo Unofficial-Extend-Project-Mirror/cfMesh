@@ -27,17 +27,10 @@ Description
 
 #include "demandDrivenData.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
-//#include "meshOctree.H"
-//#include "triSurf.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
-//#include "helperFunctions.H"
-//#include "edgeExtractor.H"
 
 #include "correctEdgesBetweenPatches.H"
-
-
-//#define DEBUGMapping
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
