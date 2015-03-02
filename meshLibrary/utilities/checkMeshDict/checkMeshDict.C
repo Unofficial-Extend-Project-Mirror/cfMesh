@@ -321,15 +321,6 @@ void checkMeshDict::checkObjectRefinements() const
 
         forAll(refObjects, oI)
         {
-            if( refObjects[oI].cellSize() < 0.0 )
-            {
-                WarningIn
-                (
-                    "void checkMeshDict::checkObjectRefinements() const"
-                ) << "Cell size specified for object " << refObjects[oI].name()
-                  << " is negative!!" << endl;
-            }
-
             if( refObjects[oI].refinementThickness() < 0.0 )
             {
                 WarningIn
