@@ -386,6 +386,7 @@ $(objectRefinement)/sphereRefinement.C
 $(objectRefinement)/lineRefinement.C
 $(objectRefinement)/coneRefinement.C
 $(objectRefinement)/boxRefinement.C
+$(objectRefinement)/hollowConeRefinement.C
 
 $(triSurface2DCheck)/triSurface2DCheck.C
 
