@@ -57,6 +57,18 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+
     polyMeshGen pmg(runTime);
 
     Info << "Starting reading mesh" << endl;
@@ -168,30 +180,19 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info << "Optimising boundary layer" << endl;
-    blOpt.optimiseLayer(5, 0.15, 0.4);
+    //Info << "Optimising boundary layer" << endl;
+    //blOpt.optimiseLayer();
 
     pmg.clearAddressingData();
-
+/*
     //- refine boundary layers
-    IOdictionary meshDict
-    (
-        IOobject
-        (
-            "meshDict",
-            runTime.system(),
-            runTime,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    );
-
     refineBoundaryLayers refLayers(pmg);
 
     refineBoundaryLayers::readSettings(meshDict, refLayers);
 
     refLayers.refineLayers();
-
+*/
+/*
     //- check bad quality cells in the layer
     boolList activeFace(pmg.faces().size(), false);
     if( blCellsId > -1 )
@@ -235,10 +236,10 @@ int main(int argc, char *argv[])
             ::exit(0);
         }
     }
-
-    //Info << "Extruding layer of cells" << endl;
-    //extrudeLayer(pmg, front);
-    //pmg.clearAddressingData();
+*/
+    Info << "Extruding layer of cells" << endl;
+    extrudeLayer(pmg, front);
+    pmg.clearAddressingData();
 
     Info << "Starting optimising mesh" << endl;
 //    meshOptimizer mOpt(pmg);
@@ -246,8 +247,8 @@ int main(int argc, char *argv[])
 //    mOpt.optimizeLowQualityFaces(15);
 //    mOpt.untangleMeshFV(5, 50, 0);
 
-    //meshOptimizer mOpt(pmg);
-    //mOpt.optimizeBoundaryLayer();
+    meshOptimizer mOpt(pmg);
+    mOpt.optimizeBoundaryLayer();
 
     forAll(pmg.points(), pointI)
     {
