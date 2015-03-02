@@ -248,34 +248,29 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
             );
     }
 
-    scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
+    //- calculate refinement levels
+    const scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
 
     List<direction> refLevels(refObjects.size(), globalRefLevel_);
+
+    forAll(refObjects, oI)
+    {
+        //- calculate additional refinement levels from cell size
+        refObjects[oI].calculateAdditionalRefLevels(s);
+
+        refLevels[oI] += refObjects[oI].additionalRefinementLevels();
+    }
+
+    //- read refinement thickness
     scalarList refThickness(refObjects.size(), 0.0);
 
     forAll(refThickness, oI)
         refThickness[oI] = refObjects[oI].refinementThickness();
 
-    label nMarked;
-    do
-    {
-        nMarked = 0;
-        forAll(refObjects, oI)
-        {
-            if( refObjects[oI].cellSize() <= s * (1.+SMALL) )
-            {
-                ++nMarked;
-                ++refLevels[oI];
-            }
-        }
-
-        s /= 2.0;
-
-    } while( nMarked != 0 );
-
     forAll(refLevels, i)
         Info << "Ref level for object " << refObjects[i].name()
-            << " is " << label(refLevels[i]) << endl;
+            << " is " << label(refLevels[i])
+            << " refinement thickness " << refThickness[i] << endl;
 
     if( octree_.neiProcs().size() )
         forAll(refObjects, oI)
@@ -290,6 +285,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
 
+    label nMarked;
     do
     {
         # ifdef OCTREETiming
