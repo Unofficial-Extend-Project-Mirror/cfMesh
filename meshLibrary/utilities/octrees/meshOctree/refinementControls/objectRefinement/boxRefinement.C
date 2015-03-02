@@ -50,6 +50,7 @@ boxRefinement::boxRefinement
 (
     const word& name,
     const scalar cellSize,
+    const direction additionalRefLevels,
     const point& centre,
     const scalar lengthX,
     const scalar lengthY,
@@ -64,6 +65,7 @@ boxRefinement::boxRefinement
 {
     setName(name);
     setCellSize(cellSize);
+    setAdditionalRefinementLevels(additionalRefLevels);
 }
 
 boxRefinement::boxRefinement
@@ -96,7 +98,15 @@ dictionary boxRefinement::dict(bool ignoreType) const
 {
     dictionary dict;
 
-    dict.add("cellSize", cellSize());
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        dict.add("cellSize", cellSize());
+    }
+    else
+    {
+        dict.add("additionalRefinementLevels", additionalRefinementLevels());
+    }
+
     dict.add("type", type());
 
     dict.add("centre", centre_);
@@ -123,7 +133,16 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
 
-    os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    {
+        os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
+    }
+    else
+    {
+        os.writeKeyword("additionalRefinementLevels")
+                << additionalRefinementLevels()
+                << token::END_STATEMENT << nl;
+    }
 
     // only write type for derived types
     if( type() != typeName_() )
@@ -215,6 +234,8 @@ Ostream& boxRefinement::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
+    os << "additionalRefinementLevels " << additionalRefinementLevels() << endl;
+
     write(os);
     return os;
 }
