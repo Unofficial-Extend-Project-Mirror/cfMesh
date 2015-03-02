@@ -101,7 +101,7 @@ public:
         void optimiseUsingMeshUntangler( const label nIerations = 5);
 
         //- smooth using volume optimizer
-        void optimiseUsingVolumeOptimizer(const label nIterations = 2);
+        void optimiseUsingVolumeOptimizer(const label nIterations = 10);
 
         //- smooth boundary using the volume optimizer
         void optimiseBoundaryVolumeOptimizer
