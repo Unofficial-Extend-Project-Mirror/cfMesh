@@ -25,8 +25,8 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "triangulateBoundaryLayerBaseFaces.H"
-#include "meshSurfaceEngine.H"
+#include "triangulateNonPlanarBaseFaces.H"
+#include "dictionary.H"
 #include "demandDrivenData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -36,49 +36,69 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-triangulateBoundaryLayerBaseFaces::triangulateBoundaryLayerBaseFaces
+triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
 (
-    polyMeshGen& mesh,
-    const VRWGraph& layerCellsInColumn
+    polyMeshGen& mesh
 )
 :
     mesh_(mesh),
-    layerCellsInColumn_(layerCellsInColumn),
     invertedCell_(mesh_.cells().size(), false),
-    ownerInColumn_(),
-    neiInColumn_(),
-    faceType_(),
-    faceCentreLabel_()
+    decomposeFace_(mesh_.faces().size(), false),
+    tol_(0.5)
 {}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-triangulateBoundaryLayerBaseFaces::~triangulateBoundaryLayerBaseFaces()
+triangulateNonPlanarBaseFaces::~triangulateNonPlanarBaseFaces()
 {}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triangulateBoundaryLayerBaseFaces::setBadCells(const labelHashSet& s)
+void triangulateNonPlanarBaseFaces::setRelativeTolerance(const scalar tol)
 {
-    forAllConstIter(labelHashSet, s, it)
-        invertedCell_[it.key()] = true;
+    tol_ = tol;
 }
 
-void triangulateBoundaryLayerBaseFaces::triangulateLayers()
+void triangulateNonPlanarBaseFaces::triangulateLayers()
 {
-    classifyMeshFaces();
-
-    if( !createNewPoints() )
+    if( findNonPlanarBoundaryFaces() )
     {
-        WarningIn
-        (
-            "void triangulateBoundaryLayerBaseFaces::triangulateLayers()"
-        ) << "Boundary layer is not modified" << endl;
+        Info << "Decomposing twisted boundary faces" << endl;
 
-        return;
+        decomposeBoundaryFaces();
+
+        decomposeCellsIntoPyramids();
     }
+    else
+    {
+        Info << "All boundary faces are flat" << endl;
+    }
+}
 
-    createNewFacesAndCells();
+void triangulateNonPlanarBaseFaces::readSettings
+(
+    const dictionary& meshDict,
+    triangulateNonPlanarBaseFaces& triangulator
+)
+{
+    if( meshDict.found("boundaryLayers") )
+    {
+        const dictionary& layersDict = meshDict.subDict("boundaryLayers");
+
+        if( layersDict.found("optimisationParameters") )
+        {
+            const dictionary& optLayerDict =
+                layersDict.subDict("optimisationParameters");
+
+            if( optLayerDict.found("relFlatnessTol") )
+            {
+                const scalar relTol =
+                    readScalar(optLayerDict.lookup("relFlatnessTol"));
+
+                triangulator.setRelativeTolerance(relTol);
+            }
+        }
+    }
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

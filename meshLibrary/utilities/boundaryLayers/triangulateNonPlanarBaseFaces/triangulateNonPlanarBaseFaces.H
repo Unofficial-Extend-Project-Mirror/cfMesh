@@ -22,30 +22,23 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triangulateBoundaryLayerBaseFaces
+    triangulateNonPlanarBaseFaces
 
 Description
     Splits selected boundary layer cells into triangular prisms
 
 SourceFiles
-    triangulateBoundaryLayerBaseFaces.C
-    triangulateBoundaryLayerBaseFacesFunctions.C
+    triangulateNonPlanarBaseFaces.C
+    triangulateNonPlanarBaseFacesFunctions.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef triangulateBoundaryLayerBaseFaces_H
-#define triangulateBoundaryLayerBaseFaces_H
+#ifndef triangulateNonPlanarBaseFaces_H
+#define triangulateNonPlanarBaseFaces_H
 
 #include "objectRegistry.H"
 #include "Time.H"
 #include "polyMeshGenModifier.H"
-#include "meshSurfaceEngine.H"
-#include "DynList.H"
-#include "labelLongList.H"
-#include "labelPair.H"
-
-#include <map>
-#include <set>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -53,99 +46,72 @@ namespace Foam
 {
 
 // Forward declarations
-class meshSurfaceEngine;
+class dictionary;
 
 /*---------------------------------------------------------------------------*\
-            Class triangulateBoundaryLayerBaseFaces Declaration
+            Class triangulateNonPlanarBaseFaces Declaration
 \*---------------------------------------------------------------------------*/
 
-class triangulateBoundaryLayerBaseFaces
+class triangulateNonPlanarBaseFaces
 {
     // Private data
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
-        //- layers of boundary layer cells belonging to a single column
-        const VRWGraph& layerCellsInColumn_;
-
         //- boolean list containing information about inverted cells
         boolList invertedCell_;
 
-        //- layer column for owner face
-        labelList ownerInColumn_;
-
-        //- layer column for neighbour face
-        labelList neiInColumn_;
-
         //- classification of faces in the mesh
-        List<direction> faceType_;
+        boolList decomposeFace_;
 
-        //- label of new point generated at the face centre
-        labelList faceCentreLabel_;
-
+        //- relative deviation compared to the layer thickness
+        scalar tol_;
 
     // Private member functions
-        //- classify faces in the mesh
-        void classifyMeshFaces();
+        //- find faces with non-planarity greater than the required
+        //- layer thickness
+        bool findNonPlanarBoundaryFaces();
 
-        //- create new points in the mesh
-        bool createNewPoints();
+        //- decompose existing faces
+        void decomposeBoundaryFaces();
 
-        //- create new cells
-        void createNewFacesAndCells();
+        //- decompose adjacent cells into pyramids
+        void decomposeCellsIntoPyramids();
 
         //- Disallow bitwise copy construct
-        triangulateBoundaryLayerBaseFaces
+        triangulateNonPlanarBaseFaces
         (
-            const triangulateBoundaryLayerBaseFaces&
+            const triangulateNonPlanarBaseFaces&
         );
 
         //- Disallow bitwise assignment
-        void operator=(const triangulateBoundaryLayerBaseFaces&);
-
-    // Enumerators
-
-        enum faceTypes_
-        {
-            NONE = 0,
-            FACEINCOLUMN = 1,
-            FACEBETWEENCOLUMNS = 2,
-            BASEFACEATBND = 4,
-            BASEFACEINSIDEBND = 8,
-            BASEFACE = 16
-        };
+        void operator=(const triangulateNonPlanarBaseFaces&);
 
 public:
 
     // Constructors
 
         //- Construct from mesh
-        triangulateBoundaryLayerBaseFaces
-        (
-            polyMeshGen& mesh,
-            const VRWGraph& layerCellsInColumn
-        );
+        triangulateNonPlanarBaseFaces(polyMeshGen& mesh);
 
     // Destructor
-        ~triangulateBoundaryLayerBaseFaces();
+        ~triangulateNonPlanarBaseFaces();
 
     // Public member functions
+        //- set the relative tolerance between the requested boundary
+        //- layer thickness and the deviation from planarity
+        //- the default is 1.0
+        void setRelativeTolerance(const scalar tol);
 
-        // Settings
-        //- set invalid cells
-        void setBadCells(const labelHashSet&);
-
-        //- set invalid cells
-        template<class labelListType>
-        void setBadCells(const labelListType& l)
-        {
-            forAll(l, i)
-                invertedCell_[l[i]] = true;
-        }
-
-    // Worker
         //- splits inverted boundary layer prisms into triangular prisms
         void triangulateLayers();
+
+    // Static member functions
+        static void readSettings
+        (
+            const dictionary&,
+            triangulateNonPlanarBaseFaces&
+        );
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
