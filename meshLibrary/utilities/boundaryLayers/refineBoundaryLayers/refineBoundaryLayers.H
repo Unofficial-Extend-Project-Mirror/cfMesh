@@ -98,6 +98,10 @@ class refineBoundaryLayers
         //- a flag whether a 2D mesh generation is active or not
         bool is2DMesh_;
 
+        //- shall the layer be refined into two layers with the first one
+        //- matching the thickness of the n-1 ones
+        bool specialMode_;
+
         //- information about existing boundary layers at patches
         //- only available layers
         List<DynList<label> > layerAtPatch_;
@@ -384,8 +388,14 @@ public:
         //- sheet
         void setInteruptForPatch(const word& patchName);
 
-        //- set the flag to store the boundatry layer cells in a subset
+        //- set the flag to store the boundary layer cells in a subset
         void setCellSubset(const word subsetName = "layerCells");
+
+        //- this flag refinement of a layer into a single one matching
+        //- the thickness of the n layers. This functionality is intended to
+        //- create additional layer that shall be improved by the boundary
+        //- layer smoother in order to leave the inside points intact
+        void activateSpecialMode();
 
     // Worker
         //- performs refinement based on the given settings

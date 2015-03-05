@@ -60,6 +60,7 @@ refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
     cellSubsetName_(),
     done_(false),
     is2DMesh_(false),
+    specialMode_(false),
     nLayersAtBndFace_(),
     splitEdges_(),
     splitEdgesAtPoint_(),
@@ -315,6 +316,11 @@ void refineBoundaryLayers::setCellSubset(const word subsetName)
     }
 
     cellSubsetName_ = subsetName;
+}
+
+void refineBoundaryLayers::activateSpecialMode()
+{
+    specialMode_ = true;
 }
 
 void refineBoundaryLayers::refineLayers()
