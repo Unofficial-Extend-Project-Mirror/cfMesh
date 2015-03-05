@@ -301,6 +301,11 @@ bool refineBoundaryLayers::analyseLayers()
         else
         {
             nLayersAtBndFace_[bfI] = nLayersAtPatch[patchI];
+
+            if( specialMode_ )
+            {
+                ++nLayersAtBndFace_[bfI];
+            }
         }
     }
 
@@ -329,6 +334,7 @@ void refineBoundaryLayers::generateNewVertices()
     LongList<scalar> firstLayerThickness(splitEdges_.size());
     LongList<scalar> thicknessRatio(splitEdges_.size());
     labelLongList nNodesAtEdge(splitEdges_.size());
+    labelLongList nLayersAtEdge(splitEdges_.size());
 
     //- count the number of vertices for each split edge
     # ifdef USE_OMP
@@ -399,7 +405,16 @@ void refineBoundaryLayers::generateNewVertices()
             //- store the information
             firstLayerThickness[seI] = thickness;
             thicknessRatio[seI] = ratio;
-            nNodesAtEdge[seI] = nLayers + 1;
+            nLayersAtEdge[seI] = nLayers;
+
+            if( !specialMode_ )
+            {
+                nNodesAtEdge[seI] = nLayers + 1;
+            }
+            else
+            {
+                nNodesAtEdge[seI] = 3;
+            }
         }
     }
 
@@ -418,10 +433,15 @@ void refineBoundaryLayers::generateNewVertices()
 
         //- exchange point number of layers
         std::map<label, LongList<labelPair> > exchangeNumLayers;
+        std::map<label, LongList<labelPair> > exchangeNumNodesAtEdge;
         std::map<label, LongList<labelledScalar> > exchangeThickness;
         std::map<label, LongList<labelledScalar> > exchangeRatio;
         forAll(neiProcs, i)
         {
+            exchangeNumNodesAtEdge.insert
+            (
+                std::make_pair(neiProcs[i], LongList<labelPair>())
+            );
             exchangeNumLayers.insert
             (
                 std::make_pair(neiProcs[i], LongList<labelPair>())
@@ -465,9 +485,13 @@ void refineBoundaryLayers::generateNewVertices()
                     if( neiProc == Pstream::myProcNo() )
                         continue;
 
-                    exchangeNumLayers[neiProc].append
+                    exchangeNumNodesAtEdge[neiProc].append
                     (
                         labelPair(geI, nNodesAtEdge[seI])
+                    );
+                    exchangeNumLayers[neiProc].append
+                    (
+                        labelPair(geI, nLayersAtEdge[seI])
                     );
                     exchangeThickness[neiProc].append
                     (
@@ -481,9 +505,9 @@ void refineBoundaryLayers::generateNewVertices()
             }
         }
 
-        //- exchange number of layers
+        //- exchange number of nodes at split edge
         LongList<labelPair> receivedNumLayers;
-        help::exchangeMap(exchangeNumLayers, receivedNumLayers);
+        help::exchangeMap(exchangeNumNodesAtEdge, receivedNumLayers);
 
         forAll(receivedNumLayers, i)
         {
@@ -501,6 +525,28 @@ void refineBoundaryLayers::generateNewVertices()
                 }
             }
             nNodesAtEdge[seI] = std::max(nNodesAtEdge[seI], lp.second());
+        }
+
+        //- exchange number of layers
+        receivedNumLayers.clear();
+        help::exchangeMap(exchangeNumLayers, receivedNumLayers);
+
+        forAll(receivedNumLayers, i)
+        {
+            const labelPair& lp = receivedNumLayers[i];
+            const label eI = globalToLocal[lp.first()];
+            const edge& e = edges[eI];
+            label seI(-1);
+            forAllRow(splitEdgesAtPoint_, e.start(), i)
+            {
+                const label seJ = splitEdgesAtPoint_(e.start(), i);
+                if( splitEdges_[seJ] == e )
+                {
+                    seI = seJ;
+                    break;
+                }
+            }
+            nLayersAtEdge[seI] = std::max(nLayersAtEdge[seI], lp.second());
         }
 
         //- exchange thickness ratio
@@ -613,14 +659,14 @@ void refineBoundaryLayers::generateNewVertices()
 
             const label nLayers = newVerticesForSplitEdge_.sizeOfRow(seI) - 1;
 
-            scalar firstThickness = magv / nLayers;
+            scalar firstThickness = magv / nLayersAtEdge[seI];
             if( thicknessRatio[seI] > (1. + SMALL) )
             {
                 firstThickness =
                     magv /
                     (
-                        (1 - Foam::pow(thicknessRatio[seI], nLayers)) /
-                        (1.0 - thicknessRatio[seI])
+                        (1 - Foam::pow(thicknessRatio[seI], nLayersAtEdge[seI]))
+                        / (1.0 - thicknessRatio[seI])
                     );
 
                 # ifdef DEBUGLayer
@@ -640,6 +686,16 @@ void refineBoundaryLayers::generateNewVertices()
                     Foam::max(firstLayerThickness[seI], SMALL),
                     firstThickness
                 );
+
+            if( specialMode_ )
+            {
+                scalar t = firstThickness;
+
+                for(label i=1;i<nLayersAtEdge[seI]-1;++i)
+                    t += firstThickness * Foam::pow(thicknessRatio[seI], i);
+
+                firstThickness = t;
+            }
 
             //- generate vertices for this edge
             newVerticesForSplitEdge_(seI, 0) = e.start();
@@ -669,6 +725,14 @@ void refineBoundaryLayers::generateNewVertices()
 
             newVerticesForSplitEdge_(seI, nLayers) = e.end();
         }
+    }
+
+    if( specialMode_ )
+    {
+        //- set the number of layers to 2
+        forAll(nLayersAtBndFace_, bfI)
+            if( nLayersAtBndFace_[bfI] > 1 )
+                nLayersAtBndFace_[bfI] = 2;
     }
 
     # ifdef DEBUGLayer

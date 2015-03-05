@@ -7,7 +7,7 @@ boundaryLayers = $(bndLayers)/boundaryLayers
 detectBoundaryLayers = $(bndLayers)/detectBoundaryLayers
 extrudeLayer = $(bndLayers)/extrudeLayer
 refineBoundaryLayers = $(bndLayers)/refineBoundaryLayers
-triangulateBoundaryLayerBaseFaces = $(bndLayers)/triangulateBoundaryLayerBaseFaces
+triangulateNonPlanarBaseFaces = $(bndLayers)/triangulateNonPlanarBaseFaces
 
 checkMeshDict = utilities/checkMeshDict
 
@@ -264,8 +264,8 @@ $(refineBoundaryLayers)/refineBoundaryLayers.C
 $(refineBoundaryLayers)/refineBoundaryLayersFunctions.C
 $(refineBoundaryLayers)/refineBoundaryLayersFaces.C
 $(refineBoundaryLayers)/refineBoundaryLayersCells.C
-$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFaces.C
-$(triangulateBoundaryLayerBaseFaces)/triangulateBoundaryLayerBaseFacesFunctions.C
+$(triangulateNonPlanarBaseFaces)/triangulateNonPlanarBaseFaces.C
+$(triangulateNonPlanarBaseFaces)/triangulateNonPlanarBaseFacesFunctions.C
 
 $(meshSurfaceEngine)/meshSurfaceEngine.C
 $(meshSurfaceEngine)/meshSurfaceEngineCalculateBoundaryNodesAndFaces.C
@@ -315,6 +315,8 @@ $(symmetryPlaneOptimisation)/symmetryPlaneOptimisation.C
 
 $(boundaryLayerOptimisation)/boundaryLayerOptimisation.C
 $(boundaryLayerOptimisation)/boundaryLayerOptimisationFunctions.C
+$(boundaryLayerOptimisation)/boundaryLayerOptimisationNormals.C
+$(boundaryLayerOptimisation)/boundaryLayerOptimisationThickness.C
 
 $(simplexSmoother)/simplexSmoother.C
 

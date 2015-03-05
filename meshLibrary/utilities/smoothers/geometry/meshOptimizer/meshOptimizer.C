@@ -133,18 +133,11 @@ label meshOptimizer::findLowQualityFaces
     return nBadFaces;
 }
 
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-// Construct from mesh
-meshOptimizer::meshOptimizer(polyMeshGen& mesh)
-:
-    mesh_(mesh),
-    vertexLocation_(mesh.points().size(), INSIDE),
-    lockedFaces_(),
-    msePtr_(NULL),
-    enforceConstraints_(false),
-    badPointsSubsetName_()
+void meshOptimizer::calculatePointLocations()
 {
+    vertexLocation_.setSize(mesh_.points().size());
+    vertexLocation_ = INSIDE;
+
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bPoints = mse.boundaryPoints();
 
@@ -170,6 +163,21 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
             if( pointAtProcs.sizeOfRow(pointI) != 0 )
                 vertexLocation_[pointI] |= PARALLELBOUNDARY;
     }
+}
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+// Construct from mesh
+meshOptimizer::meshOptimizer(polyMeshGen& mesh)
+:
+    mesh_(mesh),
+    vertexLocation_(),
+    lockedFaces_(),
+    msePtr_(NULL),
+    enforceConstraints_(false),
+    badPointsSubsetName_()
+{
+    calculatePointLocations();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

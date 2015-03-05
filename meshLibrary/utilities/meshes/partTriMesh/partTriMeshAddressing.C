@@ -82,6 +82,7 @@ void partTriMesh::createPointsAndTrias
             {
                 forAll(bf, eI)
                 {
+                    //- add a triangle connected to face centre
                     labelledTri tri
                     (
                         meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
@@ -91,6 +92,17 @@ void partTriMesh::createPointsAndTrias
                     );
 
                     surf_.appendTriangle(tri);
+
+                    //- add a triangle for shape
+                    labelledTri secondTri
+                    (
+                        meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.nextLabel(eI)]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.prevLabel(eI)]],
+                        facePatch[bfI]
+                    );
+
+                    surf_.appendTriangle(secondTri);
                 }
             }
             else
@@ -105,6 +117,20 @@ void partTriMesh::createPointsAndTrias
                 );
 
                 surf_.appendTriangle(tri);
+
+                //- add a triangle for shape
+                forAll(bf, eI)
+                {
+                    labelledTri secondTri
+                    (
+                        meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.nextLabel(eI)]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.prevLabel(eI)]],
+                        facePatch[bfI]
+                    );
+
+                    surf_.appendTriangle(secondTri);
+                }
             }
         }
     }

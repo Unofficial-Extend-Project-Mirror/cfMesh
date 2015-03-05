@@ -123,7 +123,8 @@ scalar surfaceOptimizer::evaluateFunc(const scalar& K) const
             magSqr(p2 - p0)
         );
 
-        func += LSqrTri / (0.5 * (Atri + stab));
+        const scalar Astab = Foam::max(VSMALL, 0.5 * (Atri + stab));
+        func += LSqrTri / Astab;
     }
 
     return func;
@@ -167,7 +168,7 @@ void surfaceOptimizer::evaluateGradients
 
         const scalar stab = sqrt(sqr(Atri) + K);
 
-        const scalar Astab = 0.5 * (Atri + stab);
+        const scalar Astab = Foam::max(ROOTVSMALL, 0.5 * (Atri + stab));
 
         const vector gradAtri
         (

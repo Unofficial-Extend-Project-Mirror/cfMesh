@@ -36,6 +36,7 @@ Description
 
 #include "tetMeshOptimisation.H"
 #include "boundaryLayerOptimisation.H"
+#include "refineBoundaryLayers.H"
 #include "meshSurfaceEngine.H"
 
 //#define DEBUGSmooth
@@ -106,10 +107,6 @@ void meshOptimizer::untangleMeshFV
     # endif
 
     label nBadFaces, nGlobalIter(0), nIter;
-
-    //- reduce the time in case if some parts of the mesh are locked
-    //if( returnReduce(lockedFaces_.size(), sumOp<label>()) != 0 )
-    //    maxNumGlobalIterations = 2;
 
     const faceListPMG& faces = mesh_.faces();
 
@@ -269,18 +266,32 @@ void meshOptimizer::optimizeBoundaryLayer()
         const dictionary& meshDict =
             mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
 
+        bool smoothLayer(false);
+
         if( meshDict.found("boundaryLayers") )
         {
             const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
             if( layersDict.found("optimiseLayer") )
-            {
-                const bool smoothLayer =
-                    readBool(layersDict.lookup("optimiseLayer"));
+                smoothLayer = readBool(layersDict.lookup("optimiseLayer"));
+        }
 
-                if( !smoothLayer )
-                    return;
-            }
+        if( !smoothLayer )
+            return;
+
+        if( true )
+        {
+            //- create a buffer layer which will not be modified by the smoother
+            refineBoundaryLayers refLayers(mesh_);
+
+            refineBoundaryLayers::readSettings(meshDict, refLayers);
+
+            refLayers.activateSpecialMode();
+
+            refLayers.refineLayers();
+
+            clearSurface();
+            calculatePointLocations();
         }
 
         Info << "Starting optimising boundary layer" << endl;
@@ -295,34 +306,47 @@ void meshOptimizer::optimizeBoundaryLayer()
         optimiser.optimiseLayer();
 
         //- check if the bnd layer is tangled somewhere
-        boolList layerCell(mesh_.cells().size(), false);
+        labelLongList bndLayerCells;
         const boolList& baseFace = optimiser.isBaseFace();
 
         forAll(baseFace, bfI)
         {
             if( baseFace[bfI] )
-                layerCell[faceOwner[bfI]] = true;
+                bndLayerCells.append(faceOwner[bfI]);
         }
 
         clearSurface();
         mesh_.clearAddressingData();
 
         //- lock boundary layer points, faces and cells
-        labelLongList bndLayerCells;
-        forAll(layerCell, cellI)
-        {
-            if( layerCell[cellI] )
-            {
-                bndLayerCells.append(cellI);
-            }
-        }
-
         lockCells(bndLayerCells);
 
+        # ifdef DEBUGSmooth
+        pointField origPoints(mesh_.points().size());
+        forAll(origPoints, pI)
+            origPoints[pI] = mesh_.points()[pI];
+        # endif
+
+        //- optimize mesh quality
+        optimizeMeshFV(5, 1, 50, 0);
+
+        //- get rid of bad quality faces
         optimizeLowQualityFaces(10);
 
         //- untangle remaining faces and lock the boundary layer cells
         untangleMeshFV(2, 50, 0);
+
+        # ifdef DEBUGSmooth
+        forAll(vertexLocation_, pI)
+        {
+            if( vertexLocation_[pI] & LOCKED )
+            {
+                if( mag(origPoints[pI] - mesh_.points()[pI]) > SMALL )
+                    FatalError << "Locked points were moved"
+                               << abort(FatalError);
+            }
+        }
+        # endif
 
         //- unlock bnd layer points
         removeUserConstraints();
@@ -491,14 +515,25 @@ void meshOptimizer::optimizeMeshNearBoundaries
     Info << endl;
 }
 
-void meshOptimizer::optimizeMeshFV()
+void meshOptimizer::optimizeMeshFV
+(
+    const label numLaplaceIterations,
+    const label maxNumGlobalIterations,
+    const label maxNumIterations,
+    const label maxNumSurfaceIterations
+)
 {
     Info << "Starting smoothing the mesh" << endl;
 
     laplaceSmoother lps(mesh_, vertexLocation_);
-    lps.optimizeLaplacianPC(5);
+    lps.optimizeLaplacianPC(numLaplaceIterations);
 
-    untangleMeshFV();
+    untangleMeshFV
+    (
+        maxNumGlobalIterations,
+        maxNumIterations,
+        maxNumSurfaceIterations
+    );
 
     Info << "Finished smoothing the mesh" << endl;
 }

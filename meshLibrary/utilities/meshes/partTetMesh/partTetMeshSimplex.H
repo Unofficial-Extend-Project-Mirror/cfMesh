@@ -71,6 +71,15 @@ class partTetMeshSimplex
             const DynList<parPartTet>& pt,
             const label gpI
         );
+
+        //- contruct from a list of points and a list of partTets
+        //- ad a point label
+        partTetMeshSimplex
+        (
+            const DynList<point, 128>& pts,
+            const DynList<partTet, 128>& tets,
+            const label pointI
+        );
     
     // Destructor
         ~partTetMeshSimplex();

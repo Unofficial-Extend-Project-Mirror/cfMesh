@@ -126,6 +126,13 @@ class boundaryLayerOptimisation
             pointNormalsType&
         ) const;
 
+        //- calculate normal vectors
+        void calculateNormalVectorsSmother
+        (
+            const direction eType,
+            pointNormalsType&
+        );
+
         //- calculate hairEdges
         void calculateHairEdges();
 
