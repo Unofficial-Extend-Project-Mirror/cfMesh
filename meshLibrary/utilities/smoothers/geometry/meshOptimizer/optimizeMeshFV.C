@@ -36,6 +36,7 @@ Description
 
 #include "tetMeshOptimisation.H"
 #include "boundaryLayerOptimisation.H"
+#include "refineBoundaryLayers.H"
 #include "meshSurfaceEngine.H"
 
 //#define DEBUGSmooth
@@ -278,6 +279,21 @@ void meshOptimizer::optimizeBoundaryLayer()
         if( !smoothLayer )
             return;
 
+        if( true )
+        {
+            //- create a buffer layer which will not be modified by the smoother
+            refineBoundaryLayers refLayers(mesh_);
+
+            refineBoundaryLayers::readSettings(meshDict, refLayers);
+
+            refLayers.activateSpecialMode();
+
+            refLayers.refineLayers();
+
+            clearSurface();
+            calculatePointLocations();
+        }
+
         Info << "Starting optimising boundary layer" << endl;
 
         const meshSurfaceEngine& mse = meshSurface();
@@ -312,7 +328,7 @@ void meshOptimizer::optimizeBoundaryLayer()
         # endif
 
         //- optimize mesh quality
-        optimizeMeshFV(10, 1, 50, 0);
+        optimizeMeshFV(5, 1, 50, 0);
 
         //- get rid of bad quality faces
         optimizeLowQualityFaces(10);

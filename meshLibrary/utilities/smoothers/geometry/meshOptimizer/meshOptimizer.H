@@ -88,6 +88,9 @@ class meshOptimizer
         label findBadFaces(labelHashSet&, const boolList&) const;
         label findLowQualityFaces(labelHashSet&, const boolList&) const;
 
+        //- mark point locations
+        void calculatePointLocations();
+
     // Nested classes
 
         class laplaceSmoother
