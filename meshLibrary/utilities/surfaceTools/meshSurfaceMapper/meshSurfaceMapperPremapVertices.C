@@ -50,7 +50,7 @@ namespace Foam
 
 void meshSurfaceMapper::preMapVertices(const label nIterations)
 {
-    Info << "Smoothing mesh surface before mapping." << flush;
+    Info << "Smoothing mesh surface before mapping." << endl;
 
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -304,7 +304,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         surfaceModifier.updateGeometry();
     }
 
-    Info << "Finished smoothing mesh surface before mapping." << flush;
+    Info << "Finished smoothing mesh surface before mapping." << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

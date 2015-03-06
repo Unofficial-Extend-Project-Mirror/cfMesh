@@ -171,7 +171,7 @@ public:
 
         //- a combination of mapping and smoothing intended for better
         //- feature capturing
-        void preMapVertices(const label nIterations = 2);
+        void preMapVertices(const label nIterations = 3);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
