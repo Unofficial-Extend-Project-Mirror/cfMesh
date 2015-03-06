@@ -138,6 +138,60 @@ void meshSurfaceMapper::findMappingDistance
     }
 }
 
+scalar meshSurfaceMapper::faceMetricInPatch
+(
+    const label bfI,
+    const label patchI
+) const
+{
+    const face& bf = surfaceEngine_.boundaryFaces()[bfI];
+
+    const pointFieldPMG& points = surfaceEngine_.points();
+
+    const point centre = bf.centre(points);
+    const vector area = bf.normal(points);
+
+    point projCentre;
+    scalar dSq;
+    label nt;
+
+    meshOctree_.findNearestSurfacePointInRegion
+    (
+        projCentre,
+        dSq,
+        nt,
+        patchI,
+        centre
+    );
+
+    DynList<point> projPoints(bf.size());
+    forAll(bf, pI)
+    {
+        meshOctree_.findNearestSurfacePointInRegion
+        (
+            projPoints[pI],
+            dSq,
+            nt,
+            patchI,
+            points[bf[pI]]
+        );
+    }
+
+    vector projArea(vector::zero);
+    forAll(bf, pI)
+    {
+        projArea +=
+            triPointRef
+            (
+                projPoints[pI],
+                projPoints[bf.fcIndex(pI)],
+                projCentre
+            ).normal();
+    }
+
+    return magSqr(centre - projCentre) + mag(mag(projArea) - mag(area));
+}
+
 void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
