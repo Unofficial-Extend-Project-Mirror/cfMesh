@@ -95,6 +95,13 @@ bool checkCellPartTetrahedra
 );
 
 //- Check for non-orthogonality
+void checkFaceDotProduct
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceDotProduct
 (
     const polyMeshGen&,
@@ -115,6 +122,13 @@ bool checkFacePyramids
 );
 
 //- Check face skewness
+void checkFaceSkewness
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceSkewness
 (
     const polyMeshGen&,
@@ -125,7 +139,31 @@ bool checkFaceSkewness
 );
 
 //- Check face uniformity
+void checkFaceUniformity
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceUniformity
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar warnUniform = 0.1,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+//- check volume difference of neighbouring cells
+void checkVolumeUniformity
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
+bool checkVolumeUniformity
 (
     const polyMeshGen&,
     const bool report = false,
@@ -209,12 +247,23 @@ label findBadFaces
     const boolList* activeFacePtr = NULL
 );
 
+//- check if there exist faces of worse quality that required
 label findLowQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
     const bool report = false,
     const boolList* activeFacePtr = NULL
+);
+
+//- checks the mesh and selects the faces with worst quality
+label findWorstQualityFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL,
+    const scalar relativeThreshold = 0.1
 );
 
 }

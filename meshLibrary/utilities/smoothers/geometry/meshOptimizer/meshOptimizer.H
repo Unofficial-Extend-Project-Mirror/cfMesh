@@ -288,6 +288,12 @@ public:
             const label maxNumIterations = 50,
             const label maxNumSurfaceIterations = 2
         );
+
+        //- greedy optimisation until the mesh can be improved
+        void optimizeMeshFVBestQuality
+        (
+            const label maxNumIterations = 50
+        );
 };
 
 

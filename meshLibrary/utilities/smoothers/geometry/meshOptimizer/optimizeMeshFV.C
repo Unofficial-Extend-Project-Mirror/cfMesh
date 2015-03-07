@@ -538,6 +538,73 @@ void meshOptimizer::optimizeMeshFV
     Info << "Finished smoothing the mesh" << endl;
 }
 
+void meshOptimizer::optimizeMeshFVBestQuality
+(
+    const label maxNumIterations
+)
+{
+    label nBadFaces, nIter(0);
+
+    const faceListPMG& faces = mesh_.faces();
+    boolList changedFace(faces.size(), true);
+
+    //- check if any points in the tet mesh shall not move
+    labelLongList lockedPoints;
+    forAll(vertexLocation_, pointI)
+    {
+        if( vertexLocation_[pointI] & LOCKED )
+            lockedPoints.append(pointI);
+    }
+
+    label minNumBadFaces(10 * faces.size()), minIter(-1);
+    do
+    {
+        labelHashSet lowQualityFaces;
+        nBadFaces =
+            polyMeshGenChecks::findWorstQualityFaces
+            (
+                mesh_,
+                lowQualityFaces,
+                false,
+                &changedFace,
+                0.1
+            );
+
+        changedFace = false;
+        forAllConstIter(labelHashSet, lowQualityFaces, it)
+            changedFace[it.key()] = true;
+
+        Info << "Iteration " << nIter
+            << ". Number of worst quality faces is " << nBadFaces << endl;
+
+        //- perform optimisation
+        if( nBadFaces == 0 )
+            break;
+
+        if( nBadFaces < minNumBadFaces )
+        {
+            minNumBadFaces = nBadFaces;
+            minIter = nIter;
+        }
+
+        partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
+
+        //- construct tetMeshOptimisation and improve positions
+        //- of points in the tet mesh
+        tetMeshOptimisation tmo(tetMesh);
+
+        tmo.optimiseUsingKnuppMetric();
+
+        tmo.optimiseUsingMeshUntangler();
+
+        tmo.optimiseUsingVolumeOptimizer();
+
+        //- update points in the mesh from the new coordinates in the tet mesh
+        tetMesh.updateOrigMesh(&changedFace);
+
+    } while( (nIter < minIter+2) && (++nIter < maxNumIterations) );
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
