@@ -146,6 +146,14 @@ class boundaryLayerOptimisation
         //- optimise hair normals inside the mesh
         void optimiseHairNormalsInside();
 
+        //- calculate hair edges at a boundary faces
+        void hairEdgesAtBndFace
+        (
+            const label cellI,
+            const label baseFaceI,
+            DynList<edge>&
+        ) const;
+
         //- calculate the thickness of the layer for edge heI
         //- respective to the height of edge heJ
         scalar calculateThickness
