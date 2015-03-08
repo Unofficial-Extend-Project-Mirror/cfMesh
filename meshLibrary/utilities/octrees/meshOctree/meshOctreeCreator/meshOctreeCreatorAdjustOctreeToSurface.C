@@ -433,7 +433,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
     const wordList surfaces = surfDict.toc();
     PtrList<triSurf> surfaceMeshesPtr(surfaces.size());
     List<direction> refLevels(surfaces.size(), globalRefLevel_);
-    scalarList refThickness(surfaces.size());
+    scalarList refThickness(surfaces.size(), 0.0);
 
     //- load surface meshes into memory
     forAll(surfaceMeshesPtr, surfI)
