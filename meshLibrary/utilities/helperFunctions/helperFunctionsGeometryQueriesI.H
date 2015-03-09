@@ -1004,7 +1004,7 @@ inline point nearestPointOnTheEdge
     const scalar d = mag(e);
     const vector k = p - edgePoint0;
 
-    if( d < VSMALL )
+    if( d < ROOTVSMALL )
         return edgePoint0;
 
     return edgePoint0 + ((e / (d*d)) * (e & k));

@@ -27,19 +27,10 @@ Description
 
 #include "demandDrivenData.H"
 #include "boundaryLayerOptimisation.H"
-//#include "meshSurfacePartitioner.H"
 #include "meshSurfaceEngine.H"
-//#include "detectBoundaryLayers.H"
 #include "helperFunctions.H"
 #include "labelledScalar.H"
-//#include "refLabelledPoint.H"
-//#include "refLabelledPointScalar.H"
 #include "polyMeshGenAddressing.H"
-//#include "meshSurfaceOptimizer.H"
-//#include "meshSurfaceEngineModifier.H"
-//#include "partTetMeshSimplex.H"
-//#include "volumeOptimizer.H"
-//#include "OFstream.H"
 
 //#define DEBUGLayer
 
@@ -53,6 +44,95 @@ namespace Foam
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void boundaryLayerOptimisation::hairEdgesAtBndFace
+(
+    const label cellI,
+    const label baseFaceI,
+    DynList<edge>& hairEdges
+) const
+{
+    const faceListPMG& faces = mesh_.faces();
+
+    const cell& c = mesh_.cells()[cellI];
+
+        //- check cell topology
+    DynList<edge, 48> edges;
+    DynList<DynList<label, 2>, 48> edgeFaces;
+    DynList<DynList<label, 10>, 24> faceEdges;
+    faceEdges.setSize(c.size());
+    label baseFace(-1);
+    forAll(c, fI)
+    {
+        if( c[fI] == baseFaceI )
+        {
+            baseFace = fI;
+        }
+
+        const face& f = faces[c[fI]];
+        faceEdges[fI].setSize(f.size());
+
+        forAll(f, eI)
+        {
+            const edge e = f.faceEdge(eI);
+
+            label pos = edges.containsAtPosition(e);
+
+            if( pos < 0 )
+            {
+                pos = edges.size();
+                edges.append(e);
+                edgeFaces.setSize(pos+1);
+            }
+
+            edgeFaces[pos].append(fI);
+            faceEdges[fI][eI] = pos;
+        }
+    }
+
+    const face& bf = faces[c[baseFace]];
+    hairEdges.setSize(bf.size());
+
+    forAll(bf, pI)
+    {
+        const label nextEdge = faceEdges[baseFace][pI];
+        const label prevEdge = faceEdges[baseFace][bf.rcIndex(pI)];
+
+        if( edgeFaces[nextEdge].size() != 2 || edgeFaces[prevEdge].size() != 2 )
+            break;
+
+        //- find the face attached to the edge after the current point
+        label otherNextFace = edgeFaces[nextEdge][0];
+        if( otherNextFace == baseFace )
+            otherNextFace = edgeFaces[nextEdge][1];
+
+        //- find the face attached to the edge before the current point
+        label otherPrevFace = edgeFaces[prevEdge][0];
+        if( otherPrevFace == baseFace )
+            otherPrevFace = edgeFaces[prevEdge][1];
+
+        label commonEdge;
+        for(commonEdge=0;commonEdge<edges.size();++commonEdge)
+            if(
+                edgeFaces[commonEdge].contains(otherNextFace) &&
+                edgeFaces[commonEdge].contains(otherPrevFace)
+            )
+                break;
+
+        if( commonEdge == edges.size() )
+            break;
+
+        //- there exists a common edge which shall be used as a hair
+        if( edges[commonEdge].start() == bf[pI] )
+        {
+            hairEdges[pI] = edges[commonEdge];
+        }
+        else
+        {
+            hairEdges[pI] = edges[commonEdge].reverseEdge();
+        }
+    }
+}
 
 scalar boundaryLayerOptimisation::calculateThickness
 (
@@ -213,6 +293,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bp = mse.bp();
     const VRWGraph& pFaces = mse.pointFaces();
+    const faceList::subList& bFaces = mse.boundaryFaces();
     const label start = mesh_.nInternalFaces();
     const labelList& faceOwner = mse.faceOwners();
 
@@ -230,42 +311,6 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
         hairDirections[hairEdgeI] = n / hairLength[hairEdgeI];
     }
 
-    //- check if the hair edge intersects some other face in the cells
-    //- attached to the hair edge
-    # ifdef USE_OMP
-    # pragma omp parallel for schedule(dynamic, 50)
-    # endif
-    forAll(hairEdges_, hairEdgeI)
-    {
-        if( hairEdgeType_[hairEdgeI] & edgeType )
-        {
-            const label bpI = bp[hairEdges_[hairEdgeI].start()];
-
-            forAllRow(pFaces, bpI, pfI)
-            {
-                const label bfI = pFaces(bpI, pfI);
-                const label baseFaceI = start + bfI;
-                const label cOwn = faceOwner[bfI];
-
-                const scalar maxThickness =
-                    calculateThicknessOverCell
-                    (
-                        hairEdgeI,
-                        cOwn,
-                        baseFaceI
-                    );
-
-                if( hairLength[hairEdgeI] > maxThickness )
-                {
-                    //- make the hair edge shorter
-                    hairLength[hairEdgeI] = maxThickness;
-
-                    thinnedHairEdge_[hairEdgeI] = true;
-                }
-            }
-        }
-    }
-
     //- reduce thickness of the layer
     //- such that the variation of layer thickness
     //- It is an iterative process where the layer is thinned in the regions
@@ -279,7 +324,99 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
         changed = false;
 
         boolList modifiedHairEdge(hairEdges_.size(), false);
+        boolList influencedEdges(hairEdges_.size(), false);
 
+        //- check if the hair edge intersects some other face in the cells
+        //- attached to the hair edge
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 50)
+        # endif
+        forAll(hairEdges_, hairEdgeI)
+        {
+            if
+            (
+                (hairEdgeType_[hairEdgeI] & edgeType) &&
+                activeHairEdge[hairEdgeI]
+            )
+            {
+                const edge& he = hairEdges_[hairEdgeI];
+
+                const label bpI = bp[he.start()];
+
+                scalar maxThickness = hairLength[hairEdgeI];
+
+                DynList<label, 64> influencers;
+
+                forAllRow(pFaces, bpI, pfI)
+                {
+                    const label bfI = pFaces(bpI, pfI);
+
+                    const face& bf = bFaces[bfI];
+                    if( bf.which(he.end()) >= 0 )
+                        continue;
+
+                    const label baseFaceI = start + bfI;
+                    const label cOwn = faceOwner[bfI];
+
+                    //- check if there exist any self-intersections
+                    maxThickness =
+                        Foam::min
+                        (
+                            maxThickness,
+                            calculateThicknessOverCell
+                            (
+                                hairEdgeI,
+                                cOwn,
+                                baseFaceI
+                            )
+                        );
+
+                    //- check thickness variation over all hair edges
+                    DynList<edge> hairEdges;
+                    hairEdgesAtBndFace(faceOwner[bfI], baseFaceI, hairEdges);
+
+                    forAll(bf, pI)
+                    {
+                        const edge& nhe = hairEdges[pI];
+
+                        const label bpJ = bp[nhe.start()];
+
+                        forAllRow(hairEdgesAtBndPoint_, bpJ, peJ)
+                        {
+                            const label heJ = hairEdgesAtBndPoint_(bpJ, peJ);
+
+                            if( hairEdgeI == heJ )
+                                continue;
+
+                            if( nhe == hairEdges_[heJ] )
+                            {
+                                influencers.append(heJ);
+
+                                const scalar edgeThickness =
+                                    calculateThickness(hairEdgeI, heJ);
+
+                                maxThickness =
+                                    Foam::min(maxThickness, edgeThickness);
+                            }
+                        }
+                    }
+                }
+
+                if( hairLength[hairEdgeI] > maxThickness )
+                {
+                    //- make the hair edge shorter
+                    hairLength[hairEdgeI] = maxThickness;
+                    modifiedHairEdge[hairEdgeI] = true;
+                    changed = true;
+
+                    thinnedHairEdge_[hairEdgeI] = true;
+
+                    forAll(influencers, i)
+                        influencedEdges[influencers[i]] = true;
+                }
+            }
+        }
+/*
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
@@ -324,6 +461,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                 }
             }
         }
+        */
 
         if( Pstream::parRun() )
         {
@@ -449,10 +587,11 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                 const point& s = points[he.start()];
 
                 points[he.end()] = s + hairLength[hairEdgeI] * hv;
-
-                activeHairEdge[hairEdgeI] = modifiedHairEdge[hairEdgeI];
             }
         }
+
+        //- mark edges which may be changed
+        activeHairEdge.transfer(influencedEdges);
     } while( changed && (++nIter < 1000) );
 }
 

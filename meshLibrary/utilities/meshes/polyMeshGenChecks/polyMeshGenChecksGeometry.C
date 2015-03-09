@@ -1883,6 +1883,39 @@ bool checkFaceFlatness
     }
 }
 
+label findBadFacesRelaxed
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report,
+    const boolList* activeFacePtr
+)
+{
+    badFaces.clear();
+
+    polyMeshGenChecks::checkFacePyramids
+    (
+        mesh,
+        report,
+        VSMALL,
+        &badFaces,
+        activeFacePtr
+    );
+
+    polyMeshGenChecks::checkFaceAreas
+    (
+        mesh,
+        report,
+        VSMALL,
+        &badFaces,
+        activeFacePtr
+    );
+
+    const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
+
+    return nBadFaces;
+}
+
 label findBadFaces
 (
     const polyMeshGen& mesh,
@@ -1891,7 +1924,7 @@ label findBadFaces
     const boolList* activeFacePtr
 )
 {
-   badFaces.clear();
+    badFaces.clear();
 
     polyMeshGenChecks::checkFacePyramids
     (

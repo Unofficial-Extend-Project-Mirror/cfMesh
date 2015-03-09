@@ -200,7 +200,19 @@ bool checkGeometry(const polyMeshGen&, const bool report = false);
 //- Check mesh for correctness. Returns false for no error.
 bool checkMesh(const polyMeshGen&, const bool report = false);
 
-//- Check mesh for bad faces which make the mesh invalid
+//- checks for bad faces making the mesh unusable
+//- checks for negative pyramids and zero area faces
+label findBadFacesRelaxed
+(
+    const polyMeshGen&,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
+//- check mesh for bad faces which make the mesh invalid
+//- checks for negative pyramids, face flatness,
+//- zero area faces and negative tetrahedra
 label findBadFaces
 (
     const polyMeshGen&,
@@ -209,6 +221,8 @@ label findBadFaces
     const boolList* activeFacePtr = NULL
 );
 
+//- check mesh for faces that may cause problems to the solver
+//- checks for non-orthogonality and skewness
 label findLowQualityFaces
 (
     const polyMeshGen& mesh,

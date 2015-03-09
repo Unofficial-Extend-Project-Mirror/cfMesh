@@ -309,10 +309,20 @@ void meshOptimizer::optimizeBoundaryLayer()
         labelLongList bndLayerCells;
         const boolList& baseFace = optimiser.isBaseFace();
 
+        # ifdef DEBUGSmooth
+        const label blCellsId = mesh_.addCellSubset("blCells");
+        # endif
+
         forAll(baseFace, bfI)
         {
             if( baseFace[bfI] )
+            {
                 bndLayerCells.append(faceOwner[bfI]);
+
+                # ifdef DEBUGSmooth
+                mesh_.addCellToSubset(blCellsId, faceOwner[bfI]);
+                # endif
+            }
         }
 
         clearSurface();
@@ -378,7 +388,7 @@ void meshOptimizer::untangleBoundaryLayer()
     if( !untangleLayer )
     {
         labelHashSet badFaces;
-        polyMeshGenChecks::findBadFaces(mesh_, badFaces);
+        polyMeshGenChecks::checkFacePyramids(mesh_, false, VSMALL, &badFaces);
 
         const label nInvalidFaces =
             returnReduce(badFaces.size(), sumOp<label>());

@@ -839,8 +839,8 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
     {
         //- calculate point normals with respect to all patches at a point
         pointNormalsType pointPatchNormal;
-        //calculateNormalVectors(INSIDE, pointPatchNormal);
-        calculateNormalVectorsSmother(INSIDE, pointPatchNormal);
+        calculateNormalVectors(INSIDE, pointPatchNormal);
+        //calculateNormalVectorsSmother(INSIDE, pointPatchNormal);
 
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)

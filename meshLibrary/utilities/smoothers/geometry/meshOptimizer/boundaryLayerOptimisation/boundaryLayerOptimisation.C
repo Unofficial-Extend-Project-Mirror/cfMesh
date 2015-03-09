@@ -52,7 +52,7 @@ boundaryLayerOptimisation::boundaryLayerOptimisation(polyMeshGen& mesh)
     thinnedHairEdge_(),
     maxNumIterations_(5),
     nSmoothNormals_(5),
-    relThicknessTol_(0.15),
+    relThicknessTol_(0.1),
     featureSizeFactor_(0.3),
     reCalculateNormals_(true)
 {
