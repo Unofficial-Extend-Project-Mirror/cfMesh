@@ -34,21 +34,7 @@ Description
 namespace Foam
 {
 
-<<<<<<< .mine=======label voronoiMeshExtractor::sameOrientation_[6] = {3, 1, 2, 2, 3, 0};
-
-label voronoiMeshExtractor::oppositeOrientation_[6] = {2, 3, 1, 0, 0, 1};
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void voronoiMeshExtractor::clearOut()
-{
-    deleteDemandDrivenData(pointEdgesPtr_);
-    deleteDemandDrivenData(edgesPtr_);
-    deleteDemandDrivenData(edgeTetsPtr_);
-    deleteDemandDrivenData(boundaryEdgePtr_);
-}
-
->>>>>>> .theirs// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
 (
@@ -56,16 +42,11 @@ triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
 )
 :
     mesh_(mesh),
-<<<<<<< .mine    invertedCell_(mesh_.cells().size(), false),
+    invertedCell_(mesh_.cells().size(), false),
     decomposeFace_(mesh_.faces().size(), false),
     tol_(0.5)
 {}
-=======    pointEdgesPtr_(NULL),
-    edgesPtr_(NULL),
-    edgeTetsPtr_(NULL),
-    boundaryEdgePtr_(NULL)
-{}
->>>>>>> .theirs
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 triangulateNonPlanarBaseFaces::~triangulateNonPlanarBaseFaces()
@@ -100,15 +81,11 @@ void triangulateNonPlanarBaseFaces::readSettings
     triangulateNonPlanarBaseFaces& triangulator
 )
 {
-<<<<<<< .mine    if( meshDict.found("boundaryLayers") )
+    if( meshDict.found("boundaryLayers") )
     {
         const dictionary& layersDict = meshDict.subDict("boundaryLayers");
-=======    Info << "Extracting voronoi mesh" << endl;
 
-    //- copy tet points into the mesh
-    createPoints();
->>>>>>> .theirs
-<<<<<<< .mine        if( layersDict.found("optimisationParameters") )
+        if( layersDict.found("optimisationParameters") )
         {
             const dictionary& optLayerDict =
                 layersDict.subDict("optimisationParameters");
@@ -122,19 +99,7 @@ void triangulateNonPlanarBaseFaces::readSettings
             }
         }
     }
-=======    //- create the mesh
-    createPolyMesh();
-
-    polyMeshGenModifier(mesh_).reorderBoundaryFaces();
-    polyMeshGenModifier(mesh_).removeUnusedVertices();
-
-    Info << "Mesh has :" << nl
-        << mesh_.points().size() << " vertices " << nl
-        << mesh_.faces().size() << " faces" << nl
-        << mesh_.cells().size() << " cells" << endl;
-
-    Info << "Finished extracting voronoi mesh" << endl;
->>>>>>> .theirs}
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
