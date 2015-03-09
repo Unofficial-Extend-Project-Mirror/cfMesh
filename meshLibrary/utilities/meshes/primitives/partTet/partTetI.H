@@ -39,7 +39,7 @@ namespace Foam
 inline partTet::partTet()
 {
 }
-    
+
 inline partTet::partTet
 (
     const label a,
@@ -90,7 +90,7 @@ inline label partTet::whichPosition(const label pointI) const
     for(label i=0;i<4;++i)
         if( data_[i] == pointI )
             return i;
-        
+
     return -1;
 }
 
@@ -103,7 +103,7 @@ inline vector partTet::Sa(const PointField& points) const
         points[data_[2]],
         points[data_[3]]
     );
-    
+
     return tria.normal();
     //return triangle<point, point>(b_, c_, d_).normal();
 }
@@ -117,7 +117,7 @@ inline vector partTet::Sb(const PointField& points) const
         points[data_[3]],
         points[data_[2]]
     );
-    
+
     return tria.normal();
     //return triangle<point, point>(a_, d_, c_).normal();
 }
@@ -131,7 +131,7 @@ inline vector partTet::Sc(const PointField& points) const
         points[data_[1]],
         points[data_[3]]
     );
-    
+
     return tria.normal();
     //return triangle<point, point>(a_, b_, d_).normal();
 }
@@ -145,7 +145,7 @@ inline vector partTet::Sd(const PointField& points) const
         points[data_[2]],
         points[data_[1]]
     );
-    
+
     return tria.normal();
     //return triangle<point, point>(a_, c_, b_).normal();
 }
@@ -160,7 +160,7 @@ inline scalar partTet::mag(const PointField& points) const
         points[data_[2]],
         points[data_[3]]
     );
-    
+
     return tet.mag();
     //return (1.0/6.0)*(((b_ - a_) ^ (c_ - a_)) & (d_ - a_));
 }
@@ -175,7 +175,7 @@ inline point partTet::crcmCentre(const PointField& points) const
         points[data_[2]],
         points[data_[3]]
     );
-    
+
     return tet.circumCentre();
 }
 
@@ -189,7 +189,7 @@ inline scalar partTet::crcmRadius(const PointField& points) const
         points[data_[2]],
         points[data_[3]]
     );
-    
+
     return tet.circumRadius();
 }
 
@@ -199,14 +199,14 @@ inline point partTet::centroid(const PointField& points) const
     point p = points[data_[0]];
     for(label i=1;i<4;++i)
         p += points[data_[i]];
-    
+
     p /= 4;
     return p;
 }
 
-inline edgeList partTet::edges() const
+inline FixedList<edge, 6> partTet::edges() const
 {
-    edgeList edges(6);
+    FixedList<edge, 6> edges;
     edges[0] = edge(data_[0], data_[1]);
     edges[1] = edge(data_[0], data_[2]);
     edges[2] = edge(data_[0], data_[3]);
@@ -215,6 +215,42 @@ inline edgeList partTet::edges() const
     edges[5] = edge(data_[3], data_[2]);
 
     return edges;
+}
+
+inline edge partTet::getEdge(const label eI) const
+{
+    switch( eI )
+    {
+        case 0:
+        {
+            return edge(data_[0], data_[1]);
+        } break;
+        case 1:
+        {
+            return edge(data_[0], data_[2]);
+        } break;
+        case 2:
+        {
+            return edge(data_[0], data_[3]);
+        } break;
+        case 3:
+        {
+            return edge(data_[3], data_[1]);
+        } break;
+        case 4:
+        {
+            return edge(data_[1], data_[2]);
+        } break;
+        case 5:
+        {
+            return edge(data_[3], data_[2]);
+        } break;
+    }
+
+    FatalErrorIn("inline edge partTet::getEdge(const label) const")
+        << "Invalid edge index given " << eI << abort(FatalError);
+
+    return edge();
 }
 
 inline label partTet::operator[](const label i) const
