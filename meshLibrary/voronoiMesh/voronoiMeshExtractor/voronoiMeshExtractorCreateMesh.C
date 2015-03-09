@@ -26,7 +26,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "voronoiMeshExtractor.H"
-#include "tessellationElement.H"
 #include "demandDrivenData.H"
 
 # ifdef USE_OMP
