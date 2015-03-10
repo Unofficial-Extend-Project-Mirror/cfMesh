@@ -26,6 +26,13 @@ edgeExtractor = $(edgeExtraction)/edgeExtractor
 meshSurfaceEdgeExtractor = utilities/surfaceTools/meshSurfaceEdgeExtractor
 meshSurfaceEdgeExtractorNonTopo = utilities/surfaceTools/meshSurfaceEdgeExtractorNonTopo
 meshSurfaceEdgeExtractor2D = utilities/surfaceTools/meshSurfaceEdgeExtractor2D
+meshSurfaceEdgeExtractorFUN = utilities/surfaceTools/meshSurfaceEdgeExtractorFUN
+
+createFundamentalSheetsBase = utilities/surfaceTools/createFundamentalSheets
+createFundamentalSheets = $(createFundamentalSheetsBase)/createFundamentalSheets
+createFundamentalSheetsFJ = $(createFundamentalSheetsBase)/createFundamentalSheetsFJ
+createFundamentalSheetsJFS = $(createFundamentalSheetsBase)/createFundamentalSheetsJFS
+
 correctEdgesBetweenPatches = utilities/surfaceTools/correctEdgesBetweenPatches
 
 decomposeCellsNearConcaveEdges = utilities/surfaceTools/decomposeCellsNearConcaveEdges
@@ -127,6 +134,9 @@ cartesian2DMeshGenerator = cartesian2DMesh/cartesian2DMeshGenerator
 tetMeshExtractor = tetMesh/tetMeshExtractor
 tetMeshExtractorOctree = tetMesh/tetMeshExtractorOctree
 tetMeshGenerator = tetMesh/tetMeshGenerator
+
+voronoiMeshExtractor = voronoiMesh/voronoiMeshExtractor
+voronoiMeshGenerator = voronoiMesh/voronoiMeshGenerator
 
 workflowControls = utilities/workflowControls
 
@@ -297,6 +307,13 @@ $(meshSurfaceEdgeExtractorNonTopo)/meshSurfaceEdgeExtractorNonTopoDistributeFace
 $(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2D.C
 $(meshSurfaceEdgeExtractor2D)/meshSurfaceEdgeExtractor2DDistributeFaces.C
 
+$(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUN.C
+$(meshSurfaceEdgeExtractorFUN)/meshSurfaceEdgeExtractorFUNDistributeFaces.C
+
+$(createFundamentalSheets)/createFundamentalSheets.C
+$(createFundamentalSheetsFJ)/createFundamentalSheetsFJ.C
+$(createFundamentalSheetsJFS)/createFundamentalSheetsJFS.C
+
 $(correctEdgesBetweenPatches)/correctEdgesBetweenPatches.C
 $(correctEdgesBetweenPatches)/correctEdgesBetweenPatchesDistributeFaces.C
 
@@ -436,6 +453,12 @@ $(cartesian2DMeshGenerator)/cartesian2DMeshGenerator.C
 $(tetMeshExtractorOctree)/tetMeshExtractorOctree.C
 
 $(tetMeshGenerator)/tetMeshGenerator.C
+
+$(voronoiMeshExtractor)/voronoiMeshExtractor.C
+$(voronoiMeshExtractor)/voronoiMeshExtractorAddressing.C
+$(voronoiMeshExtractor)/voronoiMeshExtractorCreateMesh.C
+
+$(voronoiMeshGenerator)/voronoiMeshGenerator.C
 
 $(writeAsFPMA)/writeMeshFPMA.C
 $(writeAsFPMA)/fpmaMesh.C
