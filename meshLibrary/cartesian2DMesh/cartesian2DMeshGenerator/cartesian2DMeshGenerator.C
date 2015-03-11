@@ -160,6 +160,10 @@ void cartesian2DMeshGenerator::generateBoundaryLayers()
         //- contruct a new octree from the input surface
         octreePtr_ = new meshOctree(*surfacePtr_, true);
         meshOctreeCreator(*octreePtr_).createOctreeWithRefinedBoundary(20);
+
+        mapEdgesAndCorners();
+
+        optimiseMeshSurface();
     }
 }
 
