@@ -62,6 +62,9 @@ class voronoiMeshGenerator
         //- pointer to the surface
         const triSurf* surfacePtr_;
 
+        //- pointer to the modifier surface
+        const triSurf* modSurfacePtr_;
+
         //- pointer to the octree
         meshOctree* octreePtr_;
 

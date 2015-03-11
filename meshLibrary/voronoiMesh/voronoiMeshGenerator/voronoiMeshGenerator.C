@@ -43,6 +43,9 @@ Description
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
+#include "triSurfaceMetaData.H"
+#include "surfaceMeshGeometryModification.H"
+#include "polyMeshGenGeometryModification.H"
 
 #include "checkCellConnectionsOverFaces.H"
 #include "checkIrregularSurfaceConnections.H"
@@ -214,15 +217,13 @@ void voronoiMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
-
-        optimizer.untangleMeshFV();
+        meshOptimizer(mesh_).untangleBoundaryLayer();
     }
 }
 
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
-    //- final optimisation
+    //- untangle the surface if needed
     bool enforceConstraints(false);
     if( meshDict_.found("enforceGeometryConstraints") )
     {
@@ -230,15 +231,41 @@ void voronoiMeshGenerator::optimiseFinalMesh()
             readBool(meshDict_.lookup("enforceGeometryConstraints"));
     }
 
-    meshOptimizer optimizer(mesh_);
-    if( enforceConstraints )
-        optimizer.enforceConstraints();
+    if( true )
+    {
+        meshSurfaceEngine mse(mesh_);
+        meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
 
-    optimizer.optimizeSurface(*octreePtr_);
+        if( enforceConstraints )
+            surfOpt.enforceConstraints();
+
+        surfOpt.optimizeSurface();
+    }
 
     deleteDemandDrivenData(octreePtr_);
 
+    //- final optimisation
+    meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
+
+    optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer();
+    optimizer.untangleMeshFV();
+
+    mesh_.clearAddressingData();
+
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
 
     # ifdef DEBUG
     mesh_.write();
@@ -301,11 +328,11 @@ void voronoiMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from Time
 voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     octreePtr_(NULL),
     pointRegionsPtr_(NULL),
     meshDict_
@@ -328,6 +355,16 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
 
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
+    }
+
     if( surfacePtr_->featureEdges().size() != 0 )
     {
         //- create surface patches based on the feature edges
@@ -342,12 +379,20 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
 
-    meshOctreeCreator* octreeCreatorPtr =
-        new meshOctreeCreator(*octreePtr_, meshDict_);
-    octreeCreatorPtr->createOctreeBoxes();
-    deleteDemandDrivenData(octreeCreatorPtr);
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
+
+    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
 }
@@ -357,6 +402,7 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 voronoiMeshGenerator::~voronoiMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
     deleteDemandDrivenData(pointRegionsPtr_);
 }
