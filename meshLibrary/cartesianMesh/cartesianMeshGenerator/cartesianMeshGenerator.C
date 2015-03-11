@@ -102,19 +102,17 @@ void cartesianMeshGenerator::surfacePreparation()
 void cartesianMeshGenerator::mapMeshToSurface()
 {
     //- calculate mesh surface
-    meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
+    meshSurfaceEngine mse(mesh_);
 
     //- pre-map mesh surface
-    meshSurfaceMapper mapper(*msePtr, *octreePtr_);
+    meshSurfaceMapper mapper(mse, *octreePtr_);
     mapper.preMapVertices();
 
     //- map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
 
     //- untangle surface faces
-    meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
-
-    deleteDemandDrivenData(msePtr);
+    meshSurfaceOptimizer(mse, *octreePtr_).untangleSurface();
 }
 
 void cartesianMeshGenerator::extractPatches()
@@ -189,7 +187,7 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeMeshFV();
 
     optimizer.optimizeLowQualityFaces();
-    optimizer.optimizeBoundaryLayer();
+    optimizer.optimizeBoundaryLayer(modSurfacePtr_==NULL);
     optimizer.untangleMeshFV();
 
     mesh_.clearAddressingData();
@@ -204,6 +202,32 @@ void cartesianMeshGenerator::optimiseFinalMesh()
         //- delete modified surface mesh
         deleteDemandDrivenData(modSurfacePtr_);
     }
+}
+
+void cartesianMeshGenerator::projectSurfaceAfterBackScaling()
+{
+    if( !meshDict_.found("anisotropicSources") )
+        return;
+
+    deleteDemandDrivenData(octreePtr_);
+    octreePtr_ = new meshOctree(*surfacePtr_);
+
+    meshOctreeCreator
+    (
+        *octreePtr_,
+        meshDict_
+    ).createOctreeWithRefinedBoundary(20, 30);
+
+    //- calculate mesh surface
+    meshSurfaceEngine mse(mesh_);
+
+    //- pre-map mesh surface
+    meshSurfaceMapper mapper(mse, *octreePtr_);
+
+    //- map mesh surface on the geometry surface
+    mapper.mapVerticesOntoSurface();
+
+    optimiseFinalMesh();
 }
 
 void cartesianMeshGenerator::replaceBoundaries()
@@ -255,6 +279,8 @@ void cartesianMeshGenerator::generateMesh()
         if( controller_.runCurrentStep("meshOptimisation") )
         {
             optimiseFinalMesh();
+
+            projectSurfaceAfterBackScaling();
         }
 
         if( controller_.runCurrentStep("boundaryLayerRefinement") )

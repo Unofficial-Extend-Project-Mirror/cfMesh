@@ -106,6 +106,9 @@ class cartesianMeshGenerator
         //- mesh optimisation
         void optimiseFinalMesh();
 
+        //- re-project points back on the surface mesh after back-scaling
+        void projectSurfaceAfterBackScaling();
+
         //- replace boundaries
         void replaceBoundaries();
 
