@@ -133,7 +133,7 @@ vector coneScaling::displacement(const point& p) const
 
     //- calculate point position in the radial direction
     const vector rVec = p - (p0_ + t * axialVec_);
-    const scalar r = mag(rVec);
+    const scalar r = mag(rVec) + VSMALL;
 
     //- calculate the radius of the cone at the axial position
     const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
@@ -142,9 +142,7 @@ vector coneScaling::displacement(const point& p) const
     //- calculate displacement in the axial direction
     disp += tBnd * axialVec_ * ((1.0/axialScaling_) - 1.0);
 
-
     //- calculate displacement in the radial direction
-
     if( r > VSMALL )
     {
         const scalar tRadial = r / rCone;
@@ -169,7 +167,7 @@ vector coneScaling::backwardDisplacement(const point& p) const
 
     //- calculate point position in the radial direction
     const vector rVec = p - (p0_ + t * axialVec_);
-    const scalar r = mag(rVec);
+    const scalar r = mag(rVec) + VSMALL;
 
     //- calculate the radius of the cone at the axial position
     const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
@@ -385,6 +383,11 @@ Ostream& coneScaling::operator<<(Ostream& os) const
     os << "name " << name() << nl;
     write(os);
     return os;
+}
+
+Ostream& operator<<(Ostream& os, const coneScaling& cs)
+{
+    return cs.operator<<(os);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

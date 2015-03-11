@@ -110,7 +110,7 @@ vector sphereScaling::displacement(const point& p) const
         const scalar rScale = (1.0/radialScaling_) - 1.0;
         const vector dispRadial = radius_ * (rVec / r) * rScale;
 
-        //- calculate displacements in th radial direction
+        //- calculate displacements in the radial direction
         disp += tRadialBnd * dispRadial;
     }
 
@@ -265,6 +265,11 @@ Ostream& sphereScaling::operator<<(Ostream& os) const
     os << "name " << name() << nl;
     write(os);
     return os;
+}
+
+Ostream& operator<<(Ostream& os, const sphereScaling& ss)
+{
+    return ss.operator<<(os);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -90,6 +90,8 @@ public:
         //- calculate the displacement vector for the backward modification
         point backwardModifiedPoint(const point&) const;
 
+        //- Print modification objects
+        void printObjects() const;
 };
 
 

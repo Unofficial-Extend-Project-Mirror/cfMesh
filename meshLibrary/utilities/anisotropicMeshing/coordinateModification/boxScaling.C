@@ -342,6 +342,11 @@ Ostream& boxScaling::operator<<(Ostream& os) const
     return os;
 }
 
+Ostream& operator<<(Ostream& os, const boxScaling& bs)
+{
+    return bs.operator<<(os);
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

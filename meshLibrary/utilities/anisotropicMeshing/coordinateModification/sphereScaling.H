@@ -144,6 +144,7 @@ public:
     // IOstream Operators
 
         Ostream& operator<<(Ostream&) const;
+        friend Ostream& operator<<(Ostream&, const sphereScaling&);
 };
 
 
