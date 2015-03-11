@@ -259,7 +259,7 @@ void meshOptimizer::untangleMeshFV
     Info << "Finished untangling the mesh" << endl;
 }
 
-void meshOptimizer::optimizeBoundaryLayer()
+void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
 {
     if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
     {
@@ -279,7 +279,7 @@ void meshOptimizer::optimizeBoundaryLayer()
         if( !smoothLayer )
             return;
 
-        if( true )
+        if( addBufferLayer )
         {
             //- create a buffer layer which will not be modified by the smoother
             refineBoundaryLayers refLayers(mesh_);
