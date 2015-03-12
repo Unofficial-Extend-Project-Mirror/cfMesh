@@ -411,14 +411,14 @@ void meshOptimizer::untangleBoundaryLayer()
                 mesh_.addCellToSubset(badBlCellsId, neighbour[it.key()]);
             }
 
-            mesh_.write();
-
             returnReduce(1, sumOp<label>());
-            FatalErrorIn
+
+            throw std::logic_error
             (
                 "void meshOptimizer::untangleBoundaryLayer()"
-            ) << "Found " << nInvalidFaces << " invalid faces. Exitting"
-              << exit(FatalError);
+                "Found invalid faces in the boundary layer."
+                " Cannot untangle mesh!!"
+            );
         }
     }
     else
