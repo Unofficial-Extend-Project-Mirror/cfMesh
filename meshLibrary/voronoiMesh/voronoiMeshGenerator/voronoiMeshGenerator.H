@@ -37,7 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
-//#include "volFields.H"
+#include "workflowControls.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -62,6 +62,9 @@ class voronoiMeshGenerator
         //- pointer to the surface
         const triSurf* surfacePtr_;
 
+        //- pointer to the modifier surface
+        const triSurf* modSurfacePtr_;
+
         //- pointer to the octree
         meshOctree* octreePtr_;
 
@@ -74,6 +77,9 @@ class voronoiMeshGenerator
         //- mesh
         polyMeshGen mesh_;
 
+        //- workflow controller
+        workflowControls controller_;
+
     // Private member functions
         //- create voronoi mesh
         void createVoronoiMesh();
@@ -83,6 +89,9 @@ class voronoiMeshGenerator
 
         //- map mesh to the surface and untangle surface
         void mapMeshToSurface();
+
+        //- assign patches to boundary faces
+        void extractPatches();
 
         //- capture edges and corners
         void mapEdgesAndCorners();
@@ -98,6 +107,9 @@ class voronoiMeshGenerator
 
         //- mesh optimisation
         void optimiseFinalMesh();
+
+        //- re-project points back on the surface mesh after back-scaling
+        void projectSurfaceAfterBackScaling();
 
         //- refine boundary layer
         void refBoundaryLayers();

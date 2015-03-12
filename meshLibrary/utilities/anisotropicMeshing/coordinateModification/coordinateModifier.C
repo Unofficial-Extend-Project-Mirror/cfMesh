@@ -212,6 +212,13 @@ point coordinateModifier::backwardModifiedPoint(const point& p) const
     return pNew;
 }
 
+void coordinateModifier::printObjects() const
+{
+    Info << "Modification objects " << modifiers_ << endl;
+
+    Info << "Backward modification objects " << backwardModifiers_ << endl;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

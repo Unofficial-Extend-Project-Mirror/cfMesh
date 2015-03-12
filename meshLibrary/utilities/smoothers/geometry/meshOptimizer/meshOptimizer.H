@@ -261,7 +261,7 @@ public:
 
         //- performs optimisation of boundary layer cells
         //- it is applied to the first boundary layer, only
-        void optimizeBoundaryLayer();
+        void optimizeBoundaryLayer(const bool addBufferLayer = true);
 
         //- performs untangling of boundary layer cells
         //- if the user requests for it

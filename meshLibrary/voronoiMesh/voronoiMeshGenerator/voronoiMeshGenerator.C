@@ -43,11 +43,10 @@ Description
 #include "renameBoundaryPatches.H"
 #include "checkMeshDict.H"
 #include "triSurfacePatchManipulator.H"
-
-#include "checkCellConnectionsOverFaces.H"
-#include "checkIrregularSurfaceConnections.H"
-#include "checkNonMappableCellConnections.H"
-#include "checkBoundaryFacesSharingTwoEdges.H"
+#include "triSurfaceMetaData.H"
+#include "surfaceMeshGeometryModification.H"
+#include "polyMeshGenGeometryModification.H"
+#include "edgeExtractor.H"
 #include "meshSurfaceEdgeExtractorFUN.H"
 
 //#define DEBUG
@@ -85,25 +84,6 @@ void voronoiMeshGenerator::surfacePreparation()
     }
     while( topologicalCleaner(mesh_).cleanTopology() );
 
-/*    bool changed;
-    do
-    {
-        changed = false;
-
-        checkIrregularSurfaceConnections checkConnections(mesh_);
-        if( checkConnections.checkAndFixIrregularConnections() )
-            changed = true;
-
-        if( checkNonMappableCellConnections(mesh_).removeCells() )
-            changed = true;
-
-        if( checkCellConnectionsOverFaces(mesh_).checkCellGroups() )
-            changed = true;
-    } while( changed );
-
-    checkBoundaryFacesSharingTwoEdges(mesh_).improveTopology();
-    */
-
     # ifdef DEBUG
     mesh_.write();
     //::exit(EXIT_FAILURE);
@@ -134,6 +114,16 @@ void voronoiMeshGenerator::mapMeshToSurface()
     # endif
 
     deleteDemandDrivenData(msePtr);
+}
+
+void voronoiMeshGenerator::extractPatches()
+{
+    edgeExtractor extractor(mesh_, *octreePtr_);
+
+    Info << "Extracting edges" << endl;
+    extractor.extractEdges();
+
+    extractor.updateMeshPatches();
 }
 
 void voronoiMeshGenerator::mapEdgesAndCorners()
@@ -214,15 +204,13 @@ void voronoiMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer optimizer(mesh_);
-
-        optimizer.untangleMeshFV();
+        meshOptimizer(mesh_).untangleBoundaryLayer();
     }
 }
 
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
-    //- final optimisation
+    //- untangle the surface if needed
     bool enforceConstraints(false);
     if( meshDict_.found("enforceGeometryConstraints") )
     {
@@ -230,20 +218,72 @@ void voronoiMeshGenerator::optimiseFinalMesh()
             readBool(meshDict_.lookup("enforceGeometryConstraints"));
     }
 
-    meshOptimizer optimizer(mesh_);
-    if( enforceConstraints )
-        optimizer.enforceConstraints();
+    if( true )
+    {
+        meshSurfaceEngine mse(mesh_);
+        meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
 
-    optimizer.optimizeSurface(*octreePtr_);
+        if( enforceConstraints )
+            surfOpt.enforceConstraints();
+
+        surfOpt.optimizeSurface();
+    }
 
     deleteDemandDrivenData(octreePtr_);
 
+    //- final optimisation
+    meshOptimizer optimizer(mesh_);
+    if( enforceConstraints )
+        optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
+
+    optimizer.optimizeLowQualityFaces();
+    optimizer.optimizeBoundaryLayer(false);
+    optimizer.untangleMeshFV();
+
+    mesh_.clearAddressingData();
+
+    if( modSurfacePtr_ )
+    {
+        polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
+
+        //- revert the mesh into the original space
+        meshMod.revertGeometryModification();
+
+        //- delete modified surface mesh
+        deleteDemandDrivenData(modSurfacePtr_);
+    }
 
     # ifdef DEBUG
     mesh_.write();
     //::exit(0);
     # endif
+}
+
+void voronoiMeshGenerator::projectSurfaceAfterBackScaling()
+{
+    if( !meshDict_.found("anisotropicSources") )
+        return;
+
+    deleteDemandDrivenData(octreePtr_);
+    octreePtr_ = new meshOctree(*surfacePtr_);
+
+    meshOctreeCreator
+    (
+        *octreePtr_,
+        meshDict_
+    ).createOctreeWithRefinedBoundary(20, 30);
+
+    //- calculate mesh surface
+    meshSurfaceEngine mse(mesh_);
+
+    //- pre-map mesh surface
+    meshSurfaceMapper mapper(mse, *octreePtr_);
+
+    //- map mesh surface on the geometry surface
+    mapper.mapVerticesOntoSurface();
+
+    optimiseFinalMesh();
 }
 
 void voronoiMeshGenerator::replaceBoundaries()
@@ -270,21 +310,49 @@ void voronoiMeshGenerator::generateMesh()
 {
     try
     {
-        createVoronoiMesh();
+        if( controller_.runCurrentStep("templateGeneration") )
+        {
+            createVoronoiMesh();
+        }
 
-        surfacePreparation();
+        if( controller_.runCurrentStep("surfaceTopology") )
+        {
+            surfacePreparation();
+        }
 
-        mapMeshToSurface();
+        if( controller_.runCurrentStep("surfaceProjection") )
+        {
+            mapMeshToSurface();
+        }
 
-        mapEdgesAndCorners();
+        if( controller_.runCurrentStep("patchAssignment") )
+        {
+            extractPatches();
+        }
 
-        optimiseMeshSurface();
+        if( controller_.runCurrentStep("edgeExtraction") )
+        {
+            mapEdgesAndCorners();
 
-        generateBoudaryLayers();
+            optimiseMeshSurface();
+        }
 
-        optimiseFinalMesh();
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
+            generateBoudaryLayers();
+        }
 
-        refBoundaryLayers();
+        if( controller_.runCurrentStep("meshOptimisation") )
+        {
+            optimiseFinalMesh();
+
+            projectSurfaceAfterBackScaling();
+        }
+
+        if( controller_.runCurrentStep("boundaryLayerRefinement") )
+        {
+            refBoundaryLayers();
+        }
 
         renumberMesh();
 
@@ -301,11 +369,11 @@ void voronoiMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from Time
 voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(NULL),
+    modSurfacePtr_(NULL),
     octreePtr_(NULL),
     pointRegionsPtr_(NULL),
     meshDict_
@@ -319,7 +387,8 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
             IOobject::NO_WRITE
         )
     ),
-    mesh_(time)
+    mesh_(time),
+    controller_(mesh_)
 {
     if( true )
         checkMeshDict cmd(meshDict_);
@@ -327,6 +396,16 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
     const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
     surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
+
+    if( true )
+    {
+        //- save meta data with the mesh (surface mesh + its topology info)
+        triSurfaceMetaData sMetaData(*surfacePtr_);
+        const dictionary& surfMetaDict = sMetaData.metaData();
+
+        mesh_.metaData().add("surfaceFile", surfaceFile, true);
+        mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
+    }
 
     if( surfacePtr_->featureEdges().size() != 0 )
     {
@@ -342,12 +421,20 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
         surfacePtr_ = surfaceWithPatches;
     }
 
-    octreePtr_ = new meshOctree(*surfacePtr_);
+    if( meshDict_.found("anisotropicSources") )
+    {
+        surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
 
-    meshOctreeCreator* octreeCreatorPtr =
-        new meshOctreeCreator(*octreePtr_, meshDict_);
-    octreeCreatorPtr->createOctreeBoxes();
-    deleteDemandDrivenData(octreeCreatorPtr);
+        modSurfacePtr_ = surfMod.modifyGeometry();
+
+        octreePtr_ = new meshOctree(*modSurfacePtr_);
+    }
+    else
+    {
+        octreePtr_ = new meshOctree(*surfacePtr_);
+    }
+
+    meshOctreeCreator(*octreePtr_, meshDict_).createOctreeBoxes();
 
     generateMesh();
 }
@@ -357,6 +444,7 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 voronoiMeshGenerator::~voronoiMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
+    deleteDemandDrivenData(modSurfacePtr_);
     deleteDemandDrivenData(octreePtr_);
     deleteDemandDrivenData(pointRegionsPtr_);
 }

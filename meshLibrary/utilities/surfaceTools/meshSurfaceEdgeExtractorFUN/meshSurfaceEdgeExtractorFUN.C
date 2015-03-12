@@ -84,11 +84,11 @@ meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
             "(polyMeshGen&, const meshOctree&)"
         ) << "Cannot run in parallel!" << exit(FatalError);
 
-    distributeBoundaryFaces();
+    //distributeBoundaryFaces();
 
-    reviseCorners();
+    //reviseCorners();
 
-    reviseEdges();
+    //reviseEdges();
 
     //remapBoundaryPoints();
 
@@ -96,7 +96,7 @@ meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
 
     smoothMeshSurface();
 
-    improveQualityOfFundamentalSheets();
+    //improveQualityOfFundamentalSheets();
 
     remapBoundaryPoints();
 }

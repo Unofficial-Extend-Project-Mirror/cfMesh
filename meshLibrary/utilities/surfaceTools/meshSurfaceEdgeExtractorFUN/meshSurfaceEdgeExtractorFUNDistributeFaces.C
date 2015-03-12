@@ -33,7 +33,6 @@ Description
 #include "meshSurfaceMapper.H"
 #include "helperFunctions.H"
 #include "createFundamentalSheetsJFS.H"
-#include "createFundamentalSheetsFJ.H"
 #include "meshSurfaceOptimizer.H"
 #include "meshSurfaceCheckEdgeTypes.H"
 #include "meshSurfaceEngine.H"
@@ -139,7 +138,6 @@ void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
 void meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
 {
     createFundamentalSheetsJFS edgeSheets(mesh_);
-    //createFundamentalSheetsFJ edgeSheets(mesh_);
 
     clearOut();
 }

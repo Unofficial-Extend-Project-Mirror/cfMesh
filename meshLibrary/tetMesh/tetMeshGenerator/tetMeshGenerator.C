@@ -45,7 +45,6 @@ Description
 #include "triSurfacePatchManipulator.H"
 #include "refineBoundaryLayers.H"
 #include "triSurfaceMetaData.H"
-#include "polyMeshGenChecks.H"
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
 
@@ -162,8 +161,10 @@ void tetMeshGenerator::optimiseFinalMesh()
 
     optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();
-    optimizer.optimizeBoundaryLayer();
+    optimizer.optimizeBoundaryLayer(false);
     optimizer.optimizeMeshFV();
+
+    mesh_.clearAddressingData();
 
     if( modSurfacePtr_ )
     {
@@ -175,6 +176,32 @@ void tetMeshGenerator::optimiseFinalMesh()
         //- delete modified surface mesh
         deleteDemandDrivenData(modSurfacePtr_);
     }
+}
+
+void tetMeshGenerator::projectSurfaceAfterBackScaling()
+{
+    if( !meshDict_.found("anisotropicSources") )
+        return;
+
+    deleteDemandDrivenData(octreePtr_);
+    octreePtr_ = new meshOctree(*surfacePtr_);
+
+    meshOctreeCreator
+    (
+        *octreePtr_,
+        meshDict_
+    ).createOctreeWithRefinedBoundary(20, 30);
+
+    //- calculate mesh surface
+    meshSurfaceEngine mse(mesh_);
+
+    //- pre-map mesh surface
+    meshSurfaceMapper mapper(mse, *octreePtr_);
+
+    //- map mesh surface on the geometry surface
+    mapper.mapVerticesOntoSurface();
+
+    optimiseFinalMesh();
 }
 
 void tetMeshGenerator::refBoundaryLayers()
@@ -225,18 +252,23 @@ void tetMeshGenerator::generateMesh()
             extractPatches();
         }
 
-        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        if( controller_.runCurrentStep("edgeExtraction") )
         {
             mapEdgesAndCorners();
 
             optimiseMeshSurface();
+        }
 
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
             generateBoundaryLayers();
         }
 
         if( controller_.runCurrentStep("meshOptimisation") )
         {
             optimiseFinalMesh();
+
+            projectSurfaceAfterBackScaling();
         }
 
         if( controller_.runCurrentStep("boundaryLayerRefinement") )

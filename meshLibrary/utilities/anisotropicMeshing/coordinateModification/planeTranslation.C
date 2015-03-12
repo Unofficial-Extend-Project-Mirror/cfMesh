@@ -282,6 +282,11 @@ Ostream& planeTranslation::operator<<(Ostream& os) const
     return os;
 }
 
+Ostream& operator<<(Ostream& os, const planeTranslation& pt)
+{
+    return pt.operator<<(os);
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
