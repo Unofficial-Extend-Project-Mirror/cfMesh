@@ -184,8 +184,8 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     meshOptimizer optimizer(mesh_);
     if( enforceConstraints )
         optimizer.enforceConstraints();
-    optimizer.optimizeMeshFV();
 
+    optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();
     optimizer.optimizeBoundaryLayer(modSurfacePtr_==NULL);
     optimizer.untangleMeshFV();
