@@ -543,7 +543,8 @@ void meshOptimizer::optimizeMeshFV
 
 void meshOptimizer::optimizeMeshFVBestQuality
 (
-    const label maxNumIterations
+    const label maxNumIterations,
+    const scalar threshold
 )
 {
     label nBadFaces, nIter(0);
@@ -570,7 +571,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
                 lowQualityFaces,
                 false,
                 &changedFace,
-                0.1
+                threshold
             );
 
         changedFace = false;
@@ -596,16 +597,12 @@ void meshOptimizer::optimizeMeshFVBestQuality
         //- of points in the tet mesh
         tetMeshOptimisation tmo(tetMesh);
 
-        tmo.optimiseUsingKnuppMetric();
-
-        tmo.optimiseUsingMeshUntangler();
-
-        tmo.optimiseUsingVolumeOptimizer();
+        tmo.optimiseUsingVolumeOptimizer(20);
 
         //- update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( (nIter < minIter+2) && (++nIter < maxNumIterations) );
+    } while( ++nIter < maxNumIterations );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

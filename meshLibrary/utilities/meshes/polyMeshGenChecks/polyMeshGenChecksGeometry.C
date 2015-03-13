@@ -2106,13 +2106,19 @@ label findWorstQualityFaces
     const scalar warnNonOrtho =
         minNonOrtho + relativeThreshold * (1.0 - minNonOrtho);
 
+    Info << "Worst non-orthogonality " << Foam::acos(minNonOrtho) * 180.0 / M_PI
+         << " selecting faces with non-orthogonality greater than "
+         << (Foam::acos(warnNonOrtho) * 180.0 / M_PI) << endl;
+
     forAll(checkValues, faceI)
+    {
         if
         (
             activeFacePtr && activeFacePtr->operator[](faceI) &&
             checkValues[faceI] < warnNonOrtho
         )
             badFaces.insert(faceI);
+    }
 
     polyMeshGenChecks::checkFaceSkewness
     (
@@ -2131,9 +2137,12 @@ label findWorstQualityFaces
         )
             badFaces.insert(faceI);
 
+    Info << "Maximum skewness in the mesh is " << maxSkew
+         << " selecting faces with skewness greater than " << warnSkew << endl;
+
     const label nBadFaces = returnReduce(badFaces.size(), sumOp<label>());
 
-    Info << "Seleted " << nBadFaces
+    Info << "Selected " << nBadFaces
          << " out of " << returnReduce(checkValues.size(), sumOp<label>())
          << " faces" << endl;
 
