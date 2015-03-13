@@ -33,6 +33,10 @@ Description
 
 //#define DEBUGLayer
 
+# ifdef DEBUGLayer
+#include "OFstream.H"
+# endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -294,7 +298,7 @@ void refineBoundaryLayers::refineFace
                 Pout << "Other point " << facePoints[i][0]
                      << " coordinates " << points[facePoints[i][0]] << endl;
                 Pout << "Points at aplit edge "
-                     << newVerticesForSplitEdge_[dir0Edges.second()] << endl;}
+                     << newVerticesForSplitEdge_[dir0Edges.second()] << endl;
                 # endif
 
                 const scalar u
@@ -309,7 +313,7 @@ void refineBoundaryLayers::refineFace
                 Pout << "Other point " << facePoints[0][j]
                      << " coordinates " << points[facePoints[0][j]] << endl;
                 Pout << "Points at aplit edge "
-                     << newVerticesForSplitEdge_[dir1Edges.first()] << endl;}
+                     << newVerticesForSplitEdge_[dir1Edges.first()] << endl;
                 # endif
 
                 const scalar v
@@ -321,7 +325,7 @@ void refineBoundaryLayers::refineFace
                 # ifdef DEBUGLayer
                 Pout << "Generating point of face " << endl;
                 Pout << "u = " << u << endl;
-                Pout << "v = " << v << endl;}
+                Pout << "v = " << v << endl;
                 # endif
 
                 //- calculate the coordinates of the missing point via
@@ -933,12 +937,24 @@ void refineBoundaryLayers::generateNewFaces()
             //- faces cannot be in the same layer
             const DynList<label>& neiLayers =
                 layerAtPatch_[facePatches[neiFace]];
+
+            if( neiLayers.size() == 0 )
+                continue;
+
             const DynList<label>& currLayers = layerAtPatch_[facePatches[bfI]];
+
             bool foundSame(false);
+
             forAll(currLayers, i)
+            {
                 if( neiLayers.contains(currLayers[i]) )
+                {
                     foundSame = true;
-            if( foundSame )
+                    break;
+                }
+            }
+
+            if( foundSame || (neiLayers.size() == 0) )
                 continue;
 
             //- set the refinement direction for this face
@@ -1226,6 +1242,43 @@ void refineBoundaryLayers::generateNewFaces()
 
         returnReduce(1, sumOp<label>());
     }
+
+    OFstream file("refinedFaces.vtk");
+
+    //- write the header
+    file << "# vtk DataFile Version 3.0\n";
+    file << "vtk output\n";
+    file << "ASCII\n";
+    file << "DATASET POLYDATA\n";
+
+    //- write points
+    file << "POINTS " << mesh_.points().size() << " float\n";
+    forAll(mesh_.points(), pI)
+    {
+        const point& p = mesh_.points()[pI];
+
+        file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
+    }
+
+    //- write faces
+    label counter(0);
+    forAll(newFaces_, faceI)
+    {
+        counter += newFaces_.sizeOfRow(faceI);
+        ++counter;
+    }
+
+    file << "\nPOLYGONS " << faces.size()
+         << " " << counter << nl;
+    forAll(newFaces_, faceI)
+    {
+        file << newFaces_.sizeOfRow(faceI);
+        forAllRow(newFaces_, faceI, i)
+            file << " " << newFaces_(faceI, i);
+        file << nl;
+    }
+
+    file << "\n";
     # endif
 
     Info << "Finished refining boundary-layer faces " << endl;
