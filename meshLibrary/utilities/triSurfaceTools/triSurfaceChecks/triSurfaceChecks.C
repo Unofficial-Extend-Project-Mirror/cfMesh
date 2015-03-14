@@ -621,9 +621,6 @@ label checkSelfIntersections
     # endif
     forAll(intersected, tI)
     {
-        if( intersected[tI] )
-            continue;
-
         const labelledTri& tri = surf[tI];
 
         boundBox bb(pts[tri[0]], pts[tri[0]]);
@@ -649,7 +646,7 @@ label checkSelfIntersections
                 const label triJ = trianglesInBox[j];
                 const labelledTri& nt = surf[triJ];
 
-                if( tI == triJ )
+                if( tI >= triJ )
                     continue;
 
                 point int0, int1;
@@ -668,8 +665,20 @@ label checkSelfIntersections
                         int0,
                         int1
                     );
+
+                if( intersect )
+                {
+                    intersected[tI] = true;
+                    intersected[triJ] = true;
+                }
             }
         }
+    }
+
+    forAll(intersected, tI)
+    {
+        if( intersected[tI] )
+            badFaces.append(tI);
     }
 
     return badFaces.size();
@@ -705,6 +714,77 @@ label checkOverlaps
 {
     badFaces.clear();
 
+    meshOctree octree(surf);
+    meshOctreeCreator(octree).createOctreeWithRefinedBoundary(20, 30);
+
+    const pointField& pts = surf.points();
+
+    boolList intersected(surf.size(), false);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(intersected, tI)
+    {
+        const labelledTri& tri = surf[tI];
+
+        boundBox bb(pts[tri[0]], pts[tri[0]]);
+        for(label i=1;i<3;++i)
+        {
+            bb.min() = Foam::min(bb.min(), pts[tri[i]]);
+            bb.max() = Foam::max(bb.max(), pts[tri[i]]);
+        }
+
+        DynList<label> leavesInBox;
+        octree.findLeavesContainedInBox(bb, leavesInBox);
+
+        forAll(leavesInBox, i)
+        {
+            const label leafI = leavesInBox[i];
+
+            DynList<label> trianglesInBox;
+
+            octree.containedTriangles(leafI, trianglesInBox);
+
+            forAll(trianglesInBox, j)
+            {
+                const label triJ = trianglesInBox[j];
+                const labelledTri& nt = surf[triJ];
+
+                if( tI >= triJ )
+                    continue;
+
+                point int0, int1;
+
+                const bool intersect =
+                    triangleFuncs::intersect
+                    (
+                        pts[tri[0]],
+                        pts[tri[1]],
+                        pts[tri[2]],
+
+                        pts[nt[0]],
+                        pts[nt[1]],
+                        pts[nt[2]],
+
+                        int0,
+                        int1
+                    );
+
+                if( intersect )
+                {
+                    intersected[tI] = true;
+                    intersected[triJ] = true;
+                }
+            }
+        }
+    }
+
+    forAll(intersected, tI)
+    {
+        if( intersected[tI] )
+            badFaces.append(tI);
+    }
 
     return badFaces.size();
 }
