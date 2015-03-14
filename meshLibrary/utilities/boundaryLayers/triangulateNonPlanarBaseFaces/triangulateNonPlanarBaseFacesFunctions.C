@@ -52,7 +52,6 @@ bool triangulateNonPlanarBaseFaces::findNonPlanarBoundaryFaces()
 
     meshSurfacePartitioner mPart(mesh_);
     const meshSurfaceEngine& mse = mPart.surfaceEngine();
-    const labelList& bp = mse.bp();
     const labelList& faceOwner = mse.faceOwners();
     const faceList::subList& bFaces = mse.boundaryFaces();
 

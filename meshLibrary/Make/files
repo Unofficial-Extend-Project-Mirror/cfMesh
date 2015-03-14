@@ -86,6 +86,7 @@ checkNonMappableCellConnections = $(topology)/checkNonMappableCellConnections
 triSurfaceTools = utilities/triSurfaceTools
 
 triSurface2DCheck = $(triSurfaceTools)/triSurface2DCheck
+triSurfaceChecks = $(triSurfaceTools)/triSurfaceChecks
 triSurfaceCleanupDuplicates = $(triSurfaceTools)/triSurfaceCleanupDuplicates
 triSurfaceCleanupDuplicateTriangles = $(triSurfaceTools)/triSurfaceCleanupDuplicateTriangles
 triSurfaceCopyParts = $(triSurfaceTools)/triSurfaceCopyParts
@@ -406,6 +407,8 @@ $(objectRefinement)/boxRefinement.C
 $(objectRefinement)/hollowConeRefinement.C
 
 $(triSurface2DCheck)/triSurface2DCheck.C
+
+$(triSurfaceChecks)/triSurfaceChecks.C
 
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicates.C
 $(triSurfaceCleanupDuplicates)/triSurfaceCleanupDuplicatesFunctions.C

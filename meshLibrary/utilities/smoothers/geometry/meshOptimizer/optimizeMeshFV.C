@@ -570,7 +570,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
             lockedPoints.append(pointI);
     }
 
-    label minNumBadFaces(10 * faces.size()), minIter(-1);
+    label minNumBadFaces(10 * faces.size());
     do
     {
         labelHashSet lowQualityFaces;
@@ -598,7 +598,6 @@ void meshOptimizer::optimizeMeshFVBestQuality
         if( nBadFaces < minNumBadFaces )
         {
             minNumBadFaces = nBadFaces;
-            minIter = nIter;
         }
 
         partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);

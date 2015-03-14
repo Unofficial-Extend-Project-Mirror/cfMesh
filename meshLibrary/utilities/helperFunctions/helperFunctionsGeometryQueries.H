@@ -224,6 +224,38 @@ namespace help
         point& pMin
     );
 
+    //- check the existence of overlap between the two edges
+    inline bool doEdgesOverlap
+    (
+        const point& e0p0,
+        const point& e0p1,
+        const point& e1p0,
+        const point& e1p1,
+        FixedList<point, 2>& overlappingPart,
+        const scalar distTol = -1.0,
+        const scalar cosTol = Foam::cos(5.0*(M_PI/180.0)) // cosine tolerance
+    );
+
+    //- check the existence of overlap between the two triangles
+    inline bool doTrianglesOverlap
+    (
+        const triangle<point, point>& tri0,
+        const triangle<point, point>& tri1,
+        DynList<point>& overlappingPolygon,
+        const scalar distTol = -1.0,
+        const scalar cosTol = Foam::cos(5.0*(M_PI/180.0)) // cosine tolerance
+    );
+
+    //- check the existence of intersection between the two triangles
+    inline bool doTrianglesIntersect
+    (
+        const triangle<point, point>& tri0,
+        const triangle<point, point>& tri1,
+        FixedList<point, 2>& interectionEdge,
+        const scalar distTol = -1.0,
+        const scalar cosTol = Foam::cos(5.0*(M_PI/180.0)) // cosine tolerance
+    );
+
     //- check if the point is inside or outside the face
     inline bool pointInsideFace
     (
