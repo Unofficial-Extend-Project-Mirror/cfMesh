@@ -74,7 +74,7 @@ label checkSurfaceManifolds(triSurf&, const word subsetPrefix="manifold_");
 
 //- check for existence of holes in the surface mesh
 label checkForHoles(const triSurf&, labelLongList&);
-label checkForHoles(triSurf&, const word subsetPrefix="hole_");
+label checkForHoles(triSurf&, const word subsetName="holes");
 
 //- check for existence of non-manifold edges
 label checkForNonManifoldEdges(const triSurf&, labelLongList&);

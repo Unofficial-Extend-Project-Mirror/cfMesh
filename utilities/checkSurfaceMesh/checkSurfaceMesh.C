@@ -30,12 +30,8 @@ Description
 #include "IFstream.H"
 #include "fileName.H"
 #include "triSurf.H"
-#include "triSurfModifier.H"
-#include "helperFunctions.H"
-#include "demandDrivenData.H"
-#include "coordinateModifier.H"
-#include "checkMeshDict.H"
-#include "surfaceMeshGeometryModification.H"
+#include "triSurfaceChecks.H"
+#include "boundBox.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -43,79 +39,106 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
+    argList::noParallel();
+    argList::validArgs.clear();
+    argList::validArgs.append("input surface file");
+    argList args(argc, argv);
 
-    IOdictionary meshDict
-    (
-        IOobject
-        (
-            "meshDict",
-            runTime.system(),
-            runTime,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    );
+    fileName inFileName(args.args()[1]);
 
-    checkMeshDict cmd(meshDict);
+    triSurf surf(inFileName);
 
-    fileName surfaceFile = meshDict.lookup("surfaceFile");
-    if( Pstream::parRun() )
-        surfaceFile = ".."/surfaceFile;
+    label nFailed(0);
 
-    triSurf surface(runTime.path()/surfaceFile);
+    boundBox bb;
+    triSurfaceChecks::calculateBoundingBox(surf, bb);
+    Info << "Surface bounding box is " << bb << endl;
 
-    surfaceMeshGeometryModification gMod(surface, meshDict);
-
-    //- modify points
-    const triSurf* modSurfPtr = gMod.modifyGeometry();
-
-    Info << "Writting modified surface" << endl;
-    modSurfPtr->writeSurface("modifiedSurf.stl");
-
-    # ifdef DEBUGScaling
-    //- apply backward modification
-    Info << "Here" << endl;
-    coordinateModifier cMod(meshDict.subDict("anisotropicSources"));
-    Info << "Starting modifications" << endl;
-    forAll(surface.points(), i)
+    //- calculate manifolds
+    const label nManifolds = triSurfaceChecks::checkSurfaceManifolds(surf);
+    if( nManifolds > 1 )
     {
-        Info << "\nOrig point " << i << " coordinates " << surface.points()[i]
-             << " modified point " << modSurfPtr->points()[i] << endl;
-        const point p = cMod.backwardModifiedPoint(modSurfPtr->points()[i]);
+        ++nFailed;
 
-        if( mag(p - surface.points()[i]) > 1e-14 )
-        {
-            Warning << "Point " << i << " is different "
-                    << p
-                    << " from original " << surface.points()[i]
-                    << " modified point "
-                    << cMod.modifiedPoint(surface.points()[i]) << endl;
-            ::exit(0);
-        }
+        Info << "Surface mesh consists of " << nManifolds
+             << " manifolds." << endl;
+        Warning << "You cannot mesh geometries consisting of more than"
+                << " one domain, and it must not contain baffles." << endl;
+    }
+    else
+    {
+        Info << "Surface mesh consists of a single manifold." << endl;
     }
 
-    Info << "Backscaling Ok" << endl;
-    ::exit(0);
-    # endif
+    //- find open boundary edges
+    if( triSurfaceChecks::checkForHoles(surf) )
+    {
+        ++nFailed;
 
-    surfaceMeshGeometryModification bgMod(*modSurfPtr, meshDict);
-    const triSurf* backModSurfPtr = bgMod.revertGeometryModification();
+        Info << "Surface mesh has open boundaries!!" << endl;
+        Warning << "This indicates that there may be some holes in the surface"
+                << " mesh. Holes in the mesh must be smaller than the specified"
+                << " cell size at this location. In addition, please avoid"
+                << " using automatic refinement (minCellSize)." << endl;
+    }
+    else
+    {
+        Info << "No holes found in the surface mesh." << endl;
+    }
 
-    Info << "Writting backward transformed surface" << endl;
-    backModSurfPtr->writeSurface("backwardModifiedSurf.stl");
+    //- find non-manifold edges
+    if( triSurfaceChecks::checkForNonManifoldEdges(surf) )
+    {
+        ++nFailed;
 
-    # ifdef DEBUGScaling
-    forAll(backModSurfPtr->points(), pI)
-        if( mag(backModSurfPtr->points()[pI] - surface.points()[pI]) > 1e-14 )
-            Warning << "Point " << pI << " is different "
-                    << backModSurfPtr->points()[pI]
-                    << " from original " << surface.points()[pI] << endl;
-    # endif
+        Info << "Surface mesh has non-manifold edges!!" << endl;
+        Warning << "This indicates that the surface mesh consists of multiple"
+                << " domains and/or baffles. Please make sure that they are not"
+                << " in the domain which shall be meshed." << endl;
+    }
+    else
+    {
+        Info << "Surface does not have any non-manifold edges." << endl;
+    }
 
-    deleteDemandDrivenData(modSurfPtr);
-    deleteDemandDrivenData(backModSurfPtr);
+    //- check the number of disconnected parts
+    if( triSurfaceChecks::checkDisconnectedParts(surf) > 1 )
+    {
+        ++nFailed;
+
+        Info << "Surface mesh consists of disconnected parts." << endl;
+        Warning << "This is not a problem if there exists a region surrounding"
+                << " the other ones! In other case, the mesher will generate"
+                << " the mesh in the domains with most cells." << endl;
+    }
+    else
+    {
+        Info << "Surface mesh consists of a single region." << endl;
+    }
+
+    //- find triangles with small angles
+    if( triSurfaceChecks::checkAngles(surf, "smallAngles", 1.0) )
+    {
+        ++nFailed;
+
+        Info << "Surface mesh has some bad-quality triangles." << endl;
+        Warning << "This may cause problems to the automatic refinement"
+                << " procedure (minCellSize). " << endl;
+    }
+    else
+    {
+        Info << "No sliver triangles found." << endl;
+    }
+
+    if( nFailed )
+    {
+        Warning << "Found " << nFailed
+                << " checks indicating potential problems." << endl;
+        Warning << "This does not mean that you cannot generate"
+                << " a valid mesh. " << endl;
+
+        surf.writeSurface(inFileName);
+    }
 
     Info << "End\n" << endl;
 

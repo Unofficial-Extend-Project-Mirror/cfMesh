@@ -281,13 +281,13 @@ label checkForHoles(const triSurf& surf, labelLongList& badTriangles)
     return badTriangles.size();
 }
 
-label checkForHoles(triSurf& surf, const word subsetPrefix)
+label checkForHoles(triSurf& surf, const word subsetName)
 {
     labelLongList trianglesNearHoles;
 
     if( checkForHoles(surf, trianglesNearHoles) )
     {
-        const label setId = surf.addFacetSubset(subsetPrefix);
+        const label setId = surf.addFacetSubset(subsetName);
 
         forAll(trianglesNearHoles, i)
             surf.addFacetToSubset(setId, trianglesNearHoles[i]);
@@ -623,6 +623,13 @@ label checkSelfIntersections
     {
         const labelledTri& tri = surf[tI];
 
+        const triangle<point, point> currTri
+        (
+            pts[tri[0]],
+            pts[tri[1]],
+            pts[tri[2]]
+        );
+
         boundBox bb(pts[tri[0]], pts[tri[0]]);
         for(label i=1;i<3;++i)
         {
@@ -649,21 +656,23 @@ label checkSelfIntersections
                 if( tI >= triJ )
                     continue;
 
-                point int0, int1;
+                const triangle<point, point> neiTri
+                (
+                    pts[nt[0]],
+                    pts[nt[1]],
+                    pts[nt[2]]
+                );
+
+                FixedList<point, 2> intersectionEdge;
 
                 const bool intersect =
-                    triangleFuncs::intersect
+                    help::doTrianglesIntersect
                     (
-                        pts[tri[0]],
-                        pts[tri[1]],
-                        pts[tri[2]],
-
-                        pts[nt[0]],
-                        pts[nt[1]],
-                        pts[nt[2]],
-
-                        int0,
-                        int1
+                        currTri,
+                        neiTri,
+                        intersectionEdge,
+                        tol,
+                        Foam::cos(5.0 * M_PI / 180.0)
                     );
 
                 if( intersect )
@@ -728,6 +737,13 @@ label checkOverlaps
     {
         const labelledTri& tri = surf[tI];
 
+        const triangle<point, point> currTri
+        (
+            pts[tri[0]],
+            pts[tri[1]],
+            pts[tri[2]]
+        );
+
         boundBox bb(pts[tri[0]], pts[tri[0]]);
         for(label i=1;i<3;++i)
         {
@@ -754,21 +770,23 @@ label checkOverlaps
                 if( tI >= triJ )
                     continue;
 
-                point int0, int1;
+                const triangle<point, point> neiTri
+                (
+                    pts[nt[0]],
+                    pts[nt[1]],
+                    pts[nt[2]]
+                );
+
+                DynList<point> intersectionPolygon;
 
                 const bool intersect =
-                    triangleFuncs::intersect
+                    help::doTrianglesOverlap
                     (
-                        pts[tri[0]],
-                        pts[tri[1]],
-                        pts[tri[2]],
-
-                        pts[nt[0]],
-                        pts[nt[1]],
-                        pts[nt[2]],
-
-                        int0,
-                        int1
+                        currTri,
+                        neiTri,
+                        intersectionPolygon,
+                        tol,
+                        Foam::cos(angleTol * M_PI / 180.0)
                     );
 
                 if( intersect )
