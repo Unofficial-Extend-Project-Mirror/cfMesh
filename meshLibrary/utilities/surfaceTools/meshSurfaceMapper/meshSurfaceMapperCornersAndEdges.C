@@ -316,8 +316,8 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const VRWGraph& pPatches = mPart.pointPatches();
 
-    const triSurf& surf = meshOctree_.surface();
-    const pointField& sPoints = surf.points();
+    //const triSurf& surf = meshOctree_.surface();
+    //const pointField& sPoints = surf.points();
 
     //- find mapping distance for selected vertices
     scalarList mappingDistance;
