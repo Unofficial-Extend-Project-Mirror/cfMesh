@@ -35,57 +35,99 @@ SourceFiles
 #ifndef triSurface2DCheck_H
 #define triSurface2DCheck_H
 
-#include "triSurf.H"
-#include "symmTensor.H"
+#include "labelLongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
+class triSurf;
+class boundBox;
+
 /*---------------------------------------------------------------------------*\
-                    Class triSurface2DCheck Declaration
+                    Namespace triSurfaceChecka Declaration
 \*---------------------------------------------------------------------------*/
 
-class triSurface2DCheck
+namespace triSurfaceChecks
 {
-    // Private data
-        //- reference to triSurf
-        const triSurf& surf_;
 
-        //- covariance matrix
-        symmTensor covarianceMatrix_;
+//- check the angles of triangles. Triangles wth the smallest angle below
+//- the given threshold are marked as bad-quality triangles
+label checkAngles
+(
+    const triSurf&,
+    labelLongList&,
+    const scalar angleTol = 5.0
+);
 
-    // Private member functions
-        //- create covariance matrix
-        void createCovarianceMatrix();
+label checkAngles
+(
+    triSurf&,
+    const word subsetName = "smallAngles",
+    const scalar angleTol = 5.0
+);
 
-        //- Disallow default bitwise copy construct
-        triSurface2DCheck(const triSurface2DCheck&);
+//- check for existence of boudary and non-manifold edges
+label checkSurfaceManifolds(const triSurf&, labelLongList&triangleInManifold);
+label checkSurfaceManifolds(triSurf&, const word subsetPrefix="manifold_");
 
-        //- Disallow default bitwise assignment
-        void operator=(const triSurface2DCheck&);
+//- check for existence of holes in the surface mesh
+label checkForHoles(const triSurf&, labelLongList&);
+label checkForHoles(triSurf&, const word subsetPrefix="hole_");
 
-public:
+//- check for existence of non-manifold edges
+label checkForNonManifoldEdges(const triSurf&, labelLongList&);
+label checkForNonManifoldEdges
+(
+    triSurf&,
+    const word subsetPrefix="nonManifold_"
+);
 
-    // Constructors
+//- check orientation of triangles
+label checkOrientation(const triSurf&, labelLongList& triangleInGroup);
+label checkOrientation(triSurf&, const word subsetPrefix="orientation_");
 
-        //- Construct from octree
-        triSurface2DCheck(const triSurf& surface);
+//- check for disconnected surface parts
+label checkDisconnectedParts(const triSurf&, labelLongList& triangleInRegion);
+label checkDisconnectedParts(triSurf&, const word subsetPrefix="region_");
 
-    // Destructor
+//- calculate bounding box of the surface mesh
+void calculateBoundingBox(const triSurf&, boundBox&);
 
-        ~triSurface2DCheck();
+//- check if there exist any self-intersections
+label checkSelfIntersections
+(
+    const triSurf&,
+    labelLongList&,
+    const scalar tol=1e-6
+);
+label checkSelfIntersections
+(
+    triSurf&,
+    const word subsetName="selfIntersect",
+    const scalar tol=1e-6
+);
 
+//- check if there exist any overlaps
+label checkOverlaps
+(
+    const triSurf&,
+    labelLongList&,
+    const scalar tol = 1e-6,
+    const scalar angleTol = 5.0
+);
+label checkOverlaps
+(
+    triSurf&,
+    const word subsetName="overlappingTriangles",
+    const scalar tol = 1e-6,
+    const scalar angleTol = 5.0
+);
 
-    // Member Functions
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-        //- checks if the surface is a 2D triangulation
-        bool is2DSurface() const;
-
-        //- create subset containing invalid facets
-        void createSubsets();
-};
+} // End namespace triSurfaceChecks
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
