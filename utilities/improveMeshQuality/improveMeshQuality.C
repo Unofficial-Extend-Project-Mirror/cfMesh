@@ -31,6 +31,8 @@ Description
 #include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "meshOptimizer.H"
+#include "meshSurfaceOptimizer.H"
+#include "meshSurfaceEngine.H"
 
 using namespace Foam;
 
@@ -102,18 +104,49 @@ int main(int argc, char *argv[])
     }
     else
     {
-        Info << "No constraints pplied on the smoothing procedure" << endl;
+        Info << "No constraints applied on the smoothing procedure" << endl;
     }
 
     //- load the mesh from disk
     polyMeshGen pmg(runTime);
     pmg.read();
 
+    //- construct the surface smoother
+    meshSurfaceEngine mse(pmg);
+    meshSurfaceOptimizer surfOpt(mse);
+
     //- construct the smoother
     meshOptimizer mOpt(pmg);
 
     if( !constrainedCellSet.empty() )
-        mOpt.lockCells(constrainedCellSet);
+    {
+        //- lock cells in constrainedCellSet
+        mOpt.lockCellsInSubset(constrainedCellSet);
+
+        //- find boundary faces which shall be locked
+        labelLongList lockedBndFaces, selectedCells;
+
+        const label sId = pmg.cellSubsetIndex(constrainedCellSet);
+        pmg.cellsInSubset(sId, selectedCells);
+
+        boolList activeCell(pmg.cells().size(), false);
+        forAll(selectedCells, i)
+            activeCell[selectedCells[i]] = true;
+
+        const labelList& faceOwner = mse.faceOwners();
+        forAll(faceOwner, bfI)
+            if( activeCell[faceOwner[bfI]] )
+                lockedBndFaces.append(bfI);
+
+        //- lock boundary faces
+        surfOpt.lockBoundaryFaces(lockedBndFaces);
+    }
+
+    //- optimise mesh surface
+    surfOpt.optimizeSurface(nSurfaceIterations);
+
+    //- clear geometry information before volume smoothing
+    pmg.clearAddressingData();
 
     //- perform optimisation using the laplace smoother and
     mOpt.optimizeMeshFV

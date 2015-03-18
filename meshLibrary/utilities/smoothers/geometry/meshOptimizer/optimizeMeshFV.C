@@ -343,9 +343,6 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
         //- get rid of bad quality faces
         optimizeLowQualityFaces(10);
 
-        //- try to improv the quality further
-        optimizeMeshFVBestQuality();
-
         //- untangle remaining faces and lock the boundary layer cells
         untangleMeshFV(2, 50, 0);
 
