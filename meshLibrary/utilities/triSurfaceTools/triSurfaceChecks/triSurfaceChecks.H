@@ -95,6 +95,20 @@ label checkDisconnectedParts(triSurf&, const word subsetPrefix="region_");
 //- calculate bounding box of the surface mesh
 void calculateBoundingBox(const triSurf&, boundBox&);
 
+//- check existence of collocated points
+label checkCollocatedPoints
+(
+    const triSurf&,
+    labelLongList&,
+    const scalar distTol = 1e-6
+);
+label checkCollocatedPoints
+(
+    triSurf&,
+    const word subsetName="collocatedPoints",
+    const scalar distTol = 1e-6
+);
+
 //- check if there exist any self-intersections
 label checkSelfIntersections
 (

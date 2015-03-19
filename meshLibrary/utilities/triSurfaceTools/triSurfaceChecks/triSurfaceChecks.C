@@ -31,7 +31,6 @@ Description
 #include "meshOctree.H"
 #include "meshOctreeCreator.H"
 #include "helperFunctions.H"
-//#include "triSurfaceCopyParts.H"
 
 #ifdef USE_OMP
 #include <omp.h>
@@ -636,6 +635,95 @@ void calculateBoundingBox(const triSurf& surf, boundBox& bb)
     bb.max() = Foam::max(surf.points());
 }
 
+label checkCollocatedPoints
+(
+    const triSurf& surf,
+    labelLongList& collocatedPoints,
+    const scalar distTol
+)
+{
+    collocatedPoints.clear();
+
+    meshOctree octree(surf);
+    meshOctreeCreator(octree).createOctreeWithRefinedBoundary(20, 30);
+
+    const pointField& pts = surf.points();
+
+    boolList collocated(pts.size(), false);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(collocated, pI)
+    {
+        const point& p = pts[pI];
+
+        boundBox bb(p, p);
+
+        bb.min() -= point(distTol, distTol, distTol);
+        bb.max() += point(distTol, distTol, distTol);
+
+        DynList<label> leavesInBox;
+        octree.findLeavesContainedInBox(bb, leavesInBox);
+
+        forAll(leavesInBox, i)
+        {
+            const label leafI = leavesInBox[i];
+
+            DynList<label> trianglesInBox;
+
+            octree.containedTriangles(leafI, trianglesInBox);
+
+            forAll(trianglesInBox, j)
+            {
+                const label triJ = trianglesInBox[j];
+                const labelledTri& nt = surf[triJ];
+
+                forAll(nt, tpI)
+                {
+                    if( nt[tpI] == pI )
+                        continue;
+
+                    if( magSqr(pts[nt[tpI]] - p) < sqr(distTol) )
+                    {
+                        collocated[pI] = true;
+                        collocated[nt[tpI]] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    forAll(collocated, pI)
+        if( collocated[pI] )
+            collocatedPoints.append(pI);
+
+    return collocatedPoints.size();
+}
+
+label checkCollocatedPoints
+(
+    triSurf& surf,
+    const word subsetName,
+    const scalar distTol
+)
+{
+    labelLongList collocatedPoints;
+
+    if( checkCollocatedPoints(surf, collocatedPoints, distTol) )
+    {
+        label setId = surf.pointSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removePointSubset(setId);
+        setId = surf.addPointSubset(subsetName);
+
+        forAll(collocatedPoints, i)
+            surf.addPointToSubset(setId, collocatedPoints[i]);
+    }
+
+    return collocatedPoints.size();
+}
+
 label checkSelfIntersections
 (
     const triSurf& surf,
@@ -808,6 +896,8 @@ label checkOverlaps
     meshOctree octree(surf);
     meshOctreeCreator(octree).createOctreeWithRefinedBoundary(20, 30);
 
+    const scalar cosVal = Foam::cos(angleTol * M_PI / 180.0);
+
     const pointField& pts = surf.points();
 
     boolList intersected(surf.size(), false);
@@ -871,7 +961,7 @@ label checkOverlaps
                         neiTri,
                         commonPolygon,
                         tol,
-                        Foam::cos(angleTol * M_PI / 180.0)
+                        cosVal
                     );
 
                 if( intersect )
