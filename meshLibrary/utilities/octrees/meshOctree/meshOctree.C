@@ -61,13 +61,9 @@ meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
     leaves_(),
     isQuadtree_(isQuadtree)
 {
-    Info << "Constructing octree" << endl;
-
     createInitialOctreeBox();
 
     setOctantVectorsAndPositions();
-
-    Info << "Finished constructing octree" << endl;
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

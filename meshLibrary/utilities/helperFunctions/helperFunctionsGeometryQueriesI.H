@@ -978,63 +978,71 @@ inline bool doTrianglesOverlap
     const scalar dn0 = mag(n0);
     n0 /= (dn0 + VSMALL);
 
+    if( dn0 < VSMALL )
+        return false;
+
     vector n1 = tri1.normal();
     const scalar dn1 = mag(n1);
     n1 /= (dn1 + VSMALL);
 
+    if( dn1 < VSMALL )
+        return false;
+
     //- check the angle deviation between the two vectors
-    if( mag(n0 & n1) < cosTol )
+    if( (mag(n0 & n1) < cosTol) && (dn0 >= VSMALL) && (dn1 >= VSMALL) )
         return false;
 
     //- check if the two nearest points are within tolerance
     if
     (
-        (sqr((tri1.a() - tri0.a()) & n0) < distTol*distTol) ||
-        (sqr((tri1.b() - tri0.a()) & n0) < distTol*distTol) ||
-        (sqr((tri1.c() - tri0.a()) & n0) < distTol*distTol) ||
-        (sqr((tri0.a() - tri1.a()) & n1) < distTol*distTol) ||
-        (sqr((tri0.b() - tri1.a()) & n1) < distTol*distTol) ||
-        (sqr((tri0.c() - tri1.a()) & n1) < distTol*distTol)
+        (mag((tri1.a() - tri0.a()) & n0) < distTol) ||
+        (mag((tri1.b() - tri0.a()) & n0) < distTol) ||
+        (mag((tri1.c() - tri0.a()) & n0) < distTol) ||
+        (mag((tri0.a() - tri1.a()) & n1) < distTol) ||
+        (mag((tri0.b() - tri1.a()) & n1) < distTol) ||
+        (mag((tri0.c() - tri1.a()) & n1) < distTol)
     )
     {
-        vector vec = n0 + ((n0 & n1) > 0.0 ? n1 : -n1);
+        vector vec = n0 + ((n0 & n1) >= 0.0 ? n1 : -n1);
         vec /= (mag(vec) + VSMALL);
         const point origin = 0.5 * (tri0.centre() + tri1.centre());
+
+        overlappingPolygon.clear();
 
         //- calculate max distance point from the origin
         point bestPoint = tri0.a();
         scalar distSq = magSqr(tri0.a() - origin);
 
         scalar dSq = magSqr(tri0.b() - origin);
-        if( dSq < distSq )
+        if( dSq > distSq )
         {
             distSq = dSq;
             bestPoint = tri0.b();
         }
 
         dSq = magSqr(tri0.c() - origin);
-        if( dSq < distSq )
+        if( dSq > distSq )
         {
             distSq = dSq;
             bestPoint = tri0.c();
         }
 
         dSq = magSqr(tri1.a() - origin);
-        if( dSq < distSq )
+        if( dSq > distSq )
         {
             distSq = dSq;
             bestPoint = tri1.a();
         }
 
         dSq = magSqr(tri1.b() - origin);
-        if( dSq < distSq )
+        if( dSq > distSq )
         {
             distSq = dSq;
             bestPoint = tri1.b();
         }
 
         dSq = magSqr(tri1.c() - origin);
-        if( dSq < distSq )
+        if( dSq > distSq )
         {
             distSq = dSq;
             bestPoint = tri1.c();
@@ -1066,7 +1074,7 @@ inline bool doTrianglesOverlap
             forAll(poly2D, pI)
             {
                 const vector2D pVec = poly2D[pI] - t1Proj[eI];
-                distance[pI] = vec.x() * pVec.y() - vec.y() * pVec.x();
+                distance[pI] = vec.y() * pVec.x() - vec.x() * pVec.y();
             }
 
             DynList<point2D, 6> newPoly2D;
@@ -1077,34 +1085,34 @@ inline bool doTrianglesOverlap
                 {
                     newPoly2D.append(poly2D[pI]);
 
-                    if( distance[distance.fcElement(pI)] < 0.0 )
+                    if( distance.fcElement(pI) < 0.0 )
                     {
                         //- this is very sensitive to floaing point tolerances
                         const point2D newP =
                             (
-                                distance[pI] * poly2D[poly2D.fcIndex(pI)] +
-                                distance[distance.fcIndex(pI)] * poly2D[pI]
+                                mag(distance[pI]) * poly2D.fcElement(pI) +
+                                mag(distance.fcElement(pI)) * poly2D[pI]
                             ) /
                             (
-                                distance[pI] -
-                                distance[distance.fcIndex(pI)] +
+                                mag(distance[pI]) +
+                                mag(distance.fcElement(pI)) +
                                 VSMALL
                             );
 
                         newPoly2D.append(newP);
                     }
                 }
-                else if( distance[distance.fcElement(pI)] >= 0.0 )
+                else if( distance.fcElement(pI) >= 0.0 )
                 {
                     //- this is very sensitive to floaing point tolerances
                     const point2D newP =
                         (
-                            distance[pI] * poly2D[poly2D.fcIndex(pI)] +
-                            distance[distance.fcIndex(pI)] * poly2D[pI]
+                            mag(distance[pI]) * poly2D.fcElement(pI) +
+                            mag(distance.fcElement(pI)) * poly2D[pI]
                         ) /
                         (
-                            distance[pI] -
-                            distance[distance.fcIndex(pI)] -
+                            mag(distance[pI]) +
+                            mag(distance.fcElement(pI)) +
                             VSMALL
                         );
 
@@ -1117,7 +1125,10 @@ inline bool doTrianglesOverlap
 
         //- check if the overlapping polygon exists
         if( poly2D.size() == 0 )
+        {
+            overlappingPolygon.clear();
             return false;
+        }
 
         //- fill the overlapping polygon
         overlappingPolygon.setSize(poly2D.size());
@@ -1130,16 +1141,15 @@ inline bool doTrianglesOverlap
         return true;
     }
 
+    overlappingPolygon.clear();
     return false;
 }
 
 inline bool doTrianglesIntersect
 (
-    const triangle<point, point>& tri0,
-    const triangle<point, point>& tri1,
-    FixedList<point, 2>& intersectionEdge,
-    const scalar distTol,
-    const scalar cosTol
+    const triangle<point, point> &tri0,
+    const triangle<point, point> &tri1,
+    const scalar distTol
 )
 {
     if( distTol < 0.0 )
@@ -1147,7 +1157,68 @@ inline bool doTrianglesIntersect
         WarningIn
         (
             "inline bool doTrianglesIntersect(const triangle<point, point>&,"
-            " const triangle<point, point>&, FixedList<point, 2>&,"
+            " const triangle<point, point>&,"
+            " const scalar, const scalar)"
+        ) << "Distance is not specified" << endl;
+
+        return false;
+    }
+
+    //- find distances of points from the second triangle
+    point np = nearestPointOnTheTriangle(tri1, tri0.a());
+    if( magSqr(np - tri0.a()) < distTol*distTol )
+        return true;
+    np = nearestPointOnTheTriangle(tri1, tri0.b());
+    if( magSqr(np - tri0.b()) < distTol*distTol )
+        return true;
+    np = nearestPointOnTheTriangle(tri1, tri0.c());
+    if( magSqr(np - tri0.c()) < distTol*distTol )
+        return true;
+
+    //- find distances of points from the first triangle
+    np = nearestPointOnTheTriangle(tri0, tri1.a());
+    if( magSqr(np - tri1.a()) < distTol*distTol )
+        return true;
+    np = nearestPointOnTheTriangle(tri0, tri1.b());
+    if( magSqr(np - tri1.b()) < distTol*distTol )
+        return true;
+    np = nearestPointOnTheTriangle(tri0, tri1.c());
+    if( magSqr(np - tri1.c()) < distTol*distTol )
+        return true;
+
+    //- find edge intersections
+    point intersection;
+    if( triLineIntersection(tri0, tri1.a(), tri1.b(), intersection) )
+        return true;
+    if( triLineIntersection(tri0, tri1.b(), tri1.c(), intersection) )
+        return true;
+    if( triLineIntersection(tri0, tri1.c(), tri1.a(), intersection) )
+        return true;
+
+    if( triLineIntersection(tri1, tri0.a(), tri0.b(), intersection) )
+        return true;
+    if( triLineIntersection(tri1, tri0.b(), tri0.c(), intersection) )
+        return true;
+    if( triLineIntersection(tri1, tri0.c(), tri0.a(), intersection) )
+        return true;
+
+    return false;
+}
+
+inline bool doTrianglesIntersect
+(
+    const triangle<point, point>& tri0,
+    const triangle<point, point>& tri1,
+    DynList<point> &intersectionPoints,
+    const scalar distTol
+)
+{
+    if( distTol < 0.0 )
+    {
+        WarningIn
+        (
+            "inline bool doTrianglesIntersect(const triangle<point, point>&,"
+            " const triangle<point, point>&, DynList<point>&,"
             " const scalar, const scalar)"
         ) << "Distance is not specified" << endl;
 
@@ -1161,10 +1232,6 @@ inline bool doTrianglesIntersect
     vector n1 = tri1.normal();
     const scalar dn1 = mag(n1);
     n1 /= (dn1 + VSMALL);
-
-    //- check the angle deviation between the two vectors
-    if( mag(n0 & n1) >= cosTol )
-        return false;
 
     //- distance of the points of the first triangle from the plane
     //- of the second triangle
@@ -1181,59 +1248,82 @@ inline bool doTrianglesIntersect
     DynList<point, 2> intersectionLine0;
     forAll(distancesTri0, pI)
     {
-        if( distancesTri0[pI] > distTol )
+        if( distancesTri0[pI] >= distTol )
         {
             hasPositive = true;
         }
-        else if( distancesTri0[pI] < -distTol )
+        else if( distancesTri0[pI] <= -distTol )
         {
             hasNegative = true;
         }
         else
         {
             hasZero = true;
-            switch( pI )
-            {
-                case 0:
-                {
-                    intersectionLine0.append(tri0.a());
-                } break;
-                case 1:
-                {
-                    intersectionLine0.append(tri0.b());
-                } break;
-                case 2:
-                {
-                    intersectionLine0.append(tri0.c());
-                } break;
-            };
         }
     }
 
     //- find points on the intersection line
-    if( !hasZero )
+    if
+    (
+        (hasPositive && !hasNegative && !hasZero) ||
+        (hasNegative && !hasPositive && !hasZero)
+    )
     {
-        if( !(hasNegative && hasPositive) )
-            return false;
-
-        if( distancesTri0[0] * distancesTri0[1] < 0.0 )
+        //- there can be no intersection
+        intersectionPoints.clear();
+        return false;
+    }
+    else if
+    (
+        (hasPositive && (hasNegative || hasZero)) ||
+        (hasNegative && (hasPositive || hasZero))
+    )
+    {
+        //- find points on the intersection line
+        if( mag(distancesTri0[0]) < distTol)
+        {
+            intersectionLine0.append(tri0.a());
+        }
+        else if( distancesTri0[0] * distancesTri0[1] < 0.0 )
+        {
             intersectionLine0.append
             (
                 (tri0.a() * distancesTri0[1] - tri0.b() * distancesTri0[0]) /
                 (distancesTri0[0] - distancesTri0[1])
             );
-        if( distancesTri0[1] * distancesTri0[2] < 0.0 )
+        }
+
+        if( mag(distancesTri0[1]) < distTol )
+        {
+            intersectionLine0.append(tri0.b());
+        }
+        else if( distancesTri0[1] * distancesTri0[2] < 0.0 )
+        {
             intersectionLine0.append
             (
                 (tri0.b() * distancesTri0[2] - tri0.c() * distancesTri0[1]) /
                 (distancesTri0[1] - distancesTri0[2])
             );
-        if( distancesTri0[2] * distancesTri0[0] < 0.0 )
+        }
+
+        if( mag(distancesTri0[2]) < distTol )
+        {
+            intersectionLine0.append(tri0.c());
+        }
+        else if( distancesTri0[2] * distancesTri0[0] < 0.0 )
+        {
             intersectionLine0.append
             (
                 (tri0.c() * distancesTri0[0] - tri0.a() * distancesTri0[2]) /
                 (distancesTri0[2] - distancesTri0[0])
             );
+        }
+    }
+    else
+    {
+        //- these triangles are in the same plane
+        //- check if they overlap
+        return doTrianglesOverlap(tri0, tri1, intersectionPoints, distTol);
     }
 
     //- distance of the points of the second triangle from the plane
@@ -1258,81 +1348,85 @@ inline bool doTrianglesIntersect
         {
             hasPositive = true;
         }
-        else if( distancesTri1[pI] < -distTol )
+        else if( distancesTri1[pI] <= -distTol )
         {
             hasNegative = true;
         }
         else
         {
             hasZero = true;
-            switch( pI )
-            {
-                case 0:
-                {
-                    intersectionLine1.append(tri1.a());
-                } break;
-                case 1:
-                {
-                    intersectionLine1.append(tri1.b());
-                } break;
-                case 2:
-                {
-                    intersectionLine1.append(tri1.c());
-                } break;
-            };
         }
     }
 
-    if( !hasZero )
+    if
+    (
+        (hasPositive && !hasNegative && !hasZero) ||
+        (hasNegative && !hasPositive && !hasZero)
+    )
     {
-        if( !(hasNegative && hasPositive) )
-            return false;
-
-        if( distancesTri1[0] * distancesTri1[1] < 0.0 )
+        //- there can be no intersection
+        intersectionPoints.clear();
+        return false;
+    }
+    else if
+    (
+        (hasPositive && (hasNegative || hasZero)) ||
+        (hasNegative && (hasPositive || hasZero))
+    )
+    {
+        //- find points on the intersection line
+        if( mag(distancesTri1[0]) < distTol)
+        {
+            intersectionLine1.append(tri1.a());
+        }
+        else if( distancesTri1[0] * distancesTri1[1] < 0.0 )
+        {
             intersectionLine1.append
             (
                 (tri1.a() * distancesTri1[1] - tri1.b() * distancesTri1[0]) /
                 (distancesTri1[0] - distancesTri1[1])
             );
-        if( distancesTri1[1] * distancesTri1[2] < 0.0 )
+        }
+
+        if( mag(distancesTri1[1]) < distTol)
+        {
+            intersectionLine1.append(tri1.b());
+        }
+        else if( distancesTri1[1] * distancesTri1[2] < 0.0 )
+        {
             intersectionLine1.append
             (
                 (tri1.b() * distancesTri1[2] - tri1.c() * distancesTri1[1]) /
                 (distancesTri1[1] - distancesTri1[2])
             );
-        if( distancesTri1[2] * distancesTri1[0] < 0.0 )
+        }
+
+        if( mag(distancesTri1[2]) < distTol)
+        {
+            intersectionLine1.append(tri1.c());
+        }
+        else if( distancesTri1[2] * distancesTri1[0] < 0.0 )
             intersectionLine1.append
             (
                 (tri1.c() * distancesTri1[0] - tri1.a() * distancesTri1[2]) /
                 (distancesTri1[2] - distancesTri1[0])
             );
     }
+    else
+    {
+        //- these triangles are in the same plane
+        //- check if they overlap
+        return doTrianglesOverlap(tri0, tri1, intersectionPoints, distTol);
+    }
 
     //- calculate the direction of the intersection line
     vector vec = n0 ^ n1;
-    label maxComp(0);
-    scalar comp(0.0);
 
-    for(label i=0;i<3;++i)
+    //- n0 and n1 are nearly coplanar, try overlap intersection
+    if( magSqr(vec) < SMALL )
     {
-        const scalar magComp =  mag(vec[i]);
-        if( magComp > comp )
-        {
-            maxComp = i;
-            comp = magComp;
-        }
-    }
-
-    for(label i=0;i<3;++i)
-    {
-        if( i == maxComp )
-        {
-            vec[i] = 1.0;
-        }
-        else
-        {
-            vec[i] = 0.0;
-        }
+        //- these triangles are in the same plane
+        return doTrianglesOverlap(tri0, tri1, intersectionPoints, distTol);
     }
 
     //- calculate intervals on the intersection line
@@ -1347,7 +1441,7 @@ inline bool doTrianglesIntersect
             t0Min = t;
             p0Min = intersectionLine0[i];
         }
-        else if( t > t0Max )
+        if( t > t0Max )
         {
             t0Max = t;
             p0Max = intersectionLine0[i];
@@ -1360,34 +1454,36 @@ inline bool doTrianglesIntersect
     {
         const scalar t = intersectionLine1[i] & vec;
 
-        if( t < t0Min )
+        if( t < t1Min )
         {
             t1Min = t;
             p1Min = intersectionLine1[i];
         }
-        else if( t > t0Max )
+        if( t > t1Max )
         {
             t1Max = t;
             p1Max = intersectionLine1[i];
         }
     }
 
-    if( t1Min < t0Max )
+    if( (t1Min <= t0Max) && (t1Max >= t0Min) )
     {
-
-        intersectionEdge[0] = p1Min;
-        intersectionEdge[1] = p0Max;
+        intersectionPoints.setSize(2);
+        intersectionPoints[0] = p1Min;
+        intersectionPoints[1] = p0Max;
 
         return true;
     }
-    else if( t0Min < t1Max )
+    else if( (t0Min <= t1Max) && (t0Max >= t1Min) )
     {
-        intersectionEdge[0] = p0Min;
-        intersectionEdge[1] = p1Max;
+        intersectionPoints.setSize(2);
+        intersectionPoints[0] = p0Min;
+        intersectionPoints[1] = p1Max;
 
         return true;
     }
 
+    intersectionPoints.setSize(0);
     return false;
 }
 

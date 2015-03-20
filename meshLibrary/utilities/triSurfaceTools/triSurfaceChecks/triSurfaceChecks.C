@@ -31,10 +31,15 @@ Description
 #include "meshOctree.H"
 #include "meshOctreeCreator.H"
 #include "helperFunctions.H"
-#include "triangleFuncs.H"
 
 #ifdef USE_OMP
 #include <omp.h>
+# endif
+
+//#define DEBUGSurfaceChecks
+
+# ifdef DEBUGSurfaceChecks
+#include "triSurfModifier.H"
 # endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -102,7 +107,10 @@ label checkAngles
 
     if( checkAngles(surf, badTriangles, angleTol) )
     {
-        const label setId = surf.addFacetSubset(subsetName);
+        label setId = surf.facetSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removeFacetSubset(setId);
+        setId = surf.addFacetSubset(subsetName);
 
         forAll(badTriangles, i)
             surf.addFacetToSubset(setId, badTriangles[i]);
@@ -248,7 +256,13 @@ label checkSurfaceManifolds
     {
         labelList groupIds(nManifolds);
         forAll(groupIds, i)
-            groupIds = surf.addFacetSubset(subsetPrefix+help::scalarToText(i));
+        {
+            const word sName = subsetPrefix+help::scalarToText(i);
+            label setId = surf.facetSubsetIndex(sName);
+            if( setId >= 0 )
+                surf.removeFacetSubset(setId);
+            groupIds[i] = surf.addFacetSubset(sName);
+        }
 
         forAll(facetInManifold, tI)
             surf.addFacetToSubset(groupIds[facetInManifold[tI]], tI);
@@ -287,7 +301,10 @@ label checkForHoles(triSurf& surf, const word subsetName)
 
     if( checkForHoles(surf, trianglesNearHoles) )
     {
-        const label setId = surf.addFacetSubset(subsetName);
+        label setId = surf.facetSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removeFacetSubset(setId);
+        setId = surf.addFacetSubset(subsetName);
 
         forAll(trianglesNearHoles, i)
             surf.addFacetToSubset(setId, trianglesNearHoles[i]);
@@ -312,7 +329,10 @@ label checkForNonManifoldEdges(const triSurf& surf, labelLongList& badTriangles)
             # ifdef USE_OMP
             # pragma omp critical
             # endif
-            badTriangles.append(edgeFacets(eI, 0));
+            {
+                forAllRow(edgeFacets, eI, efI)
+                    badTriangles.append(edgeFacets(eI, efI));
+            }
         }
     }
 
@@ -329,7 +349,10 @@ label checkForNonManifoldEdges
 
     if( checkForHoles(surf, trianglesNearHoles) )
     {
-        const label setId = surf.addFacetSubset(subsetPrefix);
+        label setId = surf.facetSubsetIndex(subsetPrefix);
+        if( setId >= 0 )
+            surf.removeFacetSubset(setId);
+        setId = surf.addFacetSubset(subsetPrefix);
 
         forAll(trianglesNearHoles, i)
             surf.addFacetToSubset(setId, trianglesNearHoles[i]);
@@ -466,7 +489,14 @@ label checkOrientation(triSurf& surf, const word subsetPrefix)
     {
         labelList groupIds(nGroups);
         forAll(groupIds, i)
-            groupIds = surf.addFacetSubset(subsetPrefix+help::scalarToText(i));
+        {
+            const word sName = subsetPrefix+help::scalarToText(i);
+            label setId = surf.facetSubsetIndex(sName);
+            if( setId >= 0 )
+                surf.removeFacetSubset(setId);
+
+            groupIds[i] = surf.addFacetSubset(sName);
+        }
 
         forAll(triangleInGroup, tI)
             surf.addFacetToSubset(groupIds[triangleInGroup[tI]], tI);
@@ -583,7 +613,14 @@ label checkDisconnectedParts(triSurf& surf, const word subsetPrefix)
     {
         labelList groupIds(nGroups);
         forAll(groupIds, i)
-            groupIds = surf.addFacetSubset(subsetPrefix+help::scalarToText(i));
+        {
+            const word sName = subsetPrefix+help::scalarToText(i);
+            label setId = surf.facetSubsetIndex(sName);
+            if( setId >= 0 )
+                surf.removeFacetSubset(setId);
+
+            groupIds[i] = surf.addFacetSubset(sName);
+        }
 
         forAll(triangleInRegion, tI)
             surf.addFacetToSubset(groupIds[triangleInRegion[tI]], tI);
@@ -598,7 +635,94 @@ void calculateBoundingBox(const triSurf& surf, boundBox& bb)
     bb.max() = Foam::max(surf.points());
 }
 
+label checkCollocatedPoints
+(
+    const triSurf& surf,
+    labelLongList& collocatedPoints,
+    const scalar distTol
+)
+{
+    collocatedPoints.clear();
 
+    meshOctree octree(surf);
+    meshOctreeCreator(octree).createOctreeWithRefinedBoundary(20, 30);
+
+    const pointField& pts = surf.points();
+
+    boolList collocated(pts.size(), false);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 50)
+    # endif
+    forAll(collocated, pI)
+    {
+        const point& p = pts[pI];
+
+        boundBox bb(p, p);
+
+        bb.min() -= point(distTol, distTol, distTol);
+        bb.max() += point(distTol, distTol, distTol);
+
+        DynList<label> leavesInBox;
+        octree.findLeavesContainedInBox(bb, leavesInBox);
+
+        forAll(leavesInBox, i)
+        {
+            const label leafI = leavesInBox[i];
+
+            DynList<label> trianglesInBox;
+
+            octree.containedTriangles(leafI, trianglesInBox);
+
+            forAll(trianglesInBox, j)
+            {
+                const label triJ = trianglesInBox[j];
+                const labelledTri& nt = surf[triJ];
+
+                forAll(nt, tpI)
+                {
+                    if( nt[tpI] == pI )
+                        continue;
+
+                    if( magSqr(pts[nt[tpI]] - p) < sqr(distTol) )
+                    {
+                        collocated[pI] = true;
+                        collocated[nt[tpI]] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    forAll(collocated, pI)
+        if( collocated[pI] )
+            collocatedPoints.append(pI);
+
+    return collocatedPoints.size();
+}
+
+label checkCollocatedPoints
+(
+    triSurf& surf,
+    const word subsetName,
+    const scalar distTol
+)
+{
+    labelLongList collocatedPoints;
+
+    if( checkCollocatedPoints(surf, collocatedPoints, distTol) )
+    {
+        label setId = surf.pointSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removePointSubset(setId);
+        setId = surf.addPointSubset(subsetName);
+
+        forAll(collocatedPoints, i)
+            surf.addPointToSubset(setId, collocatedPoints[i]);
+    }
+
+    return collocatedPoints.size();
+}
 
 label checkSelfIntersections
 (
@@ -637,6 +761,9 @@ label checkSelfIntersections
             bb.max() = Foam::max(bb.max(), pts[tri[i]]);
         }
 
+        bb.min() -= point(tol, tol, tol);
+        bb.max() += point(tol, tol, tol);
+
         DynList<label> leavesInBox;
         octree.findLeavesContainedInBox(bb, leavesInBox);
 
@@ -656,29 +783,69 @@ label checkSelfIntersections
                 if( tI >= triJ )
                     continue;
 
-                const triangle<point, point> neiTri
-                (
-                    pts[nt[0]],
-                    pts[nt[1]],
-                    pts[nt[2]]
-                );
+                DynList<label, 3> sharedPoints;
+                forAll(nt, pJ)
+                {
+                    forAll(tri, pI)
+                    if( tri[pI] == nt[pJ] )
+                        sharedPoints.append(pJ);
+                }
 
-                FixedList<point, 2> intersectionEdge;
+                if( sharedPoints.size() >= 2 )
+                {
+                    //- triangles share an edge and cannot self-intersect
+                    continue;
+                }
+                else if( sharedPoints.size() == 1 )
+                {
+                    //- check if the opposite edge intersects the triangle
+                    const point& s = pts[nt[(sharedPoints[0]+1)%3]];
+                    const point& e = pts[nt[(sharedPoints[0]+2)%3]];
 
-                const bool intersect =
-                    help::doTrianglesIntersect
+                    point intersection;
+                    const bool lineIntersection =
+                        help::triLineIntersection(currTri, s, e, intersection);
+
+                    if( lineIntersection )
+                    {
+                        intersected[tI] = true;
+                        intersected[triJ] = true;
+                    }
+                }
+                else
+                {
+                    //- triangles do not share any vertices
+                    const triangle<point, point> neiTri
                     (
-                        currTri,
-                        neiTri,
-                        intersectionEdge,
-                        tol,
-                        Foam::cos(5.0 * M_PI / 180.0)
+                        pts[nt[0]],
+                        pts[nt[1]],
+                        pts[nt[2]]
                     );
 
-                if( intersect )
-                {
-                    intersected[tI] = true;
-                    intersected[triJ] = true;
+                    const bool intersect =
+                        help::doTrianglesIntersect
+                        (
+                            currTri,
+                            neiTri,
+                            tol
+                        );
+
+                    if( intersect )
+                    {
+                        intersected[tI] = true;
+                        intersected[triJ] = true;
+
+                        # ifdef DEBUGSurfaceChecks
+                        const label sId =
+                            const_cast<triSurf&>(surf).addFacetSubset
+                            (
+                                "noCommonIntersect_"+help::scalarToText(tI)+
+                                "_"+help::scalarToText(triJ)
+                            );
+                        const_cast<triSurf&>(surf).addFacetToSubset(sId, tI);
+                        const_cast<triSurf&>(surf).addFacetToSubset(sId, triJ);
+                        # endif
+                    }
                 }
             }
         }
@@ -704,7 +871,10 @@ label checkSelfIntersections
 
     if( checkSelfIntersections(surf, badFacets, tol) )
     {
-        const label setId = surf.addFacetSubset(subsetName);
+        label setId = surf.facetSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removeFacetSubset(setId);
+        setId = surf.addFacetSubset(subsetName);
 
         forAll(badFacets, i)
             surf.addFacetToSubset(setId, badFacets[i]);
@@ -725,6 +895,8 @@ label checkOverlaps
 
     meshOctree octree(surf);
     meshOctreeCreator(octree).createOctreeWithRefinedBoundary(20, 30);
+
+    const scalar cosVal = Foam::cos(angleTol * M_PI / 180.0);
 
     const pointField& pts = surf.points();
 
@@ -750,6 +922,9 @@ label checkOverlaps
             bb.min() = Foam::min(bb.min(), pts[tri[i]]);
             bb.max() = Foam::max(bb.max(), pts[tri[i]]);
         }
+
+        bb.min() -= point(tol, tol, tol);
+        bb.max() += point(tol, tol, tol);
 
         DynList<label> leavesInBox;
         octree.findLeavesContainedInBox(bb, leavesInBox);
@@ -777,22 +952,48 @@ label checkOverlaps
                     pts[nt[2]]
                 );
 
-                DynList<point> intersectionPolygon;
+                DynList<point> commonPolygon;
 
                 const bool intersect =
                     help::doTrianglesOverlap
                     (
                         currTri,
                         neiTri,
-                        intersectionPolygon,
+                        commonPolygon,
                         tol,
-                        Foam::cos(angleTol * M_PI / 180.0)
+                        cosVal
                     );
 
                 if( intersect )
                 {
                     intersected[tI] = true;
                     intersected[triJ] = true;
+
+                    # ifdef DEBUGSurfaceChecks
+                    const label sId =
+                        const_cast<triSurf&>(surf).addFacetSubset
+                        (
+                            "noCommonOverlap_"+help::scalarToText(tI)+
+                            "_"+help::scalarToText(triJ)
+                        );
+                    const_cast<triSurf&>(surf).addFacetToSubset(sId, tI);
+                    const_cast<triSurf&>(surf).addFacetToSubset(sId, triJ);
+
+                    triSurf newSurf;
+                    geometricSurfacePatchList& patches =
+                        triSurfModifier(newSurf).patchesAccess();
+                    patches.setSize(1);
+                    patches[0].name() = "patch0";
+                    forAll(commonPolygon, i)
+                        newSurf.appendVertex(commonPolygon[i]);
+                    for(label i=0;i<commonPolygon.size()-2;++i)
+                        newSurf.appendTriangle(labelledTri(0, i+1, i+2, 0));
+                    newSurf.writeSurface
+                    (
+                        "overlap_"+help::scalarToText(tI)+
+                        "_"+help::scalarToText(triJ)+".fms"
+                    );
+                    # endif
                 }
             }
         }
@@ -819,7 +1020,10 @@ label checkOverlaps
 
     if( checkOverlaps(surf, badFaces, tol, angleTol) )
     {
-        const label setId = surf.addFacetSubset(subsetName);
+        label setId = surf.facetSubsetIndex(subsetName);
+        if( setId >= 0 )
+            surf.removeFacetSubset(setId);
+        setId = surf.addFacetSubset(subsetName);
 
         forAll(badFaces, i)
             surf.addFacetToSubset(setId, badFaces[i]);

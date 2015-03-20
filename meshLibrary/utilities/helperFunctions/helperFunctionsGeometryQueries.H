@@ -249,11 +249,17 @@ namespace help
     //- check the existence of intersection between the two triangles
     inline bool doTrianglesIntersect
     (
+        const triangle<point, point> &tri0,
+        const triangle<point, point> &tri1,
+        const scalar distTol = -1.0
+    );
+
+    inline bool doTrianglesIntersect
+    (
         const triangle<point, point>& tri0,
         const triangle<point, point>& tri1,
-        FixedList<point, 2>& interectionEdge,
-        const scalar distTol = -1.0,
-        const scalar cosTol = Foam::cos(5.0*(M_PI/180.0)) // cosine tolerance
+        DynList<point>& intersectionPoints,
+        const scalar distTol = -1.0
     );
 
     //- check if the point is inside or outside the face
