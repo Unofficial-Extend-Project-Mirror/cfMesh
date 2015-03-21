@@ -31,8 +31,6 @@ Description
 #include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "meshOptimizer.H"
-#include "meshSurfaceOptimizer.H"
-#include "meshSurfaceEngine.H"
 
 using namespace Foam;
 
@@ -111,10 +109,6 @@ int main(int argc, char *argv[])
     polyMeshGen pmg(runTime);
     pmg.read();
 
-    //- construct the surface smoother
-    meshSurfaceEngine mse(pmg);
-    meshSurfaceOptimizer surfOpt(mse);
-
     //- construct the smoother
     meshOptimizer mOpt(pmg);
 
@@ -132,18 +126,7 @@ int main(int argc, char *argv[])
         boolList activeCell(pmg.cells().size(), false);
         forAll(selectedCells, i)
             activeCell[selectedCells[i]] = true;
-
-        const labelList& faceOwner = mse.faceOwners();
-        forAll(faceOwner, bfI)
-            if( activeCell[faceOwner[bfI]] )
-                lockedBndFaces.append(bfI);
-
-        //- lock boundary faces
-        surfOpt.lockBoundaryFaces(lockedBndFaces);
     }
-
-    //- optimise mesh surface
-    surfOpt.optimizeSurface(nSurfaceIterations);
 
     //- clear geometry information before volume smoothing
     pmg.clearAddressingData();
