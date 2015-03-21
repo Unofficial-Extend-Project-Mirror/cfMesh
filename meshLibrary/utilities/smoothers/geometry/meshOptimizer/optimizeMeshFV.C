@@ -330,9 +330,6 @@ void meshOptimizer::optimizeBoundaryLayer()
         //- optimize mesh quality
         optimizeMeshFV(5, 1, 50, 0);
 
-        //- get rid of bad quality faces
-        optimizeLowQualityFaces(10);
-
         //- untangle remaining faces and lock the boundary layer cells
         untangleMeshFV(2, 50, 0);
 
@@ -504,7 +501,7 @@ void meshOptimizer::optimizeMeshNearBoundaries
     Info << "Iteration:" << flush;
     do
     {
-        tmo.optimiseUsingVolumeOptimizer(5);
+        tmo.optimiseUsingVolumeOptimizer(1);
 
         tetMesh.updateOrigMesh(&changedFace);
 
@@ -599,7 +596,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
         //- update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( ++nIter < maxNumIterations );
+    } while( (nIter < minIter+5) && (++nIter < maxNumIterations) );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
