@@ -542,6 +542,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
 )
 {
     label nBadFaces, nIter(0);
+    label minIter(-1);
 
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
@@ -554,7 +555,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
             lockedPoints.append(pointI);
     }
 
-    label minNumBadFaces(10 * faces.size()), minIter(-1);
+    label minNumBadFaces(10 * faces.size());
     do
     {
         labelHashSet lowQualityFaces;
@@ -582,6 +583,8 @@ void meshOptimizer::optimizeMeshFVBestQuality
         if( nBadFaces < minNumBadFaces )
         {
             minNumBadFaces = nBadFaces;
+
+            //- update the iteration number when the minimum is achieved
             minIter = nIter;
         }
 

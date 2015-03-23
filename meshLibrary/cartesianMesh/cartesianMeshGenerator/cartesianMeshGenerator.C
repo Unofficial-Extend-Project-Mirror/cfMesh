@@ -189,7 +189,6 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     optimizer.optimizeMeshFV();
 
     optimizer.optimizeLowQualityFaces();
-    optimizer.optimizeMeshFVBestQuality();
     optimizer.optimizeBoundaryLayer();
     optimizer.untangleMeshFV();
 
