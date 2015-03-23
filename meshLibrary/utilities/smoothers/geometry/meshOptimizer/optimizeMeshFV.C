@@ -552,6 +552,7 @@ void meshOptimizer::optimizeMeshFVBestQuality
 )
 {
     label nBadFaces, nIter(0);
+    label minIter(-1);
 
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
@@ -592,6 +593,9 @@ void meshOptimizer::optimizeMeshFVBestQuality
         if( nBadFaces < minNumBadFaces )
         {
             minNumBadFaces = nBadFaces;
+
+            //- update the iteration number when the minimum is achieved
+            minIter = nIter;
         }
 
         partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
