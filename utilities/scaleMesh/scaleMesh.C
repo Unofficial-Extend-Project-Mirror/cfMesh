@@ -22,13 +22,13 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-    Reads the specified surface and writes it in the fms format.
+    Scales the mesh into other units.
 
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
 #include "polyMeshGen.H"
-#include "coordinateModifier.H"
+#include "helperFunctions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
@@ -36,37 +36,32 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
+    argList::validArgs.append("scalingFactor");
+
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    IOdictionary meshDict
-    (
-        IOobject
-        (
-            "meshDict",
-            runTime.system(),
-            runTime,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
-        )
-    );
+    const scalar scalingFactor(help::textToScalar(args.args()[1]));
 
+    Info << "Scaling mesh vertices by a factor " << scalingFactor << endl;
+
+    //- read the mesh from disk
     polyMeshGen pmg(runTime);
+
+    Info << "Reading mesh" << endl;
     pmg.read();
 
+    //- scale the points
     pointFieldPMG& pts = pmg.points();
 
-    if( !meshDict.found("anisotropicSources") )
-        FatalError << "Cannot backward scale mesh. anisotropicSources"
-                   << " does not exist in meshDict" << exit(FatalError);
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(pts, pointI)
+        pts[pointI] *= scalingFactor;
 
-    coordinateModifier cMod(meshDict.subDict("anisotropicSources"));
-
-    //- apply backward transformation
-    forAll(pts, i)
-        pts[i] = cMod.backwardModifiedPoint(pts[i]);
-
-    Info << "Writting mesh with backward transformed points" << endl;
+    //- write the mesh back on disk
+    Info << "Writting scaled mesh" << endl;
     pmg.write();
 
     Info << "End\n" << endl;
