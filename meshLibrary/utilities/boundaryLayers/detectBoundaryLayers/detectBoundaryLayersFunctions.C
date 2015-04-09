@@ -624,6 +624,8 @@ void detectBoundaryLayers::generateHairEdges()
             hairEdges_.setSize(startEl+localEdges.size());
         }
 
+        # pragma omp barrier
+
         //- copy the local data to splitEdges_
         forAll(localEdges, i)
             hairEdges_[startEl++] = localEdges[i];
