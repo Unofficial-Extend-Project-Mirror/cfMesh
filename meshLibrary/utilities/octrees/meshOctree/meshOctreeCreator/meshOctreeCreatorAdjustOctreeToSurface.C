@@ -27,6 +27,7 @@ Description
 
 #include "meshOctreeCreator.H"
 #include "triSurf.H"
+#include "edgeMesh.H"
 #include "boundBox.H"
 #include "demandDrivenData.H"
 #include "objectRefinementList.H"
@@ -593,6 +594,240 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                             (
                                 targetRefLevel[leafI],
                                 refLevels[surfI]
+                            );
+                    }
+                }
+            }
+        }
+
+        //- mark additional boxes for refinement to achieve
+        //- correct refinement distance
+        reduce(useNLayers, maxOp<label>());
+        if( useNLayers )
+        {
+            nMarked +=
+                octreeModifier.markAdditionalLayers
+                (
+                    refineCubes,
+                    nLayers,
+                    targetRefLevel
+                );
+        }
+
+        //- refine boxes
+        octreeModifier.refineSelectedBoxes(refineCubes, hexRefinement_);
+
+        # ifdef OCTREETiming
+        const scalar refTime = omp_get_wtime();
+        Info << "Time for refinement " << (refTime-startIter) << endl;
+        # endif
+
+        if( octree_.neiProcs().size() != 0 )
+        {
+            reduce(nMarked, sumOp<label>());
+            if( nMarked )
+            {
+                octreeModifier.distributeLeavesToProcessors();
+
+                # ifdef OCTREETiming
+                const scalar distTime = omp_get_wtime();
+                Info << "Time for distributing data to processors "
+                << (distTime-refTime) << endl;
+                # endif
+
+                loadDistribution(false);
+
+                # ifdef OCTREETiming
+                Info << "Time for load distribution "
+                << (omp_get_wtime()-distTime) << endl;
+                # endif
+            }
+        }
+    } while( nMarked != 0 );
+
+    Info << "Finished refinement of boxes intersecting surface meshes" << endl;
+}
+
+void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
+{
+    if( !meshDictPtr_ || !meshDictPtr_->found("edgeMeshRefinement") )
+    {
+        return;
+    }
+
+    Info << "Refining boxes intersecting edge meshes" << endl;
+
+    label nMarked;
+
+    //- read edge meshes and calculate the refinement level for each
+    //- edge mesh
+    const dictionary& edgeDict = meshDictPtr_->subDict("edgeMeshRefinement");
+    const wordList edgeMeshNames = edgeDict.toc();
+    PtrList<const edgeMesh> edgeMeshesPtr(edgeMeshNames.size());
+    List<direction> refLevels(edgeMeshNames.size(), globalRefLevel_);
+    scalarList refThickness(edgeMeshNames.size(), 0.0);
+
+    //- load edge meshes into memory
+    forAll(edgeMeshesPtr, emI)
+    {
+        const dictionary& dict = edgeDict.subDict(edgeMeshNames[emI]);
+
+        const fileName fName(dict.lookup("edgeFile"));
+
+        if( meshDictPtr_->found("anisotropicSources") )
+        {
+            //triSurf origSurf(fName);
+            //surfaceMeshGeometryModification surfMod(origSurf, *meshDictPtr_);
+
+            //edgeMeshesPtr.set(emI, surfMod.modifyGeometry());
+        }
+        else
+        {
+            edgeMeshesPtr.set(emI, new edgeMesh(fName));
+        }
+
+        direction addLevel(0);
+        if( dict.found("cellSize") )
+        {
+            scalar s(readScalar(meshDictPtr_->lookup("maxCellSize")));
+
+            const scalar cs = readScalar(dict.lookup("cellSize"));
+
+            do
+            {
+                nMarked = 0;
+                if( cs <= s * (1.+SMALL) )
+                {
+                    ++nMarked;
+                    ++addLevel;
+                }
+
+                s /= 2.0;
+
+            } while( nMarked != 0 );
+        }
+        else if( dict.found("additionalRefinementLevels") )
+        {
+            addLevel =
+                readLabel(dict.lookup("additionalRefinementLevels"));
+        }
+
+        if( dict.found("refinementThickness") )
+        {
+            refThickness[emI] =
+                readScalar(dict.lookup("refinementThickness"));
+        }
+
+        //- set the refinement level for the current mesh
+        refLevels[emI] += addLevel;
+    }
+
+    if( octree_.neiProcs().size() )
+        forAll(refLevels, oI)
+        {
+            label l = refLevels[oI];
+            reduce(l, maxOp<label>());
+            refLevels[oI] = l;
+        }
+
+    //- start refining boxes intersecting triangles in each refinement surface
+    const boundBox& rootBox = octree_.rootBox();
+    const vector tol = SMALL * rootBox.span();
+    meshOctreeModifier octreeModifier(octree_);
+    const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
+    DynList<label> leavesInBox, intersectedLeaves;
+
+    do
+    {
+        # ifdef OCTREETiming
+        const scalar startIter = omp_get_wtime();
+        # endif
+
+        nMarked = 0;
+
+        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList nLayers(leaves.size(), 0);
+        List<direction> targetRefLevel(leaves.size(), direction(0));
+        bool useNLayers(false);
+
+        //- select boxes which need to be refined
+        forAll(edgeMeshesPtr, emI)
+        {
+            const edgeMesh& edgeMesh = edgeMeshesPtr[emI];
+            const pointField& points = edgeMesh.points();
+            const edgeList& edges = edgeMesh.edges();
+
+            # ifdef USE_OMP
+            # pragma omp parallel for \
+            reduction( + : nMarked) schedule(dynamic, 10) \
+            private(leavesInBox,intersectedLeaves)
+            # endif
+            forAll(edges, edgeI)
+            {
+                //- find the bounding box of the current triangle
+                const edge& e = edges[edgeI];
+
+                const point& sp = points[e.start()];
+                const point& ep = points[e.end()];
+
+                boundBox edgeBB(sp, ep);
+
+                edgeBB.min() -= tol;
+                edgeBB.max() += tol;
+
+                //- find octree leaves inside the bounding box
+                leavesInBox.clear();
+                octree_.findLeavesContainedInBox(edgeBB, leavesInBox);
+
+                //- check which of the leaves are intersected by the triangle
+                intersectedLeaves.clear();
+                forAll(leavesInBox, i)
+                {
+                    const label leafI = leavesInBox[i];
+
+                    const meshOctreeCube& oc = *leaves[leafI];
+
+                    if( oc.intersectsLine(rootBox, sp, ep) )
+                    {
+                        intersectedLeaves.append(leafI);
+
+                        if( oc.level() < refLevels[emI] )
+                        {
+                            # ifdef DEBUGSearch
+                            Info << "Marking leaf " << leafI
+                                << " with coordinates " << oc
+                                << " for refinement" << endl;
+                            # endif
+
+                            if( !refineCubes[leafI] )
+                                ++nMarked;
+                            refineCubes[leafI] = 1;
+                        }
+                    }
+                }
+
+                if( refThickness[emI] > VSMALL )
+                {
+                    useNLayers = true;
+
+                    forAll(intersectedLeaves, i)
+                    {
+                        const label leafI = intersectedLeaves[i];
+                        const meshOctreeCube& oc = *leaves[leafI];
+                        const scalar cs = oc.size(rootBox);
+
+                        nLayers[leafI] =
+                            Foam::max
+                            (
+                                nLayers[leafI],
+                                max(label(refThickness[emI]/cs), 1)
+                            );
+
+                        targetRefLevel[leafI] =
+                            Foam::max
+                            (
+                                targetRefLevel[leafI],
+                                refLevels[emI]
                             );
                     }
                 }
