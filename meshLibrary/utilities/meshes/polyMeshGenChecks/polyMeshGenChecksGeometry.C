@@ -2097,7 +2097,7 @@ label findLowQualityFaces
     (
         mesh,
         report,
-        70.0,
+        65.0,
         &badFaces,
         activeFacePtr
     );

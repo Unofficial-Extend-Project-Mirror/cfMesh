@@ -256,7 +256,8 @@ public:
         (
             const label maxNumGlobalIterations = 10,
             const label maxNumIterations = 50,
-            const label maxNumSurfaceIterations = 2
+            const label maxNumSurfaceIterations = 2,
+            const bool relaxedCheck = false
         );
 
         //- performs optimisation of boundary layer cells
