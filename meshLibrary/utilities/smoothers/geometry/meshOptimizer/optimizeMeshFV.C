@@ -57,7 +57,8 @@ void meshOptimizer::untangleMeshFV
 (
     const label maxNumGlobalIterations,
     const label maxNumIterations,
-    const label maxNumSurfaceIterations
+    const label maxNumSurfaceIterations,
+    const bool relaxedCheck
 )
 {
     Info << "Starting untangling the mesh" << endl;
@@ -129,14 +130,28 @@ void meshOptimizer::untangleMeshFV
         label minNumBadFaces(10 * faces.size()), minIter(-1);
         do
         {
-            nBadFaces =
-                polyMeshGenChecks::findBadFaces
-                (
-                    mesh_,
-                    badFaces,
-                    false,
-                    &changedFace
-                );
+            if( !relaxedCheck )
+            {
+                nBadFaces =
+                    polyMeshGenChecks::findBadFaces
+                    (
+                        mesh_,
+                        badFaces,
+                        false,
+                        &changedFace
+                    );
+            }
+            else
+            {
+                nBadFaces =
+                    polyMeshGenChecks::findBadFacesRelaxed
+                    (
+                        mesh_,
+                        badFaces,
+                        false,
+                        &changedFace
+                    );
+            }
 
             Info << "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
@@ -183,14 +198,28 @@ void meshOptimizer::untangleMeshFV
 
         while( nIter++ < maxNumSurfaceIterations );
         {
-            nBadFaces =
-                polyMeshGenChecks::findBadFaces
-                (
-                    mesh_,
-                    badFaces,
-                    false,
-                    &changedFace
-                );
+            if( !relaxedCheck )
+            {
+                nBadFaces =
+                    polyMeshGenChecks::findBadFaces
+                    (
+                        mesh_,
+                        badFaces,
+                        false,
+                        &changedFace
+                    );
+            }
+            else
+            {
+                nBadFaces =
+                    polyMeshGenChecks::findBadFacesRelaxed
+                    (
+                        mesh_,
+                        badFaces,
+                        false,
+                        &changedFace
+                    );
+            }
 
             Info << "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
@@ -420,7 +449,8 @@ void meshOptimizer::untangleBoundaryLayer()
     }
     else
     {
-        untangleMeshFV();
+        optimizeLowQualityFaces();
+        untangleMeshFV(2, 50, 1, true);
     }
 }
 
