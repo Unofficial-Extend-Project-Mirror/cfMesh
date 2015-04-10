@@ -83,6 +83,9 @@ class checkMeshDict
         //- check surfaceRefinements entry
         void checkSurfaceRefinements() const;
 
+        //- check edgeMeshRefinements entry
+        void checkEdgeMeshRefinements() const;
+
         //- check entry for boundary layers
         void checkBoundaryLayers() const;
 
