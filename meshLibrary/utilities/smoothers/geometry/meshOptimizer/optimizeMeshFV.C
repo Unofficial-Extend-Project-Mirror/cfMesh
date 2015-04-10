@@ -420,6 +420,7 @@ void meshOptimizer::untangleBoundaryLayer()
     }
     else
     {
+        optimizeLowQualityFaces();
         untangleMeshFV();
     }
 }
