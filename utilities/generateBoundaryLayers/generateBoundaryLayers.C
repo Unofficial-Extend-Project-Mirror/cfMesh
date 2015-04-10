@@ -22,8 +22,8 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-    Performs point relocations in the mesh (smoothing) in order to
-    improve quality measures. It does not make the mesh invalied.
+    Generates boundary layers in the existing mesh, based on the settings
+    given in meshDict. It also performs necessary quality optimisation.
 
 \*---------------------------------------------------------------------------*/
 
@@ -31,120 +31,112 @@ Description
 #include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "meshOptimizer.H"
+#include "boundaryLayers.H"
+#include "refineBoundaryLayers.H"
 
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+void generateLayer
+(
+    polyMeshGen& mesh,
+    const dictionary& meshDict,
+    const bool layers2D
+)
+{
+    boundaryLayers bl(mesh);
+
+    if( layers2D )
+        bl.activate2DMode();
+
+    if( meshDict.found("boundaryLayers") )
+    {
+        const dictionary& bndLayers = meshDict.subDict("boundaryLayers");
+
+        if( bndLayers.found("nLayers") )
+        {
+            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
+
+            if( nLayers > 0 )
+                bl.addLayerForAllPatches();
+        }
+        else if( bndLayers.found("patchBoundaryLayers") )
+        {
+            const dictionary& patchLayers =
+                bndLayers.subDict("patchBoundaryLayers");
+            const wordList createLayers = patchLayers.toc();
+
+            forAll(createLayers, patchI)
+                bl.addLayerForPatch(createLayers[patchI]);
+        }
+    }
+    else
+    {
+        bl.addLayerForAllPatches();
+    }
+}
+
+void meshOptimisation(polyMeshGen& mesh)
+{
+    meshOptimizer mOpt(mesh);
+
+    mOpt.optimizeMeshFV();
+    mOpt.optimizeLowQualityFaces();
+    mOpt.untangleMeshFV();
+    mOpt.optimizeBoundaryLayer();
+    mOpt.untangleMeshFV();
+}
+
+void layerRefinement(polyMeshGen& mesh, const dictionary& meshDict)
+{
+    if( meshDict.isDict("boundaryLayers") )
+    {
+        refineBoundaryLayers refLayers(mesh);
+
+        refineBoundaryLayers::readSettings(meshDict, refLayers);
+
+        refLayers.refineLayers();
+
+        meshOptimizer(mesh).untangleBoundaryLayer();
+    }
+}
+
 int main(int argc, char *argv[])
 {
-    argList::validArgs.clear();
-
-    argList::validOptions.insert("nLoops", "int");
-    argList::validOptions.insert("nIterations", "int");
-    argList::validOptions.insert("nSurfaceIterations", "int");
-    argList::validOptions.insert("qualityThreshold", "scalar");
-    argList::validOptions.insert("constrainedCellsSet", "word");
+    argList::validOptions.insert("2DLayers", "bool");
 
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    //- read the settings
-    label nIterations(50);
-    label nLoops(10);
-    label nSurfaceIterations(2);
-    scalar qualityThreshold(0.1);
-
-    if( args.options().found("nLoops") )
-    {
-        nLoops = readLabel(IStringStream(args.options()["nLoops"])());
-    }
-    else
-    {
-        Info << "Default number of loops is 10" << endl;
-    }
-
-    if( args.options().found("nIterations") )
-    {
-        nIterations =
-            readLabel(IStringStream(args.options()["nIterations"])());
-    }
-    else
-    {
-        Info << "Default number of iterations is 50" << endl;
-    }
-
-    if( args.options().found("nSurfaceIterations") )
-    {
-        nSurfaceIterations =
-            readLabel(IStringStream(args.options()["nSurfaceIterations"])());
-    }
-    else
-    {
-        Info << "Default number of surface iterations is 2" << endl;
-    }
-
-    if( args.options().found("qualityThreshold") )
-    {
-        qualityThreshold =
-            readScalar(IStringStream(args.options()["qualityThreshold"])());
-    }
-    else
-    {
-        Info << "Using default quality threshold 0.1" << endl;
-    }
-
-    word constrainedCellSet;
-
-    if( args.options().found("constrainedCellsSet") )
-    {
-        constrainedCellSet = args.options()["constrainedCellsSet"];
-    }
-    else
-    {
-        Info << "No constraints applied on the smoothing procedure" << endl;
-    }
+    IOdictionary meshDict
+    (
+        IOobject
+        (
+            "meshDict",
+            runTime.system(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
 
     //- load the mesh from disk
     polyMeshGen pmg(runTime);
     pmg.read();
 
-    //- construct the smoother
-    meshOptimizer mOpt(pmg);
+    bool is2DLayer(false);
+    if( args.options().found("2DLayers") )
+        is2DLayer = true;
 
-    if( !constrainedCellSet.empty() )
-    {
-        //- lock cells in constrainedCellSet
-        mOpt.lockCellsInSubset(constrainedCellSet);
+    //- generate the initial boundary layer
+    generateLayer(pmg, meshDict, is2DLayer);
 
-        //- find boundary faces which shall be locked
-        labelLongList lockedBndFaces, selectedCells;
+    //- optimisation of mesh quality
+    meshOptimisation(pmg);
 
-        const label sId = pmg.cellSubsetIndex(constrainedCellSet);
-        pmg.cellsInSubset(sId, selectedCells);
-
-        boolList activeCell(pmg.cells().size(), false);
-        forAll(selectedCells, i)
-            activeCell[selectedCells[i]] = true;
-    }
-
-    //- clear geometry information before volume smoothing
-    pmg.clearAddressingData();
-
-    //- perform optimisation using the laplace smoother and
-    mOpt.optimizeMeshFV
-    (
-        nLoops,
-        nLoops,
-        nIterations,
-        nSurfaceIterations
-    );
-
-    //- perform optimisation of worst quality faces
-    mOpt.optimizeMeshFVBestQuality(nLoops, qualityThreshold);
-
-    //- check the mesh again and untangl bad regions if any of them exist
-    mOpt.untangleMeshFV(nLoops, nIterations, nSurfaceIterations);
+    //- perform layer refinement
+    layerRefinement(pmg, meshDict);
 
     Info << "Writing mesh" << endl;
     pmg.write();
