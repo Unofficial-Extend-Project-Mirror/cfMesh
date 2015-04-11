@@ -38,6 +38,7 @@ Description
 
 #include "coordinateModifier.H"
 #include "surfaceMeshGeometryModification.H"
+#include "edgeMeshGeometryModification.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -663,27 +664,24 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
     //- edge mesh
     const dictionary& edgeDict = meshDictPtr_->subDict("edgeMeshRefinement");
     const wordList edgeMeshNames = edgeDict.toc();
+
     PtrList<const edgeMesh> edgeMeshesPtr(edgeMeshNames.size());
     List<direction> refLevels(edgeMeshNames.size(), globalRefLevel_);
     scalarList refThickness(edgeMeshNames.size(), 0.0);
 
     //- load edge meshes into memory
-    forAll(edgeMeshesPtr, emI)
+    forAll(edgeMeshNames, emI)
     {
         const dictionary& dict = edgeDict.subDict(edgeMeshNames[emI]);
 
         const fileName fName(dict.lookup("edgeFile"));
 
-        Info << "Reading edge mesh " << fName << endl;
-        edgeMesh em(fName);
-        Info << "Finished reading mesh" << endl;
-
         if( meshDictPtr_->found("anisotropicSources") )
         {
-            //triSurf origSurf(fName);
-            //surfaceMeshGeometryModification surfMod(origSurf, *meshDictPtr_);
+            edgeMesh origEdgeMesh(fName);
+            edgeMeshGeometryModification edgeMod(origEdgeMesh, *meshDictPtr_);
 
-            //edgeMeshesPtr.set(emI, surfMod.modifyGeometry());
+            edgeMeshesPtr.set(emI, edgeMod.modifyGeometry());
         }
         else
         {
@@ -755,9 +753,8 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
         bool useNLayers(false);
 
         //- select boxes which need to be refined
-        forAll(edgeMeshesPtr, emI)
+        forAll(edgeMeshNames, emI)
         {
-            Info << "Refining edge mesh " << edgeMeshNames[emI] << endl;
             const edgeMesh& edgeMesh = edgeMeshesPtr[emI];
             const pointField& points = edgeMesh.points();
             const edgeList& edges = edgeMesh.edges();
@@ -884,7 +881,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
         }
     } while( nMarked != 0 );
 
-    Info << "Finished refinement of boxes intersecting surface meshes" << endl;
+    Info << "Finished refinement of boxes intersecting edge meshes" << endl;
 }
 
 void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)

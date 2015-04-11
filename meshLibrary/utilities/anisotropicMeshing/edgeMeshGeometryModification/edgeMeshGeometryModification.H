@@ -22,19 +22,19 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    surfaceMeshGeometryModification
+    edgeMeshGeometryModification
 
 Description
-    Modifies geometry of surface meshes according to the anisotropic sources
+    Modifies geometry of edge meshes according to the anisotropic sources
     given by the user
 
 SourceFiles
-    surfaceMeshGeometryModification.C
+    edgeMeshGeometryModification.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef surfaceMeshGeometryModification_H
-#define surfaceMeshGeometryModification_H
+#ifndef edgeMeshGeometryModification_H
+#define edgeMeshGeometryModification_H
 
 #include "coordinateModification.H"
 #include "point.H"
@@ -46,18 +46,18 @@ SourceFiles
 namespace Foam
 {
 
-class triSurf;
+class edgeMesh;
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
-                Class surfaceMeshGeometryModification Declaration
+                Class edgeMeshGeometryModification Declaration
 \*---------------------------------------------------------------------------*/
 
-class surfaceMeshGeometryModification
+class edgeMeshGeometryModification
 {
     // Private data
-        //- reference to triSurf
-        const triSurf& surf_;
+        //- reference to edgeMesh
+        const edgeMesh& edgeMesh_;
 
         //- length of box sides
         const dictionary& meshDict_;
@@ -74,20 +74,20 @@ class surfaceMeshGeometryModification
         void checkModification();
 
         //- disallow bitwise copy construct
-        surfaceMeshGeometryModification(const surfaceMeshGeometryModification&);
+        edgeMeshGeometryModification(const edgeMeshGeometryModification&);
 
         //- disallow bitwise assignment
-        void operator=(const surfaceMeshGeometryModification&);
+        void operator=(const edgeMeshGeometryModification&);
 
 public:
 
     // Constructors
 
-        //- Construct from triSurf and dictionary
-        surfaceMeshGeometryModification(const triSurf&, const dictionary&);
+        //- Construct from edgeMesh and dictionary
+        edgeMeshGeometryModification(const edgeMesh&, const dictionary&);
 
     // Destructor
-        ~surfaceMeshGeometryModification();
+        ~edgeMeshGeometryModification();
 
     // Member Functions
 
@@ -95,10 +95,10 @@ public:
         bool activeModification() const;
 
         //- modify coordinates
-        const triSurf* modifyGeometry() const;
+        const edgeMesh* modifyGeometry() const;
 
         //- revert geometry modification
-        const triSurf* revertGeometryModification() const;
+        const edgeMesh* revertGeometryModification() const;
 };
 
 

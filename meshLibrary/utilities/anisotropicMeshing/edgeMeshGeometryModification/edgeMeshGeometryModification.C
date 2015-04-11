@@ -23,17 +23,17 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "surfaceMeshGeometryModification.H"
+#include "edgeMeshGeometryModification.H"
 #include "demandDrivenData.H"
 #include "dictionary.H"
-#include "triSurf.H"
+#include "edgeMesh.H"
 
 namespace Foam
 {
 
 // * * * * * * * * * * * * * * Private member functions* * * * * * * * * * * //
 
-void surfaceMeshGeometryModification::checkModification()
+void edgeMeshGeometryModification::checkModification()
 {
     if( meshDict_.found("anisotropicSources") )
     {
@@ -48,13 +48,13 @@ void surfaceMeshGeometryModification::checkModification()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-surfaceMeshGeometryModification::surfaceMeshGeometryModification
+edgeMeshGeometryModification::edgeMeshGeometryModification
 (
-    const triSurf& surf,
+    const edgeMesh& em,
     const dictionary& meshDict
 )
 :
-    surf_(surf),
+    edgeMesh_(em),
     meshDict_(meshDict),
     coordinateModifierPtr_(NULL),
     modificationActive_(false)
@@ -62,32 +62,32 @@ surfaceMeshGeometryModification::surfaceMeshGeometryModification
     checkModification();
 }
 
-surfaceMeshGeometryModification::~surfaceMeshGeometryModification()
+edgeMeshGeometryModification::~edgeMeshGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool surfaceMeshGeometryModification::activeModification() const
+bool edgeMeshGeometryModification::activeModification() const
 {
     return modificationActive_;
 }
 
-const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
+const edgeMesh* edgeMeshGeometryModification::modifyGeometry() const
 {
     if( !modificationActive_ )
     {
         WarningIn
         (
-            "const triSurf* surfaceMeshGeometryModification"
+            "const edgeMesh* edgeMeshGeometryModification"
             "::modifyGeometry() const"
         ) << "Modification is not active" << endl;
 
         return NULL;
     }
 
-    const pointField& pts = surf_.points();
+    const pointField& pts = edgeMesh_.points();
 
     pointField newPts(pts.size());
 
@@ -97,78 +97,26 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
     forAll(pts, pointI)
         newPts[pointI] = coordinateModifierPtr_->modifiedPoint(pts[pointI]);
 
-    triSurf* newSurf =
-        new triSurf
-        (
-            surf_.facets(),
-            surf_.patches(),
-            surf_.featureEdges(),
-            newPts
-        );
+    const edgeMesh* newEdgeMesh = new edgeMesh(newPts, edgeMesh_.edges());
 
-    //- copy subsets
-    DynList<label> sIds;
-
-    //- copy facet subsets
-    surf_.facetSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addFacetSubset(surf_.facetSubsetName(sIds[i]));
-
-        labelLongList facetsInSubset;
-        surf_.facetsInSubset(sIds[i], facetsInSubset);
-
-        forAll(facetsInSubset, fI)
-            newSurf->addFacetToSubset(newId, facetsInSubset[fI]);
-    }
-
-    //- copy point subsets
-    surf_.pointSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addPointSubset(surf_.pointSubsetName(sIds[i]));
-
-        labelLongList pointsInSubset;
-        surf_.pointsInSubset(sIds[i], pointsInSubset);
-
-        forAll(pointsInSubset, pI)
-            newSurf->addPointToSubset(newId, pointsInSubset[pI]);
-    }
-
-    //- copy subsets of feature edges
-    surf_.edgeSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addEdgeSubset(surf_.edgeSubsetName(sIds[i]));
-
-        labelLongList edgesInSubset;
-        surf_.edgesInSubset(sIds[i], edgesInSubset);
-
-        forAll(edgesInSubset, eI)
-            newSurf->addEdgeToSubset(newId, edgesInSubset[eI]);
-    }
-
-    return newSurf;
+    return newEdgeMesh;
 }
 
-const triSurf* surfaceMeshGeometryModification::
+const edgeMesh* edgeMeshGeometryModification::
 revertGeometryModification() const
 {
     if( !modificationActive_ )
     {
         WarningIn
         (
-            "const triSurf* surfaceMeshGeometryModification"
+            "const edgeMesh* edgeMeshGeometryModification"
             "::revertGeometryModification() const"
         ) << "Modification is not active" << endl;
 
         return NULL;
     }
 
-    const pointField& pts = surf_.points();
+    const pointField& pts = edgeMesh_.points();
 
     pointField newPts(pts.size());
 
@@ -176,64 +124,14 @@ revertGeometryModification() const
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         newPts[pointI] =
             coordinateModifierPtr_->backwardModifiedPoint(pts[pointI]);
-
-    triSurf* newSurf =
-        new triSurf
-        (
-            surf_.facets(),
-            surf_.patches(),
-            surf_.featureEdges(),
-            newPts
-        );
-
-    //- copy subsets
-    DynList<label> sIds;
-
-    //- copy facet subsets
-    surf_.facetSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addFacetSubset(surf_.facetSubsetName(sIds[i]));
-
-        labelLongList facetsInSubset;
-        surf_.facetsInSubset(sIds[i], facetsInSubset);
-
-        forAll(facetsInSubset, fI)
-            newSurf->addFacetToSubset(newId, facetsInSubset[fI]);
     }
 
-    //- copy point subsets
-    surf_.pointSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addPointSubset(surf_.pointSubsetName(sIds[i]));
+    const edgeMesh* newEdgeMeshPtr = new edgeMesh(newPts, edgeMesh_.edges());
 
-        labelLongList pointsInSubset;
-        surf_.pointsInSubset(sIds[i], pointsInSubset);
-
-        forAll(pointsInSubset, pI)
-            newSurf->addPointToSubset(newId, pointsInSubset[pI]);
-    }
-
-    //- copy subsets of feature edges
-    surf_.edgeSubsetIndices(sIds);
-    forAll(sIds, i)
-    {
-        const label newId =
-            newSurf->addEdgeSubset(surf_.edgeSubsetName(sIds[i]));
-
-        labelLongList edgesInSubset;
-        surf_.edgesInSubset(sIds[i], edgesInSubset);
-
-        forAll(edgesInSubset, eI)
-            newSurf->addEdgeToSubset(newId, edgesInSubset[eI]);
-    }
-
-    return newSurf;
+    return newEdgeMeshPtr;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
