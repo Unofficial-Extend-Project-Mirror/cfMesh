@@ -674,6 +674,10 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 
         const fileName fName(dict.lookup("edgeFile"));
 
+        Info << "Reading edge mesh " << fName << endl;
+        edgeMesh em(fName);
+        Info << "Finished reading mesh" << endl;
+
         if( meshDictPtr_->found("anisotropicSources") )
         {
             //triSurf origSurf(fName);
@@ -753,6 +757,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
         //- select boxes which need to be refined
         forAll(edgeMeshesPtr, emI)
         {
+            Info << "Refining edge mesh " << edgeMeshNames[emI] << endl;
             const edgeMesh& edgeMesh = edgeMeshesPtr[emI];
             const pointField& points = edgeMesh.points();
             const edgeList& edges = edgeMesh.edges();
