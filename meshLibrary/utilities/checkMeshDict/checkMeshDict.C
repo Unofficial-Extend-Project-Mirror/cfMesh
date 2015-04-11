@@ -468,6 +468,109 @@ void checkMeshDict::checkSurfaceRefinements() const
     }
 }
 
+void checkMeshDict::checkEdgeMeshRefinements() const
+{
+    if( meshDict_.found("edgeMeshRefinement") )
+    {
+        const dictionary& edgeMeshes = meshDict_.subDict("edgeMeshRefinement");
+
+        const wordList edgeMeshSources = edgeMeshes.toc();
+
+        forAll(edgeMeshSources, emI)
+        {
+            if( edgeMeshes.isDict(edgeMeshSources[emI]) )
+            {
+                const dictionary& dict =
+                    edgeMeshes.subDict(edgeMeshSources[emI]);
+
+                if( dict.found("edgeFile") )
+                {
+                    const fileName fName(dict.lookup("edgeFile"));
+
+                    if( !isFile(fName) )
+                        FatalErrorIn
+                        (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                        ) << "Edge mesh file " << fName
+                          << " does not exist or is not readable!!"
+                          << exit(FatalError);
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                    ) << "Missing edgeFilw for entry "
+                      << edgeMeshSources[emI] << exit(FatalError);
+                }
+
+                if( dict.found("cellSize") )
+                {
+                    const scalar cs = readScalar(dict.lookup("cellSize"));
+
+                    if( cs < VSMALL )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Cell size for entry " << edgeMeshSources[emI]
+                          << " is extremely small or negative!!"
+                          << exit(FatalError);
+                }
+                else if( dict.found("additionalRefinementLevels") )
+                {
+                    const label nLev =
+                        readLabel(dict.lookup("additionalRefinementLevels"));
+
+                    if( nLev < 0 )
+                    {
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Number refinement levels for entry "
+                          << edgeMeshSources[emI] << " is negative!!"
+                          << exit(FatalError);
+                    }
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                    ) << "Missing cellSize or additionalRefinementLevels"
+                      << " for entry " << edgeMeshSources[emI]
+                      << exit(FatalError);
+                }
+
+                if( dict.found("refinementThickness") )
+                {
+                    const scalar cs =
+                        readScalar(dict.lookup("refinementThickness"));
+
+                    if( cs < VSMALL )
+                        WarningIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Refinement thickness for entry "
+                          << edgeMeshSources[emI]
+                          << " is extremely small or negative!!" << endl;
+                }
+            }
+            else
+            {
+                FatalErrorIn
+                (
+                    "void checkMeshDict::checkEdgeMeshRefinements() const"
+                ) << "Dictionary " << edgeMeshSources[emI]
+                  << " does not exist!!"
+                  << exit(FatalError);
+            }
+        }
+    }
+}
+
 void checkMeshDict::checkBoundaryLayers() const
 {
     if( meshDict_.found("boundaryLayers") )
