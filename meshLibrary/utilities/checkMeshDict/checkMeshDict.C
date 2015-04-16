@@ -866,7 +866,7 @@ void checkMeshDict::updateSubsetCellSize
 
 }
 
-void checkMeshDict::updateLocalRefinementLevel
+void checkMeshDict::updateLocalRefinement
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -891,20 +891,7 @@ void checkMeshDict::updateLocalRefinementLevel
                 const wordList& updatedPatchNames = it->second;
 
                 const dictionary& pDict = dict.subDict(pName);
-                dictionary copy;
-                if( pDict.found("additionalRefinementLevels") )
-                {
-                    const label nLevels =
-                        readLabel(pDict.lookup("additionalRefinementLevels"));
-
-                    copy.add("additionalRefinementLevels", nLevels);
-                }
-                else if( pDict.found("cellSize") )
-                {
-                    const scalar cs = readScalar(pDict.lookup("cellSize"));
-
-                    copy.add("cellSize", cs);
-                }
+                dictionary copy = pDict;
 
                 //- add new patches
                 forAll(updatedPatchNames, nameI)
@@ -1302,7 +1289,7 @@ void checkMeshDict::updateDictionaries
 
     updateSubsetCellSize(patchesFromPatch);
 
-    updateLocalRefinementLevel(patchesFromPatch);
+    updateLocalRefinement(patchesFromPatch);
 
     updateKeepCellsIntersectingPatches(patchesFromPatch);
 
