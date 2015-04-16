@@ -358,6 +358,10 @@ void voronoiMeshGenerator::generateMesh()
 
         replaceBoundaries();
     }
+    catch(const std::string& message)
+    {
+        Info << message << endl;
+    }
     catch(...)
     {
         WarningIn

@@ -187,7 +187,11 @@ bool workflowControls::stopAfterCurrentStep() const
                 "bool workflowControls::stopAfterCurrentStep() const"
             ) << "Mesh was not written on disk" << exit(FatalError);
 
-        ::exit(0);
+
+        std::string message("Stopping after step ");
+        message += currentStep_;
+
+        throw message;
 
         return true;
     }
