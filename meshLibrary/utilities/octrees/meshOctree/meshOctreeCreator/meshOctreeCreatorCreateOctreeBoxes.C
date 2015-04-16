@@ -361,7 +361,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 if( patchDict.found("additionalRefinementLevels") )
                 {
                     nLevel =
-                        readLabel(patchDict.lookup("additionalRefinementLevels"));
+                        readLabel
+                        (
+                            patchDict.lookup("additionalRefinementLevels")
+                        );
                 }
                 else if( patchDict.found("cellSize") )
                 {

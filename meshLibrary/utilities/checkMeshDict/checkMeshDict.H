@@ -102,7 +102,7 @@ class checkMeshDict
         void updateSubsetCellSize(const std::map<word, wordList>&);
 
         //- update local refinement
-        void updateLocalRefinementLevel(const std::map<word, wordList>&);
+        void updateLocalRefinement(const std::map<word, wordList>&);
 
         //- check keepCellsIntersectingPatches entry
         void updateKeepCellsIntersectingPatches

@@ -79,7 +79,7 @@ void meshOctreeCreator::refineBoundary()
         //- select boxes which need to be refined
         # ifdef USE_OMP
         # pragma omp parallel for reduction(+ : nMarked) \
-        schedule(dynamic, Foam::min(20, leaves.size()/omp_get_num_threads()+1))
+        schedule(dynamic, 100)
         # endif
         forAll(leaves, leafI)
         {
@@ -115,7 +115,7 @@ void meshOctreeCreator::refineBoundary()
                             Foam::max
                             (
                                 nLayers[leafI],
-                                Foam::max(label(surfRefThickness_[triI]/cs), 1)
+                                Foam::max(ceil(surfRefThickness_[triI]/cs), 1)
                             );
 
                         targetLevel[leafI] =
@@ -343,7 +343,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
                             Foam::max
                             (
                                 nLayers[leafI],
-                                Foam::max(label(refThickness[oI]/cs), 1)
+                                Foam::max(ceil(refThickness[oI]/cs), 1)
                             );
 
                         targetRefLevel[leafI] =
@@ -587,7 +587,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                             Foam::max
                             (
                                 nLayers[leafI],
-                                max(label(refThickness[surfI]/cs), 1)
+                                max(ceil(refThickness[surfI]/cs), 1)
                             );
 
                         targetRefLevel[leafI] =
@@ -822,7 +822,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
                             Foam::max
                             (
                                 nLayers[leafI],
-                                max(label(refThickness[emI]/cs), 1)
+                                max(ceil(refThickness[emI]/cs), 1)
                             );
 
                         targetRefLevel[leafI] =
