@@ -39,7 +39,6 @@ SourceFiles
 #include "DynList.H"
 #include "IOdictionary.H"
 #include "meshOctreeModifier.H"
-//#include "volFields.H"
 #include "patchRefinementList.H"
 
 #include <map>
@@ -83,6 +82,10 @@ private:
         //- refine boxes intersected by surface meshes
         //- used as refinement sources
         void refineBoxesIntersectingSurfaces();
+
+        //- refine boxes by edge meshes
+        //- used as refinement sources
+        void refineBoxesIntersectingEdgeMeshes();
 
         //- refine boxes near DATA boxes to get a nice smooth surface
         void refineBoxesNearDataBoxes(const direction nLayers = 1);

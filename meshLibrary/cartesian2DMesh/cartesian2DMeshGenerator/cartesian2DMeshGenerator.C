@@ -245,6 +245,10 @@ void cartesian2DMeshGenerator::generateMesh()
 
         controller_.workflowCompleted();
     }
+    catch(const std::string& message)
+    {
+        Info << message << endl;
+    }
     catch(...)
     {
         WarningIn

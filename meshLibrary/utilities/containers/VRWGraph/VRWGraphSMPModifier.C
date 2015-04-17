@@ -336,7 +336,7 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
         # endif
 
         //- find the starting position for each thread
-        label rowStart(0), entryStart(0);
+        long long rowStart(0), entryStart(0);
         for(label i=0;i<threadI;++i)
         {
             rowStart += nRows[i];

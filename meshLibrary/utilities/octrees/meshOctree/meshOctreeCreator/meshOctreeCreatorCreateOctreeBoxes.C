@@ -361,7 +361,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 if( patchDict.found("additionalRefinementLevels") )
                 {
                     nLevel =
-                        readLabel(patchDict.lookup("additionalRefinementLevels"));
+                        readLabel
+                        (
+                            patchDict.lookup("additionalRefinementLevels")
+                        );
                 }
                 else if( patchDict.found("cellSize") )
                 {
@@ -460,8 +463,11 @@ void meshOctreeCreator::createOctreeBoxes()
     Info << "Refining boundary" << endl;
     refineBoundary();
 
-    //- refine parts intersected with surface mesh serving as refinement sources
+    //- refine parts intersected by surface meshes acting as refinement sources
     refineBoxesIntersectingSurfaces();
+
+    //- refine parts intersected by edge meshes acting as refinement sources
+    refineBoxesIntersectingEdgeMeshes();
 
     //- perform automatic octree refinement
     if( !Pstream::parRun() )

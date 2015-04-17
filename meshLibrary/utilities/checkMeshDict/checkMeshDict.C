@@ -468,6 +468,109 @@ void checkMeshDict::checkSurfaceRefinements() const
     }
 }
 
+void checkMeshDict::checkEdgeMeshRefinements() const
+{
+    if( meshDict_.found("edgeMeshRefinement") )
+    {
+        const dictionary& edgeMeshes = meshDict_.subDict("edgeMeshRefinement");
+
+        const wordList edgeMeshSources = edgeMeshes.toc();
+
+        forAll(edgeMeshSources, emI)
+        {
+            if( edgeMeshes.isDict(edgeMeshSources[emI]) )
+            {
+                const dictionary& dict =
+                    edgeMeshes.subDict(edgeMeshSources[emI]);
+
+                if( dict.found("edgeFile") )
+                {
+                    const fileName fName(dict.lookup("edgeFile"));
+
+                    if( !isFile(fName) )
+                        FatalErrorIn
+                        (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                        ) << "Edge mesh file " << fName
+                          << " does not exist or is not readable!!"
+                          << exit(FatalError);
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                    ) << "Missing edgeFilw for entry "
+                      << edgeMeshSources[emI] << exit(FatalError);
+                }
+
+                if( dict.found("cellSize") )
+                {
+                    const scalar cs = readScalar(dict.lookup("cellSize"));
+
+                    if( cs < VSMALL )
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Cell size for entry " << edgeMeshSources[emI]
+                          << " is extremely small or negative!!"
+                          << exit(FatalError);
+                }
+                else if( dict.found("additionalRefinementLevels") )
+                {
+                    const label nLev =
+                        readLabel(dict.lookup("additionalRefinementLevels"));
+
+                    if( nLev < 0 )
+                    {
+                        FatalErrorIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Number refinement levels for entry "
+                          << edgeMeshSources[emI] << " is negative!!"
+                          << exit(FatalError);
+                    }
+                }
+                else
+                {
+                    FatalErrorIn
+                    (
+                        "void checkMeshDict::checkEdgeMeshRefinements() const"
+                    ) << "Missing cellSize or additionalRefinementLevels"
+                      << " for entry " << edgeMeshSources[emI]
+                      << exit(FatalError);
+                }
+
+                if( dict.found("refinementThickness") )
+                {
+                    const scalar cs =
+                        readScalar(dict.lookup("refinementThickness"));
+
+                    if( cs < VSMALL )
+                        WarningIn
+                        (
+                            "void checkMeshDict::"
+                            "checkEdgeMeshRefinements() const"
+                        ) << "Refinement thickness for entry "
+                          << edgeMeshSources[emI]
+                          << " is extremely small or negative!!" << endl;
+                }
+            }
+            else
+            {
+                FatalErrorIn
+                (
+                    "void checkMeshDict::checkEdgeMeshRefinements() const"
+                ) << "Dictionary " << edgeMeshSources[emI]
+                  << " does not exist!!"
+                  << exit(FatalError);
+            }
+        }
+    }
+}
+
 void checkMeshDict::checkBoundaryLayers() const
 {
     if( meshDict_.found("boundaryLayers") )
@@ -763,7 +866,7 @@ void checkMeshDict::updateSubsetCellSize
 
 }
 
-void checkMeshDict::updateLocalRefinementLevel
+void checkMeshDict::updateLocalRefinement
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -788,20 +891,7 @@ void checkMeshDict::updateLocalRefinementLevel
                 const wordList& updatedPatchNames = it->second;
 
                 const dictionary& pDict = dict.subDict(pName);
-                dictionary copy;
-                if( pDict.found("additionalRefinementLevels") )
-                {
-                    const label nLevels =
-                        readLabel(pDict.lookup("additionalRefinementLevels"));
-
-                    copy.add("additionalRefinementLevels", nLevels);
-                }
-                else if( pDict.found("cellSize") )
-                {
-                    const scalar cs = readScalar(pDict.lookup("cellSize"));
-
-                    copy.add("cellSize", cs);
-                }
+                dictionary copy = pDict;
 
                 //- add new patches
                 forAll(updatedPatchNames, nameI)
@@ -1199,7 +1289,7 @@ void checkMeshDict::updateDictionaries
 
     updateSubsetCellSize(patchesFromPatch);
 
-    updateLocalRefinementLevel(patchesFromPatch);
+    updateLocalRefinement(patchesFromPatch);
 
     updateKeepCellsIntersectingPatches(patchesFromPatch);
 

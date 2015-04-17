@@ -13,6 +13,7 @@ checkMeshDict = utilities/checkMeshDict
 
 anisotropicMeshing = utilities/anisotropicMeshing
 coordinateModification = $(anisotropicMeshing)/coordinateModification
+edgeMeshGeometryModification = $(anisotropicMeshing)/edgeMeshGeometryModification
 surfaceMeshGeometryModification = $(anisotropicMeshing)/surfaceMeshGeometryModification
 polyMeshGenGeometryModification = $(anisotropicMeshing)/polyMeshGenGeometryModification
 
@@ -166,6 +167,7 @@ $(coordinateModification)/newCoordinateModification.C
 $(coordinateModification)/planeTranslation.C
 $(coordinateModification)/boxScaling.C
 
+$(edgeMeshGeometryModification)/edgeMeshGeometryModification.C
 $(surfaceMeshGeometryModification)/surfaceMeshGeometryModification.C
 $(polyMeshGenGeometryModification)/polyMeshGenGeometryModification.C
 

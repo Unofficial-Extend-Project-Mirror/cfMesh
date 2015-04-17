@@ -103,14 +103,15 @@ Foam::Ostream& Foam::operator<<
         os << nl << DL.nextFree_ << nl;
         if( DL.nextFree_ )
         {
-            const label blockSize = 1<<DL.shift_;
+            const long long blockSize = 1<<DL.shift_;
 
-            label currBlock(0);
-            label currPos(0);
+            long long currBlock(0);
+            long long currPos(0);
 
             while( currPos < DL.nextFree_ )
             {
-                const label bs = Foam::min(DL.nextFree_ - currPos, blockSize);
+                const long long bs =
+                    Foam::min(DL.nextFree_ - currPos, blockSize);
 
                 os.write
                 (
@@ -152,7 +153,7 @@ Foam::Istream& Foam::operator>>
 
     if( firstToken.isLabel() )
     {
-        const label size = firstToken.labelToken();
+        const long long size = firstToken.labelToken();
 
         // Set list length to that read
         DL.setSize(size);
@@ -201,7 +202,7 @@ Foam::Istream& Foam::operator>>
 
             if( listDelimiter == token::BEGIN_LIST )
             {
-                for(register label i=0;i<size;++i)
+                for(register long long i=0;i<size;++i)
                 {
                     is >> DL[i];
 
@@ -222,7 +223,7 @@ Foam::Istream& Foam::operator>>
                     "reading the single entry"
                 );
 
-                for(register label i=0;i<size;++i)
+                for(register long long i=0;i<size;++i)
                 {
                     DL[i] = element;
                 }
@@ -233,14 +234,14 @@ Foam::Istream& Foam::operator>>
         }
         else
         {
-            const label blockSize = (1<<DL.shift_);
+            const long long blockSize = (1<<DL.shift_);
 
-            label currBlock(0);
-            label currPos(0);
+            long long currBlock(0);
+            long long currPos(0);
 
             while( currPos < size )
             {
-                const label bs = Foam::min(size - currPos, blockSize);
+                const long long bs = Foam::min(size - currPos, blockSize);
 
                 is.read
                 (
@@ -284,7 +285,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
     if( firstToken.isLabel() )
     {
-        const label size = firstToken.labelToken();
+        const long long size = firstToken.labelToken();
 
         if( size == 0 )
         {
@@ -292,7 +293,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
             return;
         }
 
-        label origSize(this->size());
+        long long origSize(this->size());
 
         // Set list length to that read
         setSize(origSize+size);
@@ -305,7 +306,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
             if( listDelimiter == token::BEGIN_LIST )
             {
-                for(register label i=0;i<size;++i)
+                for(register long long i=0;i<size;++i)
                 {
                     is >> this->operator[](origSize);
                     ++origSize;
@@ -327,7 +328,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
                     "reading the single entry"
                 );
 
-                for(register label i=0;i<size;++i)
+                for(register long long i=0;i<size;++i)
                 {
                     this->operator[](origSize) = element;
                     ++origSize;
@@ -345,15 +346,15 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
             forAll(buf, i)
                 this->operator[](origSize++) = buf[i];
 
-            /*const label blockSize = 1<<shift_;
+            /*const long long blockSize = 1<<shift_;
 
             Info << "nextFree_ " << nextFree_ << endl;
 
             //- append elements by reading binary block
             while( origSize < nextFree_ )
             {
-                const label currBlock = origSize >> shift_;
-                const label currPos = origSize & mask_;
+                const long long currBlock = origSize >> shift_;
+                const long long currPos = origSize & mask_;
 
                 Info << "Orig size " << origSize
                     << nl << "currBlock " << currBlock
@@ -361,7 +362,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
                 T* data = &dataPtr_[currBlock][currPos];
 
-                label bs = Foam::min(nextFree_-origSize, blockSize);
+                long long bs = Foam::min(nextFree_-origSize, blockSize);
                 bs = Foam::min(blockSize - currPos, bs);
 
                 Info << "bs " << bs << endl;
