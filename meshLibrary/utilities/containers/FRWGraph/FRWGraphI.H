@@ -32,8 +32,8 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
         (
             "void Foam::FRWGraph<T,width>::"
             "checkIndex(const label i, const label j) const"
-        ) << "Row index " << Foam::label(i)
-            << " is not in range " << Foam::label(0)
+        ) << "Row index " << i
+            << " is not in range " << 0
             << " and " << nRows_ << abort(FatalError);
     }
     
@@ -41,9 +41,9 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
         FatalErrorIn
         (
             "void Foam::FRWGraph<T,width>::"
-            "checkIndex(label const i) const"
-        ) << "Column index " << Foam::label(j)
-            << " is not in range " << Foam::label(0)
+            "checkIndex(const label i, const label j) const"
+        ) << "Column index " << j
+            << " is not in range " << 0
             << " and " << width << abort(FatalError);
 }
 
@@ -55,8 +55,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph()
 :
     data_(),
     nRows_(0)
-{
-}
+{}
 
 //- Construct given size
 template<class T, Foam::label width>
@@ -65,7 +64,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph
     const label s
 )
 :
-    data_(s * width),
+    data_(static_cast<long long>(s) * width),
     nRows_(s)
 {
 }
@@ -79,10 +78,9 @@ inline Foam::FRWGraph<T,width>::FRWGraph
     const T& t
 )
 :
-    data_(s * width, t),
+    data_(static_cast<long long>(s) * width, t),
     nRows_(s)
-{
-}
+{}
 
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::FRWGraph
@@ -92,13 +90,11 @@ inline Foam::FRWGraph<T,width>::FRWGraph
 :
     data_(ol.data_),
     nRows_(ol.nRows_)
-{
-}
+{}
 
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::~FRWGraph()
-{
-}
+{}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -118,7 +114,7 @@ inline Foam::label Foam::FRWGraph<T,width>::sizeOfRow(const label rowI) const
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::setSize(const label i)
 {
-    data_.setSize(i * width);
+    data_.setSize(static_cast<long long>(i) * width);
     nRows_ = i;
 }
 
@@ -159,7 +155,7 @@ inline bool Foam::FRWGraph<T,width>::contains
     const T& e
 ) const
 {
-    const label start = rowI * width;
+    const long long start = static_cast<long long>(rowI) * width;
     for(register label i=0;i<width;++i)
         if( data_[start+i] == e )
             return true;
@@ -174,7 +170,7 @@ inline Foam::label Foam::FRWGraph<T,width>::containsAtPosition
     const T& e
 ) const
 {
-    const label start = rowI * width;
+    const long long start = static_cast<long long>(rowI) * width;
     for(register label i=0;i<width;++i)
         if( data_[start+i] == e )
             return i;
@@ -194,7 +190,7 @@ inline const T& Foam::FRWGraph<T,width>::operator()
     checkIndex(i, j);
     #endif
         
-    return data_[i * width + j];
+    return data_[static_cast<long long>(i) * width + j];
 }
 
 template<class T, Foam::label width>
@@ -207,7 +203,7 @@ inline T& Foam::FRWGraph<T,width>::operator()
     checkIndex(i, j);
     #endif
         
-    return data_[i * width + j];
+    return data_[static_cast<long long>(i) * width + j];
 }
 
 template<class T, Foam::label width>
@@ -217,6 +213,7 @@ inline void Foam::FRWGraph<T,width>::operator=
 )
 {
     data_ = l.data_;
+    nRows_ = l.nRows_;
 }
 
 

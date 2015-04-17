@@ -89,7 +89,7 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
         # pragma omp barrier
         # endif
 
-        label start(0);
+        long long start(0);
         # ifdef USE_OMP
         for(label i=0;i<omp_get_thread_num();++i)
             start += procEntries[i];
