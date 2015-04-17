@@ -217,7 +217,9 @@ label meshOctreeModifier::markAdditionalLayers
             maxLevel = Foam::max(localMax, maxLevel);
         }
 
-        reduce(maxLevel, maxOp<direction>());
+        label ml = maxLevel;
+        reduce(ml, maxOp<label>());
+        maxLevel = ml;
 
         //- mark additional boxes for refinement
         for(direction levelI=maxLevel;levelI>0;--levelI)
