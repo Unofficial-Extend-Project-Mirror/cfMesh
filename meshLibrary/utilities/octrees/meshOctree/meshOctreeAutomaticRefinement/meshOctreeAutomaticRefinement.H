@@ -65,7 +65,7 @@ class meshOctreeAutomaticRefinement
 
         //- use DATA boxes
         bool useDATABoxes_;
-    
+
         //- a flag for activating paired refinement
         bool hexRefinement_;
 
@@ -99,18 +99,18 @@ class meshOctreeAutomaticRefinement
         void setMaxRefLevel();
 
         //- refine selected boxes
-        void refineSelectedBoxes(List<direction>&, labelLongList&);
+        void refineSelectedBoxes(labelList&, labelLongList&);
 
         //- refine DATA boxes based on curvature
         bool curvatureRefinement();
-        bool refineBasedOnCurvature(List<direction>&, const labelLongList&);
+        bool refineBasedOnCurvature(labelList&, const labelLongList&);
 
         //- refine DATA boxes which contain two or more independent parts
         //- of the surface in their vicinity
         bool proximityRefinement();
         bool refineBasedOnProximityTests
         (
-            List<direction>&,
+            labelList&,
             const labelLongList&
         );
 
@@ -118,14 +118,14 @@ class meshOctreeAutomaticRefinement
         //- edges, etc.
         bool refineBasedOnContainedPartitions
         (
-            List<direction>&,
+            labelList&,
             const labelLongList&
         );
 
         //- refine boxes based on the number of contained surface corners
         bool refineBasedOnContainedCorners
         (
-            List<direction>&,
+            labelList&,
             const labelLongList&
         );
 
@@ -151,7 +151,7 @@ public:
     // Destructor
 
         ~meshOctreeAutomaticRefinement();
-        
+
     // Member Functions
         //- activate hex refinement
         void activateHexRefinement();
