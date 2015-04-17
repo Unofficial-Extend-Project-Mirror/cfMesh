@@ -41,7 +41,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
+void meshOctreeModifier::ensureCorrectRegularity(labelList& refineBox)
 {
     const FixedList<meshOctreeCubeCoordinates, 26>& rp =
         octree_.regularityPositions_;
@@ -190,7 +190,7 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
     while( nMarked != 0 );
 }
 
-bool meshOctreeModifier::ensureCorrectRegularitySons(List<direction>& refineBox)
+bool meshOctreeModifier::ensureCorrectRegularitySons(labelList& refineBox)
 {
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 

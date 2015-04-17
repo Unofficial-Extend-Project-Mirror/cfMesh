@@ -88,7 +88,7 @@ private:
         void refineBoxesIntersectingEdgeMeshes();
 
         //- refine boxes near DATA boxes to get a nice smooth surface
-        void refineBoxesNearDataBoxes(const direction nLayers = 1);
+        void refineBoxesNearDataBoxes(const label nLayers = 1);
 
         //- refine boxes of the given flag to the given size
         void refineBoxes(const direction refLevel, const direction cubeType);
