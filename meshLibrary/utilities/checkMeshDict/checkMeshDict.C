@@ -186,7 +186,7 @@ void checkMeshDict::checkLocalRefinementLevel() const
                     const label nLevels =
                         readLabel(dict.lookup("additionalRefinementLevels"));
 
-                    if( nLevels > 0 )
+                    if( nLevels < 0 )
                     {
                         WarningIn
                         (

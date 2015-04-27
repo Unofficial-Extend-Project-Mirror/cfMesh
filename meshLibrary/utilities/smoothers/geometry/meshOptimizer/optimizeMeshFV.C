@@ -469,7 +469,6 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
             lockedPoints.append(pointI);
     }
 
-    label minNumBadFaces(10 * faces.size()), minIter(-1);
     do
     {
         labelHashSet lowQualityFaces;
@@ -493,28 +492,18 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
         if( nBadFaces == 0 )
             break;
 
-        if( nBadFaces < minNumBadFaces )
-        {
-            minNumBadFaces = nBadFaces;
-            minIter = nIter;
-        }
-
         partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
 
         //- construct tetMeshOptimisation and improve positions
         //- of points in the tet mesh
         tetMeshOptimisation tmo(tetMesh);
 
-        tmo.optimiseUsingKnuppMetric();
-
-        tmo.optimiseUsingMeshUntangler();
-
         tmo.optimiseUsingVolumeOptimizer();
 
         //- update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( (nIter < minIter+2) && (++nIter < maxNumIterations) );
+    } while( ++nIter < maxNumIterations );
 }
 
 void meshOptimizer::optimizeMeshNearBoundaries

@@ -230,9 +230,14 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
     newTriangles.setSize(counter);
 
+    updateTriangleLabels(newTriangleLabel);
+
     //- update the surface
     triSurfModifier(surf_).facetsAccess().transfer(newTriangles);
     surf_.updateFacetsSubsets(newTriangleLabel);
+
+    surf_.clearAddressing();
+    surf_.clearGeometry();
 
     return true;
 }
