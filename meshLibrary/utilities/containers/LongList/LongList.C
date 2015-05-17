@@ -274,14 +274,9 @@ Foam::Istream& Foam::operator>>
 template<class T, Foam::label Offset>
 void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 {
-    if( !is.good() )
-        Pout << "Drekec" << endl;
-
     is.fatalCheck("appendFromStream(Istream& is)");
 
     token firstToken(is);
-
-    Pout << "Read "<< firstToken.info() << endl;
 
     is.fatalCheck
     (
