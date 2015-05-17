@@ -54,7 +54,7 @@ class rowElement
 {
     // Private data
         //- starting element of the row
-        long long start_;
+        label start_;
 
         //- number of elements in the row
         label size_;
@@ -67,7 +67,7 @@ class rowElement
             size_()
         {}
 
-        inline rowElement(const long long i, const label j)
+        inline rowElement(const label i, const label j)
         :
             start_(i),
             size_(j)
@@ -76,11 +76,11 @@ class rowElement
         inline ~rowElement()
         {}
 
-        inline long long start() const
+        inline label start() const
         {
             return start_;
         }
-        inline long long& start()
+        inline label& start()
         {
             return start_;
         }

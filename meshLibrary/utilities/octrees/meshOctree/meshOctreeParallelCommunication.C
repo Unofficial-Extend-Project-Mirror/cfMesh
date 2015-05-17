@@ -148,6 +148,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
 
         //- receive data from other processor
         IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+        Pout << "Upper diag communication " << endl;
         dataToReceive.appendFromStream(fromOtherProc);
     }
 
@@ -173,6 +174,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
 
         //- receive data from other processor
         IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+        Pout << "Lower diag communication " << endl;
         dataToReceive.appendFromStream(fromOtherProc);
     }
 

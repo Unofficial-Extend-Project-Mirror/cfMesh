@@ -235,7 +235,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
         }
     }
 
-    # ifdef OCTREE_DEBUG
+    //# ifdef OCTREE_DEBUG
     for(label i=0;i<Pstream::nProcs();++i)
     {
         if( i == Pstream::myProcNo() )
@@ -250,16 +250,16 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
 
         returnReduce(i, sumOp<label>());
     }
-    # endif
+    //# endif
 
     //- exchange data with other processors
     LongList<meshOctreeCubeBasic> receivedCoordinates;
     help::exchangeMap(toProcs, receivedCoordinates, Pstream::blocking);
 
-    # ifdef OCTREE_DEBUG
+    //# ifdef OCTREE_DEBUG
     Pout << "Received " << receivedCoordinates.size()
         << " from other procs" << endl;
-    # endif
+    //# endif
 
     //- cubes which share a common, face, edge or vertex are added into
     //- the current processor's tree

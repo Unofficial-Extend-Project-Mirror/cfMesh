@@ -136,6 +136,8 @@ void meshOctreeCreator::refineBoundary()
         reduce(useNLayers, maxOp<label>());
         if( useNLayers )
         {
+            returnReduce(1, sumOp<label>());
+            Info << "Marking additional layers" << endl;
             nMarked +=
                 octreeModifier.markAdditionalLayers
                 (
@@ -143,6 +145,9 @@ void meshOctreeCreator::refineBoundary()
                     nLayers,
                     targetLevel
                 );
+
+            returnReduce(1, sumOp<label>());
+            Info << "Finished marking additional layers" << endl;
         }
 
         //- refine boxes
@@ -156,8 +161,12 @@ void meshOctreeCreator::refineBoundary()
         if( Pstream::parRun() )
         {
             reduce(nMarked, sumOp<label>());
+            Info << "nMarked " << nMarked << endl;
             if( nMarked )
             {
+                returnReduce(1, sumOp<label>());
+                Info << "1.Here" << endl;
+
                 octreeModifier.distributeLeavesToProcessors();
 
                 # ifdef OCTREETiming
@@ -166,7 +175,12 @@ void meshOctreeCreator::refineBoundary()
                      << (distTime-refTime) << endl;
                 # endif
 
+                returnReduce(2, sumOp<label>());
+                Info << "Starting load distribution" << endl;
                 loadDistribution();
+
+                returnReduce(1, sumOp<label>());
+                Info << "Finished load distribution" << endl;
 
                 # ifdef OCTREETiming
                 Info << "Time for load distribution "
