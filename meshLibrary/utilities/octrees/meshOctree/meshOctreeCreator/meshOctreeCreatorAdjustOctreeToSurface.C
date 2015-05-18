@@ -71,7 +71,7 @@ void meshOctreeCreator::refineBoundary()
         const scalar startIter = omp_get_wtime();
         # endif
 
-        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
         List<direction> targetLevel(leaves.size(), direction(0));
         bool useNLayers(false);
@@ -297,7 +297,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
 
         nMarked = 0;
 
-        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
         List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
@@ -513,7 +513,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
         nMarked = 0;
 
-        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
         List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
@@ -748,7 +748,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 
         nMarked = 0;
 
-        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
         List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
@@ -885,7 +885,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
     Info << "Finished refinement of boxes intersecting edge meshes" << endl;
 }
 
-void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
+void meshOctreeCreator::refineBoxesNearDataBoxes(const label nLayers)
 {
     # ifdef OCTREETiming
     const scalar startTime = omp_get_wtime();
@@ -906,7 +906,7 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
             << " type " << label(leaves[leafI]->cubeType()) << endl;
     # endif
 
-    List<direction> refineBox(leaves.size(), direction(0));
+    labelList refineBox(leaves.size(), 0);
 
     labelHashSet transferCoordinates;
     LongList<meshOctreeCubeCoordinates> checkCoordinates;
@@ -1009,7 +1009,7 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const direction nLayers)
         }
     }
 
-    for(direction i=1;i<nLayers;i++)
+    for(label i=1;i<nLayers;i++)
     {
         if( Pstream::parRun() )
         {
@@ -1167,7 +1167,7 @@ void meshOctreeCreator::refineBoxes
 
         const LongList<meshOctreeCube*>& leaves = octreeMod.leavesAccess();
 
-        List<direction> refineCubes(leaves.size(), direction(0));
+        labelList refineCubes(leaves.size(), direction(0));
 
         # ifdef USE_OMP
         # pragma omp parallel for if( leaves.size() > 1000 ) \

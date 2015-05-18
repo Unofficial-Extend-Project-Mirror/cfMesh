@@ -78,7 +78,7 @@ void meshOctreeAutomaticRefinement::automaticRefinement()
 
 bool meshOctreeAutomaticRefinement::curvatureRefinement()
 {
-    List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
+    labelList refineBox(octree_.numberOfLeaves(), direction(0));
     labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
@@ -93,7 +93,7 @@ bool meshOctreeAutomaticRefinement::curvatureRefinement()
 bool meshOctreeAutomaticRefinement::proximityRefinement()
 {
     bool refine(false);
-    List<direction> refineBox(octree_.numberOfLeaves(), direction(0));
+    labelList refineBox(octree_.numberOfLeaves(), direction(0));
     labelLongList refinementCandidates;
     forAll(refineBox, i)
         refinementCandidates.append(i);
@@ -126,7 +126,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     const labelLongList& refCandidates
 )
 {
@@ -220,7 +220,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     const labelLongList& refCandidates
 )
 {
@@ -326,7 +326,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 
 bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     const labelLongList& refCandidates
 )
 {
@@ -398,7 +398,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 
 bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     const labelLongList& refCandidates
 )
 {
@@ -462,7 +462,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 
 void meshOctreeAutomaticRefinement::refineSelectedBoxes
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     labelLongList& refCandidates
 )
 {

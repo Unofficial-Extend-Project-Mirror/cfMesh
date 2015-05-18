@@ -48,8 +48,8 @@ namespace Foam
 
 void meshOctreeModifier::markAdditionalLayers
 (
-    List<direction>& refineBox,
-    const direction nLayers
+    labelList& refineBox,
+    const label nLayers
 ) const
 {
     const FixedList<meshOctreeCubeCoordinates, 26>& rp =
@@ -61,7 +61,7 @@ void meshOctreeModifier::markAdditionalLayers
 
     FixedList<meshOctreeCube*, 26> neighbours;
 
-    for(direction i=1;i<=nLayers;++i)
+    for(label i=1;i<=nLayers;++i)
     {
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
@@ -166,7 +166,7 @@ void meshOctreeModifier::markAdditionalLayers
 
 label meshOctreeModifier::markAdditionalLayers
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     labelList& nLayers,
     List<direction>& targetRefLevel
 ) const
@@ -224,7 +224,7 @@ label meshOctreeModifier::markAdditionalLayers
         //- mark additional boxes for refinement
         for(direction levelI=maxLevel;levelI>0;--levelI)
         {
-            List<direction> markedBoxes(leaves.size(), direction(0));
+            labelList markedBoxes(leaves.size(), 0);
 
             label counter(0);
             # ifdef USE_OMP
@@ -273,7 +273,7 @@ label meshOctreeModifier::markAdditionalLayers
 
 void meshOctreeModifier::refineSelectedBoxes
 (
-    List<direction>& refineBox,
+    labelList& refineBox,
     const bool hexRefinement
 )
 {
