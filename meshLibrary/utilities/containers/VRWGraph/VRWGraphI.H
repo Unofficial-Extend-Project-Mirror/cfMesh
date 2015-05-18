@@ -77,12 +77,12 @@ inline Foam::VRWGraph::VRWGraph
     const label nColumnsInRow
 )
 :
-    data_(static_cast<long long>(nRows) * nColumnsInRow),
+    data_(nRows * nColumnsInRow),
     rows_(nRows)
 {
     for(label rowI=0;rowI<nRows;++rowI)
     {
-        rows_[rowI].start() = static_cast<long long>(rowI) * nColumnsInRow;
+        rows_[rowI].start() = rowI * nColumnsInRow;
         rows_[rowI].size() = nColumnsInRow;
     }
 }
@@ -94,12 +94,12 @@ inline Foam::VRWGraph::VRWGraph
     const label t
 )
 :
-    data_(static_cast<long long>(nRows) * nColumnsInRow, t),
+    data_(nRows * nColumnsInRow, t),
     rows_(nRows)
 {
     for(label rowI=0;rowI<nRows;++rowI)
     {
-        rows_[rowI].start() = static_cast<long long>(rowI) * nColumnsInRow;
+        rows_[rowI].start() = rowI * nColumnsInRow;
         rows_[rowI].size() = nColumnsInRow;
     }
 }
@@ -158,11 +158,11 @@ void Foam::VRWGraph::setSizeAndColumnWidth
         ) << "This function should be used for empty graphs, only!"
             << exit(FatalError);
 
-    data_.setSize(static_cast<long long>(newNumRows) * rcWidth);
+    data_.setSize(newNumRows * rcWidth);
     data_ = FREEENTRY;
 
     rows_.setSize(newNumRows);
-    long long start(0);
+    label start(0);
 
     for(label i=0;i<newNumRows;++i)
     {
@@ -181,7 +181,7 @@ inline void Foam::VRWGraph::setSizeAndRowSize(const ListType& l)
     const label nRows = l.size();
     rows_.setSize(nRows);
 
-    long long start(0);
+    label start(0);
     for(label rowI=0;rowI<nRows;++rowI)
     {
         rows_[rowI].size() = l[rowI];
@@ -214,7 +214,7 @@ inline void Foam::VRWGraph::setRowSize(const label rowI, const label newSize)
             << " and " << rows_.size() << abort(FatalError);
     # endif
 
-    const long long start = rows_[rowI].start();
+    const label start = rows_[rowI].start();
     if( start == INVALIDROW )
     {
         if( newSize > 0 )
@@ -232,7 +232,7 @@ inline void Foam::VRWGraph::setRowSize(const label rowI, const label newSize)
 
         for(label i=rows_[rowI].size();i<newSize;++i)
         {
-            const long long j = start + i;
+            const label j = start + i;
             if(
                 (j >= data_.size()) ||
                 (data_[j] != FREEENTRY) ||
@@ -312,7 +312,7 @@ inline void Foam::VRWGraph::append(const label rowI, const label el)
     }
     else
     {
-        const long long oldStart = re.start();
+        const label oldStart = re.start();
         const label oldSize = re.size();
          ++re.size();
 
@@ -357,7 +357,7 @@ inline void Foam::VRWGraph::setRow
 )
 {
     this->setRowSize(rowI, l.size());
-    const long long start = rows_[rowI].start();
+    const label start = rows_[rowI].start();
     const label size = l.size();
     for(label elI=0;elI<size;++elI)
         data_[start+elI] = l[elI];
@@ -513,7 +513,7 @@ inline bool Foam::VRWGraph::contains
     const label e
 ) const
 {
-    const long long start = rows_[rowI].start();
+    const label start = rows_[rowI].start();
     if( start == INVALIDROW )
         return false;
     const label size = rows_[rowI].size();
@@ -531,7 +531,7 @@ inline Foam::label Foam::VRWGraph::containsAtPosition
     const label e
 ) const
 {
-    const long long start = rows_[rowI].start();
+    const label start = rows_[rowI].start();
     if( start == INVALIDROW )
         return -1;
 

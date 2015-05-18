@@ -156,6 +156,7 @@ void meshOctreeCreator::refineBoundary()
         if( Pstream::parRun() )
         {
             reduce(nMarked, sumOp<label>());
+
             if( nMarked )
             {
                 octreeModifier.distributeLeavesToProcessors();
