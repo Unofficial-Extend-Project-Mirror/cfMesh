@@ -22,18 +22,19 @@ License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    planeTranslation
+    planeScaling
 
 Description
-    Applies translation to points on the positive side of the plane.
+    Applies scaling to points on the positive side of the plane within
+    the scaling distance.
 
 SourceFiles
-    planeTranslation.C
+    planeScaling.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef planeTranslation_H
-#define planeTranslation_H
+#ifndef planeScaling_H
+#define planeScaling_H
 
 #include "coordinateModification.H"
 
@@ -43,10 +44,10 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class planeTranslation Declaration
+                    Class planeScaling Declaration
 \*---------------------------------------------------------------------------*/
 
-class planeTranslation
+class planeScaling
 :
     public coordinateModification
 {
@@ -57,8 +58,8 @@ class planeTranslation
         //- normal vector
         vector normal_;
 
-        //- translation distance
-        scalar translationDistance_;
+        //- scaling distance
+        scalar scalingDistance_;
 
         //- scaling factor
         scalar scalingFactor_;
@@ -72,35 +73,35 @@ public:
     // Constructors
 
         //- Null construct
-        planeTranslation();
+        planeScaling();
 
         //- Construct from name, origin, normal, translation distance and scale
-        planeTranslation
+        planeScaling
         (
             const word& name,
             const point& original,
             const vector& normal,
-            const scalar translationDistance,
+            const scalar scalingDistance,
             const scalar scalingFactor
         );
 
         //- Construct from dictionary
-        planeTranslation(const word& name, const dictionary& dict);
+        planeScaling(const word& name, const dictionary& dict);
 
         //- Construct and return a clone
         virtual autoPtr<coordinateModification> clone
         (
-            const planeTranslation& pt
+            const planeScaling& pt
         ) const
         {
             return autoPtr<coordinateModification>
             (
-                new planeTranslation
+                new planeScaling
                 (
                     pt.name(),
                     pt.origin_,
                     pt.normal_,
-                    pt.translationDistance_,
+                    pt.scalingDistance_,
                     pt.scalingFactor_
                 )
             );
@@ -147,7 +148,7 @@ public:
     // IOstream Operators
 
         Ostream& operator<<(Ostream&) const;
-        friend Ostream& operator<<(Ostream&, const planeTranslation&);
+        friend Ostream& operator<<(Ostream&, const planeScaling&);
 };
 
 
