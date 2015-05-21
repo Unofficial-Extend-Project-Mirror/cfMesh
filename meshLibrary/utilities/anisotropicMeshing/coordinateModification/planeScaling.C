@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "planeTranslation.H"
+#include "planeScaling.H"
 #include "addToRunTimeSelectionTable.H"
 #include "boundBox.H"
 #include "plane.H"
@@ -33,38 +33,38 @@ License
 namespace Foam
 {
 
-defineTypeNameAndDebug(planeTranslation, 0);
+defineTypeNameAndDebug(planeScaling, 0);
 addToRunTimeSelectionTable
 (
     coordinateModification,
-    planeTranslation,
+    planeScaling,
     dictionary
 );
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-planeTranslation::planeTranslation()
+planeScaling::planeScaling()
 :
     coordinateModification(),
     origin_(vector::zero),
     normal_(1, 1, 1),
-    translationDistance_(0.0),
+    scalingDistance_(0.0),
     scalingFactor_(1.0)
 {}
 
-planeTranslation::planeTranslation
+planeScaling::planeScaling
 (
     const word& name,
     const point& origin,
     const vector& normal,
-    const scalar translationDistance,
+    const scalar scalingDistance,
     const scalar scalingFactor
 )
 :
     coordinateModification(),
     origin_(origin),
     normal_(normal/mag(normal)),
-    translationDistance_(translationDistance),
+    scalingDistance_(scalingDistance),
     scalingFactor_(scalingFactor)
 {
     if( scalingFactor_ < SMALL )
@@ -78,7 +78,7 @@ planeTranslation::planeTranslation
     setName(name);
 }
 
-planeTranslation::planeTranslation
+planeScaling::planeScaling
 (
     const word& name,
     const dictionary& dict
@@ -91,59 +91,59 @@ planeTranslation::planeTranslation
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-point planeTranslation::origin() const
+point planeScaling::origin() const
 {
     return origin_;
 }
 
-void planeTranslation::translateAndModifyObject(const vector& disp)
+void planeScaling::translateAndModifyObject(const vector& disp)
 {
     origin_ += disp;
 
-    translationDistance_ /= scalingFactor_;
+    scalingDistance_ /= scalingFactor_;
 }
 
-vector planeTranslation::displacement(const point& p) const
+vector planeScaling::displacement(const point& p) const
 {
     const scalar dist = (p - origin_) & normal_;
 
     const vector translationVec =
-        normal_ * translationDistance_ * ((1.0/scalingFactor_) - 1.0);
+        normal_ * scalingDistance_ * ((1.0/scalingFactor_) - 1.0);
 
-    const scalar t = dist / translationDistance_;
+    const scalar t = dist / scalingDistance_;
 
     const scalar tBnd = Foam::max(0.0, Foam::min(1.0, t));
 
     return tBnd * translationVec;
 }
 
-vector planeTranslation::backwardDisplacement(const point& p) const
+vector planeScaling::backwardDisplacement(const point& p) const
 {
     const scalar dist = (p - origin_) & normal_;
 
     const vector translationVec =
-        normal_ * translationDistance_ * (scalingFactor_ - 1.0);
+        normal_ * scalingDistance_ * (scalingFactor_ - 1.0);
 
-    const scalar t = dist / translationDistance_;
+    const scalar t = dist / scalingDistance_;
 
     const scalar tBnd = Foam::max(0.0, Foam::min(1.0, t));
 
     return tBnd * translationVec;
 }
 
-bool planeTranslation::combiningPossible() const
+bool planeScaling::combiningPossible() const
 {
     return true;
 }
 
-void planeTranslation::boundingPlanes(PtrList<plane>& pl) const
+void planeScaling::boundingPlanes(PtrList<plane>& pl) const
 {
     if( Foam::mag(scalingFactor_ - 1.0) > VSMALL )
     {
         pl.setSize(2);
 
         pl.set(0, new plane(origin_, normal_));
-        pl.set(1, new plane(origin_ + translationDistance_ * normal_, normal_));
+        pl.set(1, new plane(origin_ + scalingDistance_ * normal_, normal_));
     }
     else
     {
@@ -153,7 +153,7 @@ void planeTranslation::boundingPlanes(PtrList<plane>& pl) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary planeTranslation::dict(bool ignoreType) const
+dictionary planeScaling::dict(bool ignoreType) const
 {
     dictionary dict;
 
@@ -161,22 +161,22 @@ dictionary planeTranslation::dict(bool ignoreType) const
 
     dict.add("origin", origin_);
     dict.add("normal", normal_);
-    dict.add("translationDistance", translationDistance_);
+    dict.add("scalingDistance", scalingDistance_);
     dict.add("scalingFactor", scalingFactor_);
 
     return dict;
 }
 
-void planeTranslation::write(Ostream& os) const
+void planeScaling::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " origin: " << origin_
         << " normal: " << normal_
-        << " translationDistance: " << translationDistance_
+        << " scalingDistance: " << scalingDistance_
         << " scalingFactor: " << scalingFactor_;
 }
 
-void planeTranslation::writeDict(Ostream& os, bool subDict) const
+void planeScaling::writeDict(Ostream& os, bool subDict) const
 {
     if( subDict )
     {
@@ -191,7 +191,7 @@ void planeTranslation::writeDict(Ostream& os, bool subDict) const
 
     os.writeKeyword("origin") << origin_ << token::END_STATEMENT << nl;
     os.writeKeyword("normal") << normal_ << token::END_STATEMENT << nl;
-    os.writeKeyword("translationDistamce") << translationDistance_
+    os.writeKeyword("scalingDistance") << scalingDistance_
                                            << token::END_STATEMENT << nl;
     os.writeKeyword("scalingFactor") << scalingFactor_
                                     << token::END_STATEMENT << nl;
@@ -202,7 +202,7 @@ void planeTranslation::writeDict(Ostream& os, bool subDict) const
     }
 }
 
-void planeTranslation::operator=(const dictionary& d)
+void planeScaling::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -221,7 +221,7 @@ void planeTranslation::operator=(const dictionary& d)
     {
         FatalErrorIn
         (
-            "void planeTranslation::operator=(const dictionary& d)"
+            "void planeScaling::operator=(const dictionary& d)"
         ) << "Entry origin is not specified!" << exit(FatalError);
 
         origin_ = vector::zero;
@@ -236,25 +236,25 @@ void planeTranslation::operator=(const dictionary& d)
     {
         FatalErrorIn
         (
-            "void planeTranslation::operator=(const dictionary& d)"
+            "void planeScaling::operator=(const dictionary& d)"
         ) << "Entry lengthX is not specified!" << exit(FatalError);
 
         normal_ = vector(1, 1, 1);
     }
 
     // specify translation distance
-    if( dict.found("translationDistance") )
+    if( dict.found("scalingDistance") )
     {
-        translationDistance_ = readScalar(dict.lookup("translationDistance"));
+        scalingDistance_ = readScalar(dict.lookup("scalingDistance"));
     }
     else
     {
         FatalErrorIn
         (
-            "void planeTranslation::operator=(const dictionary& d)"
-        ) << "Entry translationDistance is not specified!" << exit(FatalError);
+            "void planeScaling::operator=(const dictionary& d)"
+        ) << "Entry scalingDistance is not specified!" << exit(FatalError);
 
-        translationDistance_ = 0.0;
+        scalingDistance_ = 0.0;
     }
 
     // specify scaling factor
@@ -266,7 +266,7 @@ void planeTranslation::operator=(const dictionary& d)
     {
         WarningIn
         (
-            "void planeTranslation::operator=(const dictionary& d)"
+            "void planeScaling::operator=(const dictionary& d)"
         ) << "Entry scalingFactor is not specified!" << endl;
 
         scalingFactor_ = 1.0;
@@ -275,14 +275,14 @@ void planeTranslation::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& planeTranslation::operator<<(Ostream& os) const
+Ostream& planeScaling::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
     write(os);
     return os;
 }
 
-Ostream& operator<<(Ostream& os, const planeTranslation& pt)
+Ostream& operator<<(Ostream& os, const planeScaling& pt)
 {
     return pt.operator<<(os);
 }
