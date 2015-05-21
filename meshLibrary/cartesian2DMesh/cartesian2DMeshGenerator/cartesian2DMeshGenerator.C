@@ -220,12 +220,15 @@ void cartesian2DMeshGenerator::generateMesh()
             extractPatches();
         }
 
-        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        if( controller_.runCurrentStep("edgeExtraction") )
         {
             mapEdgesAndCorners();
 
             optimiseMeshSurface();
+        }
 
+        if( controller_.runCurrentStep("boundaryLayerGeneration") )
+        {
             generateBoundaryLayers();
         }
 
