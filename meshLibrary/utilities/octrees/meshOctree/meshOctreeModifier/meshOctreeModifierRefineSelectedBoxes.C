@@ -52,75 +52,60 @@ void meshOctreeModifier::markAdditionalLayers
     const label nLayers
 ) const
 {
-    const FixedList<meshOctreeCubeCoordinates, 26>& rp =
-        octree_.regularityPositions_;
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
     //- this is needed for parallel runs to reduce the bandwidth
     labelHashSet transferCoordinates;
 
-    FixedList<meshOctreeCube*, 26> neighbours;
+    DynList<label> neiLeaves;
 
     for(label i=1;i<=nLayers;++i)
     {
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
-        # ifdef USE_OMP
-        # pragma omp parallel for if( leaves.size() > 1000 ) \
-        private(neighbours) schedule(dynamic, 20)
-        # endif
+        transferCoordinates.clear();
+
+        labelLongList activeLeaves;
         forAll(leaves, leafI)
+            if( refineBox[leafI] == i )
+                activeLeaves.append(leafI);
+
+        # ifdef USE_OMP
+        # pragma omp parallel for private(neiLeaves) schedule(dynamic, 20)
+        # endif
+        forAll(activeLeaves, lI)
         {
-            if( refineBox[leafI] != i )
-                continue;
+            const label leafI = activeLeaves[lI];
 
-            const meshOctreeCube* oc = leaves[leafI];
+            const meshOctreeCubeCoordinates oc = leaves[leafI]->coordinates();
 
-            forAll(rp, posI)
+            octree_.findAllLeafNeighbours(oc, neiLeaves);
+
+            forAll(neiLeaves, posI)
             {
-                const meshOctreeCubeCoordinates cc
-                (
-                    oc->coordinates() + rp[posI]
-                );
+                const label neiLabel = neiLeaves[posI];
 
-                const label neiLabel = octree_.findLeafLabelForPosition(cc);
-
-                if( neiLabel > -1 )
+                if( neiLabel == meshOctreeCubeBasic::OTHERPROC )
                 {
-                    neighbours[posI] = leaves[neiLabel];
-                }
-                else if( neiLabel == -1 )
-                {
-                    neighbours[posI] = NULL;
-                }
-                else if( neiLabel == meshOctreeCubeBasic::OTHERPROC )
-                {
-                    neighbours[posI] = NULL;
-
                     # ifdef USE_OMP
                     # pragma omp critical
                     # endif
                     {
                         if( !transferCoordinates.found(leafI) )
                         {
-                            processorChecks.append(oc->coordinates());
+                            processorChecks.append(oc);
                             transferCoordinates.insert(leafI);
                         }
                     }
-                }
-            }
 
-            forAll(neighbours, neiI)
-            {
-                const meshOctreeCube* nei = neighbours[neiI];
-                if( !nei ) continue;
-                if( !nei->isLeaf() ) continue;
-                if( nei->level() > oc->level() ) continue;
-
-                if( !refineBox[nei->cubeLabel()] )
-                {
-                    refineBox[nei->cubeLabel()] = i+1;
+                    continue;
                 }
+
+                if( neiLabel < 0 )
+                    continue;
+
+                if( !refineBox[neiLabel] )
+                    refineBox[neiLabel] = i+1;
             }
         }
 
@@ -136,28 +121,19 @@ void meshOctreeModifier::markAdditionalLayers
             //- check consistency with received cube coordinates
             # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 1000 ) \
-            schedule(dynamic, 20)
+            schedule(dynamic, 20) private(neiLeaves)
             # endif
             forAll(receivedCoords, ccI)
             {
-                forAll(rp, posI)
+                octree_.findAllLeafNeighbours(receivedCoords[ccI], neiLeaves);
+
+                forAll(neiLeaves, posI)
                 {
-                    const meshOctreeCubeCoordinates cc
-                    (
-                        receivedCoords[ccI] + rp[posI]
-                    );
+                    if( neiLeaves[posI] < 0 )
+                        continue;
 
-                    const meshOctreeCube* nei =
-                        octree_.findCubeForPosition(cc);
-
-                    if( !nei ) continue;
-                    if( !nei->isLeaf() ) continue;
-                    if( nei->level() > cc.level() ) continue;
-
-                    if( !refineBox[nei->cubeLabel()] )
-                    {
-                        refineBox[nei->cubeLabel()] = i+1;
-                    }
+                    if( !refineBox[neiLeaves[posI]] )
+                        refineBox[neiLeaves[posI]] = i+1;
                 }
             }
         }
@@ -180,7 +156,7 @@ label meshOctreeModifier::markAdditionalLayers
     List<labelLongList> leavesForLayer(maxLevel+1);
     forAll(nLayers, leafI)
     {
-        if( nLayers[leafI] < 1 )
+        if( !refineBox[leafI] || (nLayers[leafI] < 1) )
             continue;
 
         leavesForLayer[nLayers[leafI]].append(leafI);
@@ -245,7 +221,7 @@ label meshOctreeModifier::markAdditionalLayers
                 continue;
 
             //- mark additional cells at this refinement level
-            markAdditionalLayers(markedBoxes, direction(layerI));
+            markAdditionalLayers(markedBoxes, layerI);
 
             //- update the main list
             # ifdef USE_OMP
@@ -267,6 +243,8 @@ label meshOctreeModifier::markAdditionalLayers
             }
         }
     }
+
+    reduce(nMarked, sumOp<label>());
 
     return nMarked;
 }

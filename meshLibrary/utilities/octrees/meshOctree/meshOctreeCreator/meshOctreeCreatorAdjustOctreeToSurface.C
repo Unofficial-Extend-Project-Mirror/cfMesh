@@ -136,6 +136,7 @@ void meshOctreeCreator::refineBoundary()
         reduce(useNLayers, maxOp<label>());
         if( useNLayers )
         {
+            Info << "1. Marking additional layers of boxes " << endl;
             nMarked +=
                 octreeModifier.markAdditionalLayers
                 (
@@ -503,22 +504,23 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
     const vector tol = SMALL * rootBox.span();
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
-    DynList<label> leavesInBox, intersectedLeaves;
+    DynList<label> leavesInBox;
 
+    bool changed;
     do
     {
         # ifdef OCTREETiming
         const scalar startIter = omp_get_wtime();
         # endif
 
-        nMarked = 0;
+        changed = false;
 
         labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
         List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
 
-        //- select boxes which need to be refined
+        //- select boxes that need to be refined
         forAll(surfaceMeshesPtr, surfI)
         {
             const triSurf& surf = surfaceMeshesPtr[surfI];
@@ -526,13 +528,13 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
             # ifdef USE_OMP
             # pragma omp parallel for \
-            reduction( + : nMarked) schedule(dynamic, 10) \
-            private(leavesInBox,intersectedLeaves)
+            reduction( + : nMarked) schedule(dynamic, 10) private(leavesInBox)
             # endif
             forAll(surf, triI)
             {
                 //- find the bounding box of the current triangle
                 const labelledTri& tri = surf[triI];
+
                 boundBox triBB(points[tri[0]], points[tri[0]]);
                 for(label pI=1;pI<3;++pI)
                 {
@@ -548,7 +550,6 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                 octree_.findLeavesContainedInBox(triBB, leavesInBox);
 
                 //- check which of the leaves are intersected by the triangle
-                intersectedLeaves.clear();
                 forAll(leavesInBox, i)
                 {
                     const label leafI = leavesInBox[i];
@@ -557,8 +558,6 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
                     if( oc.intersectsTriangleExact(surf, rootBox, triI) )
                     {
-                        intersectedLeaves.append(leafI);
-
                         if( oc.level() < refLevels[surfI] )
                         {
                             # ifdef DEBUGSearch
@@ -567,36 +566,32 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                                 << " for refinement" << endl;
                             # endif
 
-                            if( !refineCubes[leafI] )
-                                ++nMarked;
+                            changed = true;
                             refineCubes[leafI] = 1;
+
+                            if( refThickness[surfI] > VSMALL )
+                            {
+                                useNLayers = true;
+
+                                const scalar cs = oc.size(rootBox);
+                                const label numLayers =
+                                    ceil(refThickness[surfI] / cs);
+
+                                nLayers[leafI] =
+                                    Foam::max
+                                    (
+                                        nLayers[leafI],
+                                        Foam::max(numLayers, 1)
+                                    );
+
+                                targetRefLevel[leafI] =
+                                    Foam::max
+                                    (
+                                        targetRefLevel[leafI],
+                                        refLevels[surfI]
+                                    );
+                            }
                         }
-                    }
-                }
-
-                if( refThickness[surfI] > VSMALL )
-                {
-                    useNLayers = true;
-
-                    forAll(intersectedLeaves, i)
-                    {
-                        const label leafI = intersectedLeaves[i];
-                        const meshOctreeCube& oc = *leaves[leafI];
-                        const scalar cs = oc.size(rootBox);
-
-                        nLayers[leafI] =
-                            Foam::max
-                            (
-                                nLayers[leafI],
-                                max(ceil(refThickness[surfI]/cs), 1)
-                            );
-
-                        targetRefLevel[leafI] =
-                            Foam::max
-                            (
-                                targetRefLevel[leafI],
-                                refLevels[surfI]
-                            );
                     }
                 }
             }
@@ -605,15 +600,15 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
         //- mark additional boxes for refinement to achieve
         //- correct refinement distance
         reduce(useNLayers, maxOp<label>());
+
         if( useNLayers )
         {
-            nMarked +=
-                octreeModifier.markAdditionalLayers
-                (
-                    refineCubes,
-                    nLayers,
-                    targetRefLevel
-                );
+            octreeModifier.markAdditionalLayers
+            (
+                refineCubes,
+                nLayers,
+                targetRefLevel
+            );
         }
 
         //- refine boxes
@@ -626,8 +621,8 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
         if( octree_.neiProcs().size() != 0 )
         {
-            reduce(nMarked, sumOp<label>());
-            if( nMarked )
+            reduce(changed, maxOp<bool>());
+            if( changed )
             {
                 octreeModifier.distributeLeavesToProcessors();
 
@@ -645,7 +640,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                 # endif
             }
         }
-    } while( nMarked != 0 );
+    } while( changed );
 
     Info << "Finished refinement of boxes intersecting surface meshes" << endl;
 }
