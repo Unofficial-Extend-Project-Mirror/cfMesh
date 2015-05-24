@@ -211,6 +211,25 @@ public:
             DynList<const meshOctreeCube*, 256>&
         ) const;
 
+        //- find leaves within a sphere
+        void leavesInSphere
+        (
+            const boundBox& rootBox,
+            const point&,
+            const scalar,
+            DynList<label>&
+        ) const;
+
+        //- mark leaves within a sphere
+        void markLeavesInSphere
+        (
+            const boundBox& rootBox,
+            const point&,
+            const scalar,
+            labelList&,
+            bool&
+        ) const;
+
         //- find leaves for a given cube
         void findLeaves
         (
