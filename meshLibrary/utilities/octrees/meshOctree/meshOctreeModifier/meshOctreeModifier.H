@@ -160,8 +160,7 @@ public:
         void refineSelectedBoxesAndAdditionalLayers
         (
             labelList& refineBox,
-            const scalarList& refThickness,
-            const List<direction>& targetRefLevel
+            const scalarList& refThickness
         );
 
     // functions for parallel runs

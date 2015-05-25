@@ -499,8 +499,7 @@ void meshOctreeModifier::refineSelectedBoxes
 void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
 (
     labelList& refineBox,
-    const scalarList& refThickness,
-    const List<direction>& targetRefLevel
+    const scalarList& refThickness
 )
 {
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
@@ -510,32 +509,46 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
     lMap leavesMap;
 
     # ifdef DEBUGSearch
-    Info << "Marking additional layers " << endl;
+    Info << "Refining leaves and additional layers" << endl;
     # endif
 
-    LongList<meshOctreeCube*> refLeaves;
+    //- find the maximum refinement level of leaves marked for refinement
     direction maxLevel(0);
 
-    forAll(refineBox, leafI)
-        if( refineBox[leafI] )
+    # ifdef USE_OMP
+    # pragma omp parallel
+    {
+        direction localMax(0);
+
+        forAll(refineBox, leafI)
         {
-            //const scalar cs = leaves[leafI]->size(octree_.rootBox());
-            maxLevel = Foam::max(maxLevel, leaves[leafI]->level());
-            refLeaves.append(leaves[leafI]);
-            //refNLayers.append(Foam::max(ceil(refThickness[leafI]/cs), 1));
+            if( refineBox[leafI] )
+                localMax = Foam::max(localMax, leaves[leafI]->level());
         }
+
+        # pragma omp critical
+        maxLevel = Foam::max(maxLevel, localMax);
+    }
+    # else
+    forAll(refineBox, leafI)
+    {
+        if( refineBox[leafI] )
+            maxLevel = Foam::max(maxLevel, leaves[leafI]->level());
+    }
+    # endif
 
     label ml = maxLevel;
     reduce(ml, maxOp<label>());
     maxLevel = ml;
 
     //- sort leaves based on the current level
-    Info << "Max level " << ml << endl;
-
     List<labelLongList> leavesForLevel(maxLevel+1);
-    forAll(refLeaves, i)
+    forAll(refineBox, leafI)
     {
-        leavesForLevel[refLeaves[i]->level()].append(refLeaves[i]->cubeLabel());
+        if( !refineBox[leafI] )
+            continue;
+
+        leavesForLevel[leaves[leafI]->level()].append(leafI);
     }
 
     //- find leaves with the same number of additional layers
@@ -548,6 +561,27 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
 
         labelLongList nLayersForActive(activeLeaves.size());
         label maxNLayers(0);
+        # ifdef USE_OMP
+        # pragma omp parallel
+        {
+            label localMaxNLayers(0);
+
+            forAll(activeLeaves, i)
+            {
+                const label leafI = activeLeaves[i];
+
+                const scalar cs = leaves[leafI]->size(octree_.rootBox());
+
+                nLayersForActive[i] = Foam::max(ceil(refThickness[leafI]/cs), 1);
+
+                localMaxNLayers =
+                    Foam::max(localMaxNLayers, nLayersForActive[i]);
+            }
+
+            # pragma omp critical
+            maxNLayers = Foam::max(maxNLayers, localMaxNLayers);
+        }
+        # else
         forAll(activeLeaves, i)
         {
             const label leafI = activeLeaves[i];
@@ -558,6 +592,7 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
 
             maxNLayers = Foam::max(maxNLayers, nLayersForActive[i]);
         }
+        # endif
 
         for(label layerI=0;layerI<=maxNLayers;++layerI)
         {
@@ -584,9 +619,11 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
         if( returnReduce(selectedLeaves.size(), sumOp<label>()) == 0 )
             continue;
 
+        # ifdef DEBUGSearch
         Info << "Target level " << label(levelI) << endl;
         Info << "Target num layer " << nLayers << endl;
         Info << "Num selected leaves " << selectedLeaves.size() << endl;
+        # endif
 
         label nMarked;
         do
@@ -603,8 +640,6 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
             {
                 if( !selectedLeaves[i]->isLeaf() )
                     continue;
-                //if( selectedLeaves[i]->level() > levelI )
-                //    continue;
 
                 markedLeaves[selectedLeaves[i]->cubeLabel()] = 1;
                 ++nMarked;
@@ -635,11 +670,23 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
             # endif
             forAll(activeLeaves, i)
             {
-                if( leaves[activeLeaves[i]]->level() < levelI )
+                const direction level = leaves[activeLeaves[i]]->level();
+                if( level < levelI )
+                {
+                    //- found a neighbour at a lower refinement level
                     hasLowerLevel = true;
+                }
+                else if( level > levelI )
+                {
+                    //- do not allow refinement of leaves at higher
+                    //- refinement level
+                    markedLeaves[activeLeaves[i]] = 0;
+                }
             }
 
-            //- deselect leaves at larger levels
+            reduce(hasLowerLevel, maxOp<bool>());
+
+            //- deselect leaves at the current level
             if( hasLowerLevel )
             {
                 # ifdef USE_OMP
@@ -653,12 +700,9 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
             }
 
             //- refine selected octree boxes
-            Info << "Refining leaves" << endl;
             refineSelectedBoxes(markedLeaves);
         } while( nMarked );
     }
-
-    Info << "Finished refining leaves" << endl;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

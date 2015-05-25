@@ -73,7 +73,6 @@ void meshOctreeCreator::refineBoundary()
 
         labelList refineCubes(leaves.size(), 0);
         scalarList rThickness(leaves.size(), 0.0);
-        List<direction> targetLevel(leaves.size(), direction(0));
         bool useNLayers(false);
 
         //- select boxes which need to be refined
@@ -114,9 +113,6 @@ void meshOctreeCreator::refineBoundary()
                                 rThickness[leafI],
                                 surfRefThickness_[triI]
                             );
-
-                        targetLevel[leafI] =
-                            Foam::max(targetLevel[leafI], surfRefLevel_[triI]);
                     }
                 }
 
@@ -137,8 +133,7 @@ void meshOctreeCreator::refineBoundary()
             octreeModifier.refineSelectedBoxesAndAdditionalLayers
             (
                 refineCubes,
-                rThickness,
-                targetLevel
+                rThickness
             );
         }
         else if( changed )
@@ -296,7 +291,6 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
 
         labelList refineCubes(leaves.size(), 0);
         scalarList rThickness(leaves.size(), 0.0);
-        List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
 
         //- select boxes which need to be refined
@@ -339,8 +333,6 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
                         rThickness[leafI] =
                             Foam::max(rThickness[leafI], refThickness[oI]);
 
-                        targetRefLevel[leafI] =
-                            Foam::max(targetRefLevel[leafI], refLevels[oI]);
                         useNLayers = true;
                     }
                 }
@@ -362,8 +354,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
             octreeModifier.refineSelectedBoxesAndAdditionalLayers
             (
                 refineCubes,
-                rThickness,
-                targetRefLevel
+                rThickness
             );
         }
         else if( changed )
@@ -509,7 +500,6 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
         labelList refineCubes(leaves.size(), 0);
         labelList nLayers(leaves.size(), 0);
-        List<direction> targetRefLevel(leaves.size(), direction(0));
         scalarField rThickness(leaves.size(), 0.0);
         bool useNLayers(false);
 
@@ -582,14 +572,9 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
                                     Foam::max(numLayers, 1)
                                 );
 
-                            rThickness[leafI] = max(rThickness[leafI], sThickness);
+                            rThickness[leafI] =
+                                max(rThickness[leafI], sThickness);
 
-                            targetRefLevel[leafI] =
-                                Foam::max
-                                (
-                                    targetRefLevel[leafI],
-                                    surfLevel
-                                );
                         }
                     }
                 }
@@ -606,12 +591,8 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
             octreeModifier.refineSelectedBoxesAndAdditionalLayers
             (
                 refineCubes,
-                rThickness,
-                targetRefLevel
+                rThickness
             );
-
-            if( nMarked != 0 )
-                changed = true;
         }
         else if( changed )
         {
@@ -750,7 +731,6 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 
         labelList refineCubes(leaves.size(), 0);
         scalarList rThickness(leaves.size(), 0.0);
-        List<direction> targetRefLevel(leaves.size(), direction(0));
         bool useNLayers(false);
 
         //- select boxes which need to be refined
@@ -817,13 +797,6 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 
                         rThickness[leafI] =
                             Foam::max(rThickness[leafI], refThickness[emI]);
-
-                        targetRefLevel[leafI] =
-                            Foam::max
-                            (
-                                targetRefLevel[leafI],
-                                refLevels[emI]
-                            );
                     }
                 }
             }
@@ -838,8 +811,7 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
             octreeModifier.refineSelectedBoxesAndAdditionalLayers
             (
                 refineCubes,
-                rThickness,
-                targetRefLevel
+                rThickness
             );
         }
         else if( changed )
