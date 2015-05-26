@@ -173,7 +173,7 @@ void triSurfaceRemoveFacets::removeFacets()
         bool foundTriangle(false);
         forAllRow(edgeFacets, eI, efI)
         {
-            if( newTriangleLabel[edgeFacets(eI, efI)] >= 0 )
+            if( newFacetLabel[edgeFacets(eI, efI)] >= 0 )
             {
                 foundTriangle = true;
                 break;
