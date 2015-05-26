@@ -131,6 +131,13 @@ public:
         ) const;
 
         //- mark additional layers around the leaves selected for refinement
+        void markAdditionalLayersOfFaceNeighbours
+        (
+            labelList& refineBox,
+            const label nLayers = 1
+        ) const;
+
+        //- mark additional layers around the leaves selected for refinement
         //- given on a box-by-box basis
         //- returns the number of boxes selected for refinement
         label markAdditionalLayers
@@ -147,6 +154,13 @@ public:
         (
             labelList& refineBox,
             const bool hexRefinement = false
+        );
+
+        //- refine selected boxes and the boxes within the given range
+        void refineSelectedBoxesAndAdditionalLayers
+        (
+            labelList& refineBox,
+            const scalarList& refThickness
         );
 
     // functions for parallel runs

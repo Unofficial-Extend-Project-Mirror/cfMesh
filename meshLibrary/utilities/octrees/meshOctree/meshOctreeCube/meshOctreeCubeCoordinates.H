@@ -206,6 +206,9 @@ public:
         inline bool operator<=(const meshOctreeCubeCoordinates&) const;
         inline bool operator>=(const meshOctreeCubeCoordinates&) const;
 
+        inline bool operator<(const meshOctreeCubeCoordinates&) const;
+        inline bool operator>(const meshOctreeCubeCoordinates&) const;
+
         friend inline Istream& operator>>
         (
             Istream&,
