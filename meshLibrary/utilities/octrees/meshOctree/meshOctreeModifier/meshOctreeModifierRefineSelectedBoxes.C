@@ -594,6 +594,9 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
         }
         # endif
 
+        //- find the maximum number of layers
+        reduce(maxNLayers, maxOp<label>());
+
         for(label layerI=0;layerI<=maxNLayers;++layerI)
         {
             mapKey key(levelI, layerI);
