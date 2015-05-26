@@ -46,8 +46,8 @@ void triSurfaceCopyParts::markFacetsForCopying
 
     const geometricSurfacePatchList& patches = surf_.patches();
 
-    //- mark patches which will be removed
-    boolList removePatch(patches.size(), false);
+    //- mark patches which will be copied
+    boolList copyPatch(patches.size(), false);
 
     forAll(patches, patchI)
     {
@@ -57,7 +57,7 @@ void triSurfaceCopyParts::markFacetsForCopying
         {
             if( parts[partI] == name )
             {
-                removePatch[patchI] = true;
+                copyPatch[patchI] = true;
                 break;
             }
         }
@@ -66,7 +66,7 @@ void triSurfaceCopyParts::markFacetsForCopying
     //- select facets affected by the deletion of a patch
     forAll(surf_, triI)
     {
-        if( removePatch[surf_[triI].region()] )
+        if( copyPatch[surf_[triI].region()] )
             copyFacets[triI] = true;
     }
 
@@ -110,13 +110,14 @@ void triSurfaceCopyParts::copySurfaceMesh
 
     //- create the modifier and delete data if there is any
     triSurfModifier sm(s);
-    LongList<labelledTri>& newTriangles = sm.facetsAccess();
-    newTriangles.clear();
+    sm.facetsAccess().clear();
     sm.featureEdgesAccess().clear();
-    sm.patchesAccess().setSize(1);
-    sm.patchesAccess()[0] = geometricSurfacePatch("patch0", "patch", 0);
+    sm.patchesAccess().setSize(surf_.patches().size());
+    forAll(surf_.patches(), patchI)
+        sm.patchesAccess()[patchI] = surf_.patches()[patchI];
 
     //- copy selected patches
+    labelLongList newTriangleLabel(surf_.size(), -1);
     forAll(copyFacets, triI)
     {
         if( !copyFacets[triI] )
@@ -125,7 +126,7 @@ void triSurfaceCopyParts::copySurfaceMesh
         const labelledTri& tri = surf_[triI];
 
         labelledTri newTri;
-        newTri.region() = 0;
+        newTri.region() = tri.region();
 
         forAll(tri, pI)
         {
@@ -138,10 +139,11 @@ void triSurfaceCopyParts::copySurfaceMesh
             newTri[pI] = newPointLabel[tri[pI]];
         }
 
-        newTriangles.append(newTri);
+        newTriangleLabel[triI] = s.size();
+        s.appendTriangle(newTri);
     }
 
-    Info << "Copied triangles " << newTriangles.size() << endl;
+    Info << "Copied triangles " << s.size() << endl;
     Info << "Number of vertices " << nPoints << endl;
 
     //- copy vertices
@@ -154,6 +156,115 @@ void triSurfaceCopyParts::copySurfaceMesh
             continue;
 
         newPts[newPointLabel[i]] = pts[i];
+    }
+
+    //- copy point subsets
+    DynList<label> subsetIds;
+    surf_.pointSubsetIndices(subsetIds);
+    forAll(subsetIds, subsetI)
+    {
+        const label origId = subsetIds[subsetI];
+        const word sName = surf_.pointSubsetName(origId);
+
+        labelLongList pointsInSubset;
+        surf_.pointsInSubset(origId, pointsInSubset);
+
+        const label newId = s.addPointSubset(sName);
+        forAll(pointsInSubset, i)
+        {
+            const label newPointI = newPointLabel[pointsInSubset[i]];
+
+            if( newPointI < 0 )
+                continue;
+
+            s.addPointToSubset(newId, newPointI);
+        }
+    }
+
+    //- copy facet subsets
+    surf_.facetSubsetIndices(subsetIds);
+    forAll(subsetIds, subsetI)
+    {
+        const label origId = subsetIds[subsetI];
+        const word sName = surf_.facetSubsetName(origId);
+
+        labelLongList trianglesInSubset;
+        surf_.facetsInSubset(origId, trianglesInSubset);
+
+        const label newId = s.addFacetSubset(sName);
+        forAll(trianglesInSubset, i)
+        {
+            const label newTriI = newTriangleLabel[trianglesInSubset[i]];
+
+            if( newTriI < 0 )
+                continue;
+
+            s.addFacetToSubset(newId, newTriI);
+        }
+    }
+
+    //- copy feature edges
+    labelLongList newEdgeLabel(surf_.nFeatureEdges(), -1);
+    const VRWGraph& pointEdges = surf_.pointEdges();
+    const edgeLongList& edges = surf_.edges();
+    const VRWGraph& edgeFacets = surf_.edgeFacets();
+    forAll(newEdgeLabel, edgeI)
+    {
+        const edge& e = surf_.featureEdges()[edgeI];
+        label eI(-1);
+        forAllRow(pointEdges, e.start(), peI)
+        {
+            const label eJ = pointEdges(e.start(), peI);
+            if( edges[eJ] == e )
+            {
+                eI = eJ;
+                break;
+            }
+        }
+
+        if( newPointLabel[e.start()] < 0 )
+            continue;
+        if( newPointLabel[e.end()] < 0 )
+            continue;
+        bool foundTriangle(false);
+        forAllRow(edgeFacets, eI, efI)
+        {
+            if( newTriangleLabel[edgeFacets(eI, efI)] >= 0 )
+            {
+                foundTriangle = true;
+                break;
+            }
+        }
+        if( !foundTriangle )
+            continue;
+
+        newEdgeLabel[edgeI] = sm.featureEdgesAccess().size();
+        sm.featureEdgesAccess().append
+        (
+            edge(newPointLabel[e.start()], newPointLabel[e.end()])
+        );
+    }
+
+    //- copy subsets of feature edges
+    surf_.edgeSubsetIndices(subsetIds);
+    forAll(subsetIds, subsetI)
+    {
+        const label origId = subsetIds[subsetI];
+        const word sName = surf_.edgeSubsetName(origId);
+
+        labelLongList edgesInSubset;
+        surf_.edgesInSubset(origId, edgesInSubset);
+
+        const label newId = s.addEdgeSubset(sName);
+        forAll(edgesInSubset, i)
+        {
+            const label newEdgeI = newEdgeLabel[edgesInSubset[i]];
+
+            if( newEdgeI < 0 )
+                continue;
+
+            s.addEdgeToSubset(newId, newEdgeI);
+        }
     }
 
     Info << "Finished copying surface parts" << endl;
