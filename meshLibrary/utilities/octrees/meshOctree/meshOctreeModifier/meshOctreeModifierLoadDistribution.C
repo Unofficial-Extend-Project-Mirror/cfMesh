@@ -205,11 +205,36 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
             if( sendToProcesssors[procI][neiI] == Pstream::myProcNo() )
                 receiveFrom.insert(procI);
 
-    //- send the coordinates of the boxes to other processors
+    //- receive coordinates from processors with lower labels
+    LongList<meshOctreeCubeBasic> migratedCubes;
+    forAllConstIter(labelHashSet, receiveFrom, iter)
+    {
+        if( iter.key() >= Pstream::myProcNo() )
+            continue;
+
+        List<meshOctreeCubeBasic> mc;
+
+        IPstream fromOtherProc(Pstream::blocking, iter.key());
+
+        fromOtherProc >> mc;
+
+        label currSize = migratedCubes.size();
+        migratedCubes.setSize(currSize+mc.size());
+        forAll(mc, mcI)
+        {
+            migratedCubes[currSize] = mc[mcI];
+            ++currSize;
+        }
+    }
+
+    //- send the coordinates of the boxes to processors with greater label
     const labelList& sendToProcs = sendToProcesssors[Pstream::myProcNo()];
     forAll(sendToProcs, i)
     {
         const label procI = sendToProcs[i];
+
+        if( procI <= Pstream::myProcNo() )
+            continue;
 
         List<meshOctreeCubeBasic> sendCoordinates
         (
@@ -237,10 +262,12 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
         toOtherProc << sendCoordinates;
     }
 
-    //- receive data sent from other processors
-    LongList<meshOctreeCubeBasic> migratedCubes;
+    //- receive data sent from processors with greater label
     forAllConstIter(labelHashSet, receiveFrom, iter)
     {
+        if( iter.key() <= Pstream::myProcNo() )
+            continue;
+
         List<meshOctreeCubeBasic> mc;
 
         IPstream fromOtherProc(Pstream::blocking, iter.key());
@@ -254,6 +281,40 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
             migratedCubes[currSize] = mc[mcI];
             ++currSize;
         }
+    }
+
+    //- send the coordinates of the boxes to processors with lower label
+    forAll(sendToProcs, i)
+    {
+        const label procI = sendToProcs[i];
+
+        if( procI >= Pstream::myProcNo() )
+            continue;
+
+        List<meshOctreeCubeBasic> sendCoordinates
+        (
+            leavesToSend[procI].size()
+        );
+
+        forAll(leavesToSend[procI], lI)
+        {
+            const meshOctreeCube& oc = *leaves[leavesToSend[procI][lI]];
+            sendCoordinates[lI] =
+                meshOctreeCubeBasic
+                (
+                    oc.coordinates(),
+                    oc.cubeType()
+                );
+        }
+
+        OPstream toOtherProc
+        (
+            Pstream::blocking,
+            procI,
+            sendCoordinates.byteSize()
+        );
+
+        toOtherProc << sendCoordinates;
     }
 
     # ifdef OCTREETiming
