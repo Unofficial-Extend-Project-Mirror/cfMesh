@@ -151,18 +151,18 @@ void tetMeshGenerator::optimiseFinalMesh()
             readBool(meshDict_.lookup("enforceGeometryConstraints"));
     }
 
-    meshOptimizer optimizer(mesh_);
+    meshOptimizer optimizer(mesh_, octreePtr_);
     if( enforceConstraints )
         optimizer.enforceConstraints();
 
     optimizer.optimizeSurface(*octreePtr_);
 
-    deleteDemandDrivenData(octreePtr_);
-
     optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();
     optimizer.optimizeBoundaryLayer(false);
-    optimizer.optimizeMeshFV();
+    optimizer.untangleMeshFV();
+
+    deleteDemandDrivenData(octreePtr_);
 
     mesh_.clearAddressingData();
 
@@ -214,7 +214,12 @@ void tetMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer(mesh_).untangleBoundaryLayer();
+        labelLongList pointsInLayer;
+        refLayers.pointsInBndLayer(pointsInLayer);
+
+        meshOptimizer opt(mesh_);
+        opt.lockPoints(pointsInLayer);
+        opt.untangleBoundaryLayer();
     }
 }
 
