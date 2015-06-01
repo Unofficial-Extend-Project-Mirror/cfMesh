@@ -372,6 +372,36 @@ void refineBoundaryLayers::refineLayers()
     Info << "Finished refining boundary layers" << endl;
 }
 
+void refineBoundaryLayers::pointsInBndLayer(labelLongList& layerPoints)
+{
+    layerPoints.clear();
+
+    boolList pointInLayer(mesh_.points().size(), false);
+
+    forAll(newVerticesForSplitEdge_, seI)
+    {
+        forAllRow(newVerticesForSplitEdge_, seI, i)
+            pointInLayer[newVerticesForSplitEdge_(seI, i)] = true;
+    }
+
+    forAll(pointInLayer, pointI)
+        if( pointInLayer[pointI] )
+            layerPoints.append(pointI);
+}
+
+void refineBoundaryLayers::pointsInBndLayer(const word subsetName)
+{
+    label sId = mesh_.pointSubsetIndex(subsetName);
+    if( sId < 0 )
+        sId = mesh_.addPointSubset(subsetName);
+
+    forAll(newVerticesForSplitEdge_, seI)
+    {
+        forAllRow(newVerticesForSplitEdge_, seI, i)
+            mesh_.addPointToSubset(sId, newVerticesForSplitEdge_(seI, i));
+    }
+}
+
 void refineBoundaryLayers::readSettings
 (
     const dictionary& meshDict,

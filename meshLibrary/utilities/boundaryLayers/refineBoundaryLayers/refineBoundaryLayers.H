@@ -401,6 +401,13 @@ public:
         //- performs refinement based on the given settings
         void refineLayers();
 
+    // Post information
+        //- provide the list of points in the boundary layer
+        void pointsInBndLayer(labelLongList&);
+
+        //- create a subset containing points in the boundary layer
+        void pointsInBndLayer(const word subsetName="pointsInBndLayer");
+
     // Static member functions
         //- read the settings from dictionary
         static void readSettings(const dictionary&, refineBoundaryLayers&);
