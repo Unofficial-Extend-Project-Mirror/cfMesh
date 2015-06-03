@@ -109,10 +109,7 @@ private:
         direction globalRefLevel_;
 
         //- this list contains ref level for each surface triangle
-        List<direction> surfRefLevel_;
-
-        //- refinement thickness for each surface triangle
-        scalarList surfRefThickness_;
+        List<DynList<std::pair<direction, scalar> > > surfRefLevel_;
 
         //- set the boundBox such that maxCellSize is achieved
         void setRootCubeSizeAndRefParameters();
