@@ -169,6 +169,9 @@ void triSurfaceRemoveFacets::removeFacets()
             }
         }
 
+        if( eI < 0 )
+            continue;
+
         //- check if the edge is attached to at least one triangle
         bool foundTriangle(false);
         forAllRow(edgeFacets, eI, efI)
