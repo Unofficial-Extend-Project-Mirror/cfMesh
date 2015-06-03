@@ -542,6 +542,23 @@ bool meshSurfaceOptimizer::untangleSurface
 
     deleteDemandDrivenData(mapperPtr);
 
+    if( nInvertedTria != 0 )
+    {
+        //- the procedure has given up without success
+        //- there exist some remaining inverted faces in the mesh
+        polyMeshGen& mesh =
+            const_cast<polyMeshGen&>(surfaceEngine_.mesh());
+
+        label subsetId = mesh.pointSubsetIndex(badPointsSubsetName_);
+        if( subsetId >= 0 )
+            mesh.removePointSubset(subsetId);
+        subsetId = mesh.addPointSubset(badPointsSubsetName_);
+
+        forAll(smoothVertex, bpI)
+            if( smoothVertex[bpI] )
+                mesh.addPointToSubset(subsetId, bPoints[bpI]);
+    }
+
     Info << "Finished untangling the surface of the volume mesh" << endl;
 
     return changed;

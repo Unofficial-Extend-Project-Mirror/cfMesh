@@ -83,7 +83,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
     octreePtr_(NULL),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
-    badPointsSubsetName_()
+    badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
@@ -97,7 +97,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
     octreePtr_(NULL),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
-    badPointsSubsetName_()
+    badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
@@ -115,7 +115,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     octreePtr_(&octree),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
-    badPointsSubsetName_()
+    badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
@@ -133,7 +133,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     octreePtr_(&octree),
     triMeshPtr_(NULL),
     enforceConstraints_(false),
-    badPointsSubsetName_()
+    badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }

@@ -285,6 +285,17 @@ void meshOptimizer::untangleMeshFV
 
     } while( nBadFaces );
 
+    if( nBadFaces != 0 )
+    {
+        label subsetId = mesh_.faceSubsetIndex("badFaces");
+        if( subsetId >= 0 )
+            mesh_.removeFaceSubset(subsetId);
+        subsetId = mesh_.addFaceSubset("badFaces");
+
+        forAllConstIter(labelHashSet, badFaces, it)
+            mesh_.addFaceToSubset(subsetId, it.key());
+    }
+
     Info << "Finished untangling the mesh" << endl;
 }
 
