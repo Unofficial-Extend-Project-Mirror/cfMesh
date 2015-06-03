@@ -94,31 +94,49 @@ void meshOctreeCreator::refineBoundary()
                     oc.slotPtr()->containedTriangles_;
 
                 bool refine(false);
+                direction minRequestedLevel(255);
+                scalar maxThicknessForLevel(0.0);
                 forAllRow(containedTriangles, elRowI, tI)
                 {
                     const label triI = containedTriangles(elRowI, tI);
+                    DynList<std::pair<direction, scalar> >& refRequests =
+                        surfRefLevel_[triI];
 
-                    if( surfRefLevel_[triI] > oc.level() )
+                    forAllReverse(refRequests, i)
                     {
-                        refine = true;
-                    }
+                        const std::pair<direction, scalar>& rp = refRequests[i];
+                        if( rp.first <= oc.level() )
+                        {
+                            continue;
+                        }
 
-                    if( surfRefThickness_[triI] > VSMALL )
-                    {
-                        useNLayers = true;
-
-                        rThickness[leafI] =
-                            Foam::max
-                            (
-                                rThickness[leafI],
-                                surfRefThickness_[triI]
-                            );
+                        if( rp.first < minRequestedLevel )
+                        {
+                            refine = true;
+                            minRequestedLevel = rp.first;
+                            maxThicknessForLevel = rp.second;
+                        }
+                        else if
+                        (
+                            (rp.first == minRequestedLevel) &&
+                            (rp.second > maxThicknessForLevel)
+                        )
+                        {
+                            maxThicknessForLevel = rp.second;
+                        }
                     }
                 }
 
                 if( refine )
                 {
                     refineCubes[leafI] = 1;
+
+                    if( maxThicknessForLevel > VSMALL )
+                    {
+                        rThickness[leafI] = maxThicknessForLevel;
+                        useNLayers = true;
+                    }
+
                     changed = true;
                 }
             }

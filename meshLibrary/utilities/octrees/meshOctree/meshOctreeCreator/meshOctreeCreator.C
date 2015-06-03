@@ -47,8 +47,7 @@ meshOctreeCreator::meshOctreeCreator(meshOctree& mo)
     meshDictPtr_(NULL),
     hexRefinement_(false),
     globalRefLevel_(0),
-    surfRefLevel_(mo.surface().size(), direction(0)),
-    surfRefThickness_(mo.surface().size(), 0.0)
+    surfRefLevel_(mo.surface().size())
 {}
 
 meshOctreeCreator::meshOctreeCreator
@@ -62,8 +61,7 @@ meshOctreeCreator::meshOctreeCreator
     meshDictPtr_(&dict),
     hexRefinement_(false),
     globalRefLevel_(0),
-    surfRefLevel_(mo.surface().size(), direction(0)),
-    surfRefThickness_(mo.surface().size(), 0.0)
+    surfRefLevel_(mo.surface().size())
 {}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
