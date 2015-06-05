@@ -149,7 +149,7 @@ void polyMeshGenModifier::renumberMesh()
         const cell& c = newCells[cellI];
 
         //- Record the neighbour cell
-        labelList neiCells(c.size(), -1);
+        DynList<label, 24> neiCells(c.size(), -1);
 
         label nNeighbours(0);
 
