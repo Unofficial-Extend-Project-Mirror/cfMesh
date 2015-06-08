@@ -37,9 +37,9 @@ Description
 
 namespace Foam
 {
-    
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 void partTriMesh::createPointsAndTrias
 (
     const List<direction>& useFace
@@ -52,7 +52,7 @@ void partTriMesh::createPointsAndTrias
     const labelList& bPoints = meshSurface.boundaryPoints();
     const labelList& bp = meshSurface.bp();
     const faceList::subList& bFaces = meshSurface.boundaryFaces();
-    
+
     meshSurfacePointLabelInTriMesh_.setSize(bPoints.size());
     meshSurfacePointLabelInTriMesh_ = -1;
     labelList nodeLabelForFace(bFaces.size(), -1);
@@ -82,6 +82,7 @@ void partTriMesh::createPointsAndTrias
             {
                 forAll(bf, eI)
                 {
+                    //- add a triangle connected to face centre
                     labelledTri tri
                     (
                         meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
@@ -91,6 +92,17 @@ void partTriMesh::createPointsAndTrias
                     );
 
                     surf_.appendTriangle(tri);
+
+                    //- add a triangle for shape
+                    labelledTri secondTri
+                    (
+                        meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.nextLabel(eI)]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.prevLabel(eI)]],
+                        facePatch[bfI]
+                    );
+
+                    surf_.appendTriangle(secondTri);
                 }
             }
             else
@@ -105,6 +117,20 @@ void partTriMesh::createPointsAndTrias
                 );
 
                 surf_.appendTriangle(tri);
+
+                //- add a triangle for shape
+                forAll(bf, eI)
+                {
+                    labelledTri secondTri
+                    (
+                        meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.nextLabel(eI)]],
+                        meshSurfacePointLabelInTriMesh_[bp[bf.prevLabel(eI)]],
+                        facePatch[bfI]
+                    );
+
+                    surf_.appendTriangle(secondTri);
+                }
             }
         }
     }
@@ -128,7 +154,7 @@ void partTriMesh::createPointsAndTrias
             pts[npI] = points[bPoints[bpI]];
             pointType_[npI] |= SMOOTH;
         }
-    
+
     forAll(nodeLabelForFace, bfI)
         if( nodeLabelForFace[bfI] != -1 )
         {
@@ -148,7 +174,7 @@ void partTriMesh::createPointsAndTrias
         if( pI != -1 )
             pointType_[pI] |= FEATUREEDGE;
     }
-    
+
     //- create addressing for parallel runs
     if( Pstream::parRun() )
     {
@@ -157,9 +183,12 @@ void partTriMesh::createPointsAndTrias
             meshSurfacePointLabelInTriMesh_,
             nodeLabelForFace
         );
-        
+
         createBufferLayers();
     }
+
+    //- calculate point facets addressing
+    surf_.pointFacets();
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

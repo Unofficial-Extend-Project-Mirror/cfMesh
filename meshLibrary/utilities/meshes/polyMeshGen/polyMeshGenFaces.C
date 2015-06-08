@@ -441,10 +441,10 @@ void polyMeshGenFaces::read()
         IOobject* obj = allSets.lookup(setNames[setI]);
 
         faceSet fSet(*obj);
-        labelList content = fSet.toc();
+        const labelList content = fSet.toc();
         const label id = addFaceSubset(setNames[setI]);
-        forAll(content, i)
-            addFaceToSubset(id, content[i]);
+
+        faceSubsets_[id].updateSubset(content);
     }
 }
 

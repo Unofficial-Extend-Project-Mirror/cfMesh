@@ -415,6 +415,7 @@ void polyMeshGenCells::read()
 {
     polyMeshGenFaces::read();
 
+    Info << "Starting creating cells" << endl;
     //- count the number of cells and create the cells
     label nCells(0);
     const labelList& own = this->owner();
@@ -463,10 +464,11 @@ void polyMeshGenCells::read()
         IOobject* obj = allSets.lookup(setNames[setI]);
 
         cellSet cSet(*obj);
-        labelList content = cSet.toc();
+
+        const labelList content = cSet.toc();
         const label id = addCellSubset(setNames[setI]);
-        forAll(content, i)
-            addCellToSubset(id, content[i]);
+
+        cellSubsets_[id].updateSubset(content);
     }
 }
 

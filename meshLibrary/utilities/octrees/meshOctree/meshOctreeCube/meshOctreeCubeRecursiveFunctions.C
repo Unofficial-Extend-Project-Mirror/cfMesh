@@ -85,6 +85,102 @@ void meshOctreeCube::leavesInBox
     }
 }
 
+void meshOctreeCube::leavesInSphere
+(
+    const boundBox& rootBox,
+    const point& c,
+    const scalar r,
+    DynList<label>& containedLeaves
+) const
+{
+    const point cubeCentre = this->centre(rootBox);
+    const scalar size = 1.732 * this->size(rootBox);
+
+    if( magSqr(cubeCentre - c) < sqr(r+size) )
+    {
+        if( this->isLeaf() )
+        {
+            containedLeaves.append(this->cubeLabel());
+        }
+        else
+        {
+            for(label scI=0;scI<8;++scI)
+            {
+                meshOctreeCube* scPtr = subCubesPtr_[scI];
+
+                if( scPtr )
+                {
+                    scPtr->leavesInSphere
+                    (
+                        rootBox,
+                        c,
+                        r,
+                        containedLeaves
+                    );
+                }
+                else if( Pstream::parRun() )
+                {
+                    meshOctreeCubeCoordinates cc = refineForPosition(scI);
+                    const point sc = cc.centre(rootBox);
+
+                    if( magSqr(sc - c) < sqr(r+size) )
+                        containedLeaves.append(meshOctreeCube::OTHERPROC);
+                }
+            }
+        }
+    }
+}
+
+void meshOctreeCube::markLeavesInSphere
+(
+    const boundBox& rootBox,
+    const point& c,
+    const scalar r,
+    labelList& markedLeaves,
+    bool& atProcessorBnd
+) const
+{
+    const point cubeCentre = this->centre(rootBox);
+    const scalar size = 1.732 * this->size(rootBox);
+
+    if( magSqr(cubeCentre - c) < sqr(r+size) )
+    {
+        if( this->isLeaf() )
+        {
+            markedLeaves[this->cubeLabel()] |= 2;
+        }
+        else
+        {
+            for(label scI=0;scI<8;++scI)
+            {
+                meshOctreeCube* scPtr = subCubesPtr_[scI];
+
+                if( scPtr )
+                {
+                    scPtr->markLeavesInSphere
+                    (
+                        rootBox,
+                        c,
+                        r,
+                        markedLeaves,
+                        atProcessorBnd
+                    );
+                }
+                else if( Pstream::parRun() )
+                {
+                    meshOctreeCubeCoordinates cc = refineForPosition(scI);
+                    const point sc = cc.centre(rootBox);
+
+                    if( magSqr(sc - c) < sqr(r+size) )
+                    {
+                        atProcessorBnd = true;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void meshOctreeCube::findLeaves(LongList<meshOctreeCube*>& leaves) const
 {
     if( this->isLeaf() )

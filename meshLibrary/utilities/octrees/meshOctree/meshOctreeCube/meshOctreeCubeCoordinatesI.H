@@ -411,6 +411,112 @@ inline bool meshOctreeCubeCoordinates::operator>=
     return false;
 }
 
+inline bool meshOctreeCubeCoordinates::operator<
+(
+    const meshOctreeCubeCoordinates& cc
+) const
+{
+    const direction minL = Foam::min(level_, cc.level_);
+    const meshOctreeCubeCoordinates curr = this->reduceToLevel(minL);
+    const meshOctreeCubeCoordinates cctr = cc.reduceToLevel(minL);
+
+    const label resx = curr.posX_ ^ cctr.posX_;
+    const label resy = curr.posY_ ^ cctr.posY_;
+    const label resz = curr.posZ_ ^ cctr.posZ_;
+
+    label max(resx), dir(0);
+    if( (max <= resy) || ((max ^ resy) < resy) )
+    {
+        max = resy;
+        dir = 1;
+    }
+    if( (max <= resz) || ((max ^ resz) < resz) )
+    {
+        max = resz;
+        dir = 2;
+    }
+
+    switch( dir )
+    {
+        case 0:
+        {
+            if( curr.posX_ < cctr.posX_ )
+                return true;
+
+            return false;
+        } break;
+        case 1:
+        {
+            if( curr.posY_ < cctr.posY_ )
+                return true;
+
+            return false;
+        } break;
+        case 2:
+        {
+            if( curr.posZ_ < cctr.posZ_ )
+                return true;
+
+            return false;
+        } break;
+    };
+
+    return false;
+}
+
+inline bool meshOctreeCubeCoordinates::operator>
+(
+    const meshOctreeCubeCoordinates& cc
+) const
+{
+    const direction minL = Foam::min(level_, cc.level_);
+    const meshOctreeCubeCoordinates curr = this->reduceToLevel(minL);
+    const meshOctreeCubeCoordinates cctr = cc.reduceToLevel(minL);
+
+    const label resx = curr.posX_ ^ cctr.posX_;
+    const label resy = curr.posY_ ^ cctr.posY_;
+    const label resz = curr.posZ_ ^ cctr.posZ_;
+
+    label max(resx), dir(0);
+    if( (max <= resy) || ((max ^ resy) < resy) )
+    {
+        max = resy;
+        dir = 1;
+    }
+    if( (max <= resz) || ((max ^ resz) < resz) )
+    {
+        max = resz;
+        dir = 2;
+    }
+
+    switch( dir )
+    {
+        case 0:
+        {
+            if( curr.posX_ > cctr.posX_ )
+                return true;
+
+            return false;
+        } break;
+        case 1:
+        {
+            if( curr.posY_ > cctr.posY_ )
+                return true;
+
+            return false;
+        } break;
+        case 2:
+        {
+            if( curr.posZ_ > cctr.posZ_ )
+                return true;
+
+            return false;
+        } break;
+    };
+
+    return false;
+}
+
 inline Istream& operator>>
 (
     Istream& is,

@@ -36,7 +36,6 @@ SourceFiles
 #define meshSurfaceEdgeExtractorNonTopo_H
 
 #include "polyMeshGenModifier.H"
-#include "boolList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,7 +44,6 @@ namespace Foam
 
 // Forward declarations
 class meshOctree;
-class meshSurfaceEngine;
 
 /*---------------------------------------------------------------------------*\
                 Class meshSurfaceEdgeExtractorNonTopo Declaration
@@ -54,17 +52,17 @@ class meshSurfaceEngine;
 class meshSurfaceEdgeExtractorNonTopo
 {
     // Private data
-        //- mesh
+        //- reference to polyMeshGen
         polyMeshGen& mesh_;
-    
-        //- octree
+
+        //- reference to meshOctree
         const meshOctree& meshOctree_;
 
     // Private member functions
-    
-        //- distribute boundary faces into patches
-        void distributeBoundaryFaces();
-    
+
+        //- decompose faces with more than one edge at the same feature edge
+        void decomposeBoundaryFaces();
+
         //- re-map points after edges have been extracted
         void remapBoundaryPoints();
 

@@ -110,7 +110,8 @@ Foam::Ostream& Foam::operator<<
 
             while( currPos < DL.nextFree_ )
             {
-                const label bs = Foam::min(DL.nextFree_ - currPos, blockSize);
+                const label bs =
+                    Foam::min(DL.nextFree_ - currPos, blockSize);
 
                 os.write
                 (

@@ -91,6 +91,18 @@ label meshOctree::findLeafContainingVertex
     return meshOctreeCubeBasic::OTHERPROC;
 }
 
+void meshOctree::findLeavesInSphere
+(
+    const point& c,
+    const scalar r,
+    DynList<label>& containedLeaves
+) const
+{
+    containedLeaves.clear();
+
+    initialCubePtr_->leavesInSphere(rootBox_, c, r, containedLeaves);
+}
+
 label meshOctree::findNeighbourOverNode
 (
     const meshOctreeCubeCoordinates& cc,

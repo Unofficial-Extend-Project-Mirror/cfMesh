@@ -54,7 +54,9 @@ class boundBox;
 
 class objectRefinement
 {
-    // Private data
+protected:
+
+    // Protected data
 
         //- Name of object refinement type
         word name_;
@@ -62,8 +64,24 @@ class objectRefinement
         //- cell size for this object
         scalar cellSize_;
 
+        //- refinement level applicable to this object
+        label additionalRefLevel_;
+
         //- refinement thickness fro this object
         scalar refThickness_;
+
+    // Protected member functions
+        //- set cell size
+        void setCellSize(const scalar cellSize)
+        {
+            cellSize_ = cellSize;
+        }
+
+        //- return cell size
+        scalar cellSize() const
+        {
+            return cellSize_;
+        }
 
 public:
 
@@ -127,16 +145,19 @@ public:
             name_ = name;
         }
 
-        //- set cell size for this object
-        void setCellSize(const scalar s)
+        //- calculate additional refinement levels from cell size
+        void calculateAdditionalRefLevels(const scalar globalCellSize);
+
+        //- set the number of additional refinement level
+        void setAdditionalRefinementLevels(const direction addRefLevels)
         {
-            cellSize_ = s;
+            additionalRefLevel_ = label(addRefLevels);
         }
 
-        //- return cell size for this object
-        scalar cellSize() const
+        //-  return the number of additional refinement levels
+        direction additionalRefinementLevels() const
         {
-            return cellSize_;
+            return direction(additionalRefLevel_);
         }
 
         //- set refinement thickness

@@ -188,6 +188,226 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         toOtherProc << toProcs[neiProcI];
     }
 }
+void meshOctree::exchangeRequestsWithNeighbourProcessors
+(
+    const LongList<meshOctreeCubeCoordinates>& dataToSend,
+    const LongList<scalar>& rangesToSend,
+    LongList<meshOctreeCubeCoordinates>& dataToReceive,
+    LongList<scalar>& receivedRanges
+) const
+{
+    if( !Pstream::parRun() || (neiProcs_.size() == 0) )
+    {
+        //- this is a serial run
+        return;
+    }
+
+    List<LongList<meshOctreeCubeCoordinates> > toProcs
+    (
+        neiProcs_.size(),
+        LongList<meshOctreeCubeCoordinates>()
+    );
+    List<LongList<scalar> > attributesToProcs
+    (
+        neiProcs_.size(),
+        LongList<scalar>()
+    );
+
+    meshOctreeCubeCoordinates minCoord, maxCoord;
+    forAll(dataToSend, i)
+    {
+        dataToSend[i].neighbourRange(minCoord, maxCoord);
+
+        const scalar size = dataToSend[i].size(rootBox_);
+        const label nLayers = ceil(rangesToSend[i] / size);
+
+        minCoord =
+            meshOctreeCubeCoordinates
+            (
+                minCoord.posX() - nLayers,
+                minCoord.posY() - nLayers,
+                minCoord.posZ() - nLayers,
+                minCoord.level()
+            );
+        maxCoord =
+            meshOctreeCubeCoordinates
+            (
+                nLayers + maxCoord.posX(),
+                nLayers + maxCoord.posY(),
+                nLayers + maxCoord.posZ(),
+                maxCoord.level()
+            );
+
+        # ifdef OCTREE_DEBUG
+        label counter(0);
+        # endif
+
+        forAll(neiProcs_, procI)
+        {
+            if( maxCoord >= neiRange_[procI].first() )
+            {
+                if( minCoord <= neiRange_[procI].second() )
+                {
+                    toProcs[procI].append(dataToSend[i]);
+                    attributesToProcs[procI].append(rangesToSend[i]);
+
+                    # ifdef OCTREE_DEBUG
+                    ++counter;
+                    # endif
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    //- send an receive the size of data chunk which will be exchanged
+    forAll(neiProcs_, neiProcI)
+    {
+        OPstream toOtherProc
+        (
+            Pstream::blocking,
+            neiProcs_[neiProcI],
+            sizeof(label)
+        );
+
+        toOtherProc << toProcs[neiProcI].size();
+    }
+
+    labelList sizeOfOtherProc(neiProcs_.size());
+    forAll(neiProcs_, neiProcI)
+    {
+        IPstream fromOtherProc
+        (
+            Pstream::blocking,
+            neiProcs_[neiProcI],
+            sizeof(label)
+        );
+
+        fromOtherProc >> sizeOfOtherProc[neiProcI];
+    }
+
+    //- exchange data between processors
+    //- upper-diagonal communication
+    forAll(neiProcs_, neiProcI)
+    {
+        if( sizeOfOtherProc[neiProcI] == 0 )
+            continue;
+        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+            continue;
+
+        //- receive data from other processor
+        IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+
+        dataToReceive.appendFromStream(fromOtherProc);
+    }
+
+    forAll(neiProcs_, neiProcI)
+    {
+        if( toProcs[neiProcI].size() == 0 )
+            continue;
+        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+            continue;
+
+        //- send data to other processor
+        OPstream toOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+        toOtherProc << toProcs[neiProcI];
+    }
+
+    //- lower-diagonal communication
+    forAllReverse(neiProcs_, neiProcI)
+    {
+        if( sizeOfOtherProc[neiProcI] == 0 )
+            continue;
+        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+            continue;
+
+        //- receive data from other processor
+        IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+
+        dataToReceive.appendFromStream(fromOtherProc);
+    }
+
+    forAllReverse(neiProcs_, neiProcI)
+    {
+        if( toProcs[neiProcI].size() == 0 )
+            continue;
+        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+            continue;
+
+        //- send data to other processor
+        OPstream toOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+        toOtherProc << toProcs[neiProcI];
+    }
+
+    //- exchange attributes
+    //- exchange data between processors
+    //- upper-diagonal communication
+    forAll(neiProcs_, neiProcI)
+    {
+        if( sizeOfOtherProc[neiProcI] == 0 )
+            continue;
+        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+            continue;
+
+        //- receive data from other processor
+        IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+
+        receivedRanges.appendFromStream(fromOtherProc);
+    }
+
+    forAll(neiProcs_, neiProcI)
+    {
+        if( toProcs[neiProcI].size() == 0 )
+            continue;
+        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+            continue;
+
+        //- send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::scheduled,
+            neiProcs_[neiProcI],
+            attributesToProcs[neiProcI].byteSize()
+        );
+
+        toOtherProc << attributesToProcs[neiProcI];
+    }
+
+    //- lower-diagonal communication
+    forAllReverse(neiProcs_, neiProcI)
+    {
+        if( sizeOfOtherProc[neiProcI] == 0 )
+            continue;
+        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+            continue;
+
+        //- receive data from other processor
+        IPstream fromOtherProc(Pstream::scheduled, neiProcs_[neiProcI]);
+
+        receivedRanges.appendFromStream(fromOtherProc);
+    }
+
+    forAllReverse(neiProcs_, neiProcI)
+    {
+        if( toProcs[neiProcI].size() == 0 )
+            continue;
+        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+            continue;
+
+        //- send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::scheduled,
+            neiProcs_[neiProcI],
+            attributesToProcs[neiProcI].byteSize()
+        );
+
+        toOtherProc << attributesToProcs[neiProcI];
+    }
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

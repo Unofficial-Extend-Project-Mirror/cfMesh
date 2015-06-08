@@ -67,6 +67,9 @@ class meshOptimizer
         //- location of vertex (internal, boundary, edge, corner)
         List<direction> vertexLocation_;
 
+        //- locked faces which shall not be changed
+        labelLongList lockedFaces_;
+
         //- mesh surface
         mutable meshSurfaceEngine* msePtr_;
 
@@ -84,6 +87,9 @@ class meshOptimizer
         //- find problematic faces
         label findBadFaces(labelHashSet&, const boolList&) const;
         label findLowQualityFaces(labelHashSet&, const boolList&) const;
+
+        //- mark point locations
+        void calculatePointLocations();
 
     // Nested classes
 
@@ -189,7 +195,8 @@ class meshOptimizer
             BOUNDARY = 2,
             EDGE = 4,
             CORNER = 8,
-            PARALLELBOUNDARY = 16
+            PARALLELBOUNDARY = 16,
+            LOCKED = 32
         };
 
 public:
@@ -211,24 +218,94 @@ public:
         //- stored into a point subset
         void enforceConstraints(const word subsetName="badPoints");
 
+        //- lock the cells which shall not be modified
+        template<class labelListType>
+        inline void lockCells(const labelListType&);
+
+        //- lock cells which shall not be modified
+        //- contained inside the specified subset
+        void lockCellsInSubset(const word& subsetName);
+
+        //- lock the faces whih shall not be modified
+        template<class labelListType>
+        inline void lockFaces(const labelListType&);
+
+        //- lock faces which shall not be modified
+        //- stored in a face subset
+        void lockFacesInSubset(const word& subsetName);
+
+        //- lock points which shall not be moved
+        template<class labelListType>
+        inline void lockPoints(const labelListType&);
+
+        //- lock points which shall not be modified
+        //- given as a point subset
+        void lockPointsInSubset(const word& subsetName);
+
+        //- reset to default constraints
+        void removeUserConstraints();
+
         //- smooth surface vertices
         void optimizeSurface(const meshOctree&);
 
         //- performs mesh untangling based on detected negative normals
-        void untangleMeshFV();
+        //- a global iteration consists of maxNumIterations iterations when
+        //- only internal points are moved and maxNumSurfaceIterations when
+        //- surface points are moved
+        void untangleMeshFV
+        (
+            const label maxNumGlobalIterations = 10,
+            const label maxNumIterations = 50,
+            const label maxNumSurfaceIterations = 2,
+            const bool relaxedCheck = false
+        );
+
+        //- performs optimisation of boundary layer cells
+        //- it is applied to the first boundary layer, only
+        void optimizeBoundaryLayer(const bool addBufferLayer = true);
+
+        //- performs untangling of boundary layer cells
+        //- if the user requests for it
+        void untangleBoundaryLayer();
 
         //- performs mesh optimisation for faces with high non-orthogonality
         //- and skewness
-        void optimizeLowQualityFaces();
+        void optimizeLowQualityFaces(const label maxNumIterations = 10);
+
+        //- perform optimization of cells near the boundary
+        //- the use shall specify the number of iterations and the number
+        //- of cell layers which shall be taken into account
+        void optimizeMeshNearBoundaries
+        (
+            const label maxNumIterations = 10,
+            const label numLayersOfCells = 2
+        );
 
         //- final optimisation
-        void optimizeMeshFV();
+        void optimizeMeshFV
+        (
+            const label numLaplaceIterations = 5,
+            const label maxNumGlobalIterations = 10,
+            const label maxNumIterations = 50,
+            const label maxNumSurfaceIterations = 2
+        );
+
+        //- greedy optimisation until the mesh can be improved
+        void optimizeMeshFVBestQuality
+        (
+            const label maxNumIterations = 50,
+            const scalar threshold = 0.1
+        );
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "meshOptimizerI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

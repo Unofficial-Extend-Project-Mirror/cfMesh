@@ -34,7 +34,7 @@ Description
 #include "meshSurfacePartitioner.H"
 #include "labelledScalar.H"
 
-#include "helperFunctionsPar.H"
+#include "helperFunctions.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -138,11 +138,64 @@ void meshSurfaceMapper::findMappingDistance
     }
 }
 
+scalar meshSurfaceMapper::faceMetricInPatch
+(
+    const label bfI,
+    const label patchI
+) const
+{
+    const face& bf = surfaceEngine_.boundaryFaces()[bfI];
+
+    const pointFieldPMG& points = surfaceEngine_.points();
+
+    const point centre = bf.centre(points);
+    const vector area = bf.normal(points);
+
+    point projCentre;
+    scalar dSq;
+    label nt;
+
+    meshOctree_.findNearestSurfacePointInRegion
+    (
+        projCentre,
+        dSq,
+        nt,
+        patchI,
+        centre
+    );
+
+    DynList<point> projPoints(bf.size());
+    forAll(bf, pI)
+    {
+        meshOctree_.findNearestSurfacePointInRegion
+        (
+            projPoints[pI],
+            dSq,
+            nt,
+            patchI,
+            points[bf[pI]]
+        );
+    }
+
+    vector projArea(vector::zero);
+    forAll(bf, pI)
+    {
+        projArea +=
+            triPointRef
+            (
+                projPoints[pI],
+                projPoints[bf.fcIndex(pI)],
+                projCentre
+            ).normal();
+    }
+
+    return magSqr(centre - projCentre) + mag(mag(projArea) - mag(area));
+}
+
 void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
-    const pointField& sPoints = meshOctree_.surface().points();
     const List<DynList<label> >& cornerPatches = sPartitioner.cornerPatches();
 
     const meshSurfacePartitioner& mPart = meshPartitioner();
@@ -151,6 +204,9 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
+
+    const triSurf& surf = meshOctree_.surface();
+    const pointField& sPoints = surf.points();
 
     //std::map<label, scalar> mappingDistance;
     scalarList mappingDistance;
@@ -203,6 +259,7 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
             }
 
             newP /= patches.size();
+
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
 
@@ -259,6 +316,9 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const VRWGraph& pPatches = mPart.pointPatches();
 
+    //const triSurf& surf = meshOctree_.surface();
+    //const pointField& sPoints = surf.points();
+
     //- find mapping distance for selected vertices
     scalarList mappingDistance;
     findMappingDistance(nodesToMap, mappingDistance);
@@ -292,6 +352,7 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
         while( iter++ < 20 )
         {
             point newP(vector::zero);
+
             forAll(patches, patchI)
             {
                 point np;
@@ -309,6 +370,7 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
             }
 
             newP /= patches.size();
+
             if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
                 break;
 

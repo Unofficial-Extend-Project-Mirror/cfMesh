@@ -39,7 +39,6 @@ SourceFiles
 #include "DynList.H"
 #include "IOdictionary.H"
 #include "meshOctreeModifier.H"
-//#include "volFields.H"
 #include "patchRefinementList.H"
 
 #include <map>
@@ -84,8 +83,12 @@ private:
         //- used as refinement sources
         void refineBoxesIntersectingSurfaces();
 
+        //- refine boxes by edge meshes
+        //- used as refinement sources
+        void refineBoxesIntersectingEdgeMeshes();
+
         //- refine boxes near DATA boxes to get a nice smooth surface
-        void refineBoxesNearDataBoxes(const direction nLayers = 1);
+        void refineBoxesNearDataBoxes(const label nLayers = 1);
 
         //- refine boxes of the given flag to the given size
         void refineBoxes(const direction refLevel, const direction cubeType);
@@ -106,10 +109,7 @@ private:
         direction globalRefLevel_;
 
         //- this list contains ref level for each surface triangle
-        List<direction> surfRefLevel_;
-
-        //- refinement thickness for each surface triangle
-        scalarList surfRefThickness_;
+        List<DynList<std::pair<direction, scalar> > > surfRefLevel_;
 
         //- set the boundBox such that maxCellSize is achieved
         void setRootCubeSizeAndRefParameters();
