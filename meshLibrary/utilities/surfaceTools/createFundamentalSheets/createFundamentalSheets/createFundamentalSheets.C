@@ -45,18 +45,18 @@ defineRunTimeSelectionTable(createFundamentalSheets, polyMeshGen);
 // Construct from mesh, octree, regions for boundary vertices
 createFundamentalSheets::createFundamentalSheets
 (
-    polyMeshGen& mesh
+    polyMeshGen& mesh,
+    const bool createWrapperSheet
 )
 :
-    mesh_(mesh)
-{
-}
+    mesh_(mesh),
+    createWrapperSheet_(createWrapperSheet)
+{}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 createFundamentalSheets::~createFundamentalSheets()
-{
-}
+{}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

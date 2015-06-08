@@ -84,7 +84,11 @@ public:
     // Constructors
 
         //- Construct from mesh data
-        createFundamentalSheetsFJ(polyMeshGen& mesh);
+        createFundamentalSheetsFJ
+        (
+            polyMeshGen& mesh,
+            const bool createWrapperSheet = true
+        );
 
     // Destructor
 

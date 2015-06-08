@@ -70,12 +70,14 @@ void meshSurfaceEdgeExtractorFUN::clearOut()
 meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
 (
     polyMeshGen& mesh,
-    const meshOctree& octree
+    const meshOctree& octree,
+    const bool createWrapperSheet
 )
 :
     mesh_(mesh),
     meshOctree_(octree),
-    surfaceEnginePtr_(NULL)
+    surfaceEnginePtr_(NULL),
+    createWrapperSheet_(createWrapperSheet)
 {
     if( Pstream::parRun() )
         FatalErrorIn
@@ -84,19 +86,9 @@ meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
             "(polyMeshGen&, const meshOctree&)"
         ) << "Cannot run in parallel!" << exit(FatalError);
 
-    //distributeBoundaryFaces();
-
-    //reviseCorners();
-
-    //reviseEdges();
-
-    //remapBoundaryPoints();
-
     createBasicFundamentalSheets();
 
     smoothMeshSurface();
-
-    //improveQualityOfFundamentalSheets();
 
     remapBoundaryPoints();
 }
