@@ -461,6 +461,7 @@ void meshOptimizer::untangleBoundaryLayer()
     else
     {
         optimizeLowQualityFaces();
+        removeUserConstraints();
         untangleMeshFV(2, 50, 1, true);
     }
 }

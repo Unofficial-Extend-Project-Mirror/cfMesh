@@ -99,9 +99,6 @@ class voronoiMeshGenerator
         //- optimise surface mesh
         void optimiseMeshSurface();
 
-        //- decompose concave cells
-        void decomposeConcaveCells();
-
         //- add boundary layers
         void generateBoudaryLayers();
 

@@ -153,7 +153,12 @@ void cartesianMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer(mesh_).untangleBoundaryLayer();
+        labelLongList pointsInLayer;
+        refLayers.pointsInBndLayer(pointsInLayer);
+
+        meshOptimizer mOpt(mesh_);
+        mOpt.lockPoints(pointsInLayer);
+        mOpt.untangleBoundaryLayer();
     }
 }
 

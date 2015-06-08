@@ -73,16 +73,12 @@ void voronoiMeshGenerator::createVoronoiMesh()
 
 void voronoiMeshGenerator::surfacePreparation()
 {
-    //- removes unnecessary cells and morph the boundary
-    //- such that there is only one boundary face per cell
-    //- It also checks topology of cells after morphing is performed
-    do
-    {
-        surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
-        cmPtr->morphMesh();
-        deleteDemandDrivenData(cmPtr);
-    }
-    while( topologicalCleaner(mesh_).cleanTopology() );
+    //- removes unnecessary cells and morphs the boundary
+    //- such that there exists only one boundary face per cell
+
+    surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
+    cmPtr->morphMesh();
+    deleteDemandDrivenData(cmPtr);
 
     # ifdef DEBUG
     mesh_.write();
@@ -149,16 +145,6 @@ void voronoiMeshGenerator::optimiseMeshSurface()
     # endif
 }
 
-void voronoiMeshGenerator::decomposeConcaveCells()
-{
-    //decomposeCellsNearConcaveEdges dm(mesh_);
-
-    # ifdef DEBUG
-    mesh_.write();
-    //::exit(EXIT_FAILURE);
-    # endif
-}
-
 void voronoiMeshGenerator::generateBoudaryLayers()
 {
     boundaryLayers bl(mesh_);
@@ -203,7 +189,12 @@ void voronoiMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer(mesh_).untangleBoundaryLayer();
+        labelLongList pointsInLayer;
+        refLayers.pointsInBndLayer(pointsInLayer);
+
+        meshOptimizer mOpt(mesh_);
+        mOpt.lockPoints(pointsInLayer);
+        mOpt.untangleBoundaryLayer();
     }
 }
 

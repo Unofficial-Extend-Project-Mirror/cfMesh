@@ -157,12 +157,12 @@ void tetMeshGenerator::optimiseFinalMesh()
 
     optimizer.optimizeSurface(*octreePtr_);
 
-    deleteDemandDrivenData(octreePtr_);
-
     optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();
     optimizer.optimizeBoundaryLayer(false);
-    optimizer.optimizeMeshFV();
+    optimizer.untangleMeshFV();
+
+    deleteDemandDrivenData(octreePtr_);
 
     mesh_.clearAddressingData();
 
@@ -214,7 +214,12 @@ void tetMeshGenerator::refBoundaryLayers()
 
         refLayers.refineLayers();
 
-        meshOptimizer(mesh_).untangleBoundaryLayer();
+        labelLongList pointsInLayer;
+        refLayers.pointsInBndLayer(pointsInLayer);
+
+        meshOptimizer opt(mesh_);
+        opt.lockPoints(pointsInLayer);
+        opt.untangleBoundaryLayer();
     }
 }
 
