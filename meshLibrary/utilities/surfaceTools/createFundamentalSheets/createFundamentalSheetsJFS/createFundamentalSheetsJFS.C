@@ -57,6 +57,9 @@ addToRunTimeSelectionTable
 
 void createFundamentalSheetsJFS::createInitialSheet()
 {
+    if( !createWrapperSheet_ )
+        return;
+
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
     const label start = boundaries[0].patchStart();
@@ -168,10 +171,11 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 // Construct from mesh, octree, regions for boundary vertices
 createFundamentalSheetsJFS::createFundamentalSheetsJFS
 (
-    polyMeshGen& mesh
+    polyMeshGen& mesh,
+    const bool createWrapperSheet
 )
 :
-    createFundamentalSheets(mesh)
+    createFundamentalSheets(mesh, createWrapperSheet)
 {
     createInitialSheet();
 

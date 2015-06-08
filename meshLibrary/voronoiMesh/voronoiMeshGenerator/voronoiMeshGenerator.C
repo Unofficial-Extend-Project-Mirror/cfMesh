@@ -128,8 +128,7 @@ void voronoiMeshGenerator::extractPatches()
 
 void voronoiMeshGenerator::mapEdgesAndCorners()
 {
-    //meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
-    meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_);
+    meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_, false);
 
     # ifdef DEBUG
     mesh_.write();

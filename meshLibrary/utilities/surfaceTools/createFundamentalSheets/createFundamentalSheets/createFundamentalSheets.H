@@ -64,6 +64,9 @@ protected:
         //- reference to mesh
         polyMeshGen& mesh_;
 
+        //- shall the procedure create the intial wrapper sheet
+        const bool createWrapperSheet_;
+
     // Protected member functions
 
         //- Disallow default bitwise copy construct
@@ -80,7 +83,11 @@ public:
     // Constructors
 
         //- Construct from mesh data
-        createFundamentalSheets(polyMeshGen& mesh);
+        createFundamentalSheets
+        (
+            polyMeshGen& mesh,
+            const bool createWrapperSheet = true
+        );
 
     // Declare run-time constructor selection table
 
@@ -90,9 +97,10 @@ public:
             createFundamentalSheets,
             polyMeshGen,
             (
-                polyMeshGen& mesh
+                polyMeshGen& mesh,
+                const bool createWrapperSheet
             ),
-            (mesh)
+            (mesh, createWrapperSheet)
         );
 
 
@@ -101,7 +109,7 @@ public:
         //- Select constructed from dictionary
         static autoPtr<createFundamentalSheets> New
         (
-            polyMeshGen& mesh
+            polyMeshGen& mesh, const bool createWrapperSheet = true
         );
 
     // Destructor
