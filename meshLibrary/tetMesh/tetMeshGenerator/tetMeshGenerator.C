@@ -151,7 +151,7 @@ void tetMeshGenerator::optimiseFinalMesh()
             readBool(meshDict_.lookup("enforceGeometryConstraints"));
     }
 
-    meshOptimizer optimizer(mesh_, octreePtr_);
+    meshOptimizer optimizer(mesh_);
     if( enforceConstraints )
         optimizer.enforceConstraints();
 
