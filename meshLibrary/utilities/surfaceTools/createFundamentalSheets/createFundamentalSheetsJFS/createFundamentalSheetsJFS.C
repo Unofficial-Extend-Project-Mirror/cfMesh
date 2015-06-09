@@ -157,6 +157,10 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
             front.setSize(front.size()+localFront.size());
         }
 
+        # ifdef USE_OMP
+        # pragma omp barrier
+        # endif
+
         //- copy the local front into the global front
         forAll(localFront, lfI)
             front[frontStart+lfI] = localFront[lfI];
