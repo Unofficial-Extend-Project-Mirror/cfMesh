@@ -36,7 +36,11 @@ Description
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
+//#define DEBUGSheets
+
+# ifdef DEBUGSheets
+#include "helperFunctions.H"
+# endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -69,8 +73,6 @@ void createFundamentalSheetsJFS::createInitialSheet()
         boundaries[boundaries.size()-1].patchSize()
     );
 
-    faceListPMG::subList bFaces(mesh_.faces(), end-start, start);
-
     const labelList& owner = mesh_.owner();
 
     LongList<labelPair> extrudeFaces(end-start);
@@ -99,8 +101,43 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
     );
 
     faceListPMG::subList bFaces(mesh_.faces(), end-start, start);
+    labelList facePatch(bFaces.size());
 
-    labelList patchCell(mesh_.cells().size());
+    forAll(boundaries, patchI)
+    {
+        const label patchStart = boundaries[patchI].patchStart();
+        const label patchEnd = patchStart + boundaries[patchI].patchSize();
+
+        for(label faceI=patchStart;faceI<patchEnd;++faceI)
+        {
+            facePatch[faceI-start] = patchI;
+        }
+    }
+
+    List<DynList<label, 3> > patchCell(mesh_.cells().size());
+    forAll(facePatch, bfI)
+        patchCell[owner[start+bfI]].appendIfNotIn(facePatch[bfI]);
+
+    # ifdef DEBUGSheets
+    labelList patchSheetId(boundaries.size());
+    forAll(patchSheetId, patchI)
+        patchSheetId[patchI] =
+            mesh_.addCellSubset("sheetPatch_"+help::labelToText(patchI));
+
+    forAll(patchCell, cellI)
+    {
+        if( patchCell[cellI].size() > 1 )
+            Warning << "Cell " << cellI
+                    << " is in patches " << patchCell[cellI] << endl;
+
+        forAll(patchCell[cellI], patchI)
+            mesh_.addCellToSubset
+            (
+                patchSheetId[patchCell[cellI][patchI]],
+                cellI
+            );
+    }
+    # endif
 
     LongList<labelPair> front;
 
@@ -129,10 +166,13 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
         # ifdef USE_OMP
         # pragma omp for
         # endif
-        for(label faceI=start;faceI<end;++faceI)
+        forAll(facePatch, bfI)
         {
-            const cell& c = cells[owner[faceI]];
-            const label patchI = mesh_.faceIsInPatch(faceI);
+            const label faceI = start + bfI;
+            const label cellI = owner[faceI];
+
+            const cell& c = cells[cellI];
+            const label patchI = facePatch[bfI];
 
             forAll(c, fI)
             {
@@ -140,11 +180,11 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
                     continue;
 
                 label nei = owner[c[fI]];
-                if( nei == owner[faceI] )
+                if( nei == cellI )
                     nei = neighbour[c[fI]];
 
-                if( patchCell[nei] != patchI )
-                    localFront.append(labelPair(c[fI], owner[faceI]));
+                if( !patchCell[nei].contains(patchI) )//patchCell[nei] != patchI )
+                    localFront.append(labelPair(c[fI], cellI));
             }
         }
 
@@ -165,6 +205,19 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
         forAll(localFront, lfI)
             front[frontStart+lfI] = localFront[lfI];
     }
+
+    # ifdef DEBUGSheets
+    const label fId = mesh_.addFaceSubset("facesForFundamentalSheets");
+    const label cId = mesh_.addCellSubset("cellsForFundamentalSheets");
+
+    forAll(front, fI)
+    {
+        mesh_.addFaceToSubset(fId, front[fI].first());
+        mesh_.addCellToSubset(cId, front[fI].second());
+    }
+
+    mesh_.write();
+    # endif
 
     //- extrude the layer
     extrudeLayer(mesh_, front);

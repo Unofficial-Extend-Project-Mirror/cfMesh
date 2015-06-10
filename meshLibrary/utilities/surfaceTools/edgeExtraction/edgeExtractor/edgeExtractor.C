@@ -876,6 +876,7 @@ void edgeExtractor::distributeBoundaryFaces()
         }
         else
         {
+            pointPatch_[bpI] = nPatches;
             FatalErrorIn
             (
                 "void meshSurfaceEdgeExtractorNonTopo::"
@@ -909,6 +910,8 @@ void edgeExtractor::distributeBoundaryFaces()
         }
         else
         {
+            facePatch_[bfI] = nPatches;
+
             FatalErrorIn
             (
                 "void meshSurfaceEdgeExtractorNonTopo::"

@@ -16,7 +16,7 @@ object	meshDict;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 maxCellSize	40;
-surfaceFile	"surfaceMeshes/bunnyWrapped.fms";
+surfaceFile	"bunnyWrapped.stl";
 
 objectRefinements
 {

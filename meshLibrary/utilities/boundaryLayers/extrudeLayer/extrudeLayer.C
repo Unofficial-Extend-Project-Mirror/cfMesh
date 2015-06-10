@@ -1344,6 +1344,8 @@ void extrudeLayer::updateBoundary()
     PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
         boundaries[patchI].patchType() = patchTypes[patchI];
+
+    meshModifier.clearAll();
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -1374,6 +1376,8 @@ extrudeLayer::extrudeLayer
     createLayerCells();
 
     updateBoundary();
+
+    mesh_.clearAddressingData();
 
     # ifdef DEBUGExtrudeLayer
     polyMeshGenChecks::checkMesh(mesh_, true);
