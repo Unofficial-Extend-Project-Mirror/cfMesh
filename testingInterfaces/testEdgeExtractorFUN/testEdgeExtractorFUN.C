@@ -37,6 +37,7 @@ Description
 #include "triSurf.H"
 #include "meshOctree.H"
 #include "meshOctreeCreator.H"
+#include "triSurfacePatchManipulator.H"
 
 using namespace Foam;
 
@@ -62,14 +63,31 @@ int main(int argc, char *argv[])
     );
 
     const fileName surfFile(meshDict.lookup("surfaceFile"));
-    triSurf surf(surfFile);
+    const triSurf* surfacePtr = new triSurf(surfFile);
 
-    meshOctree mo(surf);
-    meshOctreeCreator(mo, meshDict).createOctreeBoxes();
+    if( surfacePtr->featureEdges().size() != 0 )
+    {
+        //- create surface patches based on the feature edges
+        //- and update the meshDict based on the given data
+        triSurfacePatchManipulator manipulator(*surfacePtr);
+
+        const triSurf* surfaceWithPatches =
+            manipulator.surfaceWithPatches(&meshDict);
+
+        //- delete the old surface and assign the new one
+        deleteDemandDrivenData(surfacePtr);
+        surfacePtr = surfaceWithPatches;
+    }
+
+    meshOctree mo(*surfacePtr);
+    meshOctreeCreator(mo, meshDict).createOctreeWithRefinedBoundary(20, 30);
 
     polyMeshGen pmg(runTime);
+    pmg.read();
 
     meshSurfaceEdgeExtractorFUN(pmg, mo, false);
+
+    deleteDemandDrivenData(surfacePtr);
 
     pmg.write();
 
