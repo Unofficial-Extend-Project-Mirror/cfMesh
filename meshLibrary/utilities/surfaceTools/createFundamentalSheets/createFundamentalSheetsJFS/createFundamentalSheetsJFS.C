@@ -59,10 +59,53 @@ addToRunTimeSelectionTable
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+bool createFundamentalSheetsJFS::isTopologyOk() const
+{
+    const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
+
+    const label start = boundaries[0].patchStart();
+    const label end
+    (
+        boundaries[boundaries.size()-1].patchStart() +
+        boundaries[boundaries.size()-1].patchSize()
+    );
+
+    const labelList& owner = mesh_.owner();
+
+    //- count the number of boundary faces in every cell
+    //- cells with more than one boundary face cause problem to the
+    //- sheet insertion procedure
+    labelList nBndFacesInCell(mesh_.cells().size(), 0);
+
+    bool isOkTopo(true);
+    for(label faceI=start;faceI<end;++faceI)
+    {
+        ++nBndFacesInCell[owner[faceI]];
+
+        if( nBndFacesInCell[owner[faceI]] > 1 )
+        {
+            isOkTopo = false;
+            break;
+        }
+    }
+
+    reduce(isOkTopo, minOp<bool>());
+
+    return isOkTopo;
+}
+
 void createFundamentalSheetsJFS::createInitialSheet()
 {
     if( !createWrapperSheet_ )
-        return;
+    {
+        if( isTopologyOk() )
+            return;
+
+        Warning << "Found invalid topology!"
+                << "\nStarting creating initial wrapper sheet" << endl;
+    }
+
+    Info << "Creating initial wrapper sheet" << endl;
 
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
@@ -78,17 +121,28 @@ void createFundamentalSheetsJFS::createInitialSheet()
     LongList<labelPair> extrudeFaces(end-start);
 
     # ifdef USE_OMP
-    # pragma omp parallel for
+    # pragma omp parallel for schedule(guided, 100)
     # endif
     for(label faceI=start;faceI<end;++faceI)
         extrudeFaces[faceI-start] = labelPair(faceI, owner[faceI]);
 
     extrudeLayer(mesh_, extrudeFaces);
+
+    Info << "Finished creating initial wrapper sheet" << endl;
 }
 
 void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 {
+    Info << "Starting creating sheets at feature edges" << endl;
+
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
+
+    if( returnReduce(boundaries.size(), maxOp<label>()) < 2 )
+    {
+        Info << "Skipping creating sheets at feature edges" << endl;
+        return;
+    }
+
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
@@ -109,14 +163,12 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
         const label patchEnd = patchStart + boundaries[patchI].patchSize();
 
         for(label faceI=patchStart;faceI<patchEnd;++faceI)
-        {
             facePatch[faceI-start] = patchI;
-        }
     }
 
-    List<DynList<label, 3> > patchCell(mesh_.cells().size());
+    labelList patchCell(mesh_.cells().size(), -1);
     forAll(facePatch, bfI)
-        patchCell[owner[start+bfI]].appendIfNotIn(facePatch[bfI]);
+        patchCell[owner[start+bfI]] = facePatch[bfI];
 
     # ifdef DEBUGSheets
     labelList patchSheetId(boundaries.size());
@@ -126,40 +178,20 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 
     forAll(patchCell, cellI)
     {
-        if( patchCell[cellI].size() > 1 )
-            Warning << "Cell " << cellI
-                    << " is in patches " << patchCell[cellI] << endl;
+        if( patchCell[cellI] < 0 )
+            continue;
 
-        forAll(patchCell[cellI], patchI)
-            mesh_.addCellToSubset
-            (
-                patchSheetId[patchCell[cellI][patchI]],
-                cellI
-            );
+        mesh_.addCellToSubset(patchSheetId[patchCell[cellI]], cellI);
     }
     # endif
 
     LongList<labelPair> front;
 
     # ifdef USE_OMP
-    const label nThreads = 2 * omp_get_num_procs();
+    const label nThreads = 3 * omp_get_num_procs();
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        # ifdef USE_OMP
-        # pragma omp for
-        # endif
-        forAll(patchCell, cellI)
-            patchCell[cellI] = -1;
-
-        # ifdef USE_OMP
-        # pragma omp barrier
-
-        # pragma omp for
-        # endif
-        for(label faceI=start;faceI<end;++faceI)
-            patchCell[owner[faceI]] = mesh_.faceIsInPatch(faceI);
-
         //- create the front faces
         LongList<labelPair> localFront;
 
@@ -183,7 +215,7 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
                 if( nei == cellI )
                     nei = neighbour[c[fI]];
 
-                if( !patchCell[nei].contains(patchI) )//patchCell[nei] != patchI )
+                if( patchCell[nei] != patchI )
                     localFront.append(labelPair(c[fI], cellI));
             }
         }
@@ -221,6 +253,8 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 
     //- extrude the layer
     extrudeLayer(mesh_, front);
+
+    Info << "Finished creating sheets at feature edges" << endl;
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //

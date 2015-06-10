@@ -57,6 +57,9 @@ class createFundamentalSheetsJFS
     public createFundamentalSheets
 {
     // Private member functions
+        //- check if all cells have only one face at the boundary
+        bool isTopologyOk() const;
+
         //- create inital sheet from all boundary faces of the surface mesh
         void createInitialSheet();
 
