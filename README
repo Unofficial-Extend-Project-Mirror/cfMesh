@@ -1,8 +1,8 @@
 #                            -*- mode: org; -*-
 #
-#+TITLE:             *cfMesh README for version 1.0*
+#+TITLE:                       *cfMesh README*
 #+AUTHOR:                      Franjo Juretic.
-#+DATE:                           May 2014
+#+DATE:                           May 2015
 #+LINK:                  http://www.c-fields.com
 #+OPTIONS:
 
@@ -18,7 +18,7 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   cfMesh is developed and tested on Linux and MS Windows.
 
 * Installation
-  The binaries can be downloaded from www.c-fields.com
+  Binaries and the source code can be downloaded from http://sourceforge.net/projects/cfmesh/
 
 * Building from Sources (Optional)
 
@@ -37,7 +37,19 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   + cd $FOAM_RUN/tutorials/asmoOctree
   + cartesianMesh
 
-  All cases have Allrun and Allclean scripts shoeing the commands which shall be executed.
+  All cases have Allrun and Allclean scripts guiding you through the meshing process.
 
 * Documentation
-  http://www.c-fields.com
+  http://www.c-fields.com and in the userGuide folder.
+
+* List of contributors
+  Franjo Juretic
+  Philippose Rajan
+  Ivor Clifford
+  Nebojsa Gavrilov
+  
+* How to contribute
+
+  It you are interested in contributing to cfMesh please send an e-mail at: info@c-fields.com
+  We gladly accept contributions, whether they are the code, validation data, documentation, promotional material, etc.
+  cfMesh development process follows the git-flow branching model, described in http://nvie.com/posts/a-successful-git-branching-model/.

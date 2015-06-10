@@ -78,10 +78,10 @@ class LongList
 {
     // Private data
         //- number of allocated elements
-        long long N_;
+        label N_;
 
         //- number of elements in the list
-        long long nextFree_;
+        label nextFree_;
 
         //- number of used blocks of data
         label numBlocks_;
@@ -101,13 +101,13 @@ class LongList
 
     // Private member functions
         //- check index
-        void checkIndex(const long long i) const;
+        void checkIndex(const label i) const;
 
         //- initialize width and mask
         void initializeParameters();
 
         //- Allocate memory for the list
-        void allocateSize(const long long);
+        void allocateSize(const label);
 
         //- delete all elements
         void clearOut();
@@ -120,10 +120,10 @@ public:
         inline LongList();
 
         //- Construct given size
-        explicit inline LongList(const long long size);
+        explicit inline LongList(const label size);
 
         //- Construct to given size and initialize
-        explicit inline LongList(const long long size, const T& t);
+        explicit inline LongList(const label size, const T& t);
 
         //- Copy contructor
         inline LongList(const LongList<T, Offset>&);
@@ -137,17 +137,17 @@ public:
         // Access
 
             //- Size of the active part of the list.
-            inline long long size() const;
+            inline label size() const;
 
             //- Return the binary size in number of characters of the UList
             //  if the element is a primitive type
             //  i.e. contiguous<T>() == true
-            inline long long byteSize() const;
+            inline label byteSize() const;
 
         // Edit
 
             //- Reset size of List.
-            void setSize(const long long);
+            void setSize(const label);
 
             //- Clear the list, i.e. set next free to zero.
             //  Allocated size does not change
@@ -171,23 +171,23 @@ public:
 
         //- check if the element is in the list (takes linear time)
         inline bool contains(const T& e) const;
-        inline long long containsAtPosition(const T& e) const;
+        inline label containsAtPosition(const T& e) const;
 
         //- Return and remove the element
-        inline T remove(const long long i);
+        inline T remove(const label i);
         inline T removeLastElement();
 
         //- get and set operators
-        inline const T& operator[](const long long i) const;
-        inline T& operator[](const long long i);
+        inline const T& operator[](const label i) const;
+        inline T& operator[](const label i);
 
         //- Return non-const access to an element,
         //  resizing the list if necessary
-        inline T& operator()(const long long);
+        inline T& operator()(const label);
 
         //- return a non-const access to an element,
         // resize the list if necessary
-        inline T& newElmt(const long long);
+        inline T& newElmt(const label);
 
         //- Assignment of all entries to the given value
         inline void operator=(const T&);

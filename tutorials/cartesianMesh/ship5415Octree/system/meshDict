@@ -54,7 +54,7 @@ anisotropicSources
 	type plane;
 	normal (0 0 1);
 	origin (0 0 250);
-	translationDistance 125;
+	scalingDistance 125;
 	scalingFactor 0.5;
     }
     
@@ -63,7 +63,7 @@ anisotropicSources
 	type plane;
 	normal (0 0 -1);
 	origin (0 0 250);
-	translationDistance 125;
+	scalingDistance 125;
 	scalingFactor 0.5;
     }
 */

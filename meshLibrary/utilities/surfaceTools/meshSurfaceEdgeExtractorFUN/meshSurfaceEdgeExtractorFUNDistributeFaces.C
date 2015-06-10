@@ -137,7 +137,7 @@ void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
 
 void meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
 {
-    createFundamentalSheetsJFS edgeSheets(mesh_);
+    createFundamentalSheetsJFS edgeSheets(mesh_, createWrapperSheet_);
 
     clearOut();
 }

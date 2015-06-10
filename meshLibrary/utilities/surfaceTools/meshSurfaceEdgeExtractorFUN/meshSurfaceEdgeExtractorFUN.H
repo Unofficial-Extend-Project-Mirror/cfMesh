@@ -64,6 +64,9 @@ class meshSurfaceEdgeExtractorFUN
         //- mesh surface pointer
         meshSurfaceEngine* surfaceEnginePtr_;
 
+        //- shall the procedure generate an initial wrapper sheet
+        const bool createWrapperSheet_;
+
     // Private member functions
 
         //- return reference to surface engine
@@ -115,7 +118,8 @@ public:
         meshSurfaceEdgeExtractorFUN
         (
             polyMeshGen& mesh,
-            const meshOctree& octree
+            const meshOctree& octree,
+            const bool createWrapperSheet = true
         );
 
     // Destructor

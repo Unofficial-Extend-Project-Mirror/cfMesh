@@ -64,10 +64,9 @@ inline Foam::FRWGraph<T,width>::FRWGraph
     const label s
 )
 :
-    data_(static_cast<long long>(s) * width),
+    data_(s * width),
     nRows_(s)
-{
-}
+{}
 
 
 //- Construct given size
@@ -78,7 +77,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph
     const T& t
 )
 :
-    data_(static_cast<long long>(s) * width, t),
+    data_(s * width, t),
     nRows_(s)
 {}
 
@@ -114,7 +113,7 @@ inline Foam::label Foam::FRWGraph<T,width>::sizeOfRow(const label rowI) const
 template<class T, Foam::label width>
 inline void Foam::FRWGraph<T,width>::setSize(const label i)
 {
-    data_.setSize(static_cast<long long>(i) * width);
+    data_.setSize(i * width);
     nRows_ = i;
 }
 
@@ -155,7 +154,7 @@ inline bool Foam::FRWGraph<T,width>::contains
     const T& e
 ) const
 {
-    const long long start = static_cast<long long>(rowI) * width;
+    const label start = rowI * width;
     for(register label i=0;i<width;++i)
         if( data_[start+i] == e )
             return true;
@@ -170,7 +169,7 @@ inline Foam::label Foam::FRWGraph<T,width>::containsAtPosition
     const T& e
 ) const
 {
-    const long long start = static_cast<long long>(rowI) * width;
+    const label start = rowI * width;
     for(register label i=0;i<width;++i)
         if( data_[start+i] == e )
             return i;
@@ -190,7 +189,7 @@ inline const T& Foam::FRWGraph<T,width>::operator()
     checkIndex(i, j);
     #endif
         
-    return data_[static_cast<long long>(i) * width + j];
+    return data_[i * width + j];
 }
 
 template<class T, Foam::label width>
@@ -203,7 +202,7 @@ inline T& Foam::FRWGraph<T,width>::operator()
     checkIndex(i, j);
     #endif
         
-    return data_[static_cast<long long>(i) * width + j];
+    return data_[i * width + j];
 }
 
 template<class T, Foam::label width>

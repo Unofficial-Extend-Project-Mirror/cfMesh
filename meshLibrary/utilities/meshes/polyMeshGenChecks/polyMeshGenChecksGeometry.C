@@ -1237,7 +1237,7 @@ void checkFaceSkewness
                       + cNei*dOwn/(dOwn+dNei);
 
                     faceSkewness[faceI] =
-                        mag(fCentres[start+faceI] - faceIntersection)
+                        mag(fCentres[faceI] - faceIntersection)
                         /(mag(cOwn - cNei) + VSMALL);
                 }
             }

@@ -161,7 +161,7 @@ void meshSurfaceOptimizer::smoothEdgePoints
     const labelLongList& procEdgePoints
 )
 {
-    DynList<LongList<labelledPoint> > newPositions(1);
+    List<LongList<labelledPoint> > newPositions(1);
     # ifdef USE_OMP
     newPositions.setSize(omp_get_num_procs());
     # endif
@@ -218,7 +218,7 @@ void meshSurfaceOptimizer::smoothLaplacianFC
     const bool transform
 )
 {
-    DynList<LongList<labelledPoint> > newPositions(1);
+    List<LongList<labelledPoint> > newPositions(1);
     # ifdef USE_OMP
     newPositions.setSize(omp_get_num_procs());
     # endif
@@ -281,7 +281,8 @@ void meshSurfaceOptimizer::smoothLaplacianFC
 
 void meshSurfaceOptimizer::smoothSurfaceOptimizer
 (
-    const labelLongList& selectedPoints
+    const labelLongList& selectedPoints,
+    const labelLongList& selectedProcPoints
 )
 {
     //- create partTriMesh is it is not yet present
@@ -313,6 +314,10 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
 
         surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newPositions[i]);
     }
+
+    //- ensure that vertices at inter-processor boundaries are at the same
+    //- location at all processors
+    surfaceModifier.syncVerticesAtParallelBoundaries(selectedProcPoints);
 
     //- update geometry addressing for moved points
     surfaceModifier.updateGeometry(selectedPoints);
@@ -491,7 +496,7 @@ bool meshSurfaceOptimizer::untangleSurface
             surfaceModifier.updateGeometry(movedPoints);
 
             //- use surface optimizer
-            smoothSurfaceOptimizer(movedPoints);
+            smoothSurfaceOptimizer(movedPoints, procBndPoints);
 
             if( remapVertex && mapperPtr )
                 mapperPtr->mapVerticesOntoSurface(movedPoints);
@@ -503,7 +508,7 @@ bool meshSurfaceOptimizer::untangleSurface
 
         if( nInvertedTria > 0 )
         {
-            //- use the combination with the minimu number of inverted points
+            //- use the combination with the minimum number of inverted points
             meshSurfaceEngineModifier sMod(surfaceEngine_);
             forAll(minInvertedPoints, bpI)
                 sMod.moveBoundaryVertexNoUpdate(bpI, minInvertedPoints[bpI]);
@@ -541,6 +546,23 @@ bool meshSurfaceOptimizer::untangleSurface
     } while( nInvertedTria && (++nGlobalIter < 10) );
 
     deleteDemandDrivenData(mapperPtr);
+
+    if( nInvertedTria != 0 )
+    {
+        //- the procedure has given up without success
+        //- there exist some remaining inverted faces in the mesh
+        polyMeshGen& mesh =
+            const_cast<polyMeshGen&>(surfaceEngine_.mesh());
+
+        label subsetId = mesh.pointSubsetIndex(badPointsSubsetName_);
+        if( subsetId >= 0 )
+            mesh.removePointSubset(subsetId);
+        subsetId = mesh.addPointSubset(badPointsSubsetName_);
+
+        forAll(smoothVertex, bpI)
+            if( smoothVertex[bpI] )
+                mesh.addPointToSubset(subsetId, bPoints[bpI]);
+    }
 
     Info << "Finished untangling the surface of the volume mesh" << endl;
 
@@ -623,7 +645,7 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     {
         smoothLaplacianFC(partitionPoints, procPoints, true);
 
-        smoothSurfaceOptimizer(partitionPoints);
+        smoothSurfaceOptimizer(partitionPoints, procPoints);
 
         Info << "." << flush;
     }
@@ -720,7 +742,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
     {
         Info << "." << flush;
 
-        smoothSurfaceOptimizer(movedPoints);
+        smoothSurfaceOptimizer(movedPoints, procBndPoints);
 
         //- move the points which are not at minimum z coordinate
         mesh2DEngine.correctPoints();
@@ -876,7 +898,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
 
             bMod.updateGeometry(edgePts);
 
-            smoothSurfaceOptimizer(movedPts);
+            smoothSurfaceOptimizer(movedPts, procBndPts);
 
             bMod.updateGeometry(movedPts);
         }

@@ -164,7 +164,7 @@ $(polyMeshGen2DEngine)/polyMeshGen2DEngine.C
 
 $(coordinateModification)/coordinateModification.C
 $(coordinateModification)/newCoordinateModification.C
-$(coordinateModification)/planeTranslation.C
+$(coordinateModification)/planeScaling.C
 $(coordinateModification)/boxScaling.C
 
 $(edgeMeshGeometryModification)/edgeMeshGeometryModification.C
