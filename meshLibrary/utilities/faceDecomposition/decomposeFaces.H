@@ -50,9 +50,12 @@ class decomposeFaces
     // private data
         //- reference to the mesh
         polyMeshGen& mesh_;
-    
+
         //- number of points
         VRWGraph newFacesForFace_;
+
+        //- is decomposition performed
+        bool done_;
 
         //- disallows bitwise construct
         void operator=(const decomposeFaces&);
@@ -76,6 +79,10 @@ public:
 
         //- decompose internal faces containing concave nodes
         void decomposeConcaveInternalFaces(const boolList& concaveVertex);
+
+        //- reference to a graph containg label of new faces generated
+        //- from each face
+        const VRWGraph& newFacesForFace() const;
 };
 
 

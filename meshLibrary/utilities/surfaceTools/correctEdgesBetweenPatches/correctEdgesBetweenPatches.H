@@ -64,6 +64,7 @@ class correctEdgesBetweenPatches
 
         //- boundary data
         wordList patchNames_;
+        wordList patchTypes_;
         VRWGraph newBoundaryFaces_;
         labelLongList newBoundaryOwners_;
         labelLongList newBoundaryPatches_;
@@ -90,6 +91,9 @@ class correctEdgesBetweenPatches
         //- over vertices and internal faces which have more than one feature
         //- edge at the boundary
         void decomposeProblematicFaces();
+
+        //- decompose cells with faces at concave boundary edges
+        void decomposeConcaveFaces();
 
         //- perform decompose remaining faces having more than one feature edge
         void patchCorrection();

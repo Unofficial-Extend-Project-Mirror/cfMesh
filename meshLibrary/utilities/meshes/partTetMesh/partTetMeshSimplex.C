@@ -222,6 +222,82 @@ partTetMeshSimplex::partTetMeshSimplex
     }
 }
 
+partTetMeshSimplex::partTetMeshSimplex
+(
+    const DynList<point, 128>& pts,
+    const DynList<partTet, 128>& tets,
+    const label pointI
+)
+:
+    pts_(pts),
+    tets_(tets.size())
+{
+    forAll(tets, tetI)
+    {
+        const partTet& tet = tets[tetI];
+
+        const label pos = tet.whichPosition(pointI);
+
+        switch( pos )
+        {
+            case 0:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        tet.b(),
+                        tet.d(),
+                        tet.c(),
+                        tet.a()
+                    );
+            } break;
+            case 1:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        tet.a(),
+                        tet.c(),
+                        tet.d(),
+                        tet.b()
+                    );
+            } break;
+            case 2:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        tet.a(),
+                        tet.d(),
+                        tet.b(),
+                        tet.c()
+                    );
+            } break;
+            case 3:
+            {
+                tets_[tetI] =
+                    partTet
+                    (
+                        tet.a(),
+                        tet.b(),
+                        tet.c(),
+                        tet.d()
+                    );
+            } break;
+            default:
+            {
+                FatalErrorIn
+                (
+                    "partTetMeshSimplex::partTetMeshSimplex"
+                    "(const DynList<point, 128>& pts,"
+                    "const DynList<partTet, 128>& tets, const label pointI)"
+                ) << "Point " << pointI << " is not present in tet" << tet
+                    << abort(FatalError);
+            }
+        }
+    }
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     
 partTetMeshSimplex::~partTetMeshSimplex()

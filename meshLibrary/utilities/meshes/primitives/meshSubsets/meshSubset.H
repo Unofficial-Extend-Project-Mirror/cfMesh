@@ -39,6 +39,8 @@ SourceFiles
 #include "HashSet.H"
 #include "VRWGraph.H"
 
+#include <set>
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -61,7 +63,8 @@ class meshSubset
         label type_;
 
         //- labels of elements
-        HashSet<label> data_;
+        //HashSet<label> data_;
+        std::set<label> data_;
 
 public:
 

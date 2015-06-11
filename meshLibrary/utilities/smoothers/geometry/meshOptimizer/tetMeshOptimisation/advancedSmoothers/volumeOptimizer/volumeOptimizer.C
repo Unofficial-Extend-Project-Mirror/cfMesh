@@ -39,6 +39,20 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+const vector volumeOptimizer::dirVecs[8] =
+    {
+        vector(-1.0, -1.0, -1.0),
+        vector(1.0, -1.0, -1.0),
+        vector(-1.0, 1.0, -1.0),
+        vector(1.0, 1.0, -1.0),
+        vector(-1.0, -1.0, 1.0),
+        vector(1.0, -1.0, 1.0),
+        vector(-1.0, 1.0, 1.0),
+        vector(1.0, 1.0, 1.0)
+    };
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 volumeOptimizer::volumeOptimizer(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex)

@@ -38,6 +38,16 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+const vector surfaceOptimizer::dirVecs[4] =
+    {
+        vector(-1.0, -1.0, 0.0),
+        vector(1.0, -1.0, 0.0),
+        vector(-1.0, 1.0, 0.0),
+        vector(1.0, 1.0, 0.0)
+    };
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 scalar surfaceOptimizer::evaluateStabilisationFactor() const
 {
     //- find the minimum area
@@ -113,7 +123,8 @@ scalar surfaceOptimizer::evaluateFunc(const scalar& K) const
             magSqr(p2 - p0)
         );
 
-        func += LSqrTri / (0.5 * (Atri + stab));
+        const scalar Astab = Foam::max(VSMALL, 0.5 * (Atri + stab));
+        func += LSqrTri / Astab;
     }
 
     return func;
@@ -157,7 +168,7 @@ void surfaceOptimizer::evaluateGradients
 
         const scalar stab = sqrt(sqr(Atri) + K);
 
-        const scalar Astab = 0.5 * (Atri + stab);
+        const scalar Astab = Foam::max(ROOTVSMALL, 0.5 * (Atri + stab));
 
         const vector gradAtri
         (
@@ -203,12 +214,6 @@ scalar surfaceOptimizer::optimiseDivideAndConquer(const scalar tol)
     scalar dx = (pMax_.x() - pMin_.x()) / 2.0;
     scalar dy = (pMax_.y() - pMin_.y()) / 2.0;
 
-    FixedList<vector, 4> dirVecs;
-    dirVecs[0] = vector(-1.0, -1.0, 0.0);
-    dirVecs[1] = vector(1.0, -1.0, 0.0);
-    dirVecs[2] = vector(-1.0, 1.0, 0.0);
-    dirVecs[3] = vector(1.0, 1.0, 0.0);
-
     label iter(0);
 
     //- find the value of the functional in the centre of the bnd box
@@ -222,7 +227,7 @@ scalar surfaceOptimizer::optimiseDivideAndConquer(const scalar tol)
         funcAfter = VGREAT;
         point minCentre(vector::zero);
 
-        forAll(dirVecs, i)
+        for(label i=0;i<4;++i)
         {
             pOpt.x() = currCentre.x() + 0.5 * dirVecs[i].x() * dx;
             pOpt.y() = currCentre.y() + 0.5 * dirVecs[i].y() * dy;

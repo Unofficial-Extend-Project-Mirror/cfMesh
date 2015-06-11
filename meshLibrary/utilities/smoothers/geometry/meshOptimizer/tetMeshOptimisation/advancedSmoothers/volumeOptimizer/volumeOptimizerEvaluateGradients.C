@@ -229,16 +229,6 @@ scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
     scalar dy = (bb_.max().y() - bb_.min().y()) / 2.0;
     scalar dz = (bb_.max().z() - bb_.min().z()) / 2.0;
 
-    FixedList<vector, 8> dirVecs;
-    dirVecs[0] = vector(-1.0, -1.0, -1.0);
-    dirVecs[1] = vector(1.0, -1.0, -1.0);
-    dirVecs[2] = vector(-1.0, 1.0, -1.0);
-    dirVecs[3] = vector(1.0, 1.0, -1.0);
-    dirVecs[4] = vector(-1.0, -1.0, 1.0);
-    dirVecs[5] = vector(1.0, -1.0, 1.0);
-    dirVecs[6] = vector(-1.0, 1.0, 1.0);
-    dirVecs[7] = vector(1.0, 1.0, 1.0);
-
     label iter(0);
 
     //- find the value of the functional in the centre of the bnd box
@@ -251,7 +241,7 @@ scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
         funcAfter = VGREAT;
         point minCentre(vector::zero);
 
-        forAll(dirVecs, i)
+        for(label i=0;i<8;++i)
         {
             pOpt.x() = currCentre.x() + 0.5 * dirVecs[i].x() * dx;
             pOpt.y() = currCentre.y() + 0.5 * dirVecs[i].y() * dy;

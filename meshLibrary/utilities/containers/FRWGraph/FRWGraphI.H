@@ -32,8 +32,8 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
         (
             "void Foam::FRWGraph<T,width>::"
             "checkIndex(const label i, const label j) const"
-        ) << "Row index " << Foam::label(i)
-            << " is not in range " << Foam::label(0)
+        ) << "Row index " << i
+            << " is not in range " << 0
             << " and " << nRows_ << abort(FatalError);
     }
     
@@ -41,9 +41,9 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
         FatalErrorIn
         (
             "void Foam::FRWGraph<T,width>::"
-            "checkIndex(label const i) const"
-        ) << "Column index " << Foam::label(j)
-            << " is not in range " << Foam::label(0)
+            "checkIndex(const label i, const label j) const"
+        ) << "Column index " << j
+            << " is not in range " << 0
             << " and " << width << abort(FatalError);
 }
 
@@ -55,8 +55,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph()
 :
     data_(),
     nRows_(0)
-{
-}
+{}
 
 //- Construct given size
 template<class T, Foam::label width>
@@ -67,8 +66,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph
 :
     data_(s * width),
     nRows_(s)
-{
-}
+{}
 
 
 //- Construct given size
@@ -81,8 +79,7 @@ inline Foam::FRWGraph<T,width>::FRWGraph
 :
     data_(s * width, t),
     nRows_(s)
-{
-}
+{}
 
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::FRWGraph
@@ -92,13 +89,11 @@ inline Foam::FRWGraph<T,width>::FRWGraph
 :
     data_(ol.data_),
     nRows_(ol.nRows_)
-{
-}
+{}
 
 template<class T, Foam::label width>
 inline Foam::FRWGraph<T,width>::~FRWGraph()
-{
-}
+{}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -217,6 +212,7 @@ inline void Foam::FRWGraph<T,width>::operator=
 )
 {
     data_ = l.data_;
+    nRows_ = l.nRows_;
 }
 
 

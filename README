@@ -1,8 +1,8 @@
 #                            -*- mode: org; -*-
 #
-#+TITLE:             *cfMesh README for version 1.0*
+#+TITLE:                       *cfMesh README*
 #+AUTHOR:                      Franjo Juretic.
-#+DATE:                           May 2014
+#+DATE:                           May 2015
 #+LINK:                  http://www.c-fields.com
 #+OPTIONS:
 
@@ -18,11 +18,11 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   cfMesh is developed and tested on Linux and MS Windows.
 
 * Installation
-  The binaries can be downloaded from www.c-fields.com
+  Binaries and the source code can be downloaded from http://sourceforge.net/projects/cfmesh/
 
 * Building from Sources (Optional)
 
-  cfMesh can be built with recent versions of OpenFOAM and foam-extend. In order to build the library, a working OpenFOAM environment is needed. The build started by the Allwmake script located in this folder. It can be built with gcc and mingw compilers which support OpenMP (gcc-4.2.4 and above). Other compilers are not tested.
+  cfMesh can be built with recent versions of OpenFOAM and foam-extend. In order to build the library, a working OpenFOAM environment is needed. The build started by the Allwmake script located in this folder. It can be built with gcc and mingw compilers which support OpenMP (gcc-4.2.4 and above). Other compilers are not tested. This instructions are valid for Linux, only. We encourage Windows users to download the binary package.
 
 * Getting Started
 
@@ -37,5 +37,18 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   + cd $FOAM_RUN/tutorials/asmoOctree
   + cartesianMesh
 
+  All cases have Allrun and Allclean scripts guiding you through the meshing process.
+
 * Documentation
-  http://www.c-fields.com
+  http://www.c-fields.com and in the userGuide folder.
+
+* List of contributors
+  Franjo Juretic
+  Philippose Rajan
+  Ivor Clifford
+  
+* How to contribute
+
+  It you are interested in contributing to cfMesh please send an e-mail at: info@c-fields.com
+  We gladly accept contributions, whether they are the code, validation data, documentation, promotional material, etc.
+  cfMesh development process follows the git-flow branching model, described in http://nvie.com/posts/a-successful-git-branching-model/.

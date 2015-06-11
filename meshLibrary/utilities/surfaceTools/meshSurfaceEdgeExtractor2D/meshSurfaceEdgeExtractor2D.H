@@ -62,12 +62,6 @@ class meshSurfaceEdgeExtractor2D
 
     // Private member functions
 
-        //- distribute boundary faces into patches
-        void distributeBoundaryFaces();
-
-        //- re-map points after edges have been extracted
-        void remapBoundaryPoints();
-
         //- Disallow default bitwise copy construct
         meshSurfaceEdgeExtractor2D(const meshSurfaceEdgeExtractor2D&);
 
@@ -90,6 +84,11 @@ public:
         ~meshSurfaceEdgeExtractor2D();
 
     // Member Functions
+        //- distribute boundary faces into patches
+        void distributeBoundaryFaces();
+
+        //- re-map points after edges have been extracted
+        void remapBoundaryPoints();
 };
 
 

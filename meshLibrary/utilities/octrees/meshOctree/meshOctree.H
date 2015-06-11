@@ -138,6 +138,14 @@ public:
         //- find a cube containing the vertex
         label findLeafContainingVertex(const point&) const;
 
+        //- find leaves within the given range from the given point
+        void findLeavesInSphere
+        (
+            const point&,
+            const scalar,
+            DynList<label>&
+        ) const;
+
         //- is octree a quadtree or an octree
         inline bool isQuadtree() const;
 
@@ -332,6 +340,15 @@ public:
         (
             const LongList<meshOctreeCubeCoordinates>& dataToSend,
             LongList<meshOctreeCubeCoordinates>& dataToReceive
+        ) const;
+
+        //- exchange requests with other processors generating the octree
+        void exchangeRequestsWithNeighbourProcessors
+        (
+            const LongList<meshOctreeCubeCoordinates>& dataToSend,
+            const LongList<scalar>& rangesToSend,
+            LongList<meshOctreeCubeCoordinates>& dataToReceive,
+            LongList<scalar>& receivedRanges
         ) const;
 
         //- neighbour processors of the current one

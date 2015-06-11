@@ -41,10 +41,8 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
+void meshOctreeModifier::ensureCorrectRegularity(labelList& refineBox)
 {
-    const FixedList<meshOctreeCubeCoordinates, 26>& rp =
-        octree_.regularityPositions_;
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
     //- this is needed for parallel runs to reduce the bandwidth
@@ -57,59 +55,38 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
             front.append(leafI);
     }
 
-    FixedList<meshOctreeCube*, 26> neighbours;
+    DynList<label> neighbours;
 
     label nMarked;
     do
     {
         nMarked = 0;
+        transferCoordinates.clear();
         LongList<meshOctreeCubeCoordinates> processorChecks;
 
         # ifdef USE_OMP
-        # pragma omp parallel if( front.size() > 1000 ) \
-        private(neighbours) reduction(+ : nMarked)
+        # pragma omp parallel private(neighbours)
         # endif
         {
             labelLongList tFront;
 
             # ifdef USE_OMP
-            # pragma omp for
+            # pragma omp for schedule(dynamic, 50)
             # endif
             forAll(front, i)
-                tFront.append(front[i]);
-
-            # ifdef USE_OMP
-            # pragma omp barrier
-            # endif
-
-            front.clear();
-
-            while( tFront.size() != 0 )
             {
-                const label leafI = tFront.removeLastElement();
+                const label leafI = front[i];
                 const meshOctreeCube* oc = leaves[leafI];
 
-                forAll(rp, posI)
+                neighbours.clear();
+                octree_.findAllLeafNeighbours(*oc, neighbours);
+
+                forAll(neighbours, neiI)
                 {
-                    const meshOctreeCubeCoordinates cc
-                    (
-                        oc->coordinates() + rp[posI]
-                    );
+                    const label nei = neighbours[neiI];
 
-                    const label neiLabel = octree_.findLeafLabelForPosition(cc);
-
-                    if( neiLabel > -1 )
+                    if( nei == meshOctreeCubeBasic::OTHERPROC )
                     {
-                        neighbours[posI] = leaves[neiLabel];
-                    }
-                    else if( neiLabel == -1 )
-                    {
-                        neighbours[posI] = NULL;
-                    }
-                    else if( neiLabel == meshOctreeCubeBasic::OTHERPROC )
-                    {
-                        neighbours[posI] = NULL;
-
                         # ifdef USE_OMP
                         # pragma omp critical
                         # endif
@@ -120,24 +97,49 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
                                 transferCoordinates.insert(leafI);
                             }
                         }
+
+                        continue;
                     }
-                }
 
-                forAll(neighbours, neiI)
-                {
-                    const meshOctreeCube* nei = neighbours[neiI];
-                    if( !nei ) continue;
-                    if( !nei->isLeaf() ) continue;
-                    if( nei->level() >= oc->level() ) continue;
+                    if( nei < 0 )
+                        continue;
 
-                    if( !refineBox[nei->cubeLabel()] )
+                    const meshOctreeCube& noc = *leaves[nei];
+
+                    if( noc.level() >= oc->level() )
+                        continue;
+
+                    if( !refineBox[nei] )
                     {
-                        refineBox[nei->cubeLabel()] = 1;
-                        tFront.append(nei->cubeLabel());
+                        refineBox[nei] = 1;
+                        tFront.append(nei);
                     }
                 }
             }
+
+            # ifdef USE_OMP
+
+            # pragma omp barrier
+
+            # pragma omp single
+            front.clear();
+
+            # pragma omp barrier
+
+            # pragma omp critical
+            {
+                label start = front.size();
+                front.setSize(start+tFront.size());
+
+                forAll(tFront, i)
+                    front[start++] = tFront[i];
+            }
+            # else
+            front.transfer(tFront);
+            # endif
         }
+
+        nMarked = front.size();
 
         if( octree_.neiProcs().size() )
         {
@@ -151,32 +153,34 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
             //- check consistency with received cube coordinates
             # ifdef USE_OMP
             # pragma omp parallel for if( receivedCoords.size() > 100 ) \
-            schedule(dynamic, 40)
+            schedule(dynamic, 40) private(neighbours)
             # endif
             forAll(receivedCoords, ccI)
             {
-                forAll(rp, posI)
+                const meshOctreeCubeCoordinates& cc = receivedCoords[ccI];
+                neighbours.clear();
+                octree_.findAllLeafNeighbours(cc, neighbours);
+
+                forAll(neighbours, neiI)
                 {
-                    const meshOctreeCubeCoordinates cc
-                    (
-                        receivedCoords[ccI] + rp[posI]
-                    );
+                    const label nei = neighbours[neiI];
 
-                    const meshOctreeCube* nei =
-                        octree_.findCubeForPosition(cc);
+                    if( nei < 0 )
+                        continue;
 
-                    if( !nei ) continue;
-                    if( !nei->isLeaf() ) continue;
-                    if( nei->level() >= cc.level() ) continue;
+                    const meshOctreeCube& noc = *leaves[nei];
 
-                    if( !refineBox[nei->cubeLabel()] )
+                    if( noc.level() >= cc.level() )
+                        continue;
+
+                    if( !refineBox[nei] )
                     {
-                        refineBox[nei->cubeLabel()] = 1;
+                        refineBox[nei] = 1;
 
                         # ifdef USE_OMP
                         # pragma omp critical
                         # endif
-                        front.append(nei->cubeLabel());
+                        front.append(nei);
                     }
                 }
             }
@@ -190,7 +194,7 @@ void meshOctreeModifier::ensureCorrectRegularity(List<direction>& refineBox)
     while( nMarked != 0 );
 }
 
-bool meshOctreeModifier::ensureCorrectRegularitySons(List<direction>& refineBox)
+bool meshOctreeModifier::ensureCorrectRegularitySons(labelList& refineBox)
 {
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 

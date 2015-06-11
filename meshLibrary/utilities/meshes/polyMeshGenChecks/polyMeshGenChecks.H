@@ -50,7 +50,7 @@ namespace Foam
 
 namespace polyMeshGenChecks
 {
-    
+
 // Check geometry
 //- Check boundary closedness
 bool checkClosedBoundary(const polyMeshGen&, const bool report = false);
@@ -95,6 +95,13 @@ bool checkCellPartTetrahedra
 );
 
 //- Check for non-orthogonality
+void checkFaceDotProduct
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceDotProduct
 (
     const polyMeshGen&,
@@ -115,6 +122,13 @@ bool checkFacePyramids
 );
 
 //- Check face skewness
+void checkFaceSkewness
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceSkewness
 (
     const polyMeshGen&,
@@ -125,7 +139,31 @@ bool checkFaceSkewness
 );
 
 //- Check face uniformity
+void checkFaceUniformity
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
 bool checkFaceUniformity
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar warnUniform = 0.1,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+//- check volume difference of neighbouring cells
+void checkVolumeUniformity
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
+bool checkVolumeUniformity
 (
     const polyMeshGen&,
     const bool report = false,
@@ -152,7 +190,7 @@ bool checkFaceFlatness
     const polyMeshGen&,
     const bool report,
     const scalar warnFlatness,  // When to include in set.
-    labelHashSet* setPtr,
+    labelHashSet* setPtr = NULL,
     const boolList* changedFacePtr = NULL
 );
 
@@ -193,12 +231,54 @@ bool checkFaceVertices
 //- Check mesh topology for correctness. Returns false for no error.
 bool checkTopology(const polyMeshGen&, const bool report = false);
 
-//- Check mesh geometry (& implicitly topology) for correctness. 
+//- Check mesh geometry (& implicitly topology) for correctness.
 //  Returns false for no error.
 bool checkGeometry(const polyMeshGen&, const bool report = false);
 
 //- Check mesh for correctness. Returns false for no error.
 bool checkMesh(const polyMeshGen&, const bool report = false);
+
+//- checks for bad faces making the mesh unusable
+//- checks for negative pyramids and zero area faces
+label findBadFacesRelaxed
+(
+    const polyMeshGen&,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
+//- check mesh for bad faces which make the mesh invalid
+//- checks for negative pyramids, face flatness,
+//- zero area faces and negative tetrahedra
+label findBadFaces
+(
+    const polyMeshGen&,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
+//- check mesh for faces that may cause problems to the solver
+//- checks for non-orthogonality and skewness
+label findLowQualityFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL
+);
+
+//- checks the mesh and selects the faces with worst quality
+label findWorstQualityFaces
+(
+    const polyMeshGen& mesh,
+    labelHashSet& badFaces,
+    const bool report = false,
+    const boolList* activeFacePtr = NULL,
+    const scalar relativeThreshold = 0.1
+);
+
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -37,6 +37,7 @@ SourceFiles
 
 #include "polyMeshGen.H"
 #include "IOdictionary.H"
+#include "workflowControls.H"
 //#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -62,6 +63,9 @@ class cartesianMeshGenerator
         //- pointer to the surface
         const triSurf* surfacePtr_;
 
+        //- pointer to the modified surface
+        const triSurf* modSurfacePtr_;
+
         //- IOdictionary containing information about cell sizes, etc..
         IOdictionary meshDict_;
 
@@ -70,6 +74,9 @@ class cartesianMeshGenerator
 
         //- mesh
         polyMeshGen mesh_;
+
+        //- workflow controller
+        workflowControls controller_;
 
     // Private member functions
         //- create cartesian mesh
@@ -82,6 +89,9 @@ class cartesianMeshGenerator
         void mapMeshToSurface();
 
         //- capture edges and corners
+        void extractPatches();
+
+        //- map points at feature edges and corners
         void mapEdgesAndCorners();
 
         //- optimise surface mesh
@@ -95,6 +105,9 @@ class cartesianMeshGenerator
 
         //- mesh optimisation
         void optimiseFinalMesh();
+
+        //- re-project points back on the surface mesh after back-scaling
+        void projectSurfaceAfterBackScaling();
 
         //- replace boundaries
         void replaceBoundaries();

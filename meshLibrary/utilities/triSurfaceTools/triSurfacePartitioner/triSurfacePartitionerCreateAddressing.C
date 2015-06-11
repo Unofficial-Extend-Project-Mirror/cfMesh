@@ -117,10 +117,7 @@ void triSurfacePartitioner::calculatePatchPatches()
     forAll(edgeFaces, eI)
     {
         if( edgeFaces.sizeOfRow(eI) != 2 )
-        {
-            Warning << "Surface is not a manifold!!" << endl;
             continue;
-        }
 
         const label sPatch = surface_[edgeFaces(eI, 0)].region();
         const label ePatch = surface_[edgeFaces(eI, 1)].region();

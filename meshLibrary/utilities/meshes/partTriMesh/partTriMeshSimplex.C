@@ -49,8 +49,9 @@ partTriMeshSimplex::partTriMeshSimplex
     const pointField& points = tm.points();
     const LongList<labelledTri>& trias = tm.triangles();
     const VRWGraph& pt = tm.pointTriangles();
+    const LongList<direction>& pType = tm.pointType();
     
-    trias_.setSize(pt.sizeOfRow(pI));
+    //trias_.setSize(pt.sizeOfRow(pI));
     label counter(0);
 
     Map<label> addr(2*pt.sizeOfRow(pI));
@@ -81,19 +82,32 @@ partTriMeshSimplex::partTriMeshSimplex
                 break;
             }
 
+        //- avoid using triangle serving as barriers for other points
+        if( !(pType[tri[2]] & partTriMesh::FACECENTRE) && (pos != 0) )
+            continue;
+
         switch( pos )
         {
             case 0:
             {
-                trias_[tI] = triFace(addr[tri[0]], addr[tri[1]], addr[tri[2]]);
+                trias_.append
+                (
+                    triFace(addr[tri[0]], addr[tri[1]], addr[tri[2]])
+                );
             } break;
             case 1:
             {
-                trias_[tI] = triFace(addr[tri[1]], addr[tri[2]], addr[tri[0]]);
+                trias_.append
+                (
+                    triFace(addr[tri[1]], addr[tri[2]], addr[tri[0]])
+                );
             } break;
             case 2:
             {
-                trias_[tI] = triFace(addr[tri[2]], addr[tri[0]], addr[tri[1]]);
+                trias_.append
+                (
+                    triFace(addr[tri[2]], addr[tri[0]], addr[tri[1]])
+                );
             } break;
             default:
             {
@@ -106,6 +120,15 @@ partTriMeshSimplex::partTriMeshSimplex
             }
         }
     }
+
+    # ifdef DEBUGSmooth
+    Info << "Simplex at point " << pI << " points " << pts_ << endl;
+    Info << "Simplex at point " << pI << " triangles " << trias_ << endl;
+    # endif
+
+    if( pts_.size() == 0 || trias_.size() == 0 )
+        FatalError << "Simplex at point " << pI << " is not valid "
+                   << pts_ << " triangles " << trias_ << abort(FatalError);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

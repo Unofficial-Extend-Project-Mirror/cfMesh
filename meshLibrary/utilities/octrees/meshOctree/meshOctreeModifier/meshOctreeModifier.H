@@ -54,11 +54,11 @@ class meshOctreeModifier
 
     // Private member functions
         //- correct refinement such that it produces 1-irregular octree
-        void ensureCorrectRegularity(List<direction>& refineBox);
+        void ensureCorrectRegularity(labelList& refineBox);
 
         //- add additional refinement with the following rule. If a son
         //- of a father box is refined, then refine all other sons
-        bool ensureCorrectRegularitySons(List<direction>& refineBox);
+        bool ensureCorrectRegularitySons(labelList& refineBox);
 
     // Private copy constructor
         //- Disallow default bitwise copy construct
@@ -126,8 +126,15 @@ public:
         //- mark additional layers around the leaves selected for refinement
         void markAdditionalLayers
         (
-            List<direction>& refineBox,
-            const direction nLayers = 1
+            labelList& refineBox,
+            const label nLayers = 1
+        ) const;
+
+        //- mark additional layers around the leaves selected for refinement
+        void markAdditionalLayersOfFaceNeighbours
+        (
+            labelList& refineBox,
+            const label nLayers = 1
         ) const;
 
         //- mark additional layers around the leaves selected for refinement
@@ -135,7 +142,7 @@ public:
         //- returns the number of boxes selected for refinement
         label markAdditionalLayers
         (
-            List<direction>& refineBox,
+            labelList& refineBox,
             labelList& nLayers,
             List<direction>& targetRefLevel
         ) const;
@@ -145,8 +152,15 @@ public:
         //- sons of the same father, if a single son gets marked for refinement
         void refineSelectedBoxes
         (
-            List<direction>& refineBox,
+            labelList& refineBox,
             const bool hexRefinement = false
+        );
+
+        //- refine selected boxes and the boxes within the given range
+        void refineSelectedBoxesAndAdditionalLayers
+        (
+            labelList& refineBox,
+            const scalarList& refThickness
         );
 
     // functions for parallel runs

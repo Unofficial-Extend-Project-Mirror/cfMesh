@@ -108,6 +108,9 @@ class meshSurfaceMapper
             scalarList & mappingDistance
         ) const;
 
+        //- calculate face metric
+        scalar faceMetricInPatch(const label bfI, const label patchI) const;
+
     // Private member functions needed for parallel execution
 
         //- check if nodes at parallel boundaries are selected at all processors
@@ -168,7 +171,7 @@ public:
 
         //- a combination of mapping and smoothing intended for better
         //- feature capturing
-        void preMapVertices(const label nIterations = 2);
+        void preMapVertices(const label nIterations = 3);
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

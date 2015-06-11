@@ -143,6 +143,10 @@ void triSurfaceRemoveFacets::removeFacets()
 
     //- update feature edges
     const edgeLongList& featureEdges = surf_.featureEdges();
+    const VRWGraph& pointEdges = surf_.pointEdges();
+    const edgeLongList& edges = surf_.edges();
+    const VRWGraph& edgeFacets = surf_.edgeFacets();
+
     label edgeCounter(0);
     labelLongList newFeatureEdgeLabel(featureEdges.size(), -1);
 
@@ -151,6 +155,34 @@ void triSurfaceRemoveFacets::removeFacets()
         const edge& e = featureEdges[feI];
 
         if( (newPointLabel[e.start()] < 0) || (newPointLabel[e.end()] < 0) )
+            continue;
+
+        //- find global edge label
+        label eI(-1);
+        forAllRow(pointEdges, e.start(), peI)
+        {
+            const label eJ = pointEdges(e.start(), peI);
+            if( edges[eJ] == e )
+            {
+                eI = eJ;
+                break;
+            }
+        }
+
+        if( eI < 0 )
+            continue;
+
+        //- check if the edge is attached to at least one triangle
+        bool foundTriangle(false);
+        forAllRow(edgeFacets, eI, efI)
+        {
+            if( newFacetLabel[edgeFacets(eI, efI)] >= 0 )
+            {
+                foundTriangle = true;
+                break;
+            }
+        }
+        if( !foundTriangle )
             continue;
 
         newFeatureEdgeLabel[feI] = edgeCounter++;

@@ -39,7 +39,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
+// Construct from mesh, octree
 meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
 (
     polyMeshGen& mesh,
@@ -48,11 +48,7 @@ meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
 :
     mesh_(mesh),
     meshOctree_(octree)
-{
-    distributeBoundaryFaces();
-
-    remapBoundaryPoints();
-}
+{}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 

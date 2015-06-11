@@ -27,18 +27,10 @@ Description
 
 #include "demandDrivenData.H"
 #include "meshSurfaceEdgeExtractorNonTopo.H"
-#include "meshOctree.H"
-#include "triSurf.H"
 #include "meshSurfaceEngine.H"
 #include "meshSurfaceMapper.H"
-#include "helperFunctions.H"
-#include "edgeExtractor.H"
 
-# ifdef USE_OMP
-#include <omp.h>
-# endif
-
-//#define DEBUGMapping
+#include "correctEdgesBetweenPatches.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -47,14 +39,9 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceEdgeExtractorNonTopo::distributeBoundaryFaces()
+void meshSurfaceEdgeExtractorNonTopo::decomposeBoundaryFaces()
 {
-    edgeExtractor extractor(mesh_, meshOctree_);
-
-    Info << "Extracting edges" << endl;
-    extractor.extractEdges();
-
-    extractor.updateMeshPatches();
+    correctEdgesBetweenPatches featureEdges(mesh_);
 }
 
 void meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()

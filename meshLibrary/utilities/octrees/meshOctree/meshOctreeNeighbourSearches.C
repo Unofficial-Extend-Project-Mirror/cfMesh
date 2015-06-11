@@ -54,6 +54,14 @@ label meshOctree::findLeafContainingVertex
         # ifdef OCTREE_DEBUG
         Info << "Vertex " << p << " is not in the initial cube" << endl;
         # endif
+
+        FatalErrorIn
+        (
+            "label meshOctree::findLeafContainingVertex(const point&) const"
+        ) << "Point " << p << " is not inside the initial cube" << endl;
+
+        throw "Found invalid locations of points";
+
         return -1;
     }
 
@@ -89,6 +97,18 @@ label meshOctree::findLeafContainingVertex
     }
 
     return meshOctreeCubeBasic::OTHERPROC;
+}
+
+void meshOctree::findLeavesInSphere
+(
+    const point& c,
+    const scalar r,
+    DynList<label>& containedLeaves
+) const
+{
+    containedLeaves.clear();
+
+    initialCubePtr_->leavesInSphere(rootBox_, c, r, containedLeaves);
 }
 
 label meshOctree::findNeighbourOverNode
