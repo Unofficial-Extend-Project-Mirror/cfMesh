@@ -22,7 +22,7 @@ cfMesh is a library for mesh generation built on OpenFOAM.
 
 * Building from Sources (Optional)
 
-  cfMesh can be built with recent versions of OpenFOAM and foam-extend. In order to build the library, a working OpenFOAM environment is needed. The build started by the Allwmake script located in this folder. It can be built with gcc and mingw compilers which support OpenMP (gcc-4.2.4 and above). Other compilers are not tested.
+  cfMesh can be built with recent versions of OpenFOAM and foam-extend. In order to build the library, a working OpenFOAM environment is needed. The build started by the Allwmake script located in this folder. It can be built with gcc and mingw compilers which support OpenMP (gcc-4.2.4 and above). Other compilers are not tested. This instructions are valid for Linux, only. We encourage Windows users to download the binary package.
 
 * Getting Started
 
@@ -46,7 +46,6 @@ cfMesh is a library for mesh generation built on OpenFOAM.
   Franjo Juretic
   Philippose Rajan
   Ivor Clifford
-  Nebojsa Gavrilov
   
 * How to contribute
 
