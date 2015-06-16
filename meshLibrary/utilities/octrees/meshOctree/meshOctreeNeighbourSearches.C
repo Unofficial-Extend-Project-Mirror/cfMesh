@@ -188,7 +188,7 @@ void meshOctree::findNeighboursOverEdge
     DynList<label>& neighbourLeaves
 ) const
 {
-    if( isQuadtree_ && (eI >= 8) )
+    if( isQuadtree_ && (eI < 8) )
     {
         neighbourLeaves.append(-1);
         return;
@@ -396,17 +396,26 @@ void meshOctree::findAllLeafNeighbours
     {
         for(label i=0;i<8;++i)
             neighbourLeaves.append(findNeighbourOverNode(cc, i));
+
+        //- neighbours over edges
+        for(label i=0;i<12;++i)
+            findNeighboursOverEdge(cc, i, neighbourLeaves);
+
+        //- neighbours over faces
+        for(label i=0;i<6;++i)
+            findNeighboursInDirection(cc, i, neighbourLeaves);
     }
+    else
+    {
+        //- neighbours of an quadtree leaf
+        //- neighbours over edges
+        for(label i=8;i<12;++i)
+            findNeighboursOverEdge(cc, i, neighbourLeaves);
 
-    //- neighbours over edges
-    const label nCubeEdges = isQuadtree_?8:12;
-    for(label i=0;i<nCubeEdges;++i)
-        findNeighboursOverEdge(cc, i, neighbourLeaves);
-
-    //- neighbours over faces
-    const label nCubeFaces = isQuadtree_?4:6;
-    for(label i=0;i<nCubeFaces;++i)
-        findNeighboursInDirection(cc, i, neighbourLeaves);
+        //- neighbours over faces
+        for(label i=0;i<4;++i)
+            findNeighboursInDirection(cc, i, neighbourLeaves);
+    }
 }
 
 void meshOctree::findLeavesForCubeVertex
