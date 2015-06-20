@@ -39,6 +39,10 @@ Description
 
 //#define DEBUGVrt
 
+# ifdef DEBUGVrt
+#include "OFstream.H"
+# endif
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -46,6 +50,7 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+# ifdef DEBUGVrt
 void writeOctreeToVTK
 (
     const fileName& fName,
@@ -113,6 +118,7 @@ void writeOctreeToVTK
 
     file << nl;
 }
+# endif
 
 void meshOctreeAddressing::createOctreePoints() const
 {
