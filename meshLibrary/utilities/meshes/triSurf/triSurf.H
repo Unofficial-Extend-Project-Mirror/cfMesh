@@ -74,6 +74,8 @@ class triSurf
         inline LongList<labelledTri>& accessToFacets();
         inline geometricSurfacePatchList& accessToPatches();
 
+        void topologyCheck();
+
         //- Disallow default bitwise assignment
         void operator=(const triSurf&);
 

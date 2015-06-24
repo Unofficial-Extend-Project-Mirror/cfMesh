@@ -32,6 +32,8 @@ Description
 #include "gzstream.h"
 #include "triSurface.H"
 
+#include "helperFunctions.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -163,6 +165,192 @@ void triSurf::writeToFMS(const fileName& fName) const
     fStream << subsets;
 }
 
+void triSurf::topologyCheck()
+{
+    const pointField& pts = this->points();
+    const LongList<labelledTri>& trias = this->facets();
+
+    //- check for inf and nan points
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(pts, pointI)
+    {
+        const point& p = pts[pointI];
+
+        if( help::isnan(p) || help::isinf(p) )
+        {
+            # ifdef USE_OMP
+            # pragma omp critical
+            # endif
+            {
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Point " << pointI << " has invalid coordinates "
+                  << p << exit(FatalError);
+            }
+        }
+    }
+
+    //- check whether the nodes are within the scope
+    //- report duplicate nodes in the same triangle
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(trias, triI)
+    {
+        const labelledTri& ltri = trias[triI];
+
+        forAll(ltri, pI)
+        {
+            if( ltri[pI] < 0 || (ltri[pI] >= pts.size()) )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Point " << ltri[pI] << " in triangle " << ltri
+                  << " is out of scope 0 " << pts.size() << exit(FatalError);
+            }
+
+            if( ltri[pI] == ltri[(pI+1)%3] || ltri[pI] == ltri[(pI+2)%3] )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                WarningIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Triangle " << ltri << " has duplicated points. "
+                  << "This may cause problems in the meshing process!" << endl;
+            }
+        }
+    }
+
+    //- check feature edges
+    const edgeLongList& featureEdges = this->featureEdges();
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100)
+    # endif
+    forAll(featureEdges, eI)
+    {
+        const edge& fe = featureEdges[eI];
+
+        forAll(fe, pI)
+        {
+            if( fe[pI] < 0 || (fe[pI] >= pts.size()) )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Feature edge " << fe << " point " << fe[pI]
+                  << " is out of scope 0 " << pts.size() << exit(FatalError);
+            }
+        }
+
+        if( fe.start() == fe.end() )
+        {
+            # ifdef USE_OMP
+            # pragma omp critical
+            # endif
+            WarningIn
+            (
+                "void triSurf::topologyCheck()"
+            ) << "Feature edge " << fe << " has duplicated points. "
+              << "This may cause problems in the meshing process!" << endl;
+        }
+    }
+
+    //- check point subsets
+    DynList<label> subsetIds;
+    this->pointSubsetIndices(subsetIds);
+    forAll(subsetIds, i)
+    {
+        labelLongList elmts;
+        this->pointsInSubset(subsetIds[i], elmts);
+
+        forAll(elmts, elmtI)
+        {
+            const label elI = elmts[elmtI];
+
+            if( elI < 0 || elI >= pts.size() )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Point " << elI << " in point subset "
+                  << this->pointSubsetName(subsetIds[i])
+                  << " is out of scope 0 " << pts.size() << exit(FatalError);
+            }
+        }
+    }
+
+    //- check face subsets
+    subsetIds.clear();
+    this->facetSubsetIndices(subsetIds);
+    forAll(subsetIds, i)
+    {
+        labelLongList elmts;
+        this->facetsInSubset(subsetIds[i], elmts);
+
+        forAll(elmts, elmtI)
+        {
+            const label elI = elmts[elmtI];
+
+            if( elI < 0 || elI >= trias.size() )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Triangle " << elI << " in facet subset "
+                  << this->facetSubsetName(subsetIds[i])
+                  << " is out of scope 0 " << trias.size() << exit(FatalError);
+            }
+        }
+    }
+
+    //- check feature edge subsets
+    subsetIds.clear();
+    this->edgeSubsetIndices(subsetIds);
+    forAll(subsetIds, i)
+    {
+        labelLongList elmts;
+        this->edgesInSubset(subsetIds[i], elmts);
+
+        forAll(elmts, elmtI)
+        {
+            const label elI = elmts[elmtI];
+
+            if( elI < 0 || elI >= featureEdges.size() )
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                FatalErrorIn
+                (
+                    "void triSurf::topologyCheck()"
+                ) << "Feature edge " << elI << " in edge subset "
+                  << this->edgeSubsetName(subsetIds[i])
+                  << " is out of scope 0 " << featureEdges.size()
+                  << exit(FatalError);
+            }
+        }
+    }
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 triSurf::triSurf()
@@ -186,7 +374,9 @@ triSurf::triSurf
     triSurfFacets(triangles, patches),
     triSurfFeatureEdges(featureEdges),
     triSurfAddressing(triSurfPoints::points_, triSurfFacets::triangles_)
-{}
+{
+    topologyCheck();
+}
 
 //- Read from file
 triSurf::triSurf(const fileName& fName)
@@ -197,6 +387,8 @@ triSurf::triSurf(const fileName& fName)
     triSurfAddressing(triSurfPoints::points_, triSurfFacets::triangles_)
 {
     readSurface(fName);
+
+    topologyCheck();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
