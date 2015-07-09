@@ -196,7 +196,7 @@ void meshOptimizer::untangleMeshFV
         // move boundary vertices
         nIter = 0;
 
-        while( nIter++ < maxNumSurfaceIterations );
+        while( nIter++ < maxNumSurfaceIterations )
         {
             if( !relaxedCheck )
             {
