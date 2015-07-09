@@ -87,7 +87,7 @@ public:
             return pts_[i];
         }
         
-        inline bool operator !=(const parPartTet& ptf) const
+        inline bool operator !=(const parPartTet& /*ptf*/) const
         {
             Serr << "Not implemented" << endl;
             ::exit(1);

@@ -90,7 +90,7 @@ void processorBoundaryPatch::write(Ostream& os) const
     this->operator<<(os);
 }
 
-void processorBoundaryPatch::writeDict(Ostream& os) const
+void processorBoundaryPatch::writeDict(Ostream& /*os*/) const
 {
     
 }

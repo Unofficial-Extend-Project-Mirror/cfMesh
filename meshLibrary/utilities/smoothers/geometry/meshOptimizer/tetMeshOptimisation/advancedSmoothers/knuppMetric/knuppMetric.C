@@ -121,7 +121,7 @@ knuppMetric::~knuppMetric()
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Implementation of knupp metric untangling
-void knuppMetric::optimizeNodePosition(const scalar tolObsolete)
+void knuppMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
 {
     if( !bb_.contains(p_) )
         p_ = 0.5 * (bb_.min() + bb_.max());

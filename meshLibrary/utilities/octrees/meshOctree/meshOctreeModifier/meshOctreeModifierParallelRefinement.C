@@ -119,8 +119,8 @@ void meshOctreeModifier::refineTreeForCoordinates
 void meshOctreeModifier::refineTreeForCoordinates
 (
     const meshOctreeCubeCoordinates& cc,
-    const labelList& containedTriangles,
-    const labelList& containedEdges,
+    const labelList& /*containedTriangles*/,
+    const labelList& /*containedEdges*/,
     const short procNo,
     const direction cubeType
 )
