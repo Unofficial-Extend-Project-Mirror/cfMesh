@@ -202,7 +202,11 @@ Foam::Istream& Foam::operator>>
 
             if( listDelimiter == token::BEGIN_LIST )
             {
+#if defined(__clang__)
+                for(label i=0;i<size;++i)
+#else
                 for(register label i=0;i<size;++i)
+#endif
                 {
                     is >> DL[i];
 
@@ -223,7 +227,11 @@ Foam::Istream& Foam::operator>>
                     "reading the single entry"
                 );
 
+#if defined(__clang__)
+                for(label i=0;i<size;++i)
+#else
                 for(register label i=0;i<size;++i)
+#endif
                 {
                     DL[i] = element;
                 }
@@ -306,7 +314,11 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
             if( listDelimiter == token::BEGIN_LIST )
             {
+#if defined(__clang__)
+                for(label i=0;i<size;++i)
+#else
                 for(register label i=0;i<size;++i)
+#endif
                 {
                     is >> this->operator[](origSize);
                     ++origSize;
@@ -328,7 +340,11 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
                     "reading the single entry"
                 );
 
+#if defined(__clang__)
+                for(label i=0;i<size;++i)
+#else
                 for(register label i=0;i<size;++i)
+#endif
                 {
                     this->operator[](origSize) = element;
                     ++origSize;

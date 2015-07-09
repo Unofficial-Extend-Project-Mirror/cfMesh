@@ -37,7 +37,11 @@ Foam::Ostream& Foam::operator<<
 {
     os << DL.size() << nl << token::BEGIN_LIST;
     
+#if defined(__clang__)
+    for(label i=0;i<DL.size();++i)
+#else
     for(register label i=0;i<DL.size();++i)
+#endif
     {
         os << nl << DL.sizeOfRow(i) << token::BEGIN_LIST;
         for(label j=0;j<DL.sizeOfRow(i);++j)
