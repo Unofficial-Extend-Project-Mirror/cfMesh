@@ -367,7 +367,7 @@ bool checkFaceAreas
     const boolList* changedFacePtr
 )
 {
-    const scalarField magFaceAreas = mag(mesh.addressingData().faceAreas());
+    const scalarField magFaceAreas(mag(mesh.addressingData().faceAreas()));
 
     const labelList& own = mesh.owner();
     const labelList& nei = mesh.neighbour();
@@ -1604,10 +1604,10 @@ void checkVolumeUniformity
 bool checkVolumeUniformity
 (
     const polyMeshGen&,
-    const bool report,
-    const scalar warnUniform,
-    labelHashSet* setPtr,
-    const boolList* changedFacePtr
+    const bool /*report*/,
+    const scalar /*warnUniform*/,
+    labelHashSet* /*setPtr*/,
+    const boolList* /*changedFacePtr*/
 )
 {
 
@@ -2120,7 +2120,7 @@ label findWorstQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
-    const bool report,
+    const bool /*report*/,
     const boolList* activeFacePtr,
     const scalar relativeThreshold
 )
