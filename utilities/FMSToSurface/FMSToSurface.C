@@ -27,7 +27,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "triSurf.H"
 #include "triSurfaceCopyParts.H"
 #include "demandDrivenData.H"

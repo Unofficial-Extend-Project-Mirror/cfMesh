@@ -30,7 +30,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "tetMeshGenerator.H"
 
 using namespace Foam;
