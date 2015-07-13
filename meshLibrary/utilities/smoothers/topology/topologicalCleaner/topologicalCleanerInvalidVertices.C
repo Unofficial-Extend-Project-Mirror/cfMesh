@@ -178,7 +178,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
 
 void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
 (
-    labelHashSet* irregularNodesPtr
+    labelHashSet* /*irregularNodesPtr*/
 )
 {
     const meshSurfaceEngine mse(mesh_);

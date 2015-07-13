@@ -163,7 +163,7 @@ public:
         //- set refinement thickness
         void setRefinementThickness(const scalar refThickness)
         {
-            refThickness_ = refThickness_;
+            refThickness_ = refThickness;
         }
 
         //- return refinement thickness for this object

@@ -27,7 +27,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "triSurf.H"
 #include "triFaceList.H"
 #include "labelLongList.H"

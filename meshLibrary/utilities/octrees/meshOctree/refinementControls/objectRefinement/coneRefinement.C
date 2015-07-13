@@ -106,7 +106,7 @@ bool coneRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary coneRefinement::dict(bool ignoreType) const
+dictionary coneRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
