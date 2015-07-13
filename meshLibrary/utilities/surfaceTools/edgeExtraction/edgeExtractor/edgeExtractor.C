@@ -522,6 +522,7 @@ void edgeExtractor::findFaceCandidates
 
     const labelList& fPatches = *facePatchPtr;
 
+    bool deleteOtherFacePatchPtr(false);
     if( !otherFacePatchPtr )
     {
         Map<label>* helperPtr = new Map<label>();
@@ -529,6 +530,7 @@ void edgeExtractor::findFaceCandidates
         findOtherFacePatchesParallel(*helperPtr, facePatchPtr);
 
         otherFacePatchPtr = helperPtr;
+        deleteOtherFacePatchPtr = true;
     }
 
     const Map<label>& otherFacePatch = *otherFacePatchPtr;
@@ -585,6 +587,9 @@ void edgeExtractor::findFaceCandidates
         }
         # endif
     }
+
+    if( deleteOtherFacePatchPtr )
+        deleteDemandDrivenData(otherFacePatchPtr);
 }
 
 void edgeExtractor::findOtherFacePatchesParallel
