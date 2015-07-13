@@ -29,7 +29,6 @@ Description
 #include "demandDrivenData.H"
 #include "boolList.H"
 #include "helperFunctions.H"
-#include "helperFunctionsPar.H"
 #include "VRWGraphSMPModifier.H"
 #include "labelledPoint.H"
 #include "HashSet.H"
@@ -887,6 +886,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 {
     const VRWGraph& pFaces = pointFaces();
     const faceList::subList& bFaces = boundaryFaces();
+    const labelList& bPoints = boundaryPoints();
     const labelList& bp = this->bp();
 
     edgesPtr_ = new edgeList();
@@ -911,47 +911,41 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        LongList<edge> edgesHelper;
+        edgeLongList edgesHelper;
 
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
-        forAll(bFaces, bfI)
+        forAll(pFaces, bpI)
         {
-            const face& bf = bFaces[bfI];
+            std::set<std::pair<label, label> > edgesAtPoint;
 
-            forAll(bf, pI)
+            forAllRow(pFaces, bpI, pfI)
             {
-                const edge fe = bf.faceEdge(pI);
-                const label bpI = bp[fe.start()];
-                const label e = fe.end();
+                const label bfI = pFaces(bpI, pfI);
+                const face& bf = bFaces[bfI];
 
-                DynList<label> edgeFaces;
+                const label pos = bf.which(bPoints[bpI]);
 
-                bool store(true);
-
-                //- find all faces attached to this edge
-                //- store the edge in case the face faceI is the face
-                //- with the smallest label
-                forAllRow(pFaces, bpI, pfI)
+                if( bp[bf.nextLabel(pos)] >= bpI )
                 {
-                    const label ofI = pFaces(bpI, pfI);
-                    const face& of = bFaces[ofI];
-
-                    if( of.which(e) < 0 )
-                        continue;
-                    if( ofI < bfI )
-                    {
-                        store = false;
-                        break;
-                    }
-
-                    edgeFaces.append(ofI);
+                    edgesAtPoint.insert
+                    (
+                        std::make_pair(bf[pos], bf.nextLabel(pos))
+                    );
                 }
-
-                if( store )
-                    edgesHelper.append(fe);
+                if( bp[bf.prevLabel(pos)] >= bpI )
+                {
+                    edgesAtPoint.insert
+                    (
+                        std::make_pair(bf[pos], bf.prevLabel(pos))
+                    );
+                }
             }
+
+            std::set<std::pair<label, label> >::const_iterator it;
+            for(it=edgesAtPoint.begin();it!=edgesAtPoint.end();++it)
+                edgesHelper.append(edge(it->first, it->second));
         }
 
         //- this enables other threads to see the number of edges
@@ -1099,7 +1093,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
     const faceList::subList& bFaces = this->boundaryFaces();
     const labelList& bp = this->bp();
     const edgeList& edges = this->edges();
-    const VRWGraph& pointFaces = this->pointFaces();
+    const VRWGraph& bpEdges = this->boundaryPointEdges();
 
     faceEdgesPtr_ = new VRWGraph(bFaces.size());
     VRWGraph& faceEdges = *faceEdgesPtr_;
@@ -1122,29 +1116,36 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
         # pragma omp barrier
 
         # pragma omp master
+        {
         # endif
+
         VRWGraphSMPModifier(faceEdges).setSizeAndRowSize(nfe);
 
         # ifdef USE_OMP
+        }
+
         # pragma omp barrier
 
-        # pragma omp for schedule(static)
+        # pragma omp for schedule(dynamic, 100)
         # endif
-        forAll(edges, edgeI)
+        forAll(faceEdges, bfI)
         {
-            const edge ee = edges[edgeI];
-            const label bpI = bp[ee.start()];
+            const face& bf = bFaces[bfI];
 
-            forAllRow(pointFaces, bpI, pfI)
+            forAll(bf, eI)
             {
-                const label bfI = pointFaces(bpI, pfI);
+                const edge e = bf.faceEdge(eI);
 
-                const face& bf = bFaces[bfI];
-                forAll(bf, eI)
+                const label bps = bp[e.start()];
+
+                forAllRow(bpEdges, bps, peI)
                 {
-                    if( bf.faceEdge(eI) == ee )
+                    const label beI = bpEdges(bps, peI);
+                    const edge& ee = edges[beI];
+
+                    if( e == ee )
                     {
-                        faceEdges[bfI][eI] = edgeI;
+                        faceEdges(bfI, eI) = beI;
                         break;
                     }
                 }
