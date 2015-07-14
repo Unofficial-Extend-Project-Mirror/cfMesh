@@ -206,7 +206,7 @@ bool lineRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary lineRefinement::dict(bool ignoreType) const
+dictionary lineRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 

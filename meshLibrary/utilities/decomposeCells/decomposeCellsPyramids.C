@@ -127,9 +127,9 @@ void decomposeCells::findAddressingForCell
 label decomposeCells::findTopVertex
 (
     const label cellI,
-    const DynList<label, 32>& vrt,
-    const DynList<edge, 64>& edges,
-    const DynList<DynList<label, 2>, 64>& edgeFaces
+    const DynList<label, 32>& /*vrt*/,
+    const DynList<edge, 64>& /*edges*/,
+    const DynList<DynList<label, 2>, 64>& /*edgeFaces*/
 )
 {
     const cell& c = mesh_.cells()[cellI];
