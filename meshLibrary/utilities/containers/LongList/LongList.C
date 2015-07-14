@@ -202,11 +202,7 @@ Foam::Istream& Foam::operator>>
 
             if( listDelimiter == token::BEGIN_LIST )
             {
-#if defined(__clang__)
                 for(label i=0;i<size;++i)
-#else
-                for(register label i=0;i<size;++i)
-#endif
                 {
                     is >> DL[i];
 
@@ -227,11 +223,7 @@ Foam::Istream& Foam::operator>>
                     "reading the single entry"
                 );
 
-#if defined(__clang__)
                 for(label i=0;i<size;++i)
-#else
-                for(register label i=0;i<size;++i)
-#endif
                 {
                     DL[i] = element;
                 }
@@ -314,11 +306,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
             if( listDelimiter == token::BEGIN_LIST )
             {
-#if defined(__clang__)
                 for(label i=0;i<size;++i)
-#else
-                for(register label i=0;i<size;++i)
-#endif
                 {
                     is >> this->operator[](origSize);
                     ++origSize;
@@ -340,11 +328,7 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
                     "reading the single entry"
                 );
 
-#if defined(__clang__)
                 for(label i=0;i<size;++i)
-#else
-                for(register label i=0;i<size;++i)
-#endif
                 {
                     this->operator[](origSize) = element;
                     ++origSize;
@@ -361,31 +345,6 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
             forAll(buf, i)
                 this->operator[](origSize++) = buf[i];
-
-            /*const label blockSize = 1<<shift_;
-
-            Info << "nextFree_ " << nextFree_ << endl;
-
-            //- append elements by reading binary block
-            while( origSize < nextFree_ )
-            {
-                const label currBlock = origSize >> shift_;
-                const label currPos = origSize & mask_;
-
-                Info << "Orig size " << origSize
-                    << nl << "currBlock " << currBlock
-                    << nl << "currPos " << currPos << endl;
-
-                T* data = &dataPtr_[currBlock][currPos];
-
-                label bs = Foam::min(nextFree_-origSize, blockSize);
-                bs = Foam::min(blockSize - currPos, bs);
-
-                Info << "bs " << bs << endl;
-
-                is.read(reinterpret_cast<char*>(data), bs * sizeof(T));
-                origSize += bs;
-            } */
 
             is.fatalCheck
             (

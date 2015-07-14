@@ -187,11 +187,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             neiProcNo[npI] = procBoundaries[patchI].neiProcNo();
             nFacesInPatch[npI] = 0;
 
-#if defined(__clang__)
             for(label faceI=0;faceI<oldNumFacesInPatch;++faceI)
-#else
-            for(register label faceI=0;faceI<oldNumFacesInPatch;++faceI)
-#endif
             {
                 if(
                     !removeFace[oldStart+faceI] &&

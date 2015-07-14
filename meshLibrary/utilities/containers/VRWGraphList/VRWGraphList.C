@@ -36,17 +36,21 @@ Foam::Ostream& Foam::operator<<
 )
 {
     os << DL.size() << nl << token::BEGIN_LIST;
-    
-#if defined(__clang__)
+
     for(label i=0;i<DL.size();++i)
-#else
-    for(register label i=0;i<DL.size();++i)
-#endif
     {
         os << nl << DL[i];
     }
-    
+
     os << nl << token::END_LIST;
+
+    // Check state of IOstream
+    os.check
+    (
+        "Foam::Ostream& Foam::operator<<"
+        "(Foam::Ostream&, const Foam::VRWGraphList&)"
+    );
+
     return os;
 }
 

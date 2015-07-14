@@ -78,11 +78,7 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
 
     if( numblock1 < numBlocks_ )
     {
-#if defined(__clang__)
         for(label i=numblock1;i<numBlocks_;++i)
-#else
-        for(register label i=numblock1;i<numBlocks_;++i)
-#endif
             delete [] dataPtr_[i];
     }
     else if( numblock1 > numBlocks_ )
@@ -95,11 +91,8 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
             } while( numblock1 > numAllocatedBlocks_ );
 
             T** dataptr1 = new T*[numAllocatedBlocks_];
-#if defined(__clang__)
+
             for(label i=0;i<numBlocks_;++i)
-#else
-            for(register label i=0;i<numBlocks_;++i)
-#endif
                 dataptr1[i] = dataPtr_[i];
 
             if( dataPtr_ )
@@ -107,11 +100,7 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
             dataPtr_ = dataptr1;
         }
 
-#if defined(__clang__)
         for(label i=numBlocks_;i<numblock1;++i)
-#else
-        for(register label i=numBlocks_;i<numblock1;++i)
-#endif
             dataPtr_[i] = new T[blockSize];
     }
 
@@ -122,11 +111,7 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
 template<class T, Foam::label Offset>
 void Foam::LongList<T, Offset>::clearOut()
 {
-#if defined(__clang__)
     for(label i=0;i<numBlocks_;++i)
-#else
-    for(register label i=0;i<numBlocks_;++i)
-#endif
         delete [] dataPtr_[i];
 
     if( dataPtr_ )
@@ -297,11 +282,7 @@ inline void Foam::LongList<T, Offset>::appendIfNotIn(const T& e)
 template<class T, Foam::label Offset>
 inline bool Foam::LongList<T, Offset>::contains(const T& e) const
 {
-#if defined(__clang__)
     for(label i=0;i<nextFree_;++i)
-#else
-    for(register label i=0;i<nextFree_;++i)
-#endif
         if( (*this)[i] == e )
             return true;
 
@@ -314,11 +295,7 @@ inline Foam::label Foam::LongList<T, Offset>::containsAtPosition
     const T& e
 ) const
 {
-#if defined(__clang__)
     for(label i=0;i<nextFree_;++i)
-#else
-    for(register label i=0;i<nextFree_;++i)
-#endif
         if( (*this)[i] == e )
             return i;
 
@@ -400,11 +377,7 @@ inline T& Foam::LongList<T, Offset>::newElmt(const label i)
 template<class T, Foam::label Offset>
 inline void Foam::LongList<T, Offset>::operator=(const T& t)
 {
-#if defined(__clang__)
     for(label i=0;i<nextFree_;++i)
-#else
-    for(register label i=0;i<nextFree_;++i)
-#endif
         operator[](i) = t;
 }
 
@@ -412,11 +385,8 @@ template<class T, Foam::label Offset>
 inline void Foam::LongList<T, Offset>::operator=(const LongList<T, Offset>& l)
 {
     setSize(l.size());
-#if defined(__clang__)
+
     for(label i=0;i<l.nextFree_;++i)
-#else
-    for(register label i=0;i<l.nextFree_;++i)
-#endif
         operator[](i) = l[i];
 }
 

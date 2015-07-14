@@ -531,11 +531,8 @@ bool surfaceMorpherCells::morphInternalFaces()
         //- remove faces which do not exist any more
         boolList removeFace(faces.size(), false);
         bool removeFaces(false);
-#if defined(__clang__)
+
         for(label faceI=0;faceI<nIntFaces;++faceI)
-#else
-        for(register label faceI=0;faceI<nIntFaces;++faceI)
-#endif
             if( faces[faceI].size() < 3 )
             {
                 removeFace[faceI] = true;

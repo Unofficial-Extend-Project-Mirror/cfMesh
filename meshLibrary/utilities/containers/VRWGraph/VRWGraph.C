@@ -35,26 +35,29 @@ Foam::Ostream& Foam::operator<<
     const Foam::VRWGraph& DL
 )
 {
-    os << DL.size() << nl << token::BEGIN_LIST;
-    
-#if defined(__clang__)
+    os << DL.size() << nl << token::BEGIN_LIST << nl;
+
     for(label i=0;i<DL.size();++i)
-#else
-    for(register label i=0;i<DL.size();++i)
-#endif
     {
-        os << nl << DL.sizeOfRow(i) << token::BEGIN_LIST;
+        os << DL.sizeOfRow(i) << token::BEGIN_LIST;
         for(label j=0;j<DL.sizeOfRow(i);++j)
         {
-            if( j > 0 ) os << token::SPACE;
-            
+            if( j ) os << token::SPACE;
+
             os << DL(i, j);
         }
-        
-        os << token::END_LIST;
+
+        os << token::END_LIST << nl;
     }
-    
-    os << nl << token::END_LIST;
+
+    os << token::END_LIST;
+
+    // Check state of IOstream
+    os.check
+    (
+        "Foam::Ostream& Foam::operator<<(Foam::Ostream&, const Foam::VRWGraph&)"
+    );
+
     return os;
 }
 
@@ -94,14 +97,14 @@ void Foam::VRWGraph::optimizeMemoryUsage()
         {
             newPosForNode[elI] = -1;
         }
-        
+
     //- create new data
     for(label elI=0;elI<nElements;++elI)
         if( (newPosForNode[elI] != -1) && (newPosForNode[elI] < elI) )
             data_[newPosForNode[elI]] = data_[elI];
-        
+
     data_.setSize(pos);
-    
+
     //- renumber rows
     nElements = rows_.size();
     for(label rowI=0;rowI<nElements;++rowI)

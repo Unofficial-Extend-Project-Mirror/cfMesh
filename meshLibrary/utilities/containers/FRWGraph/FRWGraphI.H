@@ -36,7 +36,7 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
             << " is not in range " << 0
             << " and " << nRows_ << abort(FatalError);
     }
-    
+
     if( (j < 0) || (j >= width) )
         FatalErrorIn
         (
@@ -105,7 +105,7 @@ inline Foam::label Foam::FRWGraph<T,width>::size() const
 }
 
 template<class T, Foam::label width>
-inline Foam::label Foam::FRWGraph<T,width>::sizeOfRow(const label /*rowI*/) const
+inline Foam::label Foam::FRWGraph<T,width>::sizeOfRow(const label) const
 {
     return width;
 }
@@ -155,14 +155,11 @@ inline bool Foam::FRWGraph<T,width>::contains
 ) const
 {
     const label start = rowI * width;
-#if defined(__clang__)
+
     for(label i=0;i<width;++i)
-#else
-    for(register label i=0;i<width;++i)
-#endif
         if( data_[start+i] == e )
             return true;
-    
+
     return false;
 }
 
@@ -174,14 +171,11 @@ inline Foam::label Foam::FRWGraph<T,width>::containsAtPosition
 ) const
 {
     const label start = rowI * width;
-#if defined(__clang__)
+
     for(label i=0;i<width;++i)
-#else
-    for(register label i=0;i<width;++i)
-#endif
         if( data_[start+i] == e )
             return i;
-    
+
     return -1;
 }
 
@@ -196,7 +190,7 @@ inline const T& Foam::FRWGraph<T,width>::operator()
     #ifdef FULLDEBUG
     checkIndex(i, j);
     #endif
-        
+
     return data_[i * width + j];
 }
 
@@ -209,7 +203,7 @@ inline T& Foam::FRWGraph<T,width>::operator()
     #ifdef FULLDEBUG
     checkIndex(i, j);
     #endif
-        
+
     return data_[i * width + j];
 }
 
