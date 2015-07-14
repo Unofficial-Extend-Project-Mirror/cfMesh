@@ -171,7 +171,7 @@ public:
     meshConnectionsSelectorOperator()
     {}
 
-    bool operator()(const label cellI) const
+    bool operator()(const label /*cellI*/) const
     {
         return true;
     }

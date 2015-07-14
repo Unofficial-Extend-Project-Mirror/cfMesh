@@ -41,7 +41,6 @@ SourceFiles
 #define LongList_H
 
 #include "label.H"
-#include "longLong.H"
 #include "bool.H"
 #include "IOstreams.H"
 #include "error.H"

@@ -115,7 +115,7 @@ bool hollowConeRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary hollowConeRefinement::dict(bool ignoreType) const
+dictionary hollowConeRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 

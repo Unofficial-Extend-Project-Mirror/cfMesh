@@ -60,7 +60,7 @@ class meshSurfaceCheckEdgeTypes
         const meshSurfaceEngine& surfaceEngine_;
 
         //- a list which classifies each edge
-        List<direction> edgeTypes_;
+        List<direction> edgeType_;
 
     // Private member functions
         //- check feature edges and classify them
@@ -83,9 +83,10 @@ public:
         {
             NONE = 0,
             PATCHEDGE = 1,
-            CONVEXEDGE = 2,
-            CONCAVEEDGE = 4,
-            UNDETERMINED = 8
+            FEATUREEDGE = 2,
+            CONVEXEDGE = 4,
+            CONCAVEEDGE = 8,
+            UNDETERMINED = 16
         };
 
     // Constructors
@@ -101,7 +102,7 @@ public:
         //- return the information about classified edges
         const List<direction>& edgeTypes() const
         {
-            return edgeTypes_;
+            return edgeType_;
         }
 
         //- return indices of convex edges

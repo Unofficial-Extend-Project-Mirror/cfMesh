@@ -87,7 +87,7 @@ bool sphereRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary sphereRefinement::dict(bool ignoreType) const
+dictionary sphereRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 

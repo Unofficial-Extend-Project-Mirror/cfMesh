@@ -522,12 +522,15 @@ void edgeExtractor::findFaceCandidates
 
     const labelList& fPatches = *facePatchPtr;
 
+    bool deleteOtherFacePatchPtr(false);
     if( !otherFacePatchPtr )
     {
-        Map<label> otherFacePatch;
-        findOtherFacePatchesParallel(otherFacePatch, &fPatches);
+        Map<label>* helperPtr = new Map<label>();
 
-        otherFacePatchPtr = &otherFacePatch;
+        findOtherFacePatchesParallel(*helperPtr, facePatchPtr);
+
+        otherFacePatchPtr = helperPtr;
+        deleteOtherFacePatchPtr = true;
     }
 
     const Map<label>& otherFacePatch = *otherFacePatchPtr;
@@ -547,15 +550,15 @@ void edgeExtractor::findFaceCandidates
         forAll(faceEdges, bfI)
         {
             DynList<label> allNeiPatches;
-            forAllRow(faceEdges, bfI, eI)
+            forAllRow(faceEdges, bfI, feI)
             {
-                const label beI = faceEdges(bfI, eI);
+                const label beI = faceEdges(bfI, feI);
 
                 if( edgeFaces.sizeOfRow(beI) == 2 )
                 {
                     label fNei = edgeFaces(beI, 0);
                     if( fNei == bfI )
-                        fNei = edgeFaces(faceEdges(bfI, eI), 1);
+                        fNei = edgeFaces(beI, 1);
 
                     allNeiPatches.appendIfNotIn(fPatches[fNei]);
                 }
@@ -584,6 +587,9 @@ void edgeExtractor::findFaceCandidates
         }
         # endif
     }
+
+    if( deleteOtherFacePatchPtr )
+        deleteDemandDrivenData(otherFacePatchPtr);
 }
 
 void edgeExtractor::findOtherFacePatchesParallel
