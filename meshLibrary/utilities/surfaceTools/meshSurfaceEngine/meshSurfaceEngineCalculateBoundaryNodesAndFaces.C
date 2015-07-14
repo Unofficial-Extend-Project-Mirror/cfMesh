@@ -1220,6 +1220,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
             const edge& ee = edges[edgeI];
             const label bpI = bp[ee.start()];
 
+            //- find boundary faces attached to this edge
             DynList<label> eFaces;
             forAllRow(pointFaces, bpI, pfI)
             {
@@ -1234,6 +1235,23 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
                         eFaces.append(bfI);
                         break;
                     }
+                }
+            }
+
+            //- the face that owns the edge shall be the first one in the list
+            // TODO: find out whether this will be necessary
+            if( eFaces.size() == 2 )
+            {
+                const face& bf = bFaces[eFaces[1]];
+
+                const label pos = bf.which(ee.start());
+
+                if( bf.nextLabel(pos) == ee.end() )
+                {
+                    //- this face shall be the first one in the list
+                    const label helper = eFaces[0];
+                    eFaces[0] = eFaces[1];
+                    eFaces[1] = helper;
                 }
             }
 
