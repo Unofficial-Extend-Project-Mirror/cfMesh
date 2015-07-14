@@ -28,7 +28,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "triSurf.H"
 #include "triSurfaceRemoveFacets.H"
 

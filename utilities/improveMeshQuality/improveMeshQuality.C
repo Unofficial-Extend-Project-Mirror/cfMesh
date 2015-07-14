@@ -28,7 +28,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "meshOptimizer.H"
 

@@ -1606,10 +1606,10 @@ void checkVolumeUniformity
 bool checkVolumeUniformity
 (
     const polyMeshGen&,
-    const bool report,
-    const scalar warnUniform,
-    labelHashSet* setPtr,
-    const boolList* changedFacePtr
+    const bool /*report*/,
+    const scalar /*warnUniform*/,
+    labelHashSet* /*setPtr*/,
+    const boolList* /*changedFacePtr*/
 )
 {
 
@@ -2122,7 +2122,7 @@ label findWorstQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
-    const bool report,
+    const bool /*report*/,
     const boolList* activeFacePtr,
     const scalar relativeThreshold
 )

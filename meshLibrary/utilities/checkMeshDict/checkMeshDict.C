@@ -860,7 +860,7 @@ void checkMeshDict::updatePatchCellSize
 
 void checkMeshDict::updateSubsetCellSize
 (
-    const std::map<word, wordList>& patchesFromPatch
+    const std::map<word, wordList>& /*patchesFromPatch*/
 )
 {
 
@@ -1028,7 +1028,7 @@ void checkMeshDict::updateRemoveCellsIntersectingPatches
 
 void checkMeshDict::updateObjectRefinements
 (
-    const std::map<word, wordList>& patchesFromPatch
+    const std::map<word, wordList>& /*patchesFromPatch*/
 )
 {
 
