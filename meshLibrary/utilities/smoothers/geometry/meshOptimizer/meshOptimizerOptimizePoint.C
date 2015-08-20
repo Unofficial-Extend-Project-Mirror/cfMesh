@@ -368,8 +368,8 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacian
 (
-    const labelHashSet& badFaces,
-    const label nIterations
+    const labelHashSet& /*badFaces*/,
+    const label /*nIterations*/
 )
 {
     FatalError << "Not implemented " << exit(FatalError);
@@ -377,8 +377,8 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian
 
 void meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
 (
-    const labelHashSet& badFaces,
-    const label nIterations
+    const labelHashSet& /*badFaces*/,
+    const label /*nIterations*/
 )
 {
     FatalError << "Not implemented " << exit(FatalError);
@@ -402,8 +402,8 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 (
-    const labelHashSet& badFaces,
-    const label nIterations
+    const labelHashSet& /*badFaces*/,
+    const label /*nIterations*/
 )
 {
     FatalError << "Not implemented " << exit(FatalError);
@@ -427,8 +427,8 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 (
-    const labelHashSet& badFaces,
-    const label nIterations
+    const labelHashSet& /*badFaces*/,
+    const label /*nIterations*/
 )
 {
     FatalError << "Not implemented " << exit(FatalError);

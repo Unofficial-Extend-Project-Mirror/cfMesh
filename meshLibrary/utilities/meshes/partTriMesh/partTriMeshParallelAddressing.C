@@ -47,7 +47,7 @@ namespace Foam
 void partTriMesh::createParallelAddressing
 (
     const labelList& nodeLabelForPoint,
-    const labelList& nodeLabelForFace
+    const labelList& /*nodeLabelForFace*/
 )
 {
     const meshSurfaceEngine& mse = mPart_.surfaceEngine();

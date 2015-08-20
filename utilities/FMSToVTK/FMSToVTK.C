@@ -45,7 +45,7 @@ using namespace Foam;
 void writePointsToVTK
 (
     const fileName& fn,
-    const string& title,
+    const string& /*title*/,
     const UList<point>& points
 )
 {
@@ -102,7 +102,7 @@ void writePointsToVTK
 void writeEdgesToVTK
 (
     const fileName& fn,
-    const string& title,
+    const string& /*title*/,
     const UList<point>& points,
     const LongList<edge>& edges
 )
@@ -201,7 +201,7 @@ void writeEdgesToVTK
 void writeFacetsToVTK
 (
     const fileName& fn,
-    const string& title,
+    const string& /*title*/,
     const UList<point>& points,
     const LongList<labelledTri>& facets
 )

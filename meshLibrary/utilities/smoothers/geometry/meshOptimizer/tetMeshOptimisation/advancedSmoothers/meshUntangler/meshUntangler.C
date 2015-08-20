@@ -57,7 +57,7 @@ meshUntangler::~meshUntangler()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshUntangler::optimizeNodePosition(const scalar tol)
+void meshUntangler::optimizeNodePosition(const scalar /*tol*/)
 {
     # ifdef DEBUGSmooth
     Info << "Untangling point " << pointI_ << endl;
