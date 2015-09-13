@@ -46,8 +46,8 @@ namespace Foam
 void partTetMesh::createParallelAddressing
 (
     const labelLongList& nodeLabelForPoint,
-    const labelLongList& nodeLabelForFace,
-    const labelLongList& nodeLabelForCell
+    const labelLongList& /*nodeLabelForFace*/,
+    const labelLongList& /*nodeLabelForCell*/
 )
 {
     //- vertices marked as SMOOTH and BOUNDARY are used by the smoother

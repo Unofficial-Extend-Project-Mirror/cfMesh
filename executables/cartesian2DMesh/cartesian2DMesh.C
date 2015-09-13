@@ -30,7 +30,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "Time.H"
 #include "cartesian2DMeshGenerator.H"
 
 using namespace Foam;

@@ -162,7 +162,7 @@ void decomposeCells::createPointsAndCellFaces(const boolList& decomposeCell)
         }
 }
 
-void decomposeCells::storeBoundaryFaces(const boolList& decomposeCell)
+void decomposeCells::storeBoundaryFaces(const boolList& /*decomposeCell*/)
 {
     meshSurfaceEngine mse(mesh_);
     const faceList::subList& bFaces = mse.boundaryFaces();

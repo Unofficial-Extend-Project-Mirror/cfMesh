@@ -367,7 +367,7 @@ bool checkFaceAreas
     const boolList* changedFacePtr
 )
 {
-    const scalarField magFaceAreas = mag(mesh.addressingData().faceAreas());
+    const vectorField& faceAreas = mesh.addressingData().faceAreas();
 
     const labelList& own = mesh.owner();
     const labelList& nei = mesh.neighbour();
@@ -384,12 +384,14 @@ bool checkFaceAreas
         # ifdef USE_OMP
         # pragma omp for schedule(guided)
         # endif
-        forAll(magFaceAreas, faceI)
+        forAll(faceAreas, faceI)
         {
             if( changedFacePtr && !changedFacePtr->operator[](faceI) )
                 continue;
 
-            if( magFaceAreas[faceI] < minFaceArea )
+            const scalar magFaceArea = mag(faceAreas[faceI]);
+
+            if( magFaceArea < minFaceArea )
             {
                 if( report )
                 {
@@ -399,14 +401,14 @@ bool checkFaceAreas
                             << "internal face " << faceI << " between cells "
                             << own[faceI] << " and " << nei[faceI]
                             << ".  Face area magnitude = "
-                            << magFaceAreas[faceI] << endl;
+                            << magFaceArea << endl;
                     }
                     else
                     {
                         Pout<< "Zero or negative face area detected for "
                             << "boundary face " << faceI << " next to cell "
                             << own[faceI] << ".  Face area magnitude = "
-                            << magFaceAreas[faceI] << endl;
+                            << magFaceArea << endl;
                     }
                 }
 
@@ -419,8 +421,8 @@ bool checkFaceAreas
                 }
             }
 
-            localMinArea = Foam::min(localMinArea, magFaceAreas[faceI]);
-            localMaxArea = Foam::max(localMaxArea, magFaceAreas[faceI]);
+            localMinArea = Foam::min(localMinArea, magFaceArea);
+            localMaxArea = Foam::max(localMaxArea, magFaceArea);
         }
 
         # ifdef USE_OMP
@@ -1604,10 +1606,10 @@ void checkVolumeUniformity
 bool checkVolumeUniformity
 (
     const polyMeshGen&,
-    const bool report,
-    const scalar warnUniform,
-    labelHashSet* setPtr,
-    const boolList* changedFacePtr
+    const bool /*report*/,
+    const scalar /*warnUniform*/,
+    labelHashSet* /*setPtr*/,
+    const boolList* /*changedFacePtr*/
 )
 {
 
@@ -2120,7 +2122,7 @@ label findWorstQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
-    const bool report,
+    const bool /*report*/,
     const boolList* activeFacePtr,
     const scalar relativeThreshold
 )
