@@ -1,3 +1,6 @@
 *.dep
+*lnInclude*
+*linux*
+cfMesh.*
 **/lnInclude/*
 **/Make/**/*
