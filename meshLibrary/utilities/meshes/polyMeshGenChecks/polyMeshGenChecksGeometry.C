@@ -2044,11 +2044,108 @@ label findBadFaces
 {
     badFaces.clear();
 
+    //Default minimum volume of the face pyramid
+    scalar minPyramidVolume = VSMALL; 
+
+    //Default face flatness
+    scalar faceFlatness = 0.8;
+
+    //Default minimum tetrahedral part of a cell
+    scalar minCellPartTetrahedra = VSMALL;
+
+    //Default minimum area of a face
+    scalar minimumFaceArea = VSMALL;
+
+    //Check whether quality criteria is specified by user
+    if( mesh.returnTime().foundObject<IOdictionary>("meshDict") )
+    {
+        const dictionary& meshDict = 
+            mesh.returnTime().lookupObject<IOdictionary>("meshDict");
+
+        Info << "Reading meshDict" << endl;
+
+
+        if( meshDict.found("meshQualitySettings") )
+        {
+            const dictionary& qualityDict =
+                meshDict.subDict("meshQualitySettings");
+
+            Info << "Reading meshQualitySettings" << endl;
+
+            //Reading minimum volume of the face pyramid defined by the user
+            if( qualityDict.found("minPyramidVolume") )
+            {
+
+                minPyramidVolume =
+		    readScalar
+                    (
+                        qualityDict.lookup("minPyramidVolume")
+                    );
+
+                Info << "Reading minPyramidVolume" << endl;
+                Info << "minPyramidVolume is " << minPyramidVolume << endl;
+
+
+            }
+
+            //Reading face flatness defined by the user
+            if( qualityDict.found("faceFlatness") )
+            {
+
+                faceFlatness =
+		    readScalar
+                    (
+                        qualityDict.lookup("faceFlatness")
+                    );
+
+                Info << "Reading faceFlatness" << endl;
+                Info << "faceFlatness is " << faceFlatness << endl;
+
+
+            }
+
+            //Reading minimum tetrahedral part of a cell defined by the user
+            if( qualityDict.found("minCellPartTetrahedra") )
+            {
+
+                minCellPartTetrahedra =
+		    readScalar
+                    (
+                        qualityDict.lookup("minCellPartTetrahedra")
+                    );
+
+                Info << "Reading minCellPartTetrahedra" << endl;
+                Info << "minCellPartTetrahedra is " << minCellPartTetrahedra << endl;
+
+
+            }
+
+            //Reading minimum area of a face defined by the user
+            if( qualityDict.found("minimumFaceArea") )
+            {
+
+                minimumFaceArea =
+		    readScalar
+                    (
+                        qualityDict.lookup("minimumFaceArea")
+                    );
+
+                Info << "Reading minimumFaceArea" << endl;
+                Info << "minimumFaceArea is " << minimumFaceArea << endl;
+
+
+            }
+
+
+        }
+
+    }
+
     polyMeshGenChecks::checkFacePyramids
     (
         mesh,
         report,
-        VSMALL,
+        minPyramidVolume,
         &badFaces,
         activeFacePtr
     );
@@ -2057,7 +2154,7 @@ label findBadFaces
     (
         mesh,
         report,
-        0.8,
+        faceFlatness,
         &badFaces,
         activeFacePtr
     );
@@ -2066,7 +2163,7 @@ label findBadFaces
     (
         mesh,
         report,
-        VSMALL,
+        minCellPartTetrahedra,
         &badFaces,
         activeFacePtr
     );
@@ -2075,7 +2172,7 @@ label findBadFaces
     (
         mesh,
         report,
-        VSMALL,
+        minimumFaceArea,
         &badFaces,
         activeFacePtr
     );
@@ -2095,11 +2192,77 @@ label findLowQualityFaces
 {
     badFaces.clear();
 
+    //Default maximum non-orthogonality
+    scalar maxNonOrtho = 65.0;
+
+    //Default maximum skewness
+    scalar maxSkewness = 2.0;
+
+    Info << "maxNonOrtho" << maxNonOrtho << endl;
+
+    //Check whether quality criteria is specified by user
+    //if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
+    if( mesh.returnTime().foundObject<IOdictionary>("meshDict") )
+    {
+        const dictionary& meshDict = 
+            //mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
+            mesh.returnTime().lookupObject<IOdictionary>("meshDict");
+
+        Info << "Reading meshDict" << endl;
+
+
+        if( meshDict.found("meshQualitySettings") )
+        {
+            const dictionary& qualityDict =
+                meshDict.subDict("meshQualitySettings");
+
+            Info << "Reading meshQualitySettings" << endl;
+
+            //Reading maximum non-orthogonality defined by the user
+            if( qualityDict.found("maxNonOrthogonality") )
+            {
+
+                maxNonOrtho =
+		    readScalar
+                    (
+                        qualityDict.lookup("maxNonOrthogonality")
+                    );
+
+                Info << "Reading maxNonOrtho" << endl;
+                Info << "maxNonOrtho is " << maxNonOrtho << endl;
+
+
+            }
+
+            //Reading maximum skewness defined by the user
+            if( qualityDict.found("maxSkewness") )
+            {
+
+                maxSkewness =
+		    readScalar
+                    (
+                        qualityDict.lookup("maxSkewness")
+                    );
+
+                Info << "Reading maxSkewness" << endl;
+                Info << "maxSkewness is " << maxSkewness << endl;
+
+
+            }
+
+
+
+        }
+
+    }
+
+
+
     polyMeshGenChecks::checkFaceDotProduct
     (
         mesh,
         report,
-        65.0,
+        maxNonOrtho,
         &badFaces,
         activeFacePtr
     );
@@ -2108,7 +2271,7 @@ label findLowQualityFaces
     (
         mesh,
         report,
-        2.0,
+        maxSkewness,
         &badFaces,
         activeFacePtr
     );
