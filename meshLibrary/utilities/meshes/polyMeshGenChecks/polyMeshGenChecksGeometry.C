@@ -2011,11 +2011,69 @@ label findBadFacesRelaxed
 {
     badFaces.clear();
 
+    //Default minimum volume of the face pyramid
+    scalar minPyramidVolume = VSMALL; 
+
+    //Default minimum area of a face
+    scalar minimumFaceArea = VSMALL;
+
+    //Check whether quality criteria is specified by user
+    if( mesh.returnTime().foundObject<IOdictionary>("meshDict") )
+    {
+        const dictionary& meshDict = 
+            mesh.returnTime().lookupObject<IOdictionary>("meshDict");
+
+        Info << "Reading meshDict from findBadFacesRelaxed" << endl;
+
+
+        if( meshDict.found("meshQualitySettings") )
+        {
+            const dictionary& qualityDict =
+                meshDict.subDict("meshQualitySettings");
+
+            Info << "Reading meshQualitySettings" << endl;
+
+            //Reading minimum volume of the face pyramid defined by the user
+            if( qualityDict.found("minPyramidVolume") )
+            {
+
+                minPyramidVolume =
+		    readScalar
+                    (
+                        qualityDict.lookup("minPyramidVolume")
+                    );
+
+                Info << "Reading minPyramidVolume from findBadFacesRelaxed" << endl;
+                Info << "minPyramidVolume is from findBadFacesRelaxed" << minPyramidVolume << endl;
+
+
+            }
+
+
+            //Reading minimum area of a face defined by the user
+            if( qualityDict.found("minimumFaceArea") )
+            {
+
+                minimumFaceArea =
+		    readScalar
+                    (
+                        qualityDict.lookup("minimumFaceArea")
+                    );
+
+                Info << "Reading minimumFaceArea from findBadFacesRelaxed" << endl;
+                Info << "minimumFaceArea is from findBadFacesRelaxed" << minimumFaceArea << endl;
+
+            }
+
+        }
+
+    }
+
     polyMeshGenChecks::checkFacePyramids
     (
         mesh,
         report,
-        VSMALL,
+        minPyramidVolume,
         &badFaces,
         activeFacePtr
     );
@@ -2024,7 +2082,7 @@ label findBadFacesRelaxed
     (
         mesh,
         report,
-        VSMALL,
+        minimumFaceArea,
         &badFaces,
         activeFacePtr
     );
@@ -2198,6 +2256,15 @@ label findLowQualityFaces
     //Default maximum skewness
     scalar maxSkewness = 2.0;
 
+    //Default face uniformity
+    scalar fcUniform = 0.1;
+
+    //Default volume uniformity
+    scalar volUniform = 0.1;
+
+    //Default maximum face angle
+    scalar maxAngle = 10;
+
     Info << "maxNonOrtho" << maxNonOrtho << endl;
 
     //Check whether quality criteria is specified by user
@@ -2249,6 +2316,79 @@ label findLowQualityFaces
 
 
             }
+
+            //Reading face uniformity specified by the user
+            if( qualityDict.found("fcUniform") )
+            {
+
+                fcUniform =
+		    readScalar
+                    (
+                        qualityDict.lookup("fcUniform")
+                    );
+
+                Info << "Reading fcUniform" << endl;
+                Info << "fcUniform is " << fcUniform << endl;
+
+                polyMeshGenChecks::checkFaceUniformity
+                (
+                    mesh,
+                    report,
+                    fcUniform,
+                    &badFaces,
+                    activeFacePtr
+                );
+
+            }
+
+            //Reading volume uniformity specified by the user
+            if( qualityDict.found("volUniform") )
+            {
+
+                volUniform =
+		    readScalar
+                    (
+                        qualityDict.lookup("volUniform")
+                    );
+
+                Info << "Reading volUniform" << endl;
+                Info << "volUniform is " << volUniform << endl;
+
+                polyMeshGenChecks::checkVolumeUniformity
+                (
+                    mesh,
+                    report,
+                    volUniform,
+                    &badFaces,
+                    activeFacePtr
+                );
+
+            }
+
+            //Reading maximum face angle specified by the user
+            if( qualityDict.found("maxAngle") )
+            {
+
+                maxAngle =
+		    readScalar
+                    (
+                        qualityDict.lookup("maxAngle")
+                    );
+
+                Info << "Reading maxAngle" << endl;
+                Info << "maxAngle is " << maxAngle << endl;
+
+                polyMeshGenChecks::checkFaceAngles
+                (
+                    mesh,
+                    report,
+                    maxAngle,
+                    &badFaces,
+                    activeFacePtr
+                );
+
+            }
+            
 
 
 
