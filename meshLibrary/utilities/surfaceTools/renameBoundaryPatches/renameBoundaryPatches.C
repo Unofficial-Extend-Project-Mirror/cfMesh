@@ -248,19 +248,40 @@ void renameBoundaryPatches::calculateNewBoundary()
     Info << "Finished renaming boundary patches" << endl;
 }
 
+void renameBoundaryPatches::checkEmptyPatches()
+{
+    polyMeshGenModifier meshModifier(mesh_);
+
+    forAll(mesh_.boundaries(), patchI)
+    {
+        boundaryPatch& patch = meshModifier.boundariesAccess()[patchI];
+        if( patch.patchType() == "empty" )
+        {
+            patch.patchType() = "wall";
+        }
+    }
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 renameBoundaryPatches::renameBoundaryPatches
 (
     polyMeshGen& mesh,
-    const IOdictionary& meshDict
+    const IOdictionary& meshDict,
+    const bool allowEmptyPatches
 )
 :
     mesh_(mesh),
     meshDict_(meshDict)
 {
+    if( !allowEmptyPatches )
+    {
+        checkEmptyPatches();
+    }
+
     if( meshDict.found("renameBoundary") )
         calculateNewBoundary();
+
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
