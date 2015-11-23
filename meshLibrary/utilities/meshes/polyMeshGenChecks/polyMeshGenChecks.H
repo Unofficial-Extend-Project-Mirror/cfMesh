@@ -82,6 +82,18 @@ bool checkFaceAreas
     const boolList* changedFacePtr = NULL
 );
 
+
+//- Check quality of tetrahedra
+bool checkTetQuality
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar minTetQuality = VSMALL,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+
 //- Check for negative part tetrahedra
 //- Cells are decomposed into tetrahedra formed by
 //- the cell centre, face centre and the edge vertices

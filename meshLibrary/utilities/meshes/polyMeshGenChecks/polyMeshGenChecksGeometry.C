@@ -26,6 +26,7 @@ License
 #include "polyMeshGenChecks.H"
 #include "polyMeshGenAddressing.H"
 #include "pyramidPointFaceRef.H"
+#include "helperFunctions.H"
 #include "tetrahedron.H"
 
 # ifdef USE_OMP
@@ -463,6 +464,124 @@ bool checkFaceAreas
     }
 }
 
+
+bool checkTetQuality
+(
+    const polyMeshGen& mesh,
+    const bool report,
+    const scalar minTetQuality,
+    labelHashSet* setPtr,
+    const boolList* changedFacePtr
+)
+{
+    const pointFieldPMG& points = mesh.points();
+    const faceListPMG& faces = mesh.faces();
+    const labelList& owner = mesh.owner();
+    const labelList& neighbour = mesh.neighbour();
+
+    const vectorField& fCentres = mesh.addressingData().faceCentres();
+    const vectorField& cCentres = mesh.addressingData().cellCentres();
+
+    label nBadFaces(0);
+
+    # ifdef USE_OMP
+    # pragma omp parallel for schedule(dynamic, 100) reduction(+:nBadFaces)
+    # endif
+    forAll(owner, faceI)
+    {
+        if( changedFacePtr && !(*changedFacePtr)[faceI] )
+            continue;
+
+        const face& f = faces[faceI];
+
+        forAll(f, eI)
+        {
+            //- check the tet on the neighbour side
+            tetrahedron<point, point> tetOwn
+            (
+                fCentres[faceI],
+                points[f[eI]],
+                points[f.nextLabel(eI)],
+                cCentres[owner[faceI]]
+            );
+
+            const scalar tetQualityOwn = help::tetQuality(tetOwn);
+
+            if( tetQualityOwn < minTetQuality )
+            {
+                ++nBadFaces;
+
+                if( report )
+                {
+                    # ifdef USE_OMP
+                    # pragma omp critical
+                    # endif
+                    Pout<< "Face " << faceI
+                        << " has a triangle that points the wrong way."
+                        << endl
+                        << "Tet quality: " << tetQualityOwn
+                        << " Face " << faceI
+                        << endl;
+                }
+
+                if( setPtr )
+                {
+                    # ifdef USE_OMP
+                    # pragma omp critical(insertingBadFaces)
+                    # endif
+                    setPtr->insert(faceI);
+                }
+            }
+
+            if( neighbour[faceI] < 0 )
+                continue;
+
+            //- check the tet on the neighbour side
+            tetrahedron<point, point> tetNei
+            (
+                fCentres[faceI],
+                points[f.nextLabel(eI)],
+                points[f[eI]],
+                cCentres[neighbour[faceI]]
+            );
+
+            const scalar tetQualityNei = help::tetQuality(tetNei);
+
+            if( tetQualityNei < minTetQuality )
+            {
+                ++nBadFaces;
+
+                if( report )
+                {
+                    # ifdef USE_OMP
+                    # pragma omp critical
+                    # endif
+                    Pout<< "Face " << faceI
+                        << " has a triangle that points the wrong way."
+                        << endl
+                        << "Tet quality: " << tetQualityNei
+                        << " Face " << faceI
+                        << endl;
+                }
+
+                if( setPtr )
+                {
+                    # ifdef USE_OMP
+                    # pragma omp critical(insertingBadFaces)
+                    # endif
+                    setPtr->insert(faceI);
+                }
+            }
+        }
+    }
+
+    if( nBadFaces != 0 )
+        return true;
+
+    return false;
+}
+
+
 bool checkCellPartTetrahedra
 (
     const polyMeshGen& mesh,
@@ -497,6 +616,7 @@ bool checkCellPartTetrahedra
 
         forAll(f, eI)
         {
+
             const tetrahedron<point, point> tetOwn
             (
                 fCentres[faceI],
@@ -2265,6 +2385,9 @@ label findLowQualityFaces
     //Default maximum face angle
     scalar maxAngle = 10;
 
+    //Default minimum quality of tetrahedra
+    scalar minTetQuality = VSMALL;
+
     Info << "maxNonOrtho" << maxNonOrtho << endl;
 
     //Check whether quality criteria is specified by user
@@ -2386,6 +2509,31 @@ label findLowQualityFaces
                     &badFaces,
                     activeFacePtr
                 );
+
+            }
+
+            //Reading minimum quality of tetrahedra defined by the user
+            if( qualityDict.found("minTetQuality") )
+            {
+
+                minTetQuality =
+            readScalar
+                    (
+                        qualityDict.lookup("minTetQuality")
+                    );
+
+                Info << "Reading minTetQuality" << endl;
+                Info << "minTetQuality is " << minTetQuality << endl;
+
+                polyMeshGenChecks::checkTetQuality
+                (
+                    mesh,
+                    report,
+                    minTetQuality,
+                    &badFaces,
+                    activeFacePtr
+                );
+
 
             }
             
