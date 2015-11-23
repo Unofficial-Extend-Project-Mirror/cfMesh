@@ -188,7 +188,7 @@ void cartesian2DMeshGenerator::refBoundaryLayers()
 
 void cartesian2DMeshGenerator::replaceBoundaries()
 {
-    renameBoundaryPatches rbp(mesh_, meshDict_);
+    renameBoundaryPatches rbp(mesh_, meshDict_, true);
 }
 
 void cartesian2DMeshGenerator::renumberMesh()
