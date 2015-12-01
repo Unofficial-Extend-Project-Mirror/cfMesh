@@ -94,6 +94,16 @@ bool checkTetQuality
 );
 
 
+//- Check minimum face twist
+bool checkMinTwist
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar minTwist = VSMALL,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
 //- Check for negative part tetrahedra
 //- Cells are decomposed into tetrahedra formed by
 //- the cell centre, face centre and the edge vertices

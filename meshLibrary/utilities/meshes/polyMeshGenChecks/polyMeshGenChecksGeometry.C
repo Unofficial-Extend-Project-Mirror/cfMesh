@@ -28,6 +28,7 @@ License
 #include "pyramidPointFaceRef.H"
 #include "helperFunctions.H"
 #include "tetrahedron.H"
+#include "syncTools.H"
 
 # ifdef USE_OMP
 #include <omp.h>
@@ -579,6 +580,291 @@ bool checkTetQuality
         return true;
 
     return false;
+}
+
+
+
+bool checkMinTwist
+(
+    const polyMeshGen& mesh,
+    const bool report,
+    const scalar minTwist,
+    labelHashSet* setPtr,
+    const boolList* changedFacePtr
+)
+
+{
+    if( minTwist < -1.-SMALL || minTwist > 1.+SMALL )
+    {
+        FatalErrorIn
+        (
+            "bool checkMinTwist("
+            "const polyMeshGen&, const bool, const scalar,"
+            " labelHashSet*, const boolList*"
+        )   << "minTwist should be [-1..1] but is now " << minTwist
+            << abort(FatalError);
+    }
+
+    const faceListPMG& faces = mesh.faces();
+
+    label nWarped = 0;
+
+    const labelList& own = mesh.owner();
+    const labelList& nei = mesh.neighbour();
+
+    const vectorField& fCentres = mesh.addressingData().faceCentres();
+    const vectorField& centres = mesh.addressingData().cellCentres();
+    const pointFieldPMG& points = mesh.points();
+
+    const label nInternalFaces = mesh.nInternalFaces();
+
+    # ifdef USE_OMP
+    # pragma omp parallel if ( nInternalFaces > 1000 ) reduction(+:nWarped)
+    # endif
+    {
+        # ifdef USE_OMP
+        # pragma omp for schedule(static, 1)
+        # endif
+        for(label faceI=0; faceI<nInternalFaces;++faceI)
+        {
+            const face& f = faces[faceI];
+
+            if( f.size() > 3 )
+            {
+                vector nf(vector::zero);
+
+                nf = centres[nei[faceI]] - centres[own[faceI]];
+                nf /= mag(nf) + VSMALL;
+
+                if( magSqr(nf) > VSMALL )
+                {
+                    forAll(f, fpI)
+                    {
+                        const triangle<point, point> triangle
+                        (
+                            points[f[fpI]],
+                            points[f.nextLabel(fpI)],
+                            fCentres[faceI]
+                        );
+
+                        const vector triArea = triangle.normal();
+
+                        const scalar magTri = mag(triArea);
+
+                        if( magTri > VSMALL &&
+                                ((nf & triArea/magTri) < minTwist) )
+                        {
+                            nWarped++;
+
+                            if( setPtr )
+                            {
+                                # ifdef USE_OMP
+                                # pragma omp critical
+                                # endif
+                                setPtr->insert(faceI);
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        //If running in parallel
+        if( Pstream::parRun() )
+        {
+            //- check parallel boundaries
+            const PtrList<processorBoundaryPatch>& procBoundaries =
+                mesh.procBoundaries();
+
+            forAll(procBoundaries, patchI)
+            {
+                const label start = procBoundaries[patchI].patchStart();
+
+                vectorField cCentres(procBoundaries[patchI].patchSize());
+
+                forAll(cCentres, faceI)
+                    cCentres[faceI] = centres[own[start+faceI]];
+
+                OPstream toOtherProc
+                (
+                    Pstream::blocking,
+                    procBoundaries[patchI].neiProcNo(),
+                    cCentres.byteSize()
+                );
+
+                toOtherProc << cCentres;
+            }
+
+            forAll(procBoundaries, patchI)
+            {
+                const label start = procBoundaries[patchI].patchStart();
+
+                vectorField otherCentres;
+
+                IPstream fromOtherProc
+                (
+                    Pstream::blocking,
+                    procBoundaries[patchI].neiProcNo()
+                );
+
+                fromOtherProc >> otherCentres;
+
+                forAll(otherCentres, fI)
+                {
+                    const label faceI = start + fI;
+
+                    if( changedFacePtr && !(*changedFacePtr)[faceI] )
+                        continue;
+
+                    const point& cOwn = centres[own[faceI]];
+                    const point& cNei = otherCentres[fI];
+
+                    const face& f = faces[faceI];
+
+                    vector nf(vector::zero);
+
+                    if( f.size() > 3 )
+                    {
+                        nf = cNei - cOwn;
+                        nf /= mag(nf) + VSMALL;
+                    }
+
+                    if( magSqr(nf) > VSMALL )
+                    {
+                        forAll(f, fpI)
+                        {
+
+                            const triangle<point, point> triangle
+                            (
+                                points[f[fpI]],
+                                points[f.nextLabel(fpI)],
+                                fCentres[faceI]
+                            );
+
+                            const vector triArea = triangle.normal();
+
+                            const scalar magTri = mag(triArea);
+
+                            if( magTri > VSMALL &&
+                                    ((nf & triArea/magTri) < minTwist) )
+                            {
+                                nWarped++;
+
+                                if( setPtr )
+                                {
+                                    setPtr->insert(faceI);
+                                }
+
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //- boundary faces
+        const label start = nInternalFaces;
+        label end = faces.size();
+        if( Pstream::parRun() )
+        {
+            const PtrList<processorBoundaryPatch>& procBoundaries =
+                    mesh.procBoundaries();
+            end = procBoundaries[0].patchStart();
+        }
+
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(static, 1) reduction(+:nWarped)
+        # endif
+        for(label faceI = start; faceI < end;++faceI)
+        {
+            const face& f = faces[faceI];
+
+            vector nf(vector::zero);
+
+            if( f.size() > 3 )
+            {
+                nf = fCentres[faceI] - centres[own[faceI]];
+                nf /= mag(nf) + VSMALL;
+            }
+
+            if( magSqr(nf) > VSMALL )
+            {            
+
+                forAll(f, fpI)
+                {
+                    const triangle<point, point> triangle
+                    (
+                        points[f[fpI]],
+                        points[f.nextLabel(fpI)],
+                        fCentres[faceI]
+                    );
+
+                    const vector triArea = triangle.normal();
+
+                    const scalar magTri = mag(triArea);
+
+                    if( magTri > VSMALL &&
+                            ((nf & triArea/magTri) < minTwist) )
+                    {
+                        nWarped++;
+
+                        if( setPtr )
+                        {
+                            # ifdef USE_OMP
+                            # pragma omp critical
+                            # endif
+                            setPtr->insert(faceI);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    reduce(nWarped,sumOp<label>());
+    if( report )
+    {
+        if( nWarped > 0 )
+        {
+            Info << "There are " << nWarped
+                 << " faces with cosine of the angle"
+                 << " between triangle normal and face normal less than "
+                 << minTwist << nl << endl;
+        }
+        else
+        {
+            Info << "All faces are flat in that the cosine of the angle"
+                 << " between triangle normal and face normal less than "
+                 << minTwist << nl << endl;
+        }
+    }
+
+    if( nWarped > 0 )
+    {
+        if( report )
+        {
+            WarningIn
+            (
+                "bool checkMinTwist("
+                "const polyMeshGen&, const bool, const scalar,"
+                " labelHashSet*, const boolList*"
+            )   << nWarped << " faces with severe warpage "
+                << "(cosine of the angle between triangle normal and "
+                << "face normal < " << minTwist << ") found.\n"
+                << endl;
+        }
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+
 }
 
 
@@ -2644,3 +2930,5 @@ label findWorstQualityFaces
 } // End namespace Foam
 
 // ************************************************************************* //
+
+
