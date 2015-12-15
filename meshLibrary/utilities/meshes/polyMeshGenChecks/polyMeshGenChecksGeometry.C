@@ -1211,7 +1211,6 @@ bool checkMinVolRatio
         if( report && minVolRatio < warnVolRatio )
             Info << "Small ratio on " << nWarnRatio << "faces."
                  << endl;
-
     }
 
     if( report )
