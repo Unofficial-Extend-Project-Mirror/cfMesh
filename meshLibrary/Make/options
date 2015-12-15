@@ -1,9 +1,11 @@
 #if defined(__GNUC__)
-#   if defined(darwinIntel64)
-        OMP_FLAGS =
-#   else
-        OMP_FLAGS = -DUSE_OMP -fopenmp
-#   endif
+
+ifeq (Gcc,$(findstring Gcc,$(WM_COMPILER)))
+    OMP_FLAGS = -DUSE_OMP -fopenmp
+else
+    OMP_FLAGS =
+endif
+
 #else
    OMP_FLAGS =
 #endif
