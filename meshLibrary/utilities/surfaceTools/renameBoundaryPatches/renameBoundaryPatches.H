@@ -54,7 +54,7 @@ class renameBoundaryPatches
     // Private data
         //- mesh
         polyMeshGen& mesh_;
-    
+
         //- dictionary containing relevant information
         const IOdictionary& meshDict_;
 
@@ -64,7 +64,11 @@ class renameBoundaryPatches
 
         //- find empty patches in 3D meshes and change them to wall
         void checkEmptyPatches();
-        
+
+        //- check if there exist any symmetry planes
+        //- and make sure they get perfectly flat
+        void checkSymmetryPlanes();
+
         //- Disallow default bitwise copy construct
         renameBoundaryPatches(const renameBoundaryPatches&);
 
