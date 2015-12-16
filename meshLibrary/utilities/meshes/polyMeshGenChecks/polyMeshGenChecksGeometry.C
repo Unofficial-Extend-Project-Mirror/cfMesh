@@ -2208,8 +2208,7 @@ bool checkFaceSkewness
 
     //- check faces
     # ifdef USE_OMP
-    # pragma omp parallel \
-    reduction(+ : sumSkew, nWarnSkew)
+    # pragma omp parallel reduction(+ : sumSkew, nWarnSkew)
     # endif
     {
         scalar localMaxSkew(0.0);
