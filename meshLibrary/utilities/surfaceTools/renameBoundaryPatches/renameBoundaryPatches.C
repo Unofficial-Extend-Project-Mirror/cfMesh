@@ -26,6 +26,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "renameBoundaryPatches.H"
+#include "symmetryPlaneOptimisation.H"
 #include "demandDrivenData.H"
 #include "IOdictionary.H"
 
@@ -262,6 +263,13 @@ void renameBoundaryPatches::checkEmptyPatches()
     }
 }
 
+void renameBoundaryPatches::checkSymmetryPlanes()
+{
+    symmetryPlaneOptimisation symmSmother(mesh_);
+
+    symmSmother.optimizeSymmetryPlanes();
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 renameBoundaryPatches::renameBoundaryPatches
@@ -279,9 +287,10 @@ renameBoundaryPatches::renameBoundaryPatches
         checkEmptyPatches();
     }
 
+    checkSymmetryPlanes();
+
     if( meshDict.found("renameBoundary") )
         calculateNewBoundary();
-
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
