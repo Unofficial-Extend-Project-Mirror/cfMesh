@@ -289,6 +289,9 @@ namespace help
         DynList<bool>& OkPoints
     );
 
+    //- calculate quality metric of a tetrahedron
+    inline scalar tetQuality(const tetrahedron<point, point>& tet);
+
     //- check if the vertex is on the positive side of the face plane
     inline bool isVertexVisible(const point& p, const plane& pl);
 
