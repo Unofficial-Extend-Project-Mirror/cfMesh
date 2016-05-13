@@ -89,19 +89,19 @@ renameBoundary
         "orificeRegion.*"
         {
             newName	orificeRegion;
-	    newType     wall;
+	    type     wall;
         }
  
         "inlet.*"
         {
             newName     inlet;
-            newType     patch;
+            type     patch;
         }
 
         "outlet.*"
         {
             newName     outlet;
-            newType     patch;
+            type     patch;
         }
     }
 }
