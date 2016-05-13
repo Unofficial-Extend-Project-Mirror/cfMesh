@@ -282,15 +282,15 @@ renameBoundaryPatches::renameBoundaryPatches
     mesh_(mesh),
     meshDict_(meshDict)
 {
+    if( meshDict.found("renameBoundary") )
+        calculateNewBoundary();
+
     if( !allowEmptyPatches )
     {
         checkEmptyPatches();
     }
 
     checkSymmetryPlanes();
-
-    if( meshDict.found("renameBoundary") )
-        calculateNewBoundary();
 }
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
