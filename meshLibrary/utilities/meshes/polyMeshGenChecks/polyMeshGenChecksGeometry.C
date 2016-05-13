@@ -479,7 +479,6 @@ bool checkTetQuality
     const labelList& owner = mesh.owner();
     const labelList& neighbour = mesh.neighbour();
 
-    const vectorField& fCentres = mesh.addressingData().faceCentres();
     const vectorField& cCentres = mesh.addressingData().cellCentres();
 
     label nBadFaces(0);
@@ -494,89 +493,168 @@ bool checkTetQuality
 
         const face& f = faces[faceI];
 
-        forAll(f, eI)
+        const label nDecomposed = f.size() - 1;
+
+        forAll(f, pI)
         {
-            //- check the tet on the neighbour side
-            tetrahedron<point, point> tetOwn
-            (
-                fCentres[faceI],
-                points[f[eI]],
-                points[f.nextLabel(eI)],
-                cCentres[owner[faceI]]
-            );
+            bool badQualityFace(false);
 
-            const scalar tetQualityOwn = help::tetQuality(tetOwn);
-
-            if( tetQualityOwn < minTetQuality )
+            for(label j=1;j<nDecomposed;++j)
             {
-                ++nBadFaces;
+                const label fpJ = f[(pI+j) % f.size()];
+                const label nfpJ = f[(pI+j+1) % f.size()];
 
-                if( report )
+                //- check the tet on the neighbour side
+                tetrahedron<point, point> tetOwn
+                (
+                    cCentres[owner[faceI]],
+                    points[f[pI]],
+                    points[fpJ],
+                    points[nfpJ]
+                );
+
+                const scalar tetQualityOwn = help::tetQuality(tetOwn);
+
+                if( tetQualityOwn < minTetQuality )
                 {
-                    # ifdef USE_OMP
-                    # pragma omp critical
-                    # endif
-                    Pout<< "Face " << faceI
-                        << " has a triangle that points the wrong way."
-                        << endl
-                        << "Tet quality: " << tetQualityOwn
-                        << " Face " << faceI
-                        << endl;
+                    ++nBadFaces;
+
+                    if( report )
+                    {
+                        # ifdef USE_OMP
+                        # pragma omp critical(output)
+                        # endif
+                        Pout<< "Face " << faceI
+                            << " has a triangle that points the wrong way."
+                            << endl
+                            << "Tet quality: " << tetQualityOwn
+                            << " Face " << faceI
+                            << endl;
+                    }
+
+                    if( setPtr )
+                    {
+                        # ifdef USE_OMP
+                        # pragma omp critical(insertingBadFaces)
+                        # endif
+                        setPtr->insert(faceI);
+                    }
+
+                    //- found a problematic face. Do not search further
+                    badQualityFace = true;
+                    continue;
                 }
 
-                if( setPtr )
+                if( neighbour[faceI] < 0 )
+                    continue;
+
+                //- check the tet on the neighbour side
+                tetrahedron<point, point> tetNei
+                (
+                    cCentres[neighbour[faceI]],
+                    points[f[pI]],
+                    points[nfpJ],
+                    points[fpJ]
+                );
+
+                const scalar tetQualityNei = help::tetQuality(tetNei);
+
+                if( tetQualityNei < minTetQuality )
                 {
-                    # ifdef USE_OMP
-                    # pragma omp critical(insertingBadFaces)
-                    # endif
-                    setPtr->insert(faceI);
+                    ++nBadFaces;
+
+                    if( report )
+                    {
+                        # ifdef USE_OMP
+                        # pragma omp critical(output)
+                        # endif
+                        Pout<< "Face " << faceI
+                            << " has a triangle that points the wrong way."
+                            << endl
+                            << "Tet quality: " << tetQualityNei
+                            << " Face " << faceI
+                            << endl;
+                    }
+
+                    if( setPtr )
+                    {
+                        # ifdef USE_OMP
+                        # pragma omp critical(insertingBadFaces)
+                        # endif
+                        setPtr->insert(faceI);
+                    }
+
+                    //- found a problematic face. Do not search further
+                    badQualityFace = true;
+                    continue;
                 }
             }
 
-            if( neighbour[faceI] < 0 )
+            if( badQualityFace )
                 continue;
+        }
+    }
 
-            //- check the tet on the neighbour side
-            tetrahedron<point, point> tetNei
+    reduce(nBadFaces, sumOp<label>());
+
+    if( Pstream::parRun() && nBadFaces && setPtr )
+    {
+        //- make sure that processor faces are marked on both sides
+        const PtrList<processorBoundaryPatch>& procBoundaries =
+            mesh.procBoundaries();
+
+        //- send and receive data where needed
+        forAll(procBoundaries, patchI)
+        {
+            const label start = procBoundaries[patchI].patchStart();
+            const label size = procBoundaries[patchI].patchSize();
+
+            labelLongList markedFaces;
+            for(label faceI=0;faceI<size;++faceI)
+            {
+                if( setPtr->found(start+faceI) )
+                    markedFaces.append(faceI);
+            }
+
+            OPstream toOtherProc
             (
-                fCentres[faceI],
-                points[f.nextLabel(eI)],
-                points[f[eI]],
-                cCentres[neighbour[faceI]]
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo(),
+                markedFaces.byteSize()
             );
 
-            const scalar tetQualityNei = help::tetQuality(tetNei);
+            toOtherProc << markedFaces;
+        }
 
-            if( tetQualityNei < minTetQuality )
-            {
-                ++nBadFaces;
+        forAll(procBoundaries, patchI)
+        {
+            labelList receivedData;
+            IPstream fromOtheProc
+            (
+                Pstream::blocking,
+                procBoundaries[patchI].neiProcNo()
+            );
+            fromOtheProc >> receivedData;
 
-                if( report )
-                {
-                    # ifdef USE_OMP
-                    # pragma omp critical
-                    # endif
-                    Pout<< "Face " << faceI
-                        << " has a triangle that points the wrong way."
-                        << endl
-                        << "Tet quality: " << tetQualityNei
-                        << " Face " << faceI
-                        << endl;
-                }
-
-                if( setPtr )
-                {
-                    # ifdef USE_OMP
-                    # pragma omp critical(insertingBadFaces)
-                    # endif
-                    setPtr->insert(faceI);
-                }
-            }
+            const label start = procBoundaries[patchI].patchStart();
+            forAll(receivedData, i)
+                setPtr->insert(start+receivedData[i]);
         }
     }
 
     if( nBadFaces != 0 )
+    {
+        WarningIn
+        (
+            "bool checkTetQuality("
+            "const polyMeshGen&, const bool, const scalar,"
+            " labelHashSet*, const boolList*)"
+        )   << "Found " << nBadFaces
+            << " faces with negative tet decomposition (minTetQuality < "
+            << minTetQuality << ")." << endl;
+
         return true;
+    }
 
     return false;
 }
@@ -622,7 +700,7 @@ bool checkMinTwist
     # endif
     {
         # ifdef USE_OMP
-        # pragma omp for schedule(static, 1)
+        # pragma omp for schedule(guided, 100)
         # endif
         for(label faceI=0; faceI<nInternalFaces;++faceI)
         {
@@ -658,7 +736,7 @@ bool checkMinTwist
                         if( setPtr )
                         {
                             # ifdef USE_OMP
-                            # pragma omp critical
+                            # pragma omp critical(badFace)
                             # endif
                             setPtr->insert(faceI);
                         }
@@ -715,7 +793,7 @@ bool checkMinTwist
                     if( setPtr )
                     {
                         # ifdef USE_OMP
-                        # pragma omp critical
+                        # pragma omp critical(badFace)
                         # endif
                         setPtr->insert(faceI);
                     }
@@ -906,17 +984,17 @@ bool checkCellDeterminant
         {
             if( affectedCells[cI] )
             {
-                const cell& cFaces = cells[cI];
+                const cell& c = cells[cI];
                 const vectorField& areas = mesh.addressingData().faceAreas();
 
                 tensor areaSum(tensor::zero);
                 scalar magAreaSum = 0.0;
 
-                forAll(cFaces, cFaceI)
+                forAll(c, fI)
                 {
-                    label faceI = cFaces[cFaceI];
+                    const label faceI = c[fI];
 
-                    scalar magArea = mag(areas[faceI]) + VSMALL;
+                    const scalar magArea = mag(areas[faceI]) + VSMALL;
 
                     magAreaSum += magArea;
                     areaSum += areas[faceI]*(areas[faceI]/magArea);
@@ -934,12 +1012,12 @@ bool checkCellDeterminant
                     if( setPtr )
                     {
                         //Insert all faces of the cell
-                        forAll(cFaces, cFaceI)
+                        forAll(c, fI)
                         {
-                            label faceI = cFaces[cFaceI];
+                            const label faceI = c[fI];
 
                             # ifdef USE_OMP
-                            # pragma omp critical
+                            # pragma omp critical(badFace)
                             # endif
                             setPtr->insert(faceI);
                         }
@@ -950,7 +1028,7 @@ bool checkCellDeterminant
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(minDet)
         # endif
         minDet = min(minDet, localMinDet);
     }
@@ -1017,13 +1095,14 @@ void checkMinVolRatio
     const scalarField& vols = mesh.addressingData().cellVolumes();
 
     volRatio.setSize(own.size());
-    volRatio = 1.0;
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule (dynamic, 100)
     # endif
     for(label faceI=0; faceI<nInternalFaces;++faceI)
     {
+        volRatio[faceI] = 1.0;
+
         if( changedFacePtr && !changedFacePtr->operator[](faceI) )
             continue;
 
@@ -1142,7 +1221,7 @@ bool checkMinVolRatio
                 if( setPtr )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(badFace)
                     # endif
                     setPtr->insert(faceI);
                 }
@@ -1156,7 +1235,7 @@ bool checkMinVolRatio
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(minVolRatio)
         # endif
         {
             maxVolRatio = Foam::max(maxVolRatio , localMaxVolRatio);
@@ -1321,7 +1400,7 @@ bool checkTriangleTwist
                     if( setPtr )
                     {
                         # ifdef USE_OMP
-                        # pragma omp critical
+                        # pragma omp critical(badFace)
                         # endif
                         setPtr->insert(faceI);
                     }
@@ -1420,7 +1499,7 @@ bool checkCellPartTetrahedra
                 if( report )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(report)
                     # endif
                     Pout<< "Zero or negative cell volume detected for cell "
                         << owner[faceI] << "." << endl;
@@ -1445,7 +1524,7 @@ bool checkCellPartTetrahedra
                 if( report )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(report)
                     # endif
                     Pout<< "Zero or negative cell volume detected for cell "
                         << neighbour[faceI] << "." << endl;
@@ -1460,7 +1539,7 @@ bool checkCellPartTetrahedra
             if( setPtr )
             {
                 # ifdef USE_OMP
-                # pragma omp critical
+                # pragma omp critical(badFace)
                 # endif
                 setPtr->insert(faceI);
             }
@@ -1687,7 +1766,7 @@ bool checkFaceDotProduct
                     {
                         // Severe non-orthogonality but mesh still OK
                         # ifdef USE_OMP
-                        # pragma omp critical
+                        # pragma omp critical(report)
                         # endif
                         Pout<< "Severe non-orthogonality for face " << faceI
                             << " between cells " << own[faceI]
@@ -1700,7 +1779,7 @@ bool checkFaceDotProduct
                     if( setPtr )
                     {
                         # ifdef USE_OMP
-                        # pragma omp critical
+                        # pragma omp critical(badFace)
                         # endif
                         setPtr->insert(faceI);
                     }
@@ -1714,7 +1793,7 @@ bool checkFaceDotProduct
                     if( setPtr )
                     {
                         # ifdef USE_OMP
-                        # pragma omp critical
+                        # pragma omp critical(badFace)
                         # endif
                         setPtr->insert(faceI);
                     }
@@ -1726,7 +1805,7 @@ bool checkFaceDotProduct
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(minDDotS)
         # endif
         minDDotS = Foam::min(minDDotS, localMinDDotS);
     }
@@ -1765,7 +1844,7 @@ bool checkFaceDotProduct
                         {
                             // Severe non-orthogonality but mesh still OK
                             # ifdef USE_OMP
-                            # pragma omp critical
+                            # pragma omp critical(report)
                             # endif
                             {
                                 const scalar angle
@@ -1784,7 +1863,7 @@ bool checkFaceDotProduct
                         if( setPtr )
                         {
                             # ifdef USE_OMP
-                            # pragma omp critical
+                            # pragma omp critical(badFace)
                             # endif
                             setPtr->insert(start+faceI);
                         }
@@ -1798,7 +1877,7 @@ bool checkFaceDotProduct
                         if( setPtr )
                         {
                             # ifdef USE_OMP
-                            # pragma omp critical
+                            # pragma omp critical(badFace)
                             # endif
                             setPtr->insert(start+faceI);
                         }
@@ -1812,7 +1891,7 @@ bool checkFaceDotProduct
             }
 
             # ifdef USE_OMP
-            # pragma omp critical
+            # pragma omp critical(minDDotS)
             # endif
             minDDotS = Foam::min(minDDotS, localMinDDotS);
         }
@@ -1910,7 +1989,7 @@ bool checkFacePyramids
             if( report )
             {
                 # ifdef USE_OMP
-                # pragma omp critical
+                # pragma omp critical(report)
                 # endif
                 Pout<< "bool checkFacePyramids("
                     << "const bool, const scalar, labelHashSet*) : "
@@ -1942,7 +2021,7 @@ bool checkFacePyramids
                 if( report )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(report)
                     # endif
                     Pout<< "bool checkFacePyramids("
                         << "const bool, const scalar, labelHashSet*) : "
@@ -1965,7 +2044,7 @@ bool checkFacePyramids
             if( setPtr )
             {
                 # ifdef USE_OMP
-                # pragma omp critical
+                # pragma omp critical(badFace)
                 # endif
                 setPtr->insert(faceI);
             }
@@ -2229,7 +2308,7 @@ bool checkFaceSkewness
                 if( report )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(report)
                     # endif
                     Pout<< " Severe skewness for face " << faceI
                         << " skewness = " << skewness << endl;
@@ -2238,7 +2317,7 @@ bool checkFaceSkewness
                 if( setPtr )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(badFace)
                     # endif
                     setPtr->insert(faceI);
                 }
@@ -2251,7 +2330,7 @@ bool checkFaceSkewness
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(maxSkew)
         # endif
         maxSkew = Foam::max(maxSkew, localMaxSkew);
     }
@@ -2420,7 +2499,7 @@ bool checkFaceUniformity
                 if( setPtr )
                 {
                     # ifdef USE_OMP
-                    # pragma omp critical
+                    # pragma omp critical(badFace)
                     # endif
                     setPtr->insert(faceI);
                 }
@@ -2434,7 +2513,7 @@ bool checkFaceUniformity
         }
 
         # ifdef USE_OMP
-        # pragma omp critical
+        # pragma omp critical(maxUniformity)
         # endif
         {
             maxUniformity = Foam::max(maxUniformity, localMaxUniformity);
@@ -2604,23 +2683,25 @@ bool checkFaceAngles
 
                         if( (edgeNormal & faceNormals[faceI]) < SMALL )
                         {
-                            # ifdef USE_OMP
-                            # pragma omp critical
-                            # endif
+                            if( faceI != errorFaceI )
                             {
-                                if( faceI != errorFaceI )
-                                {
-                                    // Count only one error per face.
-                                    errorFaceI = faceI;
-                                    ++nConcave;
-                                }
-
-                                if( setPtr )
-                                    setPtr->insert(faceI);
-
-                                localMaxEdgeSin =
-                                    Foam::max(localMaxEdgeSin, magEdgeNormal);
+                                // Count only one error per face.
+                                errorFaceI = faceI;
+                                ++nConcave;
                             }
+
+                            if( setPtr )
+                            {
+                                # ifdef USE_OMP
+                                # pragma omp critical
+                                # endif
+                                {
+                                    setPtr->insert(faceI);
+                                }
+                            }
+
+                            localMaxEdgeSin =
+                                Foam::max(localMaxEdgeSin, magEdgeNormal);
                         }
                     }
                 }
