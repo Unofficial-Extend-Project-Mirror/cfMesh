@@ -73,10 +73,14 @@ Istream& operator>>
 
 template<class T, label staticSize = 16>
 class DynList
-:
-    public UList<T>
 {
     // Private data
+        //- pointer to the data
+        T* dataPtr_;
+
+        //- size of the allocated data
+        label nAllocated_;
+
         //- statically allocated data (used for short lists)
         T staticData_[staticSize];
 
@@ -84,11 +88,20 @@ class DynList
         label nextFree_;
 
     // Private member functions
+        //- access to the data pointer
+        inline T* data();
+
+        //- const access to the data pointer
+        inline const T* data() const;
+
         //- allocate list size
         inline void allocateSize(const label);
 
         //- check if index is inside the scope (used for debugging only)
         inline void checkIndex(const label) const;
+
+        //- check if nAllocated_ is greater or equal to nextFree_
+        inline void checkAllocation() const;
 
 public:
 
@@ -204,6 +217,10 @@ public:
         //- Copy of another list type
         template<class ListType>
         inline void operator=(const ListType&);
+
+        //- Compare the list with the another one
+        inline bool operator==(const DynList<T, staticSize>&) const;
+        inline bool operator!=(const DynList<T, staticSize>&) const;
 
 
     // IOstream operators
