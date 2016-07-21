@@ -26,15 +26,9 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "argList.H"
-#include "Time.H"
-#include "polyMeshGenModifier.H"
-#include "meshSurfaceOptimizer.H"
-#include "triSurf.H"
-#include "meshOctree.H"
-#include "meshOctreeCreator.H"
-#include "meshSurfaceEngine.H"
-#include "labelledTri.H"
+#include "DynList.H"
+#include "scalar.H"
+#include "vector.H"
 
 using namespace Foam;
 
@@ -42,6 +36,36 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
+    DynList<label> a;
+    DynList<label> b(100);
+    DynList<scalar> c(1000, 0.1);
+
+    List<vector> v(1000, vector::zero);
+    DynList<vector> d(v);
+
+    Info << "b " << b << endl;
+
+    c.append(0.2);
+
+    b.appendIfNotIn(3);
+
+    c(1020) = 0.5;
+
+    Info << "c " << c << endl;
+
+    Info << "d " << d << endl;
+
+    DynList<DynList<label> > e;
+    e.setSize(5);
+    forAll(e, i)
+        e[i].setSize(18);
+
+    Info << "e " << e << endl;
+
+    c.setSize(5);
+    c.shrink();
+
+    Info << "\nEnd" << endl;
     return 0;
 }
 

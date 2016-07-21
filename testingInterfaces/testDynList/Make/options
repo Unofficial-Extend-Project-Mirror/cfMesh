@@ -5,7 +5,7 @@ EXE_INC = \
     -I../../meshLibrary/lnInclude
 
 EXE_LIBS = \
-    -L$(FOAM_USER_LIBBIN) \
+    -L$(FOAM_USER_LIBBIN) -g -ggdb -DFULLDEBUG -O0 \
     -lmeshLibrary \
     -ledgeMesh \
     -ltriSurface \
