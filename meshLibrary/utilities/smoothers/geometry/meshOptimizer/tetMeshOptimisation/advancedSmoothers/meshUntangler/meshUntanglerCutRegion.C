@@ -214,12 +214,7 @@ void meshUntangler::cutRegion::planeCut(const plane& plane)
         "testSmoothing"
     );
 
-    objectRegistry oR(runTime);
-
-    polyMeshGen pmg
-    (
-        oR
-    );
+    polyMeshGen pmg(runTime);
     this->createPolyMeshFromRegion(pmg);
     # endif
 
@@ -272,7 +267,8 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
             fEdges.append(edges[f[eI]]);
 
         Info << "Edges forming face " << fI << " are " << fEdges << endl;
-        labelListList sf = sortEdgesIntoChains(fEdges).sortedChains();
+        sortEdgesIntoChains sorter(fEdges);
+        const DynList<labelList>& sf = sorter.sortedChains();
         if( sf.size() != 1 )
             FatalErrorIn
             (

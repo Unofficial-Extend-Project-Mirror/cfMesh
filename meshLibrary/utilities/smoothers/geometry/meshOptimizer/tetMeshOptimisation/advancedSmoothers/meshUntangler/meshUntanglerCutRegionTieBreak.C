@@ -56,16 +56,14 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     deleteDemandDrivenData(cEdgesPtr_);
     deleteDemandDrivenData(cFacesPtr_);
 
-    //- remove coincident vertices
-    //removeCoincidentVertices();
-
     const DynList<edge, 128>& edges = *edgesPtr_;
 
     DynList<edge> faceEdges;
     forAll(f, eI)
         faceEdges.append(edges[f[eI]]);
 
-    labelListList fvertices = sortEdgesIntoChains(faceEdges).sortedChains();
+    sortEdgesIntoChains sorter(faceEdges);
+    const DynList<labelList>& fvertices = sorter.sortedChains();
     if( fvertices.size() != 1 )
     {
         valid_ = false;

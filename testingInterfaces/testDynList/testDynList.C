@@ -21,64 +21,52 @@ License
     You should have received a copy of the GNU General Public License
     along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
 
+Description
+    Writes the mesh in fpma format readable by AVL's CfdWM
+
 \*---------------------------------------------------------------------------*/
 
 #include "DynList.H"
+#include "scalar.H"
+#include "vector.H"
 
-// * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
+using namespace Foam;
 
-// Construct from Istream
-template<class T, Foam::label staticSize>
-Foam::DynList<T, staticSize>::DynList(Istream&)
-:
-    dataPtr_(NULL),
-    nAllocated_(0),
-    staticData_(),
-    nextFree_(0)
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
 {
-    FatalErrorIn
-    (
-        "template<class T, Foam::label staticSize>"
-        "\nFoam::DynList<T, staticSize>::DynList(Istream& is)"
-    ) << "Not implemented" << exit(FatalError);
+    DynList<label> a;
+    DynList<label> b(100);
+    DynList<scalar> c(1000, 0.1);
+
+    List<vector> v(1000, vector::zero);
+    DynList<vector> d(v);
+
+    Info << "b " << b << endl;
+
+    c.append(0.2);
+
+    b.appendIfNotIn(3);
+
+    c(1020) = 0.5;
+
+    Info << "c " << c << endl;
+
+    Info << "d " << d << endl;
+
+    DynList<DynList<label> > e;
+    e.setSize(5);
+    forAll(e, i)
+        e[i].setSize(18);
+
+    Info << "e " << e << endl;
+
+    c.setSize(5);
+    c.shrink();
+
+    Info << "\nEnd" << endl;
+    return 0;
 }
-
-
-template<class T, Foam::label staticSize>
-Foam::Ostream& Foam::operator<<
-(
-    Foam::Ostream& os,
-    const Foam::DynList<T, staticSize>& DL
-)
-{
-    UList<T> helper(DL.dataPtr_, DL.nextFree_);
-    os << helper;
-
-    return os;
-}
-
-
-template<class T, Foam::label staticSize>
-Foam::Istream& Foam::operator>>
-(
-    Foam::Istream& is,
-    Foam::DynList<T, staticSize>& DL
-)
-{
-    FatalErrorIn
-    (
-        "template<class T, Foam::label staticSize>"
-        "\nFoam::Istream& Foam::operator>>"
-        "(Foam::Istream& is, Foam::DynList<T, staticSize>& DL)"
-    ) << "Not implemented" << exit(FatalError);
-
-    UList<T> helper(DL.dataPtr_, DL.nextFree_);
-    //is >> static_cast<List<T>&>(DL);
-    is >> helper;
-    DL.nextFree_ = helper.size();
-
-    return is;
-}
-
 
 // ************************************************************************* //

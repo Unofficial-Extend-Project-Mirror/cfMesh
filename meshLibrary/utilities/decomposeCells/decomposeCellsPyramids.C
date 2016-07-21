@@ -55,8 +55,10 @@ void decomposeCells::findAddressingForCell
     const faceListPMG& faces = mesh_.faces();
     forAll(faceEdges, feI)
     {
-        faceEdges[feI].setSize(faces[c[feI]].size());
-        faceEdges[feI] = -1;
+        DynList<label, 8>& fEdges = faceEdges[feI];
+
+        fEdges.setSize(faces[c[feI]].size());
+        fEdges = -1;
     }
 
     forAll(c, fI)
