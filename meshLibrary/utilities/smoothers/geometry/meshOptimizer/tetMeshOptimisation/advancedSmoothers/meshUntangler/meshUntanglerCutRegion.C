@@ -272,7 +272,7 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
             fEdges.append(edges[f[eI]]);
 
         Info << "Edges forming face " << fI << " are " << fEdges << endl;
-        labelListList sf = sortEdgesIntoChains(fEdges).sortedChains();
+        const DynList<DynList<label> > sf = sortEdgesIntoChains(fEdges).sortedChains();
         if( sf.size() != 1 )
             FatalErrorIn
             (
@@ -280,7 +280,10 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
                 "cutRegion::createPolyMeshFromRegion(polyMesgGen&)"
             ) << "More than one face created!" << abort(FatalError);
 
-        faces[fI] = face(sf[0]);
+        faces[fI].setSize(sf[0].size());
+        forAll(sf[0], pI)
+            faces[fI][pI] = sf[0][pI];
+
         cells[0][fI] = fI;
     }
 }
