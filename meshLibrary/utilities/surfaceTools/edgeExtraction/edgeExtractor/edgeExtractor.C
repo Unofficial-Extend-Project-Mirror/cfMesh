@@ -26,8 +26,6 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "error.H"
-#include "objectRegistry.H"
-#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "edgeExtractor.H"
 #include "meshSurfaceEngine.H"

@@ -37,8 +37,11 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "objectRegistry.H"
+# ifdef ExtendSpecific
+#include "foamTime.H"
+# else
 #include "Time.H"
+# endif
 #include "meshSubset.H"
 #include "pointFieldPMG.H"
 #include "DynList.H"
@@ -53,7 +56,7 @@ namespace Foam
 class polyMeshGenPoints
 {
 protected:
-    
+
     // Protected data
         //- reference to the Time registry
         const Time& runTime_;
@@ -63,14 +66,14 @@ protected:
 
         //- map of point subsets
         std::map<label, meshSubset> pointSubsets_;
-    
+
     // Disallow bitwise assignment
         void operator=(const polyMeshGenPoints&);
-    
+
         polyMeshGenPoints(const polyMeshGenPoints&);
 
 public:
-    
+
     friend class polyMeshGenModifier;
 
     // Constructors
@@ -83,23 +86,23 @@ public:
             const Time&,
             const pointField& points
         );
-        
+
     // Destructor
         ~polyMeshGenPoints();
-        
+
     // Member functions
         //- access to Time
         inline const Time& returnTime() const;
-        
+
         //- access to points
         inline const pointFieldPMG& points() const;
-        
+
         //- non-const access to points
         inline pointFieldPMG& points();
-        
+
         //- append a vertex to the end of the list
         inline void appendVertex(const point& p);
-        
+
         //- point subsets
         label addPointSubset(const word&);
         void removePointSubset(const label);
@@ -113,10 +116,10 @@ public:
         inline void pointsInSubset(const label, ListType&) const;
         template<class ListType>
         inline void updatePointSubsets(const ListType&);
-        
+
     // Read mesh
         void read();
-        
+
     // Write mesh
         void write() const;
 };
