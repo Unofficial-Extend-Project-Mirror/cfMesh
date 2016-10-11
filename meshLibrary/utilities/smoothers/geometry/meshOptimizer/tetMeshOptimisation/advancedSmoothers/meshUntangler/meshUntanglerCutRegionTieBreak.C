@@ -62,8 +62,9 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     forAll(f, eI)
         faceEdges.append(edges[f[eI]]);
 
-    sortEdgesIntoChains sorter(faceEdges);
-    const DynList<labelList>& fvertices = sorter.sortedChains();
+    const DynList<DynList<label> > fvertices =
+        sortEdgesIntoChains(faceEdges).sortedChains();
+    
     if( fvertices.size() != 1 )
     {
         valid_ = false;
@@ -77,7 +78,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
             << fvertices.size() << abort(FatalError);
     }
 
-    const labelList& fv = fvertices[0];
+    const DynList<label>& fv = fvertices[0];
 
     DynList<label, 64> vertexRegion;
     vertexRegion.setSize(fv.size());

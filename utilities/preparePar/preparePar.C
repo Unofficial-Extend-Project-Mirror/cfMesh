@@ -29,9 +29,8 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "objectRegistry.H"
 #include "argList.H"
-#include "Time.H"
+#include "polyMeshGen.H"
 
 #include <sstream>
 
