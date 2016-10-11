@@ -39,7 +39,6 @@ SourceFiles
 #include "labelList.H"
 #include "edge.H"
 #include "Map.H"
-#include "boolList.H"
 
 namespace Foam
 {
@@ -52,43 +51,43 @@ class sortEdgesIntoChains
 {
     // Members
         const DynList<edge>& bEdges_;
-    
+
         bool openEdges_;
-    
+
         Map<label> newNodeLabel_;
-    
-        List<DynList<label> > edgesAtPoint_;
-    
-        DynList<labelList> createdChains_;
-    
+
+        DynList<DynList<label> > edgesAtPoint_;
+
+        DynList<DynList<label> > createdChains_;
+
     // Private member functions
         void createNodeLabels();
-    
+
         bool findPointsBelongingToTheChain
         (
             const label currPos,
-            boolList& chainEdges
+            DynList<bool>& chainEdges
         ) const;
-    
-        void shrinkEdges(const boolList& chainEdges);
-        
-        void createChainFromEdges(const boolList& chainEdges);
-        
+
+        void shrinkEdges(const DynList<bool>& chainEdges);
+
+        void createChainFromEdges(const DynList<bool>& chainEdges);
+
         void sortEdges();
-    
+
     public:
-        
+
         sortEdgesIntoChains
         (
             const DynList<edge>& bEdges
         );
-    
+
         ~sortEdgesIntoChains();
-    
+
     // Member functions
-        
+
         //- a list of points which have not yet been resolved
-        const DynList<labelList>& sortedChains() const;
+        const DynList<DynList<label> >& sortedChains() const;
 };
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

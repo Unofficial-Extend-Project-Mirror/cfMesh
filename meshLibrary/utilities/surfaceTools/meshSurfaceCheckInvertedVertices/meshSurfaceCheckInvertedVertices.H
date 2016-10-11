@@ -37,8 +37,6 @@ SourceFiles
 #ifndef meshSurfaceCheckInvertedVertices_H
 #define meshSurfaceCheckInvertedVertices_H
 
-#include "objectRegistry.H"
-#include "Time.H"
 #include "polyMeshGenModifier.H"
 #include "HashSet.H"
 
@@ -59,17 +57,17 @@ class meshSurfaceCheckInvertedVertices
     // Private data
         //- mesh surface partitioner
         const meshSurfacePartitioner& surfacePartitioner_;
-    
+
         //- active surface points
         const boolList* activePointsPtr_;
 
         //- set of inverted vertices
         labelHashSet invertedVertices_;
-    
+
     // Private member functions
         //- check vertices by calculating dot products
         void checkVertices();
-        
+
         //- Disallow default bitwise copy construct
         meshSurfaceCheckInvertedVertices
         (
