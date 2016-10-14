@@ -495,16 +495,16 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                         if( mag(ev[2]) > (mag(ev[1]) + mag(ev[0])) )
                         {
                             //- ordinary surface vertex
-                            vector normal = eigenVector(nt, ev[2]);
+                            vector normal = eigenVectors(nt, ev).z();
                             normal /= (mag(normal)+VSMALL);
                             disp -= (disp & normal) * normal;
                         }
                         else if( mag(ev[1]) > 0.5 * (mag(ev[2]) + mag(ev[0])) )
                         {
                             //- this vertex is on an edge
-                            vector normal1 = eigenVector(nt, ev[1]);
+                            vector normal1 = eigenVectors(nt, ev).y();
                             normal1 /= (mag(normal1)+VSMALL);
-                            vector normal2 = eigenVector(nt, ev[2]);
+                            vector normal2 = eigenVectors(nt, ev).z();
                             normal2 /= (mag(normal2)+VSMALL);
 
                             vector eVec = normal1 ^ normal2;
