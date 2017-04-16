@@ -52,7 +52,7 @@ void quadricFitting::calculateNormalVector()
 
     //- estimate the normal as the eigenvector associated
     //- to the smallest eigenvalue
-    normal_ = eigenVector(mat, ev[0]);
+    normal_ = eigenVectors(mat, ev).x();
 }
 
 void quadricFitting::calculateCoordinateSystem()

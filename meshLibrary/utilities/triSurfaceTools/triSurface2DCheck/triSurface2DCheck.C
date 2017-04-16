@@ -88,8 +88,8 @@ bool triSurface2DCheck::is2DSurface() const
     //- eigenVectors spanning the plane
     const vector n
     (
-        eigenVector(covarianceMatrix_, eigenVal[1]) ^
-        eigenVector(covarianceMatrix_, eigenVal[2])
+        eigenVectors(covarianceMatrix_, eigenVal).y() ^
+        eigenVectors(covarianceMatrix_, eigenVal).z()
     );
 
     //- check if the plane is in the x-y plane of the coordinate system
