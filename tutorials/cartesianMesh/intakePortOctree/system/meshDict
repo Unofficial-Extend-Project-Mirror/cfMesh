@@ -60,5 +60,10 @@ localRefinement
         cellSize 0.625;
     } 
 }
+
+meshQualitySettings
+{
+    maxNonOrthogonality        50;
+}
      
 // ************************************************************************* //

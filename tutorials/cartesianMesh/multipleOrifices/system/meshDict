@@ -100,13 +100,13 @@ renameBoundary
         "inlet.*"
         {
             newName     inlet;
-            newType     patch;
+            type     patch;
         }
 
         "outlet.*"
         {
             newName     outlet;
-            newType     patch;
+            type     patch;
         }
     }
 }

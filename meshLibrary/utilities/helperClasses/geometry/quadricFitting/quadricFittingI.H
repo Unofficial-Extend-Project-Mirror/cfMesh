@@ -52,7 +52,11 @@ void quadricFitting::calculateNormalVector()
 
     //- estimate the normal as the eigenvector associated
     //- to the smallest eigenvalue
+    # ifdef OpenCFDSpecific
+    normal_ = eigenVectors(mat, ev).x();
+    # else
     normal_ = eigenVector(mat, ev[0]);
+    # endif
 }
 
 void quadricFitting::calculateCoordinateSystem()

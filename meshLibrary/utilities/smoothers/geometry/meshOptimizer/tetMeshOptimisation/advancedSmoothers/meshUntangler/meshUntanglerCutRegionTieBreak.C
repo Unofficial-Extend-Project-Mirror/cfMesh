@@ -64,6 +64,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
 
     const DynList<DynList<label> > fvertices =
         sortEdgesIntoChains(faceEdges).sortedChains();
+    
     if( fvertices.size() != 1 )
     {
         valid_ = false;

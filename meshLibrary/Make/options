@@ -6,12 +6,16 @@ endif
 
 ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     ifeq (Int,$(findstring Int,$(WM_LABEL_OPTION)))
-	CFMESH_MACROS = -DNoSizeType
+        CFMESH_MACROS = -DNoSizeType
         LIBS =
     else
         CFMESH_MACROS =
         LIBS =
     endif
+endif
+
+ifeq (v, $(findstring v, $(WM_PROJECT_VERSION)))
+    CFMESH_MACROS += -DOpenCFDSpecific
 endif
 
 ifeq ($(WM_PROJECT), foam)

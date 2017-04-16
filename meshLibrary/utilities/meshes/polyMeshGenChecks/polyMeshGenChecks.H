@@ -82,6 +82,66 @@ bool checkFaceAreas
     const boolList* changedFacePtr = NULL
 );
 
+
+//- Check quality of tetrahedra
+bool checkTetQuality
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar minTetQuality = VSMALL,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+
+//- Check minimum face twist
+bool checkMinTwist
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar minTwist = VSMALL,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+
+//- Check the area of internal faces versus boundary faces
+bool checkCellDeterminant
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar warnDet = 1e-3,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+//- Check volume ratio
+void checkMinVolRatio
+(
+    const polyMeshGen&,
+    scalarField&,
+    const boolList* changedFacePtr = NULL
+);
+
+bool checkMinVolRatio
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar warnVolRatio = 0.01,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
+//- Check face triangle twist
+bool checkTriangleTwist
+(
+    const polyMeshGen&,
+    const bool report = false,
+    const scalar minTwist = VSMALL,
+    labelHashSet* setPtr = NULL,
+    const boolList* changedFacePtr = NULL
+);
+
 //- Check for negative part tetrahedra
 //- Cells are decomposed into tetrahedra formed by
 //- the cell centre, face centre and the edge vertices
@@ -237,6 +297,15 @@ bool checkGeometry(const polyMeshGen&, const bool report = false);
 
 //- Check mesh for correctness. Returns false for no error.
 bool checkMesh(const polyMeshGen&, const bool report = false);
+
+//- Read the user defined mesh quality settings
+label findBadFacesAdditionalChecks
+(
+    const polyMeshGen& mesh,
+    const bool report,
+    labelHashSet& badFaces,
+    const boolList* activeFacePtr = NULL
+);
 
 //- checks for bad faces making the mesh unusable
 //- checks for negative pyramids and zero area faces
