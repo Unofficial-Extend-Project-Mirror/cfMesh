@@ -300,7 +300,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
 
         OPstream toOtherProc
         (
-            Pstream::blocking,
+            UPstream::commsTypes::blocking,
             pBnd[patchI].neiProcNo(),
             sendData.byteSize()
         );
@@ -314,7 +314,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
 
         IPstream fromOtherProc
         (
-            Pstream::blocking,
+            UPstream::commsTypes::blocking,
             pBnd[patchI].neiProcNo()
         );
 
