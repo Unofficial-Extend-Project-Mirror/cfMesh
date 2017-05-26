@@ -36,7 +36,6 @@ Author
 #include "triSurf.H"
 #include "triSurfModifier.H"
 #include "xmlTag.H"
-#include "UList.H"
 
 using namespace Foam;
 
