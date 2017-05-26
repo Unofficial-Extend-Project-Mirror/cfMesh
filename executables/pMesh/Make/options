@@ -1,5 +1,5 @@
 ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
-    CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
+    CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume 
     ifeq (Int,$(findstring Int,$(WM_LABEL_OPTION)))
         CFMESH_MACROS = -DNoSizeType
     else
