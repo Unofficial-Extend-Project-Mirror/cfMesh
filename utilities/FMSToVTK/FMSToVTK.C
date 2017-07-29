@@ -78,7 +78,7 @@ void writePointsToVTK
     const fileName& fn,
     const string& title,
     const UList<point>& points,
-    unallocLabelList& addr
+    UList<label>& addr
 )
 {
     // Create subaddressed points
@@ -158,7 +158,7 @@ void writeEdgesToVTK
     const string& title,
     const UList<point>& points,
     const LongList<edge>& edges,
-    const unallocLabelList& addr
+    const UList<label>& addr
 )
 {
     // Remove unused points and create subaddressed edges
@@ -274,7 +274,7 @@ void writeFacetsToVTK
     const string& title,
     const pointField& points,
     const LongList<labelledTri>& facets,
-    const unallocLabelList& addr
+    const UList<label>& addr
 )
 {        
     // Remove unused points and create subaddressed facets
