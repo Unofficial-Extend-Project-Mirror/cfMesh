@@ -1049,7 +1049,7 @@ void refineBoundaryLayers::generateNewFaces()
 
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                UPstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 sendData.byteSize()
             );
@@ -1065,7 +1065,7 @@ void refineBoundaryLayers::generateNewFaces()
 
             IPstream fromOtherProc
             (
-                Pstream::blocking,
+                UPstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 

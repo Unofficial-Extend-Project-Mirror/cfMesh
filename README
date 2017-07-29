@@ -2,8 +2,8 @@
 #
 #+TITLE:                       *cfMesh README*
 #+AUTHOR:                      Franjo Juretic.
-#+DATE:                           May 2015
-#+LINK:                  http://www.c-fields.com
+#+DATE:                           October 2016
+#+LINK:                  http://www.cfmesh.com
 #+OPTIONS:
 
 cfMesh is a library for mesh generation built on OpenFOAM.

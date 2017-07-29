@@ -181,7 +181,7 @@ void topologicalCleaner::checkNonMappableFaces()
             //- send information about decomposed faces to other processor
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                UPstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 decProcFace.byteSize()
             );
@@ -193,7 +193,7 @@ void topologicalCleaner::checkNonMappableFaces()
             boolList decOtherProc;
             IPstream fromOtherProc
             (
-                Pstream::blocking,
+                UPstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtherProc >> decOtherProc;
