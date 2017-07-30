@@ -8,10 +8,9 @@ ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     ifeq (OpenFOAM-dev,$(findstring OpenFOAM-dev,$(WM_PROJECT_DIR)))
         CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume 
     else
-        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
+        CFMESH_LIBS = -lmeshTools -lfiniteVolume
     endif
 endif
-
 
 ifeq ($(WM_PROJECT), foam)
     VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
@@ -27,6 +26,7 @@ endif
 EXE_INC = \
     $(CFMESH_MACROS) \
     -I$(LIB_SRC)/triSurface/lnInclude \
+    -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/edgeMesh/lnInclude \
