@@ -8,7 +8,7 @@ ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     ifeq (OpenFOAM-dev,$(findstring OpenFOAM-dev,$(WM_PROJECT_DIR)))
         CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume 
     else
-        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
+        CFMESH_LIBS = -lmeshTools -lfiniteVolume
     endif
 endif
 
