@@ -618,7 +618,7 @@ bool checkTetQuality
 
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 markedFaces.byteSize()
             );
@@ -631,7 +631,7 @@ bool checkTetQuality
             labelList receivedData;
             IPstream fromOtheProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtheProc >> receivedData;
@@ -821,7 +821,7 @@ bool checkMinTwist
 
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 cCentres.byteSize()
             );
@@ -837,7 +837,7 @@ bool checkMinTwist
 
             IPstream fromOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
@@ -1137,7 +1137,7 @@ void checkMinVolRatio
 
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 vol.byteSize()
             );
@@ -1153,7 +1153,7 @@ void checkMinVolRatio
 
             IPstream fromOtheProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
