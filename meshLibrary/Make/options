@@ -31,6 +31,7 @@ endif
 EXE_INC = \
     $(OMP_FLAGS) $(CFMESH_MACROS) \
     -I$(LIB_SRC)/triSurface/lnInclude \
+    -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/edgeMesh/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 
