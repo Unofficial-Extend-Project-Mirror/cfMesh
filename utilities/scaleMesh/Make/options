@@ -16,7 +16,7 @@ ifeq ($(WM_PROJECT), foam)
     VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
     ifeq ($(VER), 1)
         CFMESH_LIBS = -lmeshTools -lfiniteVolume -ledgeMesh
-        CFMESH_MACROS = -DExtendSpecific
+        CFMESH_MACROS = -DExtendSpecific -std=c++11
     else
         CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
         CFMESH_MACROS =
