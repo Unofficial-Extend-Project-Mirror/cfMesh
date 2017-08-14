@@ -192,7 +192,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
 
                 OPstream toOtherProc
                 (
-                    UPstream::commsTypes::blocking,
+                    Pstream::commsTypes::blocking,
                     procBoundaries[patchI].neiProcNo(),
                     dts.byteSize()
                 );
@@ -206,7 +206,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
                 labelList receiveData;
                 IPstream fromOtherProc
                 (
-                    UPstream::commsTypes::blocking,
+                    Pstream::commsTypes::blocking,
                     procBoundaries[patchI].neiProcNo()
                 );
                 fromOtherProc >> receiveData;
@@ -1032,7 +1032,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 dts.byteSize()
             );
@@ -1046,7 +1046,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
             labelList receivedEdges;
             IPstream fromOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtherProc >> receivedEdges;

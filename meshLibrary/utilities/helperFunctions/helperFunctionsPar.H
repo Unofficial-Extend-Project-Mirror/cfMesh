@@ -43,7 +43,7 @@ SourceFiles
 
 namespace Foam
 {
-    
+
 namespace help
 {
 
@@ -65,7 +65,7 @@ void exchangeMap
 (
     const std::map<label, ListType>&,
     LongList<T>&,
-    const UPstream::commsTypes commsType = UPstream::commsTypes::blocking
+    const Pstream::commsTypes commsType = Pstream::commsTypes::blocking
 );
 
 //- sends the data stored in a map to other processors and receives the data

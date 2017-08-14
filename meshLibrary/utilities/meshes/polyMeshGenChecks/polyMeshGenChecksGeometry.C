@@ -1566,7 +1566,7 @@ bool checkCellPartTetrahedra
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBnd[patchI].neiProcNo(),
                 sendData.byteSize()
             );
@@ -1580,7 +1580,7 @@ bool checkCellPartTetrahedra
 
             IPstream fromOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBnd[patchI].neiProcNo()
             );
 
@@ -1667,7 +1667,7 @@ void checkFaceDotProduct
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 cCentres.byteSize()
             );
@@ -1680,7 +1680,7 @@ void checkFaceDotProduct
             vectorField otherCentres;
             IPstream fromOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
@@ -2076,7 +2076,7 @@ bool checkFacePyramids
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 markedFaces.byteSize()
             );
@@ -2089,7 +2089,7 @@ bool checkFacePyramids
             labelList receivedData;
             IPstream fromOtheProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtheProc >> receivedData;
@@ -2179,7 +2179,7 @@ void checkFaceSkewness
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 cCentres.byteSize()
             );
@@ -2194,7 +2194,7 @@ void checkFaceSkewness
             vectorField otherCentres;
             IPstream fromOtheProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
@@ -2421,7 +2421,7 @@ void checkFaceUniformity
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 dst.byteSize()
             );
@@ -2436,7 +2436,7 @@ void checkFaceUniformity
             scalarField otherDst;
             IPstream fromOtheProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
@@ -2885,7 +2885,7 @@ bool checkFaceFlatness
         {
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 sizeof(label)
             );
@@ -2898,7 +2898,7 @@ bool checkFaceFlatness
         {
             IPstream fromOtheProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 sizeof(label)
             );
@@ -2914,7 +2914,7 @@ bool checkFaceFlatness
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 markedFaces[patchI].byteSize()
             );
@@ -2930,7 +2930,7 @@ bool checkFaceFlatness
             labelList receivedData;
             IPstream fromOtheProc
             (
-                UPstream::commsTypes::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 nMarkedOnOtherProcs[patchI]*sizeof(label)
             );

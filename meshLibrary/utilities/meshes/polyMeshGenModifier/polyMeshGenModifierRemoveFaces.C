@@ -126,7 +126,11 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 
             OPstream toOtherProc
             (
-                UPstream::commsTypes::blocking,
+                # ifdef ExtendSpecific
+                Pstream::blocking,
+                # else
+                Pstream::commsTypes::blocking,
+                # endif
                 procBoundaries[patchI].neiProcNo(),
                 removeProcFace.byteSize()
             );
@@ -142,7 +146,11 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             boolList removeOtherProcFace;
             IPstream fromOtherProc
             (
-                UPstream::commsTypes::blocking,
+                # ifdef ExtendSpecific
+                Pstream::blocking,
+                # else
+                Pstream::commsTypes::blocking,
+                # endif
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtherProc >> removeOtherProcFace;
