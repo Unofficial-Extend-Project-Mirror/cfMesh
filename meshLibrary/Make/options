@@ -14,10 +14,6 @@ ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     endif
 endif
 
-ifeq (v, $(findstring v, $(WM_PROJECT_VERSION)))
-    CFMESH_MACROS += -DOpenCFDSpecific
-endif
-
 ifeq ($(WM_PROJECT), foam)
     VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
     ifeq ($(VER), 1)

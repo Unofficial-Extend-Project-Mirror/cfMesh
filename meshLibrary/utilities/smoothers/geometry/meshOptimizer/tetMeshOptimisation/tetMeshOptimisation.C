@@ -495,11 +495,7 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                         if( mag(ev[2]) > (mag(ev[1]) + mag(ev[0])) )
                         {
                             //- ordinary surface vertex
-                            # ifdef OpenCFDSpecific
                             vector normal = eigenVectors(nt, ev).z();
-                            # else
-                            vector normal = eigenVector(nt, ev[2]);
-                            # endif
 
                             normal /= (mag(normal)+VSMALL);
                             disp -= (disp & normal) * normal;
@@ -507,19 +503,11 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                         else if( mag(ev[1]) > 0.5 * (mag(ev[2]) + mag(ev[0])) )
                         {
                             //- this vertex is on an edge
-                            # ifdef OpenCFDSpecific
                             vector normal1 = eigenVectors(nt, ev).y();
-                            # else
-                            vector normal1 = eigenVector(nt, ev[1]);
-                            # endif
 
                             normal1 /= (mag(normal1)+VSMALL);
 
-                            # ifdef OpenCFDSpecific
                             vector normal2 = eigenVectors(nt, ev).z();
-                            # else
-                            vector normal2 = eigenVector(nt, ev[2]);
-                            # endif
 
                             normal2 /= (mag(normal2)+VSMALL);
 
