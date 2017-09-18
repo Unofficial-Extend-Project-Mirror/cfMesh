@@ -145,17 +145,9 @@ meshOctreeAddressing::meshOctreeAddressing
         useDATABoxes_ = readBool(dict.lookup("keepCellsIntersectingBoundary"));
     }
 
-    if (dict.found("nonManifoldMeshing"))
+    if (dict.lookupOrDefault<bool>("nonManifoldMeshing", false))
     {
-        const bool nonManifoldMesh
-        (
-            readBool(dict.lookup("nonManifoldMeshing"))
-        );
-
-        if (nonManifoldMesh)
-        {
-            useDATABoxes_ = true;
-        }
+        useDATABoxes_ = true;
     }
 
     if (Pstream::parRun())

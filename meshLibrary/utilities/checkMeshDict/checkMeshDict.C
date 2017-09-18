@@ -39,75 +39,61 @@ namespace Foam
 
 void checkMeshDict::checkBasicSettings() const
 {
-    // check if maxCellSize is valid
-    const scalar maxCellSize = readScalar(meshDict_.lookup("maxCellSize"));
+    bool bval;
+    scalar sval;
 
-    if (maxCellSize < 0)
+    // Check if maxCellSize is valid
+    sval = readScalar(meshDict_.lookup("maxCellSize"));
+    if (sval < 0)
     {
         FatalErrorInFunction
             << "maxCellSize is negative! Cannot generate the mesh!!"
             << exit(FatalError);
     }
 
-    // check if boundaryCellSize makes sense
-    if (meshDict_.found("boundaryCellSize"))
+    // Check if boundaryCellSize makes sense
+    if (meshDict_.readIfPresent("boundaryCellSize", sval))
     {
-        const scalar bcs = readScalar(meshDict_.lookup("boundaryCellSize"));
-
-        if (bcs < 0)
+        if (sval < 0)
         {
             WarningInFunction
                 << "Boundary cell size is negative!!" << endl;
         }
 
-        if (meshDict_.found("boundaryCellSizeRefinementThickness"))
+        if
+        (
+            meshDict_.readIfPresent
+            (
+                "boundaryCellSizeRefinementThickness",
+                sval
+            )
+         && (sval < 0)
+        )
         {
-            const scalar thickness =
-                readScalar
-                (
-                    meshDict_.lookup("boundaryCellSizeRefinementThickness")
-                );
-
-            if (thickness < 0)
-            {
-                WarningInFunction
-                    << "Boundary cell size refinement thickness is negative!!"
-                    << endl;
-            }
+            WarningInFunction
+                << "Boundary cell size refinement thickness is negative!!"
+                << endl;
         }
     }
 
-    // check if minCellSize is valid
-    if (meshDict_.found("minCellSize"))
+    // Check if minCellSize is valid
+    if
+    (
+        meshDict_.readIfPresent("minCellSize", sval)
+     && (sval < 0)
+    )
     {
-        const scalar mcs = readScalar(meshDict_.lookup("minCellSize"));
-
-        if (mcs < 0)
-        {
-            FatalErrorInFunction
-                << "Minimum cell size for automatic refinement is negative!!"
-                << exit(FatalError);
-        }
-
+        FatalErrorInFunction
+            << "Minimum cell size for automatic refinement is negative!!"
+            << exit(FatalError);
     }
 
-    // check if keepCellsIntersectingBoundary can be read correctly
-    if (meshDict_.found("keepCellsIntersectingBoundary"))
-    {
-        const bool keep =
-            readBool(meshDict_.lookup("keepCellsIntersectingBoundary"));
+    // Check if keepCellsIntersectingBoundary can be read correctly
+    meshDict_.readIfPresent("keepCellsIntersectingBoundary", bval);
+    meshDict_.readIfPresent("checkForGluedMesh", bval);
 
-        if (keep && meshDict_.found("checkForGluedMesh"))
-        {
-            readBool(meshDict_.lookup("checkForGluedMesh"));
-        }
-    }
-
-    // check if enforceConstraints is available
-    if (meshDict_.found("enforceGeometryConstraints"))
-    {
-        readBool(meshDict_.lookup("enforceGeometryConstraints"));
-    }
+    // Check if enforceConstraints is available
+    meshDict_.readIfPresent("enforceConstraints", bval);
 }
 
 
@@ -163,23 +149,21 @@ void checkMeshDict::checkLocalRefinementLevel() const
             {
                 const dictionary& dict = refDict.subDict(entries[dictI]);
 
-                if (dict.found("cellSize"))
-                {
-                    const scalar cs = readScalar(dict.lookup("cellSize"));
+                label ival;
+                scalar sval;
 
-                    if (cs < 0.0)
+                if (dict.readIfPresent("cellSize", sval))
+                {
+                    if (sval < 0.0)
                     {
                         WarningInFunction
                             << "Cell size for " << entries[dictI]
                             << " is negative" << endl;
                     }
                 }
-                else if (dict.found("additionalRefinementLevels"))
+                else if (dict.readIfPresent("additionalRefinementLevels", ival))
                 {
-                    const label nLevels =
-                        readLabel(dict.lookup("additionalRefinementLevels"));
-
-                    if (nLevels < 0)
+                    if (ival < 0)
                     {
                         WarningInFunction
                             << "Refinement level for " << entries[dictI]
@@ -194,12 +178,9 @@ void checkMeshDict::checkLocalRefinementLevel() const
                         << "for " << entries[dictI] << exit(FatalError);
                 }
 
-                if (dict.found("refinementThickness"))
+                if (dict.readIfPresent("refinementThickness", sval))
                 {
-                    const scalar s =
-                        readScalar(dict.lookup("refinementThickness"));
-
-                    if (s < 0)
+                    if (sval < 0)
                     {
                         WarningInFunction
                             << "Refinement thickness for " << entries[dictI]
@@ -387,11 +368,12 @@ void checkMeshDict::checkSurfaceRefinements() const
                         << surfaceSources[surfI] << exit(FatalError);
                 }
 
-                if (dict.found("cellSize"))
-                {
-                    const scalar cs = readScalar(dict.lookup("cellSize"));
+                label ival;
+                scalar sval;
 
-                    if (cs < VSMALL)
+                if (dict.readIfPresent("cellSize", sval))
+                {
+                    if (sval < VSMALL)
                     {
                         FatalErrorInFunction
                             << "Cell size for entry " << surfaceSources[surfI]
@@ -399,12 +381,9 @@ void checkMeshDict::checkSurfaceRefinements() const
                             << exit(FatalError);
                     }
                 }
-                else if (dict.found("additionalRefinementLevels"))
+                else if (dict.readIfPresent("additionalRefinementLevels", ival))
                 {
-                    const label nLev =
-                        readLabel(dict.lookup("additionalRefinementLevels"));
-
-                    if (nLev < 0)
+                    if (ival < 0)
                     {
                         FatalErrorInFunction
                             << "Number refinement levels for entry "
@@ -420,12 +399,9 @@ void checkMeshDict::checkSurfaceRefinements() const
                         << exit(FatalError);
                 }
 
-                if (dict.found("refinementThickness"))
+                if (dict.readIfPresent("refinementThickness", sval))
                 {
-                    const scalar cs =
-                        readScalar(dict.lookup("refinementThickness"));
-
-                    if (cs < VSMALL)
+                    if (sval < VSMALL)
                     {
                         WarningInFunction
                             << "Refinement thickness for entry "
@@ -480,11 +456,12 @@ void checkMeshDict::checkEdgeMeshRefinements() const
                         << edgeMeshSources[emI] << exit(FatalError);
                 }
 
-                if (dict.found("cellSize"))
-                {
-                    const scalar cs = readScalar(dict.lookup("cellSize"));
+                scalar sval;
+                label ival;
 
-                    if (cs < VSMALL)
+                if (dict.readIfPresent("cellSize", sval))
+                {
+                    if (sval < VSMALL)
                     {
                         FatalErrorInFunction
                             << "Cell size for entry " << edgeMeshSources[emI]
@@ -492,12 +469,9 @@ void checkMeshDict::checkEdgeMeshRefinements() const
                             << exit(FatalError);
                     }
                 }
-                else if (dict.found("additionalRefinementLevels"))
+                else if (dict.readIfPresent("additionalRefinementLevels", ival))
                 {
-                    const label nLev =
-                        readLabel(dict.lookup("additionalRefinementLevels"));
-
-                    if (nLev < 0)
+                    if (ival < 0)
                     {
                         FatalErrorInFunction
                             << "Number refinement levels for entry "
@@ -513,12 +487,9 @@ void checkMeshDict::checkEdgeMeshRefinements() const
                         << exit(FatalError);
                 }
 
-                if (dict.found("refinementThickness"))
+                if (dict.readIfPresent("refinementThickness", sval))
                 {
-                    const scalar cs =
-                        readScalar(dict.lookup("refinementThickness"));
-
-                    if (cs < VSMALL)
+                    if (sval < VSMALL)
                     {
                         WarningInFunction
                             << "Refinement thickness for entry "
@@ -545,21 +516,16 @@ void checkMeshDict::checkBoundaryLayers() const
     {
         const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
 
-        // read global properties
-        if (bndLayers.found("nLayers"))
-        {
-            readLabel(bndLayers.lookup("nLayers"));
-        }
-        if (bndLayers.found("thicknessRatio"))
-        {
-            readScalar(bndLayers.lookup("thicknessRatio"));
-        }
-        if (bndLayers.found("maxFirstLayerThickness"))
-        {
-            readScalar(bndLayers.lookup("maxFirstLayerThickness"));
-        }
+        bool bval;
+        label ival;
+        scalar sval;
 
-        // patch-based properties
+        // Check global properties
+        bndLayers.readIfPresent<label>("nLayers", ival);
+        bndLayers.readIfPresent<scalar>("thicknessRatio", sval);
+        bndLayers.readIfPresent<scalar>("maxFirstLayerThickness", sval);
+
+        // Patch-based properties
         if (bndLayers.isDict("patchBoundaryLayers"))
         {
             const dictionary& patchBndLayers =
@@ -575,22 +541,10 @@ void checkMeshDict::checkBoundaryLayers() const
                     const dictionary& patchDict =
                         patchBndLayers.subDict(pName);
 
-                    if (patchDict.found("nLayers"))
-                    {
-                        readLabel(patchDict.lookup("nLayers"));
-                    }
-                    if (patchDict.found("thicknessRatio"))
-                    {
-                        readScalar(patchDict.lookup("thicknessRatio"));
-                    }
-                    if (patchDict.found("maxFirstLayerThickness"))
-                    {
-                        readScalar(patchDict.lookup("maxFirstLayerThickness"));
-                    }
-                    if (patchDict.found("allowDiscontinuity"))
-                    {
-                        readBool(patchDict.lookup("allowDiscontinuity"));
-                    }
+                    patchDict.readIfPresent<label>("nLayers", ival);
+                    patchDict.readIfPresent("thicknessRatio", sval);
+                    patchDict.readIfPresent("maxFirstLayerThickness", sval);
+                    patchDict.readIfPresent<bool>("allowDiscontinuity", bval);
                 }
                 else
                 {
@@ -600,28 +554,19 @@ void checkMeshDict::checkBoundaryLayers() const
             }
         }
 
-        // check for existence of boundary layer smoothing
-        if (bndLayers.found("optimiseLayer"))
-        {
-            readBool(bndLayers.lookup("optimiseLayer"));
-        }
+        // Check for existence of boundary layer smoothing
+        bndLayers.readIfPresent<bool>("optimiseLayer", bval);
 
         if (bndLayers.found("optimisationParameters"))
         {
             const dictionary& optParams =
                 bndLayers.subDict("optimisationParameters");
 
-            if (optParams.found("reCalculateNormals"))
-            {
-                readBool(optParams.lookup("reCalculateNormals"));
-            }
+            optParams.readIfPresent<bool>("reCalculateNormals", bval);
 
-            if (optParams.found("nSmoothNormals"))
+            if (optParams.readIfPresent("nSmoothNormals", ival))
             {
-                const label nSmoothNormals =
-                    readLabel(optParams.lookup("nSmoothNormals"));
-
-                if (nSmoothNormals < 0)
+                if (ival < 0)
                 {
                     FatalErrorInFunction
                         << "nSmoothNormals must not be negative!"
@@ -629,12 +574,9 @@ void checkMeshDict::checkBoundaryLayers() const
                 }
             }
 
-            if (optParams.found("featureSizeFactor"))
+            if (optParams.readIfPresent("featureSizeFactor", sval))
             {
-                const scalar featureSizeFactor =
-                    readScalar(optParams.lookup("featureSizeFactor"));
-
-                if (featureSizeFactor >= 1.0 || featureSizeFactor < 0.0)
+                if (sval >= 1.0 || sval < 0.0 )
                 {
                     FatalErrorInFunction
                         << "Feature size factor is out"
@@ -642,12 +584,9 @@ void checkMeshDict::checkBoundaryLayers() const
                 }
             }
 
-            if (optParams.found("relThicknessTol"))
+            if (optParams.readIfPresent("relThicknessTol", sval))
             {
-                const scalar relThicknessTol =
-                    readScalar(optParams.lookup("relThicknessTol"));
-
-                if (relThicknessTol >= 1.0 || relThicknessTol < 0.0)
+                if (sval >= 1.0 || sval < 0.0)
                 {
                     FatalErrorInFunction
                         << "Relative thickness tolerance is out"
@@ -655,12 +594,9 @@ void checkMeshDict::checkBoundaryLayers() const
                 }
             }
 
-            if (optParams.found("maxNumIterations"))
+            if (optParams.readIfPresent("maxNumIterations", ival))
             {
-                const label maxNumIterations =
-                    readLabel(optParams.lookup("maxNumIterations"));
-
-                if (maxNumIterations < 0)
+                if (ival < 0)
                 {
                     FatalErrorInFunction
                         << "maxNumIterations must not be negative!"
@@ -736,46 +672,30 @@ void checkMeshDict::checkRenameBoundary() const
 
 void checkMeshDict::checkQualitySettings() const
 {
-    if (meshDict_.found("meshQualitySettings"))
+    scalar sval;
+
+    if (meshDict_.found("meshQualitySettings") )
     {
         const dictionary& qualityDict =
             meshDict_.subDict("meshQualitySettings");
 
-        // read maximum non-orthogonality defined by the user
-        if (qualityDict.found("maxNonOrthogonality"))
-        {
-            readScalar(qualityDict.lookup("maxNonOrthogonality"));
-        }
+        // maximum non-orthogonality defined by the user
+        qualityDict.readIfPresent("maxNonOrthogonality", sval);
 
-        // read maximum skewness defined by the user
-        if (qualityDict.found("maxSkewness"))
-        {
-            readScalar(qualityDict.lookup("maxSkewness"));
-        }
+        // maximum skewness defined by the user
+        qualityDict.readIfPresent("maxSkewness", sval);
 
-        // read minimum volume of the face pyramid defined by the user
-        if (qualityDict.found("minPyramidVolume"))
-        {
-            readScalar(qualityDict.lookup("minPyramidVolume"));
-        }
+        // minimum volume of the face pyramid defined by the user
+        qualityDict.readIfPresent("minPyramidVolume", sval);
 
-        // read face flatness defined by the user
-        if (qualityDict.found("faceFlatness"))
-        {
-            readScalar(qualityDict.lookup("faceFlatness"));
-        }
+        // face flatness defined by the user
+        qualityDict.readIfPresent("faceFlatness", sval);
 
-        // read minimum tetrahedral part of a cell defined by the user
-        if (qualityDict.found("minCellPartTetrahedra"))
-        {
-            readScalar(qualityDict.lookup("minCellPartTetrahedra"));
-        }
+        // minimum tetrahedral part of a cell defined by the user
+        qualityDict.readIfPresent("minCellPartTetrahedra", sval);
 
-        // read minimum area of a face defined by the user
-        if (qualityDict.found("minimumFaceArea"))
-        {
-            readScalar(qualityDict.lookup("minimumFaceArea"));
-        }
+        // minimum area of a face defined by the user
+        qualityDict.readIfPresent("minimumFaceArea", sval);
     }
 }
 
@@ -1134,18 +1054,14 @@ void checkMeshDict::updateRenameBoundary
     {
         const dictionary& dict = meshDict_.subDict("renameBoundary");
 
-        // transfer or generate the default name entry
-        if (dict.found("defaultName"))
+        // transfer or generate default name/type entries
+        for (const word& keyName : { "defaultName", "defaultType" })
         {
-            const word name(dict.lookup("defaultName"));
-            newDict.add("defaultName", name);
-        }
-
-        // transfer or generate the defaultType entry
-        if (dict.found("defaultType"))
-        {
-            const word type(dict.lookup("defaultType"));
-            newDict.add("defaultType", type);
+            word wval;
+            if (dict.readIfPresent(keyName, wval))
+            {
+                newDict.add(keyName, wval);
+            }
         }
 
         if (dict.found("newPatchNames"))
@@ -1159,7 +1075,12 @@ void checkMeshDict::updateRenameBoundary
                 const dictionary& patchDicts = dict.subDict("newPatchNames");
 
                 std::map<word, wordList>::const_iterator it;
-                for (it = patchesFromPatch.begin(); it!=patchesFromPatch.end(); ++it)
+                for
+                (
+                    it = patchesFromPatch.begin();
+                    it!=patchesFromPatch.end();
+                    ++it
+                )
                 {
                     const word& pName = it->first;
                     const wordList& newNames = it->second;

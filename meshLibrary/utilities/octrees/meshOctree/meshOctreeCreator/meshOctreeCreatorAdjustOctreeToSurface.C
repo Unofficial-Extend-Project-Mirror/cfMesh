@@ -482,17 +482,12 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 
             } while (nMarked != 0);
         }
-        else if (dict.found("additionalRefinementLevels"))
+        else
         {
-            addLevel =
-                readLabel(dict.lookup("additionalRefinementLevels"));
+            dict.readIfPresent("additionalRefinementLevels", addLevel);
         }
 
-        if (dict.found("refinementThickness"))
-        {
-            refThickness[surfI] =
-                readScalar(dict.lookup("refinementThickness"));
-        }
+        dict.readIfPresent("refinementThickness", refThickness[surfI]);
 
         // set the refinement level for the current surface
         refLevels[surfI] += addLevel;
@@ -715,17 +710,12 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 
             } while (nMarked != 0);
         }
-        else if (dict.found("additionalRefinementLevels"))
+        else
         {
-            addLevel =
-                readLabel(dict.lookup("additionalRefinementLevels"));
+            dict.readIfPresent("additionalRefinementLevels", addLevel);
         }
 
-        if (dict.found("refinementThickness"))
-        {
-            refThickness[emI] =
-                readScalar(dict.lookup("refinementThickness"));
-        }
+        dict.readIfPresent("refinementThickness", refThickness[emI]);
 
         // set the refinement level for the current mesh
         refLevels[emI] += addLevel;

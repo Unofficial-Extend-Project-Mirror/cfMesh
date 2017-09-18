@@ -92,11 +92,9 @@ void triangulateNonPlanarBaseFaces::readSettings
             const dictionary& optLayerDict =
                 layersDict.subDict("optimisationParameters");
 
-            if (optLayerDict.found("relFlatnessTol"))
+            scalar relTol;
+            if (optLayerDict.readIfPresent("relFlatnessTol", relTol))
             {
-                const scalar relTol =
-                    readScalar(optLayerDict.lookup("relFlatnessTol"));
-
                 triangulator.setRelativeTolerance(relTol);
             }
         }

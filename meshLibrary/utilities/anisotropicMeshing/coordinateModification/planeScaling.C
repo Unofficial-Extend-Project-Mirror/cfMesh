@@ -222,12 +222,7 @@ void planeScaling::operator=(const dictionary& d)
       : d
     );
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("origin"))
-    {
-        dict.lookup("origin") >> origin_;
-    }
-    else
+    if (!dict.readIfPresent("origin", origin_))
     {
         FatalErrorInFunction
             << "Entry origin is not specified!" << exit(FatalError);
@@ -235,25 +230,14 @@ void planeScaling::operator=(const dictionary& d)
         origin_ = vector::zero;
     }
 
-    // specify normal
-    if (dict.found("normal"))
-    {
-        dict.lookup("normal") >> normal_;
-    }
-    else
+    if (!dict.readIfPresent("normal", normal_))
     {
         FatalErrorInFunction
-            << "Entry lengthX is not specified!" << exit(FatalError);
-
+            << "Entry normal is not specified!" << exit(FatalError);
         normal_ = vector(1, 1, 1);
     }
 
-    // specify translation distance
-    if (dict.found("scalingDistance"))
-    {
-        scalingDistance_ = readScalar(dict.lookup("scalingDistance"));
-    }
-    else
+    if (!dict.readIfPresent("scalingDistance", scalingDistance_))
     {
         FatalErrorInFunction
             << "Entry scalingDistance is not specified!" << exit(FatalError);
@@ -261,12 +245,7 @@ void planeScaling::operator=(const dictionary& d)
         scalingDistance_ = 0.0;
     }
 
-    // specify scaling factor
-    if (dict.found("scalingFactor"))
-    {
-        scalingFactor_ = readScalar(dict.lookup("scalingFactor"));
-    }
-    else
+    if (!dict.readIfPresent("scalingFactor", scalingFactor_))
     {
         WarningInFunction
             << "Entry scalingFactor is not specified!" << endl;

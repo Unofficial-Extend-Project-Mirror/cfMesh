@@ -39,19 +39,12 @@ namespace Foam
 
 void meshOctreeAddressing::checkGluedRegions()
 {
-    if (!useDATABoxes_)
-    {
-        return;
-    }
-
-    if (meshDict_.found("checkForGluedMesh"))
-    {
-        if (!readBool(meshDict_.lookup("checkForGluedMesh")))
-        {
-            return;
-        }
-    }
-    else
+    // Only run if useDATABoxes_ is true and checkForGluedMesh is specified
+    if
+    (
+        !useDATABoxes_
+     || !meshDict_.lookupOrDefault<bool>("checkForGluedMesh", false)
+    )
     {
         return;
     }

@@ -165,14 +165,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             << label(boundaryRefLevel_) << endl;
 
         scalar thickness(0.0);
-        if (meshDictPtr_->found("boundaryCellSizeRefinementThickness"))
+        if
+        (
+            meshDictPtr_->readIfPresent
+            (
+                "boundaryCellSizeRefinementThickness",
+                thickness
+            )
+        )
         {
-            const scalar s =
-                readScalar
-                (
-                    meshDictPtr_->lookup("boundaryCellSizeRefinementThickness")
-                );
-            thickness = mag(s);
+            thickness = mag(thickness);
         }
 
         forAll(surfRefLevel_, triI)
@@ -390,14 +392,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 const dictionary& patchDict = dict.subDict(pName);
 
                 label nLevel(0);
-
-                if (patchDict.found("additionalRefinementLevels"))
+                if
+                (
+                    patchDict.readIfPresent
+                    (
+                        "additionalRefinementLevels",
+                        nLevel
+                    )
+                )
                 {
-                    nLevel =
-                        readLabel
-                        (
-                            patchDict.lookup("additionalRefinementLevels")
-                        );
+                    //
                 }
                 else if (patchDict.found("cellSize"))
                 {
@@ -422,11 +426,11 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 }
 
                 scalar refinementThickness(0.0);
-                if (patchDict.found("refinementThickness"))
-                {
-                    refinementThickness =
-                        readScalar(patchDict.lookup("refinementThickness"));
-                }
+                patchDict.readIfPresent
+                (
+                    "refinementThickness",
+                    refinementThickness
+                );
 
                 const direction level = globalRefLevel_ + nLevel;
 

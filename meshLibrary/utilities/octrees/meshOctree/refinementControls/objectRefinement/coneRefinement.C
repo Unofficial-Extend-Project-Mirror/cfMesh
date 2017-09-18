@@ -191,12 +191,7 @@ void coneRefinement::operator=(const dictionary& d)
       : d
     );
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("p0"))
-    {
-        dict.lookup("p0") >> p0_;
-    }
-    else
+    if (!dict.readIfPresent("p0", p0_))
     {
         FatalErrorInFunction
             << "Entry p0 is not specified!" << exit(FatalError);
@@ -204,12 +199,7 @@ void coneRefinement::operator=(const dictionary& d)
         p0_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("radius0"))
-    {
-        r0_ = readScalar(dict.lookup("radius0"));
-    }
-    else
+    if (!dict.readIfPresent("radius0", r0_))
     {
         FatalErrorInFunction
             << "Entry radius0 is not specified!" << exit(FatalError);
@@ -217,12 +207,7 @@ void coneRefinement::operator=(const dictionary& d)
         r0_ = -1.0;
     }
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("p1"))
-    {
-        dict.lookup("p1") >> p1_;
-    }
-    else
+    if (!dict.readIfPresent("p1", p1_))
     {
         FatalErrorInFunction
             << "Entry p1 is not specified!" << exit(FatalError);
@@ -230,12 +215,7 @@ void coneRefinement::operator=(const dictionary& d)
         p1_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("radius1"))
-    {
-        r1_ = readScalar(dict.lookup("radius1"));
-    }
-    else
+    if (!dict.readIfPresent("radius1", r1_))
     {
         FatalErrorInFunction
             << "Entry radius1 is not specified!" << exit(FatalError);

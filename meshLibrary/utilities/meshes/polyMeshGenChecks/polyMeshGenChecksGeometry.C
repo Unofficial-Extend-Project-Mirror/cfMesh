@@ -3096,11 +3096,10 @@ label findBadFacesAdditionalChecks
     scalar minCellPartTetrahedra = VSMALL;
 
     //Check whether quality criteria is specified by user
-    //if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
-    if (mesh.returnTime().foundObject <IOdictionary>("meshDict"))
+    if (mesh.returnTime().foundObject<IOdictionary>("meshDict"))
     {
         const dictionary& meshDict =
-            mesh.returnTime().lookupObject <IOdictionary>("meshDict");
+            mesh.returnTime().lookupObject<IOdictionary>("meshDict");
 
         if (meshDict.found("meshQualitySettings"))
         {
@@ -3108,14 +3107,8 @@ label findBadFacesAdditionalChecks
                 meshDict.subDict("meshQualitySettings");
 
             //Reading maximum non-orthogonality defined by the user
-            if (qualityDict.found("maxNonOrthogonality"))
+            if (qualityDict.readIfPresent("maxNonOrthogonality", maxNonOrtho))
             {
-                maxNonOrtho =
-                    readScalar
-                    (
-                        qualityDict.lookup("maxNonOrthogonality")
-                    );
-
                 polyMeshGenChecks::checkFaceDotProduct
                 (
                     mesh,
@@ -3127,14 +3120,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading maximum skewness defined by the user
-            if (qualityDict.found("maxSkewness"))
+            if (qualityDict.readIfPresent("maxSkewness", maxSkewness))
             {
-                maxSkewness =
-                    readScalar
-                    (
-                        qualityDict.lookup("maxSkewness")
-                    );
-
                 polyMeshGenChecks::checkFaceSkewness
                 (
                     mesh,
@@ -3143,18 +3130,11 @@ label findBadFacesAdditionalChecks
                     &badFaces,
                     activeFacePtr
                 );
-
             }
 
             //Reading face uniformity specified by the user
-            if (qualityDict.found("fcUniform"))
+            if (qualityDict.readIfPresent("fcUniform", fcUniform))
             {
-                fcUniform =
-                    readScalar
-                    (
-                        qualityDict.lookup("fcUniform")
-                    );
-
                 polyMeshGenChecks::checkFaceUniformity
                 (
                     mesh,
@@ -3166,10 +3146,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading volume uniformity specified by the user
-            if (qualityDict.found("volUniform"))
+            if (qualityDict.readIfPresent("volUniform", volUniform))
             {
-                volUniform = readScalar(qualityDict.lookup("volUniform"));
-
                 polyMeshGenChecks::checkVolumeUniformity
                 (
                     mesh,
@@ -3181,10 +3159,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading maximum face angle specified by the user
-            if (qualityDict.found("maxAngle"))
+            if (qualityDict.readIfPresent("maxAngle", maxAngle))
             {
-                maxAngle = readScalar(qualityDict.lookup("maxAngle"));
-
                 polyMeshGenChecks::checkFaceAngles
                 (
                     mesh,
@@ -3196,10 +3172,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum quality of tetrahedra defined by the user
-            if (qualityDict.found("minTetQuality"))
+            if (qualityDict.readIfPresent("minTetQuality", minTetQuality))
             {
-                minTetQuality = readScalar(qualityDict.lookup("minTetQuality"));
-
                 polyMeshGenChecks::checkTetQuality
                 (
                     mesh,
@@ -3211,10 +3185,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum face twist defined by the user
-            if (qualityDict.found("minFaceTwist"))
+            if (qualityDict.readIfPresent("minFaceTwist", minFaceTwist))
             {
-                minFaceTwist = readScalar(qualityDict.lookup("minFaceTwist"));
-
                 polyMeshGenChecks::checkMinTwist
                 (
                     mesh,
@@ -3226,11 +3198,15 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum cell determinant defined by the user
-            if (qualityDict.found("minCellDeterminant"))
+            if
+            (
+                qualityDict.readIfPresent
+                (
+                    "minCellDeterminant",
+                    minCellDeterminant
+                )
+            )
             {
-                minCellDeterminant =
-                    readScalar(qualityDict.lookup("minCellDeterminant"));
-
                 polyMeshGenChecks::checkCellDeterminant
                 (
                     mesh,
@@ -3242,10 +3218,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum cell volume ratio defined by the user
-            if (qualityDict.found("minVolRatio"))
+            if (qualityDict.readIfPresent("minVolRatio", minVolRatio))
             {
-                minVolRatio = readScalar(qualityDict.lookup("minVolRatio"));
-
                 polyMeshGenChecks::checkMinVolRatio
                 (
                     mesh,
@@ -3257,11 +3231,15 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum face triangle twist defined by the user
-            if (qualityDict.found("minFaceTriangleTwist"))
+            if
+            (
+                qualityDict.readIfPresent
+                (
+                    "minFaceTriangleTwist",
+                    minFaceTriangleTwist
+                )
+            )
             {
-                minFaceTriangleTwist =
-                    readScalar(qualityDict.lookup("minFaceTriangleTwist"));
-
                 polyMeshGenChecks::checkTriangleTwist
                 (
                     mesh,
@@ -3273,11 +3251,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum volume of the face pyramid defined by the user
-            if (qualityDict.found("minPyramidVolume"))
+            if (qualityDict.readIfPresent("minPyramidVolume", minPyramidVolume))
             {
-                minPyramidVolume =
-                    readScalar(qualityDict.lookup("minPyramidVolume"));
-
                 polyMeshGenChecks::checkFacePyramids
                 (
                     mesh,
@@ -3289,11 +3264,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum area of a face defined by the user
-            if (qualityDict.found("minimumFaceArea"))
+            if (qualityDict.readIfPresent("minimumFaceArea", minimumFaceArea))
             {
-                minimumFaceArea =
-                    readScalar(qualityDict.lookup("minimumFaceArea"));
-
                 polyMeshGenChecks::checkFaceAreas
                 (
                     mesh,
@@ -3305,10 +3277,8 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading face flatness defined by the user
-            if (qualityDict.found("faceFlatness"))
+            if (qualityDict.readIfPresent("faceFlatness", faceFlatness))
             {
-                faceFlatness = readScalar(qualityDict.lookup("faceFlatness"));
-
                 polyMeshGenChecks::checkFaceFlatness
                 (
                     mesh,
@@ -3320,11 +3290,15 @@ label findBadFacesAdditionalChecks
             }
 
             //Reading minimum tetrahedral part of a cell defined by the user
-            if (qualityDict.found("minCellPartTetrahedra"))
+            if
+            (
+                qualityDict.readIfPresent
+                (
+                    "minCellPartTetrahedra",
+                    minCellPartTetrahedra
+                )
+            )
             {
-                minCellPartTetrahedra =
-                    readScalar(qualityDict.lookup("minCellPartTetrahedra"));
-
                 polyMeshGenChecks::checkCellPartTetrahedra
                 (
                     mesh,

@@ -40,25 +40,21 @@ bool workflowControls::restartRequested() const
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
+    bool restart = false;
+
     if
     (
         meshDict.found("workflowControls")
      && meshDict.isDict("workflowControls")
     )
     {
-        const dictionary& workflowControls =
+        const dictionary& controls =
             meshDict.subDict("workflowControls");
 
-        if (workflowControls.found("restartFromLatestStep"))
-        {
-            const bool restart =
-                readBool(workflowControls.lookup("restartFromLatestStep"));
-
-            return restart;
-        }
+        controls.readIfPresent("restartFromLatestStep", restart);
     }
 
-    return false;
+    return restart;
 }
 
 
@@ -112,21 +108,20 @@ bool workflowControls::exitAfterCurrentStep() const
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
-    if
-    (
-        meshDict.found("workflowControls") &&
-        meshDict.isDict("workflowControls")
-    )
+    if (meshDict.isDict("workflowControls"))
     {
-        const dictionary& workflowControls =
+        const dictionary& controls =
             meshDict.subDict("workflowControls");
 
-        if (workflowControls.found("stopAfter"))
-        {
-            const word exitStep(workflowControls.lookup("stopAfter"));
+        word exitStep;
 
-            if (exitStep == currentStep_)
-                return true;
+        if
+        (
+            controls.readIfPresent("stopAfter", exitStep)
+         && exitStep == currentStep_
+        )
+        {
+            return true;
         }
     }
 
@@ -152,7 +147,9 @@ DynList<word> workflowControls::completedSteps() const
     DynList<word> completedSteps;
 
     if (mesh_.metaData().found("completedSteps"))
+    {
         completedSteps = wordList(mesh_.metaData().lookup("completedSteps"));
+    }
 
     return completedSteps;
 }

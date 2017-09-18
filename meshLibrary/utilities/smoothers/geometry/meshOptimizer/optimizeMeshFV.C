@@ -319,8 +319,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
         {
             const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-            if (layersDict.found("optimiseLayer"))
-                smoothLayer = readBool(layersDict.lookup("optimiseLayer"));
+            layersDict.readIfPresent("optimiseLayer", smoothLayer);
         }
 
         if (!smoothLayer)
@@ -418,15 +417,11 @@ void meshOptimizer::untangleBoundaryLayer()
         const dictionary& meshDict =
             mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
 
-        if (meshDict.found("boundaryLayers"))
+        if (meshDict.found("boundaryLayers") )
         {
-            const dictionary& layersDict = meshDict.subDict("boundaryLayers");
+            const dictionary& subdict = meshDict.subDict("boundaryLayers");
 
-            if (layersDict.found("untangleLayers"))
-            {
-                untangleLayer =
-                    readBool(layersDict.lookup("untangleLayers"));
-            }
+            subdict.readIfPresent("untangleLayers", untangleLayer);
         }
     }
 

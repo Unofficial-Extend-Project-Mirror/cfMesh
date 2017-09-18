@@ -206,12 +206,8 @@ void hollowConeRefinement::operator=(const dictionary& d)
       : d
     );
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("p0"))
-    {
-        dict.lookup("p0") >> p0_;
-    }
-    else
+    // unspecified point is (0 0 0)
+    if (!dict.readIfPresent("p0", p0_))
     {
         FatalErrorInFunction
             << "Entry p0 is not specified!" << exit(FatalError);
@@ -219,12 +215,7 @@ void hollowConeRefinement::operator=(const dictionary& d)
         p0_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("radius0_Outer"))
-    {
-        r0Outer_ = readScalar(dict.lookup("radius0_Outer"));
-    }
-    else
+    if (!dict.readIfPresent("radius0_Outer", r0Outer_))
     {
         FatalErrorInFunction
             << "Entry radius0_Outer is not specified!" << exit(FatalError);
@@ -232,25 +223,15 @@ void hollowConeRefinement::operator=(const dictionary& d)
         r0Outer_ = -1.0;
     }
 
-    // specify radius
-    if (dict.found("radius0_Inner"))
-    {
-        r0Inner_ = readScalar(dict.lookup("radius0_Inner"));
-    }
-    else
+    if (!dict.readIfPresent("radius0_Inner", r0Inner_))
     {
         FatalErrorInFunction
             << "Entry radius0_Inner is not specified!" << exit(FatalError);
         r0Inner_ = -1.0;
     }
 
-
-    // unspecified centre is (0 0 0)
-    if (dict.found("p1"))
-    {
-        dict.lookup("p1") >> p1_;
-    }
-    else
+    // unspecified point is (0 0 0)
+    if (!dict.readIfPresent("p1", p1_))
     {
         FatalErrorInFunction
             << "Entry p1 is not specified!" << exit(FatalError);
@@ -258,12 +239,7 @@ void hollowConeRefinement::operator=(const dictionary& d)
         p1_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("radius1_Outer"))
-    {
-        r1Outer_ = readScalar(dict.lookup("radius1_Outer"));
-    }
-    else
+    if (!dict.readIfPresent("radius1_Outer", r1Outer_))
     {
         FatalErrorInFunction
             << "Entry radius1_Outer is not specified!" << exit(FatalError);
@@ -271,12 +247,7 @@ void hollowConeRefinement::operator=(const dictionary& d)
         r1Outer_ = -1.0;
     }
 
-    // specify radius
-    if (dict.found("radius1_Inner"))
-    {
-         r1Inner_ = readScalar(dict.lookup("radius1_Inner"));
-    }
-    else
+    if (!dict.readIfPresent("radius1_Inner", r1Inner_))
     {
         FatalErrorInFunction
             << "Entry radius1_Inner is not specified!" << exit(FatalError);

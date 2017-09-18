@@ -62,10 +62,16 @@ void cartesian2DMeshGenerator::createCartesianMesh()
     // create polyMesh from octree boxes
     cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
 
-    if (meshDict_.found("decomposePolyhedraIntoTetsAndPyrs"))
+    if
+    (
+        meshDict_.lookupOrDefault<bool>
+        (
+            "decomposePolyhedraIntoTetsAndPyrs",
+            false
+        )
+    )
     {
-        if (readBool(meshDict_.lookup("decomposePolyhedraIntoTetsAndPyrs")))
-            cme.decomposeSplitHexes();
+        cme.decomposeSplitHexes();
     }
 
     cme.createMesh();
