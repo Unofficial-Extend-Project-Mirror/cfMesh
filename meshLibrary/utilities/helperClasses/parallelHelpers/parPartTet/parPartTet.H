@@ -89,10 +89,9 @@ public:
             return pts_[i];
         }
 
-        inline bool operator != (const parPartTet& /*ptf*/) const
+        inline bool operator!=(const parPartTet& /*ptf*/) const
         {
             NotImplemented;
-
             return true;
         }
 
@@ -108,7 +107,6 @@ public:
             os << ppt.pts_[3];
             os << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
             return os;
         }
@@ -126,9 +124,7 @@ public:
             // Read end of parHelper
             is.readEnd("parPartTet");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

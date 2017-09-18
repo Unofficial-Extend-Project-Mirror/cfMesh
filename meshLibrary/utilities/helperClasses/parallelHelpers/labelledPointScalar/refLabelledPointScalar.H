@@ -132,9 +132,7 @@ public:
             os << lps.pLabel_ << token::SPACE;
             os << lps.lps_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -149,9 +147,7 @@ public:
             // Read end of refLabelledPointScalar
             is.readEnd("refLabelledPointScalar");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

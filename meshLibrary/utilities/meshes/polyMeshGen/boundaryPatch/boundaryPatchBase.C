@@ -30,10 +30,10 @@ License
 #include "IOPtrList.H"
 #include "dictionary.H"
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 defineTemplateTypeNameAndDebugWithName
 (
@@ -44,33 +44,34 @@ defineTemplateTypeNameAndDebugWithName
 
 defineTypeNameAndDebug(boundaryPatchBase, 0);
 defineRunTimeSelectionTable(boundaryPatchBase, dictionary);
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-autoPtr<boundaryPatchBase> boundaryPatchBase::New
+Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
 (
     const word& name,
     const dictionary& dict
 )
 {
     word type(dict.lookup("type"));
-    // check the type of processor. Allowed types are processor and patch
+
+    // Check patch type - allowed types are processor and patch
     // Other patch types are treated as ordinary patches
     if (type != "processor")
     {
         type = "patch";
     }
 
-    dictionaryConstructorTable::iterator cstrIter =
-        dictionaryConstructorTablePtr_->find(type);
+    auto cstrIter = dictionaryConstructorTablePtr_->cfind(type);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalIOErrorInFunction(dict)
             << "Unknown boundaryPatchBase type " << type << nl << nl
-            << "Valid boundaryPatchBase types are :" << nl
+            << "Valid boundaryPatchBase types:" << nl
             << "[default: " << typeName_() << "]"
-            << dictionaryConstructorTablePtr_->toc()
+            << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalIOError);
     }
 
@@ -78,7 +79,7 @@ autoPtr<boundaryPatchBase> boundaryPatchBase::New
 }
 
 
-autoPtr<boundaryPatchBase> boundaryPatchBase::New
+Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
 (
     Istream& is
 )
@@ -90,9 +91,9 @@ autoPtr<boundaryPatchBase> boundaryPatchBase::New
 }
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boundaryPatchBase::boundaryPatchBase
+Foam::boundaryPatchBase::boundaryPatchBase
 (
     const word& n,
     const word& t,
@@ -107,32 +108,29 @@ boundaryPatchBase::boundaryPatchBase
 {}
 
 
-boundaryPatchBase::boundaryPatchBase(const word& name, const dictionary& dict)
+Foam::boundaryPatchBase::boundaryPatchBase
+(
+    const word& name,
+    const dictionary& dict
+)
 :
     name_(name),
-    type_(),
-    nFaces_(),
-    startFace_()
-{
-    word type(dict.lookup("type"));
-    type_ = type;
-    nFaces_ = readLabel(dict.lookup("nFaces"));
-    startFace_ = readLabel(dict.lookup("startFace"));
-}
+    type_(dict.lookup("type")),
+    nFaces_(readLabel(dict.lookup("nFaces"))),
+    startFace_(readLabel(dict.lookup("startFace")))
+{}
+
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& operator<<(Ostream& os, const boundaryPatchBase& wpb)
+Foam::Ostream&
+Foam::operator<<(Foam::Ostream& os, const Foam::boundaryPatchBase& obj)
 {
-    wpb.write(os);
+    obj.write(os);
     os.check(FUNCTION_NAME);
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

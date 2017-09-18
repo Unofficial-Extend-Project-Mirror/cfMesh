@@ -251,7 +251,6 @@ inline Istream& operator>>(Istream& is, meshSubset& sel)
     }
 
     is.check(FUNCTION_NAME);
-
     return is;
 }
 

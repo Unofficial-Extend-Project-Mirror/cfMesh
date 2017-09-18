@@ -164,9 +164,7 @@ public:
             // Read end of parMapperHelper
             is.readEnd("parMapperHelper");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

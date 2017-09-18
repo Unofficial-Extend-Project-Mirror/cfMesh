@@ -120,9 +120,7 @@ inline Ostream& operator<<
 
     os << token::END_LIST;
 
-    // Check state of Ostream
     os.check(FUNCTION_NAME);
-
     return os;
 }
 
@@ -146,9 +144,7 @@ inline Istream& operator>>
     // Read end of meshOctreeCubeBasic
     is.readEnd("meshOctreeCubeBasic");
 
-    // Check state of Istream
     is.check(FUNCTION_NAME);
-
     return is;
 }
 

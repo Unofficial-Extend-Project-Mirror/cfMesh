@@ -613,9 +613,7 @@ inline Istream& operator>>
     // Read end of meshOctreeCubeCoordinates
     is.readEnd("meshOctreeCubeCoordinates");
 
-    // Check state of Istream
     is.check(FUNCTION_NAME);
-
     return is;
 }
 
@@ -638,9 +636,7 @@ inline Ostream& operator<<
 
     os << token::END_LIST;
 
-    // Check state of Ostream
     os.check(FUNCTION_NAME);
-
     return os;
 }
 

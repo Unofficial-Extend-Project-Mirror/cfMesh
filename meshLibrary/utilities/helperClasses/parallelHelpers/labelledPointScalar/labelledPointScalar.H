@@ -158,9 +158,7 @@ public:
             os << lps.coords_ << token::SPACE;
             os << lps.weight_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -176,9 +174,7 @@ public:
             // Read end of labelledPointScalar
             is.readEnd("labelledPointScalar");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

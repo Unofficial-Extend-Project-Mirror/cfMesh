@@ -127,9 +127,7 @@ Foam::Ostream& Foam::operator<<
         }
     }
 
-    // Check state of IOstream
     os.check(FUNCTION_NAME);
-
     return os;
 }
 

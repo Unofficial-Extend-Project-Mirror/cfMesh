@@ -155,9 +155,7 @@ public:
             os << scc.sValue_ << token::SPACE;
             os << scc.coordinates_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -176,9 +174,7 @@ public:
             // Read end of meshOctreCubeCoordinatesScalar
             is.readEnd("meshOctreCubeCoordinatesScalar");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

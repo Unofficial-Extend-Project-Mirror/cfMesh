@@ -27,14 +27,9 @@ License
 #include "dictionary.H"
 #include "error.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
+Foam::autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
 (
     const word& name,
     const dictionary& dict
@@ -46,10 +41,7 @@ autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
 
     // default type is self
     word cmType(typeName_());
-    if (dict.found("type"))
-    {
-        dict.lookup("type") >> cmType;
-    }
+    dict.readIfPresent("type", cmType);
 
     auto cstrIter = dictionaryConstructorTablePtr_->cfind(cmType);
 
@@ -57,7 +49,7 @@ autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
     {
         FatalIOErrorInFunction(dict)
             << "Unknown coordinateModification type " << cmType << nl << nl
-            << "Valid coordinateModification types are :" << nl
+            << "Valid coordinateModification types :" << nl
             << "[default: " << typeName_() << "]"
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalIOError);
@@ -66,9 +58,5 @@ autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
     return autoPtr<coordinateModification>(cstrIter()(name, dict));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

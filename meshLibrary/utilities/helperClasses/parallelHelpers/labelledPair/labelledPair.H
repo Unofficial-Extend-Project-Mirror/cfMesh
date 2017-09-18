@@ -121,11 +121,19 @@ public:
 
             const labelPair& op = lpp.pair_;
 
-            if ((pair_.first() == op.first()) && (pair_.second() == op.second()))
+            if
+            (
+                (pair_.first() == op.first())
+             && (pair_.second() == op.second())
+            )
             {
                 return true;
             }
-            if ((pair_.first() == op.second()) && (pair_.second() == op.first()))
+            if
+            (
+                (pair_.first() == op.second())
+             && (pair_.second() == op.first())
+            )
             {
                 return true;
             }
@@ -186,9 +194,7 @@ public:
             os << lpp.pLabel_ << token::SPACE;
             os << lpp.pair_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -207,9 +213,7 @@ public:
             // Read end of labelledPair
             is.readEnd("labelledPair");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

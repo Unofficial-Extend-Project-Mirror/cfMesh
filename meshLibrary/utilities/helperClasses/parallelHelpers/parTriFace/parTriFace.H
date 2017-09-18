@@ -121,7 +121,6 @@ public:
             os << ptf.globalLabels_[2] << token::SPACE;
             os << ptf.triPoints_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
             return os;
         }
@@ -139,9 +138,7 @@ public:
             // Read end of parHelper
             is.readEnd("parTriFace");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

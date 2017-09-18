@@ -119,12 +119,7 @@ public:
 
         inline bool operator==(const labelledPoint& lp) const
         {
-            if (pLabel_ == lp.pLabel_)
-            {
-                return true;
-            }
-
-            return false;
+            return (pLabel_ == lp.pLabel_);
         }
 
         inline bool operator!=(const labelledPoint& lp) const
@@ -141,9 +136,7 @@ public:
             os << lp.pLabel_ << token::SPACE;
             os << lp.coords_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -158,9 +151,7 @@ public:
             // Read end of labelledPoint
             is.readEnd("labelledPoint");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };
