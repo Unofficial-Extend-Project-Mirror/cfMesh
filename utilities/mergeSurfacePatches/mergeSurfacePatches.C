@@ -300,31 +300,26 @@ int main(int argc, char *argv[])
 
     argList::validArgs.append("input surface file");
     argList::validArgs.append("new patch");
-    argList::validOptions.insert("patchNames", "list of names");
-    argList::validOptions.insert("patchIds", "list of patchIds");
-    argList::validOptions.insert("patchIdRange", "(start end)");
-    argList::validOptions.insert("output", "file name (default overwrite)");
-    argList::validOptions.insert("keep", "");
+    argList::addOption("patchNames", "list of names");
+    argList::addOption("patchIds", "list of patchIds");
+    argList::addOption("patchIdRange", "(start end)");
+    argList::addOption("output", "file name (default overwrite)");
+    argList::addBoolOption("keep");
     argList args(argc, argv);
 
     // Process commandline arguments
-    fileName inFileName(args.args()[1]);
+    fileName inFileName(args[1]);
 
-    word newPatchName(args.args()[2]);
+    word newPatchName(args[2]);
 
     fileName outFileName(inFileName);
 
-    if (args.options().found("output"))
+    if (args.optionFound("output"))
     {
-        outFileName = args.options()["output"];
+        outFileName = args["output"];
     }
 
-    bool keepPatches = false;
-
-    if (args.options().found("keep"))
-    {
-        keepPatches = true;
-    }
+    const bool keepPatches = args.optionFound("keep");
 
     // Read original surface
     triSurf origSurf(inFileName);
@@ -334,13 +329,13 @@ int main(int argc, char *argv[])
 
     if (args.options().found("patchNames"))
     {
-        if (args.options().found("patchIds"))
+        if (args.optionFound("patchIds"))
         {
             FatalError() << "Cannot specify both patch names and ids"
                 << Foam::abort(FatalError);
         }
 
-        IStringStream is(args.options()["patchNames"]);
+        IStringStream is(args["patchNames"]);
         wordList patchNames(is);
 
         getPatchIds
@@ -351,17 +346,16 @@ int main(int argc, char *argv[])
         );
     }
 
-    if (args.options().found("patchIds"))
+    if (args.optionFound("patchIds"))
     {
-        IStringStream is(args.options()["patchIds"]);
+        IStringStream is(args["patchIds"]);
 
         patchIds.append(labelList(is));
     }
 
-    if (args.options().found("patchIdRange"))
+    if (args.optionFound("patchIdRange"))
     {
-        IStringStream is(args.options()["patchIdRange"]);
-
+        IStringStream is(args["patchIdRange"]);
         Pair<label> idRange(is);
 
         for (label id = idRange.first(); id <= idRange.second(); id++)

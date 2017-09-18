@@ -39,64 +39,48 @@ int main(int argc, char *argv[])
 {
     argList::validArgs.clear();
 
-    argList::validOptions.insert("nLoops", "int");
-    argList::validOptions.insert("nIterations", "int");
-    argList::validOptions.insert("nSurfaceIterations", "int");
-    argList::validOptions.insert("qualityThreshold", "scalar");
-    argList::validOptions.insert("constrainedCellsSet", "word");
+    argList::addOption("nLoops", "int");
+    argList::addOption("nIterations", "int");
+    argList::addOption("nSurfaceIterations", "int");
+    argList::addOption("qualityThreshold", "scalar");
+    argList::addOption("constrainedCellsSet", "word");
 
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    // read the settings
+    // Defaults
     label nIterations(50);
     label nLoops(10);
     label nSurfaceIterations(2);
     scalar qualityThreshold(0.1);
 
-    if (args.options().found("nLoops"))
+    // Read the settings
+
+    if (!args.optionReadIfPresent("nLoops", nLoops))
     {
-        nLoops = readLabel(args["nLoops"]);
-    }
-    else
-    {
-        Info<< "Default number of loops is 10" << endl;
+        Info<< "Default number of loops is "
+            << nLoops << endl;
     }
 
-    if (args.options().found("nIterations"))
+    if (!args.optionReadIfPresent("nIterations", nIterations))
     {
-        nIterations = readLabel(args["nIterations"]);
-    }
-    else
-    {
-        Info<< "Default number of iterations is 50" << endl;
+        Info<< "Default number of iterations is "
+            << nIterations << endl;
     }
 
-    if (args.options().found("nSurfaceIterations"))
+    if (!args.optionReadIfPresent("nSurfaceIterations", nSurfaceIterations))
     {
-        nSurfaceIterations = readLabel(args["nSurfaceIterations"]);
-    }
-    else
-    {
-        Info<< "Default number of surface iterations is 2" << endl;
+        Info<< "Default number of surface iterations is "
+            << nSurfaceIterations << endl;
     }
 
-    if (args.options().found("qualityThreshold"))
-    {
-        qualityThreshold = readScalar(args["qualityThreshold"]);
-    }
-    else
+    if (!args.optionReadIfPresent("qualityThreshold", qualityThreshold))
     {
         Info<< "Using default quality threshold 0.1" << endl;
     }
 
     word constrainedCellSet;
-
-    if (args.options().found("constrainedCellsSet"))
-    {
-        constrainedCellSet = args.options()["constrainedCellsSet"];
-    }
-    else
+    if (!args.optionReadIfPresent("constrainedCellSet", constrainedCellSet))
     {
         Info<< "No constraints applied on the smoothing procedure" << endl;
     }

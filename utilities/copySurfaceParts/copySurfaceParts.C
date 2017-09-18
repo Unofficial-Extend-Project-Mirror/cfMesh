@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
     argList::validArgs.append("patch/subset name");
     argList args(argc, argv);
 
-    const fileName inFileName(args.args()[1]);
-    const fileName outFileName(args.args()[2]);
+    const fileName inFileName(args[1]);
+    const fileName outFileName(args[2]);
 
     if (outFileName == inFileName)
     {
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
     }
 
     wordList patches(1);
-    patches[0] = args.args()[3];
+    patches[0] = args[3];
 
     triSurf originalSurface(inFileName);
 

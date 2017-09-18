@@ -125,8 +125,8 @@ int main(int argc, char *argv[])
     argList::validArgs.append("subset");
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    word subsetName(args.args()[2]);
+    fileName inFileName(args[1]);
+    word subsetName(args[2]);
 
     triSurf* origSurfPtr = new triSurf(inFileName);
 

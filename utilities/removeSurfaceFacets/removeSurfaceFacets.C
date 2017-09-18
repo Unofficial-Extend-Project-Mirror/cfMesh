@@ -46,9 +46,9 @@ int main(int argc, char *argv[])
 
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName outFileName(args.args()[2]);
-    word patchName(args.args()[3]);
+    fileName inFileName(args[1]);
+    fileName outFileName(args[2]);
+    word patchName(args[3]);
 
     // read the input surface
     triSurf origSurf(inFileName);

@@ -50,8 +50,8 @@ int main(int argc, char *argv[])
 
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName importFileName(args.args()[2]);
+    fileName inFileName(args[1]);
+    fileName importFileName(args[2]);
 
     triSurf originalSurface(inFileName);
 
