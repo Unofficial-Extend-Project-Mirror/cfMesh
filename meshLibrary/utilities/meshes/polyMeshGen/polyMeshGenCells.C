@@ -92,7 +92,7 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
 
     label nInternalFaces(0);
 
-    List<List<LongList<labelPair>> > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>>> dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads) reduction(+ : nInternalFaces)

@@ -240,8 +240,6 @@ $(tetCreatorOctree)/tetCreatorOctreeTetsFromSplitFaces.C
 $(faceDecomposition)/faceDecomposition.C
 $(faceDecomposition)/decomposeFaces.C
 
-$(helperFunctions)/helperFunctionsStringConversion.C
-
 $(sortEdgesIntoChains)/sortEdgesIntoChains.C
 
 $(surfaceMorpherCells)/surfaceMorpherCells.C

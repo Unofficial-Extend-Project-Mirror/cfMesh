@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     scalar tol(45.0);
     if (args.options().found("angle"))
     {
-        const scalar ang = readScalar(IStringStream(args.options()["angle"])());
+        const scalar ang = readScalar(args["angle"]);
         tol = ang;
     }
     else

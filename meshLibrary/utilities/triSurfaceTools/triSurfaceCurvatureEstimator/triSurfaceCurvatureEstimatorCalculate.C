@@ -427,9 +427,9 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             OFstream file
             (
                 "point_" +
-                help::scalarToText(pointI) +
+                Foam::name(pointI) +
                 "_region_" +
-                help::scalarToText(regionI) +
+                Foam::name(regionI) +
                 "_triangles.vtk"
             );
             writeSurfaceToVTK(file, surface_, rTriangles, labels);

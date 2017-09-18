@@ -519,7 +519,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         Info<< "Adding layer subset " << layerI
             << " for patch " << patchI << endl;
         usedPatch[patchI] = true;
-        subsetId = mesh_.addFaceSubset("layer_"+help::scalarToText(layerI));
+        subsetId = mesh_.addFaceSubset("layer_" + Foam::name(layerI));
         ++layerI;
 
         forAll(treatPatchesWithPatch_[patchI], i)

@@ -396,9 +396,8 @@ void detectBoundaryLayers::analyseLayers()
     polyMeshGen& pmg = const_cast<polyMeshGen&>(mesh);
     forAll(layerSubsetId, i)
     {
-        layerSubsetId[i] = pmg.addCellSubset("bndLayer"+help::scalarToText(i));
+        layerSubsetId[i] = pmg.addCellSubset("bndLayer" + Foam::name(i));
     }
-
 
     forAll(layerAtBndFace_, bfI)
     {

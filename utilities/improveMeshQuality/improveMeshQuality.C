@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
 
     if (args.options().found("nLoops"))
     {
-        nLoops = readLabel(IStringStream(args.options()["nLoops"])());
+        nLoops = readLabel(args["nLoops"]);
     }
     else
     {
@@ -65,8 +65,7 @@ int main(int argc, char *argv[])
 
     if (args.options().found("nIterations"))
     {
-        nIterations =
-            readLabel(IStringStream(args.options()["nIterations"])());
+        nIterations = readLabel(args["nIterations"]);
     }
     else
     {
@@ -75,8 +74,7 @@ int main(int argc, char *argv[])
 
     if (args.options().found("nSurfaceIterations"))
     {
-        nSurfaceIterations =
-            readLabel(IStringStream(args.options()["nSurfaceIterations"])());
+        nSurfaceIterations = readLabel(args["nSurfaceIterations"]);
     }
     else
     {
@@ -85,8 +83,7 @@ int main(int argc, char *argv[])
 
     if (args.options().found("qualityThreshold"))
     {
-        qualityThreshold =
-            readScalar(IStringStream(args.options()["qualityThreshold"])());
+        qualityThreshold = readScalar(args["qualityThreshold"]);
     }
     else
     {

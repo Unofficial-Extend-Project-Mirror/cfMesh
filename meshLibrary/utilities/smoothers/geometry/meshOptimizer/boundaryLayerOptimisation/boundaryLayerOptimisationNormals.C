@@ -785,7 +785,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
         {
             writeHairEdges
             (
-                "bndHairVectors_"+help::scalarToText(nIter)+".vtk",
+                "bndHairVectors_" + Foam::Name(nIter) + ".vtk",
                 (BOUNDARY | ATEDGE),
                 hairVecs
             );
@@ -1128,7 +1128,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
         {
             writeHairEdges
             (
-                "insideHairVectors_"+help::scalarToText(nIter)+".vtk",
+                "insideHairVectors_" + Foam::name(nIter) + ".vtk",
                 INSIDE,
                 hairVecs
             );

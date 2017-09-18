@@ -176,7 +176,7 @@ void polyMeshGenModifier::addBufferCells()
     forAll(procBoundaries, patchI)
     {
         word subsetName = "processor_";
-        subsetName += help::scalarToText(procBoundaries[patchI].neiProcNo());
+        subsetName += Foam::name(procBoundaries[patchI].neiProcNo());
         const label subsetID = mesh_.addCellSubset(subsetName);
 
         labelList receivedCells;

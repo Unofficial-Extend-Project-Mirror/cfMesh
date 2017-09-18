@@ -261,7 +261,7 @@ label checkSurfaceManifolds
         labelList groupIds(nManifolds);
         forAll(groupIds, i)
         {
-            const word sName = subsetPrefix + help::scalarToText(i);
+            const word sName = subsetPrefix + Foam::name(i);
             label setId = surf.facetSubsetIndex(sName);
             if (setId >= 0)
                 surf.removeFacetSubset(setId);
@@ -499,7 +499,7 @@ label checkOrientation(triSurf& surf, const word subsetPrefix)
         labelList groupIds(nGroups);
         forAll(groupIds, i)
         {
-            const word sName = subsetPrefix + help::scalarToText(i);
+            const word sName = subsetPrefix + Foam::name(i);
             label setId = surf.facetSubsetIndex(sName);
             if (setId >= 0)
                 surf.removeFacetSubset(setId);
@@ -629,7 +629,7 @@ label checkDisconnectedParts(triSurf& surf, const word subsetPrefix)
         labelList groupIds(nGroups);
         forAll(groupIds, i)
         {
-            const word sName = subsetPrefix + help::scalarToText(i);
+            const word sName = subsetPrefix + Foam::name(i);
             label setId = surf.facetSubsetIndex(sName);
             if (setId >= 0)
                 surf.removeFacetSubset(setId);
@@ -858,8 +858,8 @@ label checkSelfIntersections
                         const label sId =
                             const_cast<triSurf&>(surf).addFacetSubset
                             (
-                                "noCommonIntersect_"+help::scalarToText(tI)+
-                                "_"+help::scalarToText(triJ)
+                                "noCommonIntersect_" + Foam::name(tI)
+                              + "_" + Foam::name(triJ)
                             );
                         const_cast<triSurf&>(surf).addFacetToSubset(sId, tI);
                         const_cast<triSurf&>(surf).addFacetToSubset(sId, triJ);
@@ -994,8 +994,8 @@ label checkOverlaps
                     const label sId =
                         const_cast<triSurf&>(surf).addFacetSubset
                         (
-                            "noCommonOverlap_"+help::scalarToText(tI)+
-                            "_"+help::scalarToText(triJ)
+                            "noCommonOverlap_" + Foam::name(tI)
+                          + "_" + Foam::name(triJ)
                         );
                     const_cast<triSurf&>(surf).addFacetToSubset(sId, tI);
                     const_cast<triSurf&>(surf).addFacetToSubset(sId, triJ);
@@ -1011,8 +1011,8 @@ label checkOverlaps
                         newSurf.appendTriangle(labelledTri(0, i + 1, i + 2, 0));
                     newSurf.writeSurface
                     (
-                        "overlap_"+help::scalarToText(tI)+
-                        "_"+help::scalarToText(triJ)+".fms"
+                        "overlap_" + Foam::name(tI)
+                      + "_" + Foam::name) + ".fms"
                     );
                     # endif
                 }

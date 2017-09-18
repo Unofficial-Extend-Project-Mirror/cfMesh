@@ -171,7 +171,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     sMod.patchesAccess()[0].geometricType() = "patch";
 
     fileName sName("bndSimplex_");
-    sName += help::scalarToText(bpI);
+    sName += Foam::name(bpI);
     sName += ".stl";
     surf.writeSurface(sName);
     # endif

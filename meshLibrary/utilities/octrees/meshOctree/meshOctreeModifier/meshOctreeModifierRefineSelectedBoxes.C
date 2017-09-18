@@ -390,9 +390,9 @@ label meshOctreeModifier::markAdditionalLayers
             markAdditionalLayersOfFaceNeighbours(markedBoxes, layerI);
 
             # ifdef DEBUGSearch
-            for (label i = 1; i<(layerI + 1); ++i)
+            for (label i=1; i <(layerI+1); ++i)
             {
-                const fileName fName("leaves_"+help::labelToText(i)+".vtk");
+                const fileName fName("leaves_"+Foam::name(i)+".vtk");
                 writeLeaves(fName, octree_, markedBoxes, i);
             }
 

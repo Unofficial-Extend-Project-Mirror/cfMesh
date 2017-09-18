@@ -763,7 +763,7 @@ void partTetMesh::createPolyMesh(polyMeshGen& pmg) const
 
     forAll(internalOrdering, i)
     {
-        const word name = "smoothPoints_" + help::scalarToText(i);
+        const word name = "smoothPoints_" + Foam::name(i);
         const label orderID = pmg.addPointSubset(name);
 
         forAllRow(internalOrdering, i, nI)
@@ -774,7 +774,7 @@ void partTetMesh::createPolyMesh(polyMeshGen& pmg) const
 
     forAll(boundaryOrdering, i)
     {
-        const word name = "boundaryPoints_" + help::scalarToText(i);
+        const word name = "boundaryPoints_" + Foam::name(i);
         const label orderID = pmg.addPointSubset(name);
 
         forAllRow(boundaryOrdering, i, nI)

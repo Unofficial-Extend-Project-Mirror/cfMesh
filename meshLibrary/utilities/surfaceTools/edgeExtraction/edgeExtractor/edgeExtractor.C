@@ -1659,7 +1659,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             const triSurf* surfPtr = surfaceWithPatches();
             surfPtr->writeSurface
             (
-                "surfaceTopologyIter_"+help::scalarToText(nIter)+".stl"
+                "surfaceTopologyIter_" + Foam::name(nIter) + ".stl"
             );
             delete surfPtr;
         }
@@ -2097,7 +2097,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
             const triSurf* surfPtr = surfaceWithPatches();
             surfPtr->writeSurface
             (
-                "surfaceIter_"+help::scalarToText(iter)+".stl"
+                "surfaceIter_" + Foam::name(iter) + ".stl"
             );
             delete surfPtr;
         }
@@ -2432,7 +2432,7 @@ void edgeExtractor::extractEdges()
 
         # ifdef DEBUGEdgeExtractor
         Info<< "Changes due to face patches" << endl;
-        fileName sName("checkFacePatches"+help::scalarToText(nIter)+".stl");
+        fileName sName("checkFacePatches" + Foam::name(nIter) + ".stl");
         sPtr = surfaceWithPatches();
         sPtr->writeSurface(sName);
         deleteDemandDrivenData(sPtr);

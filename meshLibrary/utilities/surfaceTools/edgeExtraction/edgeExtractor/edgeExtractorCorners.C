@@ -1247,8 +1247,8 @@ bool edgeExtractor::checkCorners()
             surfPtr = surfaceWithPatches(bpI);
             surfPtr->writeSurface
             (
-                "corner_"+help::scalarToText(bpI)+
-                "_iter_"+help::scalarToText(nIteration)+".fms"
+                "corner_" + Foam::name(bpI)
+              + "_iter_" + Foam::name(nIteration) +".fms"
             );
             deleteDemandDrivenData(surfPtr);
             Info<< "Best candidate " << bestPoint << endl;
@@ -1802,7 +1802,7 @@ bool edgeExtractor::checkCorners()
         surfPtr = surfaceWithPatches();
         surfPtr->writeSurface
         (
-            "checkCornersAfterIteration_"+help::scalarToText(nIteration)+".fms"
+            "checkCornersAfterIteration_" + Foam::name(nIteration) + ".fms"
         );
         deleteDemandDrivenData(surfPtr);
         # endif

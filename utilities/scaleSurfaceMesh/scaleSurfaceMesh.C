@@ -31,9 +31,10 @@ Description
 #include "fileName.H"
 #include "triSurf.H"
 #include "triSurfModifier.H"
-#include "helperFunctions.H"
+#include <sstream>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 // Main program:
 using namespace Foam;
 
@@ -46,9 +47,9 @@ int main(int argc, char *argv[])
     argList::validArgs.append("scalingFactor");
     argList args(argc, argv);
 
-    const fileName inFileName(args.args()[1]);
-    const fileName outFileName(args.args()[2]);
-    const scalar scalingFactor(help::textToScalar(args.args()[3]));
+    const fileName inFileName(args[1]);
+    const fileName outFileName(args[2]);
+    const scalar scalingFactor(readScalar(args[3]));
 
     // read the surface mesh
     triSurf surface(inFileName);
