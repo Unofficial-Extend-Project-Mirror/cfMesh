@@ -349,18 +349,14 @@ int main(int argc, char *argv[])
             patchIds
         );
     }
-    if (args.options().found("patchIds"))
-    {
-        IStringStream is(args.options()["patchIds"]);
-        
-        patchIds = labelList(is);
-    }
+
     if (args.options().found("patchIds"))
     {
         IStringStream is(args.options()["patchIds"]);
         
         patchIds.append(labelList(is));
     }
+
     if (args.options().found("patchIdRange"))
     {
         IStringStream is(args.options()["patchIdRange"]);
@@ -372,6 +368,7 @@ int main(int argc, char *argv[])
             patchIds.append(id);
         }
     }    
+
     if (!patchIds.size())
     {
         FatalError() << "No patches specified"
