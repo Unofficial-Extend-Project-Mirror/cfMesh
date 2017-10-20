@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenAddressing
+    Foam::polyMeshGenAddressing
 
 Description
     Cell-face mesh analysis engine
@@ -73,6 +73,7 @@ class polyMeshGenAddressing
 
         //- reference to the mesh
         const polyMeshGenCells& mesh_;
+
 
     // Shapes
 
@@ -126,38 +127,40 @@ class polyMeshGenAddressing
 
         //- Face areas
         mutable vectorField* faceAreasPtr_;
-        
+
+
     // Parallel demand driven data
-        
+
         //- global point labels
         mutable labelLongList* globalPointLabelPtr_;
-        
+
         //- global face labels
         mutable labelLongList* globalFaceLabelPtr_;
-        
+
         //- global cell labels
         mutable labelLongList* globalCellLabelPtr_;
-        
+
         //- global edge labels
         mutable labelLongList* globalEdgeLabelPtr_;
-        
+
+
     // Parallel addressing
-    
+
         //- processors containing a vertex
         mutable VRWGraph* pProcsPtr_;
-        
+
         //- global to local point adressing
         mutable Map<label>* globalToLocalPointAddressingPtr_;
-        
+
         //- neighbour processors sharing a point with this processor
         mutable DynList<label>* pointNeiProcsPtr_;
-        
+
         //- processors containing an edge
         mutable VRWGraph* eProcsPtr_;
-        
+
         //- global to local edge addressing
         mutable Map<label>* globalToLocalEdgeAddressingPtr_;
-        
+
         //- neighbour processors sharing an edge with the current processor
         mutable DynList<label>* edgeNeiProcsPtr_;
 
@@ -186,7 +189,7 @@ class polyMeshGenAddressing
 
         //- Calculate edge-face addressing
         void calcEdgeFaces() const;
-        
+
         //- Calculate face-edge addressing
         void calcFaceEdges() const;
 
@@ -210,19 +213,21 @@ class polyMeshGenAddressing
         void calcEdges() const;
         void clearOutEdges();
 
+
     // Parallel calculations
-    
+
         //- calculate global point labels
         void calcGlobalPointLabels() const;
-        
+
         //- calculate global face labels
         void calcGlobalFaceLabels() const;
-        
+
         //- calculate global cell labels
         void calcGlobalCellLabels() const;
-        
+
         //- calculate global edge labels
         void calcGlobalEdgeLabels() const;
+
 
     // Geometrical calculations
 
@@ -247,18 +252,22 @@ class polyMeshGenAddressing
 
         //- Calculate edge vectors
         void calcEdgeVectors() const;
-        
+
+
     // Disallow bitwise construct
+
         //- Default constructor
         polyMeshGenAddressing();
 
+
 public:
 
-        // Static data
+    // Static data
 
-            ClassName("polyMeshGenAddressing");
+        ClassName("polyMeshGenAddressing");
 
-/*            //- Estimated number of cells per edge
+/*
+            //- Estimated number of cells per edge
             static const unsigned cellsPerEdge_ = 4;
 
             //- Estimated number of cells per point
@@ -288,15 +297,12 @@ public:
             //- Estimated number of points per face
             static const unsigned pointsPerFace_ = 4;
 */
-    // Constructors
-
-        //- Construct from components
-        polyMeshGenAddressing(const polyMeshGenCells& mesh);
+    //- Construct from components
+    polyMeshGenAddressing(const polyMeshGenCells& mesh);
 
 
-    // Destructor
-
-        ~polyMeshGenAddressing();
+    //- Destructor
+    ~polyMeshGenAddressing();
 
 
     // Member Functions
@@ -305,6 +311,7 @@ public:
 
             //- Return mesh edges
             const edgeList& edges() const;
+
 
         // Return mesh connectivity
 
@@ -324,13 +331,14 @@ public:
             const VRWGraph& pointPoints() const;
             const VRWGraph& cellPoints() const;
 
+
         // Parallel addressing
-        
+
             const labelLongList& globalPointLabel() const;
             const labelLongList& globalFaceLabel() const;
             const labelLongList& globalCellLabel() const;
             const labelLongList& globalEdgeLabel() const;
-            
+
             const VRWGraph& pointAtProcs() const;
             const Map<label>& globalToLocalPointAddressing() const;
             const DynList<label>& pointNeiProcs() const;
@@ -338,12 +346,14 @@ public:
             const Map<label>& globalToLocalEdgeAddressing() const;
             const DynList<label>& edgeNeiProcs() const;
 
+
         // Geometric data (raw!)
 
             const vectorField& cellCentres() const;
             const vectorField& faceCentres() const;
             const scalarField& cellVolumes() const;
             const vectorField& faceAreas() const;
+
 
     //  Storage management
 
@@ -355,7 +365,7 @@ public:
 
         //- Clear topological data
         void clearAddressing();
-        
+
         //- Clear parallel addressing
         void clearParallelAddressing();
 
@@ -364,8 +374,8 @@ public:
 
         //- Clear everything primitive, geometry and addressing
         void clearAll();
-        
-    // Update geometry data
+
+        //- Update geometry data
         void updateGeometry(const boolList& changedFace);
 };
 

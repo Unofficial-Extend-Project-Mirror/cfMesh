@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeModifier
+    Foam::meshOctreeModifier
 
 Description
     Octree for mesh generation
@@ -43,16 +43,19 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class meshOctreeModifier Declaration
+                     Class meshOctreeModifier Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshOctreeModifier
 {
     // Private data
+
         //- Reference to the octree
         meshOctree& octree_;
 
+
     // Private member functions
+
         //- correct refinement such that it produces 1-irregular octree
         void ensureCorrectRegularity(labelList& refineBox);
 
@@ -60,26 +63,27 @@ class meshOctreeModifier
         //- of a father box is refined, then refine all other sons
         bool ensureCorrectRegularitySons(labelList& refineBox);
 
+
     // Private copy constructor
+
         //- Disallow default bitwise copy construct
         meshOctreeModifier(const meshOctreeModifier&);
 
         //- Disallow default bitwise assignment
         void operator=(const meshOctreeModifier&);
 
+
 public:
 
-    // Constructors
+    //- Construct from octree
+    meshOctreeModifier(meshOctree&);
 
-        //- Construct from octree
-        meshOctreeModifier(meshOctree&);
-
-    // Destructor
-
-        ~meshOctreeModifier();
+    //- Destructor
+    ~meshOctreeModifier();
 
 
     // Member Functions
+
         //- return octree
         inline const meshOctree& octree() const;
 
@@ -96,7 +100,7 @@ public:
         inline scalar& searchRangeAccess();
 
         //- return the range of leaves at each processor
-        inline List<Pair<meshOctreeCubeCoordinates> >& neiRangeAccess();
+        inline List<Pair<meshOctreeCubeCoordinates>>& neiRangeAccess();
 
         //- return initial cube
         inline meshOctreeCube& initialCubeAccess();

@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
 
@@ -38,7 +38,6 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshExtractor::createPoints()
@@ -50,7 +49,7 @@ void voronoiMeshExtractor::createPoints()
     points.setSize(tets.size());
 
     # ifdef DEBUGVoronoi
-    Info << "Number of tets " << tets.size() << endl;
+    Info<< "Number of tets " << tets.size() << endl;
     # endif
 
     # ifdef USE_OMP
@@ -61,13 +60,14 @@ void voronoiMeshExtractor::createPoints()
         points[tetI] = tets[tetI].centroid(tetPoints);
 
         # ifdef DEBUGVoronoi
-        Info << "Point " << tetI << " has coordinates "
+        Info<< "Point " << tetI << " has coordinates "
             << points[tetI] << endl;
-        Info << "Tet of origin " << tetI << " has nodes "
+        Info<< "Tet of origin " << tetI << " has nodes "
             << tets[tetI] << endl;
         # endif
     }
 }
+
 
 void voronoiMeshExtractor::createPolyMesh()
 {
@@ -80,7 +80,7 @@ void voronoiMeshExtractor::createPolyMesh()
     faceListPMG& faces = meshModifier.facesAccess();
     cellListPMG& cells = meshModifier.cellsAccess();
 
-    //- count the number of cells
+    // count the number of cells
     label nCells(0);
     labelList cellLabel(pointEdges.size(), -1);
 
@@ -88,13 +88,13 @@ void voronoiMeshExtractor::createPolyMesh()
     {
         bool create(true);
         forAllRow(pointEdges, pointI, eI)
-            if( boundaryEdge[pointEdges(pointI, eI)] )
+            if (boundaryEdge[pointEdges(pointI, eI)])
             {
                 create = false;
                 break;
             }
 
-        if( !create || (pointEdges.sizeOfRow(pointI) == 0) )
+        if (!create || (pointEdges.sizeOfRow(pointI) == 0))
             continue;
 
         cellLabel[pointI] = nCells;
@@ -102,20 +102,20 @@ void voronoiMeshExtractor::createPolyMesh()
     }
 
     # ifdef DEBUGVoronoi
-    Info << "Number of cells " << nCells << endl;
+    Info<< "Number of cells " << nCells << endl;
     # endif
 
-    //- count the number of faces
+    // count the number of faces
     label nFaces(0);
     labelList faceLabel(edges.size(), -1);
 
     forAll(boundaryEdge, edgeI)
     {
-        if( boundaryEdge[edgeI] )
+        if (boundaryEdge[edgeI])
             continue;
 
         const edge& e = edges[edgeI];
-        if( cellLabel[e[0]] < 0 && cellLabel[e[1]] < 0 )
+        if (cellLabel[e[0]] < 0 && cellLabel[e[1]] < 0)
             continue;
 
         faceLabel[edgeI] = nFaces;
@@ -123,17 +123,17 @@ void voronoiMeshExtractor::createPolyMesh()
     }
 
     # ifdef DEBUGVoronoi
-    Info << "Number of mesh faces " << nFaces << endl;
+    Info<< "Number of mesh faces " << nFaces << endl;
     # endif
 
-    //- create faces
-    Info << "Creating faces " << endl;
+    // create faces
+    Info<< "Creating faces " << endl;
     faces.setSize(nFaces);
     labelList nFacesInCell(nCells, 0);
 
     forAll(edges, edgeI)
     {
-        if( faceLabel[edgeI] < 0 )
+        if (faceLabel[edgeI] < 0)
             continue;
 
         const label faceI = faceLabel[edgeI];
@@ -141,7 +141,7 @@ void voronoiMeshExtractor::createPolyMesh()
         face& f = faces[faceI];
         f.setSize(edgeTets.sizeOfRow(edgeI));
 
-        //- fill the faces with the node labels
+        // fill the faces with the node labels
         forAllRow(edgeTets, edgeI, pI)
             f[pI] = edgeTets(edgeI, pI);
 
@@ -149,24 +149,24 @@ void voronoiMeshExtractor::createPolyMesh()
         const label cOwn = cellLabel[e[0]];
         const label cNei = cellLabel[e[1]];
 
-        if( cOwn < 0 || ((cOwn > cNei) && (cNei != -1)) )
+        if (cOwn < 0 || ((cOwn > cNei) && (cNei != -1)))
         {
             # ifdef DEBUGVoronoi
-            Info << "Reversing face " << cOwn << " " << cNei << endl;
+            Info<< "Reversing face " << cOwn << " " << cNei << endl;
             # endif
 
             f = f.reverseFace();
         }
 
-        if( cOwn >= 0 )
+        if (cOwn >= 0)
             ++nFacesInCell[cOwn];
-        if( cNei >= 0 )
+        if (cNei >= 0)
             ++nFacesInCell[cNei];
     }
 
-    //- create cells
+    // create cells
     # ifdef DEBUGVoronoi
-    Info << "Setting cell sizes" << endl;
+    Info<< "Setting cell sizes" << endl;
     # endif
 
     cells.setSize(nCells);
@@ -177,12 +177,12 @@ void voronoiMeshExtractor::createPolyMesh()
     }
 
     # ifdef DEBUGVoronoi
-    Info << "Filling cells" << endl;
+    Info<< "Filling cells" << endl;
     # endif
 
     forAll(edges, edgeI)
     {
-        if( faceLabel[edgeI] < 0 )
+        if (faceLabel[edgeI] < 0)
             continue;
 
         const label faceI = faceLabel[edgeI];
@@ -190,18 +190,19 @@ void voronoiMeshExtractor::createPolyMesh()
         const label cOwn = cellLabel[e[0]];
         const label cNei = cellLabel[e[1]];
 
-        if( cOwn >= 0 )
+        if (cOwn >= 0)
             cells[cOwn][nFacesInCell[cOwn]++] = faceI;
-        if( cNei >= 0 )
+        if (cNei >= 0)
             cells[cNei][nFacesInCell[cNei]++] = faceI;
     }
 
     # ifdef DEBUGVoronoi
-    Info << "Finished generating cells" << endl;
+    Info<< "Finished generating cells" << endl;
     # endif
 
     mesh_.clearAddressingData();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    edgeMeshGeometryModification
+    Foam::edgeMeshGeometryModification
 
 Description
     Modifies geometry of edge meshes according to the anisotropic sources
@@ -56,6 +56,7 @@ class dictionary;
 class edgeMeshGeometryModification
 {
     // Private data
+
         //- reference to edgeMesh
         const edgeMesh& edgeMesh_;
 
@@ -70,6 +71,7 @@ class edgeMeshGeometryModification
 
 
     // Private member functions
+
         //- check existence of geometry modifiers
         void checkModification();
 
@@ -79,15 +81,15 @@ class edgeMeshGeometryModification
         //- disallow bitwise assignment
         void operator=(const edgeMeshGeometryModification&);
 
+
 public:
 
-    // Constructors
+    //- Construct from edgeMesh and dictionary
+    edgeMeshGeometryModification(const edgeMesh&, const dictionary&);
 
-        //- Construct from edgeMesh and dictionary
-        edgeMeshGeometryModification(const edgeMesh&, const dictionary&);
+    //- Destructor
+    ~edgeMeshGeometryModification();
 
-    // Destructor
-        ~edgeMeshGeometryModification();
 
     // Member Functions
 

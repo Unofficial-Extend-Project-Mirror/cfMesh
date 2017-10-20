@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -51,16 +49,17 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh
 tetMeshOptimisation::tetMeshOptimisation(partTetMesh& mesh)
 :
     tetMesh_(mesh)
 {}
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshOptimisation::~tetMeshOptimisation()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,17 +71,17 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
 
     boolList negativeNode(smoothVertex.size()), invertedTets(tets.size());
 
-    //- try getting rid of negative volume using the Patrik Knupp's metric
-    //- which gets non-negative contributions from invertex tets, only
+    // try getting rid of negative volume using the Patrik Knupp's metric
+    // which gets non-negative contributions from invertex tets, only
     # ifdef USE_OMP
-    # pragma omp parallel for if( tets.size() > 100 ) \
+    # pragma omp parallel for if (tets.size() > 100) \
     schedule(dynamic, 10)
     # endif
     forAll(tets, tetI)
     {
         invertedTets[tetI] = false;
 
-        if( tets[tetI].mag(points) < VSMALL )
+        if (tets[tetI].mag(points) < VSMALL)
             invertedTets[tetI] = true;
     }
 
@@ -90,38 +89,38 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
 
     do
     {
-        //- find the number of inverted tets
+        // find the number of inverted tets
         nNegative = 0;
         negativeNode = false;
         # ifdef USE_OMP
-        # pragma omp parallel for if( tets.size() > 100 ) \
+        # pragma omp parallel for if (tets.size() > 100) \
         schedule(dynamic, 10) reduction(+ : nNegative)
         # endif
         forAll(invertedTets, tetI)
         {
-            if( invertedTets[tetI] )
+            if (invertedTets[tetI])
             {
                 ++nNegative;
                 const partTet& tet = tets[tetI];
 
-                for(label i=0;i<4;++i)
+                for (label i = 0; i < 4; ++i)
                     negativeNode[tet[i]] = true;
             }
         }
 
         reduce(nNegative, sumOp<label>());
-        if( nNegative == 0 )
+        if (nNegative == 0)
             return;
 
-        //- make sure that the points at procesor boundaries are selected
-        //- at all processors
-        if( Pstream::parRun() )
+        // make sure that the points at procesor boundaries are selected
+        // at all processors
+        if (Pstream::parRun())
             unifyNegativePoints(negativeNode);
 
-        //- smooth the mesh
-        List<LongList<labelledPoint> > newPositions;
+        // smooth the mesh
+        List<LongList<labelledPoint>> newPositions;
         # ifdef USE_OMP
-        # pragma omp parallel if( smoothVertex.size() > 100 )
+        # pragma omp parallel if (smoothVertex.size() > 100)
         # endif
         {
             # ifdef USE_OMP
@@ -150,7 +149,7 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
                 )
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
+                if (smoothVertex[nodeI] & partTetMesh::SMOOTH)
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
                     knuppMetric(simplex).optimizeNodePosition();
@@ -159,47 +158,48 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
             }
         }
 
-        //- update mesh vertices
+        // update mesh vertices
         tetMesh_.updateVerticesSMP(newPositions);
         newPositions.clear();
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             updateBufferLayerPoints();
             unifyCoordinatesParallel(&negativeNode);
         }
 
-        //- check which tets have been repaired
+        // check which tets have been repaired
         boolList helper(invertedTets.size());
         nNegativeBefore = nNegative;
         nNegative = 0;
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( tets.size() > 100 ) \
+        # pragma omp parallel for if (tets.size() > 100) \
         schedule(dynamic, 10) reduction(+ : nNegative)
         # endif
         forAll(tets, tetI)
         {
             helper[tetI] = false;
 
-            if( invertedTets[tetI] && (tets[tetI].mag(points) < VSMALL) )
+            if (invertedTets[tetI] && (tets[tetI].mag(points) < VSMALL))
             {
                 helper[tetI] = true;
 
                 const partTet& tet = tets[tetI];
 
-                for(label i=0;i<4;++i)
+                for (label i = 0; i < 4; ++i)
                     negativeNode[tet[i]] = true;
             }
         }
         invertedTets.transfer(helper);
 
         reduce(nNegative, sumOp<label>());
-        if( nNegative == 0 )
+        if (nNegative == 0)
             return;
 
-    } while( (nNegative < nNegativeBefore) || (++nIter < nIterations) );
+    } while ((nNegative < nNegativeBefore) || (++nIter < nIterations));
 }
+
 
 void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
 {
@@ -209,16 +209,16 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
 
     boolList negativeNode(smoothVertex.size()), invertedTets(tets.size());
 
-    //- try getting rid of negative volume using the untangler
+    // try getting rid of negative volume using the untangler
     # ifdef USE_OMP
-    # pragma omp parallel for if( tets.size() > 100 ) \
+    # pragma omp parallel for if (tets.size() > 100) \
     schedule(dynamic, 10)
     # endif
     forAll(tets, tetI)
     {
         invertedTets[tetI] = false;
 
-        if( tets[tetI].mag(points) < VSMALL )
+        if (tets[tetI].mag(points) < VSMALL)
             invertedTets[tetI] = true;
     }
 
@@ -226,38 +226,38 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
 
     do
     {
-        //- find the number of inverted tets
+        // find the number of inverted tets
         nNegative = 0;
         negativeNode = false;
         # ifdef USE_OMP
-        # pragma omp parallel for if( tets.size() > 100 ) \
+        # pragma omp parallel for if (tets.size() > 100) \
         schedule(dynamic, 10) reduction(+ : nNegative)
         # endif
         forAll(invertedTets, tetI)
         {
-            if( invertedTets[tetI] )
+            if (invertedTets[tetI])
             {
                 ++nNegative;
                 const partTet& tet = tets[tetI];
 
-                for(label i=0;i<4;++i)
+                for (label i = 0; i < 4; ++i)
                     negativeNode[tet[i]] = true;
             }
         }
 
         reduce(nNegative, sumOp<label>());
-        if( nNegative == 0 )
+        if (nNegative == 0)
             return;
 
-        //- make sure that the points at procesor boundaries are selected
-        //- at all processors
-        if( Pstream::parRun() )
+        // make sure that the points at procesor boundaries are selected
+        // at all processors
+        if (Pstream::parRun())
             unifyNegativePoints(negativeNode);
 
-        //- smooth the mesh
-        List<LongList<labelledPoint> > newPositions;
+        // smooth the mesh
+        List<LongList<labelledPoint>> newPositions;
         # ifdef USE_OMP
-        # pragma omp parallel if( smoothVertex.size() > 100 )
+        # pragma omp parallel if (smoothVertex.size() > 100)
         # endif
         {
             # ifdef USE_OMP
@@ -279,13 +279,13 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
             # endif
             forAll(smoothVertex, nodeI)
             {
-                if( !negativeNode[nodeI] )
+                if (!negativeNode[nodeI])
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                if (smoothVertex[nodeI] & partTetMesh::LOCKED)
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
+                if (smoothVertex[nodeI] & partTetMesh::SMOOTH)
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
                     meshUntangler(simplex).optimizeNodePosition();
@@ -294,57 +294,58 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
             }
         }
 
-        //- update mesh vertices
+        // update mesh vertices
         tetMesh_.updateVerticesSMP(newPositions);
         newPositions.clear();
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             updateBufferLayerPoints();
             unifyCoordinatesParallel(&negativeNode);
         }
 
-        //- check which tets have been repaired
+        // check which tets have been repaired
         boolList helper(invertedTets.size());
         nNegativeBefore = nNegative;
         nNegative = 0;
         # ifdef USE_OMP
-        # pragma omp parallel for if( tets.size() > 100 ) \
+        # pragma omp parallel for if (tets.size() > 100) \
         schedule(dynamic, 10) reduction(+ : nNegative)
         # endif
         forAll(tets, tetI)
         {
             helper[tetI] = false;
 
-            if( invertedTets[tetI] && (tets[tetI].mag(points) < VSMALL) )
+            if (invertedTets[tetI] && (tets[tetI].mag(points) < VSMALL))
             {
                 ++nNegative;
                 const partTet& tet = tets[tetI];
 
-                for(label i=0;i<4;++i)
+                for (label i = 0; i < 4; ++i)
                     negativeNode[tet[i]] = true;
             }
         }
 
         reduce(nNegative, sumOp<label>());
-        if( nNegative == 0 )
+        if (nNegative == 0)
             return;
         invertedTets.transfer(helper);
 
-    } while( (nNegative < nNegativeBefore) || (++nIter < nIterations) );
+    } while ((nNegative < nNegativeBefore) || (++nIter < nIterations));
 }
+
 
 void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
 {
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
-    //- use mesh optimizer to improve the result
-    for(label i=0;i<nIterations;++i)
+    // use mesh optimizer to improve the result
+    for (label i = 0; i < nIterations; ++i)
     {
-        List<LongList<labelledPoint> > newPositions;
+        List<LongList<labelledPoint>> newPositions;
 
         # ifdef USE_OMP
-        # pragma omp parallel if( smoothVertex.size() > 100 )
+        # pragma omp parallel if (smoothVertex.size() > 100)
         # endif
         {
             # ifdef USE_OMP
@@ -366,10 +367,10 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
             # endif
             forAll(smoothVertex, nodeI)
             {
-                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                if (smoothVertex[nodeI] & partTetMesh::LOCKED)
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::SMOOTH )
+                if (smoothVertex[nodeI] & partTetMesh::SMOOTH)
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
 
@@ -381,17 +382,18 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
             }
         }
 
-        //- update mesh vertices
+        // update mesh vertices
         tetMesh_.updateVerticesSMP(newPositions);
         newPositions.clear();
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             updateBufferLayerPoints();
             unifyCoordinatesParallel();
         }
     }
 }
+
 
 void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 (
@@ -404,15 +406,15 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 
     # ifdef USE_OMP
     label nThreads = omp_get_num_procs();
-    if( smoothVertex.size() < 100 )
+    if (smoothVertex.size() < 100)
       nThreads = 1;
     # else
     const label nThreads(1);
     # endif
 
-    for(label i=0;i<nIterations;++i)
+    for (label i = 0; i < nIterations; ++i)
     {
-        List<LongList<labelledPoint> > newPositions(nThreads);
+        List<LongList<labelledPoint>> newPositions(nThreads);
 
         # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads)
@@ -429,19 +431,19 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
             # endif
             forAll(smoothVertex, nodeI)
             {
-                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                if (smoothVertex[nodeI] & partTetMesh::LOCKED)
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )
+                if (smoothVertex[nodeI] & partTetMesh::BOUNDARY)
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
 
                     volumeOptimizer vOpt(simplex);
                     vOpt.optimizeNodePosition(1e-5);
 
-                    if( nonShrinking )
+                    if (nonShrinking)
                     {
-                        //- find boundary faces of the simplex
+                        // find boundary faces of the simplex
                         const DynList<point, 128>& pts = simplex.pts();
                         const DynList<partTet, 128>& tets = simplex.tets();
                         DynList<edge, 64> bEdges;
@@ -450,12 +452,12 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                         forAll(tets, tetI)
                         {
                             const partTet& tet = tets[tetI];
-                            for(label i=0;i<3;++i)
+                            for (label i = 0; i < 3; ++i)
                             {
-                                edge e(tet[i], tet[(i+1)%3]);
+                                edge e(tet[i], tet[(i + 1)%3]);
 
                                 const label pos = bEdges.containsAtPosition(e);
-                                if( pos < 0 )
+                                if (pos < 0)
                                 {
                                     bEdges.append(e);
                                     numAppearances.append(1);
@@ -467,11 +469,11 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                             }
                         }
 
-                        //- create normal tensor of the simplex
+                        // create normal tensor of the simplex
                         symmTensor nt(symmTensor::zero);
                         forAll(bEdges, beI)
                         {
-                            if( numAppearances[beI] != 1 )
+                            if (numAppearances[beI] != 1)
                                 continue;
 
                             triangle<point, point> tri
@@ -484,25 +486,25 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                             vector n = tri.normal();
                             n /= (mag(n) + VSMALL);
 
-                            nt += symm(n * n);
+                            nt += symm(n*n);
                         }
 
                         const vector ev = eigenValues(nt);
 
-                        //- make sure the point stays on the surface
+                        // make sure the point stays on the surface
                         vector disp = simplex.centrePoint() - points[nodeI];
 
-                        if( mag(ev[2]) > (mag(ev[1]) + mag(ev[0])) )
+                        if (mag(ev[2]) >(mag(ev[1]) + mag(ev[0])))
                         {
-                            //- ordinary surface vertex
+                            // ordinary surface vertex
                             vector normal = eigenVectors(nt, ev).z();
 
                             normal /= (mag(normal)+VSMALL);
-                            disp -= (disp & normal) * normal;
+                            disp -= (disp & normal)*normal;
                         }
-                        else if( mag(ev[1]) > 0.5 * (mag(ev[2]) + mag(ev[0])) )
+                        else if (mag(ev[1]) > 0.5*(mag(ev[2]) + mag(ev[0])))
                         {
-                            //- this vertex is on an edge
+                            // this vertex is on an edge
                             vector normal1 = eigenVectors(nt, ev).y();
 
                             normal1 /= (mag(normal1)+VSMALL);
@@ -514,11 +516,11 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                             vector eVec = normal1 ^ normal2;
                             eVec /= (mag(eVec) + VSMALL);
 
-                            disp = (disp & eVec) * eVec;
+                            disp = (disp & eVec)*eVec;
                         }
                         else
                         {
-                            //- this vertex is a corner. do not move it
+                            // this vertex is a corner. do not move it
                             continue;
                         }
 
@@ -527,24 +529,25 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                     }
                     else
                     {
-                        //- move the vertex without constraining it
+                        // move the vertex without constraining it
                         np.append(labelledPoint(nodeI, simplex.centrePoint()));
                     }
                 }
             }
         }
 
-        //- update tetMesh
+        // update tetMesh
         tetMesh_.updateVerticesSMP(newPositions);
         newPositions.clear();
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             updateBufferLayerPoints();
             unifyCoordinatesParallel();
         }
     }
 }
+
 
 void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
 (
@@ -555,15 +558,15 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
 
     # ifdef USE_OMP
     label nThreads = omp_get_num_procs();
-    if( smoothVertex.size() < 1000 )
+    if (smoothVertex.size() < 1000)
       nThreads = 1;
     # else
     const label nThreads(1);
     # endif
 
-    for(label i=0;i<nIterations;++i)
+    for (label i = 0; i < nIterations; ++i)
     {
-        List<LongList<labelledPoint> > newPositions(nThreads);
+        List<LongList<labelledPoint>> newPositions(nThreads);
 
         # ifdef USE_OMP
         # pragma omp parallel num_threads(nThreads)
@@ -581,29 +584,29 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
             # endif
             forAll(smoothVertex, nodeI)
             {
-                if( smoothVertex[nodeI] & partTetMesh::LOCKED )
+                if (smoothVertex[nodeI] & partTetMesh::LOCKED)
                     continue;
 
-                if( smoothVertex[nodeI] & partTetMesh::BOUNDARY )
+                if (smoothVertex[nodeI] & partTetMesh::BOUNDARY)
                 {
                     partTetMeshSimplex simplex(tetMesh_, nodeI);
 
-                    //- find boundary faces of the simplex
+                    // find boundary faces of the simplex
                     const DynList<point, 128>& pts = simplex.pts();
                     const DynList<partTet, 128>& tets = simplex.tets();
                     DynList<edge, 64> bndEdges;
                     DynList<label, 64> numAppearances;
 
-                    //- find boundary edges of the simplex
+                    // find boundary edges of the simplex
                     forAll(tets, tetI)
                     {
                         const partTet& tet = tets[tetI];
-                        for(label i=0;i<3;++i)
+                        for (label i = 0; i < 3; ++i)
                         {
-                            const edge e(tet[i], tet[(i+1)%3]);
+                            const edge e(tet[i], tet[(i + 1)%3]);
                             const label pos = bndEdges.containsAtPosition(e);
 
-                            if( pos < 0 )
+                            if (pos < 0)
                             {
                                 bndEdges.append(e);
                                 numAppearances.append(1);
@@ -619,7 +622,7 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
                     label counter(0);
                     forAll(bndEdges, beI)
                     {
-                        if( numAppearances[beI] != 1 )
+                        if (numAppearances[beI] != 1)
                             continue;
 
                         triangle<point, point> tri
@@ -633,7 +636,7 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
                         ++counter;
                     }
 
-                    if( counter != 0 )
+                    if (counter != 0)
                     {
                         newP /= counter;
                         np.append(labelledPoint(nodeI, newP));
@@ -642,17 +645,18 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
             }
         }
 
-        //- update tetMesh with new vertex positions
+        // update tetMesh with new vertex positions
         tetMesh_.updateVerticesSMP(newPositions);
         newPositions.clear();
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             updateBufferLayerPoints();
             unifyCoordinatesParallel();
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

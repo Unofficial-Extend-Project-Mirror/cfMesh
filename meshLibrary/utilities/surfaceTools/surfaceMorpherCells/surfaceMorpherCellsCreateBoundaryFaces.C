@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -54,29 +52,29 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
 
     label nRemoved(0);
     forAll(cellFlags_, cellI)
-        if( cellFlags_[cellI] & BOUNDARY )
+        if (cellFlags_[cellI] & BOUNDARY)
         {
             const cell& c = cells[cellI];
-            //- remove cells which have all their vertices at the boundary
+            // remove cells which have all their vertices at the boundary
             bool allBoundary(true);
 
             const labelList labels = c.labels(faces);
 
             forAll(labels, lI)
-                if( !boundaryVertex_[labels[lI]] )
+                if (!boundaryVertex_[labels[lI]])
                 {
                     allBoundary = false;
                     break;
                 }
 
-            if( allBoundary )
+            if (allBoundary)
             {
                 ++nRemoved;
                 changed = true;
                 removeCells[cellI] = true;
             }
 
-            //- remove cells which are not topologically closed
+            // remove cells which are not topologically closed
             DynList<edge> edges;
             DynList<direction> nAppearances;
 
@@ -87,7 +85,7 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
                 {
                     const label pos = edges.containsAtPosition(f.faceEdge(eI));
 
-                    if( pos == -1 )
+                    if (pos == -1)
                     {
                         edges.append(f.faceEdge(eI));
                         nAppearances.append(1);
@@ -100,7 +98,7 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
             }
 
             forAll(nAppearances, eI)
-                if( nAppearances[eI] != 2 )
+                if (nAppearances[eI] != 2)
                 {
                     ++nRemoved;
                     changed = true;
@@ -109,17 +107,17 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
 
         }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
         reduce(nRemoved, sumOp<label>());
 
-    if( nRemoved != 0 )
+    if (nRemoved != 0)
     {
-        Info << "Removing " << nRemoved
+        Info<< "Removing " << nRemoved
             << " cells which cannot be morphed" << endl;
         polyMeshGenModifier(mesh_).removeCells(removeCells);
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         reduce(changed, maxOp<bool>());
     }
@@ -127,9 +125,10 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
     return changed;
 }
 
+
 bool surfaceMorpherCells::morphBoundaryFaces()
 {
-    Info << "Morphing boundary faces" << endl;
+    Info<< "Morphing boundary faces" << endl;
 
     newBoundaryFaces_.setSize(0);
     newBoundaryOwners_.setSize(0);
@@ -141,21 +140,21 @@ bool surfaceMorpherCells::morphBoundaryFaces()
     bool changed(false);
 
     forAll(cells, cellI)
-        if( cellFlags_[cellI] & BOUNDARY )
+        if (cellFlags_[cellI] & BOUNDARY)
         {
             const cell& c = cells[cellI];
 
             DynList<label> bFaces;
 
             forAll(c, fI)
-                if( mesh_.faceIsInPatch(c[fI]) != -1 )
+                if (mesh_.faceIsInPatch(c[fI]) != -1)
                     bFaces.append(c[fI]);
 
             # ifdef DEBUGMorph
-            Info << "Boundary faces in cell " << cellI
+            Info<< "Boundary faces in cell " << cellI
                 << " are " << bFaces << endl;
             forAll(bFaces, bfI)
-                Info << "Face " << bFaces[bfI] << " is "
+                Info<< "Face " << bFaces[bfI] << " is "
                     << faces[bFaces[bfI]] << endl;
             # endif
 
@@ -168,9 +167,9 @@ bool surfaceMorpherCells::morphBoundaryFaces()
             do
             {
                 finished = true;
-                for(label i=1;i<bFaces.size();++i)
+                for (label i = 1; i < bFaces.size(); ++i)
                 {
-                    if( mergedFaces[i] ) continue;
+                    if (mergedFaces[i]) continue;
 
                     const face& bf = faces[bFaces[i]];
                     const edgeList bEdges = bf.edges();
@@ -179,16 +178,16 @@ bool surfaceMorpherCells::morphBoundaryFaces()
                     direction nSharedEdges(0);
                     forAll(bEdges, eI)
                         forAll(mEdges, eJ)
-                            if( bEdges[eI] == mEdges[eJ] )
+                            if (bEdges[eI] == mEdges[eJ])
                                 ++nSharedEdges;
 
                     direction nSharedPoints(0);
                     forAll(bf, pI)
                         forAll(mf, pJ)
-                            if( bf[pI] == mf[pJ] )
+                            if (bf[pI] == mf[pJ])
                                 ++nSharedPoints;
 
-                    if(
+                    if (
                         nSharedEdges &&
                         ((nSharedEdges + 1) == nSharedPoints)
                     )
@@ -198,40 +197,40 @@ bool surfaceMorpherCells::morphBoundaryFaces()
                         changed = true;
                         finished = false;
 
-                        //- set CHANGED flag
+                        // set CHANGED flag
                         cellFlags_[cellI] |= CHANGED;
                     }
                 }
-            }  while( !finished );
+            }  while (!finished);
 
             newBoundaryFaces_.appendList(mf);
             newBoundaryOwners_.append(cellI);
             newBoundaryPatches_.append(0);
 
             # ifdef DEBUGMorph
-            Info << "Adding merged face " << mf << endl;
+            Info<< "Adding merged face " << mf << endl;
             # endif
 
-            for(label i=1;i<bFaces.size();++i)
-                if( !mergedFaces[i] )
+            for (label i = 1; i < bFaces.size(); ++i)
+                if (!mergedFaces[i])
                 {
                     newBoundaryFaces_.appendList(faces[bFaces[i]]);
                     newBoundaryOwners_.append(cellI);
                     newBoundaryPatches_.append(0);
 
                     # ifdef DEBUGMorph
-                    Info << "Adding untouched boundary face "
+                    Info<< "Adding untouched boundary face "
                         << faces[bFaces[i]] << endl;
                     # endif
                 }
         }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         reduce(changed, maxOp<bool>());
     }
 
-    if( changed )
+    if (changed)
     {
         replaceMeshBoundary();
     }
@@ -239,18 +238,19 @@ bool surfaceMorpherCells::morphBoundaryFaces()
     # ifdef DEBUGMorph
     labelHashSet zipCells;
     mesh_.addressingData().checkCellsZipUp(true, &zipCells);
-    if( zipCells.size() )
+    if (zipCells.size())
     {
-        Info << "Cells " << zipCells << " are not zipped!!" << endl;
+        Info<< "Cells " << zipCells << " are not zipped!!" << endl;
         ::exit(EXIT_FAILURE);
     }
     mesh_.clearAddressingData();
     # endif
 
-    Info << "Finished morphing boundary faces" << endl;
+    Info<< "Finished morphing boundary faces" << endl;
 
     return changed;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

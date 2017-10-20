@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,7 +41,6 @@ namespace Foam
 
 namespace polyMeshGenChecks
 {
-
 bool checkPoints
 (
     const polyMeshGen& mesh,
@@ -56,16 +55,15 @@ bool checkPoints
 
     forAll(pf, pointI)
     {
-        if( pf.sizeOfRow(pointI) == 0 )
+        if (pf.sizeOfRow(pointI) == 0)
         {
-            WarningIn
-            (
-                "bool checkPoints"
-                "(const polyMeshGen&, const bool, labelHashSet*)"
-            )   << "Point " << pointI << " not used by any faces." << endl;
+            WarningInFunction
+                << "Point " << pointI << " not used by any faces." << endl;
 
-            if( setPtr )
+            if (setPtr)
+            {
                 setPtr->insert(pointI);
+            }
 
             ++nFaceErrors;
         }
@@ -75,16 +73,15 @@ bool checkPoints
 
     forAll(pc, pointI)
     {
-        if( pc.sizeOfRow(pointI) == 0 )
+        if (pc.sizeOfRow(pointI) == 0)
         {
-            WarningIn
-            (
-                "bool checkPoints"
-                "(const polyMeshGen&, const bool, labelHashSet*)"
-            )   << "Point " << pointI << " not used by any cells." << endl;
+            WarningInFunction
+                << "Point " << pointI << " not used by any cells." << endl;
 
-            if( setPtr )
+            if (setPtr)
+            {
                 setPtr->insert(pointI);
+            }
 
             ++nCellErrors;
         }
@@ -93,13 +90,10 @@ bool checkPoints
     reduce(nFaceErrors, sumOp<label>());
     reduce(nCellErrors, sumOp<label>());
 
-    if( nFaceErrors > 0 || nCellErrors > 0 )
+    if (nFaceErrors > 0 || nCellErrors > 0)
     {
-        WarningIn
-        (
-            "bool checkPoints"
-            "(const polyMeshGen&, const bool, labelHashSet*)"
-        )   << "Error in point usage detected: " << nFaceErrors
+        WarningInFunction
+            << "Error in point usage detected: " << nFaceErrors
             << " unused points found in the mesh.  This mesh is invalid."
             << endl;
 
@@ -107,12 +101,15 @@ bool checkPoints
     }
     else
     {
-        if( report )
-            Info << "Point usage check OK.\n" << endl;
+        if (report)
+        {
+            Info<< "Point usage check OK.\n" << endl;
+        }
 
         return false;
     }
 }
+
 
 bool checkUpperTriangular
 (
@@ -138,23 +135,24 @@ bool checkUpperTriangular
 
     // Loop through faceCells once more and make sure that for internal cell
     // the first label is smaller
-    for(label faceI=0;faceI<internal;++faceI)
+    for (label faceI = 0; faceI < internal; ++faceI)
     {
-        if( own[faceI] >= nei[faceI] )
+        if (own[faceI] >= nei[faceI])
         {
-            if( report )
+            if (report)
             {
-                Pout<< "bool checkUpperTriangular(const polyMeshGen&, "
-                    << "const bool, labelHashSet*) : " << endl
+                Pout<< FUNCTION_NAME << endl
                     << "face " << faceI
                     << " has the owner label greater than neighbour:" << endl
                     << own[faceI] << tab << nei[faceI] << endl;
             }
 
-            if( setPtr )
+            if (setPtr)
+            {
                 setPtr->insert(faceI);
+            }
 
-            error  = true;
+            error = true;
         }
     }
 
@@ -169,7 +167,7 @@ bool checkUpperTriangular
         // in the increasing order
         boolList usedNbr(cc.sizeOfRow(cellI), false);
 
-        for(label nSweeps=0;nSweeps<usedNbr.size();++nSweeps)
+        for (label nSweeps = 0; nSweeps < usedNbr.size(); ++nSweeps)
         {
             // Find the lowest neighbour which is still valid
             label nextNei = -1;
@@ -178,23 +176,23 @@ bool checkUpperTriangular
             forAllRow(cc, cellI, nbrI)
             {
                 const label neiI = cc(cellI, nbrI);
-                if( (neiI > cellI) && !usedNbr[nbrI] && (neiI < minNei) )
+                if ((neiI > cellI) && !usedNbr[nbrI] && (neiI < minNei))
                 {
                     nextNei = nbrI;
                     minNei = neiI;
                 }
             }
 
-            if( nextNei > -1 )
+            if (nextNei > -1)
             {
                 // Mark this neighbour as used
                 usedNbr[nextNei] = true;
 
                 forAll(curFaces, faceI)
                 {
-                    if( curFaces[faceI] < internal )
+                    if (curFaces[faceI] < internal)
                     {
-                        if( nei[curFaces[faceI]] == cc(cellI, nextNei) )
+                        if (nei[curFaces[faceI]] == cc(cellI, nextNei))
                         {
                             checkInternalFaces[nChecks] = curFaces[faceI];
                             ++nChecks;
@@ -210,19 +208,20 @@ bool checkUpperTriangular
     // Check list created. If everything is OK, the face label is equal to index
     forAll(checkInternalFaces, faceI)
     {
-        if( checkInternalFaces[faceI] != faceI )
+        if (checkInternalFaces[faceI] != faceI)
         {
             error = true;
 
-            Pout<< "bool checkUpperTriangular(const polyMeshGen&, const bool"
-                << ", labelHashSet*) : " << endl
+            Pout<< FUNCTION_NAME << endl
                 << "face " << faceI << " out of position. Markup label: "
                 << checkInternalFaces[faceI] << ". All subsequent faces will "
                 << "also be out of position. Please check the mesh manually."
                 << endl;
 
-            if( setPtr )
+            if (setPtr)
+            {
                 setPtr->insert(faceI);
+            }
 
             break;
         }
@@ -230,25 +229,25 @@ bool checkUpperTriangular
 
     reduce(error, orOp<bool>());
 
-    if( error )
+    if (error)
     {
-        WarningIn
-        (
-            "bool checkUpperTriangular(const polyMeshGen&, const bool"
-            ", labelHashSet*)"
-        )   << "Error in face ordering: faces not in upper triangular order!"
+        WarningInFunction
+            << "Error in face ordering: faces not in upper triangular order!"
             << endl;
 
         return true;
     }
     else
     {
-        if( report )
+        if (report)
+        {
             Info<< "Upper triangular ordering OK.\n" << endl;
+        }
 
         return false;
     }
 }
+
 
 bool checkCellsZipUp
 (
@@ -282,7 +281,7 @@ bool checkCellsZipUp
 
                 const label pos = cellEdges.containsAtPosition(e);
 
-                if( pos < 0 )
+                if (pos < 0)
                 {
                     cellEdges.append(e);
                     edgeUsage.append(1);
@@ -298,22 +297,19 @@ bool checkCellsZipUp
 
         forAll(edgeUsage, edgeI)
         {
-            if( edgeUsage[edgeI] == 1 )
+            if (edgeUsage[edgeI] == 1)
             {
                 singleEdges.append(cellEdges[edgeI]);
             }
-            else if( edgeUsage[edgeI] != 2 )
+            else if (edgeUsage[edgeI] != 2)
             {
-                WarningIn
-                (
-                    "bool checkCellsZipUp(const polyMeshGen&,"
-                    "const bool, labelHashSet*)"
-                )   << "edge " << cellEdges[edgeI] << " in cell " << cellI
+                WarningInFunction
+                    << "edge " << cellEdges[edgeI] << " in cell " << cellI
                     << " used " << edgeUsage[edgeI] << " times. " << endl
                     << "Should be 1 or 2 - serious error in mesh structure"
                     << endl;
 
-                if( setPtr )
+                if (setPtr)
                 {
                     # ifdef USE_OMP
                     # pragma omp critical
@@ -323,17 +319,16 @@ bool checkCellsZipUp
             }
         }
 
-        if( singleEdges.size() > 0 )
+        if (singleEdges.size() > 0)
         {
-            if( report )
+            if (report)
             {
-                Pout<< "bool checkCellsZipUp(const polyMeshGen&, const bool"
-                    << ", labelHashSet*) : " << endl
+                Pout<< FUNCTION_NAME << endl
                     << "Cell " << cellI << " has got " << singleEdges.size()
                     << " unmatched edges: " << singleEdges << endl;
             }
 
-            if( setPtr )
+            if (setPtr)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -347,28 +342,27 @@ bool checkCellsZipUp
 
     reduce(nOpenCells, sumOp<label>());
 
-    if( nOpenCells > 0 )
+    if (nOpenCells > 0)
     {
-        WarningIn
-        (
-            "bool checkCellsZipUp(const polyMeshGen&,"
-            " const bool, labelHashSet*)"
-        )   << nOpenCells
-            << " open cells found.  Please use the mesh zip-up tool. "
+        WarningInFunction
+            << nOpenCells
+            << " open cells found.  Please use the mesh zip - up tool. "
             << endl;
 
         return true;
     }
     else
     {
-        if( report )
-            Info<< "Topological cell zip-up check OK.\n" << endl;
+        if (report)
+        {
+            Info<< "Topological cell zip - up check OK.\n" << endl;
+        }
 
         return false;
     }
 }
 
-// Vertices of face within point range and unique.
+
 bool checkFaceVertices
 (
     const polyMeshGen& mesh,
@@ -386,17 +380,16 @@ bool checkFaceVertices
     {
         const face& curFace = faces[fI];
 
-        if( min(curFace) < 0 || max(curFace) > nPoints )
+        if (min(curFace) < 0 || max(curFace) > nPoints)
         {
-            WarningIn
-            (
-                "bool checkFaceVertices("
-                "const polyMesgGen&, const bool, labelHashSet*)"
-            )   << "Face " << fI << " contains vertex labels out of range: "
-                << curFace << " Max point index = " << nPoints-1 << endl;
+            WarningInFunction
+                << "Face " << fI << " contains vertex labels out of range: "
+                << curFace << " Max point index = " << nPoints - 1 << endl;
 
-            if( setPtr )
+            if (setPtr)
+            {
                 setPtr->insert(fI);
+            }
 
             ++nErrorFaces;
         }
@@ -408,17 +401,16 @@ bool checkFaceVertices
         {
             bool inserted = facePoints.insert(curFace[fp]);
 
-            if( !inserted )
+            if (!inserted)
             {
-                WarningIn
-                (
-                    "bool checkFaceVertices("
-                    "const polyMeshGen&, const bool, labelHashSet*)"
-                )   << "Face " << fI << " contains duplicate vertex labels: "
+                WarningInFunction
+                    << "Face " << fI << " contains duplicate vertex labels: "
                     << curFace << endl;
 
-                if( setPtr )
+                if (setPtr)
+                {
                     setPtr->insert(fI);
+                }
 
                 ++nErrorFaces;
             }
@@ -427,13 +419,9 @@ bool checkFaceVertices
 
     reduce(nErrorFaces, sumOp<label>());
 
-    if( nErrorFaces > 0 )
+    if (nErrorFaces > 0)
     {
-        SeriousErrorIn
-        (
-            "bool checkFaceVertices("
-            "const polyMeshGen&, const bool, labelHashSet*)"
-        )   << "const bool, labelHashSet*) const: "
+        SeriousErrorInFunction
             << nErrorFaces << " faces with invalid vertex labels found"
             << endl;
 
@@ -441,12 +429,15 @@ bool checkFaceVertices
     }
     else
     {
-        if( report )
+        if (report)
+        {
             Info<< "Face vertices OK.\n" << endl;
+        }
 
         return false;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

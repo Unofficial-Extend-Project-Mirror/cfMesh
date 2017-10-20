@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -63,8 +61,10 @@ triSurfaceCurvatureEstimator::triSurfaceCurvatureEstimator
     //calculateMinAndMaxCurvature();
 }
 
+
 triSurfaceCurvatureEstimator::~triSurfaceCurvatureEstimator()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -73,6 +73,7 @@ scalar triSurfaceCurvatureEstimator::edgePointCurvature(const label pI) const
     return edgePointCurvature_[pI];
 }
 
+
 scalar triSurfaceCurvatureEstimator::curvatureAtEdge(const label edgeI) const
 {
     const edge& edg = surface_.edges()[edgeI];
@@ -80,8 +81,9 @@ scalar triSurfaceCurvatureEstimator::curvatureAtEdge(const label edgeI) const
     const scalar k1 = edgePointCurvature_[edg.start()];
     const scalar k2 = edgePointCurvature_[edg.end()];
 
-    return (k1 + k2) / 2.0;
+    return (k1 + k2)/2.0;
 }
+
 
 scalar triSurfaceCurvatureEstimator::gaussianCurvatureAtTriangle
 (
@@ -91,12 +93,13 @@ scalar triSurfaceCurvatureEstimator::gaussianCurvatureAtTriangle
     const labelledTri& tri = surface_[triI];
 
     scalar curv(0.0);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += gaussianCurvature_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 scalar triSurfaceCurvatureEstimator::meanCurvatureAtTriangle
 (
@@ -106,12 +109,13 @@ scalar triSurfaceCurvatureEstimator::meanCurvatureAtTriangle
     const labelledTri& tri = surface_[triI];
 
     scalar curv(0.0);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += meanCurvature_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 scalar triSurfaceCurvatureEstimator::maxCurvatureAtTriangle
 (
@@ -121,12 +125,13 @@ scalar triSurfaceCurvatureEstimator::maxCurvatureAtTriangle
     const labelledTri& tri = surface_[triI];
 
     scalar curv(0.0);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += maxCurvature_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 scalar triSurfaceCurvatureEstimator::minCurvatureAtTriangle
 (
@@ -136,12 +141,13 @@ scalar triSurfaceCurvatureEstimator::minCurvatureAtTriangle
     const labelledTri& tri = surface_[triI];
 
     scalar curv(0.0);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += minCurvature_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 vector triSurfaceCurvatureEstimator::maxCurvatureVectorAtTriangle
 (
@@ -151,12 +157,13 @@ vector triSurfaceCurvatureEstimator::maxCurvatureVectorAtTriangle
     const labelledTri& tri = surface_[triI];
 
     vector curv(vector::zero);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += maxCurvatureVector_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 vector triSurfaceCurvatureEstimator::minCurvatureVectorAtTriangle
 (
@@ -166,12 +173,13 @@ vector triSurfaceCurvatureEstimator::minCurvatureVectorAtTriangle
     const labelledTri& tri = surface_[triI];
 
     vector curv(vector::zero);
-    for(label i=0;i<3;++i)
+    for (label i = 0; i < 3; ++i)
         curv += minCurvatureVector_[tri[i]][patchPositions_(triI, i)];
     curv /= 3.0;
 
     return curv;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

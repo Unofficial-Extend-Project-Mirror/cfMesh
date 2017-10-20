@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -36,13 +36,13 @@ Foam::Ostream& Foam::operator<<
 {
     os << DL.size() << "(" << nl;
 
-    for(label i=0;i<DL.size();++i)
+    for (label i = 0; i < DL.size(); ++i)
     {
         os << width << "(";
 
-        for(label j=0;j<width;++j)
+        for (label j = 0; j < width; ++j)
         {
-            if( j )
+            if (j)
             {
                 os << " ";
             }
@@ -56,14 +56,11 @@ Foam::Ostream& Foam::operator<<
     os << ")";
 
     // Check state of IOstream
-    os.check
-    (
-        "template<class T, Foam::label width>Foam::Ostream& Foam::operator<<"
-        "(Foam::Ostream& os, const Foam::FRWGraph<T, width>&)"
-    );
+    os.check(FUNCTION_NAME);
 
     return os;
 }
+
 
 /*
 template<class T, Foam::label width>
@@ -86,5 +83,6 @@ Foam::Istream& Foam::operator>>
     return is;
 }
 */
+
 
 // ************************************************************************* //

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triangulateNonPlanarBaseFaces
+    Foam::triangulateNonPlanarBaseFaces
 
 Description
     Splits selected boundary layer cells into triangular prisms
@@ -47,12 +47,13 @@ namespace Foam
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
-            Class triangulateNonPlanarBaseFaces Declaration
+                Class triangulateNonPlanarBaseFaces Declaration
 \*---------------------------------------------------------------------------*/
 
 class triangulateNonPlanarBaseFaces
 {
     // Private data
+
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
@@ -65,7 +66,9 @@ class triangulateNonPlanarBaseFaces
         //- relative deviation compared to the layer thickness
         scalar tol_;
 
+
     // Private member functions
+
         //- find faces with non-planarity greater than the required
         //- layer thickness
         bool findNonPlanarBoundaryFaces();
@@ -85,17 +88,18 @@ class triangulateNonPlanarBaseFaces
         //- Disallow bitwise assignment
         void operator=(const triangulateNonPlanarBaseFaces&);
 
+
 public:
 
-    // Constructors
+    //- Construct from mesh
+    triangulateNonPlanarBaseFaces(polyMeshGen& mesh);
 
-        //- Construct from mesh
-        triangulateNonPlanarBaseFaces(polyMeshGen& mesh);
+    //- Destructor
+    ~triangulateNonPlanarBaseFaces();
 
-    // Destructor
-        ~triangulateNonPlanarBaseFaces();
 
     // Public member functions
+
         //- set the relative tolerance between the requested boundary
         //- layer thickness and the deviation from planarity
         //- the default is 1.0
@@ -104,13 +108,16 @@ public:
         //- splits inverted boundary layer prisms into triangular prisms
         void triangulateLayers();
 
+
     // Static member functions
+
         static void readSettings
         (
             const dictionary&,
             triangulateNonPlanarBaseFaces&
         );
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOptimizer
+    Foam::meshOptimizer
 
 Description
     Mesh smoothing without any topological changes
@@ -61,6 +61,7 @@ class partTetMesh;
 class meshOptimizer
 {
     // Private data
+
         //- reference to the mesh
         polyMeshGen& mesh_;
 
@@ -79,7 +80,9 @@ class meshOptimizer
         //- name of the subset contaning tangled points
         word badPointsSubsetName_;
 
+
     // Private member functions
+
         //- return mesh surface
         const meshSurfaceEngine& meshSurface() const;
         void clearSurface();
@@ -91,18 +94,22 @@ class meshOptimizer
         //- mark point locations
         void calculatePointLocations();
 
+
     // Nested classes
 
         class laplaceSmoother
         {
             // Private data
+
                 //- reference to the mesh
                 polyMeshGen& mesh_;
 
                 //- location of vertex (internal, boundary, edge, corner)
                 const List<direction>& vertexLocation_;
 
+
             // Private member functions
+
                 //- smooth the node using the laplacian smoother
                 //- new position is the average of the neighbouring vertices
                 void laplacian(const labelLongList&, const label);
@@ -137,16 +144,15 @@ class meshOptimizer
 
         public:
 
-            // Constructor
+            //- Construct from mesh and vertex locations
+            laplaceSmoother(polyMeshGen&, const List<direction>&);
 
-                //- Construct from mesh and vertex locations
-                laplaceSmoother(polyMeshGen&, const List<direction>&);
+            //- Destructor
+            ~laplaceSmoother();
 
-            // Destructor
-
-                ~laplaceSmoother();
 
             // Member Functions
+
                 //- new position is the average of the neighbouring vertices
                 void optimizeLaplacian(const label nIterations = 1);
                 void optimizeLaplacian
@@ -188,7 +194,9 @@ class meshOptimizer
         //- Disallow default bitwise assignment
         void operator=(const meshOptimizer&);
 
+
     // enumerators
+
         enum vertexType_
         {
             INSIDE = 1,
@@ -201,17 +209,15 @@ class meshOptimizer
 
 public:
 
-    // Constructors
+    //- Construct from mesh
+    meshOptimizer(polyMeshGen& mesh);
 
-        //- Construct from mesh
-        meshOptimizer(polyMeshGen& mesh);
+    //- Destructor
+    ~meshOptimizer();
 
-
-    // Destructor
-
-        ~meshOptimizer();
 
     // Member Functions
+
         //- Flag stopping the meshing process if it is not possible
         //- to untangle the surface without sacrificing geometry constraints
         //- Points which must be moved away from the required position are

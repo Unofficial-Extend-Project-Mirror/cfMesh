@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -54,8 +52,10 @@ triSurfacePatchManipulator::triSurfacePatchManipulator(const triSurf& surface)
     createPatches();
 }
 
+
 triSurfacePatchManipulator::~triSurfacePatchManipulator()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,6 +83,7 @@ void triSurfacePatchManipulator::detectedSurfaceRegions
     }
 }
 
+
 const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 (
     IOdictionary* meshDictPtr,
@@ -90,20 +91,20 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
     const bool forceOverwrite
 ) const
 {
-    //- collect patch information
+    // collect patch information
     VRWGraph facetsInPatch;
     detectedSurfaceRegions(facetsInPatch);
 
-    //- create new list of boundary patches
+    // create new list of boundary patches
     LongList<labelledTri> newTriangles(facetInPatch_.size());
     label counter(0);
     geometricSurfacePatchList newPatches(nPatches_);
 
-    if( forceOverwrite )
+    if (forceOverwrite)
     {
         forAll(newPatches, patchI)
         {
-            newPatches[patchI].name() = prefix+help::scalarToText(patchI);
+            newPatches[patchI].name() = prefix + help::scalarToText(patchI);
             newPatches[patchI].geometricType() = "patch";
             newPatches[patchI].index() = patchI;
         }
@@ -126,7 +127,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
         }
     }
 
-    //- create triangles for the new surface
+    // create triangles for the new surface
     labelLongList newFacetLabel(newTriangles.size(), -1);
 
     forAll(facetsInPatch, patchI)
@@ -138,7 +139,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
             newTriangles[counter++] = tria;
         }
 
-    //- create and return a new surface mesh
+    // create and return a new surface mesh
     triSurf* newSurfPtr =
         new triSurf
         (
@@ -148,7 +149,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
             surf_.points()
         );
 
-    //- transfer facet subsets
+    // transfer facet subsets
     DynList<label> subsetIDs;
     surf_.facetSubsetIndices(subsetIDs);
     forAll(subsetIDs, subsetI)
@@ -168,7 +169,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
         }
     }
 
-    //- transfer point subsets
+    // transfer point subsets
     surf_.pointSubsetIndices(subsetIDs);
     forAll(subsetIDs, subsetI)
     {
@@ -183,10 +184,10 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
             newSurfPtr->addPointToSubset(newID, pointsInSubset[i]);
     }
 
-    if( meshDictPtr )
+    if (meshDictPtr)
     {
-        //- create mapping between the patches on the original surface
-        //- and the renamed patches
+        // create mapping between the patches on the original surface
+        // and the renamed patches
         std::map<word, wordList> patchesForPatch;
         std::map<word, word> patchTypes;
 
@@ -195,7 +196,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
             patchTypes[origPatches[patchI].name()] =
                 origPatches[patchI].geometricType();
 
-        //- find the mapping of patch ids
+        // find the mapping of patch ids
         List<labelHashSet> patchToNewPatches(origPatches.size());
         forAll(facetsInPatch, patchI)
         {
@@ -241,7 +242,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
         }
 
         reduce(foundProblematic, maxOp<bool>());
-        if( foundProblematic )
+        if (foundProblematic)
         {
             throw std::logic_error
             (
@@ -249,7 +250,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
             );
         }
 
-        //- update the values in meshDict based on the created patches
+        // update the values in meshDict based on the created patches
         checkMeshDict(*meshDictPtr).updateDictionaries
         (
             patchesForPatch,
@@ -259,6 +260,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 
     return newSurfPtr;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

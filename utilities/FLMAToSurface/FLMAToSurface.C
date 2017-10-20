@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Reads the AVL's surface mesh
@@ -49,13 +49,13 @@ int main(int argc, char *argv[])
     fileName inFileName(args.args()[1]);
     fileName outFileName(args.args()[2]);
 
-    if( inFileName.ext() != "flma" )
+    if (inFileName.ext() != "flma")
     {
-        Info << "Cannot convert this mesh" << endl;
+        Info<< "Cannot convert this mesh" << endl;
         return 0;
     }
 
-    //- create the surface mesh
+    // create the surface mesh
     triSurf ts;
     triSurfModifier tsm(ts);
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
     inFile >> counter;
 
-    //- read vertices
+    // read vertices
     pointField& points = tsm.pointsAccess();
     points.setSize(counter);
     forAll(points, pointI)
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         inFile >> p.z();
     }
 
-    //- read facets
+    // read facets
     inFile >> counter;
     geometricSurfacePatchList patches(1);
     patches[0].name() = "patch";
@@ -87,47 +87,47 @@ int main(int argc, char *argv[])
     {
         inFile >> counter;
 
-        if( counter != 3 )
+        if (counter != 3)
         {
-            Info << "Facet " << triI << " is not a triangle!!" << endl;
+            Info<< "Facet " << triI << " is not a triangle!!" << endl;
             Warning << "Cannot convert this surface!" << endl;
             return 0;
         }
 
-        for(label j=0;j<3;++j)
-            inFile >> triangles[triI][2-j];
+        for (label j = 0; j < 3; ++j)
+            inFile >> triangles[triI][2 - j];
 
         triangles[triI].region() = 0;
     }
 
-    //- read cell types
+    // read cell types
     inFile >> counter;
     forAll(triangles, triI)
         inFile >> counter;
 
-    //- start reading selections
+    // start reading selections
     inFile >> counter;
-    for(label selI=0;selI<counter;++selI)
+    for (label selI = 0; selI < counter; ++selI)
     {
-        //- read selection name
+        // read selection name
         word selName;
         inFile >> selName;
 
-        //- read selection type
+        // read selection type
         label selType;
         inFile >> selType;
 
-        //- read selection entries
+        // read selection entries
         label size;
         inFile >> size;
         labelLongList entries(size);
-        for(label i=0;i<size;++i)
+        for (label i = 0; i < size; ++i)
             inFile >> entries[i];
 
-        //- store cell selections
-        if( selType == 2 )
+        // store cell selections
+        if (selType == 2)
         {
-            Info << "Adding subset " << selName << endl;
+            Info<< "Adding subset " << selName << endl;
             const label setID = ts.addFacetSubset(selName);
 
             forAll(entries, i)
@@ -135,11 +135,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    //- write the surface
+    // write the surface
     ts.writeSurface(outFileName);
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
+
 
 // ************************************************************************* //

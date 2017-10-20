@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,7 +41,7 @@ namespace Foam
 
 void voronoiMeshExtractor::createAddressing() const
 {
-    if( pointEdgesPtr_ || edgeTetsPtr_ || boundaryEdgePtr_ || edgesPtr_ )
+    if (pointEdgesPtr_ || edgeTetsPtr_ || boundaryEdgePtr_ || edgesPtr_)
         return;
 
     pointEdgesPtr_ = new VRWGraph(tetCreator_.tetPoints().size());
@@ -58,7 +56,7 @@ void voronoiMeshExtractor::createAddressing() const
     edgesPtr_ = new LongList<edge>();
     LongList<edge>& edges = *edgesPtr_;
 
-    //- create edges and edgeTets
+    // create edges and edgeTets
     const LongList<partTet>& tets = tetCreator_.tets();
 
     VRWGraph pointTets;
@@ -82,10 +80,10 @@ void voronoiMeshExtractor::createAddressing() const
             {
                 const label tetJ = pointTets(start, ptI);
 
-                if( !endTets.contains(tetJ) )
+                if (!endTets.contains(tetJ))
                     continue;
 
-                if( tetJ < tetI )
+                if (tetJ < tetI)
                 {
                     store = false;
                     break;
@@ -94,7 +92,7 @@ void voronoiMeshExtractor::createAddressing() const
                 eTets.append(tetJ);
             }
 
-            if( store )
+            if (store)
             {
                 edgeTets.appendList(eTets);
 
@@ -104,13 +102,13 @@ void voronoiMeshExtractor::createAddressing() const
     }
 
     # ifdef DEBUGVoronoi
-    Info << "Edge tets " << edgeTets << endl;
+    Info<< "Edge tets " << edgeTets << endl;
     # endif
 
-    //- calculate point-edges addressing
+    // calculate point-edges addressing
     pointEdges.reverseAddressing(edges);
 
-    //- sort edge-tets in circular order
+    // sort edge-tets in circular order
     boundaryEdges.setSize(edgeTets.size());
     boundaryEdges = false;
 
@@ -123,7 +121,7 @@ void voronoiMeshExtractor::createAddressing() const
         row eTets = edgeTets[edgeI];
 
         # ifdef DEBUGVoronoi
-        Info << "Edge " << edgeI << " has points " << e << endl;
+        Info<< "Edge " << edgeI << " has points " << e << endl;
         # endif
 
         forAll(eTets, tetI)
@@ -131,18 +129,18 @@ void voronoiMeshExtractor::createAddressing() const
             const partTet& pt = tets[eTets[tetI]];
 
             # ifdef DEBUGVoronoi
-            Info << "Checking tet " << eTets[tetI] << " points " << pt << endl;
+            Info<< "Checking tet " << eTets[tetI] << " points " << pt << endl;
             # endif
 
-            //- find the face shared with the neighbour
+            // find the face shared with the neighbour
             const FixedList<edge, 6> tetEdges = pt.edges();
 
             label searchPoint(-1);
             forAll(tetEdges, eI)
             {
-                if( tetEdges[eI] == e )
+                if (tetEdges[eI] == e)
                 {
-                    if( tetEdges[eI].start() == e.start() )
+                    if (tetEdges[eI].start() == e.start())
                     {
                         searchPoint = pt[sameOrientation_[eI]];
                     }
@@ -155,72 +153,75 @@ void voronoiMeshExtractor::createAddressing() const
                 }
             }
 
-            if( searchPoint < 0 )
-                FatalErrorIn
-                (
-                    "void voronoiMeshExtractor::createAddressing() const"
-                ) << " invalid search point " << abort(FatalError);
+            if (searchPoint < 0)
+                FatalErrorInFunction
+                    << " invalid search point " << abort(FatalError);
 
             bool found(false);
             forAll(eTets, i)
             {
-                if( tetI == i )
+                if (tetI == i)
                     continue;
 
                 const partTet& ptNei = tets[eTets[i]];
 
                 const label pos = ptNei.whichPosition(searchPoint);
 
-                if( pos < 0 )
+                if (pos < 0)
                     continue;
 
-                if( tetI < eTets.size()-1 )
+                if (tetI < eTets.size()-1)
                 {
-                    const label add  = eTets[tetI+1];
-                    eTets[tetI+1] = eTets[i];
+                    const label add = eTets[tetI + 1];
+                    eTets[tetI + 1] = eTets[i];
                     eTets[i] = add;
                 }
                 found = true;
                 break;
             }
 
-            if( !found )
+            if (!found)
                 boundaryEdges[edgeI] = true;
         }
     }
 }
 
+
 const VRWGraph& voronoiMeshExtractor::pointEdges() const
 {
-    if( !pointEdgesPtr_ )
+    if (!pointEdgesPtr_)
         createAddressing();
 
     return *pointEdgesPtr_;
 }
 
+
 const LongList<edge>& voronoiMeshExtractor::edges() const
 {
-    if( !edgesPtr_ )
+    if (!edgesPtr_)
         createAddressing();
 
     return *edgesPtr_;
 }
 
+
 const VRWGraph& voronoiMeshExtractor::edgeTets() const
 {
-    if( !edgeTetsPtr_ )
+    if (!edgeTetsPtr_)
         createAddressing();
 
     return *edgeTetsPtr_;
 }
 
+
 const boolList& voronoiMeshExtractor::boundaryEdge() const
 {
-    if( !boundaryEdgePtr_ )
+    if (!boundaryEdgePtr_)
         createAddressing();
 
     return *boundaryEdgePtr_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

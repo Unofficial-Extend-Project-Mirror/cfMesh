@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfaceCurvatureCalculator
+    Foam::triSurfaceCurvatureCalculator
 
 Description
     Provides information regarding surface partitions on the surface
@@ -44,7 +44,6 @@ SourceFiles
 
 namespace Foam
 {
-
 /*---------------------------------------------------------------------------*\
                 Class triSurfaceCurvatureEstimator Declaration
 \*---------------------------------------------------------------------------*/
@@ -52,6 +51,7 @@ namespace Foam
 class triSurfaceCurvatureEstimator
 {
     // Private data
+
         //- reference to triSurface
         const triSurf& surface_;
 
@@ -60,14 +60,16 @@ class triSurfaceCurvatureEstimator
 
         //- curvatures of other points
         FRWGraph<label, 3> patchPositions_;
-        List<DynList<scalar, 1> > gaussianCurvature_;
-        List<DynList<scalar, 1> > meanCurvature_;
-        List<DynList<scalar, 1> > maxCurvature_;
-        List<DynList<scalar, 1> > minCurvature_;
-        List<DynList<vector, 1> > maxCurvatureVector_;
-        List<DynList<vector, 1> > minCurvatureVector_;
+        List<DynList<scalar, 1>> gaussianCurvature_;
+        List<DynList<scalar, 1>> meanCurvature_;
+        List<DynList<scalar, 1>> maxCurvature_;
+        List<DynList<scalar, 1>> minCurvature_;
+        List<DynList<vector, 1>> maxCurvatureVector_;
+        List<DynList<vector, 1>> minCurvatureVector_;
+
 
     // Private member functions
+
         //- calculate curvature of feature edges
         void calculateEdgeCurvature();
 
@@ -89,19 +91,18 @@ class triSurfaceCurvatureEstimator
         //- Disallow default bitwise assignment
         void operator=(const triSurfaceCurvatureEstimator&);
 
+
 public:
 
-    // Constructors
+    //- Construct from triSurface
+    triSurfaceCurvatureEstimator(const triSurf& surface);
 
-        //- Construct from triSurface
-        triSurfaceCurvatureEstimator(const triSurf& surface);
-
-    // Destructor
-
-        ~triSurfaceCurvatureEstimator();
+    //- Destructor
+    ~triSurfaceCurvatureEstimator();
 
 
     // Member Functions
+
         //- return curvature of points at feature edges
         scalar edgePointCurvature(const label) const;
         scalar curvatureAtEdge(const label) const;
@@ -115,6 +116,7 @@ public:
         vector maxCurvatureVectorAtTriangle(const label) const;
         vector minCurvatureVectorAtTriangle(const label) const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

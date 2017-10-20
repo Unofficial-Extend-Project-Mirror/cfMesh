@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -61,22 +59,19 @@ void boundaryLayerOptimisation::writeVTK
     const vectorField& vecs
 )
 {
-    if( origin.size() != vecs.size() )
-        FatalErrorIn
-        (
-            "void boundaryLayerOptimisation::writeVTK(const fileName&,"
-            " const pointField&, const vectorField&)"
-        ) << "Sizes do not match" << abort(FatalError);
+    if (origin.size() != vecs.size())
+        FatalErrorInFunction
+            << "Sizes do not match" << abort(FatalError);
 
     OFstream file(fName);
 
-    //- write the header
+    // write the header
     file << "# vtk DataFile Version 3.0\n";
     file << "vtk output\n";
     file << "ASCII\n";
     file << "DATASET POLYDATA\n";
 
-    //- write points
+    // write points
     file << "POINTS " << 2*origin.size() << " float\n";
     forAll(origin, pI)
     {
@@ -89,16 +84,17 @@ void boundaryLayerOptimisation::writeVTK
         file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
     }
 
-    //- write lines
+    // write lines
     file << "\nLINES " << vecs.size()
          << " " << 3*vecs.size() << nl;
     forAll(vecs, eI)
     {
-        file << 2 << " " << 2*eI << " " << (2*eI+1) << nl;
+        file << 2 << " " << 2*eI << " " << (2*eI + 1) << nl;
     }
 
     file << "\n";
 }
+
 
 void boundaryLayerOptimisation::writeHairEdges
 (
@@ -107,21 +103,18 @@ void boundaryLayerOptimisation::writeHairEdges
     const vectorField& vecs
 ) const
 {
-    if( vecs.size() != hairEdges_.size() )
-        FatalErrorIn
-        (
-            "void boundaryLayerOptimisation::writeHairEdges"
-            "(const fileName&, const direction, const vectorField&) const"
-        ) << "Sizes do not match" << abort(FatalError);
+    if (vecs.size() != hairEdges_.size())
+        FatalErrorInFunction
+            << "Sizes do not match" << abort(FatalError);
 
-    //- count the number of hair edges matching this criteria
+    // count the number of hair edges matching this criteria
     label counter(0);
 
     forAll(hairEdgeType_, heI)
-        if( hairEdgeType_[heI] & eType )
+        if (hairEdgeType_[heI] & eType)
             ++counter;
 
-    //- copy edge vector
+    // copy edge vector
     vectorField copyVecs(counter);
     pointField pts(counter);
 
@@ -131,20 +124,21 @@ void boundaryLayerOptimisation::writeHairEdges
 
     forAll(hairEdgeType_, heI)
     {
-        if( hairEdgeType_[heI] & eType )
+        if (hairEdgeType_[heI] & eType)
         {
             const edge& he = hairEdges_[heI];
 
             pts[counter] = points[he.start()];
-            copyVecs[counter] = vecs[heI] * he.mag(points);
+            copyVecs[counter] = vecs[heI]*he.mag(points);
 
             ++counter;
         }
     }
 
-    //- write data to file
+    // write data to file
     writeVTK(fName, pts, copyVecs);
 }
+
 
 void boundaryLayerOptimisation::writeHairEdges
 (
@@ -152,14 +146,14 @@ void boundaryLayerOptimisation::writeHairEdges
     const direction eType
 ) const
 {
-    //- count the number of hair edges matching this criteria
+    // count the number of hair edges matching this criteria
     label counter(0);
 
     forAll(hairEdgeType_, heI)
-        if( hairEdgeType_[heI] & eType )
+        if (hairEdgeType_[heI] & eType)
             ++counter;
 
-    //- copy edge vector
+    // copy edge vector
     vectorField vecs(counter);
     pointField pts(counter);
 
@@ -169,7 +163,7 @@ void boundaryLayerOptimisation::writeHairEdges
 
     forAll(hairEdgeType_, heI)
     {
-        if( hairEdgeType_[heI] & eType )
+        if (hairEdgeType_[heI] & eType)
         {
             const edge& he = hairEdges_[heI];
 
@@ -180,21 +174,19 @@ void boundaryLayerOptimisation::writeHairEdges
         }
     }
 
-    //- write data to file
-    writeVTK(fName,pts, vecs);
+    // write data to file
+    writeVTK(fName, pts, vecs);
 }
+
 
 const meshSurfaceEngine& boundaryLayerOptimisation::meshSurface() const
 {
-    if( !meshSurfacePtr_ )
+    if (!meshSurfacePtr_)
     {
         # ifdef USE_OMP
-        if( omp_in_parallel() )
-            FatalErrorIn
-            (
-                "const meshSurfaceEngine&"
-                " boundaryLayerOptimisation::meshSurface()"
-            ) << "Cannot generate meshSurfaceEngine" << abort(FatalError);
+        if (omp_in_parallel())
+            FatalErrorInFunction
+                << "Cannot generate meshSurfaceEngine" << abort(FatalError);
         # endif
 
         meshSurfacePtr_ = new meshSurfaceEngine(mesh_);
@@ -203,18 +195,17 @@ const meshSurfaceEngine& boundaryLayerOptimisation::meshSurface() const
     return *meshSurfacePtr_;
 }
 
+
 const meshSurfacePartitioner&
 boundaryLayerOptimisation::surfacePartitioner() const
 {
-    if( !partitionerPtr_ )
+    if (!partitionerPtr_)
     {
         # ifdef USE_OMP
-        if( omp_in_parallel() )
-            FatalErrorIn
-            (
-                "const meshSurfacePartitioner& "
-                "boundaryLayerOptimisation::surfacePartitioner()"
-            ) << "Cannot generate meshSurfacePartitioner" << abort(FatalError);
+        if (omp_in_parallel())
+            FatalErrorInFunction
+                << "Cannot generate meshSurfacePartitioner"
+                << abort(FatalError);
         # endif
 
         partitionerPtr_ = new meshSurfacePartitioner(meshSurface());
@@ -222,6 +213,7 @@ boundaryLayerOptimisation::surfacePartitioner() const
 
     return *partitionerPtr_;
 }
+
 
 void boundaryLayerOptimisation::calculateHairEdges()
 {
@@ -235,13 +227,13 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
     const meshSurfacePartitioner& mPart = surfacePartitioner();
 
-    //- detect layers in the mesh
+    // detect layers in the mesh
     const detectBoundaryLayers detectLayers(mPart);
 
     hairEdges_ = detectLayers.hairEdges();
     hairEdgesAtBndPoint_ = detectLayers.hairEdgesAtBndPoint();
 
-    //- mark boundary faces which are base face for the boundary layer
+    // mark boundary faces which are base face for the boundary layer
     const labelList& layerAtBndFace = detectLayers.faceInLayer();
     isBndLayerBase_.setSize(bFaces.size());
     # ifdef USE_OMP
@@ -249,7 +241,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
     # endif
     forAll(layerAtBndFace, bfI)
     {
-        if( layerAtBndFace[bfI] < 0 )
+        if (layerAtBndFace[bfI] < 0)
         {
             isBndLayerBase_[bfI] = false;
         }
@@ -263,11 +255,11 @@ void boundaryLayerOptimisation::calculateHairEdges()
     const label bndLayerFaceId = mesh_.addFaceSubset("bndLayerFaces");
     const label startBndFaceI = mesh_.boundaries()[0].patchStart();
     forAll(isBndLayerBase_, bfI)
-        if( isBndLayerBase_[bfI] )
-            mesh_.addFaceToSubset(bndLayerFaceId, startBndFaceI+bfI);
+        if (isBndLayerBase_[bfI])
+            mesh_.addFaceToSubset(bndLayerFaceId, startBndFaceI + bfI);
     # endif
 
-    //- check if a face is an exiting face for a bnd layer
+    // check if a face is an exiting face for a bnd layer
     isExitFace_.setSize(isBndLayerBase_.size());
     isExitFace_ = false;
 
@@ -276,18 +268,18 @@ void boundaryLayerOptimisation::calculateHairEdges()
     # endif
     forAll(edgeFaces, edgeI)
     {
-        //- avoid edges at inter-processor boundaries
-        if( edgeFaces.sizeOfRow(edgeI) != 2 )
+        // avoid edges at inter-processor boundaries
+        if (edgeFaces.sizeOfRow(edgeI) != 2)
             continue;
 
         const label f0 = edgeFaces(edgeI, 0);
         const label f1 = edgeFaces(edgeI, 1);
 
-        //- both faces have to be part of the same cell
-        if( faceOwner[f0] != faceOwner[f1] )
+        // both faces have to be part of the same cell
+        if (faceOwner[f0] != faceOwner[f1])
             continue;
 
-        //- check if the feature edge is attachd to exittin faces
+        // check if the feature edge is attachd to exittin faces
         if
         (
             (isBndLayerBase_[f0] && (bFaces[f1].size() == 4)) &&
@@ -302,12 +294,12 @@ void boundaryLayerOptimisation::calculateHairEdges()
     # ifdef DEBUGLayer
     const label exittingFaceId = mesh_.addFaceSubset("exittingFaces");
     forAll(isExitFace_, bfI)
-        if( isExitFace_[bfI] )
-            mesh_.addFaceToSubset(exittingFaceId, startBndFaceI+bfI);
+        if (isExitFace_[bfI])
+            mesh_.addFaceToSubset(exittingFaceId, startBndFaceI + bfI);
     # endif
 
-    //- classify hair edges as they require different tretment
-    //- in the smoothing procedure
+    // classify hair edges as they require different tretment
+    // in the smoothing procedure
     hairEdgeType_.setSize(hairEdges_.size());
 
     const labelHashSet& corners = mPart.corners();
@@ -324,39 +316,39 @@ void boundaryLayerOptimisation::calculateHairEdges()
         const edge& e = hairEdges_[hairEdgeI];
         const label bpI = bp[e.start()];
 
-        //- check if it is a boundary edge
+        // check if it is a boundary edge
         forAllRow(bpEdges, bpI, peI)
         {
             const label beI = bpEdges(bpI, peI);
 
             const edge& be = edges[bpEdges(bpI, peI)];
 
-            if( be == e )
+            if (be == e)
             {
                 hairEdgeType_[hairEdgeI] |= BOUNDARY;
 
-                if( featureEdges.found(beI) )
+                if (featureEdges.found(beI))
                     hairEdgeType_[hairEdgeI] |= FEATUREEDGE;
             }
 
-            if( corners.found(bpI) )
+            if (corners.found(bpI))
             {
                 hairEdgeType_[hairEdgeI] |= ATCORNER;
             }
-            else if( edgePoints.found(bpI) )
+            else if (edgePoints.found(bpI))
             {
                 hairEdgeType_[hairEdgeI] |= ATEDGE;
             }
         }
 
-        if( !(hairEdgeType_[hairEdgeI] & BOUNDARY) )
+        if (!(hairEdgeType_[hairEdgeI] & BOUNDARY))
             hairEdgeType_[hairEdgeI] |= INSIDE;
     }
 
     thinnedHairEdge_.setSize(hairEdges_.size());
 
-    //- calculate which other hair edges influence a hair edges
-    //- and store it in a graph
+    // calculate which other hair edges influence a hair edges
+    // and store it in a graph
     hairEdgesNearHairEdge_.setSize(hairEdges_.size());
 
     const cellListPMG& cells = mesh_.cells();
@@ -376,7 +368,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
             forAll(f, pI)
             {
                 const label bpI = bp[f[pI]];
-                if( bpI < 0 )
+                if (bpI < 0)
                     continue;
 
                 bpFacesHelper.appendIfNotIn(bpI, c[fI]);
@@ -391,41 +383,41 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
         DynList<label> neiHairEdges;
 
-        //- find mesh faces comprising of the current hair edge
+        // find mesh faces comprising of the current hair edge
         forAllRow(bpFacesHelper, bpI, pfI)
         {
             const face& f = faces[bpFacesHelper(bpI, pfI)];
 
-            //- face must be a quad
-            if( f.size() != 4 )
+            // face must be a quad
+            if (f.size() != 4)
                 continue;
 
-            //- check if the current face comprises of the hair edge
+            // check if the current face comprises of the hair edge
             label faceEdge(-1);
             forAll(f, eI)
-                if( f.faceEdge(eI) == e )
+                if (f.faceEdge(eI) == e)
                 {
                     faceEdge = eI;
                     break;
                 }
 
-            if( faceEdge != -1 )
+            if (faceEdge != -1)
             {
-                //- check if the opposite edge is also a hair edge
-                const label eJ = (faceEdge+2) % 4;
+                // check if the opposite edge is also a hair edge
+                const label eJ = (faceEdge + 2) % 4;
 
                 const edge fe = f.faceEdge(eJ);
 
-                for(label i=0;i<2;++i)
+                for (label i = 0; i < 2; ++i)
                 {
                     const label bpJ = bp[fe[i]];
 
-                    if( bpJ >= 0 )
+                    if (bpJ >= 0)
                     {
                         forAllRow(hairEdgesAtBndPoint_, bpJ, pI)
                         {
                             const label heJ = hairEdgesAtBndPoint_(bpJ, pI);
-                            if( hairEdges_[heJ] == fe )
+                            if (hairEdges_[heJ] == fe)
                                 neiHairEdges.append(heJ);
                         }
                     }
@@ -449,25 +441,25 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
         mesh_.addPointToSubset(hairEdgesId, e.start());
         mesh_.addPointToSubset(hairEdgesId, e.end());
-        if( hairEdgeType_[heI] & FEATUREEDGE)
+        if (hairEdgeType_[heI] & FEATUREEDGE)
         {
             mesh_.addPointToSubset(featureHairEdgeId, e.start());
             mesh_.addPointToSubset(featureHairEdgeId, e.end());
         }
 
-        if( hairEdgeType_[heI] & BOUNDARY)
+        if (hairEdgeType_[heI] & BOUNDARY)
         {
             mesh_.addPointToSubset(bndHairEdgeId, e.start());
             mesh_.addPointToSubset(bndHairEdgeId, e.end());
         }
 
-        if( hairEdgeType_[heI] & ATCORNER)
+        if (hairEdgeType_[heI] & ATCORNER)
         {
             mesh_.addPointToSubset(cornerHairEdgeId, e.start());
             mesh_.addPointToSubset(cornerHairEdgeId, e.end());
         }
 
-        if( hairEdgeType_[heI] & ATEDGE)
+        if (hairEdgeType_[heI] & ATEDGE)
         {
             mesh_.addPointToSubset(hairEdgeAtEdgeId, e.start());
             mesh_.addPointToSubset(hairEdgeAtEdgeId, e.end());
@@ -476,14 +468,16 @@ void boundaryLayerOptimisation::calculateHairEdges()
 
     mesh_.write();
     # endif
+
 }
+
 
 bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 {
     bool modified(false);
 
-    //- find edge points inside the mesh with more than one hair edge
-    //- attached to it
+    // find edge points inside the mesh with more than one hair edge
+    // attached to it
     labelList nEdgesAtPoint(mesh_.points().size(), 0);
 
     # ifdef USE_OMP
@@ -497,8 +491,8 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
         ++nEdgesAtPoint[hairEdges_[heI].end()];
     }
 
-    //- find the points with more than one hair edge which was modified
-    //- in the previous procedure
+    // find the points with more than one hair edge which was modified
+    // in the previous procedure
     boolList thinnedPoints(mesh_.points().size(), false);
 
     # ifdef USE_OMP
@@ -519,26 +513,27 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 
     reduce(modified, maxOp<bool>());
 
-    if( !modified )
+    if (!modified)
         return false;
 
-    Info << "Hair edges at exitting faces shall "
+    Info<< "Hair edges at exitting faces shall "
          << "be modified due to inner constraints" << endl;
 
     return true;
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void boundaryLayerOptimisation::optimiseLayer()
 {
-    //- create surface smoother
+    // create surface smoother
     meshSurfaceOptimizer surfOpt(meshSurface());
 
-    //- lock exitting faces and feature edges
+    // lock exitting faces and feature edges
     labelLongList lockedFaces;
     forAll(isExitFace_, bfI)
-        if( isExitFace_[bfI] )
+        if (isExitFace_[bfI])
             lockedFaces.append(bfI);
     surfOpt.lockBoundaryFaces(lockedFaces);
     surfOpt.lockFeatureEdges();
@@ -548,13 +543,13 @@ void boundaryLayerOptimisation::optimiseLayer()
     {
         thinnedHairEdge_ = false;
 
-        //- calculate normals at the boundary
+        // calculate normals at the boundary
         optimiseHairNormalsAtTheBoundary();
 
-        //- smoothing thickness variation of boundary hairs
+        // smoothing thickness variation of boundary hairs
         optimiseThicknessVariation(BOUNDARY);
 
-        if( true )
+        if (true)
         {
             meshSurfaceEngineModifier bMod(meshSurface());
             bMod.updateGeometry();
@@ -566,28 +561,29 @@ void boundaryLayerOptimisation::optimiseLayer()
         # ifdef DEBUGLayer
         label counter(0);
         forAll(thinnedHairEdge_, heI)
-            if( thinnedHairEdge_[heI] )
+            if (thinnedHairEdge_[heI])
                 ++counter;
         reduce(counter, sumOp<label>());
-        Info << "Thinned " << counter << " bnd hair edges" << endl;
+        Info<< "Thinned " << counter << " bnd hair edges" << endl;
         # endif
 
-        //- optimise normals inside the mesh
+        // optimise normals inside the mesh
         optimiseHairNormalsInside();
 
-        //- optimise thickness variation inside the mesh
+        // optimise thickness variation inside the mesh
         optimiseThicknessVariation(INSIDE);
 
         # ifdef DEBUGLayer
         label intCounter = 0;
         forAll(thinnedHairEdge_, heI)
-            if( thinnedHairEdge_[heI] )
+            if (thinnedHairEdge_[heI])
                 ++intCounter;
-        Info << "Thinned " << (intCounter - counter)
+        Info<< "Thinned " << (intCounter - counter)
              << " inner hair edges" << endl;
         # endif
-    } while( optimiseLayersAtExittingFaces() && (++nIter < maxNumIterations_) );
+    } while (optimiseLayersAtExittingFaces() && (++nIter < maxNumIterations_));
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

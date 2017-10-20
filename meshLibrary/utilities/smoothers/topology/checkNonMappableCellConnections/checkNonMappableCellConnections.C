@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -52,44 +50,44 @@ void checkNonMappableCellConnections::findCellTypes()
     cellType_.setSize(cells.size());
     cellType_ = INTERNALCELL;
 
-    //- find boundary cells
+    // find boundary cells
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     forAll(boundaries, patchI)
     {
         const label start = boundaries[patchI].patchStart();
         const label end = start + boundaries[patchI].patchSize();
 
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
             cellType_[owner[faceI]] = BNDCELL;
     }
 
-    //- find boundary cells with all vertices at the boundary
+    // find boundary cells with all vertices at the boundary
     meshSurfaceEngine mse(mesh_);
     const labelList& bp = mse.bp();
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 1000)
     # endif
-    for(label cellI=cells.size()-1;cellI>=0;--cellI)
+    for (label cellI = cells.size()-1; cellI>=0; --cellI)
     {
-        if( cellType_[cellI] & INTERNALCELL )
+        if (cellType_[cellI] & INTERNALCELL)
             continue;
 
         const cell& c = cells[cellI];
 
-        //- mark boundary cells with all vertices at the boundary
+        // mark boundary cells with all vertices at the boundary
         const labelList cellPoints = c.labels(faces);
         bool allBoundary(true);
         forAll(cellPoints, cpI)
         {
-            if( bp[cellPoints[cpI]] < 0 )
+            if (bp[cellPoints[cpI]] < 0)
             {
                 allBoundary = false;
                 break;
             }
         }
 
-        if( allBoundary )
+        if (allBoundary)
         {
             cellType_[cellI] |= ALLBNDVERTEXCELL;
         }
@@ -98,16 +96,16 @@ void checkNonMappableCellConnections::findCellTypes()
             continue;
         }
 
-        //- check if the internal faces are connected into a single group
-        //- over their edges
+        // check if the internal faces are connected into a single group
+        // over their edges
         DynList<label> internalFaces;
         forAll(c, fI)
         {
-            if( c[fI] < mesh_.nInternalFaces() )
+            if (c[fI] < mesh_.nInternalFaces())
             {
                 internalFaces.append(c[fI]);
             }
-            else if( mesh_.faceIsInProcPatch(c[fI]) != -1 )
+            else if (mesh_.faceIsInProcPatch(c[fI]) != -1)
             {
                 internalFaces.append(c[fI]);
             }
@@ -117,24 +115,24 @@ void checkNonMappableCellConnections::findCellTypes()
         label nGroup(0);
         forAll(internalFaces, i)
         {
-            if( faceGroup.found(internalFaces[i]) )
+            if (faceGroup.found(internalFaces[i]))
                 continue;
 
             DynList<label> front;
             front.append(internalFaces[i]);
             faceGroup.insert(internalFaces[i], nGroup);
 
-            while( front.size() )
+            while (front.size())
             {
                 const label fLabel = front.removeLastElement();
 
                 forAll(internalFaces, j)
                 {
                     const label nei = internalFaces[j];
-                    if( faceGroup.found(nei) )
+                    if (faceGroup.found(nei))
                         continue;
 
-                    if( help::shareAnEdge(faces[fLabel], faces[nei]) )
+                    if (help::shareAnEdge(faces[fLabel], faces[nei]))
                     {
                         front.append(nei);
                         faceGroup.insert(nei, nGroup);
@@ -145,10 +143,11 @@ void checkNonMappableCellConnections::findCellTypes()
             ++nGroup;
         }
 
-        if( nGroup > 1 )
+        if (nGroup > 1)
             cellType_[cellI] |= INTERNALFACEGROUP;
     }
 }
+
 
 // * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
 // Constructors
@@ -160,14 +159,14 @@ checkNonMappableCellConnections::checkNonMappableCellConnections
 :
     mesh_(mesh),
     cellType_()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
 
 checkNonMappableCellConnections::~checkNonMappableCellConnections()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -175,12 +174,12 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
 {
     badCells.clear();
 
-    //- classify cell types
+    // classify cell types
     findCellTypes();
 
-    //- select ALLBNDVERTEXCELL and INTERNALFACEGROUP cells
-    //- with at least one INTERNALCELL neighbour
-    //- these cells do not need to stay in the mesh
+    // select ALLBNDVERTEXCELL and INTERNALFACEGROUP cells
+    // with at least one INTERNALCELL neighbour
+    // these cells do not need to stay in the mesh
     const cellListPMG& cells = mesh_.cells();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
@@ -188,12 +187,12 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
     const PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries();
 
     labelListList otherProcType;
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- exchange cell types at processor boundaries
+        // exchange cell types at processor boundaries
         otherProcType.setSize(procBoundaries.size());
 
-        //- send data to other processors
+        // send data to other processors
         forAll(procBoundaries, patchI)
         {
             label start = procBoundaries[patchI].patchStart();
@@ -212,7 +211,7 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
             toOtherProc << patchCellType;
         }
 
-        //- receive data from other processors
+        // receive data from other processors
         forAll(procBoundaries, patchI)
         {
             IPstream fromOtherProc
@@ -229,18 +228,18 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
-    for(label cellI=cellType_.size()-1;cellI>=0;--cellI)
+    for (label cellI = cellType_.size()-1; cellI>=0; --cellI)
     {
-        if( cellType_[cellI] & INTERNALFACEGROUP )
+        if (cellType_[cellI] & INTERNALFACEGROUP)
         {
             # ifdef USE_OMP
             # pragma omp critical
             # endif
             badCells.insert(cellI);
         }
-        else if( cellType_[cellI] & (ALLBNDVERTEXCELL+INTERNALFACEGROUP) )
+        else if (cellType_[cellI] & (ALLBNDVERTEXCELL + INTERNALFACEGROUP))
         {
-            //- mark cells which have only one internal neighbour
+            // mark cells which have only one internal neighbour
             const cell& c = cells[cellI];
 
             bool hasInternalNeighbour(false);
@@ -250,28 +249,28 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
             {
                 const label faceI = c[fI];
 
-                if( faceI < nInternalFaces )
+                if (faceI < nInternalFaces)
                 {
                     ++nNeiCells;
 
                     label nei = neighbour[c[fI]];
-                    if( nei == cellI )
+                    if (nei == cellI)
                         nei = owner[c[fI]];
 
-                    if( cellType_[nei] & INTERNALCELL )
+                    if (cellType_[nei] & INTERNALCELL)
                     {
                         hasInternalNeighbour = true;
                         break;
                     }
                 }
-                else if( mesh_.faceIsInProcPatch(faceI) != -1 )
+                else if (mesh_.faceIsInProcPatch(faceI) != -1)
                 {
                     ++nNeiCells;
 
                     const label patchI = mesh_.faceIsInProcPatch(faceI);
                     const label j = faceI - procBoundaries[patchI].patchStart();
 
-                    if( otherProcType[patchI][j] & INTERNALCELL )
+                    if (otherProcType[patchI][j] & INTERNALCELL)
                     {
                         hasInternalNeighbour = true;
                         break;
@@ -279,7 +278,7 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
                 }
             }
 
-            if( hasInternalNeighbour || (nNeiCells == 1) )
+            if (hasInternalNeighbour || (nNeiCells == 1))
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -289,6 +288,7 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
         }
     }
 }
+
 
 bool checkNonMappableCellConnections::removeCells()
 {
@@ -304,9 +304,9 @@ bool checkNonMappableCellConnections::removeCells()
         nRemoved = badCells.size();
         reduce(nRemoved, sumOp<label>());
 
-        Info << "Found " << nRemoved << " non-mappable cells" << endl;
+        Info<< "Found " << nRemoved << " non - mappable cells" << endl;
 
-        if( nRemoved != 0 )
+        if (nRemoved != 0)
         {
             boolList removeCell(mesh_.cells().size(), false);
             forAllConstIter(labelHashSet, badCells, it)
@@ -316,10 +316,11 @@ bool checkNonMappableCellConnections::removeCells()
 
             changed = true;
         }
-    } while( nRemoved );
+    } while (nRemoved);
 
     return changed;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

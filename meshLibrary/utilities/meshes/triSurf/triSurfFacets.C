@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,6 +41,7 @@ triSurfFacets::triSurfFacets()
     facetSubsets_()
 {}
 
+
 triSurfFacets::triSurfFacets(const LongList<labelledTri>& triangles)
 :
     triangles_(triangles),
@@ -50,10 +49,13 @@ triSurfFacets::triSurfFacets(const LongList<labelledTri>& triangles)
     facetSubsets_()
 {
     forAll(triangles_, triI)
+    {
         triangles_[triI].region() = 0;
+    }
 
     patches_[0].name() = "patch";
 }
+
 
 triSurfFacets::triSurfFacets
 (
@@ -66,10 +68,12 @@ triSurfFacets::triSurfFacets
     facetSubsets_()
 {}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Destructor
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
 triSurfFacets::~triSurfFacets()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -85,6 +89,7 @@ wordList triSurfFacets::patchNames() const
     return t;
 }
 
+
 labelList triSurfFacets::findPatches(const word& patchName) const
 {
     const wordList allPatches = patchNames();
@@ -92,9 +97,9 @@ labelList triSurfFacets::findPatches(const word& patchName) const
     const labelList patchIDs = findStrings(patchName, allPatches);
 
     # ifdef DEBUGtriSurf
-    if(patchIDs.empty())
+    if (patchIDs.empty())
     {
-        WarningIn("triSurfFacets::findPatches(const word&)")
+        WarningInFunction
             << "Cannot find any patch names matching " << patchName << endl;
     }
     # endif
@@ -102,10 +107,11 @@ labelList triSurfFacets::findPatches(const word& patchName) const
     return patchIDs;
 }
 
+
 label triSurfFacets::addFacetSubset(const word& subsetName)
 {
     label id = facetSubsetIndex(subsetName);
-    if( id >= 0 )
+    if (id >= 0)
     {
         Warning << "Point subset " << subsetName << " already exists!" << endl;
         return id;
@@ -113,7 +119,9 @@ label triSurfFacets::addFacetSubset(const word& subsetName)
 
     id = 0;
     forAllConstIter(Map<meshSubset>, facetSubsets_, it)
+    {
         id = Foam::max(id, it.key()+1);
+    }
 
     facetSubsets_.insert
     (
@@ -124,18 +132,22 @@ label triSurfFacets::addFacetSubset(const word& subsetName)
     return id;
 }
 
+
 void triSurfFacets::removeFacetSubset(const label subsetID)
 {
-    if( facetSubsets_.find(subsetID) == facetSubsets_.end() )
+    if (facetSubsets_.find(subsetID) == facetSubsets_.end())
+    {
         return;
+    }
 
     facetSubsets_.erase(subsetID);
 }
 
+
 word triSurfFacets::facetSubsetName(const label subsetID) const
 {
     Map<meshSubset>::const_iterator it = facetSubsets_.find(subsetID);
-    if( it == facetSubsets_.end() )
+    if (it == facetSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not a facet subset" << endl;
         return word();
@@ -144,16 +156,20 @@ word triSurfFacets::facetSubsetName(const label subsetID) const
     return it().name();
 }
 
+
 label triSurfFacets::facetSubsetIndex(const word& subsetName) const
 {
     forAllConstIter(Map<meshSubset>, facetSubsets_, it)
     {
-        if( it().name() == subsetName )
+        if (it().name() == subsetName)
+        {
             return it.key();
+        }
     }
 
     return -1;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

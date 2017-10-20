@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -36,8 +34,7 @@ Description
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Private member functions
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 scalar quadricMetric::evaluateMetric() const
 {
@@ -49,6 +46,7 @@ scalar quadricMetric::evaluateMetric() const
     return val;
 }
 
+
 void quadricMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
 {
     grad = vector::zero;
@@ -58,10 +56,11 @@ void quadricMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
     {
         const scalar fx = (normals_[nI] & (p_ - centres_[nI]));
 
-        grad += fx * normals_[nI];
-        gradGrad += normals_[nI] * normals_[nI];
+        grad += fx*normals_[nI];
+        gradGrad += normals_[nI]*normals_[nI];
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -85,7 +84,7 @@ quadricMetric::quadricMetric(partTetMeshSimplex& simplex)
         const vector n = tri.normal();
         const scalar d = mag(n);
 
-        if( d > VSMALL )
+        if (d > VSMALL)
         {
             centres_.append(tri.centre());
             normals_.append(n/d);
@@ -95,18 +94,18 @@ quadricMetric::quadricMetric(partTetMeshSimplex& simplex)
 
 
 quadricMetric::~quadricMetric()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Implementation of knupp metric untangling
 void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
 {
-    if( !bb_.contains(p_) )
-        p_ = 0.5 * (bb_.min() + bb_.max());
+    // Implementation of knupp metric untangling
+    if (!bb_.contains(p_))
+        p_ = 0.5*(bb_.min() + bb_.max());
 
-    const scalar tol = Foam::sqr(2.0 * SMALL) * magSqr(bb_.min() - bb_.max());
+    const scalar tol = Foam::sqr(2.0*SMALL)*magSqr(bb_.min() - bb_.max());
 
     label iterI, outerIter(0);
 
@@ -119,11 +118,11 @@ void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
     forAll(normals_, nI)
     {
         const scalar fx = normals_[nI] & (p_ - centres_[nI]);
-        Info << "Tet " << nI << " has distance " << fx << " func "
+        Info<< "Tet " << nI << " has distance " << fx << " func "
             << Foam::sqr(mag(fx) - fx) << endl;
     }
-    Info << "BoundBox size " << (bb_.max() - bb_.min()) << endl;
-    Info << "Tolerance " << tol << endl;
+    Info<< "BoundBox size " << (bb_.max() - bb_.min()) << endl;
+    Info<< "Tolerance " << tol << endl;
     # endif
 
     bool finished;
@@ -137,26 +136,26 @@ void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
         do
         {
             # ifdef DEBUGSmooth
-            Info << "Iteration " << iterI << endl;
-            Info << "Initial metric value " << lastFunc << endl;
+            Info<< "Iteration " << iterI << endl;
+            Info<< "Initial metric value " << lastFunc << endl;
             # endif
 
-            //- store previous value
+            // store previous value
             const point pOrig = p_;
 
-            //- evaluate gradients
+            // evaluate gradients
             evaluateGradients(gradF, gradGradF);
 
-            //- calculate displacement
+            // calculate displacement
             const scalar determinant = det(gradGradF);
-            if( determinant > SMALL )
+            if (determinant > SMALL)
             {
                 disp = (inv(gradGradF, determinant) & gradF);
 
-                for(direction i=0;i<vector::nComponents;++i)
+                for (direction i = 0; i < vector::nComponents; ++i)
                 {
-                    const scalar& val = disp[i];
-                    if( (val != val) || ((val - val) != (val - val)) )
+                    const scalar val = disp[i];
+                    if ((val != val) || ((val - val) != (val - val)))
                     {
                         disp = vector::zero;
                         break;
@@ -168,28 +167,28 @@ void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
                 func = evaluateMetric();
 
                 # ifdef DEBUGSmooth
-                Info << "Second grad " << gradGradF << endl;
-                Info << "inv(gradGradF, determinant) "
+                Info<< "Second grad " << gradGradF << endl;
+                Info<< "inv(gradGradF, determinant) "
                     << inv(gradGradF, determinant) << endl;
-                Info << "Gradient " << gradF << endl;
-                Info << "Determinant " << determinant << endl;
-                Info << "Displacement " << disp << endl;
-                Info << "New metric value " << func << endl;
+                Info<< "Gradient " << gradF << endl;
+                Info<< "Determinant " << determinant << endl;
+                Info<< "Displacement " << disp << endl;
+                Info<< "New metric value " << func << endl;
                 # endif
 
                 scalar relax(0.8);
                 label nLoops(0);
-                while( func > lastFunc )
+                while (func > lastFunc)
                 {
-                    p_ = pOrig - relax * disp;
+                    p_ = pOrig - relax*disp;
                     relax *= 0.5;
                     func = evaluateMetric();
 
-                    if( func < lastFunc )
+                    if (func < lastFunc)
                         continue;
 
-                    //- it seems that this direction is wrong
-                    if( ++nLoops == 5 )
+                    // it seems that this direction is wrong
+                    if (++nLoops == 5)
                     {
                         p_ = pOrig;
                         disp = vector::zero;
@@ -203,25 +202,26 @@ void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
             {
                 disp = vector::zero;
             }
-        } while( (magSqr(disp) > tol) && (++iterI < 10) );
+        } while ((magSqr(disp) > tol) && (++iterI < 10));
 
-        if( lastFunc < VSMALL )
+        if (lastFunc < VSMALL)
             finished = false;
-    } while( !finished && (++outerIter < 5) );
+    } while (!finished && (++outerIter < 5));
 
     # ifdef DEBUGSmooth
-    Info << "Last value " << lastFunc << endl;
-    Info << "Beta " << beta_ << endl;
-    Info << "Metric with no beta " << evaluateMetricNoBeta() << endl;
+    Info<< "Last value " << lastFunc << endl;
+    Info<< "Beta " << beta_ << endl;
+    Info<< "Metric with no beta " << evaluateMetricNoBeta() << endl;
     forAll(normals_, nI)
     {
         const scalar fx = normals_[nI] & (p_ - centres_[nI]);
-        Info << "Tet " << nI << " has distance " << fx << " func "
+        Info<< "Tet " << nI << " has distance " << fx << " func "
             << Foam::sqr(mag(fx) - fx) << endl;
     }
     //::exit(1);
     # endif
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

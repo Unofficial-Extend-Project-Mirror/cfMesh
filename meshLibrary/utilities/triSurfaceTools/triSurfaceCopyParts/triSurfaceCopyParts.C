@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,7 +44,7 @@ void triSurfaceCopyParts::markFacetsForCopying
 
     const geometricSurfacePatchList& patches = surf_.patches();
 
-    //- mark patches which will be copied
+    // mark patches which will be copied
     boolList copyPatch(patches.size(), false);
 
     forAll(patches, patchI)
@@ -55,7 +53,7 @@ void triSurfaceCopyParts::markFacetsForCopying
 
         forAll(parts, partI)
         {
-            if( parts[partI] == name )
+            if (parts[partI] == name)
             {
                 copyPatch[patchI] = true;
                 break;
@@ -63,14 +61,14 @@ void triSurfaceCopyParts::markFacetsForCopying
         }
     }
 
-    //- select facets affected by the deletion of a patch
+    // select facets affected by the deletion of a patch
     forAll(surf_, triI)
     {
-        if( copyPatch[surf_[triI].region()] )
+        if (copyPatch[surf_[triI].region()])
             copyFacets[triI] = true;
     }
 
-    //- mark facets contained in selected subsets
+    // mark facets contained in selected subsets
     DynList<label> facetSubsetsIDs;
     surf_.facetSubsetIndices(facetSubsetsIDs);
 
@@ -80,7 +78,7 @@ void triSurfaceCopyParts::markFacetsForCopying
 
         forAll(parts, partI)
         {
-            if( parts[partI] == fsName )
+            if (parts[partI] == fsName)
             {
                 labelLongList containedFacets;
                 surf_.facetsInSubset(facetSubsetsIDs[i], containedFacets);
@@ -94,13 +92,14 @@ void triSurfaceCopyParts::markFacetsForCopying
     }
 }
 
+
 void triSurfaceCopyParts::copySurfaceMesh
 (
     const boolList& copyFacets,
     triSurf& s
 ) const
 {
-    Info << "Starting copying surface parts" << endl;
+    Info<< "Starting copying surface parts" << endl;
 
     const pointField& pts = surf_.points();
 
@@ -108,7 +107,7 @@ void triSurfaceCopyParts::copySurfaceMesh
 
     label nPoints(0);
 
-    //- create the modifier and delete data if there is any
+    // create the modifier and delete data if there is any
     triSurfModifier sm(s);
     sm.facetsAccess().clear();
     sm.featureEdgesAccess().clear();
@@ -116,11 +115,11 @@ void triSurfaceCopyParts::copySurfaceMesh
     forAll(surf_.patches(), patchI)
         sm.patchesAccess()[patchI] = surf_.patches()[patchI];
 
-    //- copy selected patches
+    // copy selected patches
     labelLongList newTriangleLabel(surf_.size(), -1);
     forAll(copyFacets, triI)
     {
-        if( !copyFacets[triI] )
+        if (!copyFacets[triI])
             continue;
 
         const labelledTri& tri = surf_[triI];
@@ -130,7 +129,7 @@ void triSurfaceCopyParts::copySurfaceMesh
 
         forAll(tri, pI)
         {
-            if( newPointLabel[tri[pI]] == -1 )
+            if (newPointLabel[tri[pI]] == -1)
             {
                 newPointLabel[tri[pI]] = nPoints;
                 ++nPoints;
@@ -143,22 +142,22 @@ void triSurfaceCopyParts::copySurfaceMesh
         s.appendTriangle(newTri);
     }
 
-    Info << "Copied triangles " << s.size() << endl;
-    Info << "Number of vertices " << nPoints << endl;
+    Info<< "Copied triangles " << s.size() << endl;
+    Info<< "Number of vertices " << nPoints << endl;
 
-    //- copy vertices
+    // copy vertices
     pointField& newPts = sm.pointsAccess();
     newPts.setSize(nPoints);
 
     forAll(newPointLabel, i)
     {
-        if( newPointLabel[i] < 0 )
+        if (newPointLabel[i] < 0)
             continue;
 
         newPts[newPointLabel[i]] = pts[i];
     }
 
-    //- copy point subsets
+    // copy point subsets
     DynList<label> subsetIds;
     surf_.pointSubsetIndices(subsetIds);
     forAll(subsetIds, subsetI)
@@ -174,14 +173,14 @@ void triSurfaceCopyParts::copySurfaceMesh
         {
             const label newPointI = newPointLabel[pointsInSubset[i]];
 
-            if( newPointI < 0 )
+            if (newPointI < 0)
                 continue;
 
             s.addPointToSubset(newId, newPointI);
         }
     }
 
-    //- copy facet subsets
+    // copy facet subsets
     surf_.facetSubsetIndices(subsetIds);
     forAll(subsetIds, subsetI)
     {
@@ -196,14 +195,14 @@ void triSurfaceCopyParts::copySurfaceMesh
         {
             const label newTriI = newTriangleLabel[trianglesInSubset[i]];
 
-            if( newTriI < 0 )
+            if (newTriI < 0)
                 continue;
 
             s.addFacetToSubset(newId, newTriI);
         }
     }
 
-    //- copy feature edges
+    // copy feature edges
     labelLongList newEdgeLabel(surf_.nFeatureEdges(), -1);
     const VRWGraph& pointEdges = surf_.pointEdges();
     const edgeLongList& edges = surf_.edges();
@@ -215,27 +214,27 @@ void triSurfaceCopyParts::copySurfaceMesh
         forAllRow(pointEdges, e.start(), peI)
         {
             const label eJ = pointEdges(e.start(), peI);
-            if( edges[eJ] == e )
+            if (edges[eJ] == e)
             {
                 eI = eJ;
                 break;
             }
         }
 
-        if( newPointLabel[e.start()] < 0 )
+        if (newPointLabel[e.start()] < 0)
             continue;
-        if( newPointLabel[e.end()] < 0 )
+        if (newPointLabel[e.end()] < 0)
             continue;
         bool foundTriangle(false);
         forAllRow(edgeFacets, eI, efI)
         {
-            if( newTriangleLabel[edgeFacets(eI, efI)] >= 0 )
+            if (newTriangleLabel[edgeFacets(eI, efI)] >= 0)
             {
                 foundTriangle = true;
                 break;
             }
         }
-        if( !foundTriangle )
+        if (!foundTriangle)
             continue;
 
         newEdgeLabel[edgeI] = sm.featureEdgesAccess().size();
@@ -245,7 +244,7 @@ void triSurfaceCopyParts::copySurfaceMesh
         );
     }
 
-    //- copy subsets of feature edges
+    // copy subsets of feature edges
     surf_.edgeSubsetIndices(subsetIds);
     forAll(subsetIds, subsetI)
     {
@@ -260,15 +259,16 @@ void triSurfaceCopyParts::copySurfaceMesh
         {
             const label newEdgeI = newEdgeLabel[edgesInSubset[i]];
 
-            if( newEdgeI < 0 )
+            if (newEdgeI < 0)
                 continue;
 
             s.addEdgeToSubset(newId, newEdgeI);
         }
     }
 
-    Info << "Finished copying surface parts" << endl;
+    Info<< "Finished copying surface parts" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -277,8 +277,10 @@ triSurfaceCopyParts::triSurfaceCopyParts(const triSurf& surface)
     surf_(surface)
 {}
 
+
 triSurfaceCopyParts::~triSurfaceCopyParts()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -290,6 +292,7 @@ void triSurfaceCopyParts::copySurface(const wordList& patches, triSurf& s) const
 
     copySurfaceMesh(copyFacets, s);
 }
+
 
 triSurf* triSurfaceCopyParts::copySurface(const wordList& patches) const
 {
@@ -303,6 +306,7 @@ triSurf* triSurfaceCopyParts::copySurface(const wordList& patches) const
 
     return sPtr;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurface2DCheck
+    Foam::triSurface2DCheck
 
 Description
 
@@ -44,19 +44,22 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class triSurface2DCheck Declaration
+                      Class triSurface2DCheck Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurface2DCheck
 {
     // Private data
+
         //- reference to triSurf
         const triSurf& surf_;
 
         //- covariance matrix
         symmTensor covarianceMatrix_;
 
+
     // Private member functions
+
         //- create covariance matrix
         void createCovarianceMatrix();
 
@@ -66,16 +69,14 @@ class triSurface2DCheck
         //- Disallow default bitwise assignment
         void operator=(const triSurface2DCheck&);
 
+
 public:
 
-    // Constructors
+    //- Construct from octree
+    triSurface2DCheck(const triSurf& surface);
 
-        //- Construct from octree
-        triSurface2DCheck(const triSurf& surface);
-
-    // Destructor
-
-        ~triSurface2DCheck();
+    //- Destructor
+    ~triSurface2DCheck();
 
 
     // Member Functions
@@ -86,6 +87,7 @@ public:
         //- create subset containing invalid facets
         void createSubsets();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

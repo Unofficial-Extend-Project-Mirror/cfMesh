@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    checkIrregularSurfaceConnections
+    Foam::checkIrregularSurfaceConnections
 
 Description
     Check mesh surface for for connections which cannot exist in a valid mesh.
@@ -46,34 +46,37 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                Class checkIrregularSurfaceConnections Declaration
+              Class checkIrregularSurfaceConnections Declaration
 \*---------------------------------------------------------------------------*/
 
 class checkIrregularSurfaceConnections
 {
     // Private data
+
         //- Reference to polyMeshGen
         polyMeshGen& mesh_;
-    
+
         //- pointer to meshSurfaceEngine
         mutable meshSurfaceEngine* meshSurfacePtr_;
 
+
     // Private member functions
+
         //- create meshSurfaceEngine
         inline const meshSurfaceEngine& surfaceEngine() const
         {
-            if( !meshSurfacePtr_ )
+            if (!meshSurfacePtr_)
                 meshSurfacePtr_ = new meshSurfaceEngine(mesh_);
-            
+
             return *meshSurfacePtr_;
         }
-        
+
         //- clear meshSurfaceEngine. Used in case if the mesh is modified
         inline void clearMeshEngine()
         {
             deleteDemandDrivenData(meshSurfacePtr_);
         }
-        
+
         //- check if there exist vertices with more than one groups of cells
         //- attached to it
         bool checkAndFixCellGroupsAtBndVertices
@@ -81,7 +84,7 @@ class checkIrregularSurfaceConnections
             labelHashSet& badVertices,
             const bool removeConnections = false
         );
-        
+
         //- check if all boundary edges are connected
         //- to two boundary faces, only!
         bool checkEdgeFaceConnections
@@ -89,7 +92,7 @@ class checkIrregularSurfaceConnections
             labelHashSet& badVertices,
             const bool removeCells = false
         );
-        
+
         //- check if all boundary face connected to a boundary vertex
         //- are connected into a single group of faces that can be visited
         //- over edges
@@ -108,24 +111,25 @@ class checkIrregularSurfaceConnections
         //- Disallow default bitwise assignment
         void operator=(const checkIrregularSurfaceConnections&);
 
+
 public:
 
-    // Constructors
+    //- Construct from polyMeshGen
+    checkIrregularSurfaceConnections(polyMeshGen& mesh);
 
-        //- Construct from polyMeshGen
-        checkIrregularSurfaceConnections(polyMeshGen& mesh);
+    //- Destructor
+    ~checkIrregularSurfaceConnections();
 
-    // Destructor
-
-        ~checkIrregularSurfaceConnections();
 
     // Member Functions
+
         //- find vertices where the surface is not valid
         void checkIrregularVertices(labelHashSet& badVertices);
 
         //- find invalid connections and fix them on the fly
         bool checkAndFixIrregularConnections();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

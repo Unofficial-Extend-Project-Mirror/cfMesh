@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -45,7 +43,7 @@ void triSurfaceMetaData::createMetaData()
 
     dictionary dict;
 
-    //- store nformation about surface patches
+    // store nformation about surface patches
     labelList nInPatch(surf_.patches().size(), 0);
     forAll(surf_, triI)
         ++nInPatch[surf_[triI].region()];
@@ -63,7 +61,7 @@ void triSurfaceMetaData::createMetaData()
 
     metaDict_.add("patches", dict);
 
-    //- store information about point subsets
+    // store information about point subsets
     DynList<label> subsetIds;
     surf_.pointSubsetIndices(subsetIds);
     dict.clear();
@@ -80,7 +78,7 @@ void triSurfaceMetaData::createMetaData()
 
     metaDict_.add("pointSubsets", dict);
 
-    //- store information about facet subsets
+    // store information about facet subsets
     subsetIds.clear();
     surf_.facetSubsetIndices(subsetIds);
     dict.clear();
@@ -97,7 +95,7 @@ void triSurfaceMetaData::createMetaData()
 
     metaDict_.add("facetSubsets", dict);
 
-    //- store information about feature edge subsets
+    // store information about feature edge subsets
     subsetIds.clear();
     surf_.edgeSubsetIndices(subsetIds);
     dict.clear();
@@ -115,6 +113,7 @@ void triSurfaceMetaData::createMetaData()
     metaDict_.add("featureEdgeSubsets", dict);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 triSurfaceMetaData::triSurfaceMetaData(const triSurf& surface)
@@ -124,6 +123,7 @@ triSurfaceMetaData::triSurfaceMetaData(const triSurf& surface)
 {
     createMetaData();
 }
+
 
 triSurfaceMetaData::~triSurfaceMetaData()
 {}

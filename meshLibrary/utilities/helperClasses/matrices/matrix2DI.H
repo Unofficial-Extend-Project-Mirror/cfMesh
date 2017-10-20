@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     matrix2D
@@ -34,19 +34,21 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 inline void matrix2D::calculateDeterminant()
 {
-    if( calculatedDet_ )
+    if (calculatedDet_)
+    {
         return;
+    }
 
     const FixedList<FixedList<scalar, 2>, 2>& mat = *this;
-    det_ = mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+    det_ = mat[0][0]*mat[1][1] - mat[0][1]*mat[1][0];
 
     calculatedDet_ = true;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -56,6 +58,7 @@ inline matrix2D::matrix2D()
     calculatedDet_(false)
 {}
 
+
 inline matrix2D::matrix2D(const matrix2D& m)
 :
     FixedList<FixedList<scalar, 2>, 2>(m),
@@ -63,8 +66,10 @@ inline matrix2D::matrix2D(const matrix2D& m)
     calculatedDet_(m.calculatedDet_)
 {}
 
+
 inline matrix2D::~matrix2D()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -75,6 +80,7 @@ inline scalar matrix2D::determinant()
     return det_;
 }
 
+
 inline matrix2D matrix2D::inverse()
 {
     calculateDeterminant();
@@ -83,12 +89,13 @@ inline matrix2D matrix2D::inverse()
 
     matrix2D imat;
     imat[0][0] = mat[1][1] / det_;
-    imat[0][1] = -1.0 * mat[0][1] / det_;
-    imat[1][0] = -1.0 * mat[1][0] / det_;
+    imat[0][1] = -1.0*mat[0][1] / det_;
+    imat[1][0] = -1.0*mat[1][0] / det_;
     imat[1][1] = mat[0][0] / det_;
 
     return matrix2D(imat);
 }
+
 
 inline FixedList<scalar, 2> matrix2D::solve
 (
@@ -102,6 +109,7 @@ inline FixedList<scalar, 2> matrix2D::solve
     return result;
 }
 
+
 inline scalar matrix2D::solveFirst(const FixedList<scalar, 2>& source)
 {
     calculateDeterminant();
@@ -110,10 +118,11 @@ inline scalar matrix2D::solveFirst(const FixedList<scalar, 2>& source)
 
     return
     (
-        mat[1][1] * source[0] -
-        mat[0][1] * source[1]
+        mat[1][1]*source[0] -
+        mat[0][1]*source[1]
     ) / det_;
 }
+
 
 inline scalar matrix2D::solveSecond(const FixedList<scalar, 2>& source)
 {
@@ -123,10 +132,11 @@ inline scalar matrix2D::solveSecond(const FixedList<scalar, 2>& source)
 
     return
     (
-        -1.0 * mat[1][0] * source[0] +
-        mat[0][0] * source[1]
+        -1.0*mat[1][0]*source[0] +
+        mat[0][0]*source[1]
     ) / det_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

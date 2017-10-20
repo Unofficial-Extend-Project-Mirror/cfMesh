@@ -8,10 +8,10 @@
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,8 +19,7 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Test for smoothers
@@ -53,17 +52,17 @@ int main(int argc, char *argv[])
 
     polyMeshGen pmg(runTime);
 
-    Info << "Starting reading mesh" << endl;
+    Info<< "Starting reading mesh" << endl;
     pmg.read();
 
-    Info << "Finished reading mesh" << endl;
+    Info<< "Finished reading mesh" << endl;
 
     forAll(pmg.points(), pointI)
     {
         const point& p = pmg.points()[pointI];
 
-        if( help::isnan(p) )
-            Info << "Vertex " << pointI << " is invalid " << p << endl;
+        if (help::isnan(p))
+            Info<< "Vertex " << pointI << " is invalid " << p << endl;
     }
 
     IOdictionary meshDict
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
     );
 
     fileName surfaceFile = meshDict.lookup("surfaceFile");
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
         surfaceFile = ".."/surfaceFile;
 
     const triSurf* surfacePtr = new triSurf(runTime.path()/surfaceFile);
@@ -91,7 +90,7 @@ int main(int argc, char *argv[])
     deleteDemandDrivenData(surfacePtr);
     deleteDemandDrivenData(surfaceWithPatches);
 
-    //- refine boundary layers
+    // refine boundary layers
     refineBoundaryLayers blRefine(pmg);
 
     refineBoundaryLayers::readSettings(meshDict, blRefine);
@@ -102,13 +101,13 @@ int main(int argc, char *argv[])
     {
         const point& p = pmg.points()[pointI];
 
-        if( help::isnan(p) )
-            Info << "Vertex " << pointI << " is invalid " << p << endl;
+        if (help::isnan(p))
+            Info<< "Vertex " << pointI << " is invalid " << p << endl;
     }
 
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
 

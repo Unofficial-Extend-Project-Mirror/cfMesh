@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    bondaryLayerOptimisation
+    Foam::bondaryLayerOptimisation
 
 Description
     A class intended for improving quality of boundary layer cells. It is intended
@@ -57,12 +57,13 @@ class meshSurfacePartitioner;
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
-                Class boundaryLayerOptimisation Declaration
+                  Class boundaryLayerOptimisation Declaration
 \*---------------------------------------------------------------------------*/
 
 class boundaryLayerOptimisation
 {
     // Private data
+
         //- reference to polyMeshGen
         polyMeshGen& mesh_;
 
@@ -118,7 +119,7 @@ class boundaryLayerOptimisation
 
         //- calculate normal vector for all patches at a point
         //- points can be filtered by a type of hair edges
-        typedef std::map<label, std::pair<point, scalar> > patchNormalType;
+        typedef std::map<label, std::pair<point, scalar>> patchNormalType;
         typedef std::map<label, patchNormalType> pointNormalsType;
         void calculateNormalVectors
         (

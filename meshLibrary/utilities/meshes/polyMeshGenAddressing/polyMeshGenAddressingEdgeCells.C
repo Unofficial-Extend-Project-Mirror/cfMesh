@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,9 +35,9 @@ namespace Foam
 
 void polyMeshGenAddressing::calcEdgeCells() const
 {
-    if( ecPtr_ )
+    if (ecPtr_)
     {
-        FatalErrorIn("polyMeshGenAddressing::calcEdgeCells() const")
+        FatalErrorInFunction
             << "edgeCells already calculated"
             << abort(FatalError);
     }
@@ -53,19 +53,20 @@ void polyMeshGenAddressing::calcEdgeCells() const
     }
 }
 
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 const VRWGraph& polyMeshGenAddressing::edgeCells() const
 {
-    if( !ecPtr_ )
+    if (!ecPtr_)
     {
         # ifdef USE_OMP
-        if( omp_in_parallel() )
-            FatalErrorIn
-            (
-                "const VRWGraph& polyMeshGenAddressing::edgeCells() const"
-            ) << "Calculating addressing inside a parallel region."
+        if (omp_in_parallel())
+        {
+            FatalErrorInFunction
+                << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
+        }
         # endif
 
         calcEdgeCells();
@@ -73,6 +74,7 @@ const VRWGraph& polyMeshGenAddressing::edgeCells() const
 
     return *ecPtr_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    coordinateModification
+    Foam::coordinateModification
 
 Description
     Base class for modifiers of point coordinates.
@@ -60,10 +60,11 @@ class coordinateModification
         //- Modification name
         word name_;
 
+
 public:
 
-    // Runtime type information
-        TypeName("coordinateModification");
+    //- Runtime type information
+    TypeName("coordinateModification");
 
 
     // Constructors
@@ -74,33 +75,29 @@ public:
         //- Construct from dictionary
         coordinateModification(const word& name, const dictionary&);
 
-    // Declare run-time constructor selection table
 
-        declareRunTimeSelectionTable
-        (
-            autoPtr,
-            coordinateModification,
-            dictionary,
-            (
-                const word& name,
-                const dictionary& dict
-            ),
-            (name, dict)
-        );
-
-
-    // Selectors
-
-        //- Select constructed from dictionary
-        static autoPtr<coordinateModification> New
+    //- Declare run-time constructor selection table
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        coordinateModification,
+        dictionary,
         (
             const word& name,
             const dictionary& dict
-        );
+        ),
+        (name, dict)
+    );
 
-    // Destructor
+    //- Select constructed from dictionary
+    static autoPtr<coordinateModification> New
+    (
+        const word& name,
+        const dictionary& dict
+    );
 
-        virtual ~coordinateModification();
+    //- Destructor
+    virtual ~coordinateModification();
 
 
     // Member Functions
@@ -125,35 +122,38 @@ public:
         virtual void boundingPlanes(PtrList<plane>&) const = 0;
 
 
-      // Access
+        // Access
 
-        //- Return name
-        const word& name() const
-        {
-            return name_;
-        }
+            //- Return name
+            const word& name() const
+            {
+                return name_;
+            }
 
-        //- set the name
-        void setName(const word& name)
-        {
-            name_ = name;
-        }
+            //- set the name
+            void setName(const word& name)
+            {
+                name_ = name;
+            }
 
-        //- Return as dictionary of entries
-        virtual dictionary dict(bool ignoreType = false) const = 0;
+            //- Return as dictionary of entries
+            virtual dictionary dict(bool ignoreType = false) const = 0;
 
-      // Write
 
-        //- Write
-        virtual void write(Ostream&) const = 0;
+        // Write
 
-        //- Write dictionary
-        virtual void writeDict(Ostream&, bool subDict = true) const = 0;
+            //- Write
+            virtual void write(Ostream&) const = 0;
+
+            //- Write dictionary
+            virtual void writeDict(Ostream&, bool subDict = true) const = 0;
+
 
     // Member Operators
 
         //- assign from dictionary
         virtual void operator=(const dictionary&) = 0;
+
 
     // IOstream Operators
 

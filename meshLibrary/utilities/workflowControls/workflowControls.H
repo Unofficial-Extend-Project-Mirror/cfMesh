@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    workflowControls
+    Foam::workflowControls
 
 Description
     A controller fo managing the mesh generation workflow. It allows the user
@@ -46,16 +46,16 @@ SourceFiles
 
 namespace Foam
 {
-
 class polyMeshGen;
 
 /*---------------------------------------------------------------------------*\
-                    Class workflowControls Declaration
+                      Class workflowControls Declaration
 \*---------------------------------------------------------------------------*/
 
 class workflowControls
 {
     // Private data
+
         //- reference to the mesh
         polyMeshGen& mesh_;
 
@@ -71,10 +71,14 @@ class workflowControls
         //- holds information whether the workflow has been restarted
         mutable bool isRestarted_;
 
+
     // static private data
+
         static const std::map<word, label> workflowSteps_;
 
+
     // Private member functions
+
         //- check if restart is requested
         bool restartRequested() const;
 
@@ -102,19 +106,20 @@ class workflowControls
         //- shall the workflow run after the current step
         bool runAfterCurrentStep() const;
 
+
     // Static private member functions
+
         //- populate workflowSteps with values
         static std::map<word, label> populateWorkflowSteps();
 
+
 public:
 
-    // Constructors
+    //- Construct from IOdictionary
+    workflowControls(polyMeshGen& mesh);
 
-        //- Construct from IOdictionary
-        workflowControls(polyMeshGen& mesh);
-
-    // Destructor
-        ~workflowControls();
+    //- Destructor
+    ~workflowControls();
 
     // Public member functions
 

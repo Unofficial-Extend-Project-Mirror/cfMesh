@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,8 +35,8 @@ namespace Foam
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 inline partTet::partTet()
-{
-}
+{}
+
 
 inline partTet::partTet
 (
@@ -54,9 +52,10 @@ inline partTet::partTet
     data_[3] = d;
 }
 
+
 inline partTet::~partTet()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -65,34 +64,44 @@ inline label partTet::a() const
     return data_[0];
 }
 
+
 inline label partTet::b() const
 {
     return data_[1];
 }
+
 
 inline label partTet::c() const
 {
     return data_[2];
 }
 
+
 inline label partTet::d() const
 {
     return data_[3];
 }
+
 
 inline label partTet::size() const
 {
     return 4;
 }
 
+
 inline label partTet::whichPosition(const label pointI) const
 {
-    for(label i=0;i<4;++i)
-        if( data_[i] == pointI )
+    for (label i = 0; i < 4; ++i)
+    {
+        if (data_[i] == pointI)
+        {
             return i;
+        }
+    }
 
     return -1;
 }
+
 
 template<class PointField>
 inline vector partTet::Sa(const PointField& points) const
@@ -108,6 +117,7 @@ inline vector partTet::Sa(const PointField& points) const
     //return triangle<point, point>(b_, c_, d_).normal();
 }
 
+
 template<class PointField>
 inline vector partTet::Sb(const PointField& points) const
 {
@@ -121,6 +131,7 @@ inline vector partTet::Sb(const PointField& points) const
     return tria.normal();
     //return triangle<point, point>(a_, d_, c_).normal();
 }
+
 
 template<class PointField>
 inline vector partTet::Sc(const PointField& points) const
@@ -136,6 +147,7 @@ inline vector partTet::Sc(const PointField& points) const
     //return triangle<point, point>(a_, b_, d_).normal();
 }
 
+
 template<class PointField>
 inline vector partTet::Sd(const PointField& points) const
 {
@@ -149,6 +161,7 @@ inline vector partTet::Sd(const PointField& points) const
     return tria.normal();
     //return triangle<point, point>(a_, c_, b_).normal();
 }
+
 
 template<class PointField>
 inline scalar partTet::mag(const PointField& points) const
@@ -165,6 +178,7 @@ inline scalar partTet::mag(const PointField& points) const
     //return (1.0/6.0)*(((b_ - a_) ^ (c_ - a_)) & (d_ - a_));
 }
 
+
 template<class PointField>
 inline point partTet::crcmCentre(const PointField& points) const
 {
@@ -178,6 +192,7 @@ inline point partTet::crcmCentre(const PointField& points) const
 
     return tet.circumCentre();
 }
+
 
 template<class PointField>
 inline scalar partTet::crcmRadius(const PointField& points) const
@@ -193,16 +208,20 @@ inline scalar partTet::crcmRadius(const PointField& points) const
     return tet.circumRadius();
 }
 
+
 template<class PointField>
 inline point partTet::centroid(const PointField& points) const
 {
     point p = points[data_[0]];
-    for(label i=1;i<4;++i)
+    for (label i = 1; i < 4; ++i)
+    {
         p += points[data_[i]];
+    }
 
     p /= 4;
     return p;
 }
+
 
 inline FixedList<edge, 6> partTet::edges() const
 {
@@ -217,9 +236,10 @@ inline FixedList<edge, 6> partTet::edges() const
     return edges;
 }
 
+
 inline edge partTet::getEdge(const label eI) const
 {
-    switch( eI )
+    switch(eI)
     {
         case 0:
         {
@@ -247,41 +267,56 @@ inline edge partTet::getEdge(const label eI) const
         } break;
     }
 
-    FatalErrorIn("inline edge partTet::getEdge(const label) const")
+    FatalErrorInFunction
         << "Invalid edge index given " << eI << abort(FatalError);
 
     return edge();
 }
+
 
 inline label partTet::operator[](const label i) const
 {
     return data_[i];
 }
 
+
 inline void partTet::operator=(const partTet& tet)
 {
-    for(label i=0;i<4;++i)
+    for (label i = 0; i < 4; ++i)
+    {
         data_[i] = tet.data_[i];
+    }
 }
+
 
 inline bool partTet::operator==(const partTet& tet) const
 {
-    if( this->a() != tet.a() )
+    if (this->a() != tet.a())
+    {
         return false;
-    if( this->b() != tet.b() )
+    }
+    if (this->b() != tet.b())
+    {
         return false;
-    if( this->c() != tet.c() )
+    }
+    if (this->c() != tet.c())
+    {
         return false;
-    if( this->d() != tet.d() )
+    }
+    if (this->d() != tet.d())
+    {
         return false;
+    }
 
     return true;
 }
+
 
 inline bool partTet::operator!=(const partTet& tet) const
 {
     return !this->operator==(tet);
 }
+
 
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
@@ -295,6 +330,7 @@ inline Ostream& operator<<(Ostream& os, const partTet& t)
 
     return os;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

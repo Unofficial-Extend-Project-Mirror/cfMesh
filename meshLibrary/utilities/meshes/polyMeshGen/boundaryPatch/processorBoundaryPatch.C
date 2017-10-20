@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -34,12 +32,17 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 defineTypeNameAndDebug(processorBoundaryPatch, 0);
-addToRunTimeSelectionTable(boundaryPatchBase, processorBoundaryPatch, dictionary);
-    
+addToRunTimeSelectionTable
+(
+    boundaryPatchBase,
+    processorBoundaryPatch,
+    dictionary
+);
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 processorBoundaryPatch::processorBoundaryPatch
@@ -56,7 +59,8 @@ processorBoundaryPatch::processorBoundaryPatch
     myProcNo_(myProcNo),
     neighbProcNo_(neighbProcNo)
 {}
-    
+
+
 processorBoundaryPatch::processorBoundaryPatch
 (
     const word& name,
@@ -66,11 +70,11 @@ processorBoundaryPatch::processorBoundaryPatch
     boundaryPatchBase(name, dict),
     myProcNo_(readLabel(dict.lookup("myProcNo"))),
     neighbProcNo_(readLabel(dict.lookup("neighbProcNo")))
-{
-}   
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 dictionary processorBoundaryPatch::dict() const
 {
     dictionary dict;
@@ -85,15 +89,16 @@ dictionary processorBoundaryPatch::dict() const
     return dict;
 }
 
+
 void processorBoundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
+
 void processorBoundaryPatch::writeDict(Ostream& /*os*/) const
-{
-    
-}
+{}
+
 
 Ostream& processorBoundaryPatch::operator<<(Ostream& os) const
 {
@@ -109,6 +114,7 @@ Ostream& processorBoundaryPatch::operator<<(Ostream& os) const
     return os;
 }
 
+
 Istream& processorBoundaryPatch::operator>>(Istream& is)
 {
     token t;
@@ -123,6 +129,7 @@ Istream& processorBoundaryPatch::operator>>(Istream& is)
     return is;
 }
 
+
 void processorBoundaryPatch::operator=(const processorBoundaryPatch& wp)
 {
     name_ = wp.name_;
@@ -133,21 +140,23 @@ void processorBoundaryPatch::operator=(const processorBoundaryPatch& wp)
     neighbProcNo_ = wp.neighbProcNo_;
 }
 
+
 bool processorBoundaryPatch::operator!=(const processorBoundaryPatch& wp) const
 {
-    if( name_ != wp.name_ )
+    if (name_ != wp.name_)
     {
         return true;
     }
-    else if( type_ != wp.name_ )
+    else if (type_ != wp.name_)
     {
         return true;
     }
-    else if( (nFaces_ != wp.nFaces_) || (startFace_ != wp.startFace_) )
+    else if ((nFaces_ != wp.nFaces_) || (startFace_ != wp.startFace_))
     {
         return true;
     }
-    else if(
+    else if
+    (
         (myProcNo_ != wp.myProcNo_) || (neighbProcNo_ != wp.neighbProcNo_)
     )
     {
@@ -156,6 +165,7 @@ bool processorBoundaryPatch::operator!=(const processorBoundaryPatch& wp) const
 
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

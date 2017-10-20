@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSurfacePartitioner
+    Foam::meshSurfacePartitioner
 
 Description
     Finds corners and edge points at the surface of the volume mesh
@@ -47,12 +47,13 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class meshSurfacePartitioner Declaration
+                   Class meshSurfacePartitioner Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshSurfacePartitioner
 {
     // Private data
+
         //- reference to mesh surface engine
         const meshSurfaceEngine& meshSurface_;
 
@@ -77,7 +78,9 @@ class meshSurfacePartitioner
         //- labels of feature edges
         labelHashSet featureEdges_;
 
+
     // Private member functions
+
         //- find corners, edge points and addressing
         void calculateCornersEdgesAndAddressing();
 
@@ -86,6 +89,7 @@ class meshSurfacePartitioner
 
         //- Disallow default bitwise assignment
         void operator=(const meshSurfacePartitioner&);
+
 
 public:
 
@@ -101,11 +105,13 @@ public:
             const labelList& facePatch
         );
 
-    // Destructor
 
-        ~meshSurfacePartitioner();
+    //- Destructor
+    ~meshSurfacePartitioner();
+
 
     // Member Functions
+
         //- return const reference to meshSurfaceEngine
         inline const meshSurfaceEngine& surfaceEngine() const
         {

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSurfaceOptimizer
+    Foam::meshSurfaceOptimizer
 
 Description
     Surface smoothing without any topological changes
@@ -64,6 +64,7 @@ class plane;
 class meshSurfaceOptimizer
 {
     // Private data
+
         //- const reference to the mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
@@ -89,7 +90,9 @@ class meshSurfaceOptimizer
         //- name of the subset contaning tangled points
         word badPointsSubsetName_;
 
+
     // Private member functions
+
         //- classify surface vertices as PARTITION, EDGE, CORNER
         void classifySurfaceVertices();
 
@@ -203,13 +206,14 @@ class meshSurfaceOptimizer
             const labelLongList& selectedProcPoints
         );
 
+
     // Functions needed for parallel runs
 
         //- transfer data between processors
         void exchangeData
         (
             const labelLongList& nodesToSmooth,
-            std::map<label, DynList<parTriFace> >& m
+            std::map<label, DynList<parTriFace>>& m
         ) const;
 
         //- laplacian smoothing of points at processor boundaries
@@ -239,7 +243,9 @@ class meshSurfaceOptimizer
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceOptimizer&);
 
+
     // Enumerators
+
         enum vertexTypes
         {
             PARTITION = 1,
@@ -248,6 +254,7 @@ class meshSurfaceOptimizer
             PROCBND = 8,
             LOCKED = 16
         };
+
 
 public:
 
@@ -270,11 +277,12 @@ public:
         );
 
 
-    // Destructor
+    //- Destructor
+    ~meshSurfaceOptimizer();
 
-        ~meshSurfaceOptimizer();
 
     // Member Functions
+
         //- lock the boundary faces which shall not be modified
         template<class labelListType>
         inline void lockBoundaryFaces(const labelListType&);

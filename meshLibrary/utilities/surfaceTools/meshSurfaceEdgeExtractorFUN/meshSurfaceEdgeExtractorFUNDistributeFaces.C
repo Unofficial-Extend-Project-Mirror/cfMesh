@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -58,7 +56,7 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     const labelList& faceOwner = mse.faceOwners();
     const pointFieldPMG& points = mse.points();
 
-    //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
+    // set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
     const triSurf& surface = meshOctree_.surface();
     const label nPatches = surface.patches().size();
 
@@ -67,21 +65,21 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     labelLongList newBoundaryOwners(bFaces.size());
     labelLongList newBoundaryPatches(bFaces.size());
 
-    //- set patchNames
+    // set patchNames
     forAll(surface.patches(), patchI)
         patchNames[patchI] = surface.patches()[patchI].name();
 
-    //- append boundary faces
+    // append boundary faces
     forAll(bFaces, bfI)
     {
         newBoundaryFaces.appendList(bFaces[bfI]);
         newBoundaryOwners[bfI] = faceOwner[bfI];
     }
 
-    //- find the region for face by finding the patch nearest
-    //- to the face centre
+    // find the region for face by finding the patch nearest
+    // to the face centre
     # ifdef USE_OMP
-    # pragma omp parallel for if( bFaces.size() > 100 ) schedule(guided)
+    # pragma omp parallel for if (bFaces.size() > 100) schedule(guided)
     # endif
     forAll(bFaces, bfI)
     {
@@ -93,17 +91,14 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
 
         meshOctree_.findNearestSurfacePoint(p, distSq, nt, facePatch, c);
 
-        if( (facePatch > -1) && (facePatch < nPatches) )
+        if ((facePatch > -1) && (facePatch < nPatches))
         {
             newBoundaryPatches[bfI] = facePatch;
         }
         else
         {
-            FatalErrorIn
-            (
-                "void meshSurfaceEdgeExtractorNonTopo::"
-                "distributeBoundaryFaces()"
-            ) << "Cannot distribute a face " << bFaces[bfI] << " into any "
+            FatalErrorInFunction
+                << "Cannot distribute a face " << bFaces[bfI] << " into any "
                 << "surface patch!. Exiting.." << exit(FatalError);
         }
     }
@@ -117,15 +112,14 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
     );
 }
 
-void meshSurfaceEdgeExtractorFUN::reviseCorners()
-{
 
-}
+void meshSurfaceEdgeExtractorFUN::reviseCorners()
+{}
+
 
 void meshSurfaceEdgeExtractorFUN::reviseEdges()
-{
+{}
 
-}
 
 void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
 {
@@ -135,12 +129,14 @@ void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
     mapper.mapVerticesOntoSurfacePatches();
 }
 
+
 void meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
 {
     createFundamentalSheetsJFS edgeSheets(mesh_, createWrapperSheet_);
 
     clearOut();
 }
+
 
 void meshSurfaceEdgeExtractorFUN::smoothMeshSurface()
 {
@@ -149,6 +145,7 @@ void meshSurfaceEdgeExtractorFUN::smoothMeshSurface()
     meshSurfaceOptimizer mso(mse, meshOctree_);
     mso.optimizeSurface();
 }
+
 
 void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
 {
@@ -174,6 +171,7 @@ void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
         mesh_.addPointToSubset(id, edges[helper[i]].end());
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

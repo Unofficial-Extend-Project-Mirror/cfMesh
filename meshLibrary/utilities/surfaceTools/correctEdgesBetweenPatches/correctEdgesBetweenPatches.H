@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    correctEdgesBetweenPatches
+    Foam::correctEdgesBetweenPatches
 
 Description
     Changes mesh surface until every boundary face shares only one edge with
@@ -50,12 +50,13 @@ class meshOctree;
 class meshSurfaceEngine;
 
 /*---------------------------------------------------------------------------*\
-                Class correctEdgesBetweenPatches Declaration
+                 Class correctEdgesBetweenPatches Declaration
 \*---------------------------------------------------------------------------*/
 
 class correctEdgesBetweenPatches
 {
     // Private data
+
         //- mesh
         polyMeshGen& mesh_;
 
@@ -72,6 +73,7 @@ class correctEdgesBetweenPatches
         //- holds data which cells have to be decomposed
         boolList decomposeCell_;
         bool decompose_;
+
 
     // Private member functions
 
@@ -104,18 +106,14 @@ class correctEdgesBetweenPatches
         //- Disallow default bitwise assignment
         void operator=(const correctEdgesBetweenPatches&);
 
+
 public:
 
-    // Constructors
+    //- Construct from mesh data
+    correctEdgesBetweenPatches(polyMeshGen& mesh);
 
-        //- Construct from mesh data
-        correctEdgesBetweenPatches(polyMeshGen& mesh);
-
-    // Destructor
-
-        ~correctEdgesBetweenPatches();
-
-    // Member Functions
+    //- Destructor
+    ~correctEdgesBetweenPatches();
 };
 
 

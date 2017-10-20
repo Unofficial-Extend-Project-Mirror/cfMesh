@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ namespace Foam
 
 void edgeMeshGeometryModification::checkModification()
 {
-    if( meshDict_.found("anisotropicSources") )
+    if (meshDict_.found("anisotropicSources"))
     {
         modificationActive_ = true;
 
@@ -45,6 +45,7 @@ void edgeMeshGeometryModification::checkModification()
         coordinateModifierPtr_ = new coordinateModifier(anisotropicDict);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -56,16 +57,18 @@ edgeMeshGeometryModification::edgeMeshGeometryModification
 :
     edgeMesh_(em),
     meshDict_(meshDict),
-    coordinateModifierPtr_(NULL),
+    coordinateModifierPtr_(nullptr),
     modificationActive_(false)
 {
     checkModification();
 }
 
+
 edgeMeshGeometryModification::~edgeMeshGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,17 +77,15 @@ bool edgeMeshGeometryModification::activeModification() const
     return modificationActive_;
 }
 
+
 const edgeMesh* edgeMeshGeometryModification::modifyGeometry() const
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const edgeMesh* edgeMeshGeometryModification"
-            "::modifyGeometry() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
-        return NULL;
+        return nullptr;
     }
 
     const pointField& pts = edgeMesh_.points();
@@ -95,25 +96,25 @@ const edgeMesh* edgeMeshGeometryModification::modifyGeometry() const
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         newPts[pointI] = coordinateModifierPtr_->modifiedPoint(pts[pointI]);
+    }
 
     const edgeMesh* newEdgeMesh = new edgeMesh(newPts, edgeMesh_.edges());
 
     return newEdgeMesh;
 }
 
+
 const edgeMesh* edgeMeshGeometryModification::
 revertGeometryModification() const
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const edgeMesh* edgeMeshGeometryModification"
-            "::revertGeometryModification() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
-        return NULL;
+        return nullptr;
     }
 
     const pointField& pts = edgeMesh_.points();
@@ -133,6 +134,7 @@ revertGeometryModification() const
 
     return newEdgeMeshPtr;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

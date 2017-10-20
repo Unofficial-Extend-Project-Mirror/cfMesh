@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -66,6 +64,7 @@ void polyMeshGen2DEngine::findActiveFaces() const
     }
 }
 
+
 void polyMeshGen2DEngine::findActiveFaceLabels() const
 {
     const boolList& activeFace = this->activeFace();
@@ -73,16 +72,25 @@ void polyMeshGen2DEngine::findActiveFaceLabels() const
     label counter(0);
 
     forAll(activeFace, faceI)
-        if( activeFace[faceI] )
+    {
+        if (activeFace[faceI])
+        {
             ++counter;
+        }
+    }
 
     activeFaceLabelsPtr_ = new labelList(counter);
 
     counter = 0;
     forAll(activeFace, faceI)
-        if( activeFace[faceI] )
+    {
+        if (activeFace[faceI])
+        {
             activeFaceLabelsPtr_->operator[](counter++) = faceI;
+        }
+    }
 }
+
 
 void polyMeshGen2DEngine::findZMinPoints() const
 {
@@ -90,14 +98,14 @@ void polyMeshGen2DEngine::findZMinPoints() const
 
     zMinPointPtr_ = new boolList(points.size());
 
-    const scalar tZ = 0.05 * (bb_.max().z() - bb_.min().z());;
+    const scalar tZ = 0.05*(bb_.max().z() - bb_.min().z()); ;
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(points, pointI)
     {
-        if( Foam::mag(points[pointI].z() - bb_.min().z()) < tZ )
+        if (Foam::mag(points[pointI].z() - bb_.min().z()) < tZ)
         {
             zMinPointPtr_->operator[](pointI) = true;
         }
@@ -108,6 +116,7 @@ void polyMeshGen2DEngine::findZMinPoints() const
     }
 }
 
+
 void polyMeshGen2DEngine::findZMinPointLabels() const
 {
     const boolList& zMinPoints = this->zMinPoints();
@@ -115,27 +124,34 @@ void polyMeshGen2DEngine::findZMinPointLabels() const
     label counter(0);
 
     forAll(zMinPoints, pointI)
-        if( zMinPoints[pointI] )
-            ++counter;
-
-    if( 2 * counter != zMinPoints.size() )
     {
-        FatalErrorIn
-        (
-            "void polyMeshGen2DEngine::findZMinPointLabels()"
-        ) << "The number of points at smallest z coordinate is"
-          << " not half of the total number of points."
-          << " This is not a 2D mesh or is not aligned with the z axis"
-          << exit(FatalError);
+        if (zMinPoints[pointI])
+        {
+            ++counter;
+        }
+    }
+
+    if (2*counter != zMinPoints.size())
+    {
+        FatalErrorInFunction
+            << "The number of points at smallest z coordinate is"
+            << " not half of the total number of points."
+            << " This is not a 2D mesh or is not aligned with the z axis"
+            << exit(FatalError);
     }
 
     zMinPointLabelsPtr_ = new labelList(counter);
 
     counter = 0;
     forAll(zMinPoints, pointI)
-        if( zMinPoints[pointI] )
+    {
+        if (zMinPoints[pointI])
+        {
             zMinPointLabelsPtr_->operator[](counter++) = pointI;
+        }
+    }
 }
+
 
 void polyMeshGen2DEngine::findZMinOffsetPoints() const
 {
@@ -155,26 +171,25 @@ void polyMeshGen2DEngine::findZMinOffsetPoints() const
         label nInactive(0), offsetPoint(-1);
         forAllRow(pointPoints, pointI, ppI)
         {
-            if( !zMinPoints[pointPoints(pointI, ppI)] )
+            if (!zMinPoints[pointPoints(pointI, ppI)])
             {
                 ++nInactive;
                 offsetPoint = pointPoints(pointI, ppI);
             }
         }
 
-        if( nInactive == 1 )
+        if (nInactive == 1)
         {
             zMinToZMaxPtr_->operator[](pI) = offsetPoint;
         }
         else
         {
-            FatalErrorIn
-            (
-                "void polyMeshGen2DEngine::findZMinOffsetPoints()"
-            ) << "This cannot be a 2D mesh" << exit(FatalError);
+            FatalErrorInFunction
+                << "This cannot be a 2D mesh" << exit(FatalError);
         }
     }
 }
+
 
 void polyMeshGen2DEngine::findZMaxPoints() const
 {
@@ -182,14 +197,14 @@ void polyMeshGen2DEngine::findZMaxPoints() const
 
     zMaxPointPtr_ = new boolList(points.size());
 
-    const scalar tZ = 0.05 * (bb_.max().z() - bb_.min().z());
+    const scalar tZ = 0.05*(bb_.max().z() - bb_.min().z());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(points, pointI)
     {
-        if( Foam::mag(points[pointI].z() - bb_.max().z()) < tZ )
+        if (Foam::mag(points[pointI].z() - bb_.max().z()) < tZ)
         {
             zMaxPointPtr_->operator[](pointI) = true;
         }
@@ -200,6 +215,7 @@ void polyMeshGen2DEngine::findZMaxPoints() const
     }
 }
 
+
 void polyMeshGen2DEngine::findZMaxPointLabels() const
 {
     const boolList& zMaxPoints = this->zMaxPoints();
@@ -207,27 +223,34 @@ void polyMeshGen2DEngine::findZMaxPointLabels() const
     label counter(0);
 
     forAll(zMaxPoints, pointI)
-        if( zMaxPoints[pointI] )
-            ++counter;
-
-    if( 2 * counter != zMaxPoints.size() )
     {
-        FatalErrorIn
-        (
-            "void polyMeshGen2DEngine::findZMaxPointLabels()"
-        ) << "The number of points at largest z coordinate is"
-          << " not half of the total number of points."
-          << " This is not a 2D mesh or is not aligned with the z axis"
-          << exit(FatalError);
+        if (zMaxPoints[pointI])
+        {
+            ++counter;
+        }
+    }
+
+    if (2*counter != zMaxPoints.size())
+    {
+        FatalErrorInFunction
+            << "The number of points at largest z coordinate is"
+            << " not half of the total number of points."
+            << " This is not a 2D mesh or is not aligned with the z axis"
+            << exit(FatalError);
     }
 
     zMaxPointLabelsPtr_ = new labelList(counter);
 
     counter = 0;
     forAll(zMaxPoints, pointI)
-        if( zMaxPoints[pointI] )
+    {
+        if (zMaxPoints[pointI])
+        {
             zMaxPointLabelsPtr_->operator[](counter++) = pointI;
+        }
+    }
 }
+
 
 void polyMeshGen2DEngine::findZMaxOffsetPoints() const
 {
@@ -247,26 +270,25 @@ void polyMeshGen2DEngine::findZMaxOffsetPoints() const
         label nInactive(0), offsetPoint(-1);
         forAllRow(pointPoints, pointI, ppI)
         {
-            if( !zMaxPoints[pointPoints(pointI, ppI)] )
+            if (!zMaxPoints[pointPoints(pointI, ppI)])
             {
                 ++nInactive;
                 offsetPoint = pointPoints(pointI, ppI);
             }
         }
 
-        if( nInactive == 1 )
+        if (nInactive == 1)
         {
             zMaxToZMinPtr_->operator[](pI) = offsetPoint;
         }
         else
         {
-            FatalErrorIn
-            (
-                "void polyMeshGen2DEngine::findZMaxOffsetPoints()"
-            ) << "This cannot be a 2D mesh" << exit(FatalError);
+            FatalErrorInFunction
+                << "This cannot be a 2D mesh" << exit(FatalError);
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -274,14 +296,14 @@ polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
 :
     mesh_(mesh),
     bb_(),
-    activeFacePtr_(NULL),
-    activeFaceLabelsPtr_(NULL),
-    zMinPointPtr_(NULL),
-    zMinPointLabelsPtr_(NULL),
-    zMinToZMaxPtr_(NULL),
-    zMaxPointPtr_(NULL),
-    zMaxPointLabelsPtr_(NULL),
-    zMaxToZMinPtr_(NULL)
+    activeFacePtr_(nullptr),
+    activeFaceLabelsPtr_(nullptr),
+    zMinPointPtr_(nullptr),
+    zMinPointLabelsPtr_(nullptr),
+    zMinToZMaxPtr_(nullptr),
+    zMaxPointPtr_(nullptr),
+    zMaxPointLabelsPtr_(nullptr),
+    zMaxToZMinPtr_(nullptr)
 {
     const pointFieldPMG& points = mesh_.points();
 
@@ -313,17 +335,19 @@ polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         reduce(bb_.min(), minOp<point>());
         reduce(bb_.max(), maxOp<point>());
     }
 }
 
+
 polyMeshGen2DEngine::~polyMeshGen2DEngine()
 {
     clearOut();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -349,6 +373,7 @@ void polyMeshGen2DEngine::correctPoints()
     }
 }
 
+
 void polyMeshGen2DEngine::clearOut()
 {
     deleteDemandDrivenData(activeFacePtr_);
@@ -360,6 +385,7 @@ void polyMeshGen2DEngine::clearOut()
     deleteDemandDrivenData(zMaxPointLabelsPtr_);
     deleteDemandDrivenData(zMaxToZMinPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

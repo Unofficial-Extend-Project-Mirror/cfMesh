@@ -6,20 +6,9 @@ ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     endif
 
     ifeq (OpenFOAM-dev,$(findstring OpenFOAM-dev,$(WM_PROJECT_DIR)))
-        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume 
+        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume
     else
         CFMESH_LIBS = -lmeshTools -lfiniteVolume
-    endif
-endif
-
-ifeq ($(WM_PROJECT), foam)
-    VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
-    ifeq ($(VER), 1)
-        CFMESH_LIBS = -lmeshTools -lfiniteVolume -ledgeMesh
-        CFMESH_MACROS = -DExtendSpecific -std=c++11
-    else
-        CFMESH_LIBS = -lmeshTools -ltriSurface -lfiniteVolume -ledgeMesh
-        CFMESH_MACROS =
     endif
 endif
 

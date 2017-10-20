@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeCubeCoordinates
+    Foam::meshOctreeCubeCoordinates
 
 Description
     A cube stores information needed for mesh generation
@@ -50,12 +50,13 @@ class triSurf;
 class boundBox;
 
 /*---------------------------------------------------------------------------*\
-                Class meshOctreeCubeCoordinates Declaration
+                  Class meshOctreeCubeCoordinates Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshOctreeCubeCoordinates
 {
     // Private data
+
         //- coordinates in the octree structure
         label posX_;
         label posY_;
@@ -64,9 +65,11 @@ class meshOctreeCubeCoordinates
         //- cube level in the octree structure
         direction level_;
 
+
 public:
 
     // Static data
+
         //- edge nodes for an octree cube
         static const label edgeNodes_[12][2];
 
@@ -85,7 +88,9 @@ public:
         //- return the opposite face of each cube face
         static const label oppositeFace_[6];
 
+
     // Constructors
+
         //- Null constructor
         inline meshOctreeCubeCoordinates();
 
@@ -104,12 +109,14 @@ public:
             const meshOctreeCubeCoordinates&
         );
 
-    // Destructor
 
-        ~meshOctreeCubeCoordinates()
-        {}
+    //- Destructor
+    ~meshOctreeCubeCoordinates()
+    {}
+
 
     // Member functions
+
         //- return level
         inline direction level() const;
 
@@ -192,6 +199,7 @@ public:
         //- check if the cube intersects a line
         bool intersectsLine(const boundBox&, const point&, const point&) const;
 
+
     // Operators
 
         inline meshOctreeCubeCoordinates operator+
@@ -221,9 +229,13 @@ public:
         );
 };
 
+
 //- Specify data associated with meshOctreeCubeCoordinates type is contiguous
 template<>
-inline bool contiguous<meshOctreeCubeCoordinates>() {return true;}
+inline bool contiguous<meshOctreeCubeCoordinates>()
+{
+    return true;
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

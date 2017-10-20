@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -34,8 +32,7 @@ Description
 namespace Foam
 {
 
-// * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
-// Constructors
+// * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
 checkIrregularSurfaceConnections::checkIrregularSurfaceConnections
 (
@@ -43,10 +40,11 @@ checkIrregularSurfaceConnections::checkIrregularSurfaceConnections
 )
 :
     mesh_(mesh),
-    meshSurfacePtr_(NULL)
+    meshSurfacePtr_(nullptr)
 {}
 
-// * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
+
+// * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
 
 checkIrregularSurfaceConnections::~checkIrregularSurfaceConnections()
 {
@@ -54,6 +52,7 @@ checkIrregularSurfaceConnections::~checkIrregularSurfaceConnections()
 
     mesh_.clearAddressingData();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -69,9 +68,10 @@ void checkIrregularSurfaceConnections::checkIrregularVertices
     checkFaceGroupsAtBndVertices(badVertices, false);
 }
 
+
 bool checkIrregularSurfaceConnections::checkAndFixIrregularConnections()
 {
-    Info << "Checking for irregular surface connections" << endl;
+    Info<< "Checking for irregular surface connections" << endl;
 
     bool finished;
 
@@ -81,25 +81,26 @@ bool checkIrregularSurfaceConnections::checkAndFixIrregularConnections()
     {
         finished = true;
 
-        while( checkAndFixCellGroupsAtBndVertices(badVertices, true) )
+        while (checkAndFixCellGroupsAtBndVertices(badVertices, true))
             finished = false;
 
-        while( checkEdgeFaceConnections(badVertices, true) )
+        while (checkEdgeFaceConnections(badVertices, true))
             finished = false;
 
-        if( checkFaceGroupsAtBndVertices(badVertices, true) )
+        if (checkFaceGroupsAtBndVertices(badVertices, true))
             finished = false;
-    } while( !finished );
+    } while (!finished);
 
     polyMeshGenModifier(mesh_).removeUnusedVertices();
 
-    Info << "Finished checking for irregular surface connections" << endl;
+    Info<< "Finished checking for irregular surface connections" << endl;
 
-    if( returnReduce(badVertices.size(), sumOp<label>()) != 0 )
+    if (returnReduce(badVertices.size(), sumOp<label>()) != 0 )
         return true;
 
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

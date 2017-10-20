@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -33,9 +31,8 @@ Description
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Constructors
-//- Null constructor
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
 polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
 :
     runTime_(runTime),
@@ -51,10 +48,9 @@ polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
         0
     ),
     pointSubsets_()
-{
-}
+{}
 
-//- Construct from time and points
+
 polyMeshGenPoints::polyMeshGenPoints
 (
     const Time& runTime,
@@ -74,21 +70,21 @@ polyMeshGenPoints::polyMeshGenPoints
         points
     ),
     pointSubsets_()
-{
-}
+{}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Destructor
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
 polyMeshGenPoints::~polyMeshGenPoints()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 label polyMeshGenPoints::addPointSubset(const word& subsetName)
 {
     label id = pointSubsetIndex(subsetName);
-    if( id >= 0 )
+    if (id >= 0)
     {
         Warning << "Point subset " << subsetName << " already exists!" << endl;
         return id;
@@ -96,8 +92,10 @@ label polyMeshGenPoints::addPointSubset(const word& subsetName)
 
     id = 0;
     std::map<label, meshSubset>::const_iterator it;
-    for(it=pointSubsets_.begin();it!=pointSubsets_.end();++it)
-        id = Foam::max(id, it->first+1);
+    for (it = pointSubsets_.begin(); it!=pointSubsets_.end(); ++it)
+    {
+        id = Foam::max(id, it->first + 1);
+    }
 
     pointSubsets_.insert
     (
@@ -111,19 +109,23 @@ label polyMeshGenPoints::addPointSubset(const word& subsetName)
     return id;
 }
 
+
 void polyMeshGenPoints::removePointSubset(const label subsetID)
 {
-    if( pointSubsets_.find(subsetID) == pointSubsets_.end() )
+    if (pointSubsets_.find(subsetID) == pointSubsets_.end())
+    {
         return;
+    }
 
     pointSubsets_.erase(subsetID);
 }
+
 
 word polyMeshGenPoints::pointSubsetName(const label subsetID) const
 {
     std::map<label, meshSubset>::const_iterator it =
         pointSubsets_.find(subsetID);
-    if( it == pointSubsets_.end() )
+    if (it == pointSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not a point subset" << endl;
         return word();
@@ -132,17 +134,21 @@ word polyMeshGenPoints::pointSubsetName(const label subsetID) const
     return it->second.name();
 }
 
+
 label polyMeshGenPoints::pointSubsetIndex(const word& subsetName) const
 {
     std::map<label, meshSubset>::const_iterator it;
-    for(it=pointSubsets_.begin();it!=pointSubsets_.end();++it)
+    for (it = pointSubsets_.begin(); it!=pointSubsets_.end(); ++it)
     {
-        if( it->second.name() == subsetName )
+        if (it->second.name() == subsetName)
+        {
             return it->first;
+        }
     }
 
     return -1;
 }
+
 
 void polyMeshGenPoints::read()
 {
@@ -159,7 +165,7 @@ void polyMeshGenPoints::read()
     );
     points_ = pts;
 
-    //- read point subsets
+    // read point subsets
     IOobjectList allSets
     (
         runTime_,
@@ -181,6 +187,7 @@ void polyMeshGenPoints::read()
     }
 }
 
+
 void polyMeshGenPoints::write() const
 {
     points_.write();
@@ -188,8 +195,8 @@ void polyMeshGenPoints::write() const
     std::map<label, meshSubset>::const_iterator setIt;
     labelLongList containedElements;
 
-    //- write point selections
-    for(setIt=pointSubsets_.begin();setIt!=pointSubsets_.end();++setIt)
+    // write point selections
+    for (setIt = pointSubsets_.begin(); setIt!=pointSubsets_.end(); ++setIt)
     {
         pointSet set
         (
@@ -207,10 +214,13 @@ void polyMeshGenPoints::write() const
         setIt->second.containedElements(containedElements);
 
         forAll(containedElements, i)
+        {
             set.insert(containedElements[i]);
+        }
         set.write();
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

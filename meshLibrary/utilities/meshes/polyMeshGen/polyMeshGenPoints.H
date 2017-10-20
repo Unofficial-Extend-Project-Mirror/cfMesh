@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenPoints
+    Foam::polyMeshGenPoints
 
 Description
     Mesh with geometry information
@@ -37,11 +37,7 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-# ifdef ExtendSpecific
-#include "foamTime.H"
-# else
 #include "Time.H"
-# endif
 #include "meshSubset.H"
 #include "pointFieldPMG.H"
 #include "DynList.H"
@@ -58,6 +54,7 @@ class polyMeshGenPoints
 protected:
 
     // Protected data
+
         //- reference to the Time registry
         const Time& runTime_;
 
@@ -67,16 +64,21 @@ protected:
         //- map of point subsets
         std::map<label, meshSubset> pointSubsets_;
 
+
     // Disallow bitwise assignment
+
         void operator=(const polyMeshGenPoints&);
 
         polyMeshGenPoints(const polyMeshGenPoints&);
+
 
 public:
 
     friend class polyMeshGenModifier;
 
+
     // Constructors
+
         //- Null constructor
         polyMeshGenPoints(const Time&);
 
@@ -87,10 +89,13 @@ public:
             const pointField& points
         );
 
-    // Destructor
-        ~polyMeshGenPoints();
+
+    //- Destructor
+    ~polyMeshGenPoints();
+
 
     // Member functions
+
         //- access to Time
         inline const Time& returnTime() const;
 
@@ -117,12 +122,13 @@ public:
         template<class ListType>
         inline void updatePointSubsets(const ListType&);
 
-    // Read mesh
+        //- Read mesh
         void read();
 
-    // Write mesh
+        //- Write mesh
         void write() const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

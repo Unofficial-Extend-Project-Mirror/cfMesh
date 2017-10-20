@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -56,18 +54,18 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
     {
         const constRow eFaces = edgeFaces[edgeI];
 
-        if( edgeFaces.sizeOfRow(edgeI) != 2 )
+        if (edgeFaces.sizeOfRow(edgeI) != 2)
         {
             featureEdges_[edgeI] |= 8;
             continue;
         }
 
         scalar cosAngle =
-            (normals[eFaces[0]] & normals[eFaces[1]]) /
-            (mag(normals[eFaces[0]]) * mag(normals[eFaces[1]]) + VSMALL);
+            (normals[eFaces[0]] & normals[eFaces[1]])
+           /(mag(normals[eFaces[0]])*mag(normals[eFaces[1]]) + VSMALL);
 
-        //- check the orientation of triangles at this edge
-        //- check the sign of the angle if the orientation  is not consistent
+        // check the orientation of triangles at this edge
+        // check the sign of the angle if the orientation  is not consistent
         const labelledTri& tri0 = surf_[edgeFaces(edgeI, 0)];
         const labelledTri& tri1 = surf_[edgeFaces(edgeI, 1)];
         DynList<labelPair> sharedIndices;
@@ -75,31 +73,32 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
         {
             forAll(tri1, j)
             {
-                if( tri0[i] == tri1[j] )
+                if (tri0[i] == tri1[j])
                     sharedIndices.append(labelPair(i, j));
             }
         }
 
-        if( sharedIndices.size() == 2 )
+        if (sharedIndices.size() == 2)
         {
             const labelPair& pair0 = sharedIndices[0];
             const labelPair& pair1 = sharedIndices[1];
-            if( ((pair0.first() + 1) % 3) == pair1.first() )
+            if (((pair0.first() + 1) % 3) == pair1.first())
             {
-                if( (pair0.second() + 1) % 3 == pair1.second() )
+                if ((pair0.second() + 1) % 3 == pair1.second())
                     cosAngle *= -1.0;
             }
             else
             {
-                if( (pair1.second() + 1) % 3 == pair0.second() )
+                if ((pair1.second() + 1) % 3 == pair0.second())
                     cosAngle *= -1.0;
             }
         }
 
-        if( cosAngle < tol )
+        if (cosAngle < tol)
             featureEdges_[edgeI] |= 1;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

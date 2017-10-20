@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -51,28 +49,27 @@ label faceDecomposition::concaveVertex() const
         vector ev = edges[eI].vec(points_);
         ev /= mag(ev);
 
-        const short next = (eI+1) % f_.size();
+        const short next = (eI + 1) % f_.size();
         vector evn = edges[next].vec(points_);
         evn /= mag(evn);
 
         const vector prod = (ev ^ evn);
-            
-        if( (prod & n) < -SMALL )
+
+        if ((prod & n) < -SMALL)
         {
-            if( concaveVrt != -1 )
+            if (concaveVrt != -1)
             {
-                FatalErrorIn
-                (
-                    "label faceDecomposition::concaveVertex(const label faceI) const"
-                ) << "Face " << f_ << " has more than one concave vertex."
+                FatalErrorInFunction
+                    << "Face " << f_ << " has more than one concave vertex."
                     << " Cannot continue ..." << exit(FatalError);
             }
 
             label vrtIndex = edges[eI].commonVertex(edges[next]);
             /*
-            if(
-                pointTriIndex_[vrtIndex] &&
-                pointTriIndex_[vrtIndex]->size() > 1
+            if
+            (
+                pointTriIndex_[vrtIndex]
+            &&  pointTriIndex_[vrtIndex]->size() > 1
             )
             */
             concaveVrt = vrtIndex;
@@ -82,8 +79,9 @@ label faceDecomposition::concaveVertex() const
     return concaveVrt;
 }
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-//- Constructor
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
 faceDecomposition::faceDecomposition
 (
     const face& f,
@@ -92,21 +90,25 @@ faceDecomposition::faceDecomposition
 :
     f_(f),
     points_(pts)
-{
-}
+{}
 
-//- Destructor
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
 faceDecomposition::~faceDecomposition()
-{
-}
+{}
+
 
 bool faceDecomposition::isFaceConvex() const
 {
-    if( concaveVertex() == -1 )
+    if (concaveVertex() == -1)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -116,16 +118,19 @@ bool faceDecomposition::isFacePlanar(const scalar tol) const
     nref /= mag(nref);
 
     forAll(f_, pI)
-        if( mag((points_[f_[pI]] - points_[f_[0]]) & nref) > tol )
+    {
+        if (mag((points_[f_[pI]] - points_[f_[0]]) & nref) > tol)
         {
             # ifdef DEBUG_faceDecomposition
-            Info << "Face is not planar " << endl;
+            Info<< "Face is not planar " << endl;
             # endif
             return false;
         }
+    }
 
     return true;
 }
+
 
 bool faceDecomposition::isFacePlanar() const
 {
@@ -133,20 +138,23 @@ bool faceDecomposition::isFacePlanar() const
 
     const point c = f_.centre(points_);
     forAll(f_, pI)
+    {
         tol = Foam::max(tol, Foam::mag(c - points_[f_[pI]]));
-    
+    }
+
     tol *= 0.05;
 
     return isFacePlanar(tol);
 }
 
+
 faceList faceDecomposition::decomposeFace() const
 {
     faceList ff = decomposeFaceIntoTriangles();
 
-    if( ff.size() <= 3 )
+    if (ff.size() <= 3)
     {
-        //- face is decomposed into 2 or 3 triangles. I am happy with that.
+        // face is decomposed into 2 or 3 triangles. I am happy with that.
         return ff;
     }
 
@@ -158,54 +166,62 @@ faceList faceDecomposition::decomposeFace() const
     faceList storage(2);
     direction fI(0);
 
-    while( il < ir )
+    while (il < ir)
     {
-        //- merge on the side of lower labels
+        // merge on the side of lower labels
         face fl = help::mergeTwoFaces(ff[il], lf);
-        if( faceDecomposition(fl, points_).isFaceConvex() )
+        if (faceDecomposition(fl, points_).isFaceConvex())
         {
             lf = fl;
-            if( il == ir - 1 )
+            if (il == ir - 1)
+            {
                 storage.newElmt(fI++) = lf;
+            }
         }
         else
         {
             storage.newElmt(fI++) = lf;
             lf = ff[il];
-            if( il == ir - 1 )
+            if (il == ir - 1)
+            {
                 storage.newElmt(fI++) = lf;
+            }
         }
 
-        //- merge from the side of higher labels
+        // merge from the side of higher labels
         face fr = help::mergeTwoFaces(rf, ff[ir]);
-        if( faceDecomposition(fr, points_).isFaceConvex() )
+        if (faceDecomposition(fr, points_).isFaceConvex())
         {
             rf = fr;
-            if( il == ir - 1 )
+            if (il == ir - 1)
+            {
                 storage.newElmt(fI++) = rf;
+            }
         }
         else
         {
             storage.newElmt(fI++) = rf;
             rf = ff[ir];
-            if( il == ir - 1 )
+            if (il == ir - 1)
+            {
                 storage.newElmt(fI++) = rf;
+            }
         }
-          
+
         il++;
         ir--;
 
-        //- this happens if the face has odd number of edges
-        if( il == ir )
+        // this happens if the face has odd number of edges
+        if (il == ir)
         {
             fl = help::mergeTwoFaces(ff[il], lf);
             fr = help::mergeTwoFaces(rf, ff[ir]);
-            if( faceDecomposition(fl, points_).isFaceConvex() )
+            if (faceDecomposition(fl, points_).isFaceConvex())
             {
                 storage.newElmt(fI++) = fl;
                 storage.newElmt(fI++) = rf;
             }
-            else if( faceDecomposition(fr, points_).isFaceConvex() )
+            else if (faceDecomposition(fr, points_).isFaceConvex())
             {
                 storage.newElmt(fI++) = fr;
                 storage.newElmt(fI++) = lf;
@@ -219,67 +235,74 @@ faceList faceDecomposition::decomposeFace() const
         }
     }
 
-    if( storage.size() > 2 )
+    if (storage.size() > 2)
+    {
         storage.setSize(fI);
+    }
 
     # ifdef DEBUG_faceDecomposition
-    Info << "Original face " << f_ << endl;
-    Info << "Triangles " << ff << endl;
-    Info << "Concave vertex " << concaveVertex(f_) << endl;
-    Info << "Storage " << storage << endl;
+    Info<< "Original face " << f_ << endl;
+    Info<< "Triangles " << ff << endl;
+    Info<< "Concave vertex " << concaveVertex(f_) << endl;
+    Info<< "Storage " << storage << endl;
     # endif
 
     return storage;
 }
 
+
 faceList faceDecomposition::decomposeFaceIntoTriangles(const label cv) const
 {
-    if( cv != -1 )
+    if (cv != -1)
     {
         short start(0);
         forAll(f_, pI)
-            if( cv == f_[pI] )
+        {
+            if (cv == f_[pI])
             {
                 start = pI;
                 break;
             }
+        }
 
         faceList fcs(10);
         short fI(0);
 
         const edgeList edg = f_.edges();
 
-        for(short eI=1;eI<edg.size()-1;eI++)
+        for (short eI = 1; eI < edg.size()-1; eI++)
         {
-            const short i = (eI+start) % f_.size();
+            const short i = (eI + start) % f_.size();
             face add(3);
             add[0] = f_[start];
             add[1] = edg[i].start();
             add[2] = edg[i].end();
-            
+
             fcs.newElmt(fI++) = add;
         }
 
         fcs.setSize(fI);
 
         # ifdef DEBUG_faceDecomposition
-        Info << "face " << faceNo << "  " << f_
+        Info<< "face " << faceNo << "  " << f_
             << " is decomposed into " << fcs << endl;
         # endif
-        
+
         return fcs;
     }
-    
+
     faceList fcs(1, f_);
-    
+
     return fcs;
 }
+
 
 faceList faceDecomposition::decomposeFaceIntoTriangles() const
 {
     const label cv = concaveVertex();
     return decomposeFaceIntoTriangles(cv);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 

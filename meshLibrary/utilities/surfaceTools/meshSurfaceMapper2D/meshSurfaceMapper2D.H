@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSurfaceMapper2D
+    Foam::meshSurfaceMapper2D
 
 Description
     Maps vertices of a 2D onto the nearest points on the geometry
@@ -57,12 +57,13 @@ class meshSurfacePartitioner;
 class triSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
-                    Class meshSurfaceMapper2D Declaration
+                     Class meshSurfaceMapper2D Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshSurfaceMapper2D
 {
     // Private data
+
         //- reference to mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
@@ -79,10 +80,12 @@ class meshSurfaceMapper2D
         mutable meshSurfacePartitioner* meshPartitionerPtr_;
 
         //- labels of edges which are at the boundary which shall be mapped
-        //- onto the surface
+        //  onto the surface
         labelLongList activeBoundaryEdges_;
 
+
     // Private member functions
+
         //- find active boundary edges
         void findActiveBoundaryEdges();
 
@@ -92,7 +95,7 @@ class meshSurfaceMapper2D
         //- create and return mesh 2D engine
         inline const polyMeshGen2DEngine& mesh2DEngine() const
         {
-            if( !mesh2DEnginePtr_ )
+            if (!mesh2DEnginePtr_)
                 create2DEngine();
 
             return *mesh2DEnginePtr_;
@@ -104,7 +107,7 @@ class meshSurfaceMapper2D
         //- create and reurn surface partitioner
         inline const triSurfacePartitioner& surfacePartitioner() const
         {
-            if( !surfPartitionerPtr_ )
+            if (!surfPartitionerPtr_)
                 createTriSurfacePartitioner();
 
             return *surfPartitionerPtr_;
@@ -116,7 +119,7 @@ class meshSurfaceMapper2D
         //- create and return mesh surface partitioner
         inline const meshSurfacePartitioner& meshPartitioner() const
         {
-            if( !meshPartitionerPtr_ )
+            if (!meshPartitionerPtr_)
                 createMeshSurfacePartitioner();
 
             return *meshPartitionerPtr_;
@@ -125,7 +128,9 @@ class meshSurfaceMapper2D
         //- delete dynamically allocated data
         void clearOut();
 
+
     // Private member functions needed for parallel execution
+
         //- find mapping distance for corner points
         void findMappingDistance
         (
@@ -142,16 +147,15 @@ class meshSurfaceMapper2D
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceMapper2D&);
 
+
 public:
 
-    // Constructors
+    //- Construct from meshSurfaceEngine and octree
+    meshSurfaceMapper2D(const meshSurfaceEngine&, const meshOctree&);
 
-        //- Construct from meshSurfaceEngine and octree
-        meshSurfaceMapper2D(const meshSurfaceEngine&, const meshOctree&);
+    //- Destructor
+    ~meshSurfaceMapper2D();
 
-    // Destructor
-
-        ~meshSurfaceMapper2D();
 
     // Member Functions
 
@@ -186,6 +190,7 @@ public:
         //- feature capturing
         void preMapVertices(const label nIterations = 2);
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

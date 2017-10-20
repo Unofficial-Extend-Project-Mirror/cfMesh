@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfacePartitioner
+    Foam::triSurfacePartitioner
 
 Description
     Provides information regarding surface partitions on the surface
@@ -54,12 +54,13 @@ namespace Foam
 class triSurfacePartitioner
 {
     // Private data
+
         //- reference to triSurf
         const triSurf& surface_;
 
         //- corner nodes
         labelList corners_;
-        List<DynList<label> > cornerPatches_;
+        List<DynList<label>> cornerPatches_;
 
         //- information which partitions share an edge with a given partition
         List<labelHashSet> patchPatches_;
@@ -67,8 +68,7 @@ class triSurfacePartitioner
         //- edge partitions
         labelList edgeGroups_;
 
-        //- information which edge groups share a corner
-        //- with a given group
+        //- information which edge groups share a corner with a given group
         List<labelHashSet> edgeGroupEdgeGroups_;
 
         //- edge groups between surface patches
@@ -77,7 +77,9 @@ class triSurfacePartitioner
         //- corners shared by edge groups
         std::map<std::pair<label, label>, labelHashSet> edgeGroupsCorners_;
 
+
     // Private member functions
+
         //- calculate patch addressing
         void calculatePatchAddressing();
 
@@ -102,24 +104,23 @@ class triSurfacePartitioner
         //- Disallow default bitwise assignment
         void operator=(const triSurfacePartitioner&);
 
+
 public:
 
-    // Constructors
+    //- Construct from triSurf
+    triSurfacePartitioner(const triSurf& surface);
 
-        //- Construct from triSurf
-        triSurfacePartitioner(const triSurf& surface);
-
-    // Destructor
-
-        ~triSurfacePartitioner();
+    //- Destructor
+    ~triSurfacePartitioner();
 
 
     // Member Functions
+
         //- return corner nodes
         const labelList& corners() const;
 
         //- return corner patches
-        const List<DynList<label> >& cornerPatches() const;
+        const List<DynList<label>>& cornerPatches() const;
 
         //- return patch-patches addressing
         const List<labelHashSet>& patchPatches() const;

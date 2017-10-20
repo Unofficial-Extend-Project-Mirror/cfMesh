@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -68,29 +66,29 @@ meshOctreeInsideOutside::meshOctreeInsideOutside
     label nInternal(0), nUnknown(0), nData(0), nOutside(0);
 
     const label nLeaves = octree.numberOfLeaves();
-    for(label leafI=0;leafI<nLeaves;++leafI)
+    for (label leafI = 0; leafI < nLeaves; ++leafI)
     {
         const meshOctreeCubeBasic& oc = octree.returnLeaf(leafI);
 
-        if( oc.cubeType() & meshOctreeCube::INSIDE )
+        if (oc.cubeType() & meshOctreeCube::INSIDE)
         {
             ++nInternal;
         }
-        else if( oc.cubeType() & meshOctreeCube::UNKNOWN )
+        else if (oc.cubeType() & meshOctreeCube::UNKNOWN)
         {
             ++nUnknown;
         }
-        else if( oc.cubeType() & meshOctreeCube::DATA )
+        else if (oc.cubeType() & meshOctreeCube::DATA)
         {
             ++nData;
         }
-        else if( oc.cubeType() & meshOctreeCube::OUTSIDE )
+        else if (oc.cubeType() & meshOctreeCube::OUTSIDE)
         {
             ++nOutside;
         }
     }
 
-    if( octree.neiProcs().size() )
+    if (octree.neiProcs().size())
     {
         reduce(nInternal, sumOp<label>());
         reduce(nUnknown, sumOp<label>());
@@ -98,17 +96,18 @@ meshOctreeInsideOutside::meshOctreeInsideOutside
         reduce(nOutside, sumOp<label>());
     }
 
-    Info << "Number of internal boxes is " << nInternal << endl;
-    Info << "Number of outside boxes is " << nOutside << endl;
-    Info << "Number of data boxes is " << nData << endl;
-    Info << "Number of unknown boxes is " << nUnknown << endl;
+    Info<< "Number of internal boxes is " << nInternal << endl;
+    Info<< "Number of outside boxes is " << nOutside << endl;
+    Info<< "Number of data boxes is " << nData << endl;
+    Info<< "Number of unknown boxes is " << nUnknown << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 meshOctreeInsideOutside::~meshOctreeInsideOutside()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -117,11 +116,11 @@ void meshOctreeInsideOutside::initialiseBoxes()
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( leaves.size() > 1000 )
+    # pragma omp parallel for if (leaves.size() > 1000)
     # endif
     forAll(leaves, leafI)
     {
-        if( leaves[leafI]->hasContainedElements() )
+        if (leaves[leafI]->hasContainedElements())
         {
             leaves[leafI]->setCubeType(meshOctreeCubeBasic::DATA);
         }
@@ -131,6 +130,7 @@ void meshOctreeInsideOutside::initialiseBoxes()
         }
     }
 }
+
 
 void meshOctreeInsideOutside::frontalMarking()
 {
@@ -148,14 +148,14 @@ void meshOctreeInsideOutside::frontalMarking()
     boolList commCubes(leaves.size(), false);
 
     # ifdef USE_OMP
-    if( leaves.size() > 1000 )
-        nThreads = 3 * omp_get_num_procs();
+    if (leaves.size() > 1000)
+        nThreads = 3*omp_get_num_procs();
 
     # pragma omp parallel num_threads(nThreads) \
     private(frontCubes, neighbours)
     # endif
     {
-        LongList<std::pair<label, label> > threadCommPairs;
+        LongList<std::pair<label, label>> threadCommPairs;
 
         # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
@@ -165,15 +165,15 @@ void meshOctreeInsideOutside::frontalMarking()
 
         const label chunkSize = leaves.size() / nThreads + 1;
 
-        const label minLeaf = threadI * chunkSize;
+        const label minLeaf = threadI*chunkSize;
 
         const label maxLeaf = Foam::min(leaves.size(), minLeaf + chunkSize);
 
-        for(label leafI=minLeaf;leafI<maxLeaf;++leafI)
+        for (label leafI = minLeaf; leafI < maxLeaf; ++leafI)
         {
-            if( leaves[leafI]->hasContainedElements() )
+            if (leaves[leafI]->hasContainedElements())
                 continue;
-            if( cubeGroup_[leafI] != -1 )
+            if (cubeGroup_[leafI] != -1)
                 continue;
 
             label groupI;
@@ -189,7 +189,7 @@ void meshOctreeInsideOutside::frontalMarking()
 
             labelLongList neiDATACubes;
 
-            while( frontCubes.size() )
+            while (frontCubes.size())
             {
                 const label fLabel = frontCubes.removeLastElement();
                 octree.findNeighboursForLeaf(fLabel, neighbours);
@@ -197,12 +197,12 @@ void meshOctreeInsideOutside::frontalMarking()
                 forAll(neighbours, neiI)
                 {
                     const label nei = neighbours[neiI];
-                    if( (nei >= minLeaf) && (nei < maxLeaf) )
+                    if ((nei >= minLeaf) && (nei < maxLeaf))
                     {
-                        if( cubeGroup_[nei] != -1 )
+                        if (cubeGroup_[nei] != -1)
                             continue;
 
-                        if( leaves[nei]->hasContainedElements() )
+                        if (leaves[nei]->hasContainedElements())
                         {
                             neiDATACubes.append(nei);
                         }
@@ -212,17 +212,17 @@ void meshOctreeInsideOutside::frontalMarking()
                             cubeGroup_[nei] = groupI;
                         }
                     }
-                    else if( nei == -1 )
+                    else if (nei == -1)
                     {
                         cType = meshOctreeCubeBasic::OUTSIDE;
                     }
-                    else if( nei == meshOctreeCubeBasic::OTHERPROC )
+                    else if (nei == meshOctreeCubeBasic::OTHERPROC)
                     {
                         commCubes[fLabel] = true;
                     }
                     else
                     {
-                        if( leaves[nei]->hasContainedElements() )
+                        if (leaves[nei]->hasContainedElements())
                         {
                             neiDATACubes.append(nei);
                         }
@@ -241,8 +241,8 @@ void meshOctreeInsideOutside::frontalMarking()
             # pragma omp critical
             # endif
             {
-                if( groupI >= boundaryDATACubes_.size() )
-                    boundaryDATACubes_.setSize(groupI+1);
+                if (groupI >= boundaryDATACubes_.size())
+                    boundaryDATACubes_.setSize(groupI + 1);
 
                 boundaryDATACubes_.setRow(groupI, neiDATACubes);
                 groupType_[groupI] = cType;
@@ -253,20 +253,20 @@ void meshOctreeInsideOutside::frontalMarking()
         # pragma omp barrier
         # endif
 
-        //- find group to neighbouring groups addressing
-        List<DynList<label> > localNeiGroups(nGroup);
+        // find group to neighbouring groups addressing
+        List<DynList<label>> localNeiGroups(nGroup);
         forAll(threadCommPairs, cfI)
         {
             const std::pair<label, label>& lp = threadCommPairs[cfI];
             const label groupI = cubeGroup_[lp.first];
             const label neiGroup = cubeGroup_[lp.second];
 
-            if( (neiGroup >= nGroup) || (groupI >= nGroup) )
+            if ((neiGroup >= nGroup) || (groupI >= nGroup))
                 FatalError << "neiGroup " << neiGroup
                     << " groupI " << groupI << " are >= than "
                     << "nGroups " << nGroup << abort(FatalError);
 
-            if( neiGroup != -1 )
+            if (neiGroup != -1)
             {
                 localNeiGroups[groupI].appendIfNotIn(neiGroup);
                 localNeiGroups[neiGroup].appendIfNotIn(groupI);
@@ -293,11 +293,11 @@ void meshOctreeInsideOutside::frontalMarking()
         }
     }
 
-    //- create cubesInGroup_ addressing
+    // create cubesInGroup_ addressing
     labelList nCubesInGroup(nGroup, 0);
     forAll(cubeGroup_, leafI)
     {
-        if( cubeGroup_[leafI] < 0 )
+        if (cubeGroup_[leafI] < 0)
             continue;
 
         ++nCubesInGroup[cubeGroup_[leafI]];
@@ -309,16 +309,16 @@ void meshOctreeInsideOutside::frontalMarking()
     {
         const label groupI = cubeGroup_[leafI];
 
-        if( groupI < 0 )
+        if (groupI < 0)
             continue;
 
         cubesInGroup_(groupI, --nCubesInGroup[groupI]) = leafI;
     }
 
-    //- mark cubes at inter-processor boundaries
+    // mark cubes at inter-processor boundaries
     forAll(commCubes, leafI)
     {
-        if( commCubes[leafI] )
+        if (commCubes[leafI])
             communicationCubes_.append(leafI);
     }
 
@@ -326,15 +326,17 @@ void meshOctreeInsideOutside::frontalMarking()
     label nMarked(0);
     forAll(cubeGroup_, leafI)
     {
-        if( cubeGroup_[leafI] != -1 )
+        if (cubeGroup_[leafI] != -1)
             ++nMarked;
     }
     reduce(nMarked, sumOp<label>());
     const label totalLeaves = returnReduce(leaves_.size(), sumOp<label>());
-    Info << "Total number of leaves " << totalLeaves << endl;
-    Info << "Number of marked leaves " << nMarked << endl;
+    Info<< "Total number of leaves " << totalLeaves << endl;
+    Info<< "Number of marked leaves " << nMarked << endl;
     # endif
+
 }
+
 
 void meshOctreeInsideOutside::markOutsideCubes()
 {
@@ -353,16 +355,16 @@ void meshOctreeInsideOutside::markOutsideCubes()
         {
             nChanged = 0;
 
-            //- make sure that groups created by different threads
-            //- have the same information
+            // make sure that groups created by different threads
+            // have the same information
             forAll(neighbouringGroups_, groupI)
             {
-                if( groupType_[groupI] & meshOctreeCubeBasic::OUTSIDE )
+                if (groupType_[groupI] & meshOctreeCubeBasic::OUTSIDE)
                 {
                     forAllRow(neighbouringGroups_, groupI, i)
                     {
                         const label neiGroup = neighbouringGroups_(groupI, i);
-                        if( groupType_[neiGroup] & meshOctreeCube::UNKNOWN )
+                        if (groupType_[neiGroup] & meshOctreeCube::UNKNOWN)
                         {
                             ++nChanged;
                             groupType_[neiGroup] = meshOctreeCube::OUTSIDE;
@@ -371,26 +373,26 @@ void meshOctreeInsideOutside::markOutsideCubes()
                 }
             }
 
-            if( nChanged != 0 )
+            if (nChanged != 0)
                 keepUpdating = true;
 
-        } while( nChanged != 0 );
+        } while (nChanged != 0);
 
         do
         {
             nChanged = 0;
             LongList<meshOctreeCubeCoordinates> dataToSend;
 
-            //- go through the list of communicationCubes and send the ones
-            //- which are marked as outside
+            // go through the list of communicationCubes and send the ones
+            // which are marked as outside
             forAll(communicationCubes_, i)
             {
                 const label groupI = cubeGroup_[communicationCubes_[i]];
 
-                if( groupI < 0 )
+                if (groupI < 0)
                     continue;
 
-                if( groupType_[groupI] & meshOctreeCube::OUTSIDE )
+                if (groupType_[groupI] & meshOctreeCube::OUTSIDE)
                     dataToSend.append(*leaves[communicationCubes_[i]]);
             }
 
@@ -401,12 +403,12 @@ void meshOctreeInsideOutside::markOutsideCubes()
                 receivedCoords
             );
 
-            //- go through the list of received coordinates and check if any
-            //- local boxes are their neighbours. If a local neighbour is
-            //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
-            //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            // go through the list of received coordinates and check if any
+            // local boxes are their neighbours. If a local neighbour is
+            // a DATA box set the hasOutsideNeighbour_ flag to true. If the
+            // local neighbour is of UNKNOWN type set it to OUTSIDE.
             # ifdef USE_OMP
-            # pragma omp parallel for if( receivedCoords.size() > 100 ) \
+            # pragma omp parallel for if (receivedCoords.size() > 100) \
             private(neighbours) schedule(dynamic, 20)
             # endif
             forAll(receivedCoords, i)
@@ -417,15 +419,15 @@ void meshOctreeInsideOutside::markOutsideCubes()
                 {
                     const label nei = neighbours[neiI];
 
-                    if( nei < 0 )
+                    if (nei < 0)
                         continue;
 
-                    if( leaves[nei]->hasContainedElements() )
+                    if (leaves[nei]->hasContainedElements())
                     {
                         hasOutsideNeighbour_[nei] = true;
                         continue;
                     }
-                    if( groupType_[cubeGroup_[nei]] & meshOctreeCube::UNKNOWN )
+                    if (groupType_[cubeGroup_[nei]] & meshOctreeCube::UNKNOWN)
                     {
                         groupType_[cubeGroup_[nei]] = meshOctreeCube::OUTSIDE;
                         ++nChanged;
@@ -433,50 +435,51 @@ void meshOctreeInsideOutside::markOutsideCubes()
                 }
             }
 
-            if( nChanged != 0 )
+            if (nChanged != 0)
                 keepUpdating = true;
 
             reduce(nChanged, sumOp<label>());
-        } while( nChanged != 0 );
+        } while (nChanged != 0);
 
         reduce(keepUpdating, maxOp<bool>());
 
-    } while( keepUpdating );
+    } while (keepUpdating);
 
-    //- set OUTSIDE type to the cubes in OUTSIDE groups
+    // set OUTSIDE type to the cubes in OUTSIDE groups
     for
     (
-        std::map<label, direction>::const_iterator it=groupType_.begin();
+        std::map<label, direction>::const_iterator it = groupType_.begin();
         it!=groupType_.end();
         ++it
     )
     {
-        if( it->first < 0 )
+        if (it->first < 0)
             continue;
 
-        if( it->second & meshOctreeCubeBasic::OUTSIDE )
+        if (it->second & meshOctreeCubeBasic::OUTSIDE)
         {
             const label groupI = it->first;
 
-            //- set the cube type to OUTSIDE
+            // set the cube type to OUTSIDE
             forAllRow(cubesInGroup_, groupI, i)
                 leaves[cubesInGroup_(groupI, i)]->setCubeType
                 (
                     meshOctreeCube::OUTSIDE
                 );
 
-            //- set true to the collected DATA boxes
+            // set true to the collected DATA boxes
             forAllRow(boundaryDATACubes_, groupI, neiI)
                 hasOutsideNeighbour_[boundaryDATACubes_(groupI, neiI)] = true;
         }
     }
 }
 
+
 void meshOctreeInsideOutside::reviseDataBoxes()
 {
-    //- remove DATA flag from boxes which do not have an OUTSIDE neighbour
-    //- and are not surrounded with DATA boxes containing different surface
-    //- triangles in different patches
+    // remove DATA flag from boxes which do not have an OUTSIDE neighbour
+    // and are not surrounded with DATA boxes containing different surface
+    // triangles in different patches
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
     const triSurf& surface = octree.surface();
@@ -494,21 +497,21 @@ void meshOctreeInsideOutside::reviseDataBoxes()
         labelHashSet transferCoordinates;
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( leaves.size() > 1000 ) \
+        # pragma omp parallel for if (leaves.size() > 1000) \
         private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
         # endif
         forAll(leaves, leafI)
-            if( Pstream::parRun() && hasOutsideNeighbour_[leafI] )
+            if (Pstream::parRun() && hasOutsideNeighbour_[leafI])
             {
                 octree.findAllLeafNeighbours(leafI, neighbours);
                 forAll(neighbours, neiI)
-                    if( neighbours[neiI] == meshOctreeCubeBasic::OTHERPROC )
+                    if (neighbours[neiI] == meshOctreeCubeBasic::OTHERPROC)
                     {
                         # ifdef USE_OMP
                         # pragma omp critical
                         # endif
                         {
-                            if( !transferCoordinates.found(leafI) )
+                            if (!transferCoordinates.found(leafI))
                             {
                                 checkCoordinates.append
                                 (
@@ -521,7 +524,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                         break;
                     }
             }
-            else if(
+            else if (
                 (leaves[leafI]->cubeType() & meshOctreeCube::DATA) &&
                 !hasOutsideNeighbour_[leafI]
             )
@@ -529,7 +532,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 meshOctreeCube* oc = leaves[leafI];
 
                 # ifdef DEBUGSearch
-                Info << "Box " << leafI << " may not be a DATA box" << endl;
+                Info<< "Box " << leafI << " may not be a DATA box" << endl;
                 # endif
 
                 DynList<label> patches;
@@ -539,22 +542,22 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 forAll(el, elI)
                     patches.appendIfNotIn(surface[el[elI]].region());
 
-                if( patches.size() > 1 )
+                if (patches.size() > 1)
                     continue;
 
                 checkedPatches[leafI] = true;
 
-                //- check if there exist neighbours
-                //- which have some DATA neighbours
+                // check if there exist neighbours
+                // which have some DATA neighbours
                 octree.findAllLeafNeighbours(leafI, neighbours);
                 forAll(neighbours, neiI)
                 {
                     const label nei = neighbours[neiI];
 
-                    if( nei < 0 )
+                    if (nei < 0)
                         continue;
 
-                    if( hasOutsideNeighbour_[nei] )
+                    if (hasOutsideNeighbour_[nei])
                     {
                         oc->setCubeType(meshOctreeCube::INSIDE);
 
@@ -564,7 +567,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 }
             }
 
-        if( octree.neiProcs().size() )
+        if (octree.neiProcs().size())
         {
             LongList<meshOctreeCubeCoordinates> receivedCoords;
             octree.exchangeRequestsWithNeighbourProcessors
@@ -573,10 +576,10 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 receivedCoords
             );
 
-            //- check if any of the local neighbours is a data box with
-            //- no OUTSIDE neighbours
+            // check if any of the local neighbours is a data box with
+            // no OUTSIDE neighbours
             # ifdef USE_OMP
-            # pragma omp parallel for if( receivedCoords.size() > 100 ) \
+            # pragma omp parallel for if (receivedCoords.size() > 100) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nMarked)
             # endif
             forAll(receivedCoords, i)
@@ -587,7 +590,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
                 {
                     const label nei = neighbours[neiI];
 
-                    if( nei < 0 )
+                    if (nei < 0)
                         continue;
 
                     if
@@ -605,32 +608,34 @@ void meshOctreeInsideOutside::reviseDataBoxes()
 
             reduce(nMarked, sumOp<label>());
         }
-    } while( nMarked != 0 );
+    } while (nMarked != 0);
 
     # ifdef DEBUGSearch
     label nOutside(0), nData(0), hasOutNei(0);
     forAll(leaves, leafI)
     {
         const direction cType = leaves[leafI]->cubeType();
-        if( cType & meshOctreeCubeBasic::OUTSIDE )
+        if (cType & meshOctreeCubeBasic::OUTSIDE)
             ++nOutside;
-        else if( cType & meshOctreeCubeBasic::DATA )
+        else if (cType & meshOctreeCubeBasic::DATA)
             ++nData;
 
-        if( hasOutsideNeighbour_[leafI] )
+        if (hasOutsideNeighbour_[leafI])
             ++hasOutNei;
     }
 
     reduce(hasOutNei, sumOp<label>());
     reduce(nData, sumOp<label>());
     reduce(nOutside, sumOp<label>());
-    Info << "Number of outside boxes " << nOutside << endl;
-    Info << "Number of data boxes " << nData << " real data "
+    Info<< "Number of outside boxes " << nOutside << endl;
+    Info<< "Number of data boxes " << nData << " real data "
         << hasOutNei << endl;
     returnReduce(1, sumOp<label>());
     //::exit(1);
     # endif
+
 }
+
 
 void meshOctreeInsideOutside::markInsideCubes()
 {
@@ -640,25 +645,25 @@ void meshOctreeInsideOutside::markInsideCubes()
     bool keepUpdating;
     DynList<label> neighbours;
 
-    //- make INSIDE groups for which it is possible
+    // make INSIDE groups for which it is possible
     for
     (
-        std::map<label, direction>::iterator it=groupType_.begin();
+        std::map<label, direction>::iterator it = groupType_.begin();
         it!=groupType_.end();
         ++it
     )
     {
         const label groupI = it->first;
 
-        if( groupI < 0 )
+        if (groupI < 0)
             continue;
 
-        if( it->second & meshOctreeCubeBasic::UNKNOWN )
+        if (it->second & meshOctreeCubeBasic::UNKNOWN)
         {
             forAllRow(boundaryDATACubes_, groupI, neiI)
             {
                 const label cLabel = boundaryDATACubes_(groupI, neiI);
-                if(
+                if (
                     hasOutsideNeighbour_[cLabel] ||
                     (
                         leaves[cLabel]->cubeType() & meshOctreeCube::INSIDE
@@ -676,20 +681,20 @@ void meshOctreeInsideOutside::markInsideCubes()
     {
         keepUpdating = false;
 
-        //- mark INSIDE groups created by different threads
+        // mark INSIDE groups created by different threads
         do
         {
             nChanged = 0;
 
             forAll(neighbouringGroups_, groupI)
             {
-                if( groupType_[groupI] & meshOctreeCube::INSIDE )
+                if (groupType_[groupI] & meshOctreeCube::INSIDE)
                 {
                     forAllRow(neighbouringGroups_, groupI, i)
                     {
                         const label neiGroup = neighbouringGroups_(groupI, i);
 
-                        if( groupType_[neiGroup] & meshOctreeCube::UNKNOWN )
+                        if (groupType_[neiGroup] & meshOctreeCube::UNKNOWN)
                         {
                             ++nChanged;
                             groupType_[neiGroup] = meshOctreeCube::INSIDE;
@@ -698,22 +703,22 @@ void meshOctreeInsideOutside::markInsideCubes()
                 }
             }
 
-            if( nChanged != 0 )
+            if (nChanged != 0)
                 keepUpdating = true;
 
-        } while( nChanged != 0 );
+        } while (nChanged != 0);
 
-        if( octree.neiProcs().size() == 0 )
+        if (octree.neiProcs().size() == 0)
             continue;
 
-        //- the code for exchanging data between different processes
+        // the code for exchanging data between different processes
         LongList<meshOctreeCubeCoordinates> dataToSend, receivedCoords;
 
-        //- send coordinates of boxes with hasOutsideNeighbour_ flag and
-        //- the boxes which have been marked as INSIDE to the neighbouring procs
+        // send coordinates of boxes with hasOutsideNeighbour_ flag and
+        // the boxes which have been marked as INSIDE to the neighbouring procs
         forAll(hasOutsideNeighbour_, leafI)
         {
-            if(
+            if (
                 hasOutsideNeighbour_[leafI] ||
                 (leaves[leafI]->cubeType() & meshOctreeCubeBasic::INSIDE)
             )
@@ -721,7 +726,7 @@ void meshOctreeInsideOutside::markInsideCubes()
                 octree.findNeighboursForLeaf(leafI, neighbours);
 
                 forAll(neighbours, neiI)
-                    if( neighbours[neiI] == meshOctreeCube::OTHERPROC )
+                    if (neighbours[neiI] == meshOctreeCube::OTHERPROC)
                     {
                         dataToSend.append(leaves[leafI]->coordinates());
                         break;
@@ -736,7 +741,7 @@ void meshOctreeInsideOutside::markInsideCubes()
         );
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( receivedCoords.size() > 100 ) \
+        # pragma omp parallel for if (receivedCoords.size() > 100) \
         private(neighbours) schedule(dynamic, 20)
         # endif
         forAll(receivedCoords, i)
@@ -747,15 +752,15 @@ void meshOctreeInsideOutside::markInsideCubes()
             {
                 const label nei = neighbours[neiI];
 
-                if( nei < 0 )
+                if (nei < 0)
                     continue;
 
                 const label groupI = cubeGroup_[nei];
 
-                if( groupI < 0 )
+                if (groupI < 0)
                     continue;
 
-                if( groupType_[groupI] & meshOctreeCube::UNKNOWN )
+                if (groupType_[groupI] & meshOctreeCube::UNKNOWN)
                     groupType_[groupI] = meshOctreeCubeBasic::INSIDE;
             }
         }
@@ -765,11 +770,11 @@ void meshOctreeInsideOutside::markInsideCubes()
             nChanged = 0;
             dataToSend.clear();
 
-            //- go through the list of communicationCubes and send the ones
-            //- which are marked as outside
+            // go through the list of communicationCubes and send the ones
+            // which are marked as outside
             forAll(communicationCubes_, i)
             {
-                if(
+                if (
                     groupType_[cubeGroup_[communicationCubes_[i]]] &
                     meshOctreeCubeBasic::INSIDE
                 )
@@ -786,12 +791,12 @@ void meshOctreeInsideOutside::markInsideCubes()
                 receivedCoords
             );
 
-            //- go through the list of received coordinates and check if any
-            //- local boxes are their neighbours. If a local neighbour is
-            //- a DATA box set the hasOutsideNeighbour_ flag to true. If the
-            //- local neighbour is of UNKNOWN type set it to OUTSIDE.
+            // go through the list of received coordinates and check if any
+            // local boxes are their neighbours. If a local neighbour is
+            // a DATA box set the hasOutsideNeighbour_ flag to true. If the
+            // local neighbour is of UNKNOWN type set it to OUTSIDE.
             # ifdef USE_OMP
-            # pragma omp parallel for if( receivedCoords.size() > 100 ) \
+            # pragma omp parallel for if (receivedCoords.size() > 100) \
             private(neighbours) schedule(dynamic, 20) reduction(+ : nChanged)
             # endif
             forAll(receivedCoords, i)
@@ -802,15 +807,15 @@ void meshOctreeInsideOutside::markInsideCubes()
                 {
                     const label nei = neighbours[neiI];
 
-                    if( nei < 0 )
+                    if (nei < 0)
                         continue;
 
                     const label groupI = cubeGroup_[nei];
 
-                    if( groupI < 0 )
+                    if (groupI < 0)
                         continue;
 
-                    if( groupType_[groupI] & meshOctreeCube::UNKNOWN )
+                    if (groupType_[groupI] & meshOctreeCube::UNKNOWN)
                     {
                         groupType_[groupI] = meshOctreeCube::INSIDE;
                         ++nChanged;
@@ -820,31 +825,31 @@ void meshOctreeInsideOutside::markInsideCubes()
 
             reduce(nChanged, sumOp<label>());
 
-            if( nChanged != 0 )
+            if (nChanged != 0)
                 keepUpdating = true;
 
-        } while( nChanged != 0 );
+        } while (nChanged != 0);
 
         reduce(keepUpdating, maxOp<bool>());
 
-    } while( keepUpdating );
+    } while (keepUpdating);
 
-    //- set INSIDE type to the cubes in INSIDE groups
+    // set INSIDE type to the cubes in INSIDE groups
     for
     (
-        std::map<label, direction>::const_iterator it=groupType_.begin();
+        std::map<label, direction>::const_iterator it = groupType_.begin();
         it!=groupType_.end();
         ++it
     )
     {
-        if( it->first < 0 )
+        if (it->first < 0)
             continue;
 
-        if( it->second & meshOctreeCubeBasic::INSIDE )
+        if (it->second & meshOctreeCubeBasic::INSIDE)
         {
             const label groupI = it->first;
 
-            //- set the cube type to OUTSIDE
+            // set the cube type to OUTSIDE
             forAllRow(cubesInGroup_, groupI, i)
                 leaves[cubesInGroup_(groupI, i)]->setCubeType
                 (
@@ -853,6 +858,7 @@ void meshOctreeInsideOutside::markInsideCubes()
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

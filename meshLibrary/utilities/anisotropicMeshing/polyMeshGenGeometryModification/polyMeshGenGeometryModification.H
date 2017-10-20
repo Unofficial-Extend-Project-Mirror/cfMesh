@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenGeometryModification
+    Foam::polyMeshGenGeometryModification
 
 Description
     Modifies coordinates of points in the mesh to achieve anistropy
@@ -48,44 +48,49 @@ namespace Foam
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
-                Class polyMeshGenGeometryModification Declaration
+               Class polyMeshGenGeometryModification Declaration
 \*---------------------------------------------------------------------------*/
 
 class polyMeshGenGeometryModification
 {
     // Private data
+
         //- reference to polyMeshGen
         polyMeshGen& mesh_;
 
         //- length of box sides
         const dictionary& meshDict_;
 
-        //- contruct coordinate modification
+        //- construct coordinate modification
         coordinateModifier* coordinateModifierPtr_;
 
-        //- is mofdification active
+        //- is modification active
         bool modificationActive_;
 
 
     // Private member functions
+
         //- check existence of geometry modifiers
         void checkModification();
 
         //- disable bitwise copy construct
-        polyMeshGenGeometryModification(const polyMeshGenGeometryModification&);
+        polyMeshGenGeometryModification
+        (
+            const polyMeshGenGeometryModification&
+        );
 
         //- disable bitwise assignment
         void operator=(const polyMeshGenGeometryModification&);
 
+
 public:
 
-    // Constructors
+    //- Construct from polyMeshGen and dictionary
+    polyMeshGenGeometryModification(polyMeshGen&, const dictionary&);
 
-        //- Construct from polyMeshGen and dictionary
-        polyMeshGenGeometryModification(polyMeshGen&, const dictionary&);
+    //- Destructor
+    ~polyMeshGenGeometryModification();
 
-    // Destructor
-        ~polyMeshGenGeometryModification();
 
     // Member Functions
 
@@ -95,7 +100,7 @@ public:
         //- modify coordinates
         void modifyGeometry();
 
-        //- revert modification of coorinates
+        //- revert modification of coordinates
         void revertGeometryModification();
 };
 

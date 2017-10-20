@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    quadricFitting
+    Foam::quadricFitting
 
 Description
     A class for fitting a quadric surface through the set of points. It is
@@ -52,6 +52,7 @@ namespace Foam
 class quadricFitting
 {
     // Private data
+
         //- seed point for fitting the quadric surface
         point origin_;
 
@@ -73,7 +74,9 @@ class quadricFitting
         //- coefficients of the quadric surface
         scalarField coefficients_;
 
+
     // Private member functions
+
         //- initial estimate of the normal vector
         void calculateNormalVector();
 
@@ -87,6 +90,7 @@ class quadricFitting
         //- until the best fit is achieved
         void calculateBestFit();
 
+
 public:
 
     // Constructors
@@ -99,8 +103,9 @@ public:
         template<class ListType>
         inline quadricFitting(const point&, const ListType&);
 
-    // Destructor
-        ~quadricFitting();
+
+    //- Destructor
+    ~quadricFitting();
 
 
     // Member Functions
@@ -128,6 +133,7 @@ public:
             //- Return max curvature vector
             inline vector maxCurvatureVector() const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

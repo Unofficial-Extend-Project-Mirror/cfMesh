@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -60,29 +58,33 @@ void partTriMesh::createPointsAndTrias
     label nTriPoints(0);
     forAll(bFaces, bfI)
     {
-        if( useFace[bfI] )
+        if (useFace[bfI])
         {
             const face& bf = bFaces[bfI];
 
-            //- create a point in the face centre
-            if( bf.size() > 3 )
+            // create a point in the face centre
+            if (bf.size() > 3)
+            {
                 nodeLabelForFace[bfI] = nTriPoints++;
+            }
 
-            //- create points at face points
+            // create points at face points
             forAll(bf, pI)
             {
                 const label bpI = bp[bf[pI]];
 
-                if( meshSurfacePointLabelInTriMesh_[bpI] == -1 )
+                if (meshSurfacePointLabelInTriMesh_[bpI] == -1)
+                {
                     meshSurfacePointLabelInTriMesh_[bpI] = nTriPoints++;
+                }
             }
 
-            //- create triangles
-            if( bf.size() > 3 )
+            // create triangles
+            if (bf.size() > 3)
             {
                 forAll(bf, eI)
                 {
-                    //- add a triangle connected to face centre
+                    // add a triangle connected to face centre
                     labelledTri tri
                     (
                         meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
@@ -93,7 +95,7 @@ void partTriMesh::createPointsAndTrias
 
                     surf_.appendTriangle(tri);
 
-                    //- add a triangle for shape
+                    // add a triangle for shape
                     labelledTri secondTri
                     (
                         meshSurfacePointLabelInTriMesh_[bp[bf[eI]]],
@@ -107,7 +109,7 @@ void partTriMesh::createPointsAndTrias
             }
             else
             {
-                //- face is a triangle
+                // face is a triangle
                 labelledTri tri
                 (
                     meshSurfacePointLabelInTriMesh_[bp[bf[0]]],
@@ -118,7 +120,7 @@ void partTriMesh::createPointsAndTrias
 
                 surf_.appendTriangle(tri);
 
-                //- add a triangle for shape
+                // add a triangle for shape
                 forAll(bf, eI)
                 {
                     labelledTri secondTri
@@ -135,7 +137,7 @@ void partTriMesh::createPointsAndTrias
         }
     }
 
-    //- add points
+    // add points
     triSurfModifier sMod(surf_);
     pointField& pts = sMod.pointsAccess();
     pts.setSize(nTriPoints);
@@ -147,36 +149,46 @@ void partTriMesh::createPointsAndTrias
     pointLabelInMeshSurface_ = -1;
 
     forAll(meshSurfacePointLabelInTriMesh_, bpI)
-        if( meshSurfacePointLabelInTriMesh_[bpI] != -1 )
+    {
+        if (meshSurfacePointLabelInTriMesh_[bpI] != -1)
         {
             const label npI = meshSurfacePointLabelInTriMesh_[bpI];
             pointLabelInMeshSurface_[npI] = bpI;
             pts[npI] = points[bPoints[bpI]];
             pointType_[npI] |= SMOOTH;
         }
+    }
 
     forAll(nodeLabelForFace, bfI)
-        if( nodeLabelForFace[bfI] != -1 )
+    {
+        if (nodeLabelForFace[bfI] != -1)
         {
             const label npI = nodeLabelForFace[bfI];
             pts[npI] = faceCentres[bfI];
             pointType_[npI] = FACECENTRE;
         }
+    }
 
-    //- set CORNER and FEATUREEDGE flags to surface points
+    // set CORNER and FEATUREEDGE flags to surface points
     forAllConstIter(labelHashSet, mPart_.corners(), it)
-        if( meshSurfacePointLabelInTriMesh_[it.key()] != -1 )
+    {
+        if (meshSurfacePointLabelInTriMesh_[it.key()] != -1)
+        {
             pointType_[meshSurfacePointLabelInTriMesh_[it.key()]] |= CORNER;
+        }
+    }
 
     forAllConstIter(labelHashSet, mPart_.edgePoints(), it)
     {
         const label pI = meshSurfacePointLabelInTriMesh_[it.key()];
-        if( pI != -1 )
+        if (pI != -1)
+        {
             pointType_[pI] |= FEATUREEDGE;
+        }
     }
 
-    //- create addressing for parallel runs
-    if( Pstream::parRun() )
+    // create addressing for parallel runs
+    if (Pstream::parRun())
     {
         createParallelAddressing
         (
@@ -187,9 +199,10 @@ void partTriMesh::createPointsAndTrias
         createBufferLayers();
     }
 
-    //- calculate point facets addressing
+    // calculate point facets addressing
     surf_.pointFacets();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

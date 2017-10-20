@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -58,8 +56,8 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     const labelList& facePatch = surfaceEngine_.boundaryFacePatches();
     const vectorField& fCentres = surfaceEngine_.faceCentres();
 
-    //- check if there exist tangled parts of mesh surface where
-    //- classification is not reliable
+    // check if there exist tangled parts of mesh surface where
+    // classification is not reliable
     boolList problematicPoint(pointFaces.size(), false);
 
     meshSurfacePartitioner mPart(surfaceEngine_);
@@ -68,12 +66,12 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     forAllConstIter(labelHashSet, invertedPoints, it)
         problematicPoint[bp[it.key()]] = true;
 
-    //- classify edges
+    // classify edges
     edgeType_.setSize(edges.size());
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( edges.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (edges.size() < 1000)
         nThreads = 1;
     # endif
 
@@ -82,7 +80,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     # endif
     {
         // TODO: this is not valid for non-manifold meshes
-        //- start checking feature edges
+        // start checking feature edges
         # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
         # endif
@@ -90,12 +88,12 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
         {
             edgeType_[edgeI] = NONE;
 
-            if( edgeFaces.sizeOfRow(edgeI) == 2 )
+            if (edgeFaces.sizeOfRow(edgeI) == 2)
             {
                 const label f0 = edgeFaces(edgeI, 0);
                 const label f1 = edgeFaces(edgeI, 1);
 
-                if( facePatch[f0] == facePatch[f1] )
+                if (facePatch[f0] == facePatch[f1])
                 {
                     edgeType_[edgeI] |= PATCHEDGE;
                 }
@@ -106,20 +104,20 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
                 const edge e = edges[edgeI];
 
-                //- check if the surface is tangled there
-                if( problematicPoint[bp[e.start()]] )
+                // check if the surface is tangled there
+                if (problematicPoint[bp[e.start()]])
                 {
                     edgeType_[edgeI] |= UNDETERMINED;
                     continue;
                 }
 
-                if( problematicPoint[bp[e.end()]] )
+                if (problematicPoint[bp[e.end()]])
                 {
                     edgeType_[edgeI] |= UNDETERMINED;
                     continue;
                 }
 
-                //- check the volumes pof tets which can be formed at the edge
+                // check the volumes pof tets which can be formed at the edge
                 const tetrahedron<point, point> tet0
                 (
                     points[e.start()],
@@ -128,7 +126,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                     fCentres[f1]
                 );
 
-                if( tet0.mag() > -VSMALL )
+                if (tet0.mag() > -VSMALL)
                 {
                     edgeType_[edgeI] |= CONCAVEEDGE;
                     continue;
@@ -142,7 +140,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                     fCentres[f0]
                 );
 
-                if( tet1.mag() > -VSMALL )
+                if (tet1.mag() > -VSMALL)
                 {
                     edgeType_[edgeI] |= CONCAVEEDGE;
                     continue;
@@ -153,9 +151,9 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- check if the edge at processor boundaries are concave or convex
+        // check if the edge at processor boundaries are concave or convex
         const labelList& globalEdgeLabel =
             surfaceEngine_.globalBoundaryEdgeLabel();
         const Map<label>& otherProc = surfaceEngine_.otherEdgeFaceAtProc();
@@ -163,7 +161,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
         const Map<label>& globalToLocalEdge =
             surfaceEngine_.globalToLocalBndEdgeAddressing();
 
-        std::map<label, LongList<labelledPoint> > exchangeFaceCentres;
+        std::map<label, LongList<labelledPoint>> exchangeFaceCentres;
         forAll(surfaceEngine_.beNeiProcs(), i)
         {
             const label neiProc = surfaceEngine_.beNeiProcs()[i];
@@ -176,7 +174,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
         forAllConstIter(Map<label>, otherPatch, eIter)
         {
-            if( eIter() == facePatch[edgeFaces(eIter.key(), 0)] )
+            if (eIter() == facePatch[edgeFaces(eIter.key(), 0)] )
             {
                 edgeType_[eIter()] |= PATCHEDGE;
             }
@@ -219,7 +217,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             const label edgeI = globalToLocalEdge[lp.pointLabel()];
 
             // TODO: this is valid for manifold meshes, only
-            if( edgeFaces.sizeOfRow(edgeI) != 1 )
+            if (edgeFaces.sizeOfRow(edgeI) != 1)
                 continue;
 
             const vector fCentre = lp.coordinates();
@@ -227,8 +225,8 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             const edge& e = edges[edgeI];
             const label f0 = edgeFaces(edgeI, 0);
 
-            //- check the volumes pof tets
-            //- which can be formed at the edge
+            // check the volumes pof tets
+            // which can be formed at the edge
             tetrahedron<point, point> tet0
             (
                 points[e.start()],
@@ -237,7 +235,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                 fCentre
             );
 
-            if ( tet0.mag() > -VSMALL )
+            if (tet0.mag() > -VSMALL)
             {
                 edgeType_[edgeI] |= CONCAVEEDGE;
                 continue;
@@ -251,7 +249,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
                 fCentres[f0]
             );
 
-            if ( tet1.mag() > -VSMALL )
+            if (tet1.mag() > -VSMALL)
             {
                 edgeType_[edgeI] |= CONCAVEEDGE;
                 continue;
@@ -265,7 +263,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     polyMeshGen& mesh_ = const_cast<polyMeshGen&>(surfaceEngine_.mesh());
     const label badVertices = mesh_.addPointSubset("invertedVertices");
     forAll(problematicPoint, bpI)
-        if( problematicPoint[bpI] )
+        if (problematicPoint[bpI])
             mesh_.addPointToSubset
             (
                 badVertices,
@@ -279,33 +277,35 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
     forAll(edgeType_, edgeI)
     {
-        if( edgeType_[edgeI] & CONVEXEDGE )
+        if (edgeType_[edgeI] & CONVEXEDGE)
         {
-            Info <<"Edge " << edgeI << " is convex" << endl;
+            Info<<"Edge " << edgeI << " is convex" << endl;
             mesh_.addPointToSubset(convexId, edges[edgeI].start());
             mesh_.addPointToSubset(convexId, edges[edgeI].end());
         }
-        if( edgeType_[edgeI] & CONCAVEEDGE )
+        if (edgeType_[edgeI] & CONCAVEEDGE)
         {
-            Info << "Edge " << edgeI << " is concave" << endl;
+            Info<< "Edge " << edgeI << " is concave" << endl;
             mesh_.addPointToSubset(concaveId, edges[edgeI].start());
             mesh_.addPointToSubset(concaveId, edges[edgeI].end());
         }
-        if( edgeType_[edgeI] & UNDETERMINED )
+        if (edgeType_[edgeI] & UNDETERMINED)
         {
-            Info << "Edge " << edgeI << " is not determined" << endl;
+            Info<< "Edge " << edgeI << " is not determined" << endl;
             mesh_.addPointToSubset(undeterminedId, edges[edgeI].start());
             mesh_.addPointToSubset(undeterminedId, edges[edgeI].end());
         }
-        if( edgeType_[edgeI] & PATCHEDGE )
+        if (edgeType_[edgeI] & PATCHEDGE)
         {
-            Info << "Edge " << edgeI << " is a patch edge" << endl;
+            Info<< "Edge " << edgeI << " is a patch edge" << endl;
             mesh_.addPointToSubset(patchId, edges[edgeI].start());
             mesh_.addPointToSubset(patchId, edges[edgeI].end());
         }
     }
     # endif
+
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -320,10 +320,12 @@ meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
     classifyEdges();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceCheckEdgeTypes::~meshSurfaceCheckEdgeTypes()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -333,10 +335,11 @@ void meshSurfaceCheckEdgeTypes::convexEdges(labelLongList& convexEdges) const
 
     forAll(edgeType_, eI)
     {
-        if( edgeType_[eI] & CONVEXEDGE )
+        if (edgeType_[eI] & CONVEXEDGE)
             convexEdges.append(eI);
     }
 }
+
 
 void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
 {
@@ -344,10 +347,11 @@ void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
 
     forAll(edgeType_, eI)
     {
-        if( edgeType_[eI] & CONCAVEEDGE )
+        if (edgeType_[eI] & CONCAVEEDGE)
             concaveEdges.append(eI);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

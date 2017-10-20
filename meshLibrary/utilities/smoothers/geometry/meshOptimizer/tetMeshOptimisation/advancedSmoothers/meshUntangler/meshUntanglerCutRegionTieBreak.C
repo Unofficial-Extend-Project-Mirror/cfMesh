@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,10 +46,10 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     // and then start marking vertices connected to that vertex via an edge.
 
     # ifdef DEBUGSmooth
-    Info << "Starting tie break" << endl;
+    Info<< "Starting tie break" << endl;
     # endif
 
-    //- delete pointer data
+    // delete pointer data
     deleteDemandDrivenData(cPtsPtr_);
     deleteDemandDrivenData(cEdgesPtr_);
     deleteDemandDrivenData(cFacesPtr_);
@@ -62,19 +60,17 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     forAll(f, eI)
         faceEdges.append(edges[f[eI]]);
 
-    const DynList<DynList<label> > fvertices =
+    const DynList<DynList<label>> fvertices =
         sortEdgesIntoChains(faceEdges).sortedChains();
-    
-    if( fvertices.size() != 1 )
+
+    if (fvertices.size() != 1)
     {
         valid_ = false;
         return;
 
-        Info << "Face vertices " << fvertices << endl;
-        FatalErrorIn
-        (
-            "void meshUntangler::cutRegion::tieBreak(const face& f)"
-        ) << "Number of created faces is not 1 but "
+        Info<< "Face vertices " << fvertices << endl;
+        FatalErrorInFunction
+            << "Number of created faces is not 1 but "
             << fvertices.size() << abort(FatalError);
     }
 
@@ -86,7 +82,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
 
     label region(1);
     forAll(fv, vI)
-        if( !vertexTypes_[fv[vI]] && !vertexRegion[vI] )
+        if (!vertexTypes_[fv[vI]] && !vertexRegion[vI])
         {
             vertexRegion[vI] = region;
 
@@ -96,53 +92,53 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
             do
             {
                 found = false;
-                if( !vertexTypes_[fv[fcI]] )
+                if (!vertexTypes_[fv[fcI]])
                 {
                     vertexRegion[fcI] = region;
                     fcI = fv.fcIndex(fcI);
                     found = true;
                 }
 
-                if( !vertexTypes_[fv[rcI]] )
+                if (!vertexTypes_[fv[rcI]])
                 {
                     vertexRegion[rcI] = region;
                     rcI = fv.rcIndex(rcI);
                     found = true;
                 }
-            } while( found );
+            } while (found);
 
             ++region;
         }
 
     # ifdef DEBUGSmooth
-    Info << "Tolerance " << tol_ << endl;
-    Info << "Number of regions " << region-1 << endl;
-    Info << "Vertex regions " << vertexRegion << endl;
+    Info<< "Tolerance " << tol_ << endl;
+    Info<< "Number of regions " << region - 1 << endl;
+    Info<< "Vertex regions " << vertexRegion << endl;
     # endif
 
-    if( region > 2 )
+    if (region > 2)
     {
-        //- there are more than two regions which need to be cut off
+        // there are more than two regions which need to be cut off
         # ifdef DEBUGSmooth
         forAll(fv, vI)
-            Info << "Distance for vertex " << fv[vI] << " is "
+            Info<< "Distance for vertex " << fv[vI] << " is "
                 << vertexDistance_[fv[vI]] << endl;
         # endif
 
-        //- there should be only one cut-off region
-        //- there this region will be determined by the most negative
-        //- distance from plane
+        // there should be only one cut-off region
+        // there this region will be determined by the most negative
+        // distance from plane
         scalar minDist(VGREAT);
         label minRegion(-1);
         forAll(fv, vI)
-            if( vertexRegion[vI] && (vertexDistance_[fv[vI]] < minDist) )
+            if (vertexRegion[vI] && (vertexDistance_[fv[vI]] < minDist))
             {
                 minDist = vertexDistance_[fv[vI]];
                 minRegion = vertexRegion[vI];
             }
 
         forAll(vertexRegion, vI)
-            if( vertexRegion[vI] && (vertexRegion[vI] != minRegion) )
+            if (vertexRegion[vI] && (vertexRegion[vI] != minRegion))
             {
                 vertexTypes_[fv[vI]] |= INPLANE;
             }
@@ -150,7 +146,7 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     else
     {
         forAll(fv, vI)
-            if(
+            if (
                 (vertexTypes_[fv[vI]] & INPLANE) &&
                 !vertexRegion[fv.rcIndex(vI)] &&
                 !vertexRegion[fv.fcIndex(vI)]
@@ -160,33 +156,34 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
                 vertexTypes_[fv[vI]] |= KEEP;
 
                 # ifdef DEBUGSmooth
-                Info << "Node " << vI << " was INPLANE" << endl;
-                Info << "New type " << label(vertexTypes_[fv[vI]]) << endl;
+                Info<< "Node " << vI << " was INPLANE" << endl;
+                Info<< "New type " << label(vertexTypes_[fv[vI]]) << endl;
                 # endif
             }
     }
 
     # ifdef DEBUGSmooth
     forAll(fv, vI)
-        Info << "Vertex type for vertex " << fv[vI] << " is "
+        Info<< "Vertex type for vertex " << fv[vI] << " is "
             << label(vertexTypes_[fv[vI]]) << endl;
     # endif
 
-    //- create new points
+    // create new points
     const DynList<point, 64>& points = *pointsPtr_;
     cPtsPtr_ = new DynList<point, 64>();
     newVertexLabel_ = -1;
     origNumVertices_ = 0;
     forAll(points, pI)
-        if( vertexTypes_[pI] )
+        if (vertexTypes_[pI])
         {
             cPtsPtr_->append(points[pI]);
             newVertexLabel_[pI] = origNumVertices_++;
         }
 
-    //- find new edges and continue creating faces
+    // find new edges and continue creating faces
     findNewEdges();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -54,18 +52,19 @@ partTriMesh::partTriMesh(const meshSurfacePartitioner& mPart)
     pointLabelInMeshSurface_(),
     meshSurfacePointLabelInTriMesh_(),
     pointType_(),
-    globalPointLabelPtr_(NULL),
-    pAtProcsPtr_(NULL),
-    globalToLocalPointAddressingPtr_(NULL),
-    neiProcsPtr_(NULL),
-    pAtParallelBoundariesPtr_(NULL),
-    pAtBufferLayersPtr_(NULL)
+    globalPointLabelPtr_(nullptr),
+    pAtProcsPtr_(nullptr),
+    globalToLocalPointAddressingPtr_(nullptr),
+    neiProcsPtr_(nullptr),
+    pAtParallelBoundariesPtr_(nullptr),
+    pAtBufferLayersPtr_(nullptr)
 {
     const meshSurfaceEngine& meshSurface = mPart.surfaceEngine();
     List<direction> useFace(meshSurface.boundaryFaces().size(), direction(1));
 
     createPointsAndTrias(useFace);
 }
+
 
 partTriMesh::partTriMesh
 (
@@ -79,12 +78,12 @@ partTriMesh::partTriMesh
     pointLabelInMeshSurface_(),
     meshSurfacePointLabelInTriMesh_(),
     pointType_(),
-    globalPointLabelPtr_(NULL),
-    pAtProcsPtr_(NULL),
-    globalToLocalPointAddressingPtr_(NULL),
-    neiProcsPtr_(NULL),
-    pAtParallelBoundariesPtr_(NULL),
-    pAtBufferLayersPtr_(NULL)
+    globalPointLabelPtr_(nullptr),
+    pAtProcsPtr_(nullptr),
+    globalToLocalPointAddressingPtr_(nullptr),
+    neiProcsPtr_(nullptr),
+    pAtParallelBoundariesPtr_(nullptr),
+    pAtBufferLayersPtr_(nullptr)
 {
     const meshSurfaceEngine& meshSurface = mPart.surfaceEngine();
     const VRWGraph& pointFaces = meshSurface.pointFaces();
@@ -94,19 +93,24 @@ partTriMesh::partTriMesh
 
     List<direction> useFace(bFaces.size(), direction(0));
 
-    //- select cells containing at least one vertex of the bad faces
+    // select cells containing at least one vertex of the bad faces
     forAll(pointFaces, bpI)
-        if( invertedPoints.found(bPoints[bpI]) )
+    {
+        if (invertedPoints.found(bPoints[bpI]))
         {
             forAllRow(pointFaces, bpI, pfI)
+            {
                 useFace[pointFaces(bpI, pfI)] = 1;
+            }
         }
+    }
 
-    //- add additional layer of cells
-    for(direction layerI=1;layerI<(additionalLayers+direction(1));++layerI)
+    // add additional layer of cells
+    for (direction layerI = 1; layerI<(additionalLayers + direction(1)); ++layerI)
     {
         forAll(useFace, bfI)
-            if( useFace[bfI] == layerI )
+        {
+            if (useFace[bfI] == layerI)
             {
                 const face& bf = bFaces[bfI];
 
@@ -118,13 +122,14 @@ partTriMesh::partTriMesh
                     {
                         const label fLabel = pointFaces(bpI, pfI);
 
-                        if( !useFace[fLabel] )
+                        if (!useFace[fLabel])
                             useFace[fLabel] = layerI + 1;
                     }
                 }
             }
+        }
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             const labelList& globalPointLabel =
                 meshSurface.globalBoundaryPointLabel();
@@ -140,10 +145,12 @@ partTriMesh::partTriMesh
                 forAllRow(pProcs, bpI, procI)
                 {
                     const label neiProc = pProcs(bpI, procI);
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
+                    {
                         continue;
+                    }
 
-                    if( eData.find(neiProc) == eData.end() )
+                    if (eData.find(neiProc) == eData.end())
                     {
                         eData.insert
                         (
@@ -152,15 +159,17 @@ partTriMesh::partTriMesh
                     }
 
                     forAllRow(pointFaces, bpI, pfI)
-                        if( useFace[pointFaces(bpI, pfI)] == layerI )
+                    {
+                        if (useFace[pointFaces(bpI, pfI)] == layerI)
                         {
                             eData[neiProc].append(globalPointLabel[bpI]);
                             break;
                         }
+                    }
                 }
             }
 
-            //- exchange data with other processors
+            // exchange data with other processors
             labelLongList receivedData;
             help::exchangeMap(eData, receivedData);
 
@@ -171,8 +180,10 @@ partTriMesh::partTriMesh
                 forAllRow(pointFaces, bpI, pfI)
                 {
                     const label fLabel = pointFaces(bpI, pfI);
-                    if( !useFace[fLabel] )
+                    if (!useFace[fLabel])
+                    {
                         useFace[fLabel] = layerI + 1;
+                    }
                 }
             }
         }
@@ -180,6 +191,7 @@ partTriMesh::partTriMesh
 
     createPointsAndTrias(useFace);
 }
+
 
 partTriMesh::~partTriMesh()
 {
@@ -191,6 +203,7 @@ partTriMesh::~partTriMesh()
     deleteDemandDrivenData(pAtBufferLayersPtr_);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void partTriMesh::updateVertex(const label pI, const point& newP)
@@ -201,23 +214,25 @@ void partTriMesh::updateVertex(const label pI, const point& newP)
 
     pts[pI] = newP;
 
-    if( pointType_[pI] & FACECENTRE )
+    if (pointType_[pI] & FACECENTRE)
     {
         Warning << "Smoothing auxiliary vertex."
             << " This has no effect on the original mesh" << endl;
         return;
     }
 
-    //- find face centres attached
+    // find face centres attached
     DynList<label> helper;
     forAllRow(pointFacets, pI, ptI)
     {
         const label centreI = surf_[pointFacets(pI, ptI)][2];
-        if( pointType_[centreI] & FACECENTRE )
+        if (pointType_[centreI] & FACECENTRE)
+        {
             helper.appendIfNotIn(centreI);
+        }
     }
 
-    //- update coordinates of FACECENTRE vertices
+    // update coordinates of FACECENTRE vertices
     forAll(helper, i)
     {
         const label centreI = helper[i];
@@ -228,20 +243,24 @@ void partTriMesh::updateVertex(const label pI, const point& newP)
         {
             const labelledTri& tri = surf_[pointFacets(centreI, ptI)];
             point c(vector::zero);
-            for(label i=0;i<3;++i)
+            for (label i = 0; i < 3; ++i)
+            {
                 c += pts[tri[i]];
+            }
+
             c /= 3;
             const scalar area = tri.mag(pts) + VSMALL;
 
-            centre += c * area;
+            centre += c*area;
             faceArea += area;
         }
 
-        pts[centreI] = centre / faceArea;
+        pts[centreI] = centre/faceArea;
     }
 }
 
-void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
+
+void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint>>& np)
 {
     triSurfModifier sMod(surf_);
     pointField& pts = sMod.pointsAccess();
@@ -271,14 +290,16 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
             {
                 const labelledTri& tri = surf_[pointFacets(pointI, ptI)];
 
-                if( pointType_[tri[2]] & FACECENTRE )
+                if (pointType_[tri[2]] & FACECENTRE)
+                {
                     updateType[tri[2]] |= FACECENTRE;
+                }
             }
         }
     }
 
-    //- update coordinates of buffer layer points
-    if( Pstream::parRun() )
+    // update coordinates of buffer layer points
+    if (Pstream::parRun())
     {
         const labelLongList& bufferLayerPoints = this->bufferLayerPoints();
         const VRWGraph& pProcs = this->pointAtProcs();
@@ -286,28 +307,34 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
         const Map<label>& globalToLocal = this->globalToLocalPointAddressing();
         const DynList<label>& neiProcs = this->neiProcs();
 
-        //- create the map
-        std::map<label, LongList<labelledPoint> > exchangeData;
+        // create the map
+        std::map<label, LongList<labelledPoint>> exchangeData;
         forAll(neiProcs, i)
+        {
             exchangeData.insert
             (
                 std::make_pair(neiProcs[i], LongList<labelledPoint>())
             );
+        }
 
-        //- add points into the map
+        // add points into the map
         forAll(bufferLayerPoints, pI)
         {
             const label pointI = bufferLayerPoints[pI];
 
-            if( !(updateType[pointI] & SMOOTH) )
+            if (!(updateType[pointI] & SMOOTH))
+            {
                 continue;
+            }
 
             forAllRow(pProcs, pointI, i)
             {
                 const label neiProc = pProcs(pointI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
+                {
                     continue;
+                }
 
                 exchangeData[neiProc].append
                 (
@@ -330,19 +357,21 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
             {
                 const labelledTri& tri = surf_[pointFacets(triPointI, ptI)];
 
-                if( pointType_[tri[2]] & FACECENTRE )
+                if (pointType_[tri[2]] & FACECENTRE)
+                {
                     updateType[tri[2]] |= FACECENTRE;
+                }
             }
         }
     }
 
-    //- update coordinates of FACECENTRE vertices
+    // update coordinates of FACECENTRE vertices
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
     # endif
     forAll(updateType, pI)
     {
-        if( updateType[pI] & FACECENTRE )
+        if (updateType[pI] & FACECENTRE)
         {
             point centre(vector::zero);
             scalar faceArea(0.0);
@@ -350,22 +379,27 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint> >& np)
             {
                 const labelledTri& tri = surf_[pointFacets(pI, ptI)];
                 point c(vector::zero);
-                for(label i=0;i<3;++i)
+                for (label i = 0; i < 3; ++i)
+                {
                     c += pts[tri[i]];
+                }
                 c /= 3;
                 const scalar area = tri.mag(pts) + VSMALL;
 
-                centre += c * area;
+                centre += c*area;
                 faceArea += area;
             }
 
-            pts[pI] = centre / faceArea;
+            pts[pI] = centre/faceArea;
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
+    {
         updateBufferLayers();
+    }
 }
+
 
 void partTriMesh::updateVertices()
 {
@@ -373,10 +407,13 @@ void partTriMesh::updateVertices()
     const labelList& bPoints = mse.boundaryPoints();
     labelLongList movedPoints(bPoints.size());
     forAll(movedPoints, i)
+    {
         movedPoints[i] = i;
+    }
 
     updateVertices(movedPoints);
 }
+
 
 void partTriMesh::updateVertices(const labelLongList& movedPoints)
 {
@@ -390,8 +427,8 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
 
     List<direction> updateType(pts.size(), direction(0));
 
-    //- update coordinates of vertices which exist in the surface
-    //- of the volume mesh
+    // update coordinates of vertices which exist in the surface
+    // of the volume mesh
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
@@ -401,8 +438,10 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
         const label pointI = bPoints[bpI];
         const label triPointI = meshSurfacePointLabelInTriMesh_[bpI];
 
-        if( triPointI < 0 )
+        if (triPointI < 0)
+        {
             continue;
+        }
 
         pts[triPointI] = points[pointI];
         updateType[triPointI] |= SMOOTH;
@@ -411,13 +450,15 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
         {
             const labelledTri& tri = surf_[pointFacets(triPointI, ptI)];
 
-            if( pointType_[tri[2]] & FACECENTRE )
+            if (pointType_[tri[2]] & FACECENTRE)
+            {
                 updateType[tri[2]] |= FACECENTRE;
+            }
         }
     }
 
-    //- update coordinates of buffer layer points
-    if( Pstream::parRun() )
+    // update coordinates of buffer layer points
+    if (Pstream::parRun())
     {
         const labelLongList& bufferLayerPoints = this->bufferLayerPoints();
         const VRWGraph& pProcs = this->pointAtProcs();
@@ -425,28 +466,34 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
         const Map<label>& globalToLocal = this->globalToLocalPointAddressing();
         const DynList<label>& neiProcs = this->neiProcs();
 
-        //- create the map
-        std::map<label, LongList<labelledPoint> > exchangeData;
+        // create the map
+        std::map<label, LongList<labelledPoint>> exchangeData;
         forAll(neiProcs, i)
+        {
             exchangeData.insert
             (
                 std::make_pair(neiProcs[i], LongList<labelledPoint>())
             );
+        }
 
-        //- add points into the map
+        // add points into the map
         forAll(bufferLayerPoints, pI)
         {
             const label pointI = bufferLayerPoints[pI];
 
-            if( !(updateType[pointI] & SMOOTH) )
+            if (!(updateType[pointI] & SMOOTH))
+            {
                 continue;
+            }
 
             forAllRow(pProcs, pointI, i)
             {
                 const label neiProc = pProcs(pointI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
+                {
                     continue;
+                }
 
                 exchangeData[neiProc].append
                 (
@@ -469,19 +516,21 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
             {
                 const labelledTri& tri = surf_[pointFacets(triPointI, ptI)];
 
-                if( pointType_[tri[2]] & FACECENTRE )
+                if (pointType_[tri[2]] & FACECENTRE)
+                {
                     updateType[tri[2]] |= FACECENTRE;
+                }
             }
         }
     }
 
-    //- update coordinates of FACECENTRE vertices
+    // update coordinates of FACECENTRE vertices
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
     # endif
     forAll(updateType, pI)
     {
-        if( updateType[pI] & FACECENTRE )
+        if (updateType[pI] & FACECENTRE)
         {
             point centre(vector::zero);
             scalar faceArea(0.0);
@@ -489,22 +538,28 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
             {
                 const labelledTri& tri = surf_[pointFacets(pI, ptI)];
                 point c(vector::zero);
-                for(label i=0;i<3;++i)
+                for (label i = 0; i < 3; ++i)
+                {
                     c += pts[tri[i]];
+                }
+
                 c /= 3;
                 const scalar area = tri.mag(pts) + VSMALL;
 
-                centre += c * area;
+                centre += c*area;
                 faceArea += area;
             }
 
-            pts[pI] = centre / faceArea;
+            pts[pI] = centre/faceArea;
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
+    {
         updateBufferLayers();
+    }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

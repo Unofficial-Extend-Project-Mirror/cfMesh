@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Generates boundary layers in the existing mesh, based on the settings
@@ -46,21 +46,21 @@ void generateLayer
 {
     boundaryLayers bl(mesh);
 
-    if( layers2D )
+    if (layers2D)
         bl.activate2DMode();
 
-    if( meshDict.found("boundaryLayers") )
+    if (meshDict.found("boundaryLayers"))
     {
         const dictionary& bndLayers = meshDict.subDict("boundaryLayers");
 
-        if( bndLayers.found("nLayers") )
+        if (bndLayers.found("nLayers"))
         {
             const label nLayers = readLabel(bndLayers.lookup("nLayers"));
 
-            if( nLayers > 0 )
+            if (nLayers > 0)
                 bl.addLayerForAllPatches();
         }
-        else if( bndLayers.found("patchBoundaryLayers") )
+        else if (bndLayers.found("patchBoundaryLayers"))
         {
             const dictionary& patchLayers =
                 bndLayers.subDict("patchBoundaryLayers");
@@ -76,6 +76,7 @@ void generateLayer
     }
 }
 
+
 void meshOptimisation(polyMeshGen& mesh)
 {
     meshOptimizer mOpt(mesh);
@@ -87,9 +88,10 @@ void meshOptimisation(polyMeshGen& mesh)
     mOpt.untangleMeshFV();
 }
 
+
 void layerRefinement(polyMeshGen& mesh, const dictionary& meshDict)
 {
-    if( meshDict.isDict("boundaryLayers") )
+    if (meshDict.isDict("boundaryLayers"))
     {
         refineBoundaryLayers refLayers(mesh);
 
@@ -100,6 +102,7 @@ void layerRefinement(polyMeshGen& mesh, const dictionary& meshDict)
         meshOptimizer(mesh).untangleBoundaryLayer();
     }
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -120,28 +123,29 @@ int main(int argc, char *argv[])
         )
     );
 
-    //- load the mesh from disk
+    // load the mesh from disk
     polyMeshGen pmg(runTime);
     pmg.read();
 
     bool is2DLayer(false);
-    if( args.options().found("2DLayers") )
+    if (args.options().found("2DLayers"))
         is2DLayer = true;
 
-    //- generate the initial boundary layer
+    // generate the initial boundary layer
     generateLayer(pmg, meshDict, is2DLayer);
 
-    //- optimisation of mesh quality
+    // optimisation of mesh quality
     meshOptimisation(pmg);
 
-    //- perform layer refinement
+    // perform layer refinement
     layerRefinement(pmg, meshDict);
 
-    Info << "Writing mesh" << endl;
+    Info<< "Writing mesh" << endl;
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
+
 
 // ************************************************************************* //

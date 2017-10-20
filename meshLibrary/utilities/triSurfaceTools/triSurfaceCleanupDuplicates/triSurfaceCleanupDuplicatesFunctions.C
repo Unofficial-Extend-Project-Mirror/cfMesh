@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,12 +46,12 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 
     const VRWGraph& pointTriangles = surf_.pointFacets();
 
-    //- check if there exist duplicate triangles
+    // check if there exist duplicate triangles
     label counter(0);
 
     forAll(surf_, triI)
     {
-        if( newTriangleLabel[triI] != -1 )
+        if (newTriangleLabel[triI] != -1)
             continue;
 
         newTriangleLabel[triI] = counter;
@@ -65,27 +63,27 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
         {
             const label triJ = pointTriangles(tri[0], ptI);
 
-            if( triJ <= triI )
+            if (triJ <= triI)
                 continue;
 
             const labelledTri& otherTri = surf_[triJ];
 
-            if( tri == otherTri )
+            if (tri == otherTri)
                 newTriangleLabel[triJ] = newTriangleLabel[triI];
         }
     }
 
-    Info << "Found " << (newTriangleLabel.size()-counter)
+    Info<< "Found " << (newTriangleLabel.size()-counter)
         << " duplicate triangles" << endl;
 
-    //- return if there exist no duplicate triangles
-    if( counter == newTriangleLabel.size() )
+    // return if there exist no duplicate triangles
+    if (counter == newTriangleLabel.size())
         return false;
 
-    Info << "Current number of triangles" << surf_.size() << endl;
-    Info << "New number of triangles " << counter << endl;
+    Info<< "Current number of triangles" << surf_.size() << endl;
+    Info<< "New number of triangles " << counter << endl;
 
-    //- create new list of triangles and store it in the surface mesh
+    // create new list of triangles and store it in the surface mesh
     LongList<labelledTri> newTriangles(counter);
 
     forAll(newTriangleLabel, triI)
@@ -100,6 +98,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 
     return true;
 }
+
 
 bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 {
@@ -120,12 +119,12 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
-        //- check if there exist any vertices closer
-        //- than the prescribed tolerance
+        // check if there exist any vertices closer
+        // than the prescribed tolerance
         # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
         # endif
-        for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
+        for (label leafI = 0; leafI < octree_.numberOfLeaves(); ++leafI)
         {
             DynList<label> ct;
             octree_.containedTriangles(leafI, ct);
@@ -136,7 +135,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
             {
                 const label triI = newTriangleLabel_[ct[ctI]];
 
-                if( triI < 0 )
+                if (triI < 0)
                     continue;
 
                 const labelledTri& tri = surf_[triI];
@@ -147,7 +146,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
             for
             (
-                std::set<label>::const_iterator it=points.begin();
+                std::set<label>::const_iterator it = points.begin();
                 it!=points.end();
             )
             {
@@ -159,7 +158,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
                     nIt!=points.end();
                     ++nIt
                 )
-                    if( magSqr(pts[pointI] - pts[*nIt]) < sqr(tolerance_) )
+                    if (magSqr(pts[pointI] - pts[*nIt]) < sqr(tolerance_))
                     {
                         foundDuplicates = true;
                         # ifdef USE_OMP
@@ -171,17 +170,17 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
         }
     }
 
-    //- find if there exist no duplicate points
-    if( !foundDuplicates )
+    // find if there exist no duplicate points
+    if (!foundDuplicates)
         return false;
 
-    //- remove vertices and update node labels
+    // remove vertices and update node labels
     label counter(0);
     forAll(pts, pI)
-        if( newPointLabel[pI] == pI )
+        if (newPointLabel[pI] == pI)
         {
             newPointLabel[pI] = counter;
-            if( counter < pI )
+            if (counter < pI)
                 pts[counter] = pts[pI];
             ++counter;
         }
@@ -191,11 +190,11 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
             newPointLabel[pI] = newPointLabel[origI];
         }
 
-    Info << "Found " << (pts.size() - counter) << "duplicate points" << endl;
+    Info<< "Found " << (pts.size() - counter) << "duplicate points" << endl;
 
     pts.setSize(counter);
 
-    //- remove triangles containing duplicate points
+    // remove triangles containing duplicate points
     LongList<labelledTri> newTriangles(surf_.facets());
     labelLongList newTriangleLabel(surf_.size(), -1);
 
@@ -212,15 +211,15 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
         );
 
         bool store(true);
-        for(label i=0;i<2;++i)
-            for(label j=i+1;j<3;++j)
-                if( newTri[i] == newTri[j] )
+        for (label i = 0; i < 2; ++i)
+            for (label j = i + 1; j < 3; ++j)
+                if (newTri[i] == newTri[j])
                 {
                     store = false;
                     break;
                 }
 
-        if( store )
+        if (store)
         {
             newTriangles[counter] = newTri;
             newTriangleLabel[triI] = counter;
@@ -232,7 +231,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 
     updateTriangleLabels(newTriangleLabel);
 
-    //- update the surface
+    // update the surface
     triSurfModifier(surf_).facetsAccess().transfer(newTriangles);
     surf_.updateFacetsSubsets(newTriangleLabel);
 
@@ -242,20 +241,22 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
     return true;
 }
 
+
 void triSurfaceCleanupDuplicates::updateTriangleLabels
 (
     const labelLongList& newTriangleLabel
 )
 {
-    //- update addressing between the original triangles and the cleaned mesh
+    // update addressing between the original triangles and the cleaned mesh
     forAll(newTriangleLabel_, triI)
     {
         const label origI = newTriangleLabel_[triI];
 
-        if( origI >= 0 )
+        if (origI >= 0)
             newTriangleLabel_[triI] = newTriangleLabel[origI];
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

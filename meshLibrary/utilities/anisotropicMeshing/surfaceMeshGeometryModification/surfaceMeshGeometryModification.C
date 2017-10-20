@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,7 +35,7 @@ namespace Foam
 
 void surfaceMeshGeometryModification::checkModification()
 {
-    if( meshDict_.found("anisotropicSources") )
+    if (meshDict_.found("anisotropicSources"))
     {
         modificationActive_ = true;
 
@@ -45,6 +45,7 @@ void surfaceMeshGeometryModification::checkModification()
         coordinateModifierPtr_ = new coordinateModifier(anisotropicDict);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -56,16 +57,18 @@ surfaceMeshGeometryModification::surfaceMeshGeometryModification
 :
     surf_(surf),
     meshDict_(meshDict),
-    coordinateModifierPtr_(NULL),
+    coordinateModifierPtr_(nullptr),
     modificationActive_(false)
 {
     checkModification();
 }
 
+
 surfaceMeshGeometryModification::~surfaceMeshGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,17 +77,15 @@ bool surfaceMeshGeometryModification::activeModification() const
     return modificationActive_;
 }
 
+
 const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const triSurf* surfaceMeshGeometryModification"
-            "::modifyGeometry() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
-        return NULL;
+        return nullptr;
     }
 
     const pointField& pts = surf_.points();
@@ -95,7 +96,9 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         newPts[pointI] = coordinateModifierPtr_->modifiedPoint(pts[pointI]);
+    }
 
     triSurf* newSurf =
         new triSurf
@@ -106,10 +109,10 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
             newPts
         );
 
-    //- copy subsets
+    // copy subsets
     DynList<label> sIds;
 
-    //- copy facet subsets
+    // copy facet subsets
     surf_.facetSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -120,10 +123,12 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
         surf_.facetsInSubset(sIds[i], facetsInSubset);
 
         forAll(facetsInSubset, fI)
+        {
             newSurf->addFacetToSubset(newId, facetsInSubset[fI]);
+        }
     }
 
-    //- copy point subsets
+    // copy point subsets
     surf_.pointSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -134,10 +139,12 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
         surf_.pointsInSubset(sIds[i], pointsInSubset);
 
         forAll(pointsInSubset, pI)
+        {
             newSurf->addPointToSubset(newId, pointsInSubset[pI]);
+        }
     }
 
-    //- copy subsets of feature edges
+    // copy subsets of feature edges
     surf_.edgeSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -148,24 +155,24 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
         surf_.edgesInSubset(sIds[i], edgesInSubset);
 
         forAll(edgesInSubset, eI)
+        {
             newSurf->addEdgeToSubset(newId, edgesInSubset[eI]);
+        }
     }
 
     return newSurf;
 }
+
 
 const triSurf* surfaceMeshGeometryModification::
 revertGeometryModification() const
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const triSurf* surfaceMeshGeometryModification"
-            "::revertGeometryModification() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
-        return NULL;
+        return nullptr;
     }
 
     const pointField& pts = surf_.points();
@@ -176,8 +183,10 @@ revertGeometryModification() const
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         newPts[pointI] =
             coordinateModifierPtr_->backwardModifiedPoint(pts[pointI]);
+    }
 
     triSurf* newSurf =
         new triSurf
@@ -188,10 +197,10 @@ revertGeometryModification() const
             newPts
         );
 
-    //- copy subsets
+    // copy subsets
     DynList<label> sIds;
 
-    //- copy facet subsets
+    // copy facet subsets
     surf_.facetSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -202,10 +211,12 @@ revertGeometryModification() const
         surf_.facetsInSubset(sIds[i], facetsInSubset);
 
         forAll(facetsInSubset, fI)
+        {
             newSurf->addFacetToSubset(newId, facetsInSubset[fI]);
+        }
     }
 
-    //- copy point subsets
+    // copy point subsets
     surf_.pointSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -216,10 +227,12 @@ revertGeometryModification() const
         surf_.pointsInSubset(sIds[i], pointsInSubset);
 
         forAll(pointsInSubset, pI)
+        {
             newSurf->addPointToSubset(newId, pointsInSubset[pI]);
+        }
     }
 
-    //- copy subsets of feature edges
+    // copy subsets of feature edges
     surf_.edgeSubsetIndices(sIds);
     forAll(sIds, i)
     {
@@ -230,11 +243,14 @@ revertGeometryModification() const
         surf_.edgesInSubset(sIds[i], edgesInSubset);
 
         forAll(edgesInSubset, eI)
+        {
             newSurf->addEdgeToSubset(newId, edgesInSubset[eI]);
+        }
     }
 
     return newSurf;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

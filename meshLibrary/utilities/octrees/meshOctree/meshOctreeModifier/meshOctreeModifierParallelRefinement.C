@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -54,38 +52,36 @@ void meshOctreeModifier::refineTreeForCoordinates
 
     # ifdef OCTREE_DEBUG
     const label levelLimiter = (1 << l);
-    if(
-        (cpx >= levelLimiter) || (cpx < 0) ||
-        (cpy >= levelLimiter) || (cpy < 0) ||
-        (cpz >= levelLimiter) || (cpz < 0)
+    if
+    (
+        (cpx >= levelLimiter) || (cpx < 0)
+     || (cpy >= levelLimiter) || (cpy < 0)
+     || (cpz >= levelLimiter) || (cpz < 0)
     )
     {
-        FatalErrorIn
-        (
-            "void meshOctree::refineTreeForCoordinates("
-            "const meshOctreeCubeCoordinates& cc)"
-        ) << "Trying to add an invalid cube!" << abort(FatalError);
+        FatalErrorInFunction
+            << "Trying to add an invalid cube!" << abort(FatalError);
     }
     # endif
 
     meshOctreeCube* nei(octree_.initialCubePtr_);
 
-    for(label i=(l-1);i>=0;--i)
+    for (label i= (l - 1); i>=0; --i)
     {
         const label levelLimiter = (1 << i);
 
         label scI(0);
 
-        if( cpx & levelLimiter )
+        if (cpx & levelLimiter)
             scI |= 1;
-        if( cpy & levelLimiter )
+        if (cpy & levelLimiter)
             scI |= 2;
-        if( cpz & levelLimiter )
+        if (cpz & levelLimiter)
             scI |= 4;
 
-        if( nei->isLeaf() )
+        if (nei->isLeaf())
         {
-            //- refine the missing cube
+            // refine the missing cube
             nei->refineMissingCube
             (
                 octree_.surface_,
@@ -97,9 +93,9 @@ void meshOctreeModifier::refineTreeForCoordinates
         }
         else
         {
-            if( !nei->subCube(scI) )
+            if (!nei->subCube(scI))
             {
-                //- create the needed cube if it is not present
+                // create the needed cube if it is not present
                 nei->refineMissingCube
                 (
                     octree_.surface_,
@@ -115,6 +111,7 @@ void meshOctreeModifier::refineTreeForCoordinates
     nei->setProcNo(procNo);
     nei->setCubeType(cubeType);
 }
+
 
 void meshOctreeModifier::refineTreeForCoordinates
 (
@@ -132,38 +129,36 @@ void meshOctreeModifier::refineTreeForCoordinates
 
     # ifdef OCTREE_DEBUG
     const label levelLimiter = (1 << l);
-    if(
-        (cpx >= levelLimiter) || (cpx < 0) ||
-        (cpy >= levelLimiter) || (cpy < 0) ||
-        (cpz >= levelLimiter) || (cpz < 0)
+    if
+    (
+        (cpx >= levelLimiter) || (cpx < 0)
+    ||  (cpy >= levelLimiter) || (cpy < 0)
+    ||  (cpz >= levelLimiter) || (cpz < 0)
     )
     {
-        FatalErrorIn
-        (
-            "void meshOctree::refineTreeForCoordinates("
-            "const meshOctreeCubeCoordinates& cc)"
-        ) << "Trying to add an invalid cube!" << abort(FatalError);
+        FatalErrorInFunction
+            << "Trying to add an invalid cube!" << abort(FatalError);
     }
     # endif
 
     meshOctreeCube* nei(octree_.initialCubePtr_);
 
-    for(label i=(l-1);i>=0;--i)
+    for (label i= (l - 1); i>=0; --i)
     {
         const label levelLimiter = (1 << i);
 
         label scI(0);
 
-        if( cpx & levelLimiter )
+        if (cpx & levelLimiter)
             scI |= 1;
-        if( cpy & levelLimiter )
+        if (cpy & levelLimiter)
             scI |= 2;
-        if( cpz & levelLimiter )
+        if (cpz & levelLimiter)
             scI |= 4;
 
-        if( nei->isLeaf() )
+        if (nei->isLeaf())
         {
-            //- refine the missing cube
+            // refine the missing cube
             //nei->refineMissingCube(scI, containedTrianglesI, containedEdgesI);
             nei->refineMissingCube
             (
@@ -178,9 +173,9 @@ void meshOctreeModifier::refineTreeForCoordinates
         {
             meshOctreeCube* scPtr = nei->subCube(scI);
 
-            if( !scPtr )
+            if (!scPtr)
             {
-                //- create the needed cube if it is not present
+                // create the needed cube if it is not present
                 nei->refineMissingCube
                 (
                     octree_.surface_,
@@ -197,31 +192,32 @@ void meshOctreeModifier::refineTreeForCoordinates
     nei->setCubeType(cubeType);
 }
 
+
 void meshOctreeModifier::addLayerFromNeighbouringProcessors()
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
         return;
 
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
     forAll(leaves, leafI)
-        if( leaves[leafI]->procNo() != Pstream::myProcNo() )
+        if (leaves[leafI]->procNo() != Pstream::myProcNo())
             return;
 
-    Info << "Adding an additional layer of cells" << endl;
+    Info<< "Adding an additional layer of cells" << endl;
 
     const labelList& neiProcs = octree_.neiProcs_;
-    const List<Pair<meshOctreeCubeCoordinates> >& neiRange = octree_.neiRange_;
+    const List<Pair<meshOctreeCubeCoordinates>>& neiRange = octree_.neiRange_;
 
     meshOctreeCubeCoordinates minCoord, maxCoord;
-    std::map<label, LongList<meshOctreeCubeBasic> > toProcs;
+    std::map<label, LongList<meshOctreeCubeBasic>> toProcs;
     forAll(neiProcs, i)
         toProcs.insert
         (
             std::make_pair(neiProcs[i], LongList<meshOctreeCubeBasic>())
         );
 
-    //- fill the data into into the map
+    // fill the data into into the map
     forAll(leaves, leafI)
     {
         leaves[leafI]->neighbourRange(minCoord, maxCoord);
@@ -230,8 +226,8 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
         {
             if
             (
-                (maxCoord >= neiRange[procI].first()) &&
-                (minCoord <= neiRange[procI].second())
+                (maxCoord >= neiRange[procI].first())
+             && (minCoord <= neiRange[procI].second())
             )
             {
                 toProcs[neiProcs[procI]].append(*leaves[leafI]);
@@ -240,15 +236,15 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     }
 
     # ifdef OCTREE_DEBUG
-    for(label i=0;i<Pstream::nProcs();++i)
+    for (label i = 0; i < Pstream::nProcs(); ++i)
     {
-        if( i == Pstream::myProcNo() )
+        if (i == Pstream::myProcNo())
         {
             Pout << "Neighbour processors " << neiProcs << endl;
             Pout << "Neighbour range " << neiRange << endl;
 
-            std::map<label, LongList<meshOctreeCubeBasic> >::iterator it;
-            for(it=toProcs.begin();it!=toProcs.end();++it)
+            std::map<label, LongList<meshOctreeCubeBasic>>::iterator it;
+            for (it = toProcs.begin(); it!=toProcs.end(); ++it)
             {
                 Pout << "Sending " << it->second.size() << " cubes to proc "
                     << it->first << endl;
@@ -259,17 +255,22 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     }
     # endif
 
-    //- exchange data with other processors
+    // exchange data with other processors
     LongList<meshOctreeCubeBasic> receivedCoordinates;
-    help::exchangeMap(toProcs, receivedCoordinates, Pstream::commsTypes::blocking);
+    help::exchangeMap
+    (
+        toProcs,
+        receivedCoordinates,
+        Pstream::commsTypes::blocking
+    );
 
     # ifdef OCTREE_DEBUG
     Pout << "Received " << receivedCoordinates.size()
         << " from other procs" << endl;
     # endif
 
-    //- cubes which share a common, face, edge or vertex are added into
-    //- the current processor's tree
+    // cubes which share a common, face, edge or vertex are added into
+    // the current processor's tree
     DynList<label> neighbours;
     forAll(receivedCoordinates, ccI)
     {
@@ -283,10 +284,10 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
         {
             const label nei = neighbours[neiI];
 
-            if( nei < 0 )
+            if (nei < 0)
                 continue;
 
-            if( leaves[nei]->procNo() == Pstream::myProcNo() )
+            if (leaves[nei]->procNo() == Pstream::myProcNo())
             {
                 refineTreeForCoordinates
                 (
@@ -300,15 +301,15 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
         }
     }
 
-    //- recalculate leaves
+    // recalculate leaves
     createListOfLeaves();
 
     # ifdef OCTREE_DEBUG
-    for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
+    for (label leafI = 0; leafI < octree_.numberOfLeaves(); ++leafI)
     {
         const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
 
-        if( oc.procNo() == Pstream::myProcNo() )
+        if (oc.procNo() == Pstream::myProcNo())
             continue;
 
         DynList<label> neighbours;
@@ -319,16 +320,16 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
         {
             const label neiLeaf = neighbours[i];
 
-            if( neiLeaf < 0 )
+            if (neiLeaf < 0)
                 continue;
-            if( octree_.returnLeaf(neiLeaf).procNo() == Pstream::myProcNo() )
+            if (octree_.returnLeaf(neiLeaf).procNo() == Pstream::myProcNo())
             {
                 found = true;
                 break;
             }
         }
 
-        if( !found )
+        if (!found)
             FatalError << "Leaf " << leafI << " with coordinates "
                 << octree_.returnLeaf(leafI)
                 << " has no neighbour local at this processor"
@@ -336,8 +337,9 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     }
     # endif
 
-    Info << "Finished adding an additional layer of octree cubes" << endl;
+    Info<< "Finished adding an additional layer of octree cubes" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

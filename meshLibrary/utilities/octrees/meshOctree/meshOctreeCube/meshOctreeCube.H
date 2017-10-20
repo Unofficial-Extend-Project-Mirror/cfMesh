@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeCube
+    Foam::meshOctreeCube
 
 Description
     A cube stores information needed for mesh generation
@@ -51,13 +51,15 @@ class VRWGraph;
 class meshOctreeSlot;
 
 /*---------------------------------------------------------------------------*\
-                    Class meshOctreeCube Declaration
+                       Class meshOctreeCube Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshOctreeCube
-: public meshOctreeCubeBasic
+:
+    public meshOctreeCubeBasic
 {
     // Private data
+
         //- pointer the slot containing this cube
         meshOctreeSlot* activeSlotPtr_;
 
@@ -73,7 +75,9 @@ class meshOctreeCube
         //- labels of contained surface edges
         label containedEdgesLabel_;
 
+
     // Static data
+
         //- this data is needed to map the the current refinement pattern
         //- to the Hilbert space-filling curve in order to reduce the bandwidth
         //- in the list of leaves. The procedure is performed using the table
@@ -85,7 +89,9 @@ class meshOctreeCube
         //- with the ordering in the above table
         static const label hOrient_[24][8];
 
+
     // Private member functions
+
         //- find edges contained in the cube
         void findContainedEdges
         (
@@ -99,6 +105,7 @@ class meshOctreeCube
 
         //- Disallow copy construct from meshOctreeCubeBasic
         meshOctreeCube(const meshOctreeCubeBasic&);
+
 
 public:
 
@@ -122,9 +129,10 @@ public:
             meshOctreeSlot* slotPtr
         );
 
-    // Destructor
 
-        ~meshOctreeCube();
+    //- Destructor
+    ~meshOctreeCube();
+
 
     // Member Functions
 
@@ -133,7 +141,7 @@ public:
         (
             const triSurf&,
             const boundBox&,
-            meshOctreeSlot* slotPtr = NULL
+            meshOctreeSlot* slotPtr = nullptr
         );
 
         //- subdivide the octree cube
@@ -141,7 +149,7 @@ public:
         (
             const triSurf&,
             const boundBox&,
-            meshOctreeSlot* slotPtr = NULL
+            meshOctreeSlot* slotPtr = nullptr
         );
 
         //- create missing child cubes and refine them until the required
@@ -151,7 +159,7 @@ public:
             const triSurf&,
             const boundBox&,
             const label scI,
-            meshOctreeSlot* slotPtr = NULL
+            meshOctreeSlot* slotPtr = nullptr
         );
 
         //- create missing child cubes and refine them until the required
@@ -162,7 +170,7 @@ public:
             const label scI,
             const label elementsRowI = -1,
             const label edgesRowI = -1,
-            meshOctreeSlot* slotPtr = NULL
+            meshOctreeSlot* slotPtr = nullptr
         );
 
         //- return the pointer to the slot containing the cube
@@ -202,7 +210,9 @@ public:
         //- this list is only allocated for cubes containing edges
         inline label containedEdges() const;
 
+
     // Recursive functions
+
         //- leaves contained in the given box
         void leavesInBox
         (
@@ -247,6 +257,7 @@ public:
 
         //- delete boxes which are not local to the given processor
         bool purgeProcessorCubes(const short procNo);
+
 
     // Member operators
 

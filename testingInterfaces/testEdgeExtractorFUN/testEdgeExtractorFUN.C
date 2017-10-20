@@ -8,10 +8,10 @@
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,8 +19,7 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Test for smoothers
@@ -65,16 +64,16 @@ int main(int argc, char *argv[])
     const fileName surfFile(meshDict.lookup("surfaceFile"));
     const triSurf* surfacePtr = new triSurf(surfFile);
 
-    if( surfacePtr->featureEdges().size() != 0 )
+    if (surfacePtr->featureEdges().size() != 0)
     {
-        //- create surface patches based on the feature edges
-        //- and update the meshDict based on the given data
+        // create surface patches based on the feature edges
+        // and update the meshDict based on the given data
         triSurfacePatchManipulator manipulator(*surfacePtr);
 
         const triSurf* surfaceWithPatches =
             manipulator.surfaceWithPatches(&meshDict);
 
-        //- delete the old surface and assign the new one
+        // delete the old surface and assign the new one
         deleteDemandDrivenData(surfacePtr);
         surfacePtr = surfaceWithPatches;
     }
@@ -91,7 +90,7 @@ int main(int argc, char *argv[])
 
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
 

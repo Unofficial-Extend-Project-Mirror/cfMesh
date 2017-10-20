@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,13 +62,14 @@ scalar volumeOptimizer::evaluateFunc() const
 
         const scalar Vtri = tet.mag();
         const scalar stab = sqrt(sqr(Vtri) + K);
-        const scalar Vstab = 0.5 * (Vtri + stab);
+        const scalar Vstab = 0.5*(Vtri + stab);
 
-        func += LSqrTri / pow(Vstab, 2./3.);
+        func += LSqrTri/pow(Vstab, 2./3.);
     }
 
     return func;
 }
+
 
 scalar volumeOptimizer::evaluateStabilisationFactor() const
 {
@@ -103,11 +102,12 @@ scalar volumeOptimizer::evaluateStabilisationFactor() const
         LSqMax = Foam::max(LSqMax, LSqrTri);
     }
 
-    if( Vmin < SMALL * LSqMax )
-        K = SMALL * LSqMax;
+    if (Vmin < SMALL*LSqMax)
+        K = SMALL*LSqMax;
 
     return K;
 }
+
 
 void volumeOptimizer::evaluateGradientsExact
 (
@@ -128,7 +128,7 @@ void volumeOptimizer::evaluateGradientsExact
     const point& p = points_[pointI_];
 
     const scalar C = 2./3. * pow(0.5, 2./3.);
-    const scalar C1 = C / 3.;
+    const scalar C1 = C/3.;
 
     forAll(tets_, tetI)
     {
@@ -141,7 +141,7 @@ void volumeOptimizer::evaluateGradientsExact
             points_[pt.d()]
         );
 
-        //- calculate the gradient of the volume
+        // calculate the gradient of the volume
         const vector gradV
         (
             (1.0/6.0) *
@@ -151,7 +151,7 @@ void volumeOptimizer::evaluateGradientsExact
             )
         );
 
-        //- calculate the Frobenius norm
+        // calculate the Frobenius norm
         const scalar LSqrTri
         (
             magSqr(tet.d() - tet.a()) +
@@ -159,71 +159,70 @@ void volumeOptimizer::evaluateGradientsExact
             magSqr(tet.d() - tet.c())
         );
 
-        //- calculate the volume of the tetrahedron
+        // calculate the volume of the tetrahedron
         const scalar Vtri = tet.mag();
 
-        //- calculate the stabilisation factor for the volume
+        // calculate the stabilisation factor for the volume
         const scalar stab = sqrt(sqr(Vtri) + K);
 
-        //- evaluate the stabilised volume
-        const scalar Vs = 0.5 * (Vtri + stab);
+        // evaluate the stabilised volume
+        const scalar Vs = 0.5*(Vtri + stab);
 
-        if( Vs < VSMALL )
+        if (Vs < VSMALL)
         {
-            Info << "Tet " << tet << endl;
-            Info << "gradV " << gradV << endl;
-            Info << "Vtri " << Vtri << endl;
+            Info<< "Tet " << tet << endl;
+            Info<< "gradV " << gradV << endl;
+            Info<< "Vtri " << Vtri << endl;
             IOstream::defaultPrecision(20);
-            Info << "Vstab " << Vs << endl;
+            Info<< "Vstab " << Vs << endl;
 
-            FatalErrorIn
-            (
-                "void nodeDisplacementVolumeOptimizer()"
-            ) << "I cannot continue " << exit(FatalError);
+            FatalErrorInFunction
+                << "I cannot continue " << exit(FatalError);
         }
 
-        //- calculate the gradient of the stabilisation volume
-        const vector gradStab = Vtri * gradV / stab;
+        // calculate the gradient of the stabilisation volume
+        const vector gradStab = Vtri*gradV/stab;
 
-        //- calculate the gradient of the Frobenius norm
+        // calculate the gradient of the Frobenius norm
         const vector gradLsq = 2. * (3. * p - tet.a() - tet.b() - tet.c());
 
-        //- calculate the gradient of the stabilised volume
-        const vector gradVs = 0.5 * (gradV + gradStab);
+        // calculate the gradient of the stabilised volume
+        const vector gradVs = 0.5*(gradV + gradStab);
 
-        //- calculate the gradient of the functional
+        // calculate the gradient of the functional
         const scalar Vs13 = pow(2. * Vs, 1./3.);
         const scalar Vstab = pow(Vs, 2./3.);
         const scalar sqrVstab = sqr(Vstab);
-        const vector gradVstab = C * (2. * gradVs) / Vs13;
+        const vector gradVstab = C*(2. * gradVs) / Vs13;
 
-        gradF += gradLsq / Vstab - LSqrTri * gradVstab / sqrVstab;
+        gradF += gradLsq/Vstab - LSqrTri*gradVstab/sqrVstab;
 
-        //- calculate the second gradient of the stabilisation volume
+        // calculate the second gradient of the stabilisation volume
         const tensor gradGradStab =
-            (gradV * gradV) / stab -
-            sqr(Vtri) * (gradV * gradV) / pow(stab, 3);
+            (gradV*gradV) / stab -
+            sqr(Vtri)*(gradV*gradV) / pow(stab, 3);
 
-        //- calculate the second gradient of the stabilised volume
+        // calculate the second gradient of the stabilised volume
 
         const tensor gradGradVstab =
-            C * (gradGradStab / Vs13) -
-            C1 * 4. * (gradVs * gradVs) / pow(Vs13, 4);
+            C*(gradGradStab/Vs13) -
+            C1*4. * (gradVs*gradVs) / pow(Vs13, 4);
 
-        //- calculate the second gradient
+        // calculate the second gradient
         gradGradF +=
-            gradGradLsq / Vstab -
-            twoSymm(gradLsq * (gradVstab / sqrVstab)) -
-            LSqrTri * gradGradVstab / sqrVstab +
-            2.0 * LSqrTri * (gradVstab * gradVstab) / (sqrVstab * Vstab);
+            gradGradLsq/Vstab -
+            twoSymm(gradLsq*(gradVstab/sqrVstab)) -
+            LSqrTri*gradGradVstab/sqrVstab +
+            2.0*LSqrTri*(gradVstab*gradVstab)/(sqrVstab*Vstab);
     }
 }
+
 
 scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
 {
     point& pOpt = points_[pointI_];
 
-    pOpt = 0.5 * (bb_.max() + bb_.min());
+    pOpt = 0.5*(bb_.max() + bb_.min());
     point currCentre = pOpt;
     scalar dx = (bb_.max().x() - bb_.min().x()) / 2.0;
     scalar dy = (bb_.max().y() - bb_.min().y()) / 2.0;
@@ -231,7 +230,7 @@ scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
 
     label iter(0);
 
-    //- find the value of the functional in the centre of the bnd box
+    // find the value of the functional in the centre of the bnd box
     scalar funcBefore, funcAfter(evaluateFunc());
 
     do
@@ -241,47 +240,48 @@ scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
         funcAfter = VGREAT;
         point minCentre(vector::zero);
 
-        for(label i=0;i<8;++i)
+        for (label i = 0; i < 8; ++i)
         {
-            pOpt.x() = currCentre.x() + 0.5 * dirVecs[i].x() * dx;
-            pOpt.y() = currCentre.y() + 0.5 * dirVecs[i].y() * dy;
-            pOpt.z() = currCentre.z() + 0.5 * dirVecs[i].z() * dz;
+            pOpt.x() = currCentre.x() + 0.5*dirVecs[i].x()*dx;
+            pOpt.y() = currCentre.y() + 0.5*dirVecs[i].y()*dy;
+            pOpt.z() = currCentre.z() + 0.5*dirVecs[i].z()*dz;
 
             const scalar func = evaluateFunc();
 
-            if( func < funcAfter )
+            if (func < funcAfter)
             {
                 minCentre = pOpt;
                 funcAfter = func;
             }
         }
 
-        //- set the centre with the minimum value
-        //- as the centre for future search
+        // set the centre with the minimum value
+        // as the centre for future search
         currCentre = minCentre;
         pOpt = minCentre;
 
-        //- halve the search range
+        // halve the search range
         dx *= 0.5;
         dy *= 0.5;
         dz *= 0.5;
 
-        //- calculate the tolerence
+        // calculate the tolerence
         const scalar t = mag(funcAfter - funcBefore) / funcAfter;
 
         # ifdef DEBUGSmooth
-        Info << "Point position " << pOpt << endl;
-        Info << "Func before " << funcBefore << endl;
-        Info << "Func after " << funcAfter << endl;
-        Info << "Normalised difference " << t << endl;
+        Info<< "Point position " << pOpt << endl;
+        Info<< "Func before " << funcBefore << endl;
+        Info<< "Func after " << funcAfter << endl;
+        Info<< "Normalised difference " << t << endl;
         # endif
 
-        if( t < tol )
+        if (t < tol)
             break;
-    } while( ++iter < 100 );
+    } while (++iter < 100);
 
     return funcAfter;
 }
+
 
 scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
 {
@@ -290,12 +290,12 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
     point& p = points_[pointI_];
 
     # ifdef DEBUGSmooth
-    Info << nl << "Smoothing point " << pointI_
+    Info<< nl << "Smoothing point " << pointI_
          << " with coordinates " << p << endl;
     scalar Vmina(VGREAT);
     forAll(tets_, tetI)
     Vmina = Foam::min(Vmina, tets_[tetI].mag(points_));
-    Info << "Vmin before " << Vmina << endl;
+    Info<< "Vmin before " << Vmina << endl;
     # endif
 
     vector gradF;
@@ -315,7 +315,7 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
         evaluateGradientsExact(gradF, gradGradF);
 
         const scalar determinant = Foam::det(gradGradF);
-        if( determinant > SMALL )
+        if (determinant > SMALL)
         {
             disp = (inv(gradGradF, determinant) & gradF);
 
@@ -324,29 +324,29 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
             funcAfter = evaluateFunc();
 
             # ifdef DEBUGSmooth
-            Info << nl << "gradF " << gradF << endl;
-            Info << "gradGradF " << gradGradF << endl;
-            Info << "det(gradGradF) " << determinant << endl;
-            Info << "disp " << disp << endl;
-            Info << "Func before " << funcBefore << endl;
-            Info << "Func after " << funcAfter << endl;
+            Info<< nl << "gradF " << gradF << endl;
+            Info<< "gradGradF " << gradGradF << endl;
+            Info<< "det(gradGradF) " << determinant << endl;
+            Info<< "disp " << disp << endl;
+            Info<< "Func before " << funcBefore << endl;
+            Info<< "Func after " << funcAfter << endl;
             # endif
 
             scalar relax(0.8);
             label nLoops(0);
 
-            while( funcAfter > funcBefore )
+            while (funcAfter > funcBefore)
             {
-                p = pOrig - relax * disp;
+                p = pOrig - relax*disp;
                 relax *= 0.5;
                 funcAfter = evaluateFunc();
 
-                if( funcAfter < funcBefore )
+                if (funcAfter < funcBefore)
                     continue;
 
-                if( ++nLoops == 5 )
+                if (++nLoops == 5)
                 {
-                    //- it seems that this direction is wrong, stop the loop
+                    // it seems that this direction is wrong, stop the loop
                     p = pOrig;
                     disp = vector::zero;
                     finished = true;
@@ -354,20 +354,20 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
                 }
             }
 
-            if( mag(funcBefore - funcAfter) / funcBefore < tol )
+            if (mag(funcBefore-funcAfter) / funcBefore < tol)
                 finished = true;
         }
         else
         {
-            //- move in random direction
-            //- this is usually needed to move the point off the zero volume
+            // move in random direction
+            // this is usually needed to move the point off the zero volume
             disp = vector::zero;
             forAll(tets_, tetI)
             {
                 const partTet& tet = tets_[tetI];
                 const scalar Vtri = tet.mag(points_);
 
-                if( Vtri < SMALL )
+                if (Vtri < SMALL)
                 {
                     triangle<point, point> tri
                     (
@@ -379,29 +379,30 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
                     vector n = tri.normal();
                     const scalar d = mag(n);
 
-                    if( d > VSMALL )
-                        disp += 0.01 * (n / d);
+                    if (d > VSMALL)
+                        disp += 0.01*(n/d);
                 }
             }
 
             p += disp;
             funcAfter = evaluateFunc();
         }
-    } while( (++iter < 100) && !finished );
+    } while ((++iter < 100) && !finished);
 
     # ifdef DEBUGSmooth
     scalar Vmin(VGREAT);
     forAll(tets_, tetI)
         Vmin = Foam::min(Vmin, tets_[tetI].mag(points_));
 
-    Info << nl << "New coordinates for point "
+    Info<< nl << "New coordinates for point "
         << pointI_ << " are " << p << endl;
-    Info << "Num iterations " << iter << " gradient " << gradF << endl;
-    Info << "Vmin " << Vmin << endl;
+    Info<< "Num iterations " << iter << " gradient " << gradF << endl;
+    Info<< "Vmin " << Vmin << endl;
     # endif
 
     return funcAfter;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

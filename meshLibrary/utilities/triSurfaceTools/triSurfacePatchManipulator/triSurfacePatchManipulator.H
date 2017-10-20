@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfacePatchManipulator
+    Foam::triSurfacePatchManipulator
 
 Description
     Generates patches in the surface mesh based
@@ -45,14 +45,14 @@ SourceFiles
 
 namespace Foam
 {
-
 /*---------------------------------------------------------------------------*\
-                Class triSurfacePatchManipulator Declaration
+                 Class triSurfacePatchManipulator Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurfacePatchManipulator
 {
     // Private data
+
         //- const reference to triSurf
         const triSurf& surf_;
 
@@ -71,7 +71,9 @@ class triSurfacePatchManipulator
         //- patch types
         wordList newPatchTypes_;
 
+
     // Private member functions
+
         //- allocate and fill the feature edges list
         void allocateFeatureEdges();
 
@@ -84,16 +86,14 @@ class triSurfacePatchManipulator
         //- Disallow default bitwise assignment
         void operator=(const triSurfacePatchManipulator&);
 
+
 public:
 
-    // Constructors
+    //- Construct from triSurface
+    triSurfacePatchManipulator(const triSurf& surface);
 
-        //- Construct from triSurface
-        triSurfacePatchManipulator(const triSurf& surface);
-
-    // Destructor
-
-        ~triSurfacePatchManipulator();
+    //- Destructor
+    ~triSurfacePatchManipulator();
 
 
     // Member Functions
@@ -103,11 +103,12 @@ public:
         //- store regions into subsets with a given prefix
         const triSurf* surfaceWithPatches
         (
-            IOdictionary* meshDictPtr = NULL,
+            IOdictionary* meshDictPtr = nullptr,
             const word prefix = "patch_",
             const bool forceOverwrite = false
         ) const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

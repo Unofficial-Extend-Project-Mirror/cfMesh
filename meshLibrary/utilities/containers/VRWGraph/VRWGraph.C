@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,12 +37,12 @@ Foam::Ostream& Foam::operator<<
 {
     os << DL.size() << nl << token::BEGIN_LIST << nl;
 
-    for(label i=0;i<DL.size();++i)
+    for (label i = 0; i < DL.size(); ++i)
     {
         os << DL.sizeOfRow(i) << token::BEGIN_LIST;
-        for(label j=0;j<DL.sizeOfRow(i);++j)
+        for (label j = 0; j < DL.sizeOfRow(i); ++j)
         {
-            if( j ) os << token::SPACE;
+            if (j) os << token::SPACE;
 
             os << DL(i, j);
         }
@@ -53,13 +53,11 @@ Foam::Ostream& Foam::operator<<
     os << token::END_LIST;
 
     // Check state of IOstream
-    os.check
-    (
-        "Foam::Ostream& Foam::operator<<(Foam::Ostream&, const Foam::VRWGraph&)"
-    );
+    os.check(FUNCTION_NAME);
 
     return os;
 }
+
 
 /*
 template<class T, Foam::label width>
@@ -83,13 +81,15 @@ Foam::Istream& Foam::operator>>
 }
 */
 
+
 void Foam::VRWGraph::optimizeMemoryUsage()
 {
     labelLongList newPosForNode(data_.size());
     label pos(0), nElements;
     nElements = data_.size();
-    for(label elI=0;elI<nElements;++elI)
-        if( data_[elI] != FREEENTRY )
+    for (label elI = 0; elI < nElements; ++elI)
+    {
+        if (data_[elI] != FREEENTRY)
         {
             newPosForNode[elI] = pos++;
         }
@@ -97,19 +97,29 @@ void Foam::VRWGraph::optimizeMemoryUsage()
         {
             newPosForNode[elI] = -1;
         }
+    }
 
-    //- create new data
-    for(label elI=0;elI<nElements;++elI)
-        if( (newPosForNode[elI] != -1) && (newPosForNode[elI] < elI) )
+    // create new data
+    for (label elI = 0; elI < nElements; ++elI)
+    {
+        if ((newPosForNode[elI] != -1) && (newPosForNode[elI] < elI))
+        {
             data_[newPosForNode[elI]] = data_[elI];
+        }
+    }
 
     data_.setSize(pos);
 
-    //- renumber rows
+    // renumber rows
     nElements = rows_.size();
-    for(label rowI=0;rowI<nElements;++rowI)
-        if( rows_[rowI].start() != INVALIDROW )
+    for (label rowI = 0; rowI < nElements; ++rowI)
+    {
+        if (rows_[rowI].start() != INVALIDROW)
+        {
             rows_[rowI].start() = newPosForNode[rows_[rowI].start()];
+        }
+    }
 }
+
 
 // ************************************************************************* //

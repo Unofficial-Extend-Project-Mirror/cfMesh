@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeCubeBasic
+    Foam::meshOctreeCubeBasic
 
 Description
     A cube stores information needed for mesh generation
@@ -48,18 +48,22 @@ namespace Foam
 \*---------------------------------------------------------------------------*/
 
 class meshOctreeCubeBasic
-: public meshOctreeCubeCoordinates
+:
+    public meshOctreeCubeCoordinates
 {
     // Private data
+
         //- cube type
         direction cubeType_;
 
         //- processor to which the cube belongs to
         short procNo_;
 
+
 public:
 
     // Constructors
+
         //- Null constructor
         inline meshOctreeCubeBasic();
 
@@ -77,10 +81,11 @@ public:
             const short procNo = ALLPROCS
         );
 
-    // Destructor
 
-        ~meshOctreeCubeBasic()
-        {}
+    //- Destructor
+    ~meshOctreeCubeBasic()
+    {}
+
 
     // Enumerators
 
@@ -94,7 +99,9 @@ public:
             OTHERPROC = -3
         };
 
+
     // Member functions
+
         //- return type
         inline direction cubeType() const;
 
@@ -110,11 +117,13 @@ public:
         //- return coordinates in the octree
         inline const meshOctreeCubeCoordinates& coordinates() const;
 
-        // Member operators
+
+    // Member operators
 
         inline void operator=(const meshOctreeCubeBasic&);
 
-        // Friend operators
+
+    // Friend operators
 
         friend inline Ostream& operator<<
         (
@@ -129,11 +138,14 @@ public:
         );
 };
 
+
 //- Specify data associated with meshOctreeCubeBasic type is contiguous
 template<>
-inline bool contiguous<meshOctreeCubeBasic>() {
+inline bool contiguous<meshOctreeCubeBasic>()
+{
     return true;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

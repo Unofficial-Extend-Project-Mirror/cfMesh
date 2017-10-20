@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -49,14 +47,14 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     const bool transformIntoPlane
 )
 {
-    if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
+    if (returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
         return;
 
-    //- create storage for data
+    // create storage for data
     std::map<label, labelledPoint> localData;
 
-    //- exchange data with other processors
-    std::map<label, LongList<refLabelledPoint> > exchangeData;
+    // exchange data with other processors
+    std::map<label, LongList<refLabelledPoint>> exchangeData;
 
     const pointField& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
@@ -68,20 +66,20 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     const Map<label>& globalToLocal =
         surfaceEngine_.globalToLocalBndPointAddressing();
 
-    //- perform smoothing
+    // perform smoothing
     forAll(nodesToSmooth, pI)
     {
         const label bpI = nodesToSmooth[pI];
 
-        if( vertexType_[bpI] & LOCKED )
+        if (vertexType_[bpI] & LOCKED)
             continue;
 
-        if( magSqr(pNormals[bpI]) < VSMALL )
+        if (magSqr(pNormals[bpI]) < VSMALL)
             continue;
 
         const plane pl(points[bPoints[bpI]], pNormals[bpI]);
 
-        //- project points onto the plane
+        // project points onto the plane
         localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
         labelledPoint& lpd = localData[bpI];
 
@@ -89,17 +87,17 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         {
             const label nei = pPoints(bpI, ppI);
 
-            if( bpAtProcs.sizeOfRow(nei) != 0 )
+            if (bpAtProcs.sizeOfRow(nei) != 0)
             {
                 label pMin(Pstream::nProcs());
                 forAllRow(bpAtProcs, nei, procI)
                 {
                     const label procJ = bpAtProcs(nei, procI);
-                    if( (procJ < pMin) && bpAtProcs.contains(bpI, procJ) )
+                    if ((procJ < pMin) && bpAtProcs.contains(bpI, procJ))
                         pMin = procJ;
                 }
 
-                if( pMin != Pstream::myProcNo() )
+                if (pMin != Pstream::myProcNo())
                     continue;
             }
 
@@ -111,10 +109,10 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
-            if( exchangeData.find(neiProc) == exchangeData.end() )
+            if (exchangeData.find(neiProc) == exchangeData.end())
             {
                 exchangeData.insert
                 (
@@ -122,13 +120,13 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
                 );
             }
 
-            //- add data to the list which will be sent to other processor
+            // add data to the list which will be sent to other processor
             LongList<refLabelledPoint>& dts = exchangeData[neiProc];
             dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
         }
     }
 
-    //- exchange data with other processors
+    // exchange data with other processors
     LongList<refLabelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
@@ -147,10 +145,10 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     {
         const label bpI = nodesToSmooth[pI];
 
-        if( localData.find(bpI) == localData.end() )
+        if (localData.find(bpI) == localData.end())
             continue;
 
-        //- create new point position
+        // create new point position
         const labelledPoint& lp = localData[bpI];
         const point newP = lp.coordinates() / lp.pointLabel();
 
@@ -163,20 +161,21 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
     }
 }
 
+
 void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 (
     const labelLongList& nodesToSmooth,
     const bool transformIntoPlane
 )
 {
-    if( returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
+    if (returnReduce(nodesToSmooth.size(), sumOp<label>()) == 0 )
         return;
 
-    //- create storage for data
+    // create storage for data
     std::map<label, labelledPoint> localData;
 
-    //- exchange data with other processors
-    std::map<label, LongList<refLabelledPoint> > exchangeData;
+    // exchange data with other processors
+    std::map<label, LongList<refLabelledPoint>> exchangeData;
 
     const pointField& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
@@ -190,20 +189,20 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
     const Map<label>& globalToLocal =
         surfaceEngine_.globalToLocalBndPointAddressing();
 
-    //- perform smoothing
+    // perform smoothing
     forAll(nodesToSmooth, pI)
     {
         const label bpI = nodesToSmooth[pI];
 
-        if( vertexType_[bpI] & LOCKED )
+        if (vertexType_[bpI] & LOCKED)
             continue;
 
-        if( magSqr(pNormals[bpI]) < VSMALL )
+        if (magSqr(pNormals[bpI]) < VSMALL)
             continue;
 
         const plane pl(points[bPoints[bpI]], pNormals[bpI]);
 
-        //- project points onto the plane
+        // project points onto the plane
         localData.insert(std::make_pair(bpI, labelledPoint(0, vector::zero)));
         labelledPoint& lpd = localData[bpI];
 
@@ -217,10 +216,10 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
-            if( exchangeData.find(neiProc) == exchangeData.end() )
+            if (exchangeData.find(neiProc) == exchangeData.end())
             {
                 exchangeData.insert
                 (
@@ -228,13 +227,13 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
                 );
             }
 
-            //- add data to the list which will be sent to other processor
+            // add data to the list which will be sent to other processor
             LongList<refLabelledPoint>& dts = exchangeData[neiProc];
             dts.append(refLabelledPoint(globalPointLabel[bpI], lpd));
         }
     }
 
-    //- exchange data with other processors
+    // exchange data with other processors
     LongList<refLabelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
@@ -258,13 +257,13 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
     {
         const label bpI = nodesToSmooth[pI];
 
-        if( localData.find(bpI) == localData.end() )
+        if (localData.find(bpI) == localData.end())
         {
             newPositions[pI] = points[bPoints[bpI]];
             continue;
         }
 
-        //- create new point position
+        // create new point position
         const labelledPoint& lp = localData[bpI];
         const point newP = lp.coordinates() / lp.pointLabel();
 
@@ -285,14 +284,15 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
     }
 }
 
+
 void meshSurfaceOptimizer::edgeNodeDisplacementParallel
 (
     const labelLongList& nodesToSmooth
 )
 {
-    std::map<label, DynList<labelledPoint, 2> > mPts;
+    std::map<label, DynList<labelledPoint, 2>> mPts;
 
-    //- insert labels into the map
+    // insert labels into the map
     const labelList& globalPointLabel =
         surfaceEngine_.globalBoundaryPointLabel();
 
@@ -308,18 +308,18 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         );
     }
 
-    //- add local edge points
+    // add local edge points
     const pointField& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const edgeList& edges = surfaceEngine_.edges();
     const VRWGraph& bpEdges = surfaceEngine_.boundaryPointEdges();
-    const  labelList& bp = surfaceEngine_.bp();
+    const labelList& bp = surfaceEngine_.bp();
 
     forAll(nodesToSmooth, nI)
     {
         const label bpI = nodesToSmooth[nI];
 
-        if( vertexType_[bpI] & LOCKED)
+        if (vertexType_[bpI] & LOCKED)
             continue;
 
         DynList<labelledPoint, 2>& neiPoints = mPts[globalPointLabel[bpI]];
@@ -328,7 +328,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         {
             const edge& e = edges[bpEdges(bpI, epI)];
             const label pI = bp[e.otherVertex(bPoints[bpI])];
-            if( vertexType_[pI] & (EDGE+CORNER) )
+            if (vertexType_[pI] & (EDGE + CORNER))
             {
                 neiPoints.append
                 (
@@ -338,16 +338,16 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         }
     }
 
-    //- start preparing data which can be exchanged with other processors
+    // start preparing data which can be exchanged with other processors
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
     const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
 
-    std::map<label, LongList<refLabelledPoint> > mProcs;
+    std::map<label, LongList<refLabelledPoint>> mProcs;
     forAll(neiProcs, procI)
     {
         const label neiProc = neiProcs[procI];
 
-        if( neiProc == Pstream::myProcNo() )
+        if (neiProc == Pstream::myProcNo())
             continue;
 
         mProcs.insert(std::make_pair(neiProc, LongList<refLabelledPoint>()));
@@ -364,7 +364,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         {
             const label neiProc = bpAtProcs(bpI, procI);
 
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
             forAll(neiPoints, npI)
@@ -378,7 +378,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         }
     }
 
-    //- exchange data with other processors
+    // exchange data with other processors
     LongList<refLabelledPoint> receivedData;
     help::exchangeMap(mProcs, receivedData);
 
@@ -389,7 +389,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         lPts.appendIfNotIn(receivedData[prI].lPoint());
     }
 
-    //- Finally, the data is ready to start smoothing
+    // Finally, the data is ready to start smoothing
     meshSurfaceEngineModifier sm(surfaceEngine_);
 
     pointField newPositions(nodesToSmooth.size());
@@ -405,7 +405,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         forAll(nPts, ppI)
             newP += nPts[ppI].coordinates();
 
-        if( nPts.size() == 2 )
+        if (nPts.size() == 2)
         {
             newP /= nPts.size();
             newPositions[pI] = newP;
@@ -423,10 +423,11 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
         sm.moveBoundaryVertexNoUpdate(nodesToSmooth[pI], newPositions[pI]);
 }
 
+
 void meshSurfaceOptimizer::exchangeData
 (
     const labelLongList& /*nodesToSmooth*/,
-    std::map<label, DynList<parTriFace> >& /*m*/
+    std::map<label, DynList<parTriFace>>& /*m*/
 ) const
 {
     /*
@@ -444,7 +445,7 @@ void meshSurfaceOptimizer::exchangeData
         shareData.insert(std::make_pair(neiProc, LongList<parTriFace>()));
     }
 
-    //- create data which will be sent to other processors
+    // create data which will be sent to other processors
     const pointField& points = surfaceEngine_.points();
     const labelList& globalPointLabel =
         surfaceEngine_.globalBoundaryPointLabel();
@@ -453,13 +454,13 @@ void meshSurfaceOptimizer::exchangeData
     const VRWGraph& pTriangles = pointTriangles();
 
     m.clear();
-    std::map<label, DynList<parTriFace> >::iterator pIter;
+    std::map<label, DynList<parTriFace>>::iterator pIter;
     forAll(nodesToSmooth, nI)
     {
         const label bpI = nodesToSmooth[nI];
 
         pIter = m.find(globalPointLabel[bpI]);
-        if( pIter == m.end() )
+        if (pIter == m.end())
         {
             m.insert
             (
@@ -492,7 +493,7 @@ void meshSurfaceOptimizer::exchangeData
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
             LongList<parTriFace>& shData = shareData[neiProc];
@@ -504,7 +505,7 @@ void meshSurfaceOptimizer::exchangeData
         }
     }
 
-    //- send data to other processors
+    // send data to other processors
     LongList<parTriFace> receivedData;
     help::exchangeMap(shareData, receivedData);
 
@@ -513,21 +514,17 @@ void meshSurfaceOptimizer::exchangeData
         const label gpI = receivedData[tI].globalLabelOfPoint(0);
 
         pIter = m.find(gpI);
-        if( pIter == m.end() )
+        if (pIter == m.end())
         {
-            FatalErrorIn
-            (
-                "void meshSurfaceOptimizer::exchangeData("
-                "const labelLongList& nodesToSmooth,"
-                "map<label, DynList<parTriFace> >& m"
-                ") const"
-            ) << "Unknown point " << gpI << abort(FatalError);
+            FatalErrorInFunction
+                << "Unknown point " << gpI << abort(FatalError);
         }
 
         pIter->second.append(receivedData[tI]);
     }
     */
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

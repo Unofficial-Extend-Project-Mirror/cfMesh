@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,8 +42,10 @@ VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
     graph_(graph)
 {}
 
+
 VRWGraphSMPModifier::~VRWGraphSMPModifier()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -53,45 +55,50 @@ void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
     const label nRows = graphParts[0].size();
     forAll(graphParts, i)
     {
-        if( nRows != graphParts[i].size() )
-            FatalErrorIn
-            (
-                "inline void Foam::VRWGraph::mergeGraphs(const List<VRWGraph>&)"
-            ) << "Cannot merge graphs" << abort(FatalError);
+        if (nRows != graphParts[i].size())
+        {
+            FatalErrorInFunction
+                << "Cannot merge graphs" << abort(FatalError);
+        }
     }
 
-    //- find the number of elements in each row
+    // find the number of elements in each row
     labelLongList nElmtsInRow(nRows);
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
     # endif
-    for(label rowI=0;rowI<nRows;++rowI)
+    for (label rowI = 0; rowI < nRows; ++rowI)
     {
         label sum(0);
-        for(label i=0;i<nGraphs;++i)
+        for (label i = 0; i < nGraphs; ++i)
+        {
             sum += graphParts[i].sizeOfRow(rowI);
+        }
 
         nElmtsInRow[rowI] = sum;
     }
 
-    //- set the size of graph
+    // set the size of graph
     setSizeAndRowSize(nElmtsInRow);
 
-    //- Finally, assemble the merged graph
+    // Finally, assemble the merged graph
     # ifdef USE_OMP
     # pragma omp parallel for schedule(static, 1)
     # endif
-    for(label rowI=0;rowI<nRows;++rowI)
+    for (label rowI = 0; rowI < nRows; ++rowI)
     {
         forAll(graphParts, i)
         {
             const VRWGraph& gp = graphParts[i];
-            for(label j=0;j<gp.sizeOfRow(rowI);++j)
+            for (label j = 0; j < gp.sizeOfRow(rowI); ++j)
+            {
                 graph_(rowI, --nElmtsInRow[rowI]) = gp(rowI, j);
+            }
         }
     }
 }
+
 
 void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
 {
@@ -99,15 +106,17 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
     labelLongList nAppearances;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( origGraph.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (origGraph.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
 
     label minRow(INT_MAX), maxRow(-1);
-    List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>>> dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
@@ -119,11 +128,11 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         const label threadI(0);
         # endif
 
-        List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
+        List<LongList<labelPair>>& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
 
-        //- find min and max entry in the graph
-        //- they are used for assigning ranges of values local for each process
+        // find min and max entry in the graph
+        // they are used for assigning ranges of values local for each process
         label localMinRow(INT_MAX), localMaxRow(-1);
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -154,22 +163,24 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         # pragma omp barrier
         # endif
 
-        //- initialise appearances
+        // initialise appearances
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
-        for(label i=0;i<maxRow;++i)
+        for (label i = 0; i < maxRow; ++i)
+        {
             nAppearances[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
-        const label localMin = minRow + threadI * range;
+        const label localMin = minRow + threadI*range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
-        //- find the number of appearances of each element in the original graph
+        // find the number of appearances of each element in the original graph
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -181,7 +192,7 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
 
                 const label threadNo = (entryI - minRow) / range;
 
-                if( threadNo == threadI )
+                if (threadNo == threadI)
                 {
                     ++nAppearances[entryI];
                 }
@@ -196,21 +207,22 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         # pragma omp barrier
         # endif
 
-        //- count the appearances which are not local to the processor
-        for(label i=0;i<nThreads;++i)
+        // count the appearances which are not local to the processor
+        for (label i = 0; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
+            {
                 ++nAppearances[data[j].first()];
+            }
         }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
-        //- allocate graph
+        // allocate graph
         # ifdef USE_OMP
         # pragma omp master
         # endif
@@ -220,17 +232,16 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
         # pragma omp barrier
         # endif
 
-        for(label i=localMin;i<localMax;++i)
+        for (label i = localMin; i < localMax; ++i)
         {
             nAppearances[i] = 0;
         }
 
-        //- start filling reverse addressing graph
-        //- update data from processors with smaller labels
-        for(label i=0;i<threadI;++i)
+        // start filling reverse addressing graph
+        // update data from processors with smaller labels
+        for (label i = 0; i < threadI; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -239,7 +250,7 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
             }
         }
 
-        //- update data local to the processor
+        // update data local to the processor
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -249,16 +260,17 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
             {
                 const label entryI = origGraph(rowI, j);
 
-                if( (entryI >= localMin) && (entryI < localMax) )
+                if ((entryI >= localMin) && (entryI < localMax))
+                {
                     graph_(entryI, nAppearances[entryI]++) = rowI;
+                }
             }
         }
 
-        //- update data from the processors with higher labels
-        for(label i=threadI+1;i<nThreads;++i)
+        // update data from the processors with higher labels
+        for (label i = threadI + 1; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -269,12 +281,15 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
     }
 }
 
+
 void VRWGraphSMPModifier::optimizeMemoryUsage()
 {
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( graph_.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (graph_.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
@@ -303,8 +318,10 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
         # endif
         forAll(graph_.rows_, rowI)
         {
-            if( graph_.rows_[rowI].start() == VRWGraph::INVALIDROW )
+            if (graph_.rows_[rowI].start() == VRWGraph::INVALIDROW)
+            {
                 continue;
+            }
 
             ++nRows[threadI];
             nEntries[threadI] += graph_.rows_[rowI].size();
@@ -316,17 +333,21 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
         # pragma omp master
         # endif
         {
-            //- find the number of rows
+            // find the number of rows
             label counter(0);
             forAll(nRows, i)
+            {
                 counter += nRows[i];
+            }
 
             newRows.setSize(counter);
 
-            //- find the number of data entries
+            // find the number of data entries
             counter = 0;
             forAll(nEntries, i)
+            {
                 counter += nEntries[i];
+            }
 
             newData.setSize(counter);
         }
@@ -335,15 +356,15 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
         # pragma omp barrier
         # endif
 
-        //- find the starting position for each thread
+        // find the starting position for each thread
         label rowStart(0), entryStart(0);
-        for(label i=0;i<threadI;++i)
+        for (label i = 0; i < threadI; ++i)
         {
             rowStart += nRows[i];
             entryStart += nEntries[i];
         }
 
-        //- copy the data into the location
+        // copy the data into the location
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -362,10 +383,11 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
         }
     }
 
-    //- replace the original data with the compressed data
+    // replace the original data with the compressed data
     graph_.rows_.transfer(newRows);
     graph_.data_.transfer(newData);
 }
+
 
 void VRWGraphSMPModifier::operator=(const VRWGraph& og)
 {
@@ -380,15 +402,20 @@ void VRWGraphSMPModifier::operator=(const VRWGraph& og)
         # pragma omp for schedule(static, 1)
         # endif
         forAll(graph_.data_, i)
+        {
             graph_.data_[i] = og.data_[i];
+        }
 
         # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
         # endif
         forAll(graph_.rows_, rowI)
+        {
             graph_.rows_[rowI] = og.rows_[rowI];
+        }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

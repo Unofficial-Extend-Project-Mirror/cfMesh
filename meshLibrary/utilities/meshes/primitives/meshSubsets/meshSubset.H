@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSubset
+    Foam::meshSubset
 
 Description
     A class containing labels of elements
@@ -56,6 +56,7 @@ class VRWGraph;
 class meshSubset
 {
     // Private data
+
         //- name of the given subset
         word name_;
 
@@ -65,6 +66,7 @@ class meshSubset
         //- labels of elements
         //HashSet<label> data_;
         std::set<label> data_;
+
 
 public:
 
@@ -79,7 +81,9 @@ public:
             FEATUREEDGESUBSET = 8
         };
 
+
     // Constructors
+
         //- Null constructor
         inline meshSubset();
 
@@ -101,8 +105,9 @@ public:
         //- Construct from Istream
         inline meshSubset(Istream&);
 
-    // Destructor
-        ~meshSubset();
+
+    //- Destructor
+    ~meshSubset();
 
 
     // Member Functions
@@ -118,6 +123,7 @@ public:
             //- elements contained in the subset
             template<class ListType>
             inline void containedElements(ListType&) const;
+
 
         // Edit
 
@@ -137,21 +143,26 @@ public:
             //- this modifier is used in case when elements are decomposed
             inline void updateSubset(const VRWGraph&);
 
+
         // Searches
+
             //- find if the element exists in the subset
             inline bool contains(const label) const;
 
+
     // operators
 
-            inline void operator=(const meshSubset&);
-            inline bool operator==(const meshSubset&) const;
-            inline bool operator!=(const meshSubset&) const;
+        inline void operator=(const meshSubset&);
+        inline bool operator==(const meshSubset&) const;
+        inline bool operator!=(const meshSubset&) const;
+
 
     // IOstream operators
 
-            friend inline Ostream& operator<<(Ostream&, const meshSubset&);
-            friend inline Istream& operator>>(Istream&, meshSubset&);
+        friend inline Ostream& operator<<(Ostream&, const meshSubset&);
+        friend inline Istream& operator>>(Istream&, meshSubset&);
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

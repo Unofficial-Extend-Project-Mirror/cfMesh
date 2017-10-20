@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -45,79 +43,81 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
 :
     mesh_(mesh),
     activePatch_(-1),
-    boundaryPointsPtr_(NULL),
-    boundaryFacesPtr_(NULL),
-    boundaryFacePatchPtr_(NULL),
-    boundaryFaceOwnersPtr_(NULL),
-    pointFacesPtr_(NULL),
-    pointInFacePtr_(NULL),
-    pointPatchesPtr_(NULL),
-    bppPtr_(NULL),
-    pointPointsPtr_(NULL),
-    edgesPtr_(NULL),
-    bpEdgesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    edgePatchesPtr_(NULL),
-    faceFacesPtr_(NULL),
-    pointNormalsPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    faceCentresPtr_(NULL),
+    boundaryPointsPtr_(nullptr),
+    boundaryFacesPtr_(nullptr),
+    boundaryFacePatchPtr_(nullptr),
+    boundaryFaceOwnersPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    pointInFacePtr_(nullptr),
+    pointPatchesPtr_(nullptr),
+    bppPtr_(nullptr),
+    pointPointsPtr_(nullptr),
+    edgesPtr_(nullptr),
+    bpEdgesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    edgePatchesPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    pointNormalsPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    faceCentresPtr_(nullptr),
 
-    globalBoundaryPointLabelPtr_(NULL),
-    globalBoundaryPointToLocalPtr_(NULL),
-    bpProcsPtr_(NULL),
-    bpNeiProcsPtr_(NULL),
-    globalBoundaryEdgeLabelPtr_(NULL),
-    globalBoundaryEdgeToLocalPtr_(NULL),
-    beProcsPtr_(NULL),
-    beNeiProcsPtr_(NULL),
-    otherEdgeFaceAtProcPtr_(NULL),
-    otherEdgeFacePatchPtr_(NULL),
-    globalBoundaryFaceLabelPtr_(NULL)
+    globalBoundaryPointLabelPtr_(nullptr),
+    globalBoundaryPointToLocalPtr_(nullptr),
+    bpProcsPtr_(nullptr),
+    bpNeiProcsPtr_(nullptr),
+    globalBoundaryEdgeLabelPtr_(nullptr),
+    globalBoundaryEdgeToLocalPtr_(nullptr),
+    beProcsPtr_(nullptr),
+    beNeiProcsPtr_(nullptr),
+    otherEdgeFaceAtProcPtr_(nullptr),
+    otherEdgeFacePatchPtr_(nullptr),
+    globalBoundaryFaceLabelPtr_(nullptr)
 {
     calculateBoundaryFaces();
     calculateBoundaryNodes();
 }
+
 
 meshSurfaceEngine::meshSurfaceEngine(polyMeshGen &mesh, const label patchI)
 :
     mesh_(mesh),
     activePatch_(patchI),
-    boundaryPointsPtr_(NULL),
-    boundaryFacesPtr_(NULL),
-    boundaryFacePatchPtr_(NULL),
-    boundaryFaceOwnersPtr_(NULL),
-    pointFacesPtr_(NULL),
-    pointInFacePtr_(NULL),
-    pointPatchesPtr_(NULL),
-    bppPtr_(NULL),
-    pointPointsPtr_(NULL),
-    edgesPtr_(NULL),
-    bpEdgesPtr_(NULL),
-    edgeFacesPtr_(NULL),
-    faceEdgesPtr_(NULL),
-    edgePatchesPtr_(NULL),
-    faceFacesPtr_(NULL),
-    pointNormalsPtr_(NULL),
-    faceNormalsPtr_(NULL),
-    faceCentresPtr_(NULL),
+    boundaryPointsPtr_(nullptr),
+    boundaryFacesPtr_(nullptr),
+    boundaryFacePatchPtr_(nullptr),
+    boundaryFaceOwnersPtr_(nullptr),
+    pointFacesPtr_(nullptr),
+    pointInFacePtr_(nullptr),
+    pointPatchesPtr_(nullptr),
+    bppPtr_(nullptr),
+    pointPointsPtr_(nullptr),
+    edgesPtr_(nullptr),
+    bpEdgesPtr_(nullptr),
+    edgeFacesPtr_(nullptr),
+    faceEdgesPtr_(nullptr),
+    edgePatchesPtr_(nullptr),
+    faceFacesPtr_(nullptr),
+    pointNormalsPtr_(nullptr),
+    faceNormalsPtr_(nullptr),
+    faceCentresPtr_(nullptr),
 
-    globalBoundaryPointLabelPtr_(NULL),
-    globalBoundaryPointToLocalPtr_(NULL),
-    bpProcsPtr_(NULL),
-    bpNeiProcsPtr_(NULL),
-    globalBoundaryEdgeLabelPtr_(NULL),
-    globalBoundaryEdgeToLocalPtr_(NULL),
-    beProcsPtr_(NULL),
-    beNeiProcsPtr_(NULL),
-    otherEdgeFaceAtProcPtr_(NULL),
-    otherEdgeFacePatchPtr_(NULL),
-    globalBoundaryFaceLabelPtr_(NULL)
+    globalBoundaryPointLabelPtr_(nullptr),
+    globalBoundaryPointToLocalPtr_(nullptr),
+    bpProcsPtr_(nullptr),
+    bpNeiProcsPtr_(nullptr),
+    globalBoundaryEdgeLabelPtr_(nullptr),
+    globalBoundaryEdgeToLocalPtr_(nullptr),
+    beProcsPtr_(nullptr),
+    beNeiProcsPtr_(nullptr),
+    otherEdgeFaceAtProcPtr_(nullptr),
+    otherEdgeFacePatchPtr_(nullptr),
+    globalBoundaryFaceLabelPtr_(nullptr)
 {
     calculateBoundaryFaces();
     calculateBoundaryNodes();
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -125,6 +125,7 @@ meshSurfaceEngine::~meshSurfaceEngine()
 {
     clearOut();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -161,6 +162,7 @@ void meshSurfaceEngine::clearOut()
     deleteDemandDrivenData(otherEdgeFacePatchPtr_);
     deleteDemandDrivenData(globalBoundaryFaceLabelPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

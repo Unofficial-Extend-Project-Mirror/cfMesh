@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -55,20 +53,20 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
 
     activeBoundaryEdges_.clear();
 
-    //- check which edges are at the boundary
+    // check which edges are at the boundary
     forAll(edgeFaces, edgeI)
     {
-        if( edgeFaces.sizeOfRow(edgeI) == 2 )
+        if (edgeFaces.sizeOfRow(edgeI) == 2)
         {
             const bool active0 = activeFace[startFace + edgeFaces(edgeI, 0)];
             const bool active1 = activeFace[startFace + edgeFaces(edgeI, 1)];
 
-            if( active0 && active1 )
+            if (active0 && active1)
                 activeBoundaryEdges_.append(edgeI);
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndEdgeAddressing();
@@ -84,7 +82,7 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
         {
             const label beI = it();
 
-            if( activeFace[startFace + edgeFaces(beI, 0)] )
+            if (activeFace[startFace + edgeFaces(beI, 0)])
             {
                 exchangeData[otherProc[beI]].append(it.key());
             }
@@ -97,11 +95,12 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
         {
             const label beI = globalToLocal[receivedData[i]];
 
-            if( activeFace[startFace + edgeFaces(beI, 0)] )
+            if (activeFace[startFace + edgeFaces(beI, 0)])
                 activeBoundaryEdges_.append(beI);
         }
     }
 }
+
 
 void meshSurfaceMapper2D::create2DEngine() const
 {
@@ -109,15 +108,18 @@ void meshSurfaceMapper2D::create2DEngine() const
     mesh2DEnginePtr_ = new polyMeshGen2DEngine(mesh);
 }
 
+
 void meshSurfaceMapper2D::createTriSurfacePartitioner() const
 {
     surfPartitionerPtr_ = new triSurfacePartitioner(meshOctree_.surface());
 }
 
+
 void meshSurfaceMapper2D::createMeshSurfacePartitioner() const
 {
     meshPartitionerPtr_ = new meshSurfacePartitioner(surfaceEngine_);
 }
+
 
 void meshSurfaceMapper2D::clearOut()
 {
@@ -125,6 +127,7 @@ void meshSurfaceMapper2D::clearOut()
     deleteDemandDrivenData(surfPartitionerPtr_);
     deleteDemandDrivenData(meshPartitionerPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -136,14 +139,14 @@ meshSurfaceMapper2D::meshSurfaceMapper2D
 :
     surfaceEngine_(mse),
     meshOctree_(octree),
-    mesh2DEnginePtr_(NULL),
-    surfPartitionerPtr_(NULL),
-    meshPartitionerPtr_(NULL)
+    mesh2DEnginePtr_(nullptr),
+    surfPartitionerPtr_(nullptr),
+    meshPartitionerPtr_(nullptr)
 {
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- allocate bpAtProcs and other addressing
-        //- this is done here to prevent possible deadlocks
+        // allocate bpAtProcs and other addressing
+        // this is done here to prevent possible deadlocks
         surfaceEngine_.bpAtProcs();
     }
 
@@ -152,12 +155,14 @@ meshSurfaceMapper2D::meshSurfaceMapper2D
     createMeshSurfacePartitioner();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceMapper2D::~meshSurfaceMapper2D()
 {
     clearOut();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

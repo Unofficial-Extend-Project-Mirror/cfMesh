@@ -8,10 +8,10 @@
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,8 +19,7 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Test for smoothers
@@ -64,11 +63,11 @@ int main(int argc, char *argv[])
 
     polyMeshGen pmg(runTime);
 
-    Info << "Starting reading mesh" << endl;
+    Info<< "Starting reading mesh" << endl;
     pmg.read();
-    Info << "Finished reading mesh" << endl;
+    Info<< "Finished reading mesh" << endl;
 
-    const triSurf* surfPtr(NULL);
+    const triSurf* surfPtr(nullptr);
     surfPtr = new triSurf(fileName(meshDict.lookup("surfaceFile")));
 
     surfaceMeshGeometryModification surfaceModification(*surfPtr, meshDict);
@@ -80,22 +79,22 @@ int main(int argc, char *argv[])
     const triSurf* backModSurfPtr =
         backSurfModification.revertGeometryModification();
 
-    //- check if the starting surface and the modified surface are the same
+    // check if the starting surface and the modified surface are the same
     const pointField& pts = surfPtr->points();
     const pointField& bPts = backModSurfPtr->points();
     forAll(pts, pointI)
     {
         const scalar dst = mag(pts[pointI] - bPts[pointI]);
 
-        if( dst > SMALL )
-            Info << "Point " << pointI << " does not match by " << dst << endl;
+        if (dst > SMALL)
+            Info<< "Point " << pointI << " does not match by " << dst << endl;
     }
 
     modSurfPtr->writeSurface("modifiedSurface.fms");
     deleteDemandDrivenData(modSurfPtr);
     deleteDemandDrivenData(backModSurfPtr);
 
-    //- check the point field
+    // check the point field
     const pointFieldPMG& points = pmg.points();
     pointField ptsCopy(points.size());
     forAll(points, pI)
@@ -109,13 +108,13 @@ int main(int argc, char *argv[])
     {
         const scalar dist = mag(ptsCopy[pI] - points[pI]);
 
-        if( dist > SMALL )
-            Info << "Point " << pI << " does not match by " << dist << endl;
+        if (dist > SMALL)
+            Info<< "Point " << pI << " does not match by " << dist << endl;
     }
 
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
 

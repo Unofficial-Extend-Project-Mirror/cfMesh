@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfAddressing
+    Foam::triSurfAddressing
 
 Description
     Provides topology addressing of the triangulated surface
@@ -53,10 +53,13 @@ namespace Foam
 class triSurfAddressing
 {
     // Private data
+
         //- const reference to the points
         const pointField& points_;
 
+
     // Topology addressing
+
         //- const reference to the facets
         const LongList<labelledTri>& facets_;
 
@@ -78,7 +81,9 @@ class triSurfAddressing
         //- facets connected tp a facet via edges
         mutable VRWGraph* facetFacetsEdgesPtr_;
 
+
     // Geometry data
+
         //- point normals
         mutable vectorField* pointNormalsPtr_;
 
@@ -88,7 +93,9 @@ class triSurfAddressing
         //- face centres
         mutable vectorField* facetCentresPtr_;
 
+
     // Private member functions
+
         //- calculate point-facets addressing
         void calculatePointFacets() const;
 
@@ -116,25 +123,29 @@ class triSurfAddressing
         //- calculate centres of facets
         void calculateFacetCentres() const;
 
+
     // Disallow bitwise assignment
+
         void operator=(const triSurfAddressing&);
 
         triSurfAddressing(const triSurfAddressing&);
 
+
 public:
 
-    // Constructors
-        //- Construct from surface triangles
-        triSurfAddressing
-        (
-            const pointField& points,
-            const LongList<labelledTri>& triangles
-        );
+    //- Construct from surface triangles
+    triSurfAddressing
+    (
+        const pointField& points,
+        const LongList<labelledTri>& triangles
+    );
 
-    // Destructor
-        ~triSurfAddressing();
+    //- Destructor
+    ~triSurfAddressing();
+
 
     // Member functions
+
         //- return point-facets addressing
         inline const VRWGraph& pointFacets() const;
 
@@ -168,6 +179,7 @@ public:
         //- delete geometry data
         void clearGeometry();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

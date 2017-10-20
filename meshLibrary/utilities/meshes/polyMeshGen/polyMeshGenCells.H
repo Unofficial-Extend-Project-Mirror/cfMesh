@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenCells
+    Foam::polyMeshGenCells
 
 Description
     Mesh with geometry and topology information
@@ -53,6 +53,7 @@ class polyMeshGenCells
 protected:
 
     // Protected data
+
         //- list of cells
         cellListPMG cells_;
 
@@ -62,7 +63,9 @@ protected:
         //- primitive mesh which calculates addressing
         mutable polyMeshGenAddressing* addressingDataPtr_;
 
+
     // Private member functions
+
         //- calculate owner and neighbour
         void calculateOwnersAndNeighbours() const;
 
@@ -72,16 +75,20 @@ protected:
         //- clear all pointer data
         void clearOut() const;
 
+
     // Disallow bitwise assignment
+
         void operator=(const polyMeshGenCells&);
 
         polyMeshGenCells(const polyMeshGenCells&);
+
 
 public:
 
     friend class polyMeshGenModifier;
 
     // Constructors
+
         //- Null constructor
         polyMeshGenCells(const Time&);
 
@@ -106,10 +113,13 @@ public:
             const labelList& nFacesInPatch
         );
 
-    // Destructor
-        ~polyMeshGenCells();
+
+    //- Destructor
+    ~polyMeshGenCells();
+
 
     // Member functions
+
         //- access to cells
         inline const cellListPMG& cells() const;
 
@@ -119,7 +129,9 @@ public:
         //- clear addressing data
         void clearAddressingData() const;
 
+
     // Subsets
+
         label addCellSubset(const word&);
         void removeCellSubset(const label);
         word cellSubsetName(const label) const;
@@ -134,12 +146,13 @@ public:
         inline void updateCellSubsets(const ListType&);
         inline void updateCellSubsets(const VRWGraph&);
 
-    // Read mesh
+        //- Read mesh
         void read();
 
-    // Write mesh
+        //- Write mesh
         void write() const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

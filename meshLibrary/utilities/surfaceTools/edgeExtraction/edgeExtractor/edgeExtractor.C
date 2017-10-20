@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -56,8 +54,7 @@ Description
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-// Private member functions
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 void edgeExtractor::calculateValence()
 {
@@ -76,14 +73,14 @@ void edgeExtractor::calculateValence()
             ++pointValence_[bp[bf[pI]]];
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& bpNeiProcs = mse.bpNeiProcs();
 
-        std::map<label, LongList<labelPair> > exchangeData;
+        std::map<label, LongList<labelPair>> exchangeData;
         forAll(bpNeiProcs, i)
             exchangeData.insert
             (
@@ -98,7 +95,7 @@ void edgeExtractor::calculateValence()
             {
                 const label neiProc = bpAtProcs(bpI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 exchangeData[neiProc].append
@@ -120,6 +117,7 @@ void edgeExtractor::calculateValence()
     }
 }
 
+
 void edgeExtractor::calculateSingleCellEdge()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
@@ -128,23 +126,23 @@ void edgeExtractor::calculateSingleCellEdge()
     const VRWGraph& edgeFaces = mse.edgeFaces();
     const labelList& faceCells = mse.faceOwners();
 
-    //- find the number of boundary faces for each cell in the mesh
+    // find the number of boundary faces for each cell in the mesh
     edgeType_.setSize(edgeFaces.size());
     edgeType_ = NONE;
 
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces.sizeOfRow(eI) == 2 )
+        if (edgeFaces.sizeOfRow(eI) == 2)
         {
             const label c0 = faceCells[edgeFaces(eI, 0)];
             const label c1 = faceCells[edgeFaces(eI, 1)];
 
-            if( c0 == c1 )
+            if (c0 == c1)
                 edgeType_[eI] |= SINGLECELLEDGE;
         }
     }
 
-    //- calculate the number of cells attache to a boundary edge
+    // calculate the number of cells attache to a boundary edge
     const labelList& bp = mse.bp();
     const cellListPMG& cells = mse.mesh().cells();
     const faceListPMG& faces = mse.faces();
@@ -171,7 +169,7 @@ void edgeExtractor::calculateSingleCellEdge()
 
                 const label bps = bp[e.start()];
 
-                if( bps < 0 )
+                if (bps < 0)
                     continue;
 
                 forAllRow(bpEdges, bps, i)
@@ -179,7 +177,7 @@ void edgeExtractor::calculateSingleCellEdge()
                     const label beI = bpEdges(bps, i);
                     const edge& be = edges[beI];
 
-                    if( (e == be) && !foundEdge.contains(be) )
+                    if ((e == be) && !foundEdge.contains(be))
                     {
                         foundEdge.append(be);
 
@@ -193,6 +191,7 @@ void edgeExtractor::calculateSingleCellEdge()
         }
     }
 }
+
 
 void edgeExtractor::findPatchesNearSurfaceFace()
 {
@@ -224,11 +223,11 @@ void edgeExtractor::findPatchesNearSurfaceFace()
             scalar d(0.0);
             forAll(bf, pI)
                 d = Foam::max(d, Foam::mag(c - points[bf[pI]]));
-            d = 2.0 * d + VSMALL;
+            d = 2.0*d + VSMALL;
 
             const boundBox bb(c - vector(d, d, d), c + vector(d, d, d));
 
-            //- get the patches near the current boundary face
+            // get the patches near the current boundary face
             meshOctree_.findTrianglesInBox(bb, nearFacets);
             DynList<label> nearPatches;
             forAll(nearFacets, i)
@@ -251,19 +250,20 @@ void edgeExtractor::findPatchesNearSurfaceFace()
         patchesNearFace_.setSizeAndRowSize(nPatchesAtFace);
         # endif
 
-        //- copy the data to the graph
+        // copy the data to the graph
         label counter(0);
-        while( counter < localData.size() )
+        while (counter < localData.size())
         {
             const label edgeI = localData[counter++];
 
             const label size = nPatchesAtFace[edgeI];
 
-            for(label i=0;i<size;++i)
+            for (label i = 0; i < size; ++i)
                 patchesNearFace_(edgeI, i) = localData[counter++];
         }
     }
 }
+
 
 void edgeExtractor::findFeatureEdgesNearEdge()
 {
@@ -288,17 +288,17 @@ void edgeExtractor::findFeatureEdgesNearEdge()
         {
             const edge& e = edges[edgeI];
             const vector c = e.centre(points);
-            const scalar d = 1.5 * e.mag(points);
+            const scalar d = 1.5*e.mag(points);
 
             const boundBox bb(c - vector(d, d, d), c + vector(d, d, d));
 
-            //- get the edges near the current edge
+            // get the edges near the current edge
             meshOctree_.findEdgesInBox(bb, nearEdges);
             forAllReverse(nearEdges, i)
             {
                 const label pos = nearEdges.containsAtPosition(nearEdges[i]);
 
-                if( pos < i )
+                if (pos < i)
                     nearEdges.removeElement(i);
             }
 
@@ -319,19 +319,20 @@ void edgeExtractor::findFeatureEdgesNearEdge()
         featureEdgesNearEdge_.setSizeAndRowSize(nFeatureEdgesAtEdge);
         # endif
 
-        //- copy the data to the graph
+        // copy the data to the graph
         label counter(0);
-        while( counter < localData.size() )
+        while (counter < localData.size())
         {
             const label edgeI = localData[counter++];
 
             const label size = nFeatureEdgesAtEdge[edgeI];
 
-            for(label i=0;i<size;++i)
+            for (label i = 0; i < size; ++i)
                 featureEdgesNearEdge_(edgeI, i) = localData[counter++];
         }
     }
 }
+
 
 void edgeExtractor::markPatchPoints(boolList& patchPoint)
 {
@@ -345,13 +346,13 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
     patchPoint = true;
 
     std::map<label, label> otherProcPatch;
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& otherProc = mse.otherEdgeFaceAtProc();
         const Map<label>& globalToLocal =
             mse.globalToLocalBndEdgeAddressing();
 
-        //- create communication matrix
+        // create communication matrix
         std::map<label, labelLongList> exchangeData;
         const DynList<label>& neiProcs = mse.beNeiProcs();
         forAll(neiProcs, procI)
@@ -364,12 +365,12 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
         {
             const label beI = it();
 
-            if( edgeFaces.sizeOfRow(beI) == 1 )
+            if (edgeFaces.sizeOfRow(beI) == 1)
             {
                 labelLongList& dts = exchangeData[otherProc[beI]];
-                //- send data as follows:
-                //- 1. global edge label
-                //- 2. patch of the attached boundary face
+                // send data as follows:
+                // 1. global edge label
+                // 2. patch of the attached boundary face
                 dts.append(it.key());
                 dts.append(facePatch_[edgeFaces(beI, 0)]);
             }
@@ -379,7 +380,7 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label beI = globalToLocal[receivedData[counter++]];
             const label fPatch = receivedData[counter++];
@@ -388,28 +389,28 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
         }
     }
 
-    //- set the patchPoint to false for all vertices at feature edges
+    // set the patchPoint to false for all vertices at feature edges
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
     forAll(edgeFaces, beI)
     {
-        if( edgeFaces.sizeOfRow(beI) == 2 )
+        if (edgeFaces.sizeOfRow(beI) == 2)
         {
-            //- an ordinary edge
-            if( facePatch_[edgeFaces(beI, 0)] != facePatch_[edgeFaces(beI, 1)] )
+            // an ordinary edge
+            if (facePatch_[edgeFaces(beI, 0)] != facePatch_[edgeFaces(beI, 1)])
             {
                 const edge& e = edges[beI];
                 patchPoint[bp[e.start()]] = false;
                 patchPoint[bp[e.end()]] = false;
             }
         }
-        else if( edgeFaces.sizeOfRow(beI) == 1 )
+        else if (edgeFaces.sizeOfRow(beI) == 1)
         {
-            //- an edge at a parallel interface
+            // an edge at a parallel interface
             const label otherPatch = otherProcPatch[beI];
 
-            if( facePatch_[edgeFaces(beI, 0)] != otherPatch )
+            if (facePatch_[edgeFaces(beI, 0)] != otherPatch)
             {
                 const edge& e = edges[beI];
                 patchPoint[bp[e.start()]] = false;
@@ -418,16 +419,16 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
         }
         else
         {
-            //- this is a non-manifold edge
+            // this is a non-manifold edge
             const edge& e = edges[beI];
             patchPoint[bp[e.start()]] = false;
             patchPoint[bp[e.end()]] = false;
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- make sure that the information is spread to all processors
+        // make sure that the information is spread to all processors
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
         const labelList& globalPointLabel =
@@ -446,7 +447,7 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
             {
                 const label neiProc = bpAtProcs(bpI, i);
 
-                if( neiProc != Pstream::myProcNo() )
+                if (neiProc != Pstream::myProcNo())
                     sendData[neiProc].append(globalPointLabel[bpI]);
             }
         }
@@ -459,15 +460,16 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
     }
 }
 
+
 const meshSurfaceEngine& edgeExtractor::surfaceEngine() const
 {
-    if( !surfaceEnginePtr_ )
+    if (!surfaceEnginePtr_)
     {
         # ifdef USE_OMP
         # pragma omp critical
         # endif
         {
-            if( !surfaceEnginePtr_ )
+            if (!surfaceEnginePtr_)
             {
                 surfaceEnginePtr_ = new meshSurfaceEngine(mesh_);
             }
@@ -477,15 +479,16 @@ const meshSurfaceEngine& edgeExtractor::surfaceEngine() const
     return *surfaceEnginePtr_;
 }
 
+
 const triSurfacePartitioner& edgeExtractor::partitioner() const
 {
-    if( !surfPartitionerPtr_ )
+    if (!surfPartitionerPtr_)
     {
         # ifdef USE_OMP
         # pragma omp critical
         # endif
         {
-            if( !surfPartitionerPtr_ )
+            if (!surfPartitionerPtr_)
             {
                 surfPartitionerPtr_ =
                     new triSurfacePartitioner(meshOctree_.surface());
@@ -496,9 +499,10 @@ const triSurfacePartitioner& edgeExtractor::partitioner() const
     return *surfPartitionerPtr_;
 }
 
+
 const triSurfaceClassifyEdges& edgeExtractor::edgeClassifier() const
 {
-    if( !surfEdgeClassificationPtr_ )
+    if (!surfEdgeClassificationPtr_)
     {
         surfEdgeClassificationPtr_ =
             new triSurfaceClassifyEdges(meshOctree_);
@@ -506,6 +510,7 @@ const triSurfaceClassifyEdges& edgeExtractor::edgeClassifier() const
 
     return *surfEdgeClassificationPtr_;
 }
+
 
 void edgeExtractor::findFaceCandidates
 (
@@ -515,13 +520,13 @@ void edgeExtractor::findFaceCandidates
 ) const
 {
     faceCandidates.clear();
-    if( !facePatchPtr )
+    if (!facePatchPtr)
         facePatchPtr = &facePatch_;
 
     const labelList& fPatches = *facePatchPtr;
 
     bool deleteOtherFacePatchPtr(false);
-    if( !otherFacePatchPtr )
+    if (!otherFacePatchPtr)
     {
         Map<label>* helperPtr = new Map<label>();
 
@@ -538,7 +543,7 @@ void edgeExtractor::findFaceCandidates
     const VRWGraph& edgeFaces = mse.edgeFaces();
 
     # ifdef USE_OMP
-    # pragma omp parallel if( faceEdges.size() > 1000 )
+    # pragma omp parallel if (faceEdges.size() > 1000)
     # endif
     {
         # ifdef USE_OMP
@@ -552,23 +557,23 @@ void edgeExtractor::findFaceCandidates
             {
                 const label beI = faceEdges(bfI, feI);
 
-                if( edgeFaces.sizeOfRow(beI) == 2 )
+                if (edgeFaces.sizeOfRow(beI) == 2)
                 {
                     label fNei = edgeFaces(beI, 0);
-                    if( fNei == bfI )
+                    if (fNei == bfI)
                         fNei = edgeFaces(beI, 1);
 
                     allNeiPatches.appendIfNotIn(fPatches[fNei]);
                 }
-                else if( edgeFaces.sizeOfRow(beI) == 1 )
+                else if (edgeFaces.sizeOfRow(beI) == 1)
                 {
                     allNeiPatches.appendIfNotIn(otherFacePatch[beI]);
                 }
             }
 
-            if( allNeiPatches.size() > 1 )
+            if (allNeiPatches.size() > 1)
             {
-                //- this face is probably near some feature edge
+                // this face is probably near some feature edge
                 # ifdef USE_OMP
                 procCandidates.append(bfI);
                 # else
@@ -586,9 +591,10 @@ void edgeExtractor::findFaceCandidates
         # endif
     }
 
-    if( deleteOtherFacePatchPtr )
+    if (deleteOtherFacePatchPtr)
         deleteDemandDrivenData(otherFacePatchPtr);
 }
+
 
 void edgeExtractor::findOtherFacePatchesParallel
 (
@@ -598,12 +604,12 @@ void edgeExtractor::findOtherFacePatchesParallel
 {
     otherFacePatch.clear();
 
-    if( !facePatchPtr )
+    if (!facePatchPtr)
         facePatchPtr = &facePatch_;
 
     const labelList& fPatches = *facePatchPtr;
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const meshSurfaceEngine& mse = this->surfaceEngine();
         const VRWGraph& edgeFaces = mse.edgeFaces();
@@ -611,7 +617,7 @@ void edgeExtractor::findOtherFacePatchesParallel
         const Map<label>& globalToLocal =
             mse.globalToLocalBndEdgeAddressing();
 
-        //- create communication matrix
+        // create communication matrix
         std::map<label, labelLongList> exchangeData;
         const DynList<label>& neiProcs = mse.beNeiProcs();
         forAll(neiProcs, procI)
@@ -624,12 +630,12 @@ void edgeExtractor::findOtherFacePatchesParallel
         {
             const label beI = it();
 
-            if( edgeFaces.sizeOfRow(beI) == 1 )
+            if (edgeFaces.sizeOfRow(beI) == 1)
             {
                 labelLongList& dts = exchangeData[otherProc[beI]];
-                //- send data as follows:
-                //- 1. global edge label
-                //- 2. patch of the attached boundary face
+                // send data as follows:
+                // 1. global edge label
+                // 2. patch of the attached boundary face
                 dts.append(it.key());
                 dts.append(fPatches[edgeFaces(beI, 0)]);
             }
@@ -639,7 +645,7 @@ void edgeExtractor::findOtherFacePatchesParallel
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label beI = globalToLocal[receivedData[counter++]];
             const label fPatch = receivedData[counter++];
@@ -648,6 +654,7 @@ void edgeExtractor::findOtherFacePatchesParallel
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
@@ -658,10 +665,10 @@ edgeExtractor::edgeExtractor
 )
 :
     mesh_(mesh),
-    surfaceEnginePtr_(NULL),
+    surfaceEnginePtr_(nullptr),
     meshOctree_(octree),
-    surfPartitionerPtr_(NULL),
-    surfEdgeClassificationPtr_(NULL),
+    surfPartitionerPtr_(nullptr),
+    surfEdgeClassificationPtr_(nullptr),
     pointValence_(),
     pointPatch_(),
     facePatch_(),
@@ -679,6 +686,7 @@ edgeExtractor::edgeExtractor
     findFeatureEdgesNearEdge();
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 // Destructor
 
@@ -689,11 +697,12 @@ edgeExtractor::~edgeExtractor()
     deleteDemandDrivenData(surfEdgeClassificationPtr_);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
 {
-    Info << "Reducing Hausdorff distance:" << flush;
+    Info<< "Reducing Hausdorff distance:" << flush;
 
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
@@ -706,13 +715,13 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
     vectorField faceCentreDisplacement(bFaces.size());
     List<labelledPoint> pointDisplacements(bPoints.size());
 
-    for(label iterI=0;iterI<nIterations;++iterI)
+    for (label iterI = 0; iterI < nIterations; ++iterI)
     {
         # ifdef USE_OMP
         # pragma omp parallel
         # endif
         {
-            //- find displacements of face centres
+            // find displacements of face centres
             # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 40)
             # endif
@@ -735,7 +744,7 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
                 faceCentreDisplacement[bfI] = newP - centre;
             }
 
-            //- initialise displacements
+            // initialise displacements
             # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 40)
             # endif
@@ -746,8 +755,8 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
             # pragma omp barrier
             # endif
 
-            //- calculate displacements of boundary points as the average
-            //- of face centre displacements
+            // calculate displacements of boundary points as the average
+            // of face centre displacements
             # ifdef USE_OMP
             # pragma omp for schedule(dynamic, 40)
             # endif
@@ -762,14 +771,14 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
             }
         }
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             const Map<label>& globalToLocal =
                 mse.globalToLocalBndPointAddressing();
             const DynList<label>& neiProcs = mse.bpNeiProcs();
             const VRWGraph& bpAtProcs = mse.bpAtProcs();
 
-            std::map<label, LongList<refLabelledPoint> > exchangeData;
+            std::map<label, LongList<refLabelledPoint>> exchangeData;
             forAll(neiProcs, i)
                 exchangeData[i] = LongList<refLabelledPoint>();
 
@@ -781,7 +790,7 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
                 {
                     const label neiProc = bpAtProcs(bpI, i);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append
@@ -815,10 +824,10 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
             const point mp =
                 points[bPoints[bpI]] + lp.coordinates() / lp.pointLabel();
 
-            //Info << "Original point " << bPoints[bpI] << " has coordinates "
+            //Info<< "Original point " << bPoints[bpI] << " has coordinates "
             //        << points[bPoints[bpI]] << endl;
-            //Info << "Displacement vector " << lp.coordinates() / lp.pointLabel() << endl;
-            //Info << "Moved point " << mp << endl;
+            //Info<< "Displacement vector " << lp.coordinates() / lp.pointLabel() << endl;
+            //Info<< "Moved point " << mp << endl;
 
             point newPoint;
             label patchI, nt;
@@ -826,19 +835,20 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
 
             meshOctree_.findNearestSurfacePoint(newPoint, distSq, nt, patchI, mp);
 
-            //Info << "Mapped point " << newPoint << nl << endl;
+            //Info<< "Mapped point " << newPoint << nl << endl;
 
             modifier.moveBoundaryVertexNoUpdate(bpI, newPoint);
         }
 
-        //- update geometry
+        // update geometry
         modifier.updateGeometry();
 
-        Info << '.' << flush;
+        Info<< '.' << flush;
     }
 
-    Info << endl;
+    Info<< endl;
 }
+
 
 void edgeExtractor::distributeBoundaryFaces()
 {
@@ -847,18 +857,18 @@ void edgeExtractor::distributeBoundaryFaces()
     const faceList::subList& bFaces = mse.boundaryFaces();
     const pointFieldPMG& points = mse.points();
 
-    //- set the size of the facePatch list
+    // set the size of the facePatch list
     facePatch_.setSize(bFaces.size());
 
-    //- check if the mesh already has patches
-    if( mesh_.boundaries().size() > 1 )
+    // check if the mesh already has patches
+    if (mesh_.boundaries().size() > 1)
         Warning << "Mesh patches are already assigned!" << endl;
 
-    //- set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
+    // set size of patchNames, newBoundaryFaces_ and newBoundaryOwners_
     const triSurf& surface = meshOctree_.surface();
     const label nPatches = surface.patches().size();
 
-    //- find patches to which the surface points are mapped to
+    // find patches to which the surface points are mapped to
     pointPatch_.setSize(bPoints.size());
 
     # ifdef USE_OMP
@@ -874,24 +884,21 @@ void edgeExtractor::distributeBoundaryFaces()
 
         meshOctree_.findNearestSurfacePoint(p, distSq, nTri, fPatch, bp);
 
-        if( (fPatch > -1) && (fPatch < nPatches) )
+        if ((fPatch > -1) && (fPatch < nPatches))
         {
             pointPatch_[bpI] = fPatch;
         }
         else
         {
             pointPatch_[bpI] = nPatches;
-            FatalErrorIn
-            (
-                "void meshSurfaceEdgeExtractorNonTopo::"
-                "distributeBoundaryFaces()"
-            ) << "Cannot distribute a boundary points " << bPoints[bpI]
-                 << " into any surface patch!. Exiting.." << exit(FatalError);
+            FatalErrorInFunction
+                << "Cannot distribute a boundary points " << bPoints[bpI]
+                << " into any surface patch!. Exiting.." << exit(FatalError);
         }
     }
 
-    //- find the patch for face by finding the patch nearest
-    //- to the face centre
+    // find the patch for face by finding the patch nearest
+    // to the face centre
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
@@ -901,14 +908,14 @@ void edgeExtractor::distributeBoundaryFaces()
 
         const point c = bf.centre(points);
 
-        //- find the nearest surface patch to face centre
+        // find the nearest surface patch to face centre
         label fPatch, nTri;
         point p;
         scalar distSq;
 
         meshOctree_.findNearestSurfacePoint(p, distSq, nTri, fPatch, c);
 
-        if( (fPatch > -1) && (fPatch < nPatches) )
+        if ((fPatch > -1) && (fPatch < nPatches))
         {
             facePatch_[bfI] = fPatch;
         }
@@ -916,15 +923,13 @@ void edgeExtractor::distributeBoundaryFaces()
         {
             facePatch_[bfI] = nPatches;
 
-            FatalErrorIn
-            (
-                "void meshSurfaceEdgeExtractorNonTopo::"
-                "distributeBoundaryFaces()"
-            ) << "Cannot distribute a face " << bFaces[bfI] << " into any "
+            FatalErrorInFunction
+                << "Cannot distribute a face " << bFaces[bfI] << " into any "
                 << "surface patch!. Exiting.." << exit(FatalError);
         }
     }
 }
+
 
 bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
 {
@@ -946,13 +951,13 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
     {
         nCorrected = 0;
 
-        //- allocate a copy of boundary patches
+        // allocate a copy of boundary patches
         labelList newBoundaryPatches(facePatch_);
 
-        //- check whether there exist situations where a boundary face
-        //- is surrounded by more faces in different patches than the
-        //- faces in the current patch
-        if( Pstream::parRun() )
+        // check whether there exist situations where a boundary face
+        // is surrounded by more faces in different patches than the
+        // faces in the current patch
+        if (Pstream::parRun())
         {
             findOtherFacePatchesParallel
             (
@@ -961,12 +966,12 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             );
         }
 
-        //- find the faces which have neighbouring faces in other patches
+        // find the faces which have neighbouring faces in other patches
         labelLongList candidates;
         findFaceCandidates(candidates, &facePatch_, &otherProcNewPatch);
 
-        //- go through the list of faces and check if they shall remain
-        //- in the current patch
+        // go through the list of faces and check if they shall remain
+        // in the current patch
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40) \
         reduction(+ : nCorrected)
@@ -984,23 +989,23 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             {
                 const label beI = faceEdges(bfI, eI);
 
-                if( edgeFaces.sizeOfRow(beI) == 2 )
+                if (edgeFaces.sizeOfRow(beI) == 2)
                 {
                     label fNei = edgeFaces(beI, 0);
-                    if( fNei == bfI )
+                    if (fNei == bfI)
                         fNei = edgeFaces(faceEdges(bfI, eI), 1);
 
                     allNeiPatches.appendIfNotIn(facePatch_[fNei]);
                     neiPatches[eI] = facePatch_[fNei];
                 }
-                else if( edgeFaces.sizeOfRow(beI) == 1 )
+                else if (edgeFaces.sizeOfRow(beI) == 1)
                 {
                     allNeiPatches.appendIfNotIn(otherProcNewPatch[beI]);
                     neiPatches[eI] = otherProcNewPatch[beI];
                 }
             }
 
-            //- do not modify faces with all neighbours in the same patch
+            // do not modify faces with all neighbours in the same patch
             if
             (
                 (allNeiPatches.size() == 1) &&
@@ -1008,8 +1013,8 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             )
                 continue;
 
-            //- check whether there exist edges which are more suitable for
-            //- projection onto feature edges than the currently selected ones
+            // check whether there exist edges which are more suitable for
+            // projection onto feature edges than the currently selected ones
             label newPatch(-1);
             DynList<scalar> normalAlignment(allNeiPatches.size());
             DynList<scalar> distanceSq(allNeiPatches.size());
@@ -1032,13 +1037,13 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
 
                 maxDSq = Foam::max(dSq, maxDSq);
 
-                //- calculate normal vectors
+                // calculate normal vectors
                 vector tn = surf[nearestTriangle].normal(sPoints);
                 tn /= (mag(tn) + VSMALL);
                 vector fn = bf.normal(points);
                 fn /= (mag(fn) + SMALL);
 
-                //- calculate alignment
+                // calculate alignment
                 normalAlignment[i] = mag(tn & fn);
                 distanceSq[i] = dSq;
             }
@@ -1048,17 +1053,17 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             {
                 const scalar metric
                 (
-                    sqrt(maxDSq / (distanceSq[i] + VSMALL)) * normalAlignment[i]
+                    sqrt(maxDSq/(distanceSq[i] + VSMALL))*normalAlignment[i]
                 );
 
-                if( metric > maxAlignment )
+                if (metric > maxAlignment)
                 {
                     maxAlignment = metric;
                     newPatch = allNeiPatches[i];
                 }
             }
 
-            if( (newPatch >= 0) && (newPatch != facePatch_[bfI]) )
+            if ((newPatch >= 0) && (newPatch != facePatch_[bfI]))
             {
                 newBoundaryPatches[bfI] = newPatch;
                 ++nCorrected;
@@ -1067,17 +1072,18 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
 
         reduce(nCorrected, sumOp<label>());
 
-        if( nCorrected )
+        if (nCorrected)
         {
             changed = true;
 
-            //- transfer the new patches back
+            // transfer the new patches back
             facePatch_.transfer(newBoundaryPatches);
         }
-    } while( (nCorrected != 0) && (++nIterations < 5) );
+    } while ((nCorrected != 0) && (++nIterations < 5));
 
     return changed;
 }
+
 
 void edgeExtractor::findEdgeCandidates()
 {
@@ -1101,7 +1107,7 @@ void edgeExtractor::findEdgeCandidates()
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40) \
-    if( faceCandidates.size() > 100 )
+    if (faceCandidates.size() > 100)
     # endif
     forAll(faceCandidates, fcI)
     {
@@ -1114,12 +1120,12 @@ void edgeExtractor::findEdgeCandidates()
         }
     }
 
-    //- find distances of all vertices supporting CANDIDATE edges
-    //- from feature edges separating various patches
+    // find distances of all vertices supporting CANDIDATE edges
+    // from feature edges separating various patches
     const VRWGraph& pEdges = mse.boundaryPointEdges();
     const edgeList& edges = mse.edges();
 
-    List<List<labelledScalar> > featureEdgesNearPoint(bPoints.size());
+    List<List<labelledScalar>> featureEdgesNearPoint(bPoints.size());
 
     DynList<label> containedTriangles;
     # ifdef USE_OMP
@@ -1133,16 +1139,16 @@ void edgeExtractor::findEdgeCandidates()
         {
             const label eI = pEdges(bpI, peI);
 
-            if( edgeType_[eI] & CANDIDATE )
+            if (edgeType_[eI] & CANDIDATE)
             {
                 check = true;
                 break;
             }
         }
 
-        if( check )
+        if (check)
         {
-            //- check the squared distance from the nearest feature edge
+            // check the squared distance from the nearest feature edge
             scalar rSq(0.0);
             forAllRow(pEdges, bpI, peI)
             {
@@ -1156,12 +1162,12 @@ void edgeExtractor::findEdgeCandidates()
             rSq *= 2.0;
             const scalar r = Foam::sqrt(rSq);
 
-            //- create a boundaing box used for searching neighbour edges
+            // create a boundaing box used for searching neighbour edges
             const point& p = points[bPoints[bpI]];
             boundBox bb(p - point(r, r, r), p + point(r, r, r));
 
-            //- find the surface triangles in the vicinity of the point
-            //- check for potential feature edges
+            // find the surface triangles in the vicinity of the point
+            // check for potential feature edges
             containedTriangles.clear();
             meshOctree_.findTrianglesInBox(bb, containedTriangles);
 
@@ -1175,12 +1181,12 @@ void edgeExtractor::findEdgeCandidates()
                 {
                     const label seI = facetEdges(tI, feI);
 
-                    if( edgeFacets.sizeOfRow(seI) == 2 )
+                    if (edgeFacets.sizeOfRow(seI) == 2)
                     {
                         const label p0 = surface[edgeFacets(seI, 0)].region();
                         const label p1 = surface[edgeFacets(seI, 1)].region();
 
-                        if( p0 != p1 )
+                        if (p0 != p1)
                         {
                             featureEdgeCandidates.appendIfNotIn(seI);
                         }
@@ -1192,7 +1198,7 @@ void edgeExtractor::findEdgeCandidates()
                 }
             }
 
-            //- check the distance of the vertex from the candidates
+            // check the distance of the vertex from the candidates
             List<labelledScalar>& featureEdgeDistances =
                 featureEdgesNearPoint[bpI];
             featureEdgeDistances.setSize(featureEdgeCandidates.size());
@@ -1207,23 +1213,23 @@ void edgeExtractor::findEdgeCandidates()
                 featureEdgeDistances[i] = labelledScalar(seI, magSqr(np - p));
             }
 
-            //- find nearest edges
+            // find nearest edges
             sort(featureEdgeDistances);
         }
     }
 
-    //- start post-processing gathered data
+    // start post-processing gathered data
     const labelList& edgeGroup = partitioner.edgeGroups();
 
-    List<List<labelledScalar> > edgeGroupAndWeights(edges.size());
+    List<List<labelledScalar>> edgeGroupAndWeights(edges.size());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40) \
-    if( edges.size() > 1000 )
+    if (edges.size() > 1000)
     # endif
     forAll(edgeType_, edgeI)
     {
-        if( edgeType_[edgeI] & CANDIDATE )
+        if (edgeType_[edgeI] & CANDIDATE)
         {
             const edge& e = edges[edgeI];
 
@@ -1232,8 +1238,8 @@ void edgeExtractor::findEdgeCandidates()
             const List<labelledScalar>& ec =
                 featureEdgesNearPoint[bp[e.end()]];
 
-            //- find the feature-edge partition for which the sum of
-            //- node weights is minimal.
+            // find the feature-edge partition for which the sum of
+            // node weights is minimal.
             DynList<labelledScalar> weights;
             forAll(sc, i)
             {
@@ -1243,7 +1249,7 @@ void edgeExtractor::findEdgeCandidates()
                 {
                     const label ePart = edgeGroup[ec[j].scalarLabel()];
 
-                    if( (sPart >= 0) && (sPart == ePart) )
+                    if ((sPart >= 0) && (sPart == ePart))
                     {
                         weights.append
                         (
@@ -1257,18 +1263,19 @@ void edgeExtractor::findEdgeCandidates()
                 }
             }
 
-            //- store the data
+            // store the data
             edgeGroupAndWeights[edgeI].setSize(weights.size());
             forAll(edgeGroupAndWeights[edgeI], epI)
                 edgeGroupAndWeights[edgeI][epI] = weights[epI];
 
-            //- sort the data according to the weights
+            // sort the data according to the weights
             stableSort(edgeGroupAndWeights[edgeI]);
         }
     }
 
-    Info << "Edge partitions and weights " << edgeGroupAndWeights << endl;
+    Info<< "Edge partitions and weights " << edgeGroupAndWeights << endl;
 }
+
 
 void edgeExtractor::findNeiPatches
 (
@@ -1288,20 +1295,21 @@ void edgeExtractor::findNeiPatches
     {
         const label beI = faceEdges(bfI, feI);
 
-        if( edgeFaces.sizeOfRow(beI) == 2 )
+        if (edgeFaces.sizeOfRow(beI) == 2)
         {
             label nei = edgeFaces(beI, 0);
-            if( nei == bfI )
+            if (nei == bfI)
                 nei = edgeFaces(beI, 1);
 
             neiPatches[feI] = facePatch_[nei];
         }
-        else if( edgeFaces.sizeOfRow(beI) == 1 )
+        else if (edgeFaces.sizeOfRow(beI) == 1)
         {
             neiPatches[feI] = otherProcPatch[beI];
         }
     }
 }
+
 
 scalar edgeExtractor::calculateAlignmentForEdge
 (
@@ -1335,13 +1343,14 @@ scalar edgeExtractor::calculateAlignmentForEdge
     vector fv = mpe - mps;
     fv /= (mag(fv) + VSMALL);
 
-    val = 0.5 * (1.0 + (ev & fv));
+    val = 0.5*(1.0 + (ev & fv));
 
     val = min(val, 1.0);
     val = max(val, 0.0);
 
     return val;
 }
+
 
 scalar edgeExtractor::calculateDeformationMetricForEdge
 (
@@ -1379,10 +1388,11 @@ scalar edgeExtractor::calculateDeformationMetricForEdge
     c = max(-1.0, c);
     const scalar angle = acos(c);
 
-    val = 0.5 * (sqrt(dSqS) + sqrt(dSqE)) + magE * angle;
+    val = 0.5*(sqrt(dSqS) + sqrt(dSqE)) + magE*angle;
 
     return val;
 }
+
 
 scalar edgeExtractor::calculateDeformationMetricForFace
 (
@@ -1395,14 +1405,11 @@ scalar edgeExtractor::calculateDeformationMetricForFace
 
     const VRWGraph& faceEdges = surfaceEnginePtr_->faceEdges();
 
-    if( neiPatches.size() != faceEdges.sizeOfRow(bfI) )
+    if (neiPatches.size() != faceEdges.sizeOfRow(bfI))
     {
-        FatalErrorIn
-        (
-            "scalar edgeExtractor::calculateDeformationMetricForFace"
-            "(const label, const DynList<label>&, const label) const"
-        ) << "Number of neiPatches and faceEdge does not match for face "
-          << bfI << abort(FatalError);
+        FatalErrorInFunction
+            << "Number of neiPatches and faceEdge does not match for face "
+            << bfI << abort(FatalError);
     }
 
     const label patch0 = facePatch == -1 ? facePatch_[bfI] : facePatch;
@@ -1411,7 +1418,7 @@ scalar edgeExtractor::calculateDeformationMetricForFace
     {
         const label beI = faceEdges(bfI, i);
 
-        if( neiPatches[i] == patch0 )
+        if (neiPatches[i] == patch0)
             continue;
 
         Enorm += calculateDeformationMetricForEdge(beI, patch0, neiPatches[i]);
@@ -1419,6 +1426,7 @@ scalar edgeExtractor::calculateDeformationMetricForFace
 
     return Enorm;
 }
+
 
 bool edgeExtractor::checkConcaveEdgeCells()
 {
@@ -1438,14 +1446,14 @@ bool edgeExtractor::checkConcaveEdgeCells()
     const labelList& faceCells = mse.faceOwners();
     const VRWGraph& edgeFaces = mse.edgeFaces();
 
-    //- analyse the surface mesh and find out which edges are concave or convex
+    // analyse the surface mesh and find out which edges are concave or convex
     const triSurfaceClassifyEdges& edgeClassifier = this->edgeClassifier();
     const List<direction>& edgeType = edgeClassifier.edgeTypes();
 
-    //- create a copy of facePatch array for local modifications
+    // create a copy of facePatch array for local modifications
     labelList newBoundaryPatches(facePatch_);
 
-    //- start checking the surface of the mesh
+    // start checking the surface of the mesh
     label nChanged;
 
     boolList patchPoint(mse.boundaryPoints().size(), false);
@@ -1454,30 +1462,30 @@ bool edgeExtractor::checkConcaveEdgeCells()
     {
         nChanged = 0;
 
-        //- check which surface points are surrounded by boundary faces
-        //- in the same surface patch
+        // check which surface points are surrounded by boundary faces
+        // in the same surface patch
         markPatchPoints(patchPoint);
 
-        //- check whether exist edges of a single cell which shall be projected
-        //- onto a concave edge
+        // check whether exist edges of a single cell which shall be projected
+        // onto a concave edge
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40) reduction(+ : nChanged)
         # endif
         forAll(edgeType_, beI)
         {
-            if( !(edgeType_[beI] & SINGLECELLEDGE) )
+            if (!(edgeType_[beI] & SINGLECELLEDGE))
                 continue;
 
-            //- check if all faces are assigned to the same patch
+            // check if all faces are assigned to the same patch
             const label firstPatch = newBoundaryPatches[edgeFaces(beI, 0)];
             const label secondPatch = newBoundaryPatches[edgeFaces(beI, 1)];
 
-            if( firstPatch == secondPatch )
+            if (firstPatch == secondPatch)
                 continue;
 
             const cell& c = cells[faceCells[edgeFaces(beI, 0)]];
 
-            //- find edges within the bounding box determined by the cell
+            // find edges within the bounding box determined by the cell
             point pMin(VGREAT, VGREAT, VGREAT);
             point pMax(-VGREAT, -VGREAT, -VGREAT);
             forAll(c, fI)
@@ -1491,24 +1499,24 @@ bool edgeExtractor::checkConcaveEdgeCells()
                 }
             }
 
-            const point cc = 0.5 * (pMin + pMax);
+            const point cc = 0.5*(pMin + pMax);
             const point diff = pMax - pMin;
-            boundBox bb(cc-diff, cc+diff);
+            boundBox bb(cc - diff, cc + diff);
             DynList<label> containedEdges;
             meshOctree_.findEdgesInBox(bb, containedEdges);
 
-            //- check if there exists concave edges boundaing patches
-            //- assigned to boundary faces of the current cell
+            // check if there exists concave edges boundaing patches
+            // assigned to boundary faces of the current cell
             forAll(containedEdges, ceI)
             {
                 const label eI = containedEdges[ceI];
 
-                if( edgeFacets.sizeOfRow(eI) != 2 )
+                if (edgeFacets.sizeOfRow(eI) != 2)
                     continue;
-                if( !(edgeType[eI] & triSurfaceClassifyEdges::FEATUREEDGE) )
+                if (!(edgeType[eI] & triSurfaceClassifyEdges::FEATUREEDGE))
                     continue;
 
-                if( edgeType[eI] & triSurfaceClassifyEdges::CONCAVEEDGE )
+                if (edgeType[eI] & triSurfaceClassifyEdges::CONCAVEEDGE)
                 {
                     const label patch0 = surf[edgeFacets(eI, 0)].region();
                     const label patch1 = surf[edgeFacets(eI, 1)].region();
@@ -1532,49 +1540,49 @@ bool edgeExtractor::checkConcaveEdgeCells()
 
                         forAll(c, fI)
                         {
-                            if( c[fI] < bndStartFace )
+                            if (c[fI] < bndStartFace)
                                 continue;
 
                             const label bfI = c[fI] - bndStartFace;
                             const face& bf = bFaces[bfI];
 
-                            if( newBoundaryPatches[bfI] == patch1 )
+                            if (newBoundaryPatches[bfI] == patch1)
                             {
                                 facesInPatch[1].append(bfI);
                                 ++nFacesInPatch[1];
 
                                 forAll(bf, pI)
                                 {
-                                    if( patchPoint[bp[bf[pI]]] )
+                                    if (patchPoint[bp[bf[pI]]])
                                         hasPatchPoints[1] = true;
                                 }
                             }
-                            else if( newBoundaryPatches[bfI] == patch0 )
+                            else if (newBoundaryPatches[bfI] == patch0)
                             {
                                 facesInPatch[0].append(bfI);
                                 ++nFacesInPatch[0];
 
                                 forAll(bf, pI)
                                 {
-                                    if( patchPoint[bp[bf[pI]]] )
+                                    if (patchPoint[bp[bf[pI]]])
                                         hasPatchPoints[0] = true;
                                 }
                             }
                         }
 
-                        if( nFacesInPatch[1] > nFacesInPatch[0] )
+                        if (nFacesInPatch[1] > nFacesInPatch[0])
                         {
-                            //- there exist more faces in patch 1
-                            //- assign all boundary faces to the same patch
+                            // there exist more faces in patch 1
+                            // assign all boundary faces to the same patch
                             forAll(facesInPatch[0], i)
                                 newBoundaryPatches[facesInPatch[0][i]] = patch1;
                             ++nChanged;
                             break;
                         }
-                        else if( nFacesInPatch[0] > nFacesInPatch[1] )
+                        else if (nFacesInPatch[0] > nFacesInPatch[1])
                         {
-                            //- there exist more faces in patch 0
-                            //- assign all boundary faces to the same patch
+                            // there exist more faces in patch 0
+                            // assign all boundary faces to the same patch
                             forAll(facesInPatch[1], i)
                                 newBoundaryPatches[facesInPatch[1][i]] = patch0;
                             ++nChanged;
@@ -1582,18 +1590,18 @@ bool edgeExtractor::checkConcaveEdgeCells()
                         }
                         else
                         {
-                            if( hasPatchPoints[0] && !hasPatchPoints[1] )
+                            if (hasPatchPoints[0] && !hasPatchPoints[1])
                             {
-                                //- transfer all faces to patch 1
+                                // transfer all faces to patch 1
                                 forAll(facesInPatch[0], i)
                                     newBoundaryPatches[facesInPatch[0][i]] =
                                         patch1;
                                 ++nChanged;
                                 break;
                             }
-                            else if( !hasPatchPoints[0] && hasPatchPoints[1] )
+                            else if (!hasPatchPoints[0] && hasPatchPoints[1])
                             {
-                                //- transfer all faces to patch 0
+                                // transfer all faces to patch 0
                                 forAll(facesInPatch[1], i)
                                     newBoundaryPatches[facesInPatch[1][i]] =
                                         patch0;
@@ -1602,7 +1610,7 @@ bool edgeExtractor::checkConcaveEdgeCells()
                             }
                             else
                             {
-                                //- just transfer all faces to the same patch
+                                // just transfer all faces to the same patch
                                 forAll(facesInPatch[1], i)
                                     newBoundaryPatches[facesInPatch[1][i]] =
                                         patch0;
@@ -1615,19 +1623,20 @@ bool edgeExtractor::checkConcaveEdgeCells()
             }
         }
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
             reduce(nChanged, sumOp<label>());
 
-        if( nChanged )
+        if (nChanged)
             changed = true;
 
-    } while( nChanged != 0 );
+    } while (nChanged != 0);
 
-    //- transfer the information back to facePatch
+    // transfer the information back to facePatch
     facePatch_.transfer(newBoundaryPatches);
 
     return changed;
 }
+
 
 bool edgeExtractor::checkFacePatchesTopology()
 {
@@ -1658,13 +1667,13 @@ bool edgeExtractor::checkFacePatchesTopology()
 
         nCorrected = 0;
 
-        //- allocate a copy of boundary patches
+        // allocate a copy of boundary patches
         labelList newBoundaryPatches(facePatch_);
 
-        //- check whether there exist situations where a boundary face
-        //- is surrounded by more faces in different patches than the
-        //- faces in the current patch
-        if( Pstream::parRun() )
+        // check whether there exist situations where a boundary face
+        // is surrounded by more faces in different patches than the
+        // faces in the current patch
+        if (Pstream::parRun())
         {
             findOtherFacePatchesParallel
             (
@@ -1673,12 +1682,12 @@ bool edgeExtractor::checkFacePatchesTopology()
             );
         }
 
-        //- find the faces which have neighbouring faces in other patches
+        // find the faces which have neighbouring faces in other patches
         labelLongList candidates;
         findFaceCandidates(candidates, &facePatch_, &otherProcNewPatch);
 
-        //- go through the list of faces and check if they shall remain
-        //- in the current patch
+        // go through the list of faces and check if they shall remain
+        // in the current patch
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40) \
         reduction(+ : nCorrected)
@@ -1688,17 +1697,17 @@ bool edgeExtractor::checkFacePatchesTopology()
             const label bfI = candidates[i];
             const face& bf = bFaces[bfI];
 
-            //- do not change patches of faces where all points are mapped
-            //- onto the same patch
+            // do not change patches of faces where all points are mapped
+            // onto the same patch
             bool allInSamePatch(true);
             forAll(bf, pI)
-                if( pointPatch_[bp[bf[pI]]] != facePatch_[bfI] )
+                if (pointPatch_[bp[bf[pI]]] != facePatch_[bfI])
                 {
                     allInSamePatch = false;
                     break;
                 }
 
-            if( allInSamePatch )
+            if (allInSamePatch)
                 continue;
 
             DynList<label> allNeiPatches;
@@ -1709,23 +1718,23 @@ bool edgeExtractor::checkFacePatchesTopology()
             {
                 const label beI = faceEdges(bfI, eI);
 
-                if( edgeFaces.sizeOfRow(beI) == 2 )
+                if (edgeFaces.sizeOfRow(beI) == 2)
                 {
                     label fNei = edgeFaces(beI, 0);
-                    if( fNei == bfI )
+                    if (fNei == bfI)
                         fNei = edgeFaces(faceEdges(bfI, eI), 1);
 
                     allNeiPatches.appendIfNotIn(facePatch_[fNei]);
                     neiPatches[eI] = facePatch_[fNei];
                 }
-                else if( edgeFaces.sizeOfRow(beI) == 1 )
+                else if (edgeFaces.sizeOfRow(beI) == 1)
                 {
                     allNeiPatches.appendIfNotIn(otherProcNewPatch[beI]);
                     neiPatches[eI] = otherProcNewPatch[beI];
                 }
             }
 
-            //- do not modify faces with all neighbours in the same patch
+            // do not modify faces with all neighbours in the same patch
             if
             (
                 (allNeiPatches.size() == 1) &&
@@ -1733,12 +1742,12 @@ bool edgeExtractor::checkFacePatchesTopology()
             )
                 continue;
 
-            //- check whether there exist edges which are more suitable for
-            //- projection onto feature edges than the currently selected ones
+            // check whether there exist edges which are more suitable for
+            // projection onto feature edges than the currently selected ones
             label newPatch(-1);
 
-            //- check if some faces have to be distributed to another patch
-            //- in order to reduce the number of feature edges
+            // check if some faces have to be distributed to another patch
+            // in order to reduce the number of feature edges
             Map<label> nNeiInPatch(allNeiPatches.size());
             forAll(allNeiPatches, i)
                 nNeiInPatch.insert(allNeiPatches[i], 0);
@@ -1749,7 +1758,7 @@ bool edgeExtractor::checkFacePatchesTopology()
             label nNeiEdges(0);
             forAllConstIter(Map<label>, nNeiInPatch, it)
             {
-                if( it() > nNeiEdges )
+                if (it() > nNeiEdges)
                 {
                     newPatch = it.key();
                     nNeiEdges = it();
@@ -1763,31 +1772,31 @@ bool edgeExtractor::checkFacePatchesTopology()
                 }
             }
 
-            //- do not swap in case the
-            if( (newPatch < 0) || (newPatch == facePatch_[bfI]) )
+            // do not swap in case the
+            if ((newPatch < 0) || (newPatch == facePatch_[bfI]))
                 continue;
 
-            //- check whether the edges shared ith the neighbour patch form
-            //- a singly linked chain
+            // check whether the edges shared ith the neighbour patch form
+            // a singly linked chain
             DynList<bool> sharedEdge;
             sharedEdge.setSize(bFaces[bfI].size());
             sharedEdge = false;
 
             forAll(neiPatches, eI)
-                if( neiPatches[eI] == newPatch )
+                if (neiPatches[eI] == newPatch)
                     sharedEdge[eI] = true;
 
-            if( help::areElementsInChain(sharedEdge) )
+            if (help::areElementsInChain(sharedEdge))
             {
-                //- change the patch to the newPatch
+                // change the patch to the newPatch
                 ++nCorrected;
                 newBoundaryPatches[bfI] = newPatch;
             }
         }
 
-        //- evaluate the new situation and ensure that no oscillation occur
+        // evaluate the new situation and ensure that no oscillation occur
         reduce(nCorrected, sumOp<label>());
-        if( nCorrected )
+        if (nCorrected)
         {
             faceEvaluator faceEvaluator(*this);
 
@@ -1807,38 +1816,41 @@ bool edgeExtractor::checkFacePatchesTopology()
             }
         }
 
-        if( nCorrected )
+        if (nCorrected)
         {
             changed = true;
 
-            //- transfer the new patches back
+            // transfer the new patches back
             facePatch_.transfer(newBoundaryPatches);
         }
 
-    } while( nCorrected != 0 && (nIter++ < 3) );
+    } while (nCorrected != 0 && (nIter++< 3));
 
     return changed;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 namespace featureEdgeHelpers
 {
-
 class featureEdgesNeiOp
 {
     // Private data
-        //- reference to meshSurfaceEngine
+
+        // reference to meshSurfaceEngine
         const meshSurfaceEngine& mse_;
 
-        //- refence to a list holding information which edges are feature edges
+        // refence to a list holding information which edges are feature edges
         const boolList& isFeatureEdge_;
 
-        //- number of feature edges at a surface point
+        // number of feature edges at a surface point
         labelList nFeatureEdgesAtPoint_;
 
+
     // Private member functions
-        //- calculate the number of feature edges connected to a surface vertex
+
+        // calculate the number of feature edges connected to a surface vertex
         void calculateNumberOfEdgesAtPoint()
         {
             const labelList& bp = mse_.bp();
@@ -1849,7 +1861,7 @@ class featureEdgesNeiOp
 
             forAll(isFeatureEdge_, edgeI)
             {
-                if( !isFeatureEdge_[edgeI] )
+                if (!isFeatureEdge_[edgeI])
                     continue;
 
                 const edge& e = edges[edgeI];
@@ -1857,18 +1869,18 @@ class featureEdgesNeiOp
                 ++nFeatureEdgesAtPoint_[bp[e.end()]];
             }
 
-            if( Pstream::parRun() )
+            if (Pstream::parRun())
             {
                 const Map<label>& globalToLocal =
                     mse_.globalToLocalBndPointAddressing();
                 const DynList<label>& neiProcs = mse_.bpNeiProcs();
                 const VRWGraph& bpAtProcs = mse_.bpAtProcs();
 
-                std::map<label, DynList<labelPair> > exchangeData;
+                std::map<label, DynList<labelPair>> exchangeData;
                 forAll(neiProcs, i)
                     exchangeData[neiProcs[i]].clear();
 
-                //- fill the data from sending
+                // fill the data from sending
                 forAllConstIter(Map<label>, globalToLocal, it)
                 {
                     const label bpI = it();
@@ -1877,7 +1889,7 @@ class featureEdgesNeiOp
                     {
                         const label neiProc = bpAtProcs(bpI, i);
 
-                        if( neiProc == Pstream::myProcNo() )
+                        if (neiProc == Pstream::myProcNo())
                             continue;
 
                         exchangeData[neiProc].append
@@ -1887,7 +1899,7 @@ class featureEdgesNeiOp
                     }
                 }
 
-                //- exchange the data between the procesors
+                // exchange the data between the procesors
                 LongList<labelPair> receivedData;
                 help::exchangeMap(exchangeData, receivedData);
 
@@ -1934,26 +1946,26 @@ public:
         const label bps = bp[e.start()];
         const label bpe = bp[e.end()];
 
-        if( nFeatureEdgesAtPoint_[bps] == 2 )
+        if (nFeatureEdgesAtPoint_[bps] == 2)
         {
             forAllRow(bpEdges, bps, peI)
             {
                 const label beJ = bpEdges(bps, peI);
 
-                if( (beJ == beI) || !isFeatureEdge_[beJ] )
+                if ((beJ == beI) || !isFeatureEdge_[beJ])
                     continue;
 
                 neighbourEdges.append(beJ);
             }
         }
 
-        if( nFeatureEdgesAtPoint_[bpe] == 2 )
+        if (nFeatureEdgesAtPoint_[bpe] == 2)
         {
             forAllRow(bpEdges, bpe, peI)
             {
                 const label beJ = bpEdges(bpe, peI);
 
-                if( (beJ == beI) || !isFeatureEdge_[beJ] )
+                if ((beJ == beI) || !isFeatureEdge_[beJ])
                     continue;
 
                 neighbourEdges.append(beJ);
@@ -1964,7 +1976,7 @@ public:
     template<class labelListType>
     void collectGroups
     (
-        std::map<label, DynList<label> >& neiGroups,
+        std::map<label, DynList<label>>& neiGroups,
         const labelListType& elementInGroup,
         const DynList<label>& localGroupLabel
     ) const
@@ -1975,7 +1987,7 @@ public:
 
         const DynList<label>& neiProcs = mse_.beNeiProcs();
 
-        std::map<label, DynList<labelPair> > exchangeData;
+        std::map<label, DynList<labelPair>> exchangeData;
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
@@ -1983,14 +1995,14 @@ public:
         {
             const label bpI = it();
 
-            if( nFeatureEdgesAtPoint_[bpI] != 2 )
+            if (nFeatureEdgesAtPoint_[bpI] != 2)
                 continue;
 
             forAllRow(bpEdges, bpI, i)
             {
                 const label beI = bpEdges(bpI, i);
 
-                if( !isFeatureEdge_[beI] )
+                if (!isFeatureEdge_[beI])
                     continue;
 
                 const label groupI = elementInGroup[beI];
@@ -1999,7 +2011,7 @@ public:
                 {
                     const label neiProc = bpAtProcs(bpI, ppI);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append
@@ -2020,17 +2032,20 @@ public:
 
             DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
 
-            //- store the connection over the inter-processor boundary
+            // store the connection over the inter-processor boundary
             ng.appendIfNotIn(lp.second());
         }
     }
 };
 
+
 class featureEdgesSelOp
 {
     // Private data
-        //- reference to a list holding information which edge is afeture edge
+
+        // reference to a list holding information which edge is afeture edge
         const boolList& isFeatureEdge_;
+
 
 public:
 
@@ -2039,11 +2054,13 @@ public:
         isFeatureEdge_(isFeatureEdge)
     {}
 
+
     bool operator()(const label beI) const
     {
         return isFeatureEdge_[beI];
     }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
@@ -2060,7 +2077,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
     const faceList::subList& bFaces = mse.boundaryFaces();
     const labelList& bp = mse.bp();
 
-    //- allocate a copy of boundary patches
+    // allocate a copy of boundary patches
     labelList newBoundaryPatches(facePatch_.size());
 
     label nCorrected;
@@ -2086,37 +2103,35 @@ bool edgeExtractor::checkFacePatchesGeometry()
         }
         # endif
 
-        //- create feature edges and corners information
+        // create feature edges and corners information
         meshSurfacePartitioner mPart(mse, facePatch_);
 
-        //- project vertices onto the surface mesh
+        // project vertices onto the surface mesh
         meshSurfaceMapper(mPart, meshOctree_).mapVerticesOntoSurfacePatches
         (
             activePointLabel
         );
 
-        //- stop after a certain number of iterations
-        if( ++iter > 3 )
+        // stop after a certain number of iterations
+        if (++iter > 3)
             break;
 
-        //- update surface geometry data
+        // update surface geometry data
         meshSurfaceEngineModifier(mse).updateGeometry();
 
-        //- check if there exist any inverted faces
+        // check if there exist any inverted faces
         meshSurfaceCheckInvertedVertices surfCheck(mPart, activePoints);
         const labelHashSet& invertedPoints = surfCheck.invertedVertices();
 
-        if( returnReduce(invertedPoints.size(), sumOp<label>()) == 0 )
+        if (returnReduce(invertedPoints.size(), sumOp<label>()) == 0 )
             return false;
 
-        WarningIn
-        (
-            "void edgeExtractor::extractEdges()"
-        ) << "Found " << invertedPoints.size()
-          << " points with inverted surface normals. Getting rid of them..."
-          << endl;
+        WarningInFunction
+            << "Found " << invertedPoints.size()
+            << " points with inverted surface normals. Getting rid of them..."
+            << endl;
 
-        //- untangle the surface
+        // untangle the surface
         activePointLabel.clear();
         activePoints = false;
         forAllConstIter(labelHashSet, invertedPoints, it)
@@ -2125,17 +2140,17 @@ bool edgeExtractor::checkFacePatchesGeometry()
             activePoints[bp[it.key()]] = true;
         }
 
-        //- untangle the surface
+        // untangle the surface
         meshSurfaceOptimizer mso(mPart, meshOctree_);
         mso.untangleSurface(activePointLabel, 1);
 
         nCorrected = 0;
         newBoundaryPatches = facePatch_;
 
-        //- check whether there exist situations where a boundary face
-        //- is surrounded by more faces in different patches than the
-        //- faces in the current patch
-        if( Pstream::parRun() )
+        // check whether there exist situations where a boundary face
+        // is surrounded by more faces in different patches than the
+        // faces in the current patch
+        if (Pstream::parRun())
         {
             findOtherFacePatchesParallel
             (
@@ -2144,14 +2159,14 @@ bool edgeExtractor::checkFacePatchesGeometry()
             );
         }
 
-        //- find the faces which have neighbouring faces in other patches
+        // find the faces which have neighbouring faces in other patches
         labelLongList candidates;
         forAll(bFaces, bfI)
         {
             const face& bf = bFaces[bfI];
 
             forAll(bf, pI)
-                if( invertedPoints.found(bf[pI]) )
+                if (invertedPoints.found(bf[pI]))
                 {
                     candidates.append(bfI);
                     break;
@@ -2172,8 +2187,8 @@ bool edgeExtractor::checkFacePatchesGeometry()
             forAll(neiPatches, i)
                 allNeiPatches.appendIfNotIn(neiPatches[i]);
 
-            //- check the deformation energy and find the minimum energy which
-            //- can be achieved by switching face patch
+            // check the deformation energy and find the minimum energy which
+            // can be achieved by switching face patch
             scalar minE(VGREAT);
             label minEPatch(-1);
             DynList<scalar> Enorm(allNeiPatches.size());
@@ -2187,42 +2202,42 @@ bool edgeExtractor::checkFacePatchesGeometry()
                         allNeiPatches[i]
                     );
 
-                if( Enorm[i] < minE )
+                if (Enorm[i] < minE)
                 {
                     minE = Enorm[i];
                     minEPatch = allNeiPatches[i];
                 }
             }
 
-            if( minEPatch != facePatch_[bfI] )
+            if (minEPatch != facePatch_[bfI])
             {
                 newBoundaryPatches[bfI] = minEPatch;
                 ++nCorrected;
             }
         }
 
-        //- check if any faces are re-assigned to some other patch
+        // check if any faces are re-assigned to some other patch
         reduce(nCorrected, sumOp<label>());
-        if( nCorrected == 0 )
+        if (nCorrected == 0)
             break;
 
-        //- update faceEvaluator with information after patches have been
-        //- altered. It blocks chaning of patches if it causes oscillations
+        // update faceEvaluator with information after patches have been
+        // altered. It blocks chaning of patches if it causes oscillations
         faceEvaluator facePatchEvaluator(*this);
         facePatchEvaluator.setNewBoundaryPatches(newBoundaryPatches);
 
-        //- compare face patches before and after
-        //- disallow modification which may trigger oscillating behaviour
+        // compare face patches before and after
+        // disallow modification which may trigger oscillating behaviour
         labelLongList changedFaces;
         forAll(newBoundaryPatches, bfI)
         {
-            if( newBoundaryPatches[bfI] != facePatch_[bfI] )
+            if (newBoundaryPatches[bfI] != facePatch_[bfI])
             {
                 const label patchI =
                     facePatchEvaluator.bestPatchAfterModification(bfI);
                 newBoundaryPatches[bfI] = patchI;
 
-                if( patchI != facePatch_[bfI] )
+                if (patchI != facePatch_[bfI])
                     changedFaces.append(bfI);
             }
         }
@@ -2231,20 +2246,21 @@ bool edgeExtractor::checkFacePatchesGeometry()
 
         reduce(nCorrected, sumOp<label>());
 
-        if( nCorrected )
+        if (nCorrected)
         {
             changed = true;
             facePatch_ = newBoundaryPatches;
         }
 
-    } while( nCorrected != 0 );
+    } while (nCorrected != 0);
 
     return changed;
 }
 
+
 void edgeExtractor::projectDeterminedFeatureVertices()
 {
-    List<DynList<label, 5> > pointPatches;
+    List<DynList<label, 5>> pointPatches;
     pointPatches.setSize(pointValence_.size());
 
     const meshSurfaceEngine& mse = surfaceEngine();
@@ -2254,7 +2270,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
     const faceList::subList& bFaces = mse.boundaryFaces();
     meshOctree_.surface().pointEdges();
 
-    //- calculate patches for each point
+    // calculate patches for each point
     forAll(bFaces, bfI)
     {
         const face& bf = bFaces[bfI];
@@ -2263,21 +2279,21 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             pointPatches[bp[bf[pI]]].appendIfNotIn(facePatch_[bfI]);
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             mse.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const DynList<label>& bpNeiProcs = mse.bpNeiProcs();
 
-        std::map<label, LongList<labelPair> > exchangeData;
+        std::map<label, LongList<labelPair>> exchangeData;
         forAll(bpNeiProcs, i)
             exchangeData.insert
             (
                 std::make_pair(bpNeiProcs[i], LongList<labelPair>())
             );
 
-        //- collect the data distributed to others
+        // collect the data distributed to others
         forAllConstIter(Map<label>, globalToLocal, it)
         {
             const label bpI = it();
@@ -2288,7 +2304,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             {
                 const label neiProc = bpAtProcs(bpI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 LongList<labelPair>& data = exchangeData[neiProc];
@@ -2298,11 +2314,11 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             }
         }
 
-        //- exchange information
+        // exchange information
         LongList<labelPair> receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
-        //- unify the data
+        // unify the data
         forAll(receivedData, i)
         {
             const labelPair& lp = receivedData[i];
@@ -2318,17 +2334,17 @@ void edgeExtractor::projectDeterminedFeatureVertices()
     # endif
     forAll(pointPatches, bpI)
     {
-        if( pointPatches[bpI].size() < 2 )
+        if (pointPatches[bpI].size() < 2)
             continue;
 
         const DynList<label> pPatches = pointPatches[bpI];
 
         const point& p = points[bPoints[bpI]];
 
-        //- find the nearest object on the surface mesh
+        // find the nearest object on the surface mesh
         point newP;
         scalar dSqExact;
-        if( pPatches.size() == 2 )
+        if (pPatches.size() == 2)
         {
             label nse;
             meshOctree_.findNearestEdgePoint(newP, dSqExact, nse, p, pPatches);
@@ -2339,9 +2355,9 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             meshOctree_.findNearestCorner(newP, dSqExact, nsp, p, pPatches);
         }
 
-        //- find the nearest object in an iterative procedure
+        // find the nearest object in an iterative procedure
         point pp(p);
-        for(label iterI=0;iterI<20;++iterI)
+        for (label iterI = 0; iterI < 20; ++iterI)
         {
             point inp(vector::zero);
 
@@ -2367,13 +2383,13 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             const scalar currDSq = magSqr(inp - pp);
             pp = inp;
 
-            if( currDSq < 1e-2 * dSqExact )
+            if (currDSq < 1e-2*dSqExact)
                 break;
         }
 
-        //- check if the exact position of the corner is further away
-        //- than the iteratively found object
-        if( dSqExact > 1.1 * magSqr(pp - p) )
+        // check if the exact position of the corner is further away
+        // than the iteratively found object
+        if (dSqExact > 1.1*magSqr(pp - p))
             newP = pp;
 
         surfMod.moveBoundaryVertexNoUpdate(bpI, newP);
@@ -2382,6 +2398,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
     surfMod.syncVerticesAtParallelBoundaries();
     surfMod.updateGeometry();
 }
+
 
 bool edgeExtractor::untangleSurface()
 {
@@ -2395,6 +2412,7 @@ bool edgeExtractor::untangleSurface()
     return changed;
 }
 
+
 void edgeExtractor::extractEdges()
 {
     distributeBoundaryFaces();
@@ -2407,13 +2425,13 @@ void edgeExtractor::extractEdges()
     deleteDemandDrivenData(sPtr);
     # endif
 
-    Info << "Starting topological adjustment of patches" << endl;
-    if( checkFacePatchesTopology() )
+    Info<< "Starting topological adjustment of patches" << endl;
+    if (checkFacePatchesTopology())
     {
-        Info << "Finished topological adjustment of patches" << endl;
+        Info<< "Finished topological adjustment of patches" << endl;
 
         # ifdef DEBUGEdgeExtractor
-        Info << "Changes due to face patches" << endl;
+        Info<< "Changes due to face patches" << endl;
         fileName sName("checkFacePatches"+help::scalarToText(nIter)+".stl");
         sPtr = surfaceWithPatches();
         sPtr->writeSurface(sName);
@@ -2422,17 +2440,17 @@ void edgeExtractor::extractEdges()
     }
     else
     {
-        Info << "No topological adjustment was needed" << endl;
+        Info<< "No topological adjustment was needed" << endl;
     }
 
-    Info << "Starting geometrical adjustment of patches" << endl;
-    if( checkFacePatchesGeometry() )
+    Info<< "Starting geometrical adjustment of patches" << endl;
+    if (checkFacePatchesGeometry())
     {
-        Info << "Finished geometrical adjustment of patches" << endl;
+        Info<< "Finished geometrical adjustment of patches" << endl;
     }
     else
     {
-        Info << "No geometrical adjustment was needed" << endl;
+        Info<< "No geometrical adjustment was needed" << endl;
     }
 
     # ifdef DEBUGEdgeExtractor
@@ -2440,35 +2458,37 @@ void edgeExtractor::extractEdges()
     sPtr->writeSurface("finalDistributionOfPatches.stl");
     deleteDemandDrivenData(sPtr);
     # endif
+
 }
+
 
 const triSurf* edgeExtractor::surfaceWithPatches() const
 {
-    //- allocate the memory for the surface mesh
+    // allocate the memory for the surface mesh
     triSurf* surfPtr = new triSurf();
 
-    //- surface of the volume mesh
+    // surface of the volume mesh
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const labelList& bp = mse.bp();
     const pointFieldPMG& points = mesh_.points();
 
-    //- modifier of the new surface mesh
+    // modifier of the new surface mesh
     triSurfModifier surfModifier(*surfPtr);
     surfModifier.patchesAccess() = meshOctree_.surface().patches();
     pointField& sPts = surfModifier.pointsAccess();
     sPts.setSize(mse.boundaryPoints().size());
 
-    //- copy points
+    // copy points
     forAll(bp, pointI)
     {
-        if( bp[pointI] < 0 )
+        if (bp[pointI] < 0)
             continue;
 
         sPts[bp[pointI]] = points[pointI];
     }
 
-    //- create the triangulation of the volume mesh surface
+    // create the triangulation of the volume mesh surface
     forAll(bFaces, bfI)
     {
         const face& bf = bFaces[bfI];
@@ -2477,10 +2497,10 @@ const triSurf* edgeExtractor::surfaceWithPatches() const
         tri.region() = facePatch_[bfI];
         tri[0] = bp[bf[0]];
 
-        for(label i=bf.size()-2;i>0;--i)
+        for (label i = bf.size()-2; i > 0; --i)
         {
             tri[1] = bp[bf[i]];
-            tri[2] = bp[bf[i+1]];
+            tri[2] = bp[bf[i + 1]];
 
             surfPtr->appendTriangle(tri);
         }
@@ -2489,23 +2509,24 @@ const triSurf* edgeExtractor::surfaceWithPatches() const
     return surfPtr;
 }
 
+
 const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
 {
-    //- allocate the memory for the surface mesh
+    // allocate the memory for the surface mesh
     triSurf* surfPtr = new triSurf();
 
-    //- surface of the volume mesh
+    // surface of the volume mesh
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
     const VRWGraph& pFaces = mse.pointFaces();
     const pointFieldPMG& points = mesh_.points();
 
-    //- modifier of the new surface mesh
+    // modifier of the new surface mesh
     triSurfModifier surfModifier(*surfPtr);
     surfModifier.patchesAccess() = meshOctree_.surface().patches();
     pointField& sPts = surfModifier.pointsAccess();
 
-    //- create the triangulation of the volume mesh surface
+    // create the triangulation of the volume mesh surface
     labelLongList newPointLabel(points.size(), -1);
     label nPoints(0);
     forAllRow(pFaces, bpI, pfI)
@@ -2514,32 +2535,33 @@ const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
         const face& bf = bFaces[bfI];
 
         forAll(bf, pI)
-            if( newPointLabel[bf[pI]] == -1 )
+            if (newPointLabel[bf[pI]] == -1)
                 newPointLabel[bf[pI]] = nPoints++;
 
         labelledTri tri;
         tri.region() = facePatch_[bfI];
         tri[0] = newPointLabel[bf[0]];
 
-        for(label i=bf.size()-2;i>0;--i)
+        for (label i = bf.size()-2; i > 0; --i)
         {
             tri[1] = newPointLabel[bf[i]];
-            tri[2] = newPointLabel[bf[i+1]];
+            tri[2] = newPointLabel[bf[i + 1]];
 
             surfPtr->appendTriangle(tri);
         }
     }
 
-    //- copy points
+    // copy points
     sPts.setSize(nPoints);
     forAll(newPointLabel, pointI)
-        if( newPointLabel[pointI] != -1 )
+        if (newPointLabel[pointI] != -1)
         {
             sPts[newPointLabel[pointI]] = points[pointI];
         }
 
     return surfPtr;
 }
+
 
 void edgeExtractor::updateMeshPatches()
 {
@@ -2556,11 +2578,11 @@ void edgeExtractor::updateMeshPatches()
     labelLongList newBoundaryOwners(bFaces.size());
     labelLongList newBoundaryPatches(bFaces.size());
 
-    //- set patchNames
+    // set patchNames
     forAll(surface.patches(), patchI)
         patchNames[patchI] = surface.patches()[patchI].name();
 
-    //- append boundary faces
+    // append boundary faces
     forAll(bFaces, bfI)
     {
         newBoundaryFaces.appendList(bFaces[bfI]);
@@ -2568,7 +2590,7 @@ void edgeExtractor::updateMeshPatches()
         newBoundaryPatches[bfI] = facePatch_[bfI];
     }
 
-    //- replace the boundary with the new patches
+    // replace the boundary with the new patches
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.replaceBoundary
     (
@@ -2578,12 +2600,13 @@ void edgeExtractor::updateMeshPatches()
         newBoundaryPatches
     );
 
-    //- set the new patch types
+    // set the new patch types
     PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
 
     forAll(surfPatches, patchI)
         boundaries[patchI].patchType() = surfPatches[patchI].geometricType();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 

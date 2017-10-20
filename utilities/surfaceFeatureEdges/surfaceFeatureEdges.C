@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Finds feature edges and corners of a triangulated surface
@@ -40,7 +40,7 @@ Description
 #include "triSurfacePatchManipulator.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Main program:
+
 using namespace Foam;
 
 int main(int argc, char *argv[])
@@ -57,21 +57,21 @@ int main(int argc, char *argv[])
 
     if (outFileName == inFileName)
     {
-        FatalErrorIn(args.executable())
+        FatalErrorInFunction
             << "Output file " << outFileName
             << " would overwrite the input file."
             << exit(FatalError);
     }
 
     scalar tol(45.0);
-    if( args.options().found("angle") )
+    if (args.options().found("angle"))
     {
         const scalar ang = readScalar(IStringStream(args.options()["angle"])());
         tol = ang;
     }
     else
     {
-        Info << "Using 45 deg as default angle!" << endl;
+        Info<< "Using 45 deg as default angle!" << endl;
     }
 
     triSurf originalSurface(inFileName);
@@ -79,9 +79,9 @@ int main(int argc, char *argv[])
     triSurfaceDetectFeatureEdges edgeDetector(originalSurface, tol);
     edgeDetector.detectFeatureEdges();
 
-    if( outFileName.ext() == "fms" || outFileName.ext() == "FMS" )
+    if (outFileName.ext() == "fms" || outFileName.ext() == "FMS")
     {
-        Info << "Writing : " << outFileName << endl;
+        Info<< "Writing : " << outFileName << endl;
         originalSurface.writeSurface(outFileName);
     }
     else
@@ -89,13 +89,13 @@ int main(int argc, char *argv[])
         triSurfacePatchManipulator manipulator(originalSurface);
         const triSurf* newSurfPtr = manipulator.surfaceWithPatches();
 
-        Info << "Writing : " << outFileName << endl;
+        Info<< "Writing : " << outFileName << endl;
         newSurfPtr->writeSurface(outFileName);
 
         deleteDemandDrivenData(newSurfPtr);
     }
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
 
     return 0;
 }

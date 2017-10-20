@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,26 +39,28 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 {
     //mesh_.clearOut();
 
-    Info << "Removing faces" << endl;
+    Info<< "Removing faces" << endl;
     faceListPMG& faces = mesh_.faces_;
     cellListPMG& cells = mesh_.cells_;
 
     label nFaces(0);
     labelLongList newFaceLabel(faces.size(), -1);
 
-    //- copy internal faces
+    // copy internal faces
     const label nInternalFaces = mesh_.nInternalFaces();
-    for(label faceI=0;faceI<nInternalFaces;++faceI)
-        if( !removeFace[faceI] )
+    for (label faceI = 0; faceI < nInternalFaces; ++faceI)
+    {
+        if (!removeFace[faceI])
         {
-            if( nFaces < faceI )
+            if (nFaces < faceI)
                 faces[nFaces].transfer(faces[faceI]);
 
             newFaceLabel[faceI] = nFaces;
             ++nFaces;
         }
+    }
 
-    //- copy boundary faces
+    // copy boundary faces
     PtrList<boundaryPatch>& boundaries = mesh_.boundaries_;
     labelList patchStart(boundaries.size());
     labelList nFacesInPatch(boundaries.size());
@@ -73,14 +73,18 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
         patchStart[npI] = nFaces;
         nFacesInPatch[npI] = 0;
 
-        for(label faceI=0;faceI<oldNumFacesInPatch;++faceI)
-            if( !removeFace[oldStart+faceI] )
+        for (label faceI = 0; faceI < oldNumFacesInPatch; ++faceI)
+        {
+            if (!removeFace[oldStart + faceI])
             {
                 ++nFacesInPatch[npI];
-                if( nFaces < (oldStart+faceI) )
-                    faces[nFaces].transfer(faces[oldStart+faceI]);
-                newFaceLabel[oldStart+faceI] = nFaces++;
+                if (nFaces <(oldStart + faceI))
+                {
+                    faces[nFaces].transfer(faces[oldStart + faceI]);
+                }
+                newFaceLabel[oldStart + faceI] = nFaces++;
             }
+        }
 
         ++npI;
     }
@@ -91,46 +95,48 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
         boundaries[patchI].patchSize() = nFacesInPatch[patchI];
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries_;
 
         label nProcFaces(0);
         forAll(procBoundaries, patchI)
+        {
             nProcFaces += procBoundaries[patchI].patchSize();
+        }
 
-        //- copy processor faces into a separate list
-        //- this preserves the order of faces after the modification is finished
+        // copy processor faces into a separate list
+        // this preserves the order of faces after the modification is finished
         faceList procFaces(nProcFaces);
         nProcFaces = 0;
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
-            for(label faceI=start;faceI<end;++faceI)
+            for (label faceI = start; faceI < end; ++faceI)
                 procFaces[nProcFaces++].transfer(faces[faceI]);
         }
 
-        //- create ordinary boundary faces from processor faces
-        //- which are removed from one processor only
-        //- these faces are stored in the latest ordinary patch
+        // create ordinary boundary faces from processor faces
+        // which are removed from one processor only
+        // these faces are stored in the latest ordinary patch
         forAll(procBoundaries, patchI)
         {
-            //- send data to other proc
+            // send data to other proc
             const label start = procBoundaries[patchI].patchStart();
             boolList removeProcFace(procBoundaries[patchI].patchSize(), false);
             forAll(removeProcFace, faceI)
-                if( removeFace[start+faceI] )
+            {
+                if (removeFace[start + faceI])
+                {
                     removeProcFace[faceI] = true;
+                }
+            }
 
             OPstream toOtherProc
             (
-                # ifdef ExtendSpecific
-                Pstream::blocking,
-                # else
                 Pstream::commsTypes::blocking,
-                # endif
                 procBoundaries[patchI].neiProcNo(),
                 removeProcFace.byteSize()
             );
@@ -146,40 +152,38 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             boolList removeOtherProcFace;
             IPstream fromOtherProc
             (
-                # ifdef ExtendSpecific
-                Pstream::blocking,
-                # else
                 Pstream::commsTypes::blocking,
-                # endif
                 procBoundaries[patchI].neiProcNo()
             );
             fromOtherProc >> removeOtherProcFace;
 
             forAll(removeOtherProcFace, faceI)
             {
-                if( !removeFace[start+faceI] && removeOtherProcFace[faceI] )
+                if (!removeFace[start + faceI] && removeOtherProcFace[faceI])
                 {
-                    //- this face becomes an ordinary boundary face
-                    //- because the face on the other side of the processor
-                    //- boundary has been deleted
+                    // this face becomes an ordinary boundary face
+                    // because the face on the other side of the processor
+                    // boundary has been deleted
                     ordinaryBoundaryFace[nProcFaces] = true;
                     ++boundaries[npI].patchSize();
-                    if( nFaces < (start+faceI) )
+                    if (nFaces <(start + faceI))
+                    {
                         faces[nFaces].transfer(procFaces[nProcFaces]);
-                    newFaceLabel[start+faceI] = nFaces++;
+                    }
+                    newFaceLabel[start + faceI] = nFaces++;
                 }
 
                 ++nProcFaces;
             }
         }
 
-        if( nProcFaces != procFaces.size() )
-            FatalErrorIn
-            (
-                "void polyMeshGenModifier::removeFaces()"
-            ) << "Invalid number of processor faces!" << abort(FatalError);
+        if (nProcFaces != procFaces.size())
+        {
+            FatalErrorInFunction
+                << "Invalid number of processor faces!" << abort(FatalError);
+        }
 
-        //- remove faces from processor patches
+        // remove faces from processor patches
         npI = 0;
         nFacesInPatch.setSize(procBoundaries.size());
         patchStart.setSize(procBoundaries.size());
@@ -195,16 +199,17 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             neiProcNo[npI] = procBoundaries[patchI].neiProcNo();
             nFacesInPatch[npI] = 0;
 
-            for(label faceI=0;faceI<oldNumFacesInPatch;++faceI)
+            for (label faceI = 0; faceI < oldNumFacesInPatch; ++faceI)
             {
-                if(
-                    !removeFace[oldStart+faceI] &&
-                    !ordinaryBoundaryFace[nProcFaces]
+                if
+                (
+                    !removeFace[oldStart + faceI]
+                 && !ordinaryBoundaryFace[nProcFaces]
                 )
                 {
                     ++nFacesInPatch[npI];
                     faces[nFaces].transfer(procFaces[nProcFaces]);
-                    newFaceLabel[oldStart+faceI] = nFaces++;
+                    newFaceLabel[oldStart + faceI] = nFaces++;
                 }
 
                 ++nProcFaces;
@@ -213,7 +218,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
             ++npI;
         }
 
-        //- all patches still exist
+        // all patches still exist
         forAll(procBoundaries, patchI)
         {
             procBoundaries[patchI].patchSize() = nFacesInPatch[patchI];
@@ -223,12 +228,12 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 
     faces.setSize(nFaces);
 
-    //- update face subsets in the mesh
+    // update face subsets in the mesh
     mesh_.updateFaceSubsets(newFaceLabel);
 
-    //- change cells
+    // change cells
     # ifdef USE_OMP
-    # pragma omp parallel for if( cells.size() > 1000 ) schedule(dynamic, 40)
+    # pragma omp parallel for if (cells.size() > 1000) schedule(dynamic, 40)
     # endif
     forAll(cells, cellI)
     {
@@ -237,19 +242,26 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
         DynList<label> newC;
 
         forAll(c, fI)
-            if( newFaceLabel[c[fI]] != -1 )
+        {
+            if (newFaceLabel[c[fI]] != -1)
+            {
                 newC.append(newFaceLabel[c[fI]]);
+            }
+        }
 
         c.setSize(newC.size());
 
         forAll(c, fI)
+        {
             c[fI] = newC[fI];
+        }
     }
 
     mesh_.clearOut();
 
-    Info << "Finished removing faces" << endl;
+    Info<< "Finished removing faces" << endl;
 }
+
 
 void polyMeshGenModifier::removeDuplicateFaces()
 {
@@ -262,8 +274,10 @@ void polyMeshGenModifier::removeDuplicateFaces()
     label nFaces(0);
     forAll(faces, faceI)
     {
-        if( newFaceLabel[faceI] != -1 )
+        if (newFaceLabel[faceI] != -1)
+        {
             continue;
+        }
 
         const face& f = faces[faceI];
         DynList<label> duplicates;
@@ -271,33 +285,43 @@ void polyMeshGenModifier::removeDuplicateFaces()
         {
             const label faceJ = pointFaces(f[0], pfI);
 
-            if( faceI == faceJ )
+            if (faceI == faceJ)
+            {
                 continue;
+            }
 
-            if( faces[faceJ] == f )
+            if (faces[faceJ] == f)
+            {
                 duplicates.append(faceJ);
+            }
         }
 
         newFaceLabel[faceI] = nFaces;
         forAll(duplicates, i)
+        {
             newFaceLabel[duplicates[i]] = nFaces;
+        }
         ++nFaces;
     }
 
     label nInternalFaces(faces.size());
-    if( mesh_.boundaries_.size() != 0 )
-        nInternalFaces = mesh_.boundaries_[0].patchStart();
-
-    //- remove internal faces
-    for(label faceI=0;faceI<nInternalFaces;++faceI)
+    if (mesh_.boundaries_.size() != 0)
     {
-        if( newFaceLabel[faceI] >= faceI )
+        nInternalFaces = mesh_.boundaries_[0].patchStart();
+    }
+
+    // remove internal faces
+    for (label faceI = 0; faceI < nInternalFaces; ++faceI)
+    {
+        if (newFaceLabel[faceI] >= faceI)
+        {
             continue;
+        }
 
         faces[newFaceLabel[faceI]].transfer(faces[faceI]);
     }
 
-    //- update boundary faces (they cannot be duplicated)
+    // update boundary faces (they cannot be duplicated)
     forAll(mesh_.boundaries_, patchI)
     {
         boundaryPatch& patch = mesh_.boundaries_[patchI];
@@ -306,14 +330,16 @@ void polyMeshGenModifier::removeDuplicateFaces()
         const label end = start + patch.patchSize();
 
         patch.patchStart() = newFaceLabel[start];
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
         {
-            if( newFaceLabel[faceI] <  faceI )
+            if (newFaceLabel[faceI] <  faceI)
+            {
                 faces[newFaceLabel[faceI]].transfer(faces[faceI]);
+            }
         }
     }
 
-    //- update processor faces (they cannot be duplicated)
+    // update processor faces (they cannot be duplicated)
     forAll(mesh_.procBoundaries_, patchI)
     {
         processorBoundaryPatch& patch = mesh_.procBoundaries_[patchI];
@@ -322,20 +348,22 @@ void polyMeshGenModifier::removeDuplicateFaces()
         const label end = start + patch.patchSize();
 
         patch.patchStart() = newFaceLabel[start];
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
         {
-            if( newFaceLabel[faceI] < faceI )
+            if (newFaceLabel[faceI] < faceI)
+            {
                 faces[newFaceLabel[faceI]].transfer(faces[faceI]);
+            }
         }
     }
 
     faces.setSize(nFaces);
     mesh_.updateFaceSubsets(newFaceLabel);
 
-    //- change cells
+    // change cells
     cellListPMG& cells = mesh_.cells_;
     # ifdef USE_OMP
-    # pragma omp parallel for if( cells.size() > 1000 ) schedule(dynamic, 40)
+    # pragma omp parallel for if (cells.size() > 1000) schedule(dynamic, 40)
     # endif
     forAll(cells, cellI)
     {
@@ -344,17 +372,24 @@ void polyMeshGenModifier::removeDuplicateFaces()
         DynList<label> newC;
 
         forAll(c, fI)
-            if( newFaceLabel[c[fI]] != -1 )
+        {
+            if (newFaceLabel[c[fI]] != -1)
+            {
                 newC.append(newFaceLabel[c[fI]]);
+            }
+        }
 
         c.setSize(newC.size());
 
         forAll(c, fI)
+        {
             c[fI] = newC[fI];
+        }
     }
 
     mesh_.clearOut();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

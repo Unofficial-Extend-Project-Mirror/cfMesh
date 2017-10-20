@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -62,27 +60,34 @@ void meshOctreeAutomaticRefinement::activateHexRefinement()
     hexRefinement_ = true;
 }
 
+
 void meshOctreeAutomaticRefinement::automaticRefinement()
 {
-    Info << "Performing automatic refinement" << endl;
+    Info<< "Performing automatic refinement" << endl;
 
-    if( !maxRefLevel_ )
+    if (!maxRefLevel_)
+    {
         return;
+    }
 
     curvatureRefinement();
 
     proximityRefinement();
 
-    Info << "Finished with automatic refinement" << endl;
+    Info<< "Finished with automatic refinement" << endl;
 }
+
 
 bool meshOctreeAutomaticRefinement::curvatureRefinement()
 {
     labelList refineBox(octree_.numberOfLeaves(), direction(0));
     labelLongList refinementCandidates;
     forAll(refineBox, i)
+    {
         refinementCandidates.append(i);
-    while( refineBasedOnCurvature(refineBox, refinementCandidates) )
+    }
+
+    while (refineBasedOnCurvature(refineBox, refinementCandidates))
     {
         refineSelectedBoxes(refineBox, refinementCandidates);
     }
@@ -90,14 +95,18 @@ bool meshOctreeAutomaticRefinement::curvatureRefinement()
     return false;
 }
 
+
 bool meshOctreeAutomaticRefinement::proximityRefinement()
 {
     bool refine(false);
     labelList refineBox(octree_.numberOfLeaves(), direction(0));
     labelLongList refinementCandidates;
     forAll(refineBox, i)
+    {
         refinementCandidates.append(i);
-    while( refineBasedOnContainedCorners(refineBox, refinementCandidates) )
+    }
+
+    while (refineBasedOnContainedCorners(refineBox, refinementCandidates))
     {
         refineSelectedBoxes(refineBox, refinementCandidates);
         refine = true;
@@ -105,8 +114,11 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 
     refinementCandidates.clear();
     forAll(refineBox, i)
+    {
         refinementCandidates.append(i);
-    while( refineBasedOnContainedPartitions(refineBox, refinementCandidates) )
+    }
+
+    while (refineBasedOnContainedPartitions(refineBox, refinementCandidates))
     {
         refineSelectedBoxes(refineBox, refinementCandidates);
         refine = true;
@@ -114,8 +126,11 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 
     refinementCandidates.clear();
     forAll(refineBox, i)
+    {
         refinementCandidates.append(i);
-    while( refineBasedOnProximityTests(refineBox, refinementCandidates) )
+    }
+
+    while (refineBasedOnProximityTests(refineBox, refinementCandidates))
     {
         refineSelectedBoxes(refineBox, refinementCandidates);
         refine = true;
@@ -123,6 +138,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 
     return refine;
 }
+
 
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 (
@@ -137,7 +153,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
     const pointField& points = surface.points();
     const triSurfacePartitioner& sPart = this->partitioner();
 
-    //- find leaves which contains corner nodes
+    // find leaves which contains corner nodes
     labelList cornerInLeaf(refineBox.size(), -1);
     const labelList& corners = sPart.corners();
 
@@ -148,10 +164,12 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
         const label cLabel =
         octree_.findLeafContainingVertex(points[corners[cornerI]]);
 
-        if( cLabel < 0 )
+        if (cLabel < 0)
+        {
             continue;
+        }
 
-        if( cornerInLeaf[cLabel] != -1 )
+        if (cornerInLeaf[cLabel] != -1)
         {
             // refine this box because it already contains some other corner
             ++nMarked;
@@ -165,22 +183,26 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 
     DynList<label> leavesInBox;
     # ifdef USE_OMP
-    # pragma omp parallel for if( refCandidates.size() > 1000 ) \
+    # pragma omp parallel for if (refCandidates.size() > 1000) \
     private(leavesInBox) shared(cornerInLeaf) \
     reduction(+ : nMarked) schedule(dynamic, 20)
     # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
-        if( leaves[leafI]->level() >= maxRefLevel_ )
+        if (leaves[leafI]->level() >= maxRefLevel_)
+        {
             continue;
-        if( cornerInLeaf[leafI] == -1 )
+        }
+        if (cornerInLeaf[leafI] == -1)
+        {
             continue;
+        }
 
         // check if there exist some corners in the neighbour boxes
         // refine the box if some corners are found in the neighbouring boxes
         const point c = leaves[leafI]->centre(rootBox);
-        const scalar r = 1.732 * leaves[leafI]->size(rootBox);
+        const scalar r = 1.732*leaves[leafI]->size(rootBox);
 
         boundBox bb(c - point(r, r, r), c + point(r, r, r));
 
@@ -191,15 +213,21 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
         {
             const label nei = leavesInBox[i];
 
-            if( nei < 0 )
+            if (nei < 0)
+            {
                 continue;
+            }
 
-            if( nei == leafI )
+            if (nei == leafI)
+            {
                 continue;
-            if( cornerInLeaf[nei] == -1 )
+            }
+            if (cornerInLeaf[nei] == -1)
+            {
                 continue;
+            }
 
-            if( mag(points[cornerInLeaf[nei]] - c) < r )
+            if (mag(points[cornerInLeaf[nei]] - c) < r)
             {
                 ++nMarked;
                 refineBox[nei] = 1;
@@ -210,13 +238,16 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
     }
 
     reduce(nMarked, sumOp<label>());
-    Info << nMarked << " boxes marked by the corner criteria" << endl;
+    Info<< nMarked << " boxes marked by the corner criteria" << endl;
 
-    if( nMarked )
+    if (nMarked)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 (
@@ -227,13 +258,13 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     const boundBox& rootBox = octree_.rootBox();
     const triSurfacePartitioner& sPart = this->partitioner();
 
-    //- find leaves which contains corner nodes
+    // find leaves which contains corner nodes
     const List<labelHashSet>& pPatches = sPart.patchPatches();
     const labelList& edgeGroups = sPart.edgeGroups();
     const List<labelHashSet>& eNeiGroups = sPart.edgeGroupEdgeGroups();
 
     # ifdef DEBUGAutoRef
-    Info << "pPart " << pPart << endl;
+    Info<< "pPart " << pPart << endl;
     # endif
 
     label nMarked(0);
@@ -244,70 +275,82 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 
     DynList<label> patches, eGroups, helper;
     # ifdef USE_OMP
-    # pragma omp parallel for if( refCandidates.size() > 1000 ) \
+    # pragma omp parallel for if (refCandidates.size() > 1000) \
     private(patches, eGroups, helper) \
     reduction(+ : nMarked) schedule(dynamic, 20)
     # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
-        if( !leaves[leafI]->hasContainedElements() )
+        if (!leaves[leafI]->hasContainedElements())
+        {
             continue;
-        if( leaves[leafI]->level() >= maxRefLevel_ )
+        }
+        if (leaves[leafI]->level() >= maxRefLevel_)
+        {
             continue;
+        }
 
         const meshOctreeCubeBasic& oc = *leaves[leafI];
         const point c = oc.centre(rootBox);
-        const scalar s = 1.733 * oc.size(rootBox);
+        const scalar s = 1.733*oc.size(rootBox);
         const boundBox bb(c - point(s, s, s), c + point(s, s, s));
 
-        //- find triangle patches contained in this box
+        // find triangle patches contained in this box
         octree_.findTrianglesInBox(bb, helper);
         patches.clear();
         forAll(helper, i)
+        {
             patches.appendIfNotIn(surf[helper[i]].region());
+        }
 
-        //- find edge partitions contained in this box
+        // find edge partitions contained in this box
         helper.clear();
         octree_.findEdgesInBox(bb, helper);
         eGroups.clear();
         forAll(helper, i)
+        {
             eGroups.appendIfNotIn(edgeGroups[helper[i]]);
+        }
 
         # ifdef DEBUGAutoRef
-        Info << "patches for leaf " << leafI << " are " << patches << endl;
+        Info<< "patches for leaf " << leafI << " are " << patches << endl;
         # endif
 
         bool refine(false);
         forAll(patches, patchI)
         {
-            for(label patchJ=(patchI+1);patchJ<patches.size();++patchJ)
-                if( !pPatches[patches[patchI]].found(patches[patchJ]) )
+            for (label patchJ= (patchI + 1); patchJ < patches.size(); ++patchJ)
+            {
+                if (!pPatches[patches[patchI]].found(patches[patchJ]))
                 {
                     # ifdef DEBUGAutoRef
-                    Info << "2.Here" << endl;
+                    Info<< "2.Here" << endl;
                     # endif
 
                     refine = true;
                     break;
                 }
+            }
         }
 
         forAll(eGroups, egI)
         {
-            for(label egJ=egI+1;egJ<eGroups.size();++egJ)
-                if( !eNeiGroups[eGroups[egI]].found(eGroups[egJ]) )
+            for (label egJ = egI + 1; egJ < eGroups.size(); ++egJ)
+            {
+                if (!eNeiGroups[eGroups[egI]].found(eGroups[egJ]))
                 {
                     refine = true;
                     break;
                 }
+            }
         }
 
-        if( refine )
+        if (refine)
         {
             # ifdef DEBUGAutoRef
-            Info << "Selecting leaf " << leafI
-                << " for auto-refinement" << endl;
+            Info<< "Selecting leaf " << leafI
+                << " for auto - refinement" << endl;
             # endif
 
             ++nMarked;
@@ -316,13 +359,16 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
     }
 
     reduce(nMarked, sumOp<label>());
-    Info << nMarked << " boxed marked by partitioning criteria" << endl;
+    Info<< nMarked << " boxed marked by partitioning criteria" << endl;
 
-    if( nMarked )
+    if (nMarked)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 (
@@ -337,7 +383,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
     label nMarked(0);
     DynList<label> containedTrias;
     # ifdef USE_OMP
-    # pragma omp parallel for if( refCandidates.size() > 10000 ) \
+    # pragma omp parallel for if (refCandidates.size() > 10000) \
     private(containedTrias) \
     reduction(+ : nMarked) schedule(dynamic, 100)
     # endif
@@ -345,27 +391,33 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
     {
         const label leafI = refCandidates[refI];
 
-        if( !octree_.hasContainedTriangles(leafI) )
+        if (!octree_.hasContainedTriangles(leafI))
+        {
             continue;
+        }
 
         const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
-        if( oc.level() >= maxRefLevel_ )
+        if (oc.level() >= maxRefLevel_)
+        {
             continue;
+        }
 
-        //- search for the minimum curvature radius at surface triangles
+        // search for the minimum curvature radius at surface triangles
         octree_.containedTriangles(leafI, containedTrias);
 
         scalar maxCurv(0.0);
         forAll(containedTrias, i)
+        {
             maxCurv =
                 Foam::max
                 (
                     maxCurv,
                     mag(curv.meanCurvatureAtTriangle(containedTrias[i]))
                 );
+        }
 
-        //- check the edge curvature
-        if( octree_.hasContainedEdges(leafI) )
+        // check the edge curvature
+        if (octree_.hasContainedEdges(leafI))
         {
             octree_.containedEdges(leafI, containedTrias);
 
@@ -380,7 +432,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
             }
         }
 
-        if( oc.size(rootBox) > 0.2835 / (maxCurv + SMALL) )
+        if (oc.size(rootBox) > 0.2835 /(maxCurv + SMALL))
         {
             refineBox[leafI] = 1;
             ++nMarked;
@@ -388,13 +440,16 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
     }
 
     reduce(nMarked, sumOp<label>());
-    Info << nMarked << " boxes marked by curvature criteria!" << endl;
+    Info<< nMarked << " boxes marked by curvature criteria!" << endl;
 
-    if( nMarked )
+    if (nMarked)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 (
@@ -408,42 +463,50 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
     label nMarked(0);
     DynList<label> helper;
     # ifdef USE_OMP
-    # pragma omp parallel for if( refCandidates.size() > 1000 ) \
+    # pragma omp parallel for if (refCandidates.size() > 1000) \
     private(helper) reduction(+ : nMarked) schedule(dynamic, 20)
     # endif
     forAll(refCandidates, refI)
     {
         const label leafI = refCandidates[refI];
 
-        if( !octree_.hasContainedTriangles(leafI) )
+        if (!octree_.hasContainedTriangles(leafI))
+        {
             continue;
+        }
 
         const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafI);
-        if( oc.level() >= maxRefLevel_ )
+        if (oc.level() >= maxRefLevel_)
+        {
             continue;
+        }
 
         const point c = oc.centre(rootBox);
-        const scalar s = 1.732 * oc.size(rootBox);
+        const scalar s = 1.732*oc.size(rootBox);
         boundBox bb(c - point(s, s, s), c + point(s, s, s));
 
         labelHashSet triaInRange(100), edgesInRange(100);
-        //- find triangles in range
+        // find triangles in range
         helper.clear();
         octree_.findTrianglesInBox(bb, helper);
         forAll(helper, i)
+        {
             triaInRange.insert(helper[i]);
+        }
 
-        //- find edges contained in the neighbourhood
+        // find edges contained in the neighbourhood
         helper.clear();
         octree_.findEdgesInBox(bb, helper);
         forAll(helper, i)
+        {
             edgesInRange.insert(helper[i]);
+        }
 
-        //- refine boxes with more than two face groups
+        // refine boxes with more than two face groups
         if
         (
-            (help::numberOfFaceGroups(triaInRange, c, s, surf) > 1) ||
-            (help::numberOfEdgeGroups(edgesInRange, c, s, surf) > 1)
+            (help::numberOfFaceGroups(triaInRange, c, s, surf) > 1)
+         || (help::numberOfEdgeGroups(edgesInRange, c, s, surf) > 1)
         )
         {
             ++nMarked;
@@ -452,13 +515,16 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
     }
 
     reduce(nMarked, sumOp<label>());
-    Info << nMarked << " boxed marked by proximity criteria" << endl;
+    Info<< nMarked << " boxed marked by proximity criteria" << endl;
 
-    if( nMarked != 0 )
+    if (nMarked != 0)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 void meshOctreeAutomaticRefinement::refineSelectedBoxes
 (
@@ -474,21 +540,23 @@ void meshOctreeAutomaticRefinement::refineSelectedBoxes
     octreeModifier.markAdditionalLayers(refineBox, 1);
     octreeModifier.refineSelectedBoxes(refineBox, hexRefinement_);
 
-    //- find the cubes which have been marked for refinement
+    // find the cubes which have been marked for refinement
     LongList<meshOctreeCubeCoordinates> refinedCubes;
     forAll(refineBox, i)
     {
-        if( refineBox[i] )
+        if (refineBox[i])
+        {
             refinedCubes.append(leaves[i]->coordinates());
+        }
     }
     leaves.setSize(0);
 
-    //- perform load distribution in case od parallel runs
+    // perform load distribution in case od parallel runs
     octreeModifier.loadDistribution();
 
-    //- communicate the cubes selected for refinement with other processors
+    // communicate the cubes selected for refinement with other processors
     LongList<meshOctreeCubeCoordinates> receivedCoordinates;
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         octree_.exchangeRequestsWithNeighbourProcessors
         (
@@ -498,23 +566,27 @@ void meshOctreeAutomaticRefinement::refineSelectedBoxes
     }
 
     forAll(refinedCubes, i)
+    {
         receivedCoordinates.append(refinedCubes[i]);
+    }
     refinedCubes.setSize(0);
 
-    //- find the cubes which shall checked in the next iteration
+    // find the cubes which shall checked in the next iteration
     refCandidates.clear();
     forAll(receivedCoordinates, i)
     {
         const meshOctreeCubeCoordinates& cc = receivedCoordinates[i];
 
-        for(label scI=0;scI<8;++scI)
+        for (label scI = 0; scI < 8; ++scI)
         {
             const meshOctreeCubeCoordinates child = cc.refineForPosition(scI);
 
             meshOctreeCube* oc = octreeModifier.findCubeForPosition(child);
 
-            if( !oc || !oc->isLeaf() )
+            if (!oc || !oc->isLeaf())
+            {
                 continue;
+            }
 
             refCandidates.append(oc->cubeLabel());
         }
@@ -523,6 +595,7 @@ void meshOctreeAutomaticRefinement::refineSelectedBoxes
     refineBox.setSize(octree_.numberOfLeaves());
     refineBox = direction(0);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

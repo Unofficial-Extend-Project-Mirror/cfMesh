@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    DynList
+    Foam::DynList
 
 Description
     A dynamic list is a 1-D vector of objects of type T which resizes
@@ -30,7 +30,7 @@ Description
     is a compact array and the list can be shrunk to compact storage.
     The increase of list size is controlled by three template parameters,
     which allows the list storage to either increase by the given increment
-    or the given multiplier and divider (allowing non-integer multiples).
+    or the given multiplier and divider(allowing non-integer multiples).
 
 SourceFiles
     DynListI.H
@@ -48,7 +48,7 @@ SourceFiles
 namespace Foam
 {
 
-// * * * * * * Forward declaration of template friend fuctions * * * * * * * //
+// Forward declaration of template friend
 
 template<class T, label staticSize>
 class DynList;
@@ -75,6 +75,7 @@ template<class T, label staticSize = 16>
 class DynList
 {
     // Private data
+    //
         //- pointer to the data
         T* dataPtr_;
 
@@ -87,7 +88,9 @@ class DynList
         //- Number of next free element
         label nextFree_;
 
+
     // Private member functions
+
         //- access to the data pointer
         inline T* data();
 
@@ -102,6 +105,7 @@ class DynList
 
         //- check if nAllocated_ is greater or equal to nextFree_
         inline void checkAllocation() const;
+
 
 public:
 
@@ -129,9 +133,8 @@ public:
         //- Construct from Istream. nextFree_ set to size().
         explicit DynList(Istream&);
 
-    // Destructor
-
-        inline ~DynList();
+    //- Destructor
+    inline ~DynList();
 
 
     // Member Functions
@@ -180,7 +183,7 @@ public:
         inline T removeLastElement();
         inline T removeElement(const label i);
 
-        //- return a refence to the element. Resize the list if necessary
+        //- return a reference to the element. Resize the list if necessary
         inline T& newElmt(const label);
 
         //- Return non-const access to an element,

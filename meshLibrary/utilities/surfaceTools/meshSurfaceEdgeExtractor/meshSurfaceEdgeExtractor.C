@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,7 +35,6 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
 meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
 (
     polyMeshGen& mesh,
@@ -53,7 +50,7 @@ meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
     pointRegions_(pointRegion.size())
 {
     forAll(pointRegion, pointI)
-        if( pointRegion[pointI] != -1 )
+        if (pointRegion[pointI] != -1)
             pointRegions_.append(pointI, pointRegion[pointI]);
 
     createEdgeVertices();
@@ -63,11 +60,12 @@ meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
     createBoundaryFaces();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceEdgeExtractor::~meshSurfaceEdgeExtractor()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -84,13 +82,13 @@ void meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
         cell newC(c);
 
         forAll(c, fI)
-            if( neighbour_[c[fI]] != -1 )
+            if (neighbour_[c[fI]] != -1)
             {
                 boundaryCell_[cellI] = true;
                 newC[nFacesInCell_[cellI]++] = c[fI];
             }
 
-        if( nFacesInCell_[cellI] < direction(c.size()) )
+        if (nFacesInCell_[cellI] < direction(c.size()))
         {
             newC.setSize(nFacesInCell_[cellI]);
 
@@ -103,6 +101,7 @@ void meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
     boundaries[0].patchSize() = 0;
     meshModifier_.facesAccess().setSize(boundaries[0].patchStart());
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

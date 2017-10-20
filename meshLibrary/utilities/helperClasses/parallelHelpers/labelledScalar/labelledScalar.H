@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    labelledScalar
+    Foam::labelledScalar
 
 Description
     A class containing point label and its coordinates. It is used for
@@ -45,27 +45,31 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class labelledScalar Declaration
+                       Class labelledScalar Declaration
 \*---------------------------------------------------------------------------*/
 
 class labelledScalar
 {
     // Private data
+
         //- label
         label sLabel_;
 
         //- value
         scalar value_;
 
-    public:
+
+public:
 
     // Constructors
+
         //- Null construct
         labelledScalar()
         :
             sLabel_(-1),
             value_(0.0)
         {}
+
 
         //- Construct from label and value
         labelledScalar(const label sl, const scalar s)
@@ -74,11 +78,14 @@ class labelledScalar
             value_(s)
         {}
 
-    // Destructor
-        ~labelledScalar()
-        {}
+
+    //- Destructor
+    ~labelledScalar()
+    {}
+
 
     // Member functions
+
         //- return scalar label
         inline label scalarLabel() const
         {
@@ -86,10 +93,11 @@ class labelledScalar
         }
 
         //- return the value
-        inline const scalar& value() const
+        inline scalar value() const
         {
             return value_;
         }
+
 
     // Member operators
 
@@ -101,40 +109,50 @@ class labelledScalar
 
         inline bool operator==(const labelledScalar& ls) const
         {
-            if( sLabel_ == ls.sLabel_ )
+            if (sLabel_ == ls.sLabel_)
+            {
                 return true;
+            }
 
             return false;
         }
 
         inline bool operator<(const labelledScalar& ls) const
         {
-            if( value_ < ls.value_ )
+            if (value_ < ls.value_)
+            {
                 return true;
+            }
 
             return false;
         }
 
         inline bool operator<=(const labelledScalar& ls) const
         {
-            if( value_ <= ls.value_ )
+            if (value_ <= ls.value_)
+            {
                 return true;
+            }
 
             return false;
         }
 
         inline bool operator>(const labelledScalar& ls) const
         {
-            if( value_ > ls.value_ )
+            if (value_ > ls.value_)
+            {
                 return true;
+            }
 
             return false;
         }
 
         inline bool operator>=(const labelledScalar& ls) const
         {
-            if( value_ >= ls.value_ )
+            if (value_ >= ls.value_)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -144,7 +162,9 @@ class labelledScalar
             return !this->operator==(ls);
         }
 
+
     // Friend operators
+
         friend Ostream& operator<<(Ostream& os, const labelledScalar& ls)
         {
             os << token::BEGIN_LIST;
@@ -152,7 +172,7 @@ class labelledScalar
             os << ls.value_ << token::END_LIST;
 
             // Check state of Ostream
-            os.check("operator<<(Ostream&, const labelledScalar&");
+            os.check(FUNCTION_NAME);
 
             return os;
         }
@@ -169,15 +189,20 @@ class labelledScalar
             is.readEnd("labelledScalar");
 
             // Check state of Istream
-            is.check("operator>>(Istream&, labelledScalar");
+            is.check(FUNCTION_NAME);
 
             return is;
         }
 };
 
+
 //- Specify data associated with labelledScalar type is contiguous
 template<>
-inline bool contiguous<labelledScalar>() {return true;}
+inline bool contiguous<labelledScalar>()
+{
+    return true;
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

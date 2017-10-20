@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -63,7 +61,7 @@ void meshSurfaceMapper2D::findMappingDistance
     const edgeList& edges = surfaceEngine_.edges();
     const pointFieldPMG& points = surfaceEngine_.points();
 
-    //- generate search distance for corner edges
+    // generate search distance for corner edges
     mappingDistance.clear();
     forAll(edgesToMap, i)
     {
@@ -79,22 +77,22 @@ void meshSurfaceMapper2D::findMappingDistance
             mIter->second = Foam::max(mIter->second, d);
         }
 
-        //- safety factor
+        // safety factor
         mIter->second *= 16.0;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- make sure that corner edges at parallel boundaries
-        //- have the same range in which they accept the corners
+        // make sure that corner edges at parallel boundaries
+        // have the same range in which they accept the corners
         const VRWGraph& beAtProcs = surfaceEngine_.beAtProcs();
         const labelList& globalEdgeLabel =
             surfaceEngine_.globalBoundaryEdgeLabel();
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndEdgeAddressing();
 
-        //- create the map for exchanging data
-        std::map<label, DynList<labelledScalar> > exchangeData;
+        // create the map for exchanging data
+        std::map<label, DynList<labelledScalar>> exchangeData;
         const DynList<label>& neiProcs = surfaceEngine_.beNeiProcs();
         forAll(neiProcs, i)
             exchangeData.insert
@@ -108,7 +106,7 @@ void meshSurfaceMapper2D::findMappingDistance
             forAllRow(beAtProcs, beI, i)
             {
                 const label neiProc = beAtProcs(beI, i);
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 exchangeData[neiProc].append
@@ -118,30 +116,31 @@ void meshSurfaceMapper2D::findMappingDistance
             }
         }
 
-        //- exchange data between processors
+        // exchange data between processors
         LongList<labelledScalar> receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
-        //- select the maximum mapping distance for processor points
+        // select the maximum mapping distance for processor points
         forAll(receivedData, i)
         {
             const labelledScalar& ls = receivedData[i];
 
             const label beI = globalToLocal[ls.scalarLabel()];
 
-            //- choose the maximum value for the mapping distance
+            // choose the maximum value for the mapping distance
             std::map<label, scalar>::iterator mIter = mappingDistance.find(beI);
             mIter->second = Foam::max(mIter->second, ls.value());
         }
     }
 }
 
+
 void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
         return;
 
-    std::map<label, LongList<parMapperHelper> > exchangeData;
+    std::map<label, LongList<parMapperHelper>> exchangeData;
     const DynList<label>& neiProcs = surfaceEngine_.beNeiProcs();
     forAll(neiProcs, i)
         exchangeData.insert
@@ -168,7 +167,7 @@ void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
         forAllRow(beAtProcs, beI, procI)
         {
             const label neiProc = beAtProcs(beI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
             exchangeData[neiProc].append
@@ -184,11 +183,11 @@ void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
         }
     }
 
-    //- exchange data
+    // exchange data
     LongList<parMapperHelper> receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
-    //- select the point with the smallest moving distance
+    // select the point with the smallest moving distance
     meshSurfaceEngineModifier surfModifier(surfaceEngine_);
     forAll(receivedData, i)
     {
@@ -197,7 +196,7 @@ void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
         const label beI = globalToLocal[ph.globalLabel()];
 
         parMapperHelper& phOrig = parE[beToList[beI]];
-        if( phOrig.movingDistance() < ph.movingDistance() )
+        if (phOrig.movingDistance() < ph.movingDistance())
         {
             const edge& e = edges[beI];
 
@@ -216,9 +215,10 @@ void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
     surfModifier.updateVertexNormals();
 }
 
+
 void meshSurfaceMapper2D::adjustZCoordinates()
 {
-    //- create the bounding box of the surface mesh
+    // create the bounding box of the surface mesh
     const boundBox sbb(meshOctree_.surface().points());
 
     const labelList& bp = surfaceEngine_.bp();
@@ -237,20 +237,18 @@ void meshSurfaceMapper2D::adjustZCoordinates()
     {
         point newP = points[pointI];
 
-        if( minZPoint[pointI] )
+        if (minZPoint[pointI])
         {
             newP.z() = sbb.min().z();
         }
-        else if( maxZPoint[pointI] )
+        else if (maxZPoint[pointI])
         {
             newP.z() = sbb.max().z();
         }
         else
         {
-            FatalErrorIn
-            (
-                "void meshSurfaceMapper2D::adjustZCoordinates()"
-            ) << "This mesh is not in the x-y plane!" << exit(FatalError);
+            FatalErrorInFunction
+                << "This mesh is not in the x - y plane!" << exit(FatalError);
         }
 
         modifier.moveBoundaryVertexNoUpdate(bp[pointI], newP);
@@ -258,6 +256,7 @@ void meshSurfaceMapper2D::adjustZCoordinates()
 
     modifier.updateGeometry();
 }
+
 
 void meshSurfaceMapper2D::mapVerticesOntoSurface()
 {
@@ -269,14 +268,15 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface()
     mapVerticesOntoSurface(edgesToMap);
 }
 
+
 void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap)
 {
     const edgeList& edges = surfaceEngine_.edges();
     const labelList& bp = surfaceEngine_.bp();
     const pointFieldPMG& points = surfaceEngine_.points();
 
-    const VRWGraph* beAtProcsPtr(NULL);
-    if( Pstream::parRun() )
+    const VRWGraph* beAtProcsPtr(nullptr);
+    if (Pstream::parRun())
         beAtProcsPtr = &surfaceEngine_.beAtProcs();
 
     labelLongList nodesToMap;
@@ -292,8 +292,8 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
 
     # ifdef USE_OMP
     const label size = edgesToMap.size();
-    # pragma omp parallel for if( size > 1000 ) shared(parallelBndEdges) \
-    schedule(dynamic, Foam::max(1, size / (3 * omp_get_max_threads())))
+    # pragma omp parallel for if (size > 1000) shared(parallelBndEdges) \
+    schedule(dynamic, Foam::max(1, size/(3*omp_get_max_threads())))
     # endif
     forAll(edgesToMap, i)
     {
@@ -301,7 +301,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
         const edge& e = edges[beI];
 
         # ifdef DEBUGMapping
-        Info << nl << "Mapping edge " << beI << " with nodes "
+        Info<< nl << "Mapping edge " << beI << " with nodes "
              << e << endl;
         # endif
 
@@ -324,7 +324,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
         mapPoint.z() = points[e.end()].z();
         surfaceModifier.moveBoundaryVertexNoUpdate(bp[e.end()], mapPoint);
 
-        if( beAtProcsPtr && beAtProcsPtr->sizeOfRow(beI) )
+        if (beAtProcsPtr && beAtProcsPtr->sizeOfRow(beI))
         {
             # ifdef USE_OMP
             # pragma omp critical
@@ -342,7 +342,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
         }
 
         # ifdef DEBUGMapping
-        Info << "Mapped edge " << edges[beI] << endl;
+        Info<< "Mapped edge " << edges[beI] << endl;
         # endif
     }
 
@@ -350,6 +350,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
 
     mapToSmallestDistance(parallelBndEdges);
 }
+
 
 void meshSurfaceMapper2D::mapCorners()
 {
@@ -363,12 +364,13 @@ void meshSurfaceMapper2D::mapCorners()
     {
         const edge& e = edges[activeBoundaryEdges_[eI]];
 
-        if( cornerPoints.found(e.start()) || cornerPoints.found(e.end()) )
+        if (cornerPoints.found(e.start()) || cornerPoints.found(e.end()))
             selectedEdges.append(activeBoundaryEdges_[eI]);
     }
 
     mapCorners(selectedEdges);
 }
+
 
 void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
 {
@@ -383,12 +385,12 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
     std::map<label, scalar> mappingDistance;
     findMappingDistance(edgesToMap, mappingDistance);
 
-    //- for every corner in the mesh surface find the nearest corner in the
-    //- triSurface
+    // for every corner in the mesh surface find the nearest corner in the
+    // triSurface
     meshSurfaceEngineModifier sMod(surfaceEngine_);
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( edgesToMap.size() > 10 )
+    # pragma omp parallel for if (edgesToMap.size() > 10)
     # endif
     forAll(edgesToMap, eI)
     {
@@ -401,26 +403,24 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
         DynList<label> ePatches;
         forAllRow(pPatches, bps, i)
         {
-            if( pPatches.contains(bpe, pPatches(bps, i)) )
+            if (pPatches.contains(bpe, pPatches(bps, i)))
                 ePatches.append(pPatches(bps, i));
         }
 
-        if( !corners.found(bps) || !corners.found(bpe) )
-            FatalErrorIn
-            (
-                "meshSurfaceMapper2D::mapCorners(const labelLongList&)"
-            ) << "Trying to map a point that is not a corner"
+        if (!corners.found(bps) || !corners.found(bpe))
+            FatalErrorInFunction
+                << "Trying to map a point that is not a corner"
                 << abort(FatalError);
 
         const point& p = points[be.start()];
         const scalar maxDist = mappingDistance[beI];
 
-        //- find the nearest position to the given point patches
+        // find the nearest position to the given point patches
         point mapPointApprox(p);
         scalar distSqApprox;
 
         label iter(0);
-        while( iter++ < 40 )
+        while (iter++ < 40)
         {
             point newP(vector::zero);
             forAll(ePatches, epI)
@@ -440,7 +440,7 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
             }
 
             newP /= ePatches.size();
-            if( magSqr(newP - mapPointApprox) < 1e-8 * maxDist )
+            if (magSqr(newP - mapPointApprox) < 1e-8*maxDist)
                 break;
 
             mapPointApprox = newP;
@@ -448,26 +448,26 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
 
         distSqApprox = magSqr(mapPointApprox - p);
 
-        //- find the nearest triSurface corner for the given corner
+        // find the nearest triSurface corner for the given corner
         scalar distSq;
         point mapPoint;
         label nse;
         meshOctree_.findNearestEdgePoint(mapPoint, distSq, nse, p, ePatches);
 
-        if( distSq > mappingDistance[beI] )
+        if (distSq > mappingDistance[beI])
         {
             const vector disp = mapPoint - p;
 
-            mapPoint = Foam::sqrt(mappingDistance[beI] / distSq) * disp + p;
+            mapPoint = Foam::sqrt(mappingDistance[beI] / distSq)*disp + p;
             distSq = mappingDistance[beI];
         }
 
-        if( distSq > 1.2 * distSqApprox )
+        if (distSq > 1.2*distSqApprox)
         {
             mapPoint = mapPointApprox;
         }
 
-        //- move the point to the nearest corner
+        // move the point to the nearest corner
         mapPoint.z() = points[be.start()].z();
         sMod.moveBoundaryVertexNoUpdate(bps, mapPoint);
 
@@ -487,6 +487,7 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
     sMod.updateGeometry(nodesToMap);
 }
 
+
 void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
 {
     labelLongList edgesToMap;
@@ -497,19 +498,20 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
     mapVerticesOntoSurfacePatches(edgesToMap);
 }
 
+
 void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 (
     const labelLongList& edgesToMap
 )
 {
-    //- map the selected edges on their patches
+    // map the selected edges on their patches
     const edgeList& edges = surfaceEngine_.edges();
     const pointFieldPMG& points = surfaceEngine_.points();
     const VRWGraph& edgePatches = surfaceEngine_.edgePatches();
     const labelList& bp = surfaceEngine_.bp();
 
-    const VRWGraph* beAtProcsPtr(NULL);
-    if( Pstream::parRun() )
+    const VRWGraph* beAtProcsPtr(nullptr);
+    if (Pstream::parRun())
         beAtProcsPtr = &surfaceEngine_.beAtProcs();
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
@@ -518,14 +520,14 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 
     # ifdef USE_OMP
     const label size = edgesToMap.size();
-    # pragma omp parallel for if( size > 1000 ) shared(parallelBndEdges) \
-    schedule(dynamic, Foam::max(50, size / (3 * omp_get_max_threads())))
+    # pragma omp parallel for if (size > 1000) shared(parallelBndEdges) \
+    schedule(dynamic, Foam::max(50, size/(3*omp_get_max_threads())))
     # endif
     forAll(edgesToMap, nI)
     {
         const label beI = edgesToMap[nI];
 
-        if( edgePatches.sizeOfRow(beI) == 2 )
+        if (edgePatches.sizeOfRow(beI) == 2)
         {
             # ifdef USE_OMP
             # pragma omp critical
@@ -557,7 +559,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
         mapPoint.z() = points[e.end()].z();
         surfaceModifier.moveBoundaryVertexNoUpdate(bp[e.end()], mapPoint);
 
-        if( beAtProcsPtr && beAtProcsPtr->sizeOfRow(beI) )
+        if (beAtProcsPtr && beAtProcsPtr->sizeOfRow(beI))
         {
             # ifdef USE_OMP
             # pragma omp critical
@@ -575,7 +577,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
         }
 
         # ifdef DEBUGMapping
-        Info << "Mapped edge " << edges[beI] << endl;
+        Info<< "Mapped edge " << edges[beI] << endl;
         # endif
     }
 
@@ -583,7 +585,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 
     mapCorners(selectedCorners);
 
-    //- update geometry at moved vertices
+    // update geometry at moved vertices
     selectedCorners.clear();
     forAll(edgesToMap, eI)
     {
@@ -595,6 +597,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 
     surfaceModifier.updateGeometry(selectedCorners);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

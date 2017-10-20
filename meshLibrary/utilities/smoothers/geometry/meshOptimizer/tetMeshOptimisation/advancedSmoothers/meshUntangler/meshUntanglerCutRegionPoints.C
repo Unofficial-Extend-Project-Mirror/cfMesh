@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -52,7 +50,7 @@ bool meshUntangler::cutRegion::findNewVertices
 )
 {
     #ifdef DEBUGSmooth
-    Info << "Finding new vertices" << endl;
+    Info<< "Finding new vertices" << endl;
     #endif
 
     const DynList<point, 64>& points = *pointsPtr_;
@@ -76,13 +74,13 @@ bool meshUntangler::cutRegion::findNewVertices
         const point& p = points[pI];
         vertexDistance_[pI] = ((p - rp) & n);
 
-        if( vertexDistance_[pI] > tol_ )
+        if (vertexDistance_[pI] > tol_)
         {
             cPtsPtr_->append(p);
             newVertexLabel_[pI] = origNumVertices_++;
             vertexTypes_[pI] |= KEEP;
         }
-        else if( vertexDistance_[pI] >= -tol_ )
+        else if (vertexDistance_[pI] >= -tol_)
         {
             cPtsPtr_->append(p);
             newVertexLabel_[pI] = origNumVertices_++;
@@ -92,15 +90,15 @@ bool meshUntangler::cutRegion::findNewVertices
     }
 
     #ifdef DEBUGSmooth
-    Info << "tolerance " << tol_ << endl;
-    Info << "New number of vertices is " << origNumVertices_ << endl;
+    Info<< "tolerance " << tol_ << endl;
+    Info<< "New number of vertices is " << origNumVertices_ << endl;
     forAll(points, pI)
-        Info << "Original vertex " << pI << " is " << points[pI]
+        Info<< "Original vertex " << pI << " is " << points[pI]
             << ". Vertex distance from plane is " << vertexDistance_[pI]
             << " and its new label is " << newVertexLabel_[pI] << endl;
     #endif
 
-    if( origNumVertices_ < points.size() )
+    if (origNumVertices_ < points.size())
     {
         return true;
     }
@@ -111,6 +109,7 @@ bool meshUntangler::cutRegion::findNewVertices
         return false;
     }
 }
+
 
 void meshUntangler::cutRegion::removeCoincidentVertices()
 {
@@ -123,12 +122,12 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
     bool found(false);
     forAll(points, pI)
     {
-        if( newLabelForPoint[pI] != -1 ) continue;
-        for(label pJ=pI+1;pJ<points.size();++pJ)
-            if( mag(points[pJ] - points[pI]) < tol_ )
+        if (newLabelForPoint[pI] != -1) continue;
+        for (label pJ = pI + 1; pJ < points.size(); ++pJ)
+            if (mag(points[pJ] - points[pI]) < tol_)
             {
                 # ifdef DEBUGSmooth
-                Info << "Vertices " << pI << " and " << pJ
+                Info<< "Vertices " << pI << " and " << pJ
                     << " are too close" << endl;
                 # endif
 
@@ -137,25 +136,25 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
             }
     }
 
-    if( !found )
+    if (!found)
         return;
 
     forAll(edges, eI)
     {
         edge& e = edges[eI];
-        if( newLabelForPoint[e.start()] != -1 )
+        if (newLabelForPoint[e.start()] != -1)
             e.start() = newLabelForPoint[e.start()];
-        if( newLabelForPoint[e.end()] != -1 )
+        if (newLabelForPoint[e.end()] != -1)
             e.end() = newLabelForPoint[e.end()];
     }
 
-    //- remove edges which contain the same vertex
+    // remove edges which contain the same vertex
     newEdgeLabel_ = -1;
     label edgeLabel(0);
 
     cEdgesPtr_ = new DynList<edge, 128>();
     forAll(edges, eI)
-        if( edges[eI].start() != edges[eI].end() )
+        if (edges[eI].start() != edges[eI].end())
         {
             cEdgesPtr_->append(edges[eI]);
             newEdgeLabel_[eI] = edgeLabel++;
@@ -163,9 +162,9 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
 
     deleteDemandDrivenData(edgesPtr_);
     edgesPtr_ = cEdgesPtr_;
-    cEdgesPtr_ = NULL;
+    cEdgesPtr_ = nullptr;
 
-    //- renumber faces
+    // renumber faces
     const DynList<DynList<label, 8>, 64>& faces = *facesPtr_;
     cFacesPtr_ = new DynList<DynList<label, 8>, 64>();
     forAll(faces, fI)
@@ -175,10 +174,10 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
         DynList<label, 8> nf;
 
         forAll(f, eI)
-            if( newEdgeLabel_[f[eI]] != -1 )
+            if (newEdgeLabel_[f[eI]] != -1)
                 nf.append(newEdgeLabel_[f[eI]]);
 
-        if( nf.size() > 2 )
+        if (nf.size() > 2)
         {
             cFacesPtr_->append(nf);
         }
@@ -186,8 +185,9 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
 
     deleteDemandDrivenData(facesPtr_);
     facesPtr_ = cFacesPtr_;
-    cFacesPtr_ = NULL;
+    cFacesPtr_ = nullptr;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

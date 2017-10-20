@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -55,7 +53,7 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
 
     nPoints_ = points.size();
 
-    for(label faceI=nIntFaces;faceI<nFaces;++faceI)
+    for (label faceI = nIntFaces; faceI < nFaces; ++faceI)
     {
         const face& f = faces[faceI];
 
@@ -63,12 +61,12 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
         {
             const label edgeI = faceEdges(faceI, pI);
 
-            if( newEdgePoint.found(edgeI) ) continue;
+            if (newEdgePoint.found(edgeI)) continue;
 
             const label s = f[pI];
             const label e = f.nextLabel(pI);
 
-            if( !pointRegions_.sizeOfRow(s) || !pointRegions_.sizeOfRow(e) )
+            if (!pointRegions_.sizeOfRow(s) || !pointRegions_.sizeOfRow(e))
             {
                 Warning << "Boundary vertices " << s << " and " << e
                     << " are not mapped to the boundary!" << endl;
@@ -76,7 +74,7 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
                 continue;
             }
 
-            if( pointRegions_(s, 0) != pointRegions_(e, 0) )
+            if (pointRegions_(s, 0) != pointRegions_(e, 0))
             {
                 point newP;
                 scalar distSq;
@@ -100,7 +98,7 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
                     patches
                 );
 
-                if( found )
+                if (found)
                 {
                     points.append(newP);
                 }
@@ -122,7 +120,7 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
 
     points.setSize(nPoints_);
 
-    //- create new faces
+    // create new faces
     DynList<label> newF;
     forAll(faces, faceI)
     {
@@ -133,13 +131,13 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
         forAll(f, eI)
         {
             newF.append(f[eI]);
-            if( newEdgePoint.found(faceEdges(faceI, eI)) )
+            if (newEdgePoint.found(faceEdges(faceI, eI)))
                 newF.append(newEdgePoint[faceEdges(faceI, eI)]);
         }
 
-        if( newF.size() > f.size() )
+        if (newF.size() > f.size())
         {
-            //- face must be changed
+            // face must be changed
             face& mf = const_cast<face&>(f);
             mf.setSize(newF.size());
             forAll(mf, pI)
@@ -149,8 +147,9 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
 
     mesh_.clearAddressingData();
 
-    Info << "Finished creating mesh edges" << endl;
+    Info<< "Finished creating mesh edges" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    decomposeCells
+    Foam::decomposeCells
 
 Description
     Decomposes selected cells into pyramids
@@ -43,12 +43,13 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class decomposeCells Declaration
+                       Class decomposeCells Declaration
 \*---------------------------------------------------------------------------*/
 
 class decomposeCells
 {
     // private data
+
         //- reference to the mesh
         polyMeshGen& mesh_;
 
@@ -59,6 +60,7 @@ class decomposeCells
         labelLongList newBoundaryPatches_;
 
         VRWGraphList facesOfNewCells_;
+
 
     // Private member functions
 
@@ -73,7 +75,7 @@ class decomposeCells
             const label cellI,
             DynList<label, 32>& vrt,
             DynList<edge, 64>& edges,
-            DynList<DynList<label, 8> >& faceEdges,
+            DynList<DynList<label, 8>>& faceEdges,
             DynList<DynList<label, 2>, 64>& edgeFaces
         ) const;
 
@@ -102,15 +104,16 @@ class decomposeCells
         //- copy constructor
         decomposeCells(const decomposeCells&);
 
+
 public:
 
-    // Constructors
-        //- construct from polyMeshGen and a list containing patches
-        //- for each point
-        decomposeCells(polyMeshGen& mesh);
+    //- construct from polyMeshGen and a list containing patches
+    //- for each point
+    decomposeCells(polyMeshGen& mesh);
 
-        //- Destructor
-        ~decomposeCells();
+    //- Destructor
+    ~decomposeCells();
+
 
     // Member functions
 

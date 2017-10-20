@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfaceDetectFeatureEdges
+    Foam::triSurfaceDetectFeatureEdges
 
 Description
     Divides the surface mesh into regions bounded by feature edges
@@ -51,6 +51,7 @@ namespace Foam
 class triSurfaceDetectFeatureEdges
 {
     // Private data
+
         //- reference to triSurf
         triSurf& surf_;
 
@@ -60,7 +61,9 @@ class triSurfaceDetectFeatureEdges
         //- angle tolerance
         scalar angleTolerance_;
 
+
     // Private member functions
+
         //- detect feature edges by check angle between the normals
         //- of the two neighbouring facets
         void detectFeatureEdgesAngleCriterion();
@@ -71,20 +74,19 @@ class triSurfaceDetectFeatureEdges
         //- Disallow default bitwise assignment
         void operator=(const triSurfaceDetectFeatureEdges&);
 
+
 public:
 
-    // Constructors
+    //- Construct from triSurface and tolerance
+    triSurfaceDetectFeatureEdges
+    (
+        triSurf& surface,
+        const scalar angleDeviation = 45.0
+    );
 
-        //- Construct from triSurface and tolerance
-        triSurfaceDetectFeatureEdges
-        (
-            triSurf& surface,
-            const scalar angleDeviation = 45.0
-        );
 
-    // Destructor
-
-        ~triSurfaceDetectFeatureEdges();
+    //- Destructor
+    ~triSurfaceDetectFeatureEdges();
 
 
     // Member Functions
@@ -92,6 +94,7 @@ public:
         //- store regions in a graph
         void detectFeatureEdges();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

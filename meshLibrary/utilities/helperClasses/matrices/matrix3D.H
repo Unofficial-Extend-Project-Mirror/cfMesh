@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    matrix3D
+    Foam::matrix3D
 
 Description
     Implementation of 3 x 3 matrix
@@ -44,33 +44,42 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class matrix3D Declaration
+                          Class matrix3D Declaration
 \*---------------------------------------------------------------------------*/
 
 class matrix3D
-: public FixedList<FixedList<scalar, 3>, 3>
+:
+    public FixedList<FixedList<scalar, 3>, 3>
 {
     // Private members
+
         scalar det_;
         bool calculatedDet_;
 
+
     // Private member functions
+
         //- calculate matrix determinant
         inline void calculateDeterminant();
+
 
 public:
 
     // Constructors
+
         //- Null constructor
         explicit inline matrix3D();
 
         //- Copy constructor
         inline matrix3D(const matrix3D&);
 
-    // Destructor
-        inline ~matrix3D();
+
+    //- Destructor
+    inline ~matrix3D();
+
 
     // Member functions
+
         //- return matrix determinant
         inline scalar determinant();
 
@@ -92,6 +101,7 @@ public:
         //- return the third component of the solution vector
         inline scalar solveThird(const FixedList<scalar, 3>& source);
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

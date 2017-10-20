@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -66,13 +64,13 @@ void meshOctreeCube::findContainedEdges
         {
             const label edgeI = faceEdges(facetI, feI);
 
-            if( addEdge.found(edgeI) )
+            if (addEdge.found(edgeI))
                 continue;
 
-            if( edgeFaces.sizeOfRow(edgeI) != 2 )
+            if (edgeFaces.sizeOfRow(edgeI) != 2)
                 continue;
 
-            if(
+            if (
                 surface[edgeFaces(edgeI, 0)].region() !=
                 surface[edgeFaces(edgeI, 1)].region()
             )
@@ -80,7 +78,7 @@ void meshOctreeCube::findContainedEdges
                 const edge& edg = edges[edgeI];
                 const point& s = points[edg.start()];
                 const point& e = points[edg.end()];
-                if( intersectsLine(rootBox, s, e) )
+                if (intersectsLine(rootBox, s, e))
                 {
                     addEdge.insert(edgeI);
                     addedEdges.append(edgeI);
@@ -89,12 +87,13 @@ void meshOctreeCube::findContainedEdges
         }
     }
 
-    if( addedEdges.size() != 0 )
+    if (addedEdges.size() != 0)
     {
         containedEdgesLabel_ = containedEdges.size();
         containedEdges.appendList(addedEdges);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -105,23 +104,23 @@ void meshOctreeCube::refineCube2D
     meshOctreeSlot* slotPtr
 )
 {
-    if( !slotPtr )
+    if (!slotPtr)
         slotPtr = activeSlotPtr_;
 
     # ifdef DEBUGSearch
-    Info << "Refining the cube " << *this << endl;
+    Info<< "Refining the cube " << *this << endl;
     # endif
 
-    //- set the cube label to -1
+    // set the cube label to -1
     cubeLabel_ = -1;
 
-    //- create subCubes
+    // create subCubes
     FixedList<meshOctreeCube*, 8> subCubes;
     forAll(subCubes, scI)
-        subCubes[scI] = NULL;
+        subCubes[scI] = nullptr;
 
-    //- create new cubes in the Z-order fashion
-    for(label scI=0;scI<4;++scI)
+    // create new cubes in the Z-order fashion
+    for (label scI = 0; scI < 4; ++scI)
     {
         const label cubeI = slotPtr->cubes_.size();
         const meshOctreeCubeCoordinates cc = this->refineForPosition(scI);
@@ -138,17 +137,17 @@ void meshOctreeCube::refineCube2D
     slotPtr->childCubes_.appendFixedList(subCubes);
     subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
 
-    if( hasContainedElements() )
+    if (hasContainedElements())
     {
         const VRWGraph& containedElements =
             activeSlotPtr_->containedTriangles_;
 
         # ifdef DEBUGSearch
-        Info << "Distributing contained elements "
+        Info<< "Distributing contained elements "
             << containedElements[containedElementsLabel_] << endl;
         # endif
 
-        //- check if the subCube contain the element
+        // check if the subCube contain the element
         FixedList<DynList<label, 512>, 4> elementsInSubCubes;
 
         forAllRow(containedElements, containedElementsLabel_, tI)
@@ -156,8 +155,9 @@ void meshOctreeCube::refineCube2D
             const label elI = containedElements(containedElementsLabel_, tI);
 
             bool used(false);
-            for(label scI=0;scI<4;++scI)
-                if(
+            for (label scI = 0; scI < 4; ++scI)
+                if
+                (
                     subCubes[scI]->intersectsTriangleExact
                     (
                         surface,
@@ -170,7 +170,7 @@ void meshOctreeCube::refineCube2D
                     elementsInSubCubes[scI].append(elI);
                 }
 
-            if( !used )
+            if (!used)
             {
                 Warning << "Triangle " << elI
                     << " is not transferred to the child cubes!" << endl;
@@ -181,7 +181,7 @@ void meshOctreeCube::refineCube2D
         {
             const DynList<label, 512>& elmts = elementsInSubCubes[scI];
 
-            if( elmts.size() != 0 )
+            if (elmts.size() != 0)
             {
                 VRWGraph& ct = slotPtr->containedTriangles_;
                 subCubes[scI]->containedElementsLabel_ = ct.size();
@@ -189,16 +189,16 @@ void meshOctreeCube::refineCube2D
 
 
                 # ifdef DEBUGSearch
-                Info << "Elements in leaf " << scI << " are "
-                << ct[subCubes[scI]->containedElements()]
+                Info<< "Elements in leaf " << scI << " are "
+                    << ct[subCubes[scI]->containedElements()]
                     << endl;
                 # endif
             }
         }
 
-        //- find surface edges within the cube
-        for(label scI=0;scI<4;++scI)
-            if( subCubes[scI]->hasContainedElements() )
+        // find surface edges within the cube
+        for (label scI = 0; scI < 4; ++scI)
+            if (subCubes[scI]->hasContainedElements())
             {
                 subCubes[scI]->findContainedEdges
                 (
@@ -206,18 +206,20 @@ void meshOctreeCube::refineCube2D
                     rootBox
                 );
             }
-            else if( subCubes[scI]->cubeType() & DATA )
+            else if (subCubes[scI]->cubeType() & DATA)
             {
                 subCubes[scI]->setCubeType(UNKNOWN);
             }
     }
 
     # ifdef DEBUGSearch
-    for(label scI=0;scI<4;++scI)
-        Info << "Refined cube " << scI << " is "
+    for (label scI = 0; scI < 4; ++scI)
+        Info<< "Refined cube " << scI << " is "
             << *subCubes[scI] << endl;
     # endif
+
 }
+
 
 void meshOctreeCube::refineCube
 (
@@ -226,21 +228,21 @@ void meshOctreeCube::refineCube
     meshOctreeSlot* slotPtr
 )
 {
-    if( !slotPtr )
+    if (!slotPtr)
         slotPtr = activeSlotPtr_;
 
     # ifdef DEBUGSearch
-    Info << "Refining the cube " << *this << endl;
+    Info<< "Refining the cube " << *this << endl;
     # endif
 
-    //- set the cube label to -1
+    // set the cube label to -1
     cubeLabel_ = -1;
 
-    //- create subCubes
+    // create subCubes
     FixedList<meshOctreeCube*, 8> subCubes;
 
-    //- create new cubes in the Z-order fashion
-    for(label scI=0;scI<8;++scI)
+    // create new cubes in the Z-order fashion
+    for (label scI = 0; scI < 8; ++scI)
     {
         const label cubeI = slotPtr->cubes_.size();
         slotPtr->cubes_.append(meshOctreeCube(this->refineForPosition(scI)));
@@ -255,17 +257,17 @@ void meshOctreeCube::refineCube
     slotPtr->childCubes_.appendFixedList(subCubes);
     subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
 
-    if( hasContainedElements() )
+    if (hasContainedElements())
     {
         const VRWGraph& containedElements =
             activeSlotPtr_->containedTriangles_;
 
         # ifdef DEBUGSearch
-        Info << "Distributing contained elements "
+        Info<< "Distributing contained elements "
             << containedElements[containedElementsLabel_] << endl;
         # endif
 
-        //- check if the subCube contain the element
+        // check if the subCube contain the element
         FixedList<DynList<label, 512>, 8> elementsInSubCubes;
 
         forAllRow(containedElements, containedElementsLabel_, tI)
@@ -273,8 +275,8 @@ void meshOctreeCube::refineCube
             const label elI = containedElements(containedElementsLabel_, tI);
 
             bool used(false);
-            for(label scI=0;scI<8;++scI)
-                if(
+            for (label scI = 0; scI < 8; ++scI)
+                if (
                     subCubes[scI]->intersectsTriangleExact
                     (
                         surface,
@@ -287,7 +289,7 @@ void meshOctreeCube::refineCube
                     elementsInSubCubes[scI].append(elI);
                 }
 
-            if( !used )
+            if (!used)
             {
                 Warning << "Triangle " << elI
                     << " is not transferred to the child cubes!" << endl;
@@ -298,7 +300,7 @@ void meshOctreeCube::refineCube
         {
             const DynList<label, 512>& elmts = elementsInSubCubes[scI];
 
-            if( elmts.size() != 0 )
+            if (elmts.size() != 0)
             {
                 VRWGraph& ct = slotPtr->containedTriangles_;
                 subCubes[scI]->containedElementsLabel_ = ct.size();
@@ -306,16 +308,16 @@ void meshOctreeCube::refineCube
 
 
                 # ifdef DEBUGSearch
-                Info << "Elements in leaf " << scI << " are "
-                << ct[subCubes[scI]->containedElements()]
+                Info<< "Elements in leaf " << scI << " are "
+                    << ct[subCubes[scI]->containedElements()]
                     << endl;
                 # endif
             }
         }
 
-        //- find surface edges within the cube
-        for(label scI=0;scI<8;++scI)
-            if( subCubes[scI]->hasContainedElements() )
+        // find surface edges within the cube
+        for (label scI = 0; scI < 8; ++scI)
+            if (subCubes[scI]->hasContainedElements())
             {
                 subCubes[scI]->findContainedEdges
                 (
@@ -323,18 +325,20 @@ void meshOctreeCube::refineCube
                     rootBox
                 );
             }
-            else if( subCubes[scI]->cubeType() & DATA )
+            else if (subCubes[scI]->cubeType() & DATA)
             {
                 subCubes[scI]->setCubeType(UNKNOWN);
             }
     }
 
     # ifdef DEBUGSearch
-    for(label scI=0;scI<8;++scI)
-        Info << "Refined cube " << scI << " is "
+    for (label scI = 0; scI < 8; ++scI)
+        Info<< "Refined cube " << scI << " is "
             << *subCubes[scI] << endl;
     # endif
+
 }
+
 
 void meshOctreeCube::refineMissingCube
 (
@@ -344,14 +348,14 @@ void meshOctreeCube::refineMissingCube
     meshOctreeSlot* slotPtr
 )
 {
-    if( !slotPtr )
+    if (!slotPtr)
         slotPtr = activeSlotPtr_;
 
-    if( !subCubesPtr_ )
+    if (!subCubesPtr_)
     {
         FixedList<meshOctreeCube*, 8> sCubes;
         forAll(sCubes, i)
-            sCubes[i] = NULL;
+            sCubes[i] = nullptr;
 
         const label subCubesLabel = slotPtr->childCubes_.size();
 
@@ -359,10 +363,10 @@ void meshOctreeCube::refineMissingCube
         subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
     }
 
-    //- set the cube label to -1
+    // set the cube label to -1
     cubeLabel_ = -1;
 
-    //- refine the cube for the selected position
+    // refine the cube for the selected position
     const label cubeI = slotPtr->cubes_.size();
     slotPtr->cubes_.append(meshOctreeCube(this->refineForPosition(scI)));
     subCubesPtr_[scI] = &slotPtr->cubes_[cubeI];
@@ -371,7 +375,7 @@ void meshOctreeCube::refineMissingCube
     subCubesPtr_[scI]->setCubeType(this->cubeType());
     subCubesPtr_[scI]->setProcNo(this->procNo());
 
-    if( hasContainedElements() )
+    if (hasContainedElements())
     {
         const VRWGraph& containedElements =
             activeSlotPtr_->containedTriangles_;
@@ -380,7 +384,8 @@ void meshOctreeCube::refineMissingCube
         forAllRow(containedElements, containedElementsLabel_, tI)
         {
             const label elI = containedElements(containedElementsLabel_, tI);
-            if(
+            if
+            (
                 subCubesPtr_[scI]->intersectsTriangleExact
                 (
                     ts,
@@ -393,7 +398,7 @@ void meshOctreeCube::refineMissingCube
             }
         }
 
-        if( ce.size() != 0 )
+        if (ce.size() != 0)
         {
             subCubesPtr_[scI]->containedElementsLabel_ =
                 slotPtr->containedTriangles_.size();
@@ -408,6 +413,7 @@ void meshOctreeCube::refineMissingCube
     }
 }
 
+
 void meshOctreeCube::refineMissingCube
 (
     const label scI,
@@ -416,24 +422,24 @@ void meshOctreeCube::refineMissingCube
     meshOctreeSlot* slotPtr
 )
 {
-    if( !slotPtr )
+    if (!slotPtr)
         slotPtr = activeSlotPtr_;
 
-    if( subCubesPtr_ )
+    if (subCubesPtr_)
     {
         FixedList<meshOctreeCube*, 8> sCubes;
         forAll(sCubes, i)
-            sCubes[i] = NULL;
+            sCubes[i] = nullptr;
 
         const label subCubesLabel = slotPtr->childCubes_.size();
         slotPtr->childCubes_.appendFixedList(sCubes);
         subCubesPtr_ = &slotPtr->childCubes_(subCubesLabel, 0);
     }
 
-    //- set the cube label to -1
+    // set the cube label to -1
     cubeLabel_ = -1;
 
-    //- refine the cube for the selected position
+    // refine the cube for the selected position
     const label cubeI = slotPtr->cubes_.size();
     slotPtr->cubes_.append(meshOctreeCube(this->refineForPosition(scI)));
     subCubesPtr_[scI] = &slotPtr->cubes_[cubeI];
@@ -442,10 +448,11 @@ void meshOctreeCube::refineMissingCube
     subCubesPtr_[scI]->setCubeType(this->cubeType());
     subCubesPtr_[scI]->setProcNo(this->procNo());
 
-    //- set the contained elements and edges
+    // set the contained elements and edges
     subCubesPtr_[scI]->containedElementsLabel_ = elementsRowI;
     subCubesPtr_[scI]->containedEdgesLabel_ = edgesRowI;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

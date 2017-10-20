@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -56,6 +54,7 @@ void surfaceMorpherCells::replaceMeshBoundary()
     );
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 surfaceMorpherCells::surfaceMorpherCells
@@ -70,17 +69,18 @@ surfaceMorpherCells::surfaceMorpherCells
     newBoundaryFaces_(),
     newBoundaryOwners_(),
     newBoundaryPatches_()
-{
-}
+{}
+
 
 surfaceMorpherCells::~surfaceMorpherCells()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void surfaceMorpherCells::morphMesh()
 {
-    //- perform surface morphing
+    // perform surface morphing
     bool changed;
 
     # ifdef DEBUGMorph
@@ -91,26 +91,26 @@ void surfaceMorpherCells::morphMesh()
     {
         changed = false;
         # ifdef DEBUGMorph
-        Info << "Iteration " << ++iter << endl;
+        Info<< "Iteration " << ++iter << endl;
         # endif
 
         findBoundaryVertices();
 
         findBoundaryCells();
 
-        if( removeCellsWithAllVerticesAtTheBoundary() )
+        if (removeCellsWithAllVerticesAtTheBoundary())
         {
             changed = true;
             continue;
         }
 
-        if( morphInternalFaces() )
+        if (morphInternalFaces())
         {
             changed = true;
             continue;
         }
 
-        if( morphBoundaryFaces() )
+        if (morphBoundaryFaces())
         {
             changed = true;
             continue;
@@ -123,7 +123,7 @@ void surfaceMorpherCells::morphMesh()
         std::ostringstream ss;
         ss << iter;
         name += ss.str();
-        Info << "name " << name << endl;
+        Info<< "name " << name << endl;
         ++iter;
 
         const cellListPMG& cells = mesh_.cells();
@@ -141,7 +141,7 @@ void surfaceMorpherCells::morphMesh()
 
                 forAll(fEdges, eI)
                     forAll(edges, eJ)
-                        if( fEdges[eI] == edges[eJ] )
+                        if (fEdges[eI] == edges[eJ])
                         {
                             ++nAppearances[eJ];
                             break;
@@ -150,32 +150,32 @@ void surfaceMorpherCells::morphMesh()
 
             bool closed(true);
             forAll(nAppearances, eI)
-                if( nAppearances[eI] != 2 )
+                if (nAppearances[eI] != 2)
                 {
                     closed = false;
-                    Info << "Edge " << edges[eI] << " appears "
+                    Info<< "Edge " << edges[eI] << " appears "
                         << label(nAppearances[eI]) << " times in cell "
                         << cellI << endl;
                 }
 
-            if( !closed )
+            if (!closed)
             {
-                Info << "Cell " << cellI << " consists of faces " << c << endl;
+                Info<< "Cell " << cellI << " consists of faces " << c << endl;
                 forAll(c, fI)
-                    Info << "Face " << c[fI] << " is " << faces[c[fI]] << endl;
-                FatalErrorIn
-                (
-                    "void surfaceMorpherCells::morphMesh()"
-                ) << "Cell " << cellI << " is not topologically closed"
+                    Info<< "Face " << c[fI] << " is " << faces[c[fI]] << endl;
+
+                FatalErrorInFunction
+                    << "Cell " << cellI << " is not topologically closed"
                     << abort(FatalError);
             }
         }
         # endif
 
-    } while( changed );
+    } while (changed);
 
     polyMeshGenModifier(mesh_).removeUnusedVertices();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

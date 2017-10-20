@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -61,26 +59,26 @@ void meshOptimizer::untangleMeshFV
     const bool relaxedCheck
 )
 {
-    Info << "Starting untangling the mesh" << endl;
+    Info<< "Starting untangling the mesh" << endl;
 
     # ifdef DEBUGSmooth
     partTetMesh tm(mesh_);
     forAll(tm.tets(), tetI)
-        if( tm.tets()[tetI].mag(tm.points()) < 0.0 )
-            Info << "Tet " << tetI << " is inverted!" << endl;
+        if (tm.tets()[tetI].mag(tm.points()) < 0.0)
+            Info<< "Tet " << tetI << " is inverted!" << endl;
     polyMeshGen tetPolyMesh(mesh_.returnTime());
     tm.createPolyMesh(tetPolyMesh);
     polyMeshGenModifier(tetPolyMesh).removeUnusedVertices();
     forAll(tm.smoothVertex(), pI)
-        if( !tm.smoothVertex()[pI] )
-            Info << "Point " << pI << " cannot be moved!" << endl;
+        if (!tm.smoothVertex()[pI])
+            Info<< "Point " << pI << " cannot be moved!" << endl;
 
     const VRWGraph& pTets = tm.pointTets();
     forAll(pTets, pointI)
     {
         const LongList<partTet>& tets = tm.tets();
         forAllRow(pTets, pointI, i)
-            if( tets[pTets(pointI, i)].whichPosition(pointI) < 0 )
+            if (tets[pTets(pointI, i)].whichPosition(pointI) < 0)
                 FatalError << "Wrong partTet" << abort(FatalError);
 
         partTetMeshSimplex simplex(tm, pointI);
@@ -89,7 +87,7 @@ void meshOptimizer::untangleMeshFV
     boolList boundaryVertex(tetPolyMesh.points().size(), false);
     const labelList& neighbour = tetPolyMesh.neighbour();
     forAll(neighbour, faceI)
-        if( neighbour[faceI] == -1 )
+        if (neighbour[faceI] == -1)
         {
             const face& f = tetPolyMesh.faces()[faceI];
 
@@ -99,11 +97,9 @@ void meshOptimizer::untangleMeshFV
 
     forAll(boundaryVertex, pI)
     {
-        if( boundaryVertex[pI] && tm.smoothVertex()[pI] )
-            FatalErrorIn
-            (
-                "void meshOptimizer::untangleMeshFV()"
-            ) << "Boundary vertex should not be moved!" << abort(FatalError);
+        if (boundaryVertex[pI] && tm.smoothVertex()[pI])
+            FatalErrorInFunction
+                << "Boundary vertex should not be moved!" << abort(FatalError);
     }
     # endif
 
@@ -113,11 +109,11 @@ void meshOptimizer::untangleMeshFV
 
     boolList changedFace(faces.size(), true);
 
-    //- check if any points in the tet mesh shall not move
+    // check if any points in the tet mesh shall not move
     labelLongList lockedPoints;
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             lockedPoints.append(pointI);
     }
 
@@ -127,10 +123,10 @@ void meshOptimizer::untangleMeshFV
     {
         nIter = 0;
 
-        label minNumBadFaces(10 * faces.size()), minIter(-1);
+        label minNumBadFaces(10*faces.size()), minIter(-1);
         do
         {
-            if( !relaxedCheck )
+            if (!relaxedCheck)
             {
                 nBadFaces =
                     polyMeshGenChecks::findBadFaces
@@ -153,30 +149,30 @@ void meshOptimizer::untangleMeshFV
                     );
             }
 
-            Info << "Iteration " << nIter
+            Info<< "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
 
-            //- perform optimisation
-            if( nBadFaces == 0 )
+            // perform optimisation
+            if (nBadFaces == 0)
                 break;
 
-            if( nBadFaces < minNumBadFaces )
+            if (nBadFaces < minNumBadFaces)
             {
                 minNumBadFaces = nBadFaces;
                 minIter = nIter;
             }
 
-            //- create a tet mesh from the mesh and the labels of bad faces
+            // create a tet mesh from the mesh and the labels of bad faces
             partTetMesh tetMesh
             (
                 mesh_,
                 lockedPoints,
                 badFaces,
-                (nGlobalIter / 2) + 1
+                (nGlobalIter/2) + 1
             );
 
-            //- construct tetMeshOptimisation and improve positions of
-            //- points in the tet mesh
+            // construct tetMeshOptimisation and improve positions of
+            // points in the tet mesh
             tetMeshOptimisation tmo(tetMesh);
 
             tmo.optimiseUsingKnuppMetric();
@@ -185,20 +181,20 @@ void meshOptimizer::untangleMeshFV
 
             tmo.optimiseUsingVolumeOptimizer();
 
-            //- update points in the mesh from the coordinates in the tet mesh
+            // update points in the mesh from the coordinates in the tet mesh
             tetMesh.updateOrigMesh(&changedFace);
 
-        } while( (nIter < minIter+5) && (++nIter < maxNumIterations) );
+        } while ((nIter < minIter + 5) && (++nIter < maxNumIterations));
 
-        if( (nBadFaces == 0) || (++nGlobalIter >= maxNumGlobalIterations) )
+        if ((nBadFaces == 0) || (++nGlobalIter >= maxNumGlobalIterations))
             break;
 
         // move boundary vertices
         nIter = 0;
 
-        while( nIter++ < maxNumSurfaceIterations )
+        while (nIter++< maxNumSurfaceIterations)
         {
-            if( !relaxedCheck )
+            if (!relaxedCheck)
             {
                 nBadFaces =
                     polyMeshGenChecks::findBadFaces
@@ -221,15 +217,15 @@ void meshOptimizer::untangleMeshFV
                     );
             }
 
-            Info << "Iteration " << nIter
+            Info<< "Iteration " << nIter
                 << ". Number of bad faces is " << nBadFaces << endl;
 
-            //- perform optimisation
-            if( nBadFaces == 0 )
+            // perform optimisation
+            if (nBadFaces == 0)
             {
                 break;
             }
-            else if( enforceConstraints_ )
+            else if (enforceConstraints_)
             {
                 const label subsetId =
                     mesh_.addPointSubset(badPointsSubsetName_);
@@ -241,13 +237,11 @@ void meshOptimizer::untangleMeshFV
                         mesh_.addPointToSubset(subsetId, f[pI]);
                 }
 
-                WarningIn
-                (
-                    "void meshOptimizer::untangleMeshFV()"
-                ) << "Writing mesh with " << badPointsSubsetName_
-                  << " subset. These points cannot be untangled"
-                  << " without sacrificing geometry constraints. Exitting.."
-                  << endl;
+                WarningInFunction
+                    << "Writing mesh with " << badPointsSubsetName_
+                    << " subset. These points cannot be untangled"
+                    << " without sacrificing geometry constraints. Exitting.."
+                    << endl;
 
                 returnReduce(1, sumOp<label>());
                 throw std::logic_error
@@ -257,25 +251,25 @@ void meshOptimizer::untangleMeshFV
                 );
             }
 
-            //- create tethrahedral mesh from the cells which shall be smoothed
+            // create tethrahedral mesh from the cells which shall be smoothed
             partTetMesh tetMesh(mesh_, lockedPoints, badFaces, 0);
 
-            //- contruct tetMeshOptimisation
+            // contruct tetMeshOptimisation
             tetMeshOptimisation tmo(tetMesh);
 
-            if( nGlobalIter < 2 )
+            if (nGlobalIter < 2)
             {
-                //- the point stays in the plane determined by the point normal
+                // the point stays in the plane determined by the point normal
                 tmo.optimiseBoundaryVolumeOptimizer(true);
             }
-            else if( nGlobalIter < 5 )
+            else if (nGlobalIter < 5)
             {
-                //- move points without any constraints on the movement
+                // move points without any constraints on the movement
                 tmo.optimiseBoundarySurfaceLaplace();
             }
             else
             {
-                //- move boundary points without any constraints
+                // move boundary points without any constraints
                 tmo.optimiseBoundaryVolumeOptimizer(false);
             }
 
@@ -283,12 +277,12 @@ void meshOptimizer::untangleMeshFV
 
         }
 
-    } while( nBadFaces );
+    } while (nBadFaces);
 
-    if( nBadFaces != 0 )
+    if (nBadFaces != 0)
     {
         label subsetId = mesh_.faceSubsetIndex("badFaces");
-        if( subsetId >= 0 )
+        if (subsetId >= 0)
             mesh_.removeFaceSubset(subsetId);
         subsetId = mesh_.addFaceSubset("badFaces");
 
@@ -302,38 +296,39 @@ void meshOptimizer::untangleMeshFV
         {
             mesh_.addFaceToSubset(subsetId, it.key());
             mesh_.addCellToSubset(badCellsId, owner[it.key()]);
-            if( neighbour[it.key()] < 0 )
+            if (neighbour[it.key()] < 0)
                 continue;
             mesh_.addCellToSubset(badCellsId, neighbour[it.key()]);
         }
     }
 
-    Info << "Finished untangling the mesh" << endl;
+    Info<< "Finished untangling the mesh" << endl;
 }
+
 
 void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
 {
-    if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
+    if (mesh_.returnTime().foundObject <IOdictionary>("meshDict"))
     {
         const dictionary& meshDict =
-            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
+            mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
 
         bool smoothLayer(false);
 
-        if( meshDict.found("boundaryLayers") )
+        if (meshDict.found("boundaryLayers"))
         {
             const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-            if( layersDict.found("optimiseLayer") )
+            if (layersDict.found("optimiseLayer"))
                 smoothLayer = readBool(layersDict.lookup("optimiseLayer"));
         }
 
-        if( !smoothLayer )
+        if (!smoothLayer)
             return;
 
-        if( addBufferLayer )
+        if (addBufferLayer)
         {
-            //- create a buffer layer which will not be modified by the smoother
+            // create a buffer layer which will not be modified by the smoother
             refineBoundaryLayers refLayers(mesh_);
 
             refineBoundaryLayers::readSettings(meshDict, refLayers);
@@ -346,7 +341,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
             calculatePointLocations();
         }
 
-        Info << "Starting optimising boundary layer" << endl;
+        Info<< "Starting optimising boundary layer" << endl;
 
         const meshSurfaceEngine& mse = meshSurface();
         const labelList& faceOwner = mse.faceOwners();
@@ -357,7 +352,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
 
         optimiser.optimiseLayer();
 
-        //- check if the bnd layer is tangled somewhere
+        // check if the bnd layer is tangled somewhere
         labelLongList bndLayerCells;
         const boolList& baseFace = optimiser.isBaseFace();
 
@@ -367,7 +362,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
 
         forAll(baseFace, bfI)
         {
-            if( baseFace[bfI] )
+            if (baseFace[bfI])
             {
                 bndLayerCells.append(faceOwner[bfI]);
 
@@ -380,7 +375,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
         clearSurface();
         mesh_.clearAddressingData();
 
-        //- lock boundary layer points, faces and cells
+        // lock boundary layer points, faces and cells
         lockCells(bndLayerCells);
 
         # ifdef DEBUGSmooth
@@ -389,44 +384,45 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
             origPoints[pI] = mesh_.points()[pI];
         # endif
 
-        //- optimize mesh quality
+        // optimize mesh quality
         optimizeMeshFV(5, 1, 50, 0);
 
-        //- untangle remaining faces and lock the boundary layer cells
+        // untangle remaining faces and lock the boundary layer cells
         untangleMeshFV(2, 50, 0);
 
         # ifdef DEBUGSmooth
         forAll(vertexLocation_, pI)
         {
-            if( vertexLocation_[pI] & LOCKED )
+            if (vertexLocation_[pI] & LOCKED)
             {
-                if( mag(origPoints[pI] - mesh_.points()[pI]) > SMALL )
+                if (mag(origPoints[pI] - mesh_.points()[pI]) > SMALL)
                     FatalError << "Locked points were moved"
                                << abort(FatalError);
             }
         }
         # endif
 
-        //- unlock bnd layer points
+        // unlock bnd layer points
         removeUserConstraints();
 
-        Info << "Finished optimising boundary layer" << endl;
+        Info<< "Finished optimising boundary layer" << endl;
     }
 }
+
 
 void meshOptimizer::untangleBoundaryLayer()
 {
     bool untangleLayer(true);
-    if( mesh_.returnTime().foundObject<IOdictionary>("meshDict") )
+    if (mesh_.returnTime().foundObject <IOdictionary>("meshDict"))
     {
         const dictionary& meshDict =
-            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
+            mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
 
-        if( meshDict.found("boundaryLayers") )
+        if (meshDict.found("boundaryLayers"))
         {
             const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-            if( layersDict.found("untangleLayers") )
+            if (layersDict.found("untangleLayers"))
             {
                 untangleLayer =
                     readBool(layersDict.lookup("untangleLayers"));
@@ -434,7 +430,7 @@ void meshOptimizer::untangleBoundaryLayer()
         }
     }
 
-    if( !untangleLayer )
+    if (!untangleLayer)
     {
         labelHashSet badFaces;
         polyMeshGenChecks::checkFacePyramids(mesh_, false, VSMALL, &badFaces);
@@ -442,7 +438,7 @@ void meshOptimizer::untangleBoundaryLayer()
         const label nInvalidFaces =
             returnReduce(badFaces.size(), sumOp<label>());
 
-        if( nInvalidFaces != 0 )
+        if (nInvalidFaces != 0)
         {
             const labelList& owner = mesh_.owner();
             const labelList& neighbour = mesh_.neighbour();
@@ -454,7 +450,7 @@ void meshOptimizer::untangleBoundaryLayer()
             {
                 mesh_.addCellToSubset(badBlCellsId, owner[it.key()]);
 
-                if( neighbour[it.key()] < 0 )
+                if (neighbour[it.key()] < 0)
                     continue;
 
                 mesh_.addCellToSubset(badBlCellsId, neighbour[it.key()]);
@@ -478,6 +474,7 @@ void meshOptimizer::untangleBoundaryLayer()
     }
 }
 
+
 void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
 {
     label nBadFaces, nIter(0);
@@ -485,11 +482,11 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
-    //- check if any points in the tet mesh shall not move
+    // check if any points in the tet mesh shall not move
     labelLongList lockedPoints;
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             lockedPoints.append(pointI);
     }
 
@@ -509,26 +506,27 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
         forAllConstIter(labelHashSet, lowQualityFaces, it)
             changedFace[it.key()] = true;
 
-        Info << "Iteration " << nIter
+        Info<< "Iteration " << nIter
             << ". Number of bad faces is " << nBadFaces << endl;
 
-        //- perform optimisation
-        if( nBadFaces == 0 )
+        // perform optimisation
+        if (nBadFaces == 0)
             break;
 
         partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
 
-        //- construct tetMeshOptimisation and improve positions
-        //- of points in the tet mesh
+        // construct tetMeshOptimisation and improve positions
+        // of points in the tet mesh
         tetMeshOptimisation tmo(tetMesh);
 
         tmo.optimiseUsingVolumeOptimizer();
 
-        //- update points in the mesh from the new coordinates in the tet mesh
+        // update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( ++nIter < maxNumIterations );
+    } while (++nIter < maxNumIterations);
 }
+
 
 void meshOptimizer::optimizeMeshNearBoundaries
 (
@@ -541,29 +539,30 @@ void meshOptimizer::optimizeMeshNearBoundaries
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
-    //- check if any points in the tet mesh shall not move
+    // check if any points in the tet mesh shall not move
     labelLongList lockedPoints;
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             lockedPoints.append(pointI);
     }
 
     partTetMesh tetMesh(mesh_, lockedPoints, numLayersOfCells);
     tetMeshOptimisation tmo(tetMesh);
-    Info << "Iteration:" << flush;
+    Info<< "Iteration:" << flush;
     do
     {
         tmo.optimiseUsingVolumeOptimizer(1);
 
         tetMesh.updateOrigMesh(&changedFace);
 
-        Info << "." << flush;
+        Info<< "." << flush;
 
-    } while( ++nIter < maxNumIterations );
+    } while (++nIter < maxNumIterations);
 
-    Info << endl;
+    Info<< endl;
 }
+
 
 void meshOptimizer::optimizeMeshFV
 (
@@ -573,7 +572,7 @@ void meshOptimizer::optimizeMeshFV
     const label maxNumSurfaceIterations
 )
 {
-    Info << "Starting smoothing the mesh" << endl;
+    Info<< "Starting smoothing the mesh" << endl;
 
     laplaceSmoother lps(mesh_, vertexLocation_);
     lps.optimizeLaplacianPC(numLaplaceIterations);
@@ -585,8 +584,9 @@ void meshOptimizer::optimizeMeshFV
         maxNumSurfaceIterations
     );
 
-    Info << "Finished smoothing the mesh" << endl;
+    Info<< "Finished smoothing the mesh" << endl;
 }
+
 
 void meshOptimizer::optimizeMeshFVBestQuality
 (
@@ -600,15 +600,15 @@ void meshOptimizer::optimizeMeshFVBestQuality
     const faceListPMG& faces = mesh_.faces();
     boolList changedFace(faces.size(), true);
 
-    //- check if any points in the tet mesh shall not move
+    // check if any points in the tet mesh shall not move
     labelLongList lockedPoints;
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             lockedPoints.append(pointI);
     }
 
-    label minNumBadFaces(10 * faces.size());
+    label minNumBadFaces(10*faces.size());
     do
     {
         labelHashSet lowQualityFaces;
@@ -626,34 +626,35 @@ void meshOptimizer::optimizeMeshFVBestQuality
         forAllConstIter(labelHashSet, lowQualityFaces, it)
             changedFace[it.key()] = true;
 
-        Info << "Iteration " << nIter
+        Info<< "Iteration " << nIter
             << ". Number of worst quality faces is " << nBadFaces << endl;
 
-        //- perform optimisation
-        if( nBadFaces == 0 )
+        // perform optimisation
+        if (nBadFaces == 0)
             break;
 
-        if( nBadFaces < minNumBadFaces )
+        if (nBadFaces < minNumBadFaces)
         {
             minNumBadFaces = nBadFaces;
 
-            //- update the iteration number when the minimum is achieved
+            // update the iteration number when the minimum is achieved
             minIter = nIter;
         }
 
         partTetMesh tetMesh(mesh_, lockedPoints, lowQualityFaces, 2);
 
-        //- construct tetMeshOptimisation and improve positions
-        //- of points in the tet mesh
+        // construct tetMeshOptimisation and improve positions
+        // of points in the tet mesh
         tetMeshOptimisation tmo(tetMesh);
 
         tmo.optimiseUsingVolumeOptimizer(20);
 
-        //- update points in the mesh from the new coordinates in the tet mesh
+        // update points in the mesh from the new coordinates in the tet mesh
         tetMesh.updateOrigMesh(&changedFace);
 
-    } while( (nIter < minIter+5) && (++nIter < maxNumIterations) );
+    } while ((nIter < minIter + 5) && (++nIter < maxNumIterations));
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    voronoiMeshExtractor
+    Foam::voronoiMeshExtractor
 
 Description
     A class which extracts tet mesh out of an octree structure
@@ -52,6 +52,7 @@ namespace Foam
 class voronoiMeshExtractor
 {
     // Private data
+
         //- create tets
         tetCreatorOctree tetCreator_;
 
@@ -70,7 +71,9 @@ class voronoiMeshExtractor
         //- is edge at the boundary
         mutable boolList* boundaryEdgePtr_;
 
+
     // Private member functions
+
         //- create and return addressing
         void createAddressing() const;
 
@@ -88,38 +91,42 @@ class voronoiMeshExtractor
         //- delete all pointer data
         void clearOut();
 
+
     // Private copy constructor
+
         //- Disallow default bitwise copy construct
         voronoiMeshExtractor(const voronoiMeshExtractor&);
 
         //- Disallow default bitwise assignment
         void operator=(const voronoiMeshExtractor&);
 
+
     // Private static data
+
         //- positive orientation
         static label sameOrientation_[6];
 
         //- opposite orientation
         static label oppositeOrientation_[6];
 
+
 public:
 
-    // Constructors
+    //- Construct from octree and mesh data
+    voronoiMeshExtractor
+    (
+        const meshOctree& octree,
+        const IOdictionary& meshDict,
+        polyMeshGen& mesh
+    );
 
-        //- Construct from octree and mesh data
-        voronoiMeshExtractor
-        (
-            const meshOctree& octree,
-            const IOdictionary& meshDict,
-            polyMeshGen& mesh
-        );
 
-    // Destructor
-
-        ~voronoiMeshExtractor();
+    //- Destructor
+    ~voronoiMeshExtractor();
 
 
     // Member Functions
+
         void createMesh();
 };
 

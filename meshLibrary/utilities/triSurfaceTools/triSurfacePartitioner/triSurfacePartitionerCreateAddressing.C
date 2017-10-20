@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -54,23 +52,24 @@ void triSurfacePartitioner::calculatePatchAddressing()
     calculateEdgeGroupsToCorners();
 }
 
+
 void triSurfacePartitioner::calculateCornersAndAddressing()
 {
     const VRWGraph& pointFaces = surface_.pointFacets();
     const edgeLongList& edges = surface_.edges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
-    //- find the number of feature edges connected to each surface node
+    // find the number of feature edges connected to each surface node
     labelList nEdgesAtNode(surface_.points().size(), 0);
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces.sizeOfRow(eI) != 2 )
+        if (edgeFaces.sizeOfRow(eI) != 2)
             continue;
 
         const label sPatch = surface_[edgeFaces(eI, 0)].region();
         const label ePatch = surface_[edgeFaces(eI, 1)].region();
 
-        if( sPatch != ePatch )
+        if (sPatch != ePatch)
         {
             const edge& e = edges[eI];
             ++nEdgesAtNode[e.start()];
@@ -78,12 +77,12 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
         }
     }
 
-    //- count the number of feature edges connected to each surface point
-    //- corners must have 3 or more edges attached to them
+    // count the number of feature edges connected to each surface point
+    // corners must have 3 or more edges attached to them
     label nCorners(0);
     forAll(nEdgesAtNode, pI)
     {
-        if( nEdgesAtNode[pI] < 3 )
+        if (nEdgesAtNode[pI] < 3)
             continue;
 
         ++nCorners;
@@ -93,11 +92,11 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
     cornerPatches_.setSize(nCorners);
     nCorners = 0;
 
-    //- store corner data
+    // store corner data
     DynList<label> patches;
     forAll(pointFaces, pointI)
     {
-        if( nEdgesAtNode[pointI] < 3 )
+        if (nEdgesAtNode[pointI] < 3)
             continue;
 
         patches.clear();
@@ -110,25 +109,27 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
     }
 }
 
+
 void triSurfacePartitioner::calculatePatchPatches()
 {
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces.sizeOfRow(eI) != 2 )
+        if (edgeFaces.sizeOfRow(eI) != 2)
             continue;
 
         const label sPatch = surface_[edgeFaces(eI, 0)].region();
         const label ePatch = surface_[edgeFaces(eI, 1)].region();
 
-        if( sPatch != ePatch )
+        if (sPatch != ePatch)
         {
             patchPatches_[sPatch].insert(ePatch);
             patchPatches_[ePatch].insert(sPatch);
         }
     }
 }
+
 
 void triSurfacePartitioner::calculateEdgeGroups()
 {
@@ -137,7 +138,7 @@ void triSurfacePartitioner::calculateEdgeGroups()
     const VRWGraph& pointEdges = surface_.pointEdges();
 
 
-    //- make all feature edges
+    // make all feature edges
     boolList featureEdge(edgeFaces.size(), false);
 
     # ifdef USE_OMP
@@ -149,11 +150,11 @@ void triSurfacePartitioner::calculateEdgeGroups()
         forAllRow(edgeFaces, eI, efI)
             patches.appendIfNotIn(surface_[edgeFaces(eI, efI)].region());
 
-        if( patches.size() > 1 )
+        if (patches.size() > 1)
             featureEdge[eI] = true;
     }
 
-    //- create a set containing corners for fast searching
+    // create a set containing corners for fast searching
     labelHashSet corners;
     forAll(corners_, i)
         corners.insert(corners_[i]);
@@ -164,9 +165,9 @@ void triSurfacePartitioner::calculateEdgeGroups()
     label nGroups(0);
     forAll(featureEdge, eI)
     {
-        if( !featureEdge[eI] )
+        if (!featureEdge[eI])
             continue;
-        if( edgeGroups_[eI] != -1 )
+        if (edgeGroups_[eI] != -1)
             continue;
 
         labelLongList front;
@@ -174,23 +175,23 @@ void triSurfacePartitioner::calculateEdgeGroups()
         edgeGroups_[eI] = nGroups;
         featureEdge[eI] = false;
 
-        while( front.size() )
+        while (front.size())
         {
             const label eLabel = front.removeLastElement();
             const edge& e = edges[eLabel];
 
-            for(label pI=0;pI<2;++pI)
+            for (label pI = 0; pI < 2; ++pI)
             {
                 const label pointI = e[pI];
 
-                if( corners.found(pointI) )
+                if (corners.found(pointI))
                     continue;
 
                 forAllRow(pointEdges, pointI, peI)
                 {
                     const label eJ = pointEdges(pointI, peI);
 
-                    if( featureEdge[eJ] && (edgeGroups_[eJ] == -1) )
+                    if (featureEdge[eJ] && (edgeGroups_[eJ] == -1))
                     {
                         edgeGroups_[eJ] = nGroups;
                         featureEdge[eJ] = false;
@@ -203,11 +204,12 @@ void triSurfacePartitioner::calculateEdgeGroups()
         ++nGroups;
     }
 
-    Info << nGroups << " edge groups found!" << endl;
+    Info<< nGroups << " edge groups found!" << endl;
 
     edgeGroupEdgeGroups_.clear();
     edgeGroupEdgeGroups_.setSize(nGroups);
 }
+
 
 void triSurfacePartitioner::calculatePatchToEdgeGroups()
 {
@@ -215,7 +217,7 @@ void triSurfacePartitioner::calculatePatchToEdgeGroups()
 
     forAll(edgeFaces, eI)
     {
-        if( edgeGroups_[eI] < 0 )
+        if (edgeGroups_[eI] < 0)
             continue;
 
         DynList<label> patches;
@@ -226,7 +228,7 @@ void triSurfacePartitioner::calculatePatchToEdgeGroups()
         {
             const label patchI = patches[i];
 
-            for(label j=i+1;j<patches.size();++j)
+            for (label j = i + 1; j < patches.size(); ++j)
             {
                 const label patchJ = patches[j];
 
@@ -241,6 +243,7 @@ void triSurfacePartitioner::calculatePatchToEdgeGroups()
         }
     }
 }
+
 
 void triSurfacePartitioner::calculateEdgeGroupsToCorners()
 {
@@ -260,12 +263,12 @@ void triSurfacePartitioner::calculateEdgeGroupsToCorners()
         forAll(edgeGroupsAtCorner, i)
         {
             const label epI = edgeGroupsAtCorner[i];
-            if( epI < 0 )
+            if (epI < 0)
                 continue;
-            for(label j=i+1;j<edgeGroupsAtCorner.size();++j)
+            for (label j = i + 1; j < edgeGroupsAtCorner.size(); ++j)
             {
                 const label epJ = edgeGroupsAtCorner[j];
-                if( epJ < 0 )
+                if (epJ < 0)
                     continue;
 
                 std::pair<label, label> ep
@@ -274,7 +277,7 @@ void triSurfacePartitioner::calculateEdgeGroupsToCorners()
                     Foam::max(epI, epJ)
                 );
 
-                //- create edgepartition - edge partitions addressing
+                // create edgepartition - edge partitions addressing
                 edgeGroupEdgeGroups_[ep.first].insert(ep.second);
                 edgeGroupEdgeGroups_[ep.second].insert(ep.first);
 
@@ -283,6 +286,7 @@ void triSurfacePartitioner::calculateEdgeGroupsToCorners()
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

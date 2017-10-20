@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    partTriMesh
+    Foam::partTriMesh
 
 Description
     Triangulation of mesh surface needed for surface smoothing
@@ -54,12 +54,13 @@ class meshSurfacePartitioner;
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
-                        Class partTriMesh Declaration
+                         Class partTriMesh Declaration
 \*---------------------------------------------------------------------------*/
 
 class partTriMesh
 {
     // Private data
+
         //- const reference to the meshSurfacePartitioner
         const meshSurfacePartitioner& mPart_;
 
@@ -75,7 +76,9 @@ class partTriMesh
         //- shall a node be used for smoothing or not
         LongList<direction> pointType_;
 
+
     // Private data for parallel runs
+
         //- global point label
         mutable labelLongList* globalPointLabelPtr_;
 
@@ -93,6 +96,7 @@ class partTriMesh
 
         //- labels of points serving as buffer layers on other processors
         mutable labelLongList* pAtBufferLayersPtr_;
+
 
     // Private member functions
 
@@ -118,9 +122,11 @@ class partTriMesh
         //- disallow bitwise copy construct
         partTriMesh(const partTriMesh&);
 
+
 public:
 
     // Constructors
+
         //- construct from meshSurfacePartitioner
         partTriMesh(const meshSurfacePartitioner& mPart);
 
@@ -132,6 +138,7 @@ public:
             const labelHashSet& invertedPoints,
             const label additionalLayers = 0
         );
+
 
     // Enumerators
 
@@ -146,10 +153,13 @@ public:
             CORNER = 64
         };
 
-    // Destructor
-        ~partTriMesh();
+
+    //- Destructor
+    ~partTriMesh();
+
 
     // Member functions
+
         //- access to points, tets and other data
         inline const pointField& points() const
         {
@@ -183,54 +193,69 @@ public:
             return meshSurfacePointLabelInTriMesh_;
         }
 
+
     // Access to parallel data
+
         inline const labelLongList& globalPointLabel() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *globalPointLabelPtr_;
         }
 
         inline const VRWGraph& pointAtProcs() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *pAtProcsPtr_;
         }
 
         inline const Map<label>& globalToLocalPointAddressing() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *globalToLocalPointAddressingPtr_;
         }
 
         inline const DynList<label>& neiProcs() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *neiProcsPtr_;
         }
 
         inline const labelLongList& pointsAtProcessorBoundaries() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *pAtParallelBoundariesPtr_;
         }
 
         inline const labelLongList& bufferLayerPoints() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
+            {
                 FatalError << "This is a serial run" << abort(FatalError);
+            }
 
             return *pAtBufferLayersPtr_;
         }
+
 
     // Modifiers
 
@@ -239,7 +264,7 @@ public:
 
         //- move vertices to their new positions
         //- intended for SMP parallelisation
-        void updateVerticesSMP(const List<LongList<labelledPoint> >&);
+        void updateVerticesSMP(const List<LongList<labelledPoint>>&);
 
         //- update coordinates of points in partTriMesh to match the coordinates
         //- in the mesh surface
@@ -255,6 +280,7 @@ public:
             return surf_;
         }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

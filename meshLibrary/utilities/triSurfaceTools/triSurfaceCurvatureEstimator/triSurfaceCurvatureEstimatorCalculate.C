@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -57,13 +55,13 @@ void writeSurfaceToVTK
     const triSurf& surf
 )
 {
-    //- write the header
+    // write the header
     file << "# vtk DataFile Version 3.0\n";
     file << "vtk output\n";
     file << "ASCII\n";
     file << "DATASET POLYDATA\n";
 
-    //- write points
+    // write points
     const pointField& points = surf.points();
     file << "POINTS " << points.size() << " float\n";
     forAll(points, pI)
@@ -72,11 +70,11 @@ void writeSurfaceToVTK
 
         file << p.x() << ' ' << p.y() << ' ' << p.z() << ' ';
 
-        if( pI % 5 == 0 )
+        if (pI % 5 == 0)
             file << "\n";
     }
 
-    //- write triangles
+    // write triangles
     file << "\n";
     file << "\nPOLYGONS " << surf.size() << " " << 4*surf.size() << endl;
     forAll(surf, triI)
@@ -86,6 +84,7 @@ void writeSurfaceToVTK
     }
 }
 
+
 void writeSurfaceToVTK
 (
     OFstream& file,
@@ -94,19 +93,19 @@ void writeSurfaceToVTK
     const labelHashSet& labels
 )
 {
-    //- write the header
+    // write the header
     file << "# vtk DataFile Version 3.0\n";
     file << "vtk output\n";
     file << "ASCII\n";
     file << "DATASET POLYDATA\n";
 
-    //- write points
+    // write points
     std::map<label, label> newPointLabel;
     forAll(triangles, tI)
     {
         const labelledTri& tri = surf[triangles[tI]];
 
-        for(label pI=0;pI<3;++pI)
+        for (label pI = 0; pI < 3; ++pI)
         {
             newPointLabel[tri[pI]];
         }
@@ -120,7 +119,7 @@ void writeSurfaceToVTK
     label counter(0);
     for
     (
-        std::map<label, label>::iterator it=newPointLabel.begin();
+        std::map<label, label>::iterator it = newPointLabel.begin();
         it!=newPointLabel.end();
         ++it
     )
@@ -134,7 +133,7 @@ void writeSurfaceToVTK
         file << nl;
     }
 
-    //- write triangles
+    // write triangles
     file << "\n";
     file << "\nPOLYGONS " << triangles.size()
          << " " << 4*triangles.size() << endl;
@@ -149,18 +148,19 @@ void writeSurfaceToVTK
     }
 }
 
+
 void writeSurfaceToVTK
 (
     const word& name,
     const triSurf& surf,
-    const List<DynList<scalar, 1> >& data
+    const List<DynList<scalar, 1>>& data
 )
 {
     OFstream file(name+".vtk");
 
     writeSurfaceToVTK(file, surf);
 
-    //- write curvature fields
+    // write curvature fields
     const pointField& points = surf.points();
     file << "\n";
     file << "\nPOINT_DATA " << points.size() << "\n";
@@ -171,23 +171,24 @@ void writeSurfaceToVTK
     {
         file << data[pI][0] << " ";
 
-        if( pI && pI % 5 == 0 )
+        if (pI && pI % 5 == 0)
             file << endl;
     }
 }
+
 
 void writeSurfaceToVTK
 (
     const word& name,
     const triSurf& surf,
-    const List<DynList<vector, 1> >& data
+    const List<DynList<vector, 1>>& data
 )
 {
     OFstream file(name+".vtk");
 
     writeSurfaceToVTK(file, surf);
 
-    //- write curvature fields
+    // write curvature fields
     const pointField& points = surf.points();
     file << "\n";
     file << "\nPOINT_DATA " << points.size() << "\n";
@@ -200,10 +201,11 @@ void writeSurfaceToVTK
 
         file << v[0] << " " << v[1] << " " << v[2] << " ";
 
-        if( pI && pI % 5 == 0 )
+        if (pI && pI % 5 == 0)
             file << endl;
     }
 }
+
 
 void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 {
@@ -225,19 +227,19 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
         forAll(edgePointCurvature_, i)
             edgePointCurvature_[i] = 0.0;
 
-        //- mark feature edges
+        // mark feature edges
         # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
         # endif
         forAll(edgeFaces, eI)
         {
-            if( edgeFaces.sizeOfRow(eI) != 2 )
+            if (edgeFaces.sizeOfRow(eI) != 2)
             {
                 featureEdge[eI] = false;
                 continue;
             }
 
-            if(
+            if (
                  surface_[edgeFaces(eI, 0)].region() ==
                  surface_[edgeFaces(eI, 1)].region()
             )
@@ -254,8 +256,8 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
         # pragma omp barrier
         # endif
 
-        //- loop through the points and calculate the curvature for points
-        //- attached to two feature edges
+        // loop through the points and calculate the curvature for points
+        // attached to two feature edges
         # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
         # endif
@@ -265,13 +267,13 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
             forAllRow(pointEdges, pI, peI)
             {
                 const label edgeI = pointEdges(pI, peI);
-                if( featureEdge[edgeI] )
+                if (featureEdge[edgeI])
                     features.append(edgeI);
             }
 
-            if( features.size() == 2 )
+            if (features.size() == 2)
             {
-                //- calculate the curvature and store it in the map
+                // calculate the curvature and store it in the map
                 vector e1 = edges[features[0]].vec(points);
                 const scalar d1 = mag(e1) + VSMALL;
                 e1 /= d1;
@@ -283,12 +285,13 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
                 cs = Foam::min(1.0, cs);
                 cs = Foam::max(-1.0, cs);
 
-                const scalar curv = Foam::acos(cs) / (0.5 * (d1+d2+VSMALL));
+                const scalar curv = Foam::acos(cs)/(0.5*(d1 + d2 + VSMALL));
                 edgePointCurvature_[pI] = Foam::mag(curv);
             }
         }
     }
 }
+
 
 void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 {
@@ -304,14 +307,14 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
     maxCurvatureVector_.setSize(points.size());
     minCurvatureVector_.setSize(points.size());
 
-    List<DynList<label, 4> > pointPatches(points.size());
+    List<DynList<label, 4>> pointPatches(points.size());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
     forAll(pointTriangles, pointI)
     {
-        std::map<label, DynList<label> > regionTriangles;
+        std::map<label, DynList<label>> regionTriangles;
         Map<labelHashSet> otherLabels;
         Map<vector> normals;
 
@@ -320,9 +323,9 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             const label triI = pointTriangles(pointI, ptI);
             const label regionI = surface_[triI].region();
 
-            if( !normals.found(regionI) )
+            if (!normals.found(regionI))
                 normals.insert(regionI, vector::zero);
-            if( regionTriangles.find(regionI) != regionTriangles.end() )
+            if (regionTriangles.find(regionI) != regionTriangles.end())
                 regionTriangles.insert
                 (
                     std::make_pair
@@ -331,7 +334,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                         DynList<label>()
                     )
                 );
-            if( !otherLabels.found(regionI) )
+            if (!otherLabels.found(regionI))
                 otherLabels.insert(regionI, labelHashSet());
 
             regionTriangles[regionI].append(triI);
@@ -340,7 +343,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             {
                 const label pI = surface_[triI][tpI];
 
-                if( pointI == pI )
+                if (pointI == pI)
                     continue;
 
                 otherLabels[regionI].insert(pI);
@@ -352,7 +355,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
         {
             const labelHashSet& currLabels = it();
 
-            if( otherLabels[it.key()].size() > 5 )
+            if (otherLabels[it.key()].size() > 5)
                 continue;
 
             labelHashSet additionalPoints;
@@ -365,7 +368,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 {
                     const labelledTri& nTri = surface_[pTriangles[ptI]];
 
-                    if( nTri.region() != it.key() )
+                    if (nTri.region() != it.key())
                         continue;
 
                     forAll(nTri, pI)
@@ -386,10 +389,10 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
             const label regionI = it.key();
 
-            //- store the patches
+            // store the patches
             pointPatches[pointI].append(regionI);
 
-            //- find the position of point in the patch triangles
+            // find the position of point in the patch triangles
             const DynList<label>& rTriangles = regionTriangles[regionI];
             forAll(rTriangles, i)
             {
@@ -397,7 +400,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
                 label pos(-1);
                 forAll(surface_[tI], j)
-                    if( surface_[tI][j] == pointI )
+                    if (surface_[tI][j] == pointI)
                     {
                         pos = j;
                         break;
@@ -406,17 +409,17 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 patchPositions_(tI, pos) = gaussianCurvature_[pointI].size();
             }
 
-            //- store point coordinates
+            // store point coordinates
             DynList<point> op;
 
             forAllConstIter(labelHashSet, labels, lit)
                 op.append(points[lit.key()]);
 
-            //- fit the quadric patch to the surface
+            // fit the quadric patch to the surface
             quadricFitting qfit(points[pointI], normals[it.key()], op);
 
             # ifdef DEBUGCurvatureEstimator
-            Info << "Point " << pointI << " in patch " << regionI
+            Info<< "Point " << pointI << " in patch " << regionI
                 << " normal " << normals[it.key()]
                 << " evalution points " << labels
                 << " has max curvature " << qfit.maxCurvature()
@@ -432,7 +435,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             writeSurfaceToVTK(file, surface_, rTriangles, labels);
             # endif
 
-            //- store curvatures
+            // store curvatures
             gaussianCurvature_[pointI].append(qfit.gaussianCurvature());
             meanCurvature_[pointI].append(qfit.meanCurvature());
             maxCurvature_[pointI].append(qfit.maxCurvature());
@@ -442,15 +445,15 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
         }
     }
 
-    //- smooth curvatures using weighted Laplace
-    List<DynList<scalar, 1> > smoothMinCurv(points.size());
-    List<DynList<scalar, 1> > smoothMaxCurv(points.size());
+    // smooth curvatures using weighted Laplace
+    List<DynList<scalar, 1>> smoothMinCurv(points.size());
+    List<DynList<scalar, 1>> smoothMaxCurv(points.size());
 
     # ifdef USE_OMP
     # pragma omp parallel
     # endif
     {
-        for(label iteration=0;iteration<2;++iteration)
+        for (label iteration = 0; iteration < 2; ++iteration)
         {
             # ifdef USE_OMP
             # pragma omp for schedule(static, 1)
@@ -459,8 +462,8 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             {
                 const constRow pTriangles = pointTriangles[pointI];
 
-                //- find neighbouring points for each patch
-                Map<DynList<label> > patchNeiPoints;
+                // find neighbouring points for each patch
+                Map<DynList<label>> patchNeiPoints;
                 forAll(pointPatches[pointI], ppI)
                     patchNeiPoints.insert
                     (
@@ -472,14 +475,14 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 {
                     const labelledTri& tri = surface_[pTriangles[ptI]];
 
-                    if( !patchNeiPoints.found(tri.region()) )
+                    if (!patchNeiPoints.found(tri.region()))
                         patchNeiPoints.insert(tri.region(), DynList<label>());
 
                     forAll(tri, pI)
                     {
                         const label neiPointI = tri[pI];
 
-                        if( neiPointI == pointI )
+                        if (neiPointI == pointI)
                             continue;
 
                         patchNeiPoints[tri.region()].appendIfNotIn(neiPointI);
@@ -489,7 +492,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 smoothMinCurv[pointI].setSize(minCurvature_[pointI].size());
                 smoothMaxCurv[pointI].setSize(maxCurvature_[pointI].size());
 
-                //- update min curvature for all point patches
+                // update min curvature for all point patches
                 forAll(minCurvature_[pointI], patchI)
                 {
                     const label cPatch = pointPatches[pointI][patchI];
@@ -499,7 +502,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
                     const DynList<label>& neiPoints = patchNeiPoints[cPatch];
 
-                    if( neiPoints.size() == 0 )
+                    if (neiPoints.size() == 0)
                     {
                         smoothMinCurv[pointI][patchI] =
                             minCurvature_[pointI][patchI];
@@ -522,12 +525,12 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                     minCurv /= neiPoints.size();
                     maxCurv /= neiPoints.size();
 
-                    //- store the value
+                    // store the value
                     smoothMinCurv[pointI][patchI] =
-                        0.5 * (minCurv + minCurvature_[pointI][patchI]);
+                        0.5*(minCurv + minCurvature_[pointI][patchI]);
 
                     smoothMaxCurv[pointI][patchI] =
-                        0.5 * (maxCurv + maxCurvature_[pointI][patchI]);
+                        0.5*(maxCurv + maxCurvature_[pointI][patchI]);
                 }
             }
 
@@ -550,7 +553,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
         # pragma omp barrier
         # endif
 
-        //- update Gaussian and mean curvatures
+        // update Gaussian and mean curvatures
         # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
         # endif
@@ -561,8 +564,8 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
             forAll(minCurv, i)
             {
-                gaussianCurvature_[pointI][i] = minCurv[i] * maxCurv[i];
-                meanCurvature_[pointI][i] = 0.5 * (minCurv[i] + maxCurv[i]);
+                gaussianCurvature_[pointI][i] = minCurv[i]*maxCurv[i];
+                meanCurvature_[pointI][i] = 0.5*(minCurv[i] + maxCurv[i]);
             }
         }
     }
@@ -577,12 +580,14 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
     writeSurfaceToVTK("surfaceMinCurvVec", surface_, minCurvatureVector_);
     # endif
 }
+
+
 /*
 void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 {
     gaussianCurvature_.setSize(surface_.patches().size());
 
-    List<std::map<label, scalar> > magAreas(gaussianCurvature_.size());
+    List<std::map<label, scalar>> magAreas(gaussianCurvature_.size());
 
     forAll(surface_, triI)
     {
@@ -591,7 +596,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 
         forAll(tri, pI)
         {
-            gaussianCurvature_[region][tri[pI]] = 2 * M_PI;
+            gaussianCurvature_[region][tri[pI]] = 2*M_PI;
             magAreas[region][tri[pI]] = 0.0;
         }
     }
@@ -623,12 +628,12 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
             cs = Foam::min(1.0, cs);
             cs = Foam::max(1.0, cs);
 
-            gaussianCurvature_[region][tri[pI]] -= Foam::acos(-1.0 * cs);
+            gaussianCurvature_[region][tri[pI]] -= Foam::acos(-1.0*cs);
             magAreas[region][tri[pI]] += A;
         }
     }
 
-    //- calculate tge gaussian curvature for each vertex
+    // calculate tge gaussian curvature for each vertex
     forAll(gaussianCurvature_, patchI)
     {
         std::map<label, scalar>& gc = gaussianCurvature_[patchI];
@@ -640,10 +645,10 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
             it!=gc.end();
             ++it
         )
-            it->second = 3.0 * it->second / magSf[it->first];
+            it->second = 3.0*it->second/magSf[it->first];
     }
 
-    //- smooth the curvature variation
+    // smooth the curvature variation
     const edgeList& edges = surface_.edges();
     const labelListList& pointEdges = surface_.pointEdges();
     forAll(meanCurvature_, patchI)
@@ -652,7 +657,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 
         std::map<label, scalar> newValues;
 
-        for(std::map<label, scalar>::iterator it=gc.begin();it!=gc.end();++it)
+        for (std::map<label, scalar>::iterator it = gc.begin(); it!=gc.end(); ++it)
         {
             const labelList& pEdges = pointEdges[it->first];
 
@@ -663,7 +668,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
             {
                 const label ovI = edges[pEdges[peI]].otherVertex(it->first);
 
-                if( gc.find(ovI) != gc.end() )
+                if (gc.find(ovI) != gc.end())
                 {
                     maxCurv = Foam::max(maxCurv, gc[ovI]);
                     minCurv = Foam::min(minCurv, gc[ovI]);
@@ -671,16 +676,16 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
                 }
             }
 
-            if( nNei != 0 )
+            if (nNei != 0)
             {
-                if( gc[it->first] > maxCurv )
+                if (gc[it->first] > maxCurv)
                 {
                     newValues.insert
                     (
-                        std::make_pair(it->first, 0.5*(maxCurv+gc[it->first]))
+                        std::make_pair(it->first, 0.5*(maxCurv + gc[it->first]))
                     );
                 }
-                else if( gc[it->first] >= minCurv )
+                else if (gc[it->first] >= minCurv)
                 {
                     newValues.insert(*it);
                 }
@@ -688,7 +693,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
                 {
                     newValues.insert
                     (
-                        std::make_pair(it->first, 0.5*(minCurv+gc[it->first]))
+                        std::make_pair(it->first, 0.5*(minCurv + gc[it->first]))
                     );
                 }
             }
@@ -698,80 +703,81 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
     }
 }
 
+
 void triSurfaceCurvatureEstimator::calculateMeanCurvature()
 {
     const pointField& points = surface_.points();
 
     meanCurvature_.setSize(surface_.patches().size());
 
-    List<Map<label> > nNeighbours(meanCurvature_.size());
+    List<Map<label>> nNeighbours(meanCurvature_.size());
 
     const edgeList& edges = surface_.edges();
     const labelListList& edgeFaces = surface_.edgeFaces();
 
-    //- calculate edge angles
+    // calculate edge angles
     forAll(edges, eI)
     {
         const labelList& eFaces = edgeFaces[eI];
 
-        if( eFaces.size() != 2 )
+        if (eFaces.size() != 2)
             continue;
-        if( surface_[eFaces[0]].region() != surface_[eFaces[1]].region() )
+        if (surface_[eFaces[0]].region() != surface_[eFaces[1]].region())
             continue;
 
         const label region = surface_[eFaces[0]].region();
         std::map<label, scalar>& mc = meanCurvature_[region];
         Map<label>& nn = nNeighbours[region];
 
-        //- calculate normal vectors
+        // calculate normal vectors
         vector n0 = surface_[eFaces[0]].normal(points);
         const scalar A0 = mag(n0);
-        if( A0 > VSMALL )
+        if (A0 > VSMALL)
             n0 /= A0;
 
         vector n1 = surface_[eFaces[1]].normal(points);
         const scalar A1 = mag(n1);
-        if( A1 > VSMALL )
+        if (A1 > VSMALL)
             n1 /= A1;
 
-        //- calculate the cosine of the angle between the two vectors
+        // calculate the cosine of the angle between the two vectors
         scalar cs = n0 & n1;
         cs = Foam::min(1.0, cs);
         cs = Foam::max(-1.0, cs);
 
-        //- calculate and normalize the edge vector
+        // calculate and normalize the edge vector
         vector ev = edges[eI].vec(points);
         const scalar length = mag(ev);
-        if( length > VSMALL )
+        if (length > VSMALL)
             ev /= length;
 
-        //- calculate cross product of the normal vectors
+        // calculate cross product of the normal vectors
         const vector t = n0 ^ n1;
 
-        //- calculate the dot product between the edge vector and t
+        // calculate the dot product between the edge vector and t
         scalar sn = t & ev;
         sn = Foam::min(1.0, sn);
         sn = Foam::max(-1.0, sn);
 
-        //- calculate mean curvature over the edge
+        // calculate mean curvature over the edge
         scalar Hf(0.0);
 
-        if( mag(sn) > VSMALL || mag(cs) > VSMALL )
+        if (mag(sn) > VSMALL || mag(cs) > VSMALL)
         {
-            //- calculate the angle
+            // calculate the angle
             const scalar angle = Foam::atan2(sn, cs);
-            Hf += angle * length;
+            Hf += angle*length;
         }
 
-        if( A0 > VSMALL || A1 > VSMALL )
+        if (A0 > VSMALL || A1 > VSMALL)
         {
             Hf /= (A0 + A1 + VSMALL);
             Hf *= 3.0;
         }
 
-        //- store the data
+        // store the data
         const edge& e = edges[eI];
-        if( mc.find(e.start()) == mc.end() )
+        if (mc.find(e.start()) == mc.end())
         {
             mc.insert(std::make_pair(e.start(), 0.0));
             nn.insert(e.start(), 0);
@@ -779,7 +785,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
         mc[e.start()] += Hf;
         nn[e.start()] += 1;
 
-        if( mc.find(e.end()) == mc.end() )
+        if (mc.find(e.end()) == mc.end())
         {
             mc.insert(std::make_pair(e.end(), 0.0));
             nn.insert(e.end(), 0);
@@ -788,7 +794,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
         nn[e.end()] += 1;
     }
 
-    //- calculate the curvature for each vertex
+    // calculate the curvature for each vertex
     forAll(meanCurvature_, patchI)
     {
         std::map<label, scalar>& mc = meanCurvature_[patchI];
@@ -796,17 +802,17 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
 
         forAllIter(Map<label>, nn, it)
         {
-            if( it() == 0 )
+            if (it() == 0)
             {
                 mc[it.key()] = 0.0;
                 continue;
             }
 
-            mc[it.key()] = 0.5 * mc[it.key()] / it();
+            mc[it.key()] = 0.5*mc[it.key()] / it();
         }
     }
 
-    //- smooth the curvature variation
+    // smooth the curvature variation
     const labelListList& pointEdges = surface_.pointEdges();
     forAll(meanCurvature_, patchI)
     {
@@ -814,7 +820,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
 
         std::map<label, scalar> newValues;
 
-        for(std::map<label, scalar>::iterator it=mc.begin();it!=mc.end();++it)
+        for (std::map<label, scalar>::iterator it = mc.begin(); it!=mc.end(); ++it)
         {
             const labelList& pEdges = pointEdges[it->first];
 
@@ -825,7 +831,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
             {
                 const label ovI = edges[pEdges[peI]].otherVertex(it->first);
 
-                if( mc.find(ovI) != mc.end() )
+                if (mc.find(ovI) != mc.end())
                 {
                     maxCurv = Foam::max(maxCurv, mc[ovI]);
                     minCurv = Foam::min(minCurv, mc[ovI]);
@@ -833,16 +839,16 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
                 }
             }
 
-            if( nNei != 0 )
+            if (nNei != 0)
             {
-                if( mc[it->first] > maxCurv )
+                if (mc[it->first] > maxCurv)
                 {
                     newValues.insert
                     (
-                        std::make_pair(it->first, 0.5*(maxCurv+mc[it->first]))
+                        std::make_pair(it->first, 0.5*(maxCurv + mc[it->first]))
                     );
                 }
-                else if( mc[it->first] >= minCurv )
+                else if (mc[it->first] >= minCurv)
                 {
                     newValues.insert(*it);
                 }
@@ -850,7 +856,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
                 {
                     newValues.insert
                     (
-                        std::make_pair(it->first, 0.5*(minCurv+mc[it->first]))
+                        std::make_pair(it->first, 0.5*(minCurv + mc[it->first]))
                     );
                 }
             }
@@ -859,6 +865,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
         mc = newValues;
     }
 }
+
 
 void triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
 {
@@ -871,14 +878,14 @@ void triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
         std::map<label, scalar>& gc = gaussianCurvature_[patchI];
         for
         (
-            std::map<label, scalar>::const_iterator it=mc.begin();
+            std::map<label, scalar>::const_iterator it = mc.begin();
             it!=mc.end();
             ++it
         )
         {
             const label pI = it->first;
             scalar disc = sqr(mc[pI]) - gc[pI];
-            if( disc <  0 )
+            if (disc < 0)
                 disc = sqr(mc[pI]) + gc[pI];
 
             const scalar sqrtdisc = sqrt(disc);
@@ -887,6 +894,8 @@ void triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
         }
     }
 }
+
+
 */
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

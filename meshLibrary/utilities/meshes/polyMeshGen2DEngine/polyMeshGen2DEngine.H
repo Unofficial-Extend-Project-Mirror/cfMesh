@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGen2DEngine
+    Foam::polyMeshGen2DEngine
 
 Description
     A simple engine which provides topological information of a 2D mesh
@@ -52,6 +52,7 @@ namespace Foam
 class polyMeshGen2DEngine
 {
     // Private data
+
         //- const reference to the mesh
         const polyMeshGen& mesh_;
 
@@ -82,7 +83,9 @@ class polyMeshGen2DEngine
         //- labels of zMin points of zMax points
         mutable labelList* zMaxToZMinPtr_;
 
+
     // Private member functions
+
         //- find active faces
         void findActiveFaces() const;
 
@@ -113,16 +116,18 @@ class polyMeshGen2DEngine
         //- disallow copy construct
         polyMeshGen2DEngine(const polyMeshGen2DEngine&);
 
+
 public:
 
-    // Constructors
-        //- Construct from the const reference to the mesh
-        polyMeshGen2DEngine(const polyMeshGen& mesh);
+    //- Construct from the const reference to the mesh
+    polyMeshGen2DEngine(const polyMeshGen& mesh);
 
-    // Destructor
-        ~polyMeshGen2DEngine();
+    //- Destructor
+    ~polyMeshGen2DEngine();
+
 
     // Member functions
+
         //- const access to active faces
         inline const boolList& activeFace() const;
 
@@ -156,6 +161,7 @@ public:
         //- delete all dynamically allocated data
         void clearOut();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

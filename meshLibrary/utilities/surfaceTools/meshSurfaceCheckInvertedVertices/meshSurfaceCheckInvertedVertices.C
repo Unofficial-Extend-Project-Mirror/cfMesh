@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -69,7 +67,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     {
         const label bpI = it.key();
 
-        if( activePointsPtr_ && !activePointsPtr_->operator[](bpI))
+        if (activePointsPtr_ && !activePointsPtr_->operator[](bpI))
             continue;
 
         ltvMap& patchNormal = pointPatchNormal[bpI];
@@ -79,7 +77,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
             const label bfI = pointFaces(bpI, pfI);
             const label patchI = facePatch[bfI];
 
-            if( patchNormal.find(patchI) == patchNormal.end() )
+            if (patchNormal.find(patchI) == patchNormal.end())
             {
                 patchNormal[patchI] = fNormals[bfI];
             }
@@ -94,7 +92,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     {
         const label bpI = it.key();
 
-        if( activePointsPtr_ && !activePointsPtr_->operator[](bpI))
+        if (activePointsPtr_ && !activePointsPtr_->operator[](bpI))
             continue;
 
         ltvMap& patchNormal = pointPatchNormal[bpI];
@@ -104,7 +102,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
             const label bfI = pointFaces(bpI, pfI);
             const label patchI = facePatch[bfI];
 
-            if( patchNormal.find(patchI) == patchNormal.end() )
+            if (patchNormal.find(patchI) == patchNormal.end())
             {
                 patchNormal[patchI] = fNormals[bfI];
             }
@@ -115,13 +113,13 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
 
-        std::map<label, LongList<refLabelledPoint> > exchangeData;
+        std::map<label, LongList<refLabelledPoint>> exchangeData;
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
@@ -129,7 +127,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         {
             const label bpI = it();
 
-            if( pointPatchNormal.find(bpI) != pointPatchNormal.end() )
+            if (pointPatchNormal.find(bpI) != pointPatchNormal.end())
             {
                 const ltvMap& patchNormal = pointPatchNormal[bpI];
 
@@ -137,7 +135,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 {
                     const label neiProc = bpAtProcs(bpI, i);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     forAllConstIter(ltvMap, patchNormal, pIt)
@@ -183,12 +181,12 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     invertedVertices_.clear();
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( pointFaces.size() > 100 ) \
+    # pragma omp parallel for if (pointFaces.size() > 100) \
     schedule(dynamic, 20)
     # endif
     forAll(pointFaces, bpI)
     {
-        if( activePointsPtr_ && !activePointsPtr_->operator[](bpI) )
+        if (activePointsPtr_ && !activePointsPtr_->operator[](bpI))
             continue;
 
         forAllRow(pointFaces, bpI, pfI)
@@ -198,12 +196,12 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
             vector pNormal = pNormals[bpI];
 
-            if( pointPatchNormal.find(bpI) != pointPatchNormal.end() )
+            if (pointPatchNormal.find(bpI) != pointPatchNormal.end())
                 pNormal = pointPatchNormal[bpI][facePatch[bfI]];
 
             const face& bf = bFaces[bfI];
 
-            //- chech the first triangle (with the next node)
+            // chech the first triangle (with the next node)
             triangle<point, point> triNext
             (
                 points[bf[pI]],
@@ -214,8 +212,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
             vector nNext = triNext.normal();
             scalar mNext = mag(nNext);
 
-            //- face has zero area
-            if( mNext < VSMALL )
+            // face has zero area
+            if (mNext < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -229,8 +227,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 nNext /= mNext;
             }
 
-            //- collocated points
-            if( magSqr(triNext.a() - triNext.b()) < VSMALL )
+            // collocated points
+            if (magSqr(triNext.a() - triNext.b()) < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -239,18 +237,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
                 break;
             }
-            if( magSqr(triNext.c() - triNext.a()) < VSMALL )
-            {
-                # ifdef USE_OMP
-                # pragma omp critical
-                # endif
-                invertedVertices_.insert(bf[pI]);
-
-                break;
-            }
-
-            //- normal vector is not visible
-            if( (nNext & pNormal) < 0.0 )
+            if (magSqr(triNext.c() - triNext.a()) < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -260,7 +247,18 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 break;
             }
 
-            //- check the second triangle (with previous node)
+            // normal vector is not visible
+            if ((nNext & pNormal) < 0.0)
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                invertedVertices_.insert(bf[pI]);
+
+                break;
+            }
+
+            // check the second triangle (with previous node)
             triangle<point, point> triPrev
             (
                 points[bf[pI]],
@@ -271,8 +269,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
             vector nPrev = triPrev.normal();
             scalar mPrev = mag(nPrev);
 
-            //- face has zero area
-            if( mPrev < VSMALL )
+            // face has zero area
+            if (mPrev < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -286,8 +284,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 nPrev /= mPrev;
             }
 
-            //- collocated points
-            if( magSqr(triPrev.a() - triPrev.b()) < VSMALL )
+            // collocated points
+            if (magSqr(triPrev.a() - triPrev.b()) < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -296,18 +294,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
                 break;
             }
-            if( magSqr(triPrev.c() - triPrev.a()) < VSMALL )
-            {
-                # ifdef USE_OMP
-                # pragma omp critical
-                # endif
-                invertedVertices_.insert(bf[pI]);
-
-                break;
-            }
-
-            //- normal vector is not visible
-            if( (nPrev & pNormal) < 0.0 )
+            if (magSqr(triPrev.c() - triPrev.a()) < VSMALL)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -317,9 +304,20 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                 break;
             }
 
-            //- check whether the normals of both triangles
-            //- point in the same direction
-            if( (nNext & nPrev) < 0.0 )
+            // normal vector is not visible
+            if ((nPrev & pNormal) < 0.0)
+            {
+                # ifdef USE_OMP
+                # pragma omp critical
+                # endif
+                invertedVertices_.insert(bf[pI]);
+
+                break;
+            }
+
+            // check whether the normals of both triangles
+            // point in the same direction
+            if ((nNext & nPrev) < 0.0)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -331,7 +329,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
-    //- check if there exist concave faces
+    // check if there exist concave faces
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
@@ -340,14 +338,14 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         const face& bf = bFaces[bfI];
 
         DynList<bool> OkPoints;
-        if( !help::isFaceConvexAndOk(bf, points, OkPoints) )
+        if (!help::isFaceConvexAndOk(bf, points, OkPoints))
         {
             forAll(OkPoints, pI)
             {
-                if( activePointsPtr_ && !(*activePointsPtr_)[bp[bf[pI]]] )
+                if (activePointsPtr_ && !(*activePointsPtr_)[bp[bf[pI]]])
                     continue;
 
-                if( !OkPoints[pI] )
+                if (!OkPoints[pI])
                 {
                     # ifdef USE_OMP
                     # pragma omp critical
@@ -360,9 +358,9 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- exchange global labels of inverted points
+        // exchange global labels of inverted points
         const labelList& bPoints = mse.boundaryPoints();
         const Map<label>& globalToLocal =
             mse.globalToLocalBndPointAddressing();
@@ -377,21 +375,21 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         {
             const label bpI = iter();
 
-            if( !invertedVertices_.found(bPoints[bpI]) )
+            if (!invertedVertices_.found(bPoints[bpI]))
                 continue;
 
             forAllRow(bpAtProcs, bpI, procI)
             {
                 const label neiProc = bpAtProcs(bpI, procI);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 shareData[neiProc].append(iter.key());
             }
         }
 
-        //- exchange data with other processors
+        // exchange data with other processors
         labelLongList receivedData;
         help::exchangeMap(shareData, receivedData);
 
@@ -403,6 +401,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     }
 }
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
@@ -411,11 +410,12 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 )
 :
     surfacePartitioner_(mpart),
-    activePointsPtr_(NULL),
+    activePointsPtr_(nullptr),
     invertedVertices_()
 {
     checkVertices();
 }
+
 
 meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 (
@@ -430,10 +430,12 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
     checkVertices();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshSurfaceCheckInvertedVertices::~meshSurfaceCheckInvertedVertices()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

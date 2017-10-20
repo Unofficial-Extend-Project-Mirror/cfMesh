@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,7 +44,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     corners_.clear();
     edgePoints_.clear();
 
-    //- count the number of patches
+    // count the number of patches
     label nPatches(0);
     # ifdef USE_OMP
     # pragma omp parallel
@@ -65,7 +63,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
     # endif
     ++nPatches;
 
-    //- set the size and starting creating addressing
+    // set the size and starting creating addressing
     patchPatches_.setSize(nPatches);
 
     nEdgesAtPoint_.clear();
@@ -76,13 +74,13 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
 
     forAll(edgeFaces, edgeI)
     {
-        if( edgeFaces.sizeOfRow(edgeI) != 2 )
+        if (edgeFaces.sizeOfRow(edgeI) != 2)
             continue;
 
         const label patch0 = facePatch_[edgeFaces(edgeI, 0)];
         const label patch1 = facePatch_[edgeFaces(edgeI, 1)];
 
-        if( patch0 != patch1 )
+        if (patch0 != patch1)
         {
             const edge& e = edges[edgeI];
             ++nEdgesAtPoint_[bp[e.start()]];
@@ -95,11 +93,11 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& otherFaceAtProc = meshSurface_.otherEdgeFaceAtProc();
 
-        //- find patches on other procs sharing surface edges
+        // find patches on other procs sharing surface edges
         Map<label> otherFacePatch;
 
         const DynList<label>& beNeiProcs = meshSurface_.beNeiProcs();
@@ -114,7 +112,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         {
             const label beI = it();
 
-            if( edgeFaces.sizeOfRow(beI) == 1 )
+            if (edgeFaces.sizeOfRow(beI) == 1)
             {
                 labelLongList& data = exchangeData[otherFaceAtProc[beI]];
 
@@ -126,7 +124,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
-        for(label i=0;i<receivedData.size();)
+        for (label i = 0; i < receivedData.size(); )
         {
             const label geI = receivedData[i++];
             const label patchI = receivedData[i++];
@@ -134,14 +132,14 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             otherFacePatch.insert(globalToLocalEdges[geI], patchI);
         }
 
-        //- take into account feature edges at processor boundaries
+        // take into account feature edges at processor boundaries
         forAllConstIter(Map<label>, otherFaceAtProc, it)
         {
             const label beI = it.key();
 
-            if( it() <= Pstream::myProcNo() )
+            if (it() <= Pstream::myProcNo())
                 continue;
-            if( otherFacePatch[beI] != facePatch_[edgeFaces(beI, 0)] )
+            if (otherFacePatch[beI] != facePatch_[edgeFaces(beI, 0)])
             {
                 const edge& e = edges[beI];
                 ++nEdgesAtPoint_[bp[e.start()]];
@@ -149,7 +147,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             }
         }
 
-        //- gather data on all processors
+        // gather data on all processors
         exchangeData.clear();
         const DynList<label>& bpNeiProcs = meshSurface_.bpNeiProcs();
         forAll(bpNeiProcs, i)
@@ -166,26 +164,26 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             {
                 const label procI = bpAtProcs(bpI, i);
 
-                if( procI == Pstream::myProcNo() )
+                if (procI == Pstream::myProcNo())
                     continue;
 
                 labelLongList& dts = exchangeData[procI];
 
-                //- exchange data as follows:
-                //- 1. global point label
-                //- 2. number of feature edges connected to the vertex
+                // exchange data as follows:
+                // 1. global point label
+                // 2. number of feature edges connected to the vertex
                 dts.append(it.key());
                 dts.append(nEdgesAtPoint_[bpI]);
             }
         }
 
-        //- exchange information
+        // exchange information
         receivedData.clear();
         help::exchangeMap(exchangeData, receivedData);
 
-        //- add the edges from other processors to the points
+        // add the edges from other processors to the points
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             const label nEdges = receivedData[counter++];
@@ -194,20 +192,20 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
     }
 
-    //- mark edges and corners
+    // mark edges and corners
     forAll(nEdgesAtPoint_, bpI)
     {
-        if( nEdgesAtPoint_[bpI] > 2 )
+        if (nEdgesAtPoint_[bpI] > 2)
         {
             corners_.insert(bpI);
         }
-        else if( nEdgesAtPoint_[bpI] == 2 )
+        else if (nEdgesAtPoint_[bpI] == 2)
         {
             edgePoints_.insert(bpI);
         }
     }
 
-    //- find patches at a surface points
+    // find patches at a surface points
     pointPatches_.setSize(pointFaces.size());
     forAll(pointFaces, bpI)
     {
@@ -215,7 +213,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             pointPatches_.appendIfNotIn(bpI, facePatch_[pointFaces(bpI, pfI)]);
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             meshSurface_.globalToLocalBndPointAddressing();
@@ -234,7 +232,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             {
                 const label neiProc = bpAtProcs(bpI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 labelLongList& data = exchangeData[neiProc];
@@ -246,30 +244,31 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
             }
         }
 
-        //- exchange data with other prcessors
+        // exchange data with other prcessors
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             const label size = receivedData[counter++];
 
-            for(label i=0;i<size;++i)
+            for (label i = 0; i < size; ++i)
                 pointPatches_.appendIfNotIn(bpI, receivedData[counter++]);
         }
     }
 
     label counter = corners_.size();
     reduce(counter, sumOp<label>());
-    Info << "Found " << counter
+    Info<< "Found " << counter
         << " corners at the surface of the volume mesh" << endl;
     counter = edgePoints_.size();
     reduce(counter, sumOp<label>());
-    Info << "Found " << counter
+    Info<< "Found " << counter
         << " edge points at the surface of the volume mesh" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

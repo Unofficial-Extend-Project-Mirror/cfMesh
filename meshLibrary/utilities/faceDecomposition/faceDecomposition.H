@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    faceDecomposition
+    Foam::faceDecomposition
 
 Description
     Decomposition of a face into triangles
@@ -42,21 +42,24 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class faceDecomposition Declaration
+                      Class faceDecomposition Declaration
 \*---------------------------------------------------------------------------*/
 
 class faceDecomposition
 {
     // private data
+
         const face& f_;
-    
+
         const pointField& points_;
 
+
     // private member functions
+
         //- find concave vertex and return its position
         //- in the face
         label concaveVertex() const;
-    
+
         //- decomposes the face into triangle starting from
         //- the given vertex
         faceList decomposeFaceIntoTriangles(const label cv) const;
@@ -66,6 +69,7 @@ class faceDecomposition
 
         //- copy constructor
         faceDecomposition(const faceDecomposition&);
+
 
 public:
 
@@ -81,7 +85,9 @@ public:
         //- Destructor
         ~faceDecomposition();
 
+
     // Member functions
+
         //- check if the face is convex
         bool isFaceConvex() const;
 
@@ -91,7 +97,7 @@ public:
 
         //- decompose face into triangles
         faceList decomposeFaceIntoTriangles() const;
-        
+
         //- decompose face into the minimal number
         //- of convex faces
         faceList decomposeFace() const;

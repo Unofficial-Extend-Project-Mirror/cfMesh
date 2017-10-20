@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,7 +44,7 @@ namespace Foam
 
 void tetMeshExtractorOctree::createPoints()
 {
-    polyMeshGenModifier meshModifier ( mesh_ );
+    polyMeshGenModifier meshModifier(mesh_);
     pointFieldPMG& points = meshModifier.pointsAccess();
 
     const LongList<point>& tetPoints = tetCreator_.tetPoints();
@@ -60,39 +58,40 @@ void tetMeshExtractorOctree::createPoints()
         points[pointI] = tetPoints[pointI];
 }
 
+
 void tetMeshExtractorOctree::createPolyMesh()
 {
-    polyMeshGenModifier meshModifier ( mesh_ );
+    polyMeshGenModifier meshModifier(mesh_);
 
     faceListPMG& faces = meshModifier.facesAccess();
     cellListPMG& cells = meshModifier.cellsAccess();
-    meshModifier.boundariesAccess().setSize ( 0 );
-    meshModifier.procBoundariesAccess().setSize ( 0 );
+    meshModifier.boundariesAccess().setSize(0);
+    meshModifier.procBoundariesAccess().setSize(0);
 
     const LongList<partTet>& tets = tetCreator_.tets();
 
     VRWGraph pTets;
     pTets.reverseAddressing(mesh_.points().size(), tets);
 
-    //- set the number of cells
+    // set the number of cells
     cells.setSize(tets.size());
 
-    //- all faces of tetrahedral cells
+    // all faces of tetrahedral cells
     faces.setSize(4*tets.size());
     boolList removeFace(faces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel if( tets.size() > 1000 )
+    # pragma omp parallel if (tets.size() > 1000)
     # endif
     {
-        //- set face labels
+        // set face labels
         # ifdef USE_OMP
         # pragma omp for
         # endif
         forAll(removeFace, faceI)
             removeFace[faceI] = false;
 
-        //- set sizes of cells and create all faces
+        // set sizes of cells and create all faces
         # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
         # endif
@@ -102,9 +101,9 @@ void tetMeshExtractorOctree::createPolyMesh()
 
             const partTet& elmt = tets[elmtI];
 
-            label faceI = 4 * elmtI;
+            label faceI = 4*elmtI;
 
-            //- first face
+            // first face
             cells[elmtI][0] = faceI;
 
             face& f0 = faces[faceI];
@@ -116,7 +115,7 @@ void tetMeshExtractorOctree::createPolyMesh()
 
             ++faceI;
 
-            //- second face
+            // second face
             cells[elmtI][1] = faceI;
 
             face& f1 = faces[faceI];
@@ -128,11 +127,11 @@ void tetMeshExtractorOctree::createPolyMesh()
 
             ++faceI;
 
-            //- third face
+            // third face
             cells[elmtI][2] = faceI;
 
             face& f2 = faces[faceI];
-            f2.setSize ( 3 );
+            f2.setSize(3);
 
             f2[0] = elmt.b();
             f2[1] = elmt.c();
@@ -140,11 +139,11 @@ void tetMeshExtractorOctree::createPolyMesh()
 
             ++faceI;
 
-            //- fourth face
+            // fourth face
             cells[elmtI][3] = faceI;
 
             face& f3 = faces[faceI];
-            f3.setSize ( 3 );
+            f3.setSize(3);
 
             f3[0] = elmt.c();
             f3[1] = elmt.a();
@@ -155,7 +154,7 @@ void tetMeshExtractorOctree::createPolyMesh()
         # pragma omp barrier
         # endif
 
-        //- find duplicate faces
+        // find duplicate faces
         # ifdef USE_OMP
         # pragma omp for schedule(dynamic, 20)
         # endif
@@ -170,23 +169,23 @@ void tetMeshExtractorOctree::createPolyMesh()
 
                 forAllRow(pTets, pointI, ptI)
                 {
-                    //- do not check cells with greater labels
-                    //- they cannot be face owners
-                    if( pTets(pointI, ptI) >= cellI )
+                    // do not check cells with greater labels
+                    // they cannot be face owners
+                    if (pTets(pointI, ptI) >= cellI)
                         continue;
 
                     const cell& otherTet = cells[pTets(pointI, ptI)];
 
-                    //- check faces created from a tet
+                    // check faces created from a tet
                     forAll(otherTet, ofI)
                     {
-                        //- do not compare faces with greater labels
-                        //- they shall not be removed here
-                        if( otherTet[ofI] >= c[fI] )
+                        // do not compare faces with greater labels
+                        // they shall not be removed here
+                        if (otherTet[ofI] >= c[fI])
                             continue;
 
-                        //- check if the faces are equal
-                        if( f == faces[otherTet[ofI]] )
+                        // check if the faces are equal
+                        if (f == faces[otherTet[ofI]])
                         {
                             removeFace[c[fI]] = true;
                             c[fI] = otherTet[ofI];
@@ -197,15 +196,15 @@ void tetMeshExtractorOctree::createPolyMesh()
         }
     }
 
-    //- remove duplicate faces
+    // remove duplicate faces
     label nFaces(0);
     labelLongList newFaceLabel(faces.size(), -1);
 
     forAll(faces, faceI)
     {
-        if( !removeFace[faceI] )
+        if (!removeFace[faceI])
         {
-            if( nFaces < faceI )
+            if (nFaces < faceI)
                 faces[nFaces].transfer(faces[faceI]);
 
             newFaceLabel[faceI] = nFaces;
@@ -213,10 +212,10 @@ void tetMeshExtractorOctree::createPolyMesh()
         }
     }
 
-    //- set the size of faces
+    // set the size of faces
     faces.setSize(nFaces);
 
-    //- change cells
+    // change cells
     # ifdef USE_OMP
     # pragma omp for schedule(dynamic, 40)
     # endif
@@ -228,7 +227,7 @@ void tetMeshExtractorOctree::createPolyMesh()
 
         forAll(c, fI)
         {
-            if( newFaceLabel[c[fI]] != -1 )
+            if (newFaceLabel[c[fI]] != -1)
                 newC.append(newFaceLabel[c[fI]]);
         }
 
@@ -238,9 +237,9 @@ void tetMeshExtractorOctree::createPolyMesh()
     }
 }
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from octree and mesh data
 tetMeshExtractorOctree::tetMeshExtractorOctree
 (
     const meshOctree& octree,
@@ -252,33 +251,36 @@ tetMeshExtractorOctree::tetMeshExtractorOctree
     mesh_(mesh)
 {}
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 tetMeshExtractorOctree::~tetMeshExtractorOctree()
 {}
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void tetMeshExtractorOctree::createMesh()
 {
-    Info << "Extracting tetMesh" << endl;
+    Info<< "Extracting tetMesh" << endl;
 
-    //- copy tet points into the mesh
+    // copy tet points into the mesh
     createPoints();
 
-    //- create the mesh
+    // create the mesh
     createPolyMesh();
 
     polyMeshGenModifier(mesh_).reorderBoundaryFaces();
     polyMeshGenModifier(mesh_).removeUnusedVertices();
 
-    Info << "Mesh has :" << nl
-    << mesh_.points().size() << " vertices " << nl
-    << mesh_.faces().size() << " faces" << nl
-    << mesh_.cells().size() << " cells" << endl;
+    Info<< "Mesh has :" << nl
+        << mesh_.points().size() << " vertices " << nl
+        << mesh_.faces().size() << " faces" << nl
+        << mesh_.cells().size() << " cells" << endl;
 
-    Info << "Finished extracting tetMesh" << endl;
+    Info<< "Finished extracting tetMesh" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

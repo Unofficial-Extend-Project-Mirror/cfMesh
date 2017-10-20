@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    parTriFace
+    Foam::parTriFace
 
 Description
     Hold point labels and their coordinates. It is used for exchanging data
@@ -46,17 +46,19 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class parTriFace Declaration
+                         Class parTriFace Declaration
 \*---------------------------------------------------------------------------*/
 
 class parTriFace
 {
     // Private data
+
         label globalLabels_[3];
 
         triangle<point, point> triPoints_;
 
-    public:
+
+public:
 
     // Constructors
 
@@ -64,6 +66,7 @@ class parTriFace
         :
             triPoints_(vector::zero, vector::zero, vector::zero)
         {}
+
 
         explicit inline parTriFace
         (
@@ -80,10 +83,11 @@ class parTriFace
             globalLabels_[2] = globalLabel2;
         }
 
-    // Destructor
 
-        ~parTriFace()
-        {}
+    //- Destructor
+    ~parTriFace()
+    {}
+
 
     // Member functions
 
@@ -97,13 +101,15 @@ class parTriFace
             return triPoints_;
         }
 
+
     // Member operators
 
-        inline bool operator !=(const parTriFace& /*ptf*/) const
+        inline bool operator != (const parTriFace& /*ptf*/) const
         {
-            Serr << "parTriFace::operator!= Not implemented" << endl;
-            ::exit(1);
+            NotImplemented;
+            return false;
         }
+
 
     // Friend operators
 
@@ -116,7 +122,7 @@ class parTriFace
             os << ptf.triPoints_ << token::END_LIST;
 
             // Check state of Ostream
-            os.check("operator<<(Ostream&, const parTriFace&");
+            os.check(FUNCTION_NAME);
             return os;
         }
 
@@ -134,15 +140,20 @@ class parTriFace
             is.readEnd("parTriFace");
 
             // Check state of Istream
-            is.check("operator>>(Istream&, parTriFace");
+            is.check(FUNCTION_NAME);
 
             return is;
         }
 };
 
+
 //- Specify data associated with parTriFace type is contiguous
 template<>
-inline bool contiguous<parTriFace>() {return true;}
+inline bool contiguous<parTriFace>()
+{
+    return true;
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

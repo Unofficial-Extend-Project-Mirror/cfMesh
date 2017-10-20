@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,23 +36,26 @@ triSurfFeatureEdges::triSurfFeatureEdges()
     featureEdgeSubsets_()
 {}
 
+
 triSurfFeatureEdges::triSurfFeatureEdges(const edgeLongList& featureEdges)
 :
     featureEdges_(featureEdges),
     featureEdgeSubsets_()
 {}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Destructor
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
 triSurfFeatureEdges::~triSurfFeatureEdges()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
 {
     label id = edgeSubsetIndex(subsetName);
-    if( id >= 0 )
+    if (id >= 0)
     {
         Warning << "Edge subset " << subsetName << " already exists!" << endl;
         return id;
@@ -62,7 +63,9 @@ label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
 
     id = 0;
     forAllConstIter(Map<meshSubset>, featureEdgeSubsets_, it)
+    {
         id = Foam::max(id, it.key()+1);
+    }
 
     featureEdgeSubsets_.insert
     (
@@ -73,18 +76,22 @@ label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
     return id;
 }
 
+
 void triSurfFeatureEdges::removeEdgeSubset(const label subsetID)
 {
-    if( featureEdgeSubsets_.find(subsetID) == featureEdgeSubsets_.end() )
+    if (featureEdgeSubsets_.find(subsetID) == featureEdgeSubsets_.end())
+    {
         return;
+    }
 
     featureEdgeSubsets_.erase(subsetID);
 }
 
+
 word triSurfFeatureEdges::edgeSubsetName(const label subsetID) const
 {
     Map<meshSubset>::const_iterator it = featureEdgeSubsets_.find(subsetID);
-    if( it == featureEdgeSubsets_.end() )
+    if (it == featureEdgeSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not an edge subset" << endl;
         return word();
@@ -93,16 +100,20 @@ word triSurfFeatureEdges::edgeSubsetName(const label subsetID) const
     return it().name();
 }
 
+
 label triSurfFeatureEdges::edgeSubsetIndex(const word& subsetName) const
 {
     forAllConstIter(Map<meshSubset>, featureEdgeSubsets_, it)
     {
-        if( it().name() == subsetName )
+        if (it().name() == subsetName)
+        {
             return it.key();
+        }
     }
 
     return -1;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

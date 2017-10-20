@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,6 +35,7 @@ namespace Foam
 defineTypeNameAndDebug(sphereRefinement, 0);
 addToRunTimeSelectionTable(objectRefinement, sphereRefinement, dictionary);
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 sphereRefinement::sphereRefinement()
@@ -43,6 +44,7 @@ sphereRefinement::sphereRefinement()
     centre_(),
     radius_(-1.0)
 {}
+
 
 sphereRefinement::sphereRefinement
 (
@@ -62,6 +64,7 @@ sphereRefinement::sphereRefinement
     setAdditionalRefinementLevels(additionalRefLevels);
 }
 
+
 sphereRefinement::sphereRefinement
 (
     const word& name,
@@ -73,17 +76,19 @@ sphereRefinement::sphereRefinement
     this->operator=(dict);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 bool sphereRefinement::intersectsObject(const boundBox& bb) const
 {
-    const point& c = (bb.max() + bb.min()) / 2.0;
-    
-    if( magSqr(c - centre_) < sqr(radius_) )
+    const point c = (bb.max() + bb.min()) / 2.0;
+
+    if (magSqr(c - centre_) < sqr(radius_))
         return true;
-    
+
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -91,7 +96,7 @@ dictionary sphereRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
-    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    if (additionalRefinementLevels() == 0 && cellSize() >= 0.0)
     {
         dict.add("cellSize", cellSize());
     }
@@ -108,6 +113,7 @@ dictionary sphereRefinement::dict(bool /*ignoreType*/) const
     return dict;
 }
 
+
 void sphereRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
@@ -115,26 +121,27 @@ void sphereRefinement::write(Ostream& os) const
         << " radius: " << radius_;
 }
 
+
 void sphereRefinement::writeDict(Ostream& os, bool subDict) const
 {
-    if( subDict )
+    if (subDict)
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-    
-    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+
+    if (additionalRefinementLevels() == 0 && cellSize() >= 0.0)
     {
         os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
     }
     else
     {
         os.writeKeyword("additionalRefinementLevels")
-                << additionalRefinementLevels()
-                << token::END_STATEMENT << nl;
+            << additionalRefinementLevels()
+            << token::END_STATEMENT << nl;
     }
 
     // only write type for derived types
-    if( type() != typeName_() )
+    if (type() != typeName_())
     {
         os.writeKeyword("type") << type() << token::END_STATEMENT << nl;
     }
@@ -142,11 +149,12 @@ void sphereRefinement::writeDict(Ostream& os, bool subDict) const
     os.writeKeyword("centre") << centre_ << token::END_STATEMENT << nl;
     os.writeKeyword("radius") << radius_ << token::END_STATEMENT << nl;
 
-    if( subDict )
+    if (subDict)
     {
         os << decrIndent << indent << token::END_BLOCK << endl;
     }
 }
+
 
 void sphereRefinement::operator=(const dictionary& d)
 {
@@ -159,33 +167,32 @@ void sphereRefinement::operator=(const dictionary& d)
     );
 
     // unspecified centre is (0 0 0)
-    if( dict.found("centre") )
+    if (dict.found("centre"))
     {
         dict.lookup("centre") >> centre_;
     }
     else
     {
-        FatalErrorIn
-        (
-            "void sphereRefinement::operator=(const dictionary& d)"
-        ) << "Entry centre is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry centre is not specified!" << exit(FatalError);
+
         centre_ = vector::zero;
     }
 
     // specify radius
-    if( dict.found("radius") )
+    if (dict.found("radius"))
     {
         radius_ = readScalar(dict.lookup("radius"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void sphereRefinement::operator=(const dictionary& d)"
-        ) << "Entry radius is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry radius is not specified!" << exit(FatalError);
+
         radius_ = -1.0;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -198,9 +205,10 @@ Ostream& sphereRefinement::operator<<(Ostream& os) const
     write(os);
     return os;
 }
-        
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-        
+
 } // End namespace Foam
 
 // ************************************************************************* //

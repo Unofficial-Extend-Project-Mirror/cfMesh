@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    objectRefinement
+    Foam::objectRefinement
 
 Description
     Base class for coordinate systems.
@@ -49,7 +49,7 @@ namespace Foam
 class boundBox;
 
 /*---------------------------------------------------------------------------*\
-                     Class objectRefinement Declaration
+                      Class objectRefinement Declaration
 \*---------------------------------------------------------------------------*/
 
 class objectRefinement
@@ -70,7 +70,9 @@ protected:
         //- refinement thickness fro this object
         scalar refThickness_;
 
+
     // Protected member functions
+
         //- set cell size
         void setCellSize(const scalar cellSize)
         {
@@ -83,10 +85,11 @@ protected:
             return cellSize_;
         }
 
+
 public:
 
-    // Runtime type information
-        TypeName("objectRefinement");
+    //- Runtime type information
+    TypeName("objectRefinement");
 
 
     // Constructors
@@ -97,33 +100,29 @@ public:
         //- Construct from dictionary
         objectRefinement(const word& name, const dictionary&);
 
-    // Declare run-time constructor selection table
 
-        declareRunTimeSelectionTable
-        (
-            autoPtr,
-            objectRefinement,
-            dictionary,
-            (
-                const word& name,
-                const dictionary& dict
-            ),
-            (name, dict)
-        );
-
-
-    // Selectors
-
-        //- Select constructed from dictionary
-        static autoPtr<objectRefinement> New
+    //- Declare run-time constructor selection table
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        objectRefinement,
+        dictionary,
         (
             const word& name,
             const dictionary& dict
-        );
+        ),
+        (name, dict)
+    );
 
-    // Destructor
+    //- Select constructed from dictionary
+    static autoPtr<objectRefinement> New
+    (
+        const word& name,
+        const dictionary& dict
+    );
 
-        virtual ~objectRefinement();
+    //- Destructor
+    virtual ~objectRefinement();
 
 
     // Member Functions
@@ -131,62 +130,64 @@ public:
         //- check if a boundBox intersects or is inside the object
         virtual bool intersectsObject(const boundBox&) const = 0;
 
-      // Access
+        // Access
 
-        //- Return name
-        const word& name() const
-        {
-            return name_;
-        }
+            //- Return name
+            const word& name() const
+            {
+                return name_;
+            }
 
-        //- set the name
-        void setName(const word& name)
-        {
-            name_ = name;
-        }
+            //- set the name
+            void setName(const word& name)
+            {
+                name_ = name;
+            }
 
-        //- calculate additional refinement levels from cell size
-        void calculateAdditionalRefLevels(const scalar globalCellSize);
+            //- calculate additional refinement levels from cell size
+            void calculateAdditionalRefLevels(const scalar globalCellSize);
 
-        //- set the number of additional refinement level
-        void setAdditionalRefinementLevels(const direction addRefLevels)
-        {
-            additionalRefLevel_ = label(addRefLevels);
-        }
+            //- set the number of additional refinement level
+            void setAdditionalRefinementLevels(const direction addRefLevels)
+            {
+                additionalRefLevel_ = label(addRefLevels);
+            }
 
-        //-  return the number of additional refinement levels
-        direction additionalRefinementLevels() const
-        {
-            return direction(additionalRefLevel_);
-        }
+            //-  return the number of additional refinement levels
+            direction additionalRefinementLevels() const
+            {
+                return direction(additionalRefLevel_);
+            }
 
-        //- set refinement thickness
-        void setRefinementThickness(const scalar refThickness)
-        {
-            refThickness_ = refThickness;
-        }
+            //- set refinement thickness
+            void setRefinementThickness(const scalar refThickness)
+            {
+                refThickness_ = refThickness;
+            }
 
-        //- return refinement thickness for this object
-        scalar refinementThickness() const
-        {
-            return refThickness_;
-        }
+            //- return refinement thickness for this object
+            scalar refinementThickness() const
+            {
+                return refThickness_;
+            }
 
-        //- Return as dictionary of entries
-        virtual dictionary dict(bool ignoreType = false) const = 0;
+            //- Return as dictionary of entries
+            virtual dictionary dict(bool ignoreType = false) const = 0;
 
-      // Write
+        // Write
 
-        //- Write
-        virtual void write(Ostream&) const = 0;
+            //- Write
+            virtual void write(Ostream&) const = 0;
 
-        //- Write dictionary
-        virtual void writeDict(Ostream&, bool subDict = true) const = 0;
+            //- Write dictionary
+            virtual void writeDict(Ostream&, bool subDict = true) const = 0;
+
 
     // Member Operators
 
         //- assign from dictionary
         virtual void operator=(const dictionary&) = 0;
+
 
     // IOstream Operators
 

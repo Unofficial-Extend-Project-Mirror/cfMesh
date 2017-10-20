@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,13 +41,13 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
     LongList<meshOctreeCubeCoordinates>& dataToReceive
 ) const
 {
-    if( !Pstream::parRun() || (neiProcs_.size() == 0) )
+    if (!Pstream::parRun() || (neiProcs_.size() == 0))
     {
-        //- this is a serial run
+        // this is a serial run
         return;
     }
 
-    List<LongList<meshOctreeCubeCoordinates> > toProcs
+    List<LongList<meshOctreeCubeCoordinates>> toProcs
     (
         neiProcs_.size(),
         LongList<meshOctreeCubeCoordinates>()
@@ -65,9 +63,9 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
 
         forAll(neiProcs_, procI)
         {
-            if( maxCoord >= neiRange_[procI].first() )
+            if (maxCoord >= neiRange_[procI].first())
             {
-                if( minCoord <= neiRange_[procI].second() )
+                if (minCoord <= neiRange_[procI].second())
                 {
                     toProcs[procI].append(dataToSend[i]);
 
@@ -83,19 +81,19 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         }
 
         # ifdef OCTREE_DEBUG
-        if( !counter )
+        if (!counter)
         {
             DynList<label> neighs;
             this->findAllLeafNeighbours(dataToSend[i], neighs);
             forAll(neighs, nI)
-            if( neighs[nI] == meshOctreeCubeBasic::OTHERPROC )
+            if (neighs[nI] == meshOctreeCubeBasic::OTHERPROC)
             {
                 forAll(neiRange_, j)
                 {
-                    if( minCoord <= neiRange_[j].second() )
+                    if (minCoord <= neiRange_[j].second())
                         Pout << "Min coord " << minCoord << " is smaller "
                             << "than " << neiRange_[j].first() << endl;
-                    if( maxCoord >= neiRange_[j].first() )
+                    if (maxCoord >= neiRange_[j].first())
                         Pout << "Max coord " << maxCoord << " is greater "
                             << "than " << neiRange_[j].second() << endl;
                 }
@@ -111,7 +109,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         # endif
     }
 
-    //- send an receive the size of data chunk which will be exchanged
+    // send an receive the size of data chunk which will be exchanged
     forAll(neiProcs_, neiProcI)
     {
         OPstream toOtherProc
@@ -137,57 +135,75 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         fromOtherProc >> sizeOfOtherProc[neiProcI];
     }
 
-    //- exchange data between processors
-    //- upper-diagonal communication
+    // exchange data between processors
+    // upper-diagonal communication
     forAll(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         dataToReceive.appendFromStream(fromOtherProc);
     }
 
     forAll(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
-        OPstream toOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         toOtherProc << toProcs[neiProcI];
     }
 
-    //- lower-diagonal communication
+    // lower-diagonal communication
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         dataToReceive.appendFromStream(fromOtherProc);
     }
 
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
-        OPstream toOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         toOtherProc << toProcs[neiProcI];
     }
 }
+
+
 void meshOctree::exchangeRequestsWithNeighbourProcessors
 (
     const LongList<meshOctreeCubeCoordinates>& dataToSend,
@@ -196,18 +212,18 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
     LongList<scalar>& receivedRanges
 ) const
 {
-    if( !Pstream::parRun() || (neiProcs_.size() == 0) )
+    if (!Pstream::parRun() || (neiProcs_.size() == 0))
     {
-        //- this is a serial run
+        // this is a serial run
         return;
     }
 
-    List<LongList<meshOctreeCubeCoordinates> > toProcs
+    List<LongList<meshOctreeCubeCoordinates>> toProcs
     (
         neiProcs_.size(),
         LongList<meshOctreeCubeCoordinates>()
     );
-    List<LongList<scalar> > attributesToProcs
+    List<LongList<scalar>> attributesToProcs
     (
         neiProcs_.size(),
         LongList<scalar>()
@@ -244,9 +260,9 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
 
         forAll(neiProcs_, procI)
         {
-            if( maxCoord >= neiRange_[procI].first() )
+            if (maxCoord >= neiRange_[procI].first())
             {
-                if( minCoord <= neiRange_[procI].second() )
+                if (minCoord <= neiRange_[procI].second())
                 {
                     toProcs[procI].append(dataToSend[i]);
                     attributesToProcs[procI].append(rangesToSend[i]);
@@ -263,7 +279,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         }
     }
 
-    //- send an receive the size of data chunk which will be exchanged
+    // send an receive the size of data chunk which will be exchanged
     forAll(neiProcs_, neiProcI)
     {
         OPstream toOtherProc
@@ -289,83 +305,103 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         fromOtherProc >> sizeOfOtherProc[neiProcI];
     }
 
-    //- exchange data between processors
-    //- upper-diagonal communication
+    // exchange data between processors
+    // upper-diagonal communication
     forAll(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
 
         dataToReceive.appendFromStream(fromOtherProc);
     }
 
     forAll(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
-        OPstream toOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         toOtherProc << toProcs[neiProcI];
     }
 
-    //- lower-diagonal communication
+    // lower-diagonal communication
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
 
         dataToReceive.appendFromStream(fromOtherProc);
     }
 
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
-        OPstream toOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // send data to other processor
+        OPstream toOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
         toOtherProc << toProcs[neiProcI];
     }
 
-    //- exchange attributes
-    //- exchange data between processors
-    //- upper-diagonal communication
+    // exchange attributes
+    // exchange data between processors
+    // upper-diagonal communication
     forAll(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
 
         receivedRanges.appendFromStream(fromOtherProc);
     }
 
     forAll(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
+        // send data to other processor
         OPstream toOtherProc
         (
             Pstream::commsTypes::scheduled,
@@ -376,28 +412,32 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         toOtherProc << attributesToProcs[neiProcI];
     }
 
-    //- lower-diagonal communication
+    // lower-diagonal communication
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( sizeOfOtherProc[neiProcI] == 0 )
+        if (sizeOfOtherProc[neiProcI] == 0)
             continue;
-        if( neiProcs_[neiProcI] <= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] <= Pstream::myProcNo())
             continue;
 
-        //- receive data from other processor
-        IPstream fromOtherProc(Pstream::commsTypes::scheduled, neiProcs_[neiProcI]);
+        // receive data from other processor
+        IPstream fromOtherProc
+        (
+            Pstream::commsTypes::scheduled,
+            neiProcs_[neiProcI]
+        );
 
         receivedRanges.appendFromStream(fromOtherProc);
     }
 
     forAllReverse(neiProcs_, neiProcI)
     {
-        if( toProcs[neiProcI].size() == 0 )
+        if (toProcs[neiProcI].size() == 0)
             continue;
-        if( neiProcs_[neiProcI] >= Pstream::myProcNo() )
+        if (neiProcs_[neiProcI] >= Pstream::myProcNo())
             continue;
 
-        //- send data to other processor
+        // send data to other processor
         OPstream toOtherProc
         (
             Pstream::commsTypes::scheduled,
@@ -408,6 +448,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
         toOtherProc << attributesToProcs[neiProcI];
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

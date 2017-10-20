@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Class
-    triSurface2DCheck
+Namespace
+    Foam::triSurfaceChecks
 
 Description
 
@@ -51,9 +51,8 @@ class boundBox;
 
 namespace triSurfaceChecks
 {
-
 //- check the angles of triangles. Triangles wth the smallest angle below
-//- the given threshold are marked as bad-quality triangles
+//  the given threshold are marked as bad-quality triangles
 label checkAngles
 (
     const triSurf&,
@@ -70,11 +69,11 @@ label checkAngles
 
 //- check for existence of boudary and non-manifold edges
 label checkSurfaceManifolds(const triSurf&, labelLongList&triangleInManifold);
-label checkSurfaceManifolds(triSurf&, const word subsetPrefix="manifold_");
+label checkSurfaceManifolds(triSurf&, const word subsetPrefix = "manifold_");
 
 //- check for existence of holes in the surface mesh
 label checkForHoles(const triSurf&, labelLongList&);
-label checkForHoles(triSurf&, const word subsetName="holes");
+label checkForHoles(triSurf&, const word subsetName = "holes");
 
 //- check for existence of non-manifold edges
 label checkForNonManifoldEdges(const triSurf&, labelLongList&);
@@ -86,11 +85,11 @@ label checkForNonManifoldEdges
 
 //- check orientation of triangles
 label checkOrientation(const triSurf&, labelLongList& triangleInGroup);
-label checkOrientation(triSurf&, const word subsetPrefix="orientation_");
+label checkOrientation(triSurf&, const word subsetPrefix = "orientation_");
 
 //- check for disconnected surface parts
 label checkDisconnectedParts(const triSurf&, labelLongList& triangleInRegion);
-label checkDisconnectedParts(triSurf&, const word subsetPrefix="region_");
+label checkDisconnectedParts(triSurf&, const word subsetPrefix = "region_");
 
 //- calculate bounding box of the surface mesh
 void calculateBoundingBox(const triSurf&, boundBox&);
@@ -105,7 +104,7 @@ label checkCollocatedPoints
 label checkCollocatedPoints
 (
     triSurf&,
-    const word subsetName="collocatedPoints",
+    const word subsetName = "collocatedPoints",
     const scalar distTol = 1e-6
 );
 
@@ -114,13 +113,13 @@ label checkSelfIntersections
 (
     const triSurf&,
     labelLongList&,
-    const scalar tol=1e-6
+    const scalar tol = 1e-6
 );
 label checkSelfIntersections
 (
     triSurf&,
-    const word subsetName="selfIntersect",
-    const scalar tol=1e-6
+    const word subsetName = "selfIntersect",
+    const scalar tol = 1e-6
 );
 
 //- check if there exist any overlaps
@@ -134,7 +133,7 @@ label checkOverlaps
 label checkOverlaps
 (
     triSurf&,
-    const word subsetName="overlappingTriangles",
+    const word subsetName = "overlappingTriangles",
     const scalar tol = 1e-6,
     const scalar angleTol = 5.0
 );

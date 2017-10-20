@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    sortEdgesIntoChains
+    Foam::sortEdgesIntoChains
 
 Description
     Creates boundary faces from a chain of open edges
@@ -44,23 +44,26 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class sortEdgesIntoChains Declaration
+                     Class sortEdgesIntoChains Declaration
 \*---------------------------------------------------------------------------*/
 
 class sortEdgesIntoChains
 {
-    // Members
+    // Private data
+
         const DynList<edge>& bEdges_;
 
         bool openEdges_;
 
         Map<label> newNodeLabel_;
 
-        DynList<DynList<label> > edgesAtPoint_;
+        DynList<DynList<label>> edgesAtPoint_;
 
-        DynList<DynList<label> > createdChains_;
+        DynList<DynList<label>> createdChains_;
+
 
     // Private member functions
+
         void createNodeLabels();
 
         bool findPointsBelongingToTheChain
@@ -75,20 +78,25 @@ class sortEdgesIntoChains
 
         void sortEdges();
 
-    public:
 
-        sortEdgesIntoChains
-        (
-            const DynList<edge>& bEdges
-        );
+public:
 
-        ~sortEdgesIntoChains();
+    //- Constructor
+    sortEdgesIntoChains
+    (
+        const DynList<edge>& bEdges
+    );
+
+    //- Destructor
+    ~sortEdgesIntoChains();
+
 
     // Member functions
 
         //- a list of points which have not yet been resolved
-        const DynList<DynList<label> >& sortedChains() const;
+        const DynList<DynList<label>>& sortedChains() const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
     findCellsIntersectingSurface
@@ -54,6 +54,7 @@ class meshOctree;
 class findCellsIntersectingSurface
 {
     // Private data
+
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
@@ -69,12 +70,15 @@ class findCellsIntersectingSurface
         //- stores information which surface facets intersect each cell
         VRWGraph facetsIntersectingCell_;
 
+
     // Private member functions
+
         //- generate the octree
         void generateOctree(const triSurf&);
 
         //- check for the intersected cells
         void findIntersectedCells();
+
 
 public:
 
@@ -94,10 +98,13 @@ public:
             const triSurf& surface
         );
 
-    // Destructor
-        ~findCellsIntersectingSurface();
+
+    //- Destructor
+    ~findCellsIntersectingSurface();
+
 
     // Public member functions
+
         //- return the list of intersected cells;
         const boolList& intersectedCells() const;
 

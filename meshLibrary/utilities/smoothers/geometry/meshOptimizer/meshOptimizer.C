@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -39,21 +37,22 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * Private member functions * * * * * * * * * * * * * * * * * //
 
 const meshSurfaceEngine& meshOptimizer::meshSurface() const
 {
-    if( !msePtr_ )
+    if (!msePtr_)
         msePtr_ = new meshSurfaceEngine(mesh_);
 
     return *msePtr_;
 }
 
+
 void meshOptimizer::clearSurface()
 {
     deleteDemandDrivenData(msePtr_);
 }
+
 
 label meshOptimizer::findBadFaces
 (
@@ -104,6 +103,7 @@ label meshOptimizer::findBadFaces
     return nBadFaces;
 }
 
+
 label meshOptimizer::findLowQualityFaces
 (
     labelHashSet& badFaces,
@@ -133,6 +133,7 @@ label meshOptimizer::findLowQualityFaces
     return nBadFaces;
 }
 
+
 void meshOptimizer::calculatePointLocations()
 {
     vertexLocation_.setSize(mesh_.points().size());
@@ -141,29 +142,30 @@ void meshOptimizer::calculatePointLocations()
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bPoints = mse.boundaryPoints();
 
-    //- mark boundary vertices
+    // mark boundary vertices
     forAll(bPoints, bpI)
         vertexLocation_[bPoints[bpI]] = BOUNDARY;
 
-    //- mark edge vertices
+    // mark edge vertices
     meshSurfacePartitioner mPart(mse);
     forAllConstIter(labelHashSet, mPart.edgePoints(), it)
         vertexLocation_[bPoints[it.key()]] = EDGE;
 
-    //- mark corner vertices
+    // mark corner vertices
     forAllConstIter(labelHashSet, mPart.corners(), it)
         vertexLocation_[bPoints[it.key()]] = CORNER;
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const polyMeshGenAddressing& addresing = mesh_.addressingData();
         const VRWGraph& pointAtProcs = addresing.pointAtProcs();
 
         forAll(pointAtProcs, pointI)
-            if( pointAtProcs.sizeOfRow(pointI) != 0 )
+            if (pointAtProcs.sizeOfRow(pointI) != 0)
                 vertexLocation_[pointI] |= PARALLELBOUNDARY;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -173,12 +175,13 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
     mesh_(mesh),
     vertexLocation_(),
     lockedFaces_(),
-    msePtr_(NULL),
+    msePtr_(nullptr),
     enforceConstraints_(false),
     badPointsSubsetName_()
 {
     calculatePointLocations();
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -186,6 +189,7 @@ meshOptimizer::~meshOptimizer()
 {
     clearSurface();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -196,11 +200,12 @@ void meshOptimizer::enforceConstraints(const word subsetName)
     badPointsSubsetName_ = subsetName;
 }
 
+
 void meshOptimizer::lockCellsInSubset(const word& subsetName)
 {
-    //- lock the points in the cell subset with the given name
+    // lock the points in the cell subset with the given name
     label subsetI = mesh_.cellSubsetIndex(subsetName);
-    if( subsetI >= 0 )
+    if (subsetI >= 0)
     {
         labelLongList lc;
         mesh_.cellsInSubset(subsetI, lc);
@@ -214,11 +219,12 @@ void meshOptimizer::lockCellsInSubset(const word& subsetName)
     }
 }
 
+
 void meshOptimizer::lockFacesInSubset(const word& subsetName)
 {
-    //- lock the points in the face subset with the given name
+    // lock the points in the face subset with the given name
     label subsetI = mesh_.faceSubsetIndex(subsetName);
-    if( subsetI >= 0 )
+    if (subsetI >= 0)
     {
         labelLongList lf;
         mesh_.facesInSubset(subsetI, lf);
@@ -232,11 +238,12 @@ void meshOptimizer::lockFacesInSubset(const word& subsetName)
     }
 }
 
+
 void meshOptimizer::lockPointsInSubset(const word& subsetName)
 {
-    //- lock the points in the point subset with the given name
+    // lock the points in the point subset with the given name
     label subsetI = mesh_.pointSubsetIndex(subsetName);
-    if( subsetI >= 0 )
+    if (subsetI >= 0)
     {
         labelLongList lp;
         mesh_.pointsInSubset(subsetI, lp);
@@ -250,20 +257,22 @@ void meshOptimizer::lockPointsInSubset(const word& subsetName)
     }
 }
 
+
 void meshOptimizer::removeUserConstraints()
 {
     lockedFaces_.setSize(0);
 
-    //- unlock points
+    // unlock points
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(vertexLocation_, i)
     {
-        if( vertexLocation_[i] & LOCKED )
+        if (vertexLocation_[i] & LOCKED)
             vertexLocation_[i] ^= LOCKED;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

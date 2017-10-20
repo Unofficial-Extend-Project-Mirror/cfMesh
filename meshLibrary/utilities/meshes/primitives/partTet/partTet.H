@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    partTet
+    Foam::partTet
 
 Description
     A partTet is a primitive needed during mesh smoothing
@@ -56,11 +56,14 @@ class partTet
 protected:
 
     // Protected data
+
         label data_[4];
+
 
 public:
 
     // Constructors
+
         //- Null construct
         inline partTet();
 
@@ -73,8 +76,9 @@ public:
             const label d
         );
 
-    // Destructor
-        ~partTet();
+
+    //- Destructor
+    ~partTet();
 
 
     // Member Functions
@@ -92,9 +96,12 @@ public:
 
             inline label size() const;
 
+
         // Searches
+
             //- find position of the node in the partTet
             inline label whichPosition(const label) const;
+
 
         // Properties
 
@@ -133,6 +140,7 @@ public:
             //- Return edge
             inline edge getEdge(const label) const;
 
+
     // Member operators
 
             inline label operator[](const label) const;
@@ -141,6 +149,7 @@ public:
 
             inline bool operator==(const partTet&) const;
             inline bool operator!=(const partTet&) const;
+
 
     // IOstream operators
 

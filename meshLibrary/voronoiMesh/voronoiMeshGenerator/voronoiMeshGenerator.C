@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -58,7 +56,7 @@ namespace Foam
 
 void voronoiMeshGenerator::createVoronoiMesh()
 {
-    //- create voronoi mesh from octree and Delaunay tets
+    // create voronoi mesh from octree and Delaunay tets
     voronoiMeshExtractor vme(*octreePtr_, meshDict_, mesh_);
 
     vme.createMesh();
@@ -69,10 +67,11 @@ void voronoiMeshGenerator::createVoronoiMesh()
     # endif
 }
 
+
 void voronoiMeshGenerator::surfacePreparation()
 {
-    //- removes unnecessary cells and morphs the boundary
-    //- such that there exists only one boundary face per cell
+    // removes unnecessary cells and morphs the boundary
+    // such that there exists only one boundary face per cell
 
     surfaceMorpherCells* cmPtr = new surfaceMorpherCells(mesh_);
     cmPtr->morphMesh();
@@ -84,12 +83,13 @@ void voronoiMeshGenerator::surfacePreparation()
     # endif
 }
 
+
 void voronoiMeshGenerator::mapMeshToSurface()
 {
-    //- calculate mesh surface
+    // calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
 
-    //- map mesh surface on the geometry surface
+    // map mesh surface on the geometry surface
     meshSurfaceMapper mapper(*msePtr, *octreePtr_);
     mapper.preMapVertices();
     mapper.mapVerticesOntoSurface();
@@ -99,7 +99,7 @@ void voronoiMeshGenerator::mapMeshToSurface()
     //::exit(EXIT_FAILURE);
     # endif
 
-    //- untangle surface faces
+    // untangle surface faces
     meshSurfaceOptimizer(*msePtr, *octreePtr_).untangleSurface();
 
     # ifdef DEBUG
@@ -110,15 +110,17 @@ void voronoiMeshGenerator::mapMeshToSurface()
     deleteDemandDrivenData(msePtr);
 }
 
+
 void voronoiMeshGenerator::extractPatches()
 {
     edgeExtractor extractor(mesh_, *octreePtr_);
 
-    Info << "Extracting edges" << endl;
+    Info<< "Extracting edges" << endl;
     extractor.extractEdges();
 
     extractor.updateMeshPatches();
 }
+
 
 void voronoiMeshGenerator::mapEdgesAndCorners()
 {
@@ -129,6 +131,7 @@ void voronoiMeshGenerator::mapEdgesAndCorners()
     //::exit(EXIT_FAILURE);
     # endif
 }
+
 
 void voronoiMeshGenerator::optimiseMeshSurface()
 {
@@ -143,24 +146,25 @@ void voronoiMeshGenerator::optimiseMeshSurface()
     # endif
 }
 
+
 void voronoiMeshGenerator::generateBoudaryLayers()
 {
     boundaryLayers bl(mesh_);
 
-    if( meshDict_.found("boundaryLayers") )
+    if (meshDict_.found("boundaryLayers"))
     {
         boundaryLayers bl(mesh_);
 
         const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
 
-        if( bndLayers.found("nLayers") )
+        if (bndLayers.found("nLayers"))
         {
             const label nLayers = readLabel(bndLayers.lookup("nLayers"));
 
-            if( nLayers > 0 )
+            if (nLayers > 0)
                 bl.addLayerForAllPatches();
         }
-        else if( bndLayers.found("patchBoundaryLayers") )
+        else if (bndLayers.found("patchBoundaryLayers"))
         {
             const dictionary& patchLayers =
                 bndLayers.subDict("patchBoundaryLayers");
@@ -177,9 +181,10 @@ void voronoiMeshGenerator::generateBoudaryLayers()
     # endif
 }
 
+
 void voronoiMeshGenerator::refBoundaryLayers()
 {
-    if( meshDict_.isDict("boundaryLayers") )
+    if (meshDict_.isDict("boundaryLayers"))
     {
         refineBoundaryLayers refLayers(mesh_);
 
@@ -196,22 +201,23 @@ void voronoiMeshGenerator::refBoundaryLayers()
     }
 }
 
+
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
-    //- untangle the surface if needed
+    // untangle the surface if needed
     bool enforceConstraints(false);
-    if( meshDict_.found("enforceGeometryConstraints") )
+    if (meshDict_.found("enforceGeometryConstraints"))
     {
         enforceConstraints =
             readBool(meshDict_.lookup("enforceGeometryConstraints"));
     }
 
-    if( true )
+    if (true)
     {
         meshSurfaceEngine mse(mesh_);
         meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
 
-        if( enforceConstraints )
+        if (enforceConstraints)
             surfOpt.enforceConstraints();
 
         surfOpt.optimizeSurface();
@@ -219,9 +225,9 @@ void voronoiMeshGenerator::optimiseFinalMesh()
 
     deleteDemandDrivenData(octreePtr_);
 
-    //- final optimisation
+    // final optimisation
     meshOptimizer optimizer(mesh_);
-    if( enforceConstraints )
+    if (enforceConstraints)
         optimizer.enforceConstraints();
     optimizer.optimizeMeshFV();
 
@@ -231,14 +237,14 @@ void voronoiMeshGenerator::optimiseFinalMesh()
 
     mesh_.clearAddressingData();
 
-    if( modSurfacePtr_ )
+    if (modSurfacePtr_)
     {
         polyMeshGenGeometryModification meshMod(mesh_, meshDict_);
 
-        //- revert the mesh into the original space
+        // revert the mesh into the original space
         meshMod.revertGeometryModification();
 
-        //- delete modified surface mesh
+        // delete modified surface mesh
         deleteDemandDrivenData(modSurfacePtr_);
     }
 
@@ -248,9 +254,10 @@ void voronoiMeshGenerator::optimiseFinalMesh()
     # endif
 }
 
+
 void voronoiMeshGenerator::projectSurfaceAfterBackScaling()
 {
-    if( !meshDict_.found("anisotropicSources") )
+    if (!meshDict_.found("anisotropicSources"))
         return;
 
     deleteDemandDrivenData(octreePtr_);
@@ -262,17 +269,18 @@ void voronoiMeshGenerator::projectSurfaceAfterBackScaling()
         meshDict_
     ).createOctreeWithRefinedBoundary(20, 30);
 
-    //- calculate mesh surface
+    // calculate mesh surface
     meshSurfaceEngine mse(mesh_);
 
-    //- pre-map mesh surface
+    // pre-map mesh surface
     meshSurfaceMapper mapper(mse, *octreePtr_);
 
-    //- map mesh surface on the geometry surface
+    // map mesh surface on the geometry surface
     mapper.mapVerticesOntoSurface();
 
     optimiseFinalMesh();
 }
+
 
 void voronoiMeshGenerator::replaceBoundaries()
 {
@@ -284,6 +292,7 @@ void voronoiMeshGenerator::replaceBoundaries()
     # endif
 }
 
+
 void voronoiMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
@@ -294,48 +303,49 @@ void voronoiMeshGenerator::renumberMesh()
     # endif
 }
 
+
 void voronoiMeshGenerator::generateMesh()
 {
-    if( controller_.runCurrentStep("templateGeneration") )
+    if (controller_.runCurrentStep("templateGeneration"))
     {
         createVoronoiMesh();
     }
 
-    if( controller_.runCurrentStep("surfaceTopology") )
+    if (controller_.runCurrentStep("surfaceTopology"))
     {
         surfacePreparation();
     }
 
-    if( controller_.runCurrentStep("surfaceProjection") )
+    if (controller_.runCurrentStep("surfaceProjection"))
     {
         mapMeshToSurface();
     }
 
-    if( controller_.runCurrentStep("patchAssignment") )
+    if (controller_.runCurrentStep("patchAssignment"))
     {
         extractPatches();
     }
 
-    if( controller_.runCurrentStep("edgeExtraction") )
+    if (controller_.runCurrentStep("edgeExtraction"))
     {
         mapEdgesAndCorners();
 
         optimiseMeshSurface();
     }
 
-    if( controller_.runCurrentStep("boundaryLayerGeneration") )
+    if (controller_.runCurrentStep("boundaryLayerGeneration"))
     {
         generateBoudaryLayers();
     }
 
-    if( controller_.runCurrentStep("meshOptimisation") )
+    if (controller_.runCurrentStep("meshOptimisation"))
     {
         optimiseFinalMesh();
 
         projectSurfaceAfterBackScaling();
     }
 
-    if( controller_.runCurrentStep("boundaryLayerRefinement") )
+    if (controller_.runCurrentStep("boundaryLayerRefinement"))
     {
         refBoundaryLayers();
     }
@@ -345,15 +355,16 @@ void voronoiMeshGenerator::generateMesh()
     replaceBoundaries();
 }
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 :
     runTime_(time),
-    surfacePtr_(NULL),
-    modSurfacePtr_(NULL),
-    octreePtr_(NULL),
-    pointRegionsPtr_(NULL),
+    surfacePtr_(nullptr),
+    modSurfacePtr_(nullptr),
+    octreePtr_(nullptr),
+    pointRegionsPtr_(nullptr),
     meshDict_
     (
         IOobject
@@ -370,16 +381,16 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 {
     try
     {
-        if( true )
+        if (true)
             checkMeshDict cmd(meshDict_);
 
         const fileName surfaceFile = meshDict_.lookup("surfaceFile");
 
         surfacePtr_ = new triSurf(runTime_.path()/surfaceFile);
 
-        if( true )
+        if (true)
         {
-            //- save meta data with the mesh (surface mesh + its topology info)
+            // save meta data with the mesh (surface mesh + its topology info)
             triSurfaceMetaData sMetaData(*surfacePtr_);
             const dictionary& surfMetaDict = sMetaData.metaData();
 
@@ -387,21 +398,21 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
             mesh_.metaData().add("surfaceMeta", surfMetaDict, true);
         }
 
-        if( surfacePtr_->featureEdges().size() != 0 )
+        if (surfacePtr_->featureEdges().size() != 0)
         {
-            //- create surface patches based on the feature edges
-            //- and update the meshDict based on the given data
+            // create surface patches based on the feature edges
+            // and update the meshDict based on the given data
             triSurfacePatchManipulator manipulator(*surfacePtr_);
 
             const triSurf* surfaceWithPatches =
                 manipulator.surfaceWithPatches(&meshDict_);
 
-            //- delete the old surface and assign the new one
+            // delete the old surface and assign the new one
             deleteDemandDrivenData(surfacePtr_);
             surfacePtr_ = surfaceWithPatches;
         }
 
-        if( meshDict_.found("anisotropicSources") )
+        if (meshDict_.found("anisotropicSources"))
         {
             surfaceMeshGeometryModification surfMod(*surfacePtr_, meshDict_);
 
@@ -418,18 +429,17 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 
         generateMesh();
     }
-    catch(const std::string& message)
+    catch (const std::string& message)
     {
-        Info << message << endl;
+        Info<< message << endl;
     }
-    catch(...)
+    catch (...)
     {
-        WarningIn
-        (
-            "voronoiMeshGenerator::voronoiMeshGenerator(const Time&)"
-        ) << "Meshing process terminated!" << endl;
+        WarningInFunction
+            << "Meshing process terminated!" << endl;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -441,12 +451,14 @@ voronoiMeshGenerator::~voronoiMeshGenerator()
     deleteDemandDrivenData(pointRegionsPtr_);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void voronoiMeshGenerator::writeMesh() const
 {
     mesh_.write();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

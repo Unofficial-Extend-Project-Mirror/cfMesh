@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Writes the mesh in fpma format readable by AVL's CfdWM
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     List<vector> v(1000, vector::zero);
     DynList<vector> d(v);
 
-    Info << "b " << b << endl;
+    Info<< "b " << b << endl;
 
     c.append(0.2);
 
@@ -51,22 +51,23 @@ int main(int argc, char *argv[])
 
     c(1020) = 0.5;
 
-    Info << "c " << c << endl;
+    Info<< "c " << c << endl;
 
-    Info << "d " << d << endl;
+    Info<< "d " << d << endl;
 
-    DynList<DynList<label> > e;
+    DynList<DynList<label>> e;
     e.setSize(5);
     forAll(e, i)
         e[i].setSize(18);
 
-    Info << "e " << e << endl;
+    Info<< "e " << e << endl;
 
     c.setSize(5);
     c.shrink();
 
-    Info << "\nEnd" << endl;
+    Info<< "\nEnd" << endl;
     return 0;
 }
+
 
 // ************************************************************************* //

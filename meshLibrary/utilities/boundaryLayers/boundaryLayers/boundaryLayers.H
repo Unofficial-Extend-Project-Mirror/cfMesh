@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    boundaryLayers
+    Foam::boundaryLayers
 
 Description
     Creates boundary layers
@@ -55,18 +55,20 @@ class meshSurfaceEngine;
 class meshSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
-                           Class boundaryLayers Declaration
+                       Class boundaryLayers Declaration
 \*---------------------------------------------------------------------------*/
 
 class boundaryLayers
 {
+    // Private data
+    //
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
         //- pointer to mesh surface engine
         mutable meshSurfaceEngine* msePtr_;
 
-        //- poiner to meshSurfacePartitioner
+        //- pointer to meshSurfacePartitioner
         mutable meshSurfacePartitioner* meshPartitionerPtr_;
 
         //- shall I create patch-wise layers (true)
@@ -90,14 +92,14 @@ class boundaryLayers
         boolList treatedPatch_;
 
         //- extrude patches with patch
-        List<DynList<label> > treatPatchesWithPatch_;
+        List<DynList<label>> treatPatchesWithPatch_;
 
         //- label of a new node (helper)
         labelLongList newLabelForVertex_;
 
         //- map storing labels of new vertices created at node
         //- and corner vertices
-        std::map<label, std::map<std::pair<label, label>, label> > otherVrts_;
+        std::map<label, std::map<std::pair<label, label>, label>> otherVrts_;
 
         //- a key assigned to each patch. It is needed to search in otherVrts_
         labelList patchKey_;
@@ -108,7 +110,9 @@ class boundaryLayers
         //- has the geometry been analysed
         bool geometryAnalysed_;
 
+
     // Private member functions
+
         //- Return const reference to meshSurfaceEngine
         const meshSurfaceEngine& surfaceEngine() const;
 
@@ -187,7 +191,7 @@ class boundaryLayers
         //- to create faces at parallel boundaries
         void createNewFacesFromPointsParallel
         (
-            const LongList<DynList<label, 4> >& faceCandidates,
+            const LongList<DynList<label, 4>>& faceCandidates,
             const LongList<labelPair>& candidatePatches
         );
 
@@ -229,7 +233,9 @@ class boundaryLayers
             deleteDemandDrivenData(meshPartitionerPtr_);
         }
 
+
     // Enumerators
+
         enum vertexTypes
         {
             NONE = 0,
@@ -245,17 +251,18 @@ class boundaryLayers
         //- Disallow bitwise assignment
         void operator=(const boundaryLayers&);
 
+
 public:
 
-    // Constructors
+    //- Construct from mesh reference
+    boundaryLayers(polyMeshGen& mesh);
 
-        //- Construct from mesh reference
-        boundaryLayers(polyMeshGen& mesh);
+    //- Destructor
+    ~boundaryLayers();
 
-    // Destructor
-        ~boundaryLayers();
 
     // Public member functions
+
         //- adds layer for a given patch
         void addLayerForPatch(const word& patchName);
 

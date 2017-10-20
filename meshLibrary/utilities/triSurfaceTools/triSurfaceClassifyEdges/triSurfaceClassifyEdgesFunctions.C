@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -53,21 +51,21 @@ void triSurfaceClassifyEdges::checkOrientation()
 
     facetOrientation_.setSize(surf.size());
 
-    //- sort all surface facets into groups consisting of facets with consistent
-    //- orientation. Do not cross non-manifold edges
+    // sort all surface facets into groups consisting of facets with consistent
+    // orientation. Do not cross non-manifold edges
     labelLongList orientationGroup(surf.size(), -1);
     label nGroups(0);
 
     forAll(surf, triI)
     {
-        if( orientationGroup[triI] != -1 )
+        if (orientationGroup[triI] != -1)
             continue;
 
         orientationGroup[triI] = nGroups;
         labelLongList front;
         front.append(triI);
 
-        while( front.size() != 0 )
+        while (front.size() != 0)
         {
             const label tLabel = front.removeLastElement();
 
@@ -77,40 +75,40 @@ void triSurfaceClassifyEdges::checkOrientation()
             {
                 const label edgeI = facetEdges(tLabel, eI);
 
-                if( edgeFacets.sizeOfRow(edgeI) != 2 )
+                if (edgeFacets.sizeOfRow(edgeI) != 2)
                     continue;
 
                 forAllRow(edgeFacets, edgeI, efI)
                 {
                     const label neiFacetI = edgeFacets(edgeI, efI);
 
-                    if( orientationGroup[neiFacetI] != -1 )
+                    if (orientationGroup[neiFacetI] != -1)
                         continue;
-                    if( neiFacetI == tLabel )
+                    if (neiFacetI == tLabel)
                         continue;
 
                     const labelledTri& neiFacet = surf[neiFacetI];
 
-                    //- check the orientation of triangles at this edge
-                    //- check the sign of the angle
-                    //- if the orientation  is not consistent
+                    // check the orientation of triangles at this edge
+                    // check the sign of the angle
+                    // if the orientation  is not consistent
                     DynList<labelPair, 2> sharedIndices;
                     forAll(facet, i)
                     {
                         forAll(neiFacet, j)
                         {
-                            if( facet[i] == neiFacet[j] )
+                            if (facet[i] == neiFacet[j])
                                 sharedIndices.append(labelPair(i, j));
                         }
                     }
 
-                    if( sharedIndices.size() == 2 )
+                    if (sharedIndices.size() == 2)
                     {
                         const labelPair& pair0 = sharedIndices[0];
                         const labelPair& pair1 = sharedIndices[1];
-                        if( ((pair0.first() + 1) % 3) == pair1.first() )
+                        if (((pair0.first() + 1) % 3) == pair1.first())
                         {
-                            if( (pair1.second() + 1) % 3 == pair0.second() )
+                            if ((pair1.second() + 1) % 3 == pair0.second())
                             {
                                 orientationGroup[neiFacetI] = nGroups;
                                 front.append(neiFacetI);
@@ -118,7 +116,7 @@ void triSurfaceClassifyEdges::checkOrientation()
                         }
                         else
                         {
-                            if( (pair0.second() + 1) % 3 == pair1.second() )
+                            if ((pair0.second() + 1) % 3 == pair1.second())
                             {
                                 orientationGroup[neiFacetI] = nGroups;
                                 front.append(neiFacetI);
@@ -132,15 +130,15 @@ void triSurfaceClassifyEdges::checkOrientation()
         ++nGroups;
     }
 
-    Info << "Found " << nGroups
+    Info<< "Found " << nGroups
          << " groups of triangles with consistent orientation" << endl;
 
-    //- find the octree leaves containing each triangle
+    // find the octree leaves containing each triangle
     VRWGraph triangleInLeaves(surf.size());
     labelLongList ntl(surf.size(), 0);
 
     DynList<label> helper;
-    for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
+    for (label leafI = 0; leafI < octree_.numberOfLeaves(); ++leafI)
     {
         helper.clear();
         octree_.containedTriangles(leafI, helper);
@@ -153,7 +151,7 @@ void triSurfaceClassifyEdges::checkOrientation()
         triangleInLeaves.setRowSize(triI, ntl[triI]);
 
     ntl = 0;
-    for(label leafI=0;leafI<octree_.numberOfLeaves();++leafI)
+    for (label leafI = 0; leafI < octree_.numberOfLeaves(); ++leafI)
     {
         helper.clear();
         octree_.containedTriangles(leafI, helper);
@@ -166,13 +164,13 @@ void triSurfaceClassifyEdges::checkOrientation()
         }
     }
 
-    //- check the orientation of all facets in a group and collect their votes
+    // check the orientation of all facets in a group and collect their votes
     DynList<labelPair> groupVotes;
     groupVotes.setSize(nGroups);
     groupVotes = labelPair(0, 0);
 
     # ifdef USE_OMP
-    # pragma omp parallel if( surf.size() > 1000 ) private(helper)
+    # pragma omp parallel if (surf.size() > 1000) private(helper)
     # endif
     {
         DynList<labelPair> localVotes;
@@ -189,13 +187,13 @@ void triSurfaceClassifyEdges::checkOrientation()
             vector n = tri.normal(points);
             const scalar magN = mag(n);
 
-            if( magN < VSMALL )
+            if (magN < VSMALL)
                 continue;
 
             n /= magN;
 
-            //- find the OUTSIDE octree cubes in the vicinity of the triangle
-            //- and check the orientation of the triangle
+            // find the OUTSIDE octree cubes in the vicinity of the triangle
+            // and check the orientation of the triangle
             forAllRow(triangleInLeaves, triI, tlI)
             {
                 const label leafI = triangleInLeaves(triI, tlI);
@@ -208,28 +206,28 @@ void triSurfaceClassifyEdges::checkOrientation()
 
                     const meshOctreeCubeBasic& oc = octree_.returnLeaf(leafJ);
 
-                    if( oc.cubeType() & meshOctreeCubeBasic::OUTSIDE )
+                    if (oc.cubeType() & meshOctreeCubeBasic::OUTSIDE)
                     {
-                        const scalar length = 3.0 * oc.size(rootBox);
+                        const scalar length = 3.0*oc.size(rootBox);
 
                         point pMin, pMax;
                         oc.cubeBox(rootBox, pMin, pMax);
 
                         const boundBox bb(pMin, pMax);
 
-                        //- check whether the ray casted from
-                        //- the centre of the triangle intersects the cube
-                        const point endPos = c + length * n;
-                        const point endNeg = c - length * n;
+                        // check whether the ray casted from
+                        // the centre of the triangle intersects the cube
+                        const point endPos = c + length*n;
+                        const point endNeg = c - length*n;
 
-                        if( help::boundBoxLineIntersection(c, endPos, bb) )
+                        if (help::boundBoxLineIntersection(c, endPos, bb))
                         {
-                            //- found an intersection in the positive direction
+                            // found an intersection in the positive direction
                             ++localVotes[orientationGroup[triI]].first();
                         }
-                        else if( help::boundBoxLineIntersection(c, endNeg, bb) )
+                        else if (help::boundBoxLineIntersection(c, endNeg, bb))
                         {
-                            //- found an intersection in the negative direction
+                            // found an intersection in the negative direction
                             ++localVotes[orientationGroup[triI]].second();
                         }
                     }
@@ -249,29 +247,30 @@ void triSurfaceClassifyEdges::checkOrientation()
         }
     }
 
-    Info << "Before determining of orientation" << endl;
+    Info<< "Before determining of orientation" << endl;
 
-    //- determine whether a group is oriented outward or inward
+    // determine whether a group is oriented outward or inward
     List<direction> outwardGroup(nGroups, direction(0));
 
     forAll(groupVotes, groupI)
     {
-        if( groupVotes[groupI].first() > groupVotes[groupI].second() )
+        if (groupVotes[groupI].first() > groupVotes[groupI].second())
         {
             outwardGroup[groupI] = 1;
         }
-        else if( groupVotes[groupI].first() < groupVotes[groupI].second() )
+        else if (groupVotes[groupI].first() < groupVotes[groupI].second())
         {
             outwardGroup[groupI] = 2;
         }
     }
 
-    Info << "Here setting orientation" << endl;
-    //- Finally, set the orientation of the normal
+    Info<< "Here setting orientation" << endl;
+    // Finally, set the orientation of the normal
     facetOrientation_.setSize(surf.size());
     forAll(facetOrientation_, triI)
         facetOrientation_[triI] = outwardGroup[orientationGroup[triI]];
 }
+
 
 void triSurfaceClassifyEdges::classifyEdgesTypes()
 {
@@ -285,7 +284,7 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
     edgeTypes_.setSize(edgeFacets.size());
     edgeTypes_ = NONE;
 
-    //- set feature edge types
+    // set feature edge types
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
     # endif
@@ -295,32 +294,32 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
 
         forAllRow(pointEdges, e.start(), peI)
         {
-            if( edges[pointEdges(e.start(), peI)] == e )
+            if (edges[pointEdges(e.start(), peI)] == e)
                 edgeTypes_[pointEdges(e.start(), peI)] |= FEATUREEDGE;
         }
     }
 
-    //- Finally, check the edges and assign flags
+    // Finally, check the edges and assign flags
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
     forAll(edgeFacets, edgeI)
     {
-        if( edgeFacets.sizeOfRow(edgeI) != 2 )
+        if (edgeFacets.sizeOfRow(edgeI) != 2)
         {
-            //- this is not a manifold edge
+            // this is not a manifold edge
             edgeTypes_[edgeI] = NONE;
             continue;
         }
 
-        //- surface is a manifold at this edge
+        // surface is a manifold at this edge
         const label f0 = edgeFacets(edgeI, 0);
         const label f1 = edgeFacets(edgeI, 1);
 
         const labelledTri& tri0 = surf[f0];
         const labelledTri& tri1 = surf[f1];
 
-        if( tri0.region() != tri1.region() )
+        if (tri0.region() != tri1.region())
             edgeTypes_[edgeI] |= FEATUREEDGE;
 
         label apexNode(-1);
@@ -329,17 +328,17 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
             bool found(false);
             forAll(tri0, pJ)
             {
-                if( tri0[pJ] == tri1[pI] )
+                if (tri0[pJ] == tri1[pI])
                 {
                     found = true;
                     break;
                 }
 
-                if( found )
+                if (found)
                     break;
             }
 
-            if( !found )
+            if (!found)
             {
                 apexNode = tri1[pI];
                 break;
@@ -356,17 +355,17 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
 
         const scalar vol = tet.mag();
 
-        if( facetOrientation_[f0] == 1 )
+        if (facetOrientation_[f0] == 1)
         {
-            //- facet is outward oriented
-            if( vol < -VSMALL )
+            // facet is outward oriented
+            if (vol < -VSMALL)
             {
-                //- this is a convex edge
+                // this is a convex edge
                 edgeTypes_[edgeI] |= CONVEXEDGE;
             }
-            else if( vol > VSMALL )
+            else if (vol > VSMALL)
             {
-                //- this is a concave edge
+                // this is a concave edge
                 edgeTypes_[edgeI] |= CONCAVEEDGE;
             }
             else
@@ -374,17 +373,17 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
                 edgeTypes_[edgeI] |= FLATSURFACEEDGE;
             }
         }
-        else if( facetOrientation_[f0] == 2 )
+        else if (facetOrientation_[f0] == 2)
         {
-            //- facet is inward oriented
-            if( vol > VSMALL )
+            // facet is inward oriented
+            if (vol > VSMALL)
             {
-                //- this is a convex edge
+                // this is a convex edge
                 edgeTypes_[edgeI] |= CONVEXEDGE;
             }
-            else if( vol < -VSMALL )
+            else if (vol < -VSMALL)
             {
-                //- this is a concave edge
+                // this is a concave edge
                 edgeTypes_[edgeI] |= CONCAVEEDGE;
             }
             else
@@ -394,6 +393,7 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

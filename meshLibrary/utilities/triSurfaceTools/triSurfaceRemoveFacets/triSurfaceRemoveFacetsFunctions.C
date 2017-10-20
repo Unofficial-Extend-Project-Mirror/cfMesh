@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -32,7 +30,6 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
@@ -42,23 +39,23 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
 
     const geometricSurfacePatchList& patches = surf_.patches();
 
-    //- mark patches which will be removed
+    // mark patches which will be removed
     boolList removePatch(patches.size(), false);
 
     forAll(patches, patchI)
     {
-        if( selectedEntities_.contains(patches[patchI].name()) )
+        if (selectedEntities_.contains(patches[patchI].name()))
             removePatch[patchI] = true;
     }
 
-    //- select facets affected by the deletion of a patch
+    // select facets affected by the deletion of a patch
     forAll(surf_, triI)
     {
-        if( removePatch[surf_[triI].region()] )
+        if (removePatch[surf_[triI].region()])
             removeFacet[triI] = true;
     }
 
-    //- mark facets contained in selected subsets
+    // mark facets contained in selected subsets
     DynList<label> facetSubsetsIDs;
     surf_.facetSubsetIndices(facetSubsetsIDs);
 
@@ -66,7 +63,7 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
     {
         const word fsName = surf_.facetSubsetName(facetSubsetsIDs[i]);
 
-        if( selectedEntities_.contains(fsName) )
+        if (selectedEntities_.contains(fsName))
         {
             labelLongList containedFacets;
             surf_.facetsInSubset(facetSubsetsIDs[i], containedFacets);
@@ -77,12 +74,13 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
     }
 }
 
+
 void triSurfaceRemoveFacets::removeFacets()
 {
     boolList removeFacet;
     markFacetsForRemoval(removeFacet);
 
-    //- calculate new indices of vertices and facets
+    // calculate new indices of vertices and facets
     const pointField& points = surf_.points();
     labelLongList newPointLabel(surf_.points().size(), -1);
     labelLongList newFacetLabel(surf_.size(), -1);
@@ -91,25 +89,25 @@ void triSurfaceRemoveFacets::removeFacets()
 
     forAll(removeFacet, triI)
     {
-        if( removeFacet[triI] )
+        if (removeFacet[triI])
             continue;
 
         const labelledTri& tri = surf_[triI];
 
         forAll(tri, pI)
         {
-            if( newPointLabel[tri[pI]] == -1 )
+            if (newPointLabel[tri[pI]] == -1)
                 newPointLabel[tri[pI]] = pointCounter++;
         }
 
         newFacetLabel[triI] = facetCounter++;
     }
 
-    //- remove vertices
+    // remove vertices
     pointField newPts(pointCounter);
     forAll(newPointLabel, pI)
     {
-        if( newPointLabel[pI] < 0 )
+        if (newPointLabel[pI] < 0)
             continue;
 
         newPts[newPointLabel[pI]] = points[pI];
@@ -118,12 +116,12 @@ void triSurfaceRemoveFacets::removeFacets()
     triSurfModifier(surf_).pointsAccess().transfer(newPts);
     surf_.updatePointSubsets(newPointLabel);
 
-    //- remove facets
+    // remove facets
     LongList<labelledTri> newFacets(facetCounter);
 
     forAll(newFacetLabel, triI)
     {
-        if( newFacetLabel[triI] < 0 )
+        if (newFacetLabel[triI] < 0)
             continue;
 
         const labelledTri& tri = surf_[triI];
@@ -141,7 +139,7 @@ void triSurfaceRemoveFacets::removeFacets()
     triSurfModifier(surf_).facetsAccess().transfer(newFacets);
     surf_.updateFacetsSubsets(newFacetLabel);
 
-    //- update feature edges
+    // update feature edges
     const edgeLongList& featureEdges = surf_.featureEdges();
     const VRWGraph& pointEdges = surf_.pointEdges();
     const edgeLongList& edges = surf_.edges();
@@ -154,35 +152,35 @@ void triSurfaceRemoveFacets::removeFacets()
     {
         const edge& e = featureEdges[feI];
 
-        if( (newPointLabel[e.start()] < 0) || (newPointLabel[e.end()] < 0) )
+        if ((newPointLabel[e.start()] < 0) || (newPointLabel[e.end()] < 0))
             continue;
 
-        //- find global edge label
+        // find global edge label
         label eI(-1);
         forAllRow(pointEdges, e.start(), peI)
         {
             const label eJ = pointEdges(e.start(), peI);
-            if( edges[eJ] == e )
+            if (edges[eJ] == e)
             {
                 eI = eJ;
                 break;
             }
         }
 
-        if( eI < 0 )
+        if (eI < 0)
             continue;
 
-        //- check if the edge is attached to at least one triangle
+        // check if the edge is attached to at least one triangle
         bool foundTriangle(false);
         forAllRow(edgeFacets, eI, efI)
         {
-            if( newFacetLabel[edgeFacets(eI, efI)] >= 0 )
+            if (newFacetLabel[edgeFacets(eI, efI)] >= 0)
             {
                 foundTriangle = true;
                 break;
             }
         }
-        if( !foundTriangle )
+        if (!foundTriangle)
             continue;
 
         newFeatureEdgeLabel[feI] = edgeCounter++;
@@ -191,7 +189,7 @@ void triSurfaceRemoveFacets::removeFacets()
     edgeLongList newFeatureEdges(edgeCounter);
     forAll(newFeatureEdgeLabel, eI)
     {
-        if( newFeatureEdgeLabel[eI] < 0 )
+        if (newFeatureEdgeLabel[eI] < 0)
             continue;
 
         const edge& e = featureEdges[eI];
@@ -209,6 +207,7 @@ void triSurfaceRemoveFacets::removeFacets()
 
     selectedEntities_.clear();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

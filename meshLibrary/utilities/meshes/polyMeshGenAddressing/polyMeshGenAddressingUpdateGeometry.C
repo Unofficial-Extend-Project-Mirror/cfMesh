@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -45,18 +45,19 @@ void polyMeshGenAddressing::updateGeometry
     const pointFieldPMG& p = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
 
-    //- update face centres and face areas
-    if( faceCentresPtr_ && faceAreasPtr_ )
+    // update face centres and face areas
+    if (faceCentresPtr_ && faceAreasPtr_)
     {
         vectorField& fCtrs = *faceCentresPtr_;
         vectorField& fAreas = *faceAreasPtr_;
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( faces.size() > 100 ) \
+        # pragma omp parallel for if (faces.size() > 100) \
         schedule(dynamic, 10)
         # endif
         forAll(faces, faceI)
-            if( changedFace[faceI] )
+        {
+            if (changedFace[faceI])
             {
                 const face& f = faces[faceI];
                 const label nPoints = f.size();
@@ -76,19 +77,19 @@ void polyMeshGenAddressing::updateGeometry
                     vector sumAc = vector::zero;
 
                     point fCentre = p[f[0]];
-                    for(label pI=1;pI<nPoints;++pI)
+                    for (label pI = 1; pI < nPoints; ++pI)
                     {
                         fCentre += p[f[pI]];
                     }
 
                     fCentre /= nPoints;
 
-                    for(label pI=0;pI<nPoints;++pI)
+                    for (label pI = 0; pI < nPoints; ++pI)
                     {
                         const point& nextPoint = p[f.nextLabel(pI)];
 
                         vector c = p[f[pI]] + nextPoint + fCentre;
-                        vector n = (nextPoint - p[f[pI]])^(fCentre - p[f[pI]]);
+                        vector n = (nextPoint - p[f[pI]])^(fCentre-p[f[pI]]);
                         scalar a = mag(n);
 
                         sumN += n;
@@ -100,10 +101,11 @@ void polyMeshGenAddressing::updateGeometry
                     fAreas[faceI] = 0.5*sumN;
                 }
             }
+        }
     }
 
-    //- update cell centres and cell volumes
-    if( cellCentresPtr_ && cellVolumesPtr_ && faceCentresPtr_ && faceAreasPtr_ )
+    // update cell centres and cell volumes
+    if (cellCentresPtr_ && cellVolumesPtr_ && faceCentresPtr_ && faceAreasPtr_)
     {
         const vectorField& fCtrs = *faceCentresPtr_;
         const vectorField& fAreas = *faceAreasPtr_;
@@ -114,7 +116,7 @@ void polyMeshGenAddressing::updateGeometry
         const cellListPMG& cells = mesh_.cells();
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( cells.size() > 100 ) \
+        # pragma omp parallel for if (cells.size() > 100) \
         schedule(dynamic, 10)
         # endif
         forAll(cells, cellI)
@@ -123,25 +125,28 @@ void polyMeshGenAddressing::updateGeometry
 
             bool update(false);
             forAll(c, fI)
-                if( changedFace[c[fI]] )
+            {
+                if (changedFace[c[fI]])
                 {
                     update = true;
                     break;
                 }
+            }
 
-            if( update )
+            if (update)
             {
                 cellCtrs[cellI] = vector::zero;
                 cellVols[cellI] = 0.0;
 
-                //- estimate position of cell centre
+                // estimate position of cell centre
                 vector cEst(vector::zero);
                 forAll(c, fI)
                     cEst += fCtrs[c[fI]];
                 cEst /= c.size();
 
                 forAll(c, fI)
-                    if( own[c[fI]] == cellI )
+                {
+                    if (own[c[fI]] == cellI)
                     {
                         // Calculate 3*face-pyramid volume
                         const scalar pyr3Vol =
@@ -188,6 +193,7 @@ void polyMeshGenAddressing::updateGeometry
                         // Accumulate face-pyramid volume
                         cellVols[cellI] += pyr3Vol;
                     }
+                }
 
                 cellCtrs[cellI] /= cellVols[cellI];
                 cellVols[cellI] /= 3.0;
@@ -195,6 +201,7 @@ void polyMeshGenAddressing::updateGeometry
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

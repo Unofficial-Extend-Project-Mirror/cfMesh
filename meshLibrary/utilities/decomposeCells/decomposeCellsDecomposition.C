@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -56,6 +54,7 @@ void decomposeCells::decomposeMesh(const boolList& decomposeCell)
     # endif
 }
 
+
 void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 {
     const faceListPMG& faces = mesh_.faces();
@@ -64,11 +63,11 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
     boolList decomposeFace(faces.size(), false);
     forAll(cells, cellI)
     {
-        if( decomposeCell[cellI] )
+        if (decomposeCell[cellI])
         {
             DynList<label, 32> vrt;
             DynList<edge, 64> edges;
-            DynList<DynList<label, 8> > faceEdges;
+            DynList<DynList<label, 8>> faceEdges;
             DynList<DynList<label, 2>, 64> edgeFaces;
 
             findAddressingForCell(cellI, vrt, edges, faceEdges, edgeFaces);
@@ -81,10 +80,12 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
                 forAll(fEdges, feI)
                 {
                     label neiFace = edgeFaces[fEdges[feI]][0];
-                    if( neiFace == fI )
+                    if (neiFace == fI)
+                    {
                         neiFace = edgeFaces[fEdges[feI]][1];
+                    }
 
-                    if( neiFaces.found(neiFace) )
+                    if (neiFaces.found(neiFace))
                     {
                         decomposeFace[cells[cellI][fI]] = true;
                     }
@@ -97,22 +98,24 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
-        //- send information to the neighbour processor
+        // send information to the neighbour processor
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             boolList decFace(procBoundaries[patchI].patchSize(), false);
             const label size = decFace.size();
 
-            for(label i=0;i<size;++i)
+            for (label i = 0; i < size; ++i)
             {
-                if( decomposeFace[start+i] )
+                if (decomposeFace[start + i])
+                {
                     decFace[i] = true;
+                }
             }
 
             OPstream toOtherProc
@@ -125,7 +128,7 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
             toOtherProc << decFace;
         }
 
-        //- receive information from the neighbour processor
+        // receive information from the neighbour processor
         forAll(procBoundaries, patchI)
         {
             boolList decFace;
@@ -141,26 +144,32 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
             const label start = procBoundaries[patchI].patchStart();
             forAll(decFace, i)
             {
-                if( decFace[i] )
-                    decomposeFace[start+i] = true;
+                if (decFace[i])
+                {
+                    decomposeFace[start + i] = true;
+                }
             }
         }
     }
 
-    //- decompose faces which would cause invalid connections
+    // decompose faces which would cause invalid connections
     decomposeFaces(mesh_).decomposeMeshFaces(decomposeFace);
 }
+
 
 void decomposeCells::createPointsAndCellFaces(const boolList& decomposeCell)
 {
     facesOfNewCells_.clear();
 
     forAll(decomposeCell, cI)
-        if( decomposeCell[cI] )
+    {
+        if (decomposeCell[cI])
         {
             decomposeCellIntoPyramids(cI);
         }
+    }
 }
+
 
 void decomposeCells::storeBoundaryFaces(const boolList& /*decomposeCell*/)
 {
@@ -175,29 +184,31 @@ void decomposeCells::storeBoundaryFaces(const boolList& /*decomposeCell*/)
     }
 }
 
+
 void decomposeCells::removeDecomposedCells(const boolList& decomposeCell)
 {
     # ifdef DEBUGDecompose
-    Info << "Number of cells before removal " << mesh_.cells().size() << endl;
+    Info<< "Number of cells before removal " << mesh_.cells().size() << endl;
     # endif
 
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.removeCells(decomposeCell, false);
 
     # ifdef DEBUGDecompose
-    Info << "Number of cells after removal " << mesh_.cells().size() << endl;
+    Info<< "Number of cells after removal " << mesh_.cells().size() << endl;
     # endif
 }
 
+
 void decomposeCells::addNewCells()
 {
-    Info << "Adding new cells " << endl;
+    Info<< "Adding new cells " << endl;
     polyMeshGenModifier(mesh_).addCells(facesOfNewCells_);
     facesOfNewCells_.clear();
-    Info << "Reordering bnd faces" << endl;
+    Info<< "Reordering bnd faces" << endl;
     polyMeshGenModifier(mesh_).reorderBoundaryFaces();
 
-    Info << "Finding bnd faces" << endl;
+    Info<< "Finding bnd faces" << endl;
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     const VRWGraph& pointFaces = mesh_.addressingData().pointFaces();
@@ -208,30 +219,36 @@ void decomposeCells::addNewCells()
     {
         face bf(newBoundaryFaces_.sizeOfRow(faceI));
         forAllRow(newBoundaryFaces_, faceI, pI)
+        {
             bf[pI] = newBoundaryFaces_(faceI, pI);
+        }
 
         # ifdef DEBUGDecompose
-        Info << "Finding cell for boundary face " << bf << endl;
+        Info<< "Finding cell for boundary face " << bf << endl;
         bool found(false);
         forAllRow(pointFaces, bf[0], pfI)
-            if( bf == faces[pointFaces(bf[0], pfI)] )
+        {
+            if (bf == faces[pointFaces(bf[0], pfI)])
+            {
                 found = true;
-        if( !found )
-            FatalErrorIn
-            (
-                "void decomposeCells::addNewCells()"
-            ) << "Face " << bf << " does not exist in the mesh"
+            }
+        }
+        if (!found)
+        {
+            FatalErrorInFunction
+                << "Face " << bf << " does not exist in the mesh"
                 << abort(FatalError);
+        }
         #endif
 
         forAllRow(pointFaces, bf[0], pfI)
         {
             const label fLabel = pointFaces(bf[0], pfI);
-            if( (mesh_.faceIsInPatch(fLabel) != -1) && (bf == faces[fLabel]) )
+            if ((mesh_.faceIsInPatch(fLabel) != -1) && (bf == faces[fLabel]))
             {
                 # ifdef DEBUGDecompose
-                Info << "Boundary face " << bf << " is in cell "
-                << owner[fLabel]] << endl;
+                Info<< "Boundary face " << bf << " is in cell "
+                    << owner[fLabel]] << endl;
                 # endif
 
                 newBoundaryOwners.append(owner[fLabel]);
@@ -253,8 +270,11 @@ void decomposeCells::addNewCells()
     PtrList<boundaryPatch>& boundaries =
         polyMeshGenModifier(mesh_).boundariesAccess();
     forAll(boundaries, patchI)
+    {
         boundaries[patchI].patchType() = patchTypes_[patchI];
+    }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 

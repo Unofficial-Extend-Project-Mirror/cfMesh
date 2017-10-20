@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    refineBoundaryLayers
+    Foam::refineBoundaryLayers
 
 Description
     Refine existing boundary layers
@@ -54,11 +54,13 @@ namespace Foam
 class meshSurfaceEngine;
 
 /*---------------------------------------------------------------------------*\
-                Class refineBoundaryLayers Declaration
+                    Class refineBoundaryLayers Declaration
 \*---------------------------------------------------------------------------*/
 
 class refineBoundaryLayers
 {
+    // Private data
+
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
@@ -102,10 +104,10 @@ class refineBoundaryLayers
 
         //- information about existing boundary layers at patches
         //- only available layers
-        List<DynList<label> > layerAtPatch_;
+        List<DynList<label>> layerAtPatch_;
 
         //- which patches are part of a single layer
-        List<DynList<word> > patchesInLayer_;
+        List<DynList<word>> patchesInLayer_;
 
         //- a containing the number of layers which shall be generated above
         //- a boundary face
@@ -127,7 +129,9 @@ class refineBoundaryLayers
         //- a graph containing faces after layer refinement
         VRWGraph newFaces_;
 
+
     // Private member functions
+
         //- Return reference to meshSurfaceEngine
         const meshSurfaceEngine& surfaceEngine() const;
 
@@ -151,7 +155,7 @@ class refineBoundaryLayers
         void sortFacePoints
         (
             const label faceI,
-            DynList<DynList<label> >& facePoints,
+            DynList<DynList<label>>& facePoints,
             const label transpose = false
         ) const;
 
@@ -160,7 +164,7 @@ class refineBoundaryLayers
         void sortFaceFaces
         (
             const label faceI,
-            DynList<DynList<label> >& faceFaces,
+            DynList<DynList<label>>& faceFaces,
             const label transpose = false
         ) const;
 
@@ -191,7 +195,9 @@ class refineBoundaryLayers
         //- generate new cells and add them to the mesh
         void generateNewCells();
 
+
     // Nested classes
+
         class refineEdgeHexCell
         {
             // Private data
@@ -201,7 +207,7 @@ class refineBoundaryLayers
                 //- number of cells in local direction i
                 label nLayersI_;
 
-                //- number of cells in locatiol direction j
+                //- number of cells in local direction j
                 label nLayersJ_;
 
                 //- container for new cells
@@ -219,10 +225,12 @@ class refineBoundaryLayers
                 FixedList<bool, 6> faceOrientation_;
 
                 //- points on cross-split faces
-                FixedList<DynList<DynList<label> >, 2> cellPoints_;
+                FixedList<DynList<DynList<label>>, 2> cellPoints_;
+
 
             // Private member functions
-                //- populate faceInDirection_nad wrongFaceOrientation_
+
+                //- populate faceInDirection_ and wrongFaceOrientation_
                 void determineFacesInDirections();
 
                 //- populate new cells with new faces generated from already
@@ -234,15 +242,16 @@ class refineBoundaryLayers
 
         public:
 
-            // Constructor
-                //- construct from cell label and the refineBoundaryLayers
-                refineEdgeHexCell
-                (
-                    const label cellI,
-                    const refineBoundaryLayers& ref
-                );
+            //- construct from cell label and the refineBoundaryLayers
+            refineEdgeHexCell
+            (
+                const label cellI,
+                const refineBoundaryLayers& ref
+            );
+
 
             // Public member functions
+
                 inline const DynList<DynList<DynList<label, 4>, 6>, 256>&
                 newCells() const
                 {
@@ -253,6 +262,7 @@ class refineBoundaryLayers
         class refineCornerHexCell
         {
             // Private data
+
                 //- label of cell
                 const label cellI_;
 
@@ -283,13 +293,15 @@ class refineBoundaryLayers
                 FixedList<bool, 6> faceOrientation_;
 
                 //- points on cross-split faces
-                FixedList<DynList<DynList<label> >, 6> facePoints_;
+                FixedList<DynList<DynList<label>>, 6> facePoints_;
 
                 //- points inside the cell
-                DynList<DynList<DynList<label> > > cellPoints_;
+                DynList<DynList<DynList<label>>> cellPoints_;
+
 
             // Private member functions
-                //- populate faceInDirection_nad wrongFaceOrientation_
+
+                //- populate faceInDirection_ and wrongFaceOrientation_
                 void determineFacesInDirections();
 
                 //- populate new cells with new faces generated from already
@@ -302,23 +314,26 @@ class refineBoundaryLayers
                 //- generate new internal faces and tore them to new cells
                 void generateMissingFaces();
 
+
         public:
 
-            // Constructor
-                //- construct from cell label and the refineBoundaryLayers
-                refineCornerHexCell
-                (
-                    const label cellI,
-                    const refineBoundaryLayers& ref
-                );
+            //- construct from cell label and the refineBoundaryLayers
+            refineCornerHexCell
+            (
+                const label cellI,
+                const refineBoundaryLayers& ref
+            );
+
 
             // Public member functions
+
                 inline const DynList<DynList<DynList<label, 4>, 6>, 256>&
                 newCells() const
                 {
                     return cellsFromCell_;
                 }
         };
+
 
     // Private member functions
 
@@ -328,19 +343,20 @@ class refineBoundaryLayers
         //- Disallow bitwise assignment
         void operator=(const refineBoundaryLayers&);
 
+
 public:
 
-    // Constructors
+    //- Construct from mesh reference
+    refineBoundaryLayers(polyMeshGen& mesh);
 
-        //- Construct from mesh reference
-        refineBoundaryLayers(polyMeshGen& mesh);
+    //- Destructor
+     ~refineBoundaryLayers();
 
-    // Destructor
-        ~refineBoundaryLayers();
 
     // Public member functions
 
         // Settings
+
         //- set no refinement flag
         void avoidRefinement();
 
@@ -395,21 +411,28 @@ public:
         //- layer smoother in order to leave the inside points intact
         void activateSpecialMode();
 
+
     // Worker
+
         //- performs refinement based on the given settings
         void refineLayers();
 
+
     // Post information
+
         //- provide the list of points in the boundary layer
         void pointsInBndLayer(labelLongList&);
 
         //- create a subset containing points in the boundary layer
         void pointsInBndLayer(const word subsetName="pointsInBndLayer");
 
+
     // Static member functions
+
         //- read the settings from dictionary
         static void readSettings(const dictionary&, refineBoundaryLayers&);
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

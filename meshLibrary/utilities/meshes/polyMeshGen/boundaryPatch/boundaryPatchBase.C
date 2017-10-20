@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,7 +41,7 @@ defineTemplateTypeNameAndDebugWithName
     "polyBoundaryMesh",
     0
 );
-    
+
 defineTypeNameAndDebug(boundaryPatchBase, 0);
 defineRunTimeSelectionTable(boundaryPatchBase, dictionary);
 
@@ -56,29 +54,29 @@ autoPtr<boundaryPatchBase> boundaryPatchBase::New
 )
 {
     word type(dict.lookup("type"));
-    //- check the type of processor. Allowed types are processor and patch
-    //- Other patch types are treated as ordinary patches
-    if( type != "processor" )
+    // check the type of processor. Allowed types are processor and patch
+    // Other patch types are treated as ordinary patches
+    if (type != "processor")
+    {
         type = "patch";
-    
+    }
+
     dictionaryConstructorTable::iterator cstrIter =
         dictionaryConstructorTablePtr_->find(type);
 
-    if( cstrIter == dictionaryConstructorTablePtr_->end() )
+    if (cstrIter == dictionaryConstructorTablePtr_->end())
     {
-        FatalIOErrorIn
-        (
-            "boundaryPatchBase::New(const word&, const dictionary&)",
-            dict
-        )   << "Unknown boundaryPatchBase type " << type << nl << nl
+        FatalIOErrorInFunction(dict)
+            << "Unknown boundaryPatchBase type " << type << nl << nl
             << "Valid boundaryPatchBase types are :" << nl
             << "[default: " << typeName_() << "]"
             << dictionaryConstructorTablePtr_->toc()
             << exit(FatalIOError);
     }
-    
+
     return autoPtr<boundaryPatchBase>(cstrIter()(name, dict));
 }
+
 
 autoPtr<boundaryPatchBase> boundaryPatchBase::New
 (
@@ -90,7 +88,8 @@ autoPtr<boundaryPatchBase> boundaryPatchBase::New
 
     return boundaryPatchBase::New(name, dict);
 }
-    
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 boundaryPatchBase::boundaryPatchBase
@@ -106,7 +105,8 @@ boundaryPatchBase::boundaryPatchBase
     nFaces_(nF),
     startFace_(sF)
 {}
-    
+
+
 boundaryPatchBase::boundaryPatchBase(const word& name, const dictionary& dict)
 :
     name_(name),
@@ -120,14 +120,16 @@ boundaryPatchBase::boundaryPatchBase(const word& name, const dictionary& dict)
     startFace_ = readLabel(dict.lookup("startFace"));
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Ostream& operator<<(Ostream& os, const boundaryPatchBase& wpb)
 {
     wpb.write(os);
-    os.check("Ostream& operator<<(Ostream& f, const boundaryPatchBase& wpb");
+    os.check(FUNCTION_NAME);
     return os;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

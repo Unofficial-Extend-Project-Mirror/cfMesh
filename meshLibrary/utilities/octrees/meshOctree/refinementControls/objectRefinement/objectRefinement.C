@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -31,7 +31,6 @@ License
 
 namespace Foam
 {
-
 defineTypeNameAndDebug(objectRefinement, 0);
 defineRunTimeSelectionTable(objectRefinement, dictionary);
 
@@ -45,6 +44,7 @@ objectRefinement::objectRefinement()
     refThickness_(0.0)
 {}
 
+
 objectRefinement::objectRefinement
 (
     const word& name,
@@ -56,39 +56,34 @@ objectRefinement::objectRefinement
     additionalRefLevel_(0),
     refThickness_(0.0)
 {
-    if( dict.found("cellSize") )
+    if (dict.found("cellSize"))
     {
         cellSize_ = readScalar(dict.lookup("cellSize"));
 
-        if( cellSize_ < 0.0 )
+        if (cellSize_ < 0.0)
         {
-            FatalErrorIn
-            (
-                "objectRefinement::objectRefinement"
-                "(const word&, const dictionary&)"
-            ) << "Specified cell size for object " << name_
-              << " is negative" << exit(FatalError);
+            FatalErrorInFunction
+                << "Specified cell size for object " << name_
+                << " is negative" << exit(FatalError);
         }
     }
-    else if( dict.found("additionalRefinementLevels") )
+    else if (dict.found("additionalRefinementLevels"))
     {
         additionalRefLevel_ =
             readLabel(dict.lookup("additionalRefinementLevels"));
 
-        if( additionalRefLevel_ < 0 )
+        if (additionalRefLevel_ < 0)
         {
-            FatalErrorIn
-            (
-                "objectRefinement::objectRefinement"
-                "(const word&, const dictionary&)"
-            ) << "Specified additionalRefinementLevel for object " << name_
-              << " is negative" << exit(FatalError);
+            FatalErrorInFunction
+                << "Specified additionalRefinementLevel for object " << name_
+                << " is negative" << exit(FatalError);
         }
     }
 
-    if( dict.found("refinementThickness") )
+    if (dict.found("refinementThickness"))
         refThickness_ = readScalar(dict.lookup("refinementThickness"));
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -105,9 +100,10 @@ Ostream& operator<<(Ostream& os, const objectRefinement& obr)
     return os;
 }
 
+
 void objectRefinement::calculateAdditionalRefLevels(const scalar globalCellSize)
 {
-    if( cellSize_ < 0.0 || additionalRefLevel_ != 0 )
+    if (cellSize_ < 0.0 || additionalRefLevel_ != 0)
         return;
 
     scalar s = globalCellSize;
@@ -117,7 +113,7 @@ void objectRefinement::calculateAdditionalRefLevels(const scalar globalCellSize)
     {
         nMarked = 0;
 
-        if( cellSize_ <= s * (1.+SMALL) )
+        if (cellSize_ <= s*(1.+SMALL))
         {
             ++nMarked;
             ++additionalRefLevel_;
@@ -125,9 +121,9 @@ void objectRefinement::calculateAdditionalRefLevels(const scalar globalCellSize)
 
         s /= 2.0;
 
-    } while( nMarked != 0 );
-
+    } while (nMarked != 0);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

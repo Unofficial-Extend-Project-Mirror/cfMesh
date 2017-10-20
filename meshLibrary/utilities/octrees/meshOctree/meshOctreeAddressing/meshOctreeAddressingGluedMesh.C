@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,20 +39,24 @@ namespace Foam
 
 void meshOctreeAddressing::checkGluedRegions()
 {
-    if( !useDATABoxes_ )
-        return;
-
-    if( meshDict_.found("checkForGluedMesh") )
+    if (!useDATABoxes_)
     {
-        if( !readBool(meshDict_.lookup("checkForGluedMesh")) )
+        return;
+    }
+
+    if (meshDict_.found("checkForGluedMesh"))
+    {
+        if (!readBool(meshDict_.lookup("checkForGluedMesh")))
+        {
             return;
+        }
     }
     else
     {
         return;
     }
 
-    Info << "Removing glued regions" << endl;
+    Info<< "Removing glued regions" << endl;
     const List<direction>& boxType = this->boxType();
     const VRWGraph& nodeLabels = this->nodeLabels();
     const List<direction>& nodeType = this->nodeType();
@@ -68,22 +70,25 @@ void meshOctreeAddressing::checkGluedRegions()
     labelLongList removeBox;
     forAll(boxType, leafI)
     {
-        if(
-            octree_.hasContainedTriangles(leafI) &&
-            (boxType[leafI] & MESHCELL)
+        if
+        (
+            octree_.hasContainedTriangles(leafI)
+         && (boxType[leafI] & MESHCELL)
         )
         {
-            //- mark the initial INNERNODE
+            // mark the initial INNERNODE
             labelHashSet innerNodes;
             forAllRow(nodeLabels, leafI, nodeI)
-                if( nodeType[nodeLabels(leafI, nodeI)] & INNERNODE )
+            {
+                if (nodeType[nodeLabels(leafI, nodeI)] & INNERNODE)
                 {
                     innerNodes.insert(nodeLabels(leafI, nodeI));
                     break;
                 }
+            }
 
-            //- mark all INNERNODEs for which it is possible to walk along
-            //- cubes edges without crossing any boundary
+            // mark all INNERNODEs for which it is possible to walk along
+            // cubes edges without crossing any boundary
             bool finished;
             do
             {
@@ -96,32 +101,40 @@ void meshOctreeAddressing::checkGluedRegions()
                     const label s = edg[0];
                     const label e = edg[1];
 
-                    if(
+                    if
+                    (
                         (nodeType[s] & INNERNODE) && (nodeType[e] & INNERNODE)
-                        && (innerNodes.found(s) ^ innerNodes.found(e))
+                     && (innerNodes.found(s) ^ innerNodes.found(e))
                     )
                     {
                         bool foundInside(false);
                         forAllRow(edgeLeaves, edgeI, elI)
                         {
                             const label ecLabel = edgeLeaves(edgeI, elI);
-                            if( ecLabel < 0 )
+                            if (ecLabel < 0)
+                            {
                                 continue;
-                            if( octree_.hasContainedTriangles(ecLabel) )
+                            }
+                            if (octree_.hasContainedTriangles(ecLabel))
+                            {
                                 continue;
-                            if(
+                            }
+                            if
+                            (
                                 !(
-                                    octree_.returnLeaf(ecLabel).cubeType() &
-                                    meshOctreeCubeBasic::INSIDE
+                                    octree_.returnLeaf(ecLabel).cubeType()
+                                  & meshOctreeCubeBasic::INSIDE
                                 )
                             )
+                            {
                                 continue;
+                            }
 
                             foundInside = true;
                             break;
                         }
 
-                        if( foundInside )
+                        if (foundInside)
                         {
                             innerNodes.insert(s);
                             innerNodes.insert(e);
@@ -130,19 +143,21 @@ void meshOctreeAddressing::checkGluedRegions()
                     }
                 }
 
-            } while( !finished );
+            } while (!finished);
 
             labelHashSet permissibleNeighbours;
             forAllConstIter(labelHashSet, innerNodes, it)
             {
                 const label nodeI = it.key();
                 forAllRow(nodeLeaves, nodeI, nlI)
+                {
                     permissibleNeighbours.insert(nodeLeaves(nodeI, nlI));
+                }
             }
 
-            if( permissibleNeighbours.size() )
+            if (permissibleNeighbours.size())
             {
-                for(label i=0;i<6;++i)
+                for (label i = 0; i < 6; ++i)
                 {
                     neighbours.clear();
                     octree_.findNeighboursInDirection(leafI, i, neighbours);
@@ -150,11 +165,15 @@ void meshOctreeAddressing::checkGluedRegions()
                     forAll(neighbours, neiI)
                     {
                         const label nei = neighbours[neiI];
-                        if( nei < 0 )
+                        if (nei < 0)
+                        {
                             continue;
-                        if( !(boxType[nei] & MESHCELL) )
+                        }
+                        if (!(boxType[nei] & MESHCELL))
+                        {
                             continue;
-                        if( !permissibleNeighbours.found(nei) )
+                        }
+                        if (!permissibleNeighbours.found(nei))
                         {
                             removeBox.append(leafI);
                             break;
@@ -170,9 +189,11 @@ void meshOctreeAddressing::checkGluedRegions()
     }
 
     forAll(removeBox, i)
+    {
         (*boxTypePtr_)[removeBox[i]] = BOUNDARY;
+    }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         LongList<meshOctreeCubeCoordinates> checkBoundary;
         forAll(removeBox, i)
@@ -192,14 +213,18 @@ void meshOctreeAddressing::checkGluedRegions()
         {
             const label cLabel =
                 octree_.findLeafLabelForPosition(receivedBoundary[i]);
-            if( cLabel < 0 )
+
+            if (cLabel < 0)
+            {
                 continue;
+            }
             (*boxTypePtr_)[cLabel] = BOUNDARY;
         }
     }
 
-    Info << "Finished removing glued regions" << endl;
+    Info<< "Finished removing glued regions" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

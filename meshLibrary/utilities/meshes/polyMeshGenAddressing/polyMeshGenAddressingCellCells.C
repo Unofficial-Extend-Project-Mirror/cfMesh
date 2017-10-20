@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -39,9 +39,9 @@ namespace Foam
 
 void polyMeshGenAddressing::calcCellCells() const
 {
-    if( ccPtr_ )
+    if (ccPtr_)
     {
-        FatalErrorIn("polyMeshGenAddressing::calcCellCells() const")
+        FatalErrorInFunction
             << "cellCells already calculated"
             << abort(FatalError);
     }
@@ -52,14 +52,14 @@ void polyMeshGenAddressing::calcCellCells() const
         const labelList& own = mesh_.owner();
         const labelList& nei = mesh_.neighbour();
 
-        //- create the storage
+        // create the storage
         ccPtr_ = new VRWGraph();
         VRWGraph& cellCellAddr = *ccPtr_;
 
         labelList nNei(cells.size());
 
         # ifdef USE_OMP
-        const label nThreads = 3 * omp_get_num_procs();
+        const label nThreads = 3*omp_get_num_procs();
         # endif
 
         # ifdef USE_OMP
@@ -70,7 +70,9 @@ void polyMeshGenAddressing::calcCellCells() const
             # pragma omp for schedule(static)
             # endif
             forAll(nNei, i)
+            {
                 nNei[i] = 0;
+            }
 
             # ifdef USE_OMP
             # pragma omp for schedule(static)
@@ -84,11 +86,15 @@ void polyMeshGenAddressing::calcCellCells() const
                 forAll(c, fI)
                 {
                     label neiCell = own[c[fI]];
-                    if( (neiCell == cellI) && (nei[c[fI]] != -1) )
+                    if ((neiCell == cellI) && (nei[c[fI]] != -1))
+                    {
                         neiCell = nei[c[fI]];
+                    }
 
-                    if( neiCell != cellI )
+                    if (neiCell != cellI)
+                    {
                         neiCells.appendIfNotIn(neiCell);
+                    }
                 }
 
                 nNei[cellI] = neiCells.size();
@@ -104,7 +110,7 @@ void polyMeshGenAddressing::calcCellCells() const
             # ifdef USE_OMP
             # pragma omp barrier
 
-            //- fill the graph with data
+            // fill the graph with data
             # pragma omp for schedule(static)
             # endif
             forAll(cells, cellI)
@@ -116,11 +122,15 @@ void polyMeshGenAddressing::calcCellCells() const
                 forAll(c, fI)
                 {
                     label neiCell = own[c[fI]];
-                    if( (neiCell == cellI) && (nei[c[fI]] != -1) )
+                    if ((neiCell == cellI) && (nei[c[fI]] != -1))
+                    {
                         neiCell = nei[c[fI]];
+                    }
 
-                    if( neiCell != cellI )
+                    if (neiCell != cellI)
+                    {
                         neiCells.appendIfNotIn(neiCell);
+                    }
                 }
 
                 cellCellAddr.setRow(cellI, neiCells);
@@ -129,19 +139,20 @@ void polyMeshGenAddressing::calcCellCells() const
     }
 }
 
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 const VRWGraph& polyMeshGenAddressing::cellCells() const
 {
-    if( !ccPtr_ )
+    if (!ccPtr_)
     {
         # ifdef USE_OMP
-        if( omp_in_parallel() )
-            FatalErrorIn
-            (
-                "const VRWGraph& polyMeshGenAddressing::cellCells() const"
-            ) << "Calculating addressing inside a parallel region."
+        if (omp_in_parallel())
+        {
+            FatalErrorInFunction
+                << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
+        }
         # endif
 
         calcCellCells();
@@ -149,6 +160,7 @@ const VRWGraph& polyMeshGenAddressing::cellCells() const
 
     return *ccPtr_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

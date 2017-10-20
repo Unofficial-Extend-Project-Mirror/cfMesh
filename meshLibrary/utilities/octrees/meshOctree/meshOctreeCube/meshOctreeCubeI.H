@@ -6,23 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
-
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,12 +35,13 @@ namespace Foam
 inline meshOctreeCube::meshOctreeCube()
 :
     meshOctreeCubeBasic(),
-    activeSlotPtr_(NULL),
-    subCubesPtr_(NULL),
+    activeSlotPtr_(nullptr),
+    subCubesPtr_(nullptr),
     cubeLabel_(-1),
     containedElementsLabel_(-1),
     containedEdgesLabel_(-1)
 {}
+
 
 inline meshOctreeCube::meshOctreeCube(const meshOctreeCube& moc)
 :
@@ -55,54 +53,69 @@ inline meshOctreeCube::meshOctreeCube(const meshOctreeCube& moc)
     containedEdgesLabel_(moc.containedEdgesLabel_)
 {}
 
+
 inline const meshOctreeSlot* meshOctreeCube::slotPtr() const
 {
     return activeSlotPtr_;
 }
 
+
 inline bool meshOctreeCube::isLeaf() const
 {
-    if( !subCubesPtr_ )
+    if (!subCubesPtr_)
+    {
         return true;
+    }
 
     return false;
 }
+
 
 inline meshOctreeCube* meshOctreeCube::subCube(const label scI) const
 {
     return subCubesPtr_[scI];
 }
 
+
 inline label meshOctreeCube::cubeLabel() const
 {
     return cubeLabel_;
 }
 
+
 inline bool meshOctreeCube::hasContainedElements() const
 {
-    if( containedElementsLabel_ == -1 )
+    if (containedElementsLabel_ == -1)
+    {
         return false;
+    }
 
     return true;
 }
+
 
 inline label meshOctreeCube::containedElements() const
 {
     return containedElementsLabel_;
 }
 
+
 inline bool meshOctreeCube::hasContainedEdges() const
 {
-    if( containedEdgesLabel_ == -1 )
-        return false;;
+    if (containedEdgesLabel_ == -1)
+    {
+        return false;
+    }
 
     return true;
 }
+
 
 inline label meshOctreeCube::containedEdges() const
 {
     return containedEdgesLabel_;
 }
+
 
 inline void meshOctreeCube::operator=(const meshOctreeCube& moc)
 {
@@ -113,6 +126,7 @@ inline void meshOctreeCube::operator=(const meshOctreeCube& moc)
     containedElementsLabel_ = moc.containedElementsLabel_;
     containedEdgesLabel_ = moc.containedEdgesLabel_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,6 +62,7 @@ public:
         size_(mse.boundaryFaces().size())
     {}
 
+
     label size() const
     {
         return size_;
@@ -86,38 +85,46 @@ public:
         {
             const label edgeI = faceEdges(bfI, feI);
 
-            if( edgeFaces.sizeOfRow(edgeI) == 2 )
+            if (edgeFaces.sizeOfRow(edgeI) == 2)
             {
                 label nei = edgeFaces(edgeI, 0);
 
-                if( nei == bfI )
+                if (nei == bfI)
+                {
                     nei = edgeFaces(edgeI, 1);
+                }
 
-                //- faces must not be part of the same cell
-                if( faceOwner[nei] == cellI )
+                // faces must not be part of the same cell
+                if (faceOwner[nei] == cellI)
+                {
                     continue;
+                }
 
-                //- owner cell of the other face must
-                //- have cellI as its neighbour
+                // owner cell of the other face must
+                // have cellI as its neighbour
                 const cell& neiC = cells[faceOwner[nei]];
                 bool sharedFace(false);
                 forAll(c, fI)
                 {
                     forAll(neiC, fJ)
                     {
-                        if( c[fI] == neiC[fJ] )
+                        if (c[fI] == neiC[fJ])
                         {
                             sharedFace = true;
                             break;
                         }
                     }
 
-                    if( sharedFace )
+                    if (sharedFace)
+                    {
                         break;
+                    }
                 }
 
-                if( sharedFace )
+                if (sharedFace)
+                {
                     neighbourFaces.append(nei);
+                }
             }
         }
     }
@@ -125,7 +132,7 @@ public:
     template<class labelListType>
     void collectGroups
     (
-        std::map<label, DynList<label> >& neiGroups,
+        std::map<label, DynList<label>>& neiGroups,
         const labelListType& elementInGroup,
         const DynList<label>& localGroupLabel
     ) const
@@ -141,17 +148,19 @@ public:
         const Map<label>& globalToLocal =
             mse_.globalToLocalBndEdgeAddressing();
 
-        std::map<label, LongList<labelPair> > exchangeData;
+        std::map<label, LongList<labelPair>> exchangeData;
         forAll(mse_.beNeiProcs(), procI)
+        {
             exchangeData[mse_.beNeiProcs()[procI]].clear();
+        }
 
         forAllConstIter(Map<label>, globalToLocal, it)
         {
             const label beI = it();
 
-            //- combine data if the cell attached to this face has a face
-            //- attached to the inter-processor boundary
-            //- this must hold for boundary layer cells
+            // combine data if the cell attached to this face has a face
+            // attached to the inter-processor boundary
+            // this must hold for boundary layer cells
             const cell& c = cells[faceOwner[edgeFaces(beI, 0)]];
 
             bool validCell(false);
@@ -174,17 +183,23 @@ public:
                     }
                 }
 
-                if( validCell )
+                if (validCell)
+                {
                     break;
+                }
             }
 
-            if( !validCell )
+            if (!validCell)
+            {
                 continue;
+            }
 
             const label groupI = elementInGroup[edgeFaces(beI, 0)];
 
-            if( groupI < 0 )
+            if (groupI < 0)
+            {
                 continue;
+            }
 
             const label lgI = localGroupLabel[groupI];
             exchangeData[otherProc[beI]].append(labelPair(it.key(), lgI));
@@ -201,9 +216,9 @@ public:
 
             const cell& c = cells[faceOwner[edgeFaces(beI, 0)]];
 
-            //- combine data if the cell attached to this face has a face
-            //- attached to the inter-processor boundary
-            //- this must hold for boundary layer cells
+            // combine data if the cell attached to this face has a face
+            // attached to the inter-processor boundary
+            // this must hold for boundary layer cells
             bool validCell(false);
             forAll(c, fI)
             {
@@ -224,25 +239,32 @@ public:
                     }
                 }
 
-                if( validCell )
+                if (validCell)
+                {
                     break;
+                }
             }
 
-            if( !validCell )
+            if (!validCell)
+            {
                 continue;
+            }
 
             const label groupI = elementInGroup[edgeFaces(beI, 0)];
 
-            if( groupI < 0 )
+            if (groupI < 0)
+            {
                 continue;
+            }
 
             DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
 
-            //- store the connection over the inter-processor boundary
+            // store the connection over the inter-processor boundary
             ng.appendIfNotIn(lp.second());
         }
     }
 };
+
 
 class meshBndLayerSelectorOperator
 {
@@ -254,6 +276,7 @@ public:
     :
         mse_(mse)
     {}
+
 
     bool operator()(const label bfI) const
     {
@@ -268,63 +291,77 @@ public:
         label nBndFaces(0), baseFace(-1), otherBase(-1), nQuads(0);
         forAll(c, fI)
         {
-            if( faces[c[fI]].size() == 4 )
+            if (faces[c[fI]].size() == 4)
+            {
                 ++nQuads;
+            }
 
-            if( (c[fI] - start) == bfI )
+            if ((c[fI] - start) == bfI)
             {
                 baseFace = fI;
                 ++nBndFaces;
             }
         }
 
-        if( nQuads == 6 )
+        if (nQuads == 6)
         {
-            //- cell is a hex
+            // cell is a hex
             return true;
         }
 
-        if( (nQuads + 2) != c.size() )
+        if ((nQuads + 2) != c.size())
+        {
             return false;
+        }
 
-        if( nBndFaces != 1 )
+        if (nBndFaces != 1)
+        {
             return false;
+        }
 
         label nQuadsAttachedToBaseFace(0);
         forAll(c, fI)
         {
-            if( fI == baseFace )
+            if (fI == baseFace)
+            {
                 continue;
+            }
 
             const bool sEdge =
                 help::shareAnEdge(faces[c[baseFace]], faces[c[fI]]);
 
-            if( (faces[c[fI]].size() == 4) && sEdge )
+            if ((faces[c[fI]].size() == 4) && sEdge)
             {
                 ++nQuadsAttachedToBaseFace;
             }
-            else if( !sEdge )
+            else if (!sEdge)
             {
-                if( otherBase != -1 )
+                if (otherBase != -1)
+                {
                     return false;
+                }
 
                 otherBase = fI;
             }
         }
 
-        if(
-            (nQuads == 6) ||
-            (
+        if
+        (
+            (nQuads == 6)
+         || (
                 ((nQuadsAttachedToBaseFace + 2) == c.size()) &&
                 otherBase != -1 &&
                 !help::shareAnEdge(faces[c[baseFace]], faces[c[otherBase]])
             )
         )
+        {
             return true;
+        }
 
         return false;
     }
 };
+
 
 } // End namespace bndLayerOps
 
@@ -332,20 +369,20 @@ public:
 
 void detectBoundaryLayers::analyseLayers()
 {
-    Info << "Analysing mesh for bnd layer existence" << endl;
+    Info<< "Analysing mesh for bnd layer existence" << endl;
 
     const meshSurfaceEngine& mse = meshSurface_.surfaceEngine();
     const polyMeshGen& mesh = mse.mesh();
     const PtrList<boundaryPatch>& boundaries = mesh.boundaries();
 
-    //- allocate data needed in parallel loops
+    // allocate data needed in parallel loops
     mse.faceOwners();
     mse.faceEdges();
     mse.edgeFaces();
     mse.edges();
     mse.boundaryPointEdges();
 
-    //- find layers in patch
+    // find layers in patch
     nFirstLayers_ =
         help::groupMarking
         (
@@ -358,13 +395,17 @@ void detectBoundaryLayers::analyseLayers()
     labelList layerSubsetId(nFirstLayers_);
     polyMeshGen& pmg = const_cast<polyMeshGen&>(mesh);
     forAll(layerSubsetId, i)
+    {
         layerSubsetId[i] = pmg.addCellSubset("bndLayer"+help::scalarToText(i));
+    }
 
 
     forAll(layerAtBndFace_, bfI)
     {
-        if( layerAtBndFace_[bfI] < 0 )
+        if (layerAtBndFace_[bfI] < 0)
+        {
             continue;
+        }
 
         pmg.addCellToSubset
         (
@@ -374,7 +415,7 @@ void detectBoundaryLayers::analyseLayers()
     }
     # endif
 
-    if( is2DMesh_ )
+    if (is2DMesh_)
     {
         polyMeshGen2DEngine mesh2DEngine(mse.mesh());
         const boolList& zMinPoint = mesh2DEngine.zMinPoints();
@@ -392,19 +433,25 @@ void detectBoundaryLayers::analyseLayers()
             bool allZMin(true), allZMax(true);
             forAll(bf, pI)
             {
-                if( !zMinPoint[bf[pI]] )
+                if (!zMinPoint[bf[pI]])
+                {
                     allZMin = false;
-                if( !zMaxPoint[bf[pI]] )
+                }
+                if (!zMaxPoint[bf[pI]])
+                {
                     allZMax = false;
+                }
             }
 
-            if( allZMax ^ allZMin )
+            if (allZMax ^ allZMin)
+            {
                 layerAtBndFace_[bfI] = -1;
+            }
         }
     }
 
-    //- check the number of layer found at a patch
-    typedef std::map<label, DynList<label> > patchToLayerType;
+    // check the number of layer found at a patch
+    typedef std::map<label, DynList<label>> patchToLayerType;
     patchToLayerType patchToLayer;
 
     const labelList& facePatch = meshSurface_.boundaryFacePatches();
@@ -414,14 +461,16 @@ void detectBoundaryLayers::analyseLayers()
         patchToLayer[facePatch[bfI]].appendIfNotIn(layerAtBndFace_[bfI]);
     }
 
-    //- all faces of a patch must be in the same layer
+    // all faces of a patch must be in the same layer
     layerAtPatch_.setSize(boundaries.size());
     forAll(layerAtPatch_, i)
+    {
         layerAtPatch_[i].clear();
+    }
 
     for
     (
-        patchToLayerType::const_iterator it=patchToLayer.begin();
+        patchToLayerType::const_iterator it = patchToLayer.begin();
         it!=patchToLayer.end();
         ++it
     )
@@ -430,7 +479,7 @@ void detectBoundaryLayers::analyseLayers()
 
         forAll(layersAtPatch, i)
         {
-            if( layersAtPatch[i] < 0 )
+            if (layersAtPatch[i] < 0)
             {
                 layerAtPatch_[it->first].clear();
                 break;
@@ -442,20 +491,27 @@ void detectBoundaryLayers::analyseLayers()
         }
     }
 
-    //- set the layer ID to -1 for all faces where the patch is set to -1
+    // set the layer ID to -1 for all faces where the patch is set to -1
     forAll(facePatch, bfI)
     {
-        if( layerAtPatch_[facePatch[bfI]].size() == 0 )
+        if (layerAtPatch_[facePatch[bfI]].size() == 0)
+        {
             layerAtBndFace_[bfI] = -1;
+        }
     }
 
     # ifdef DEBUGLayer
-    Info << "Layer at patch " << layerAtPatch_ << endl;
+    Info<< "Layer at patch " << layerAtPatch_ << endl;
     forAll(layerAtBndFace_, bfI)
-        if( layerAtBndFace_[bfI] < 0 )
-            Info << "0.2 No layer at boundary face " << bfI << endl;
+    {
+        if (layerAtBndFace_[bfI] < 0)
+        {
+            Info<< "0.2 No layer at boundary face " << bfI << endl;
+        }
+    }
     # endif
 }
+
 
 bool detectBoundaryLayers::findHairsForFace
 (
@@ -473,7 +529,7 @@ bool detectBoundaryLayers::findHairsForFace
     const faceListPMG& faces = mesh.faces();
     const cell& c = mesh.cells()[faceOwner[bfI]];
 
-    //- check cell topology
+    // check cell topology
     DynList<edge, 48> edges;
     DynList<DynList<label, 2>, 48> edgeFaces;
     DynList<DynList<label, 10>, 24> faceEdges;
@@ -481,7 +537,7 @@ bool detectBoundaryLayers::findHairsForFace
     label baseFace(-1);
     forAll(c, fI)
     {
-        if( c[fI] - nInternalFaces == bfI )
+        if (c[fI] - nInternalFaces == bfI)
         {
             baseFace = fI;
         }
@@ -495,11 +551,11 @@ bool detectBoundaryLayers::findHairsForFace
 
             label pos = edges.containsAtPosition(e);
 
-            if( pos < 0 )
+            if (pos < 0)
             {
                 pos = edges.size();
                 edges.append(e);
-                edgeFaces.setSize(pos+1);
+                edgeFaces.setSize(pos + 1);
             }
 
             edgeFaces[pos].append(fI);
@@ -507,12 +563,14 @@ bool detectBoundaryLayers::findHairsForFace
         }
     }
 
-    //- check does the base face exist and is the number of faces
-    //- in the cell corresponding to a prism cell
-    if( (baseFace < 0) || ((c.size() - faces[c[baseFace]].size()) != 2) )
+    // check does the base face exist and is the number of faces
+    // in the cell corresponding to a prism cell
+    if ((baseFace < 0) || ((c.size() - faces[c[baseFace]].size()) != 2))
+    {
         return false;
+    }
 
-    //- check if all faces attached to the base face are quads
+    // check if all faces attached to the base face are quads
     bool isPrism(true);
 
     const face& bf = faces[c[baseFace]];
@@ -523,38 +581,48 @@ bool detectBoundaryLayers::findHairsForFace
         const label nextEdge = faceEdges[baseFace][pI];
         const label prevEdge = faceEdges[baseFace][bf.rcIndex(pI)];
 
-        if( edgeFaces[nextEdge].size() != 2 || edgeFaces[prevEdge].size() != 2 )
+        if (edgeFaces[nextEdge].size() != 2 || edgeFaces[prevEdge].size() != 2)
         {
             isPrism = false;
             break;
         }
 
-        //- find the face attached to the edge after the current point
+        // find the face attached to the edge after the current point
         label otherNextFace = edgeFaces[nextEdge][0];
-        if( otherNextFace == baseFace )
+        if (otherNextFace == baseFace)
+        {
             otherNextFace = edgeFaces[nextEdge][1];
+        }
 
-        //- find the face attached to the edge before the current point
+        // find the face attached to the edge before the current point
         label otherPrevFace = edgeFaces[prevEdge][0];
-        if( otherPrevFace == baseFace )
+        if (otherPrevFace == baseFace)
+        {
             otherPrevFace = edgeFaces[prevEdge][1];
+        }
 
         label commonEdge;
-        for(commonEdge=0;commonEdge<edges.size();++commonEdge)
-            if(
+        for (commonEdge = 0; commonEdge < edges.size(); ++commonEdge)
+        {
+            if
+            (
                 edgeFaces[commonEdge].contains(otherNextFace) &&
                 edgeFaces[commonEdge].contains(otherPrevFace)
             )
+            {
                 break;
+            }
+        }
 
-        if( commonEdge == edges.size() )
+
+        if (commonEdge == edges.size())
         {
             isPrism = false;
             break;
         }
 
-        //- there exists a common edge which shall be used as a hair
-        if( edges[commonEdge].start() == bf[pI] )
+        // there exists a common edge which shall be used as a hair
+        if (edges[commonEdge].start() == bf[pI])
         {
             hairEdges[pI] = edges[commonEdge];
         }
@@ -566,6 +634,7 @@ bool detectBoundaryLayers::findHairsForFace
 
     return isPrism;
 }
+
 
 void detectBoundaryLayers::generateHairEdges()
 {
@@ -579,7 +648,7 @@ void detectBoundaryLayers::generateHairEdges()
     const labelList& bp = mse.bp();
 
     # ifdef USE_OMP
-    # pragma omp parallel if( bFaces.size() > 1000 )
+    # pragma omp parallel if (bFaces.size() > 1000)
     # endif
     {
         edgeLongList localEdges;
@@ -589,53 +658,59 @@ void detectBoundaryLayers::generateHairEdges()
         # endif
         forAll(bFaces, bfI)
         {
-            if( layerAtBndFace_[bfI] < 0 )
+            if (layerAtBndFace_[bfI] < 0)
+            {
                 continue;
+            }
 
-            //- find hair edges for this face
+            // find hair edges for this face
             DynList<edge> hairEdges;
-            if( !findHairsForFace(bfI, hairEdges) )
+            if (!findHairsForFace(bfI, hairEdges))
+            {
                 continue;
+            }
 
             const face& bf = bFaces[bfI];
 
             forAll(bf, pI)
             {
-                //- store hair edges in a list
+                // store hair edges in a list
                 const edge& he = hairEdges[pI];
 
-                if( he.start() != bf[pI] )
-                    FatalErrorIn
-                    (
-                        "void detectBoundaryLayers::generateHairEdges()"
-                    ) << "Wrong starting point" << abort(FatalError);
+                if (he.start() != bf[pI])
+                {
+                    FatalErrorInFunction
+                        << "Wrong starting point" << abort(FatalError);
+                }
 
                 localEdges.append(he);
             }
         }
 
         # ifdef USE_OMP
-        //- find the starting element for this thread
+        // find the starting element for this thread
         label startEl;
         # pragma omp critical
         {
             startEl = hairEdges_.size();
 
-            hairEdges_.setSize(startEl+localEdges.size());
+            hairEdges_.setSize(startEl + localEdges.size());
         }
 
         # pragma omp barrier
 
-        //- copy the local data to splitEdges_
+        // copy the local data to splitEdges_
         forAll(localEdges, i)
+        {
             hairEdges_[startEl++] = localEdges[i];
+        }
         # else
-        //- just transfer the data to splitEdges_
+        // just transfer the data to splitEdges_
         hairEdges_.transfer(localEdges);
         # endif
     }
 
-    //- filter out duplicate edges
+    // filter out duplicate edges
     VRWGraph pHairEdges;
     pHairEdges.reverseAddressing(hairEdges_);
 
@@ -650,13 +725,20 @@ void detectBoundaryLayers::generateHairEdges()
             const label heI = pHairEdges(pointI, pheI);
             const edge& he = hairEdges_[heI];
 
-            for(label pheJ=pheI+1;pheJ<pHairEdges.sizeOfRow(pointI);++pheJ)
+            for
+            (
+                label pheJ = pheI + 1;
+                pheJ < pHairEdges.sizeOfRow(pointI);
+                ++pheJ
+            )
             {
                 const label heJ = pHairEdges(pointI, pheJ);
                 const edge& nhe = hairEdges_[heJ];
 
-                if( he == nhe )
+                if (he == nhe)
+                {
                     duplicateEdge[heJ] = true;
+                }
             }
         }
     }
@@ -664,9 +746,9 @@ void detectBoundaryLayers::generateHairEdges()
     label counter(0);
     forAll(hairEdges_, heI)
     {
-        if( !duplicateEdge[heI] )
+        if (!duplicateEdge[heI])
         {
-            if( heI > counter )
+            if (heI > counter)
             {
                 hairEdges_[counter++] = hairEdges_[heI];
             }
@@ -679,7 +761,7 @@ void detectBoundaryLayers::generateHairEdges()
 
     hairEdges_.setSize(counter);
 
-    //- create point to split edges addressing
+    // create point to split edges addressing
     hairEdgesAtBoundaryPoint_.setSize(pFaces.size());
 
     forAll(hairEdges_, heI)
@@ -688,6 +770,7 @@ void detectBoundaryLayers::generateHairEdges()
         hairEdgesAtBoundaryPoint_.append(bp[he.start()], heI);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,17 +41,19 @@ Description
 namespace Foam
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Private member functions
+// * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
 void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 {
     meshOctreeModifier octreeModifier(octree_);
-    if( octreeModifier.isRootInitialisedAccess() )
-        return;
-    if( !meshDictPtr_ )
+    if (octreeModifier.isRootInitialisedAccess())
     {
-        WarningIn("void meshOctreeCreator::setRootCubeSizeAndRefParameters()")
+        return;
+    }
+
+    if (!meshDictPtr_)
+    {
+        WarningInFunction
             << "meshDict is not available" << endl;
         return;
     }
@@ -64,19 +64,23 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         readScalar(meshDictPtr_->lookup("maxCellSize"))
     );
 
-    octreeModifier.searchRangeAccess() = 0.25 * maxSize;
+    octreeModifier.searchRangeAccess() = 0.25*maxSize;
 
     const triSurf& surface = octree_.surface();
     boundBox& rootBox = octreeModifier.rootBoxAccess();
     const point c = (rootBox.max() + rootBox.min()) / 2.0;
 
     scalar size = rootBox.max().x() - rootBox.min().x();
-    if( (rootBox.max().y() - rootBox.min().y()) > size )
+    if ((rootBox.max().y() - rootBox.min().y()) > size)
+    {
         size = rootBox.max().y() - rootBox.min().y();
-    if( (rootBox.max().z() - rootBox.min().z()) > size )
+    }
+    if ((rootBox.max().z() - rootBox.min().z()) > size)
+    {
         size = rootBox.max().z() - rootBox.min().z();
+    }
 
-    size += 0.5 * maxSize;
+    size += 0.5*maxSize;
 
     globalRefLevel_ = 0;
     bool finished;
@@ -84,12 +88,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
     {
         finished = false;
 
-        const scalar lSize = size / Foam::pow(2, label(globalRefLevel_));
+        const scalar lSize = size/Foam::pow(2, label(globalRefLevel_));
 
-        if( lSize < (maxSize * (1.0-SMALL)) )
+        if (lSize <(maxSize*(1.0 - SMALL)))
         {
             const scalar bbSize =
-                0.5 * maxSize * Foam::pow(2, label(globalRefLevel_));
+                0.5*maxSize*Foam::pow(2, label(globalRefLevel_));
             rootBox.max() = c + point(bbSize, bbSize, bbSize);
             rootBox.min() = c - point(bbSize, bbSize, bbSize);
             finished = true;
@@ -98,29 +102,31 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             ++globalRefLevel_;
         }
-    } while( !finished );
+    } while (!finished);
 
-    //- exchange data
-    if( Pstream::parRun() )
+    // exchange data
+    if (Pstream::parRun())
     {
         label l = globalRefLevel_;
         reduce(l, maxOp<label>());
         globalRefLevel_ = l;
     }
 
-    Info << "Root box " << rootBox << endl;
-    Info << "Requested cell size corresponds to octree level "
+    Info<< "Root box " << rootBox << endl;
+    Info<< "Requested cell size corresponds to octree level "
         << label(globalRefLevel_) << endl;
 
     octreeModifier.isRootInitialisedAccess() = true;
 
     //surfRefLevel_ = globalRefLevel_;
     forAll(surfRefLevel_, triI)
+    {
         surfRefLevel_[triI].append(std::make_pair(globalRefLevel_, 0.0));
+    }
 
-    //- set other refinement parameters
-    //- set boundary ref level
-    if( meshDictPtr_->found("boundaryCellSize") )
+    // set other refinement parameters
+    // set boundary ref level
+    if (meshDictPtr_->found("boundaryCellSize"))
     {
         direction boundaryRefLevel_ = globalRefLevel_;
         scalar cs(readScalar(meshDictPtr_->lookup("boundaryCellSize")));
@@ -133,9 +139,9 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             finished = false;
 
-            const scalar lSize = maxSize / Foam::pow(2, addLevel);
+            const scalar lSize = maxSize/Foam::pow(2, addLevel);
 
-            if( lSize <= cs )
+            if (lSize <= cs)
             {
                 finished = true;
             }
@@ -143,23 +149,23 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 ++addLevel;
             }
-        } while( !finished );
+        } while (!finished);
 
         boundaryRefLevel_ += addLevel;
 
-        //- exchange data
-        if( Pstream::parRun() )
+        // exchange data
+        if (Pstream::parRun())
         {
             label l = boundaryRefLevel_;
             reduce(l, maxOp<label>());
             boundaryRefLevel_ = l;
         }
 
-        Info << "Requested boundary cell size corresponds to octree level "
+        Info<< "Requested boundary cell size corresponds to octree level "
             << label(boundaryRefLevel_) << endl;
 
         scalar thickness(0.0);
-        if( meshDictPtr_->found("boundaryCellSizeRefinementThickness") )
+        if (meshDictPtr_->found("boundaryCellSizeRefinementThickness"))
         {
             const scalar s =
                 readScalar
@@ -170,16 +176,18 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         }
 
         forAll(surfRefLevel_, triI)
+        {
             surfRefLevel_[triI][0] =
                 std::make_pair(boundaryRefLevel_, thickness);
+        }
     }
 
-    //- set patch-wise ref levels
-    if( meshDictPtr_->found("patchCellSize") )
+    // set patch-wise ref levels
+    if (meshDictPtr_->found("patchCellSize"))
     {
         patchRefinementList refPatches;
 
-        if( meshDictPtr_->isDict("patchCellSize") )
+        if (meshDictPtr_->isDict("patchCellSize"))
         {
             const dictionary& dict = meshDictPtr_->subDict("patchCellSize");
             const wordList patchNames = dict.toc();
@@ -192,8 +200,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
             forAll(patchNames, patchI)
             {
-                if( !dict.isDict(patchNames[patchI]) )
+                if (!dict.isDict(patchNames[patchI]))
+                {
                     continue;
+                }
 
                 const dictionary& patchDict = dict.subDict(patchNames[patchI]);
                 const scalar cs = readScalar(patchDict.lookup("cellSize"));
@@ -219,8 +229,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             const label regionI = refPatches[patchI].patchInSurface(surface);
 
-            if( regionI < 0 )
+            if (regionI < 0)
+            {
                 continue;
+            }
 
             scalar cs = refPatches[patchI].cellSize();
             cs *= (scalingFactor_ + SMALL);
@@ -230,9 +242,9 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 finished = false;
 
-                const scalar lSize = maxSize / Foam::pow(2, addLevel);
+                const scalar lSize = maxSize/Foam::pow(2, addLevel);
 
-                if( lSize <= cs )
+                if (lSize <= cs)
                 {
                     finished = true;
                 }
@@ -240,27 +252,31 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 {
                     ++addLevel;
                 }
-            } while( !finished );
+            } while (!finished);
 
-            if( Pstream::parRun() )
+            if (Pstream::parRun())
+            {
                 reduce(addLevel, maxOp<label>());
+            }
 
             const direction level = globalRefLevel_ + addLevel;
 
             std::pair<direction, scalar> pp(level, 0.0);
             forAll(surface, triI)
             {
-                if( surface[triI].region() == regionI )
+                if (surface[triI].region() == regionI)
+                {
                     surfRefLevel_[triI].append(pp);
+                }
             }
         }
     }
 
-    if( meshDictPtr_->found("subsetCellSize") )
+    if (meshDictPtr_->found("subsetCellSize"))
     {
         patchRefinementList refPatches;
 
-        if( meshDictPtr_->isDict("subsetCellSize") )
+        if (meshDictPtr_->isDict("subsetCellSize"))
         {
             const dictionary& dict = meshDictPtr_->subDict("subsetCellSize");
             const wordList patchNames = dict.toc();
@@ -270,8 +286,10 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
             forAll(patchNames, patchI)
             {
-                if( !dict.isDict(patchNames[patchI]) )
+                if (!dict.isDict(patchNames[patchI]))
+                {
                     continue;
+                }
 
                 const dictionary& patchDict = dict.subDict(patchNames[patchI]);
                 const scalar cs = readScalar(patchDict.lookup("cellSize"));
@@ -293,7 +311,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             const word subsetName = refPatches[patchI].patchName();
 
             const label subsetID = surface.facetSubsetIndex(subsetName);
-            if( subsetID < 0 )
+            if (subsetID < 0)
             {
                 Warning << "Surface subset " << subsetName
                     << " does not exist" << endl;
@@ -301,16 +319,16 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
             }
 
             scalar cs = refPatches[patchI].cellSize();
-            cs *= (scalingFactor_+ SMALL);
+            cs *= (scalingFactor_ + SMALL);
 
             label addLevel(0);
             do
             {
                 finished = false;
 
-                const scalar lSize = maxSize / Foam::pow(2, addLevel);
+                const scalar lSize = maxSize/Foam::pow(2, addLevel);
 
-                if( lSize <= cs )
+                if (lSize <= cs)
                 {
                     finished = true;
                 }
@@ -318,10 +336,12 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                 {
                     ++addLevel;
                 }
-            } while( !finished );
+            } while (!finished);
 
-            if( Pstream::parRun() )
+            if (Pstream::parRun())
+            {
                 reduce(addLevel, maxOp<label>());
+            }
 
             labelLongList subsetFaces;
             surface.facetsInSubset(subsetID, subsetFaces);
@@ -329,41 +349,49 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
             const std::pair<direction, scalar> pp(level, 0.0);
             forAll(subsetFaces, tI)
+            {
                 surfRefLevel_[subsetFaces[tI]].append(pp);
+            }
         }
     }
 
-    if( meshDictPtr_->found("localRefinement") )
+    if (meshDictPtr_->found("localRefinement"))
     {
-        if( meshDictPtr_->isDict("localRefinement") )
+        if (meshDictPtr_->isDict("localRefinement"))
         {
             const dictionary& dict = meshDictPtr_->subDict("localRefinement");
             const wordList entries = dict.toc();
 
-            //- map patch name to its index
+            // map patch name to its index
             std::map<word, label> patchToIndex;
             forAll(surface.patches(), patchI)
+            {
                 patchToIndex[surface.patches()[patchI].name()] = patchI;
+            }
 
-            //- map a facet subset name to its index
+            // map a facet subset name to its index
             std::map<word, label> setToIndex;
             DynList<label> setIDs;
             surface.facetSubsetIndices(setIDs);
             forAll(setIDs, i)
+            {
                 setToIndex[surface.facetSubsetName(setIDs[i])] = setIDs[i];
+            }
 
-            //- set refinement for these entries
+            // set refinement for these entries
             forAll(entries, dictI)
             {
-                if( !dict.isDict(entries[dictI]) )
+                if (!dict.isDict(entries[dictI]))
+                {
                     continue;
+                }
 
                 const word& pName = entries[dictI];
                 const dictionary& patchDict = dict.subDict(pName);
 
                 label nLevel(0);
 
-                if( patchDict.found("additionalRefinementLevels") )
+                if (patchDict.found("additionalRefinementLevels"))
                 {
                     nLevel =
                         readLabel
@@ -371,7 +399,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                             patchDict.lookup("additionalRefinementLevels")
                         );
                 }
-                else if( patchDict.found("cellSize") )
+                else if (patchDict.found("cellSize"))
                 {
                     const scalar cs =
                         readScalar(patchDict.lookup("cellSize"));
@@ -380,9 +408,9 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     {
                         finished = false;
 
-                        const scalar lSize = maxSize / Foam::pow(2, nLevel);
+                        const scalar lSize = maxSize/Foam::pow(2, nLevel);
 
-                        if( lSize <= cs )
+                        if (lSize <= cs)
                         {
                             finished = true;
                         }
@@ -390,11 +418,11 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
                         {
                             ++nLevel;
                         }
-                    } while( !finished );
+                    } while (!finished);
                 }
 
                 scalar refinementThickness(0.0);
-                if( patchDict.found("refinementThickness") )
+                if (patchDict.found("refinementThickness"))
                 {
                     refinementThickness =
                         readScalar(patchDict.lookup("refinementThickness"));
@@ -408,20 +436,20 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 
                 forAll(matchedPatches, matchI)
                 {
-                    //- patch-based refinement
+                    // patch-based refinement
                     const label patchI = matchedPatches[matchI];
 
                     forAll(surface, triI)
                     {
-                        if( surface[triI].region() == patchI )
+                        if (surface[triI].region() == patchI)
                         {
                             surfRefLevel_[triI].append(rp);
                         }
                     }
                 }
-                if( setToIndex.find(pName) != setToIndex.end() )
+                if (setToIndex.find(pName) != setToIndex.end())
                 {
-                    //- this is a facet subset
+                    // this is a facet subset
                     const label subsetId = setToIndex[pName];
 
                     labelLongList facetsInSubset;
@@ -438,6 +466,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
     }
 }
 
+
 void meshOctreeCreator::refineInsideAndUnknownBoxes()
 {
     const direction cType = meshOctreeCube::INSIDE + meshOctreeCube::UNKNOWN;
@@ -445,54 +474,58 @@ void meshOctreeCreator::refineInsideAndUnknownBoxes()
     refineBoxes(globalRefLevel_, cType);
 }
 
+
 void meshOctreeCreator::createOctreeBoxes()
 {
-    //- set root cube size in order to achieve desired maxCellSize
-    Info << "Setting root cube size and refinement parameters" << endl;
+    // set root cube size in order to achieve desired maxCellSize
+    Info<< "Setting root cube size and refinement parameters" << endl;
     setRootCubeSizeAndRefParameters();
 
-    //- refine to required boundary resolution
-    Info << "Refining boundary" << endl;
+    // refine to required boundary resolution
+    Info<< "Refining boundary" << endl;
     refineBoundary();
 
-    //- refine parts intersected by surface meshes acting as refinement sources
+    // refine parts intersected by surface meshes acting as refinement sources
     refineBoxesIntersectingSurfaces();
 
-    //- refine parts intersected by edge meshes acting as refinement sources
+    // refine parts intersected by edge meshes acting as refinement sources
     refineBoxesIntersectingEdgeMeshes();
 
-    //- perform automatic octree refinement
-    if( !Pstream::parRun() )
+    // perform automatic octree refinement
+    if (!Pstream::parRun())
     {
-        Info << "Performing automatic refinement" << endl;
+        Info<< "Performing automatic refinement" << endl;
         meshOctreeAutomaticRefinement autoRef(octree_, *meshDictPtr_, false);
 
-        if( hexRefinement_ )
+        if (hexRefinement_)
+        {
             autoRef.activateHexRefinement();
+        }
 
         autoRef.automaticRefinement();
     }
 
-    //- set up inside-outside information
+    // set up inside-outside information
     createInsideOutsideInformation();
 
-    //- refine INSIDE and UNKNOWN boxes to to the given cell size
+    // refine INSIDE and UNKNOWN boxes to to the given cell size
     refineInsideAndUnknownBoxes();
 
-    //- refine boxes inside the geometry objects
+    // refine boxes inside the geometry objects
     refineBoxesContainedInObjects();
 
-    //- make sure that INSIDE and UNKNOWN neighbours of DATA boxes
-    //- have the same or higher refinement level
+    // make sure that INSIDE and UNKNOWN neighbours of DATA boxes
+    // have the same or higher refinement level
     refineBoxesNearDataBoxes(1);
 
-    //- distribute octree such that each processor has the same number
-    //- of leaf boxes which will be used as mesh cells
-    if( Pstream::parRun() )
+    // distribute octree such that each processor has the same number
+    // of leaf boxes which will be used as mesh cells
+    if (Pstream::parRun())
     {
         loadDistribution(true);
     }
 }
+
 
 void meshOctreeCreator::createOctreeWithRefinedBoundary
 (
@@ -507,7 +540,7 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
     meshOctreeModifier octreeModifier(octree_);
     List<meshOctreeSlot>& slots = octreeModifier.dataSlotsAccess();
 
-    while( true )
+    while (true)
     {
         const LongList<meshOctreeCube*>& leaves =
             octreeModifier.leavesAccess();
@@ -534,7 +567,7 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
                 DynList<label> ct;
                 octree_.containedTriangles(leafI, ct);
 
-                if( (oc.level() < maxLevel) && (ct.size() > nTrianglesInLeaf) )
+                if ((oc.level() < maxLevel) && (ct.size() > nTrianglesInLeaf))
                 {
                     oc.refineCube(surface, rootBox, slotPtr);
                     ++nMarked;
@@ -542,13 +575,16 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
             }
         }
 
-        if( nMarked == 0 )
+        if (nMarked == 0)
+        {
             break;
+        }
 
         octreeModifier.createListOfLeaves();
 
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

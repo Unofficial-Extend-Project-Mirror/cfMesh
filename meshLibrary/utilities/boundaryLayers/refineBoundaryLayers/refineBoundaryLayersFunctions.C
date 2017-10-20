@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -66,19 +64,19 @@ bool refineBoundaryLayers::analyseLayers()
     const label nGroups = dbl.nDistinctLayers();
     const labelList& faceInLayer = dbl.faceInLayer();
 
-    //- get the hair edges
+    // get the hair edges
     splitEdges_ = dbl.hairEdges();
 
     # ifdef DEBUGLayer
     OFstream file("hairEdges.vtk");
 
-    //- write the header
+    // write the header
     file << "# vtk DataFile Version 3.0\n";
     file << "vtk output\n";
     file << "ASCII\n";
     file << "DATASET POLYDATA\n";
 
-    //- write points
+    // write points
     file << "POINTS " << 2*splitEdges_.size() << " float\n";
     forAll(splitEdges_, seI)
     {
@@ -91,65 +89,77 @@ bool refineBoundaryLayers::analyseLayers()
         file << op.x() << ' ' << op.y() << ' ' << op.z() << nl;
     }
 
-    //- write lines
+    // write lines
     file << "\nLINES " << splitEdges_.size()
          << " " << 3*splitEdges_.size() << nl;
     forAll(splitEdges_, eI)
     {
-        file << 2 << " " << 2*eI << " " << (2*eI+1) << nl;
+        file << 2 << " " << 2*eI << " " << (2*eI + 1) << nl;
     }
 
     file << "\n";
     # endif
 
-    //- create point to split edges addressing
+    // create point to split edges addressing
     splitEdgesAtPoint_.reverseAddressing(splitEdges_);
 
-    //- check if the layer is valid
+    // check if the layer is valid
     bool validLayer(true);
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 40)
     # endif
     forAll(faceInLayer, bfI)
     {
-        if( faceInLayer[bfI] < 0 )
+        if (faceInLayer[bfI] < 0)
+        {
             continue;
+        }
 
         const face& bf = bFaces[bfI];
 
         forAll(bf, pI)
-            if( splitEdgesAtPoint_.sizeOfRow(bf[pI]) == 0 )
+        {
+            if (splitEdgesAtPoint_.sizeOfRow(bf[pI]) == 0)
+            {
                 validLayer = false;
+            }
+        }
     }
 
     # ifdef DEBUGLayer
-    Info << "Number of independent layers in the mesh is " << nGroups << endl;
-    Info << "Is valid layer " << validLayer << endl;
+    Info<< "Number of independent layers in the mesh is " << nGroups << endl;
+    Info<< "Is valid layer " << validLayer << endl;
     # endif
 
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
-    //- create patch name to index addressing
+    // create patch name to index addressing
     std::map<word, label> patchNameToIndex;
     forAll(boundaries, patchI)
+    {
         patchNameToIndex[boundaries[patchI].patchName()] = patchI;
+    }
 
-    //- check layer labels over a patch
+    // check layer labels over a patch
     layerAtPatch_.setSize(boundaries.size());
     forAll(layerAtPatch_, i)
+    {
         layerAtPatch_[i].clear();
-    List<DynList<label> > groupsAtPatch(boundaries.size());
+    }
+    List<DynList<label>> groupsAtPatch(boundaries.size());
     forAll(faceInLayer, bfI)
+    {
         groupsAtPatch[facePatch[bfI]].appendIfNotIn(faceInLayer[bfI]);
+    }
 
-    //- set the information which patches have an extruded layer
+    // set the information which patches have an extruded layer
     forAll(groupsAtPatch, patchI)
     {
         const DynList<label>& layers = groupsAtPatch[patchI];
 
         forAll(layers, i)
         {
-            if( layers[i] < 0 )
+            if (layers[i] < 0)
             {
                 layerAtPatch_[patchI].clear();
                 break;
@@ -162,27 +172,29 @@ bool refineBoundaryLayers::analyseLayers()
     }
 
     # ifdef DEBUGLayer
-    Info << "Layer at patch " << layerAtPatch_ << endl;
+    Info<< "Layer at patch " << layerAtPatch_ << endl;
     # endif
 
-    //- set the information which patches are a single boundary layer face
+    // set the information which patches are a single boundary layer face
     patchesInLayer_.setSize(nGroups);
     forAll(layerAtPatch_, patchI)
     {
         const DynList<label>& layers = layerAtPatch_[patchI];
 
         forAll(layers, i)
+        {
             patchesInLayer_[layers[i]].append
             (
                 boundaries[patchI].patchName()
             );
+        }
     }
 
     # ifdef DEBUGLayer
-    Info << "Patches in layer " << patchesInLayer_ << endl;
+    Info<< "Patches in layer " << patchesInLayer_ << endl;
     # endif
 
-    //- set the number of boundary layers for each patch
+    // set the number of boundary layers for each patch
     labelList nLayersAtPatch(layerAtPatch_.size(), -1);
     boolList protectedValue(layerAtPatch_.size(), false);
 
@@ -193,7 +205,7 @@ bool refineBoundaryLayers::analyseLayers()
         label maxNumLayers(1);
         bool hasLocalValue(false);
 
-        //- find the maximum requested number of layers over the layer
+        // find the maximum requested number of layers over the layer
         forAll(layerPatches, lpI)
         {
             const word pName = layerPatches[lpI];
@@ -201,43 +213,48 @@ bool refineBoundaryLayers::analyseLayers()
             std::map<word, label>::const_iterator it =
                 numLayersForPatch_.find(pName);
 
-            if( it != numLayersForPatch_.end() )
+            if (it != numLayersForPatch_.end())
             {
-                //- check if the layer is interrupted at this patch
-                if(
+                // check if the layer is interrupted at this patch
+                if
+                (
                     discontinuousLayersForPatch_.find(pName) !=
                     discontinuousLayersForPatch_.end()
                 )
                 {
-                    //- set the number of layers and lock this location
+                    // set the number of layers and lock this location
                     nLayersAtPatch[patchNameToIndex[pName]] = it->second;
                     protectedValue[patchNameToIndex[pName]] = true;
                     hasLocalValue = true;
                 }
                 else
                 {
-                    //- take the maximum number of layers
+                    // take the maximum number of layers
                     maxNumLayers = Foam::max(maxNumLayers, it->second);
                     hasLocalValue = true;
                 }
             }
         }
 
-        //- apply the global value if no local values exist
-        if( !hasLocalValue )
+        // apply the global value if no local values exist
+        if (!hasLocalValue)
+        {
             maxNumLayers = globalNumLayers_;
+        }
 
-        //- apply the maximum number of ayer of all unprotected patches
+        // apply the maximum number of ayer of all unprotected patches
         forAll(layerPatches, lpI)
         {
             const label ptchI = patchNameToIndex[layerPatches[lpI]];
 
-            if( !protectedValue[ptchI] )
+            if (!protectedValue[ptchI])
+            {
                 nLayersAtPatch[ptchI] = maxNumLayers;
+            }
         }
     }
 
-    if( is2DMesh_ )
+    if (is2DMesh_)
     {
         polyMeshGen2DEngine mesh2DEngine(mesh_);
         const boolList& zMinPoint = mesh2DEngine.zMinPoints();
@@ -257,17 +274,21 @@ bool refineBoundaryLayers::analyseLayers()
 
             forAll(bf, pI)
             {
-                if( !zMinPoint[bf[pI]] )
+                if (!zMinPoint[bf[pI]])
+                {
                     allZMin[facePatch[bfI]] = false;
-                if( !zMaxPoint[bf[pI]] )
+                }
+                if (!zMaxPoint[bf[pI]])
+                {
                     allZMax[facePatch[bfI]] = false;
+                }
             }
         }
 
-        //- mark empty patches as already used
+        // mark empty patches as already used
         forAll(allZMin, patchI)
         {
-            if( allZMin[patchI] ^ allZMax[patchI] )
+            if (allZMin[patchI] ^ allZMax[patchI])
             {
                 nLayersAtPatch[patchI] = -1;
                 layerAtPatch_[patchI].clear();
@@ -275,15 +296,15 @@ bool refineBoundaryLayers::analyseLayers()
         }
     }
 
-    //- perform reduction over all processors
+    // perform reduction over all processors
     reduce(nLayersAtPatch, maxOp<labelList>());
 
     # ifdef DEBUGLayer
     Pout << "nLayersAtPatch " << nLayersAtPatch << endl;
     # endif
 
-    //- set the number of boundary layers which shall be generated above
-    //- each boundary face
+    // set the number of boundary layers which shall be generated above
+    // each boundary face
     nLayersAtBndFace_.setSize(facePatch.size());
     nLayersAtBndFace_ = globalNumLayers_;
 
@@ -294,7 +315,7 @@ bool refineBoundaryLayers::analyseLayers()
     {
         const label patchI = facePatch[bfI];
 
-        if( nLayersAtPatch[patchI] < 0 )
+        if (nLayersAtPatch[patchI] < 0)
         {
             nLayersAtBndFace_[bfI] = 1;
         }
@@ -302,7 +323,7 @@ bool refineBoundaryLayers::analyseLayers()
         {
             nLayersAtBndFace_[bfI] = nLayersAtPatch[patchI];
 
-            if( specialMode_ )
+            if (specialMode_)
             {
                 ++nLayersAtBndFace_[bfI];
             }
@@ -311,13 +332,14 @@ bool refineBoundaryLayers::analyseLayers()
 
     # ifdef DEBUGLayer
     forAll(nLayersAtBndFace_, bfI)
-    Pout << "Boundary face " << bfI << " in patch "
+    Pout<< "Boundary face " << bfI << " in patch "
         << facePatch[bfI] << " num layers " << nLayersAtBndFace_[bfI] << endl;
     //::exit(1);
     # endif
 
     return validLayer;
 }
+
 
 void refineBoundaryLayers::generateNewVertices()
 {
@@ -330,15 +352,15 @@ void refineBoundaryLayers::generateNewVertices()
     const labelList& facePatch = mse.boundaryFacePatches();
     const labelList& bp = mse.bp();
 
-    //- allocate the data from storing parameters applying to a split edge
+    // allocate the data from storing parameters applying to a split edge
     LongList<scalar> firstLayerThickness(splitEdges_.size());
     LongList<scalar> thicknessRatio(splitEdges_.size());
     labelLongList nNodesAtEdge(splitEdges_.size());
     labelLongList nLayersAtEdge(splitEdges_.size());
 
-    //- count the number of vertices for each split edge
+    // count the number of vertices for each split edge
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
     # else
     const label nThreads = 1;
     # endif
@@ -347,7 +369,7 @@ void refineBoundaryLayers::generateNewVertices()
     # pragma omp parallel num_threads(nThreads)
     # endif
     {
-        //- start counting vertices at each thread
+        // start counting vertices at each thread
         # ifdef USE_OMP
         # pragma omp for schedule(static, 1)
         # endif
@@ -355,7 +377,7 @@ void refineBoundaryLayers::generateNewVertices()
         {
             const edge& e = splitEdges_[seI];
 
-            //- get the requested number of boundary layers
+            // get the requested number of boundary layers
             label nLayers(1);
             scalar ratio(globalThicknessRatio_);
             scalar thickness(globalMaxThicknessFirstLayer_);
@@ -367,30 +389,32 @@ void refineBoundaryLayers::generateNewVertices()
             {
                 const label bfI = pointFaces(bpI, pfI);
                 const label pos = help::positionOfEdgeInFace(e, bFaces[bfI]);
-                if( pos >= 0 )
+                if (pos >= 0)
+                {
                     continue;
+                }
 
                 const word& patchName =
                     boundaries[facePatch[bfI]].patchName();
 
-                //- overrride the global value with the maximum number of layers
-                //- at this edge
+                // overrride the global value with the maximum number of layers
+                // at this edge
                 nLayers = Foam::max(nLayers, nLayersAtBndFace_[bfI]);
 
-                //- override with the maximum ratio
+                // override with the maximum ratio
                 const std::map<word, scalar>::const_iterator rIt =
                     thicknessRatioForPatch_.find(patchName);
-                if( rIt != thicknessRatioForPatch_.end() )
+                if (rIt != thicknessRatioForPatch_.end())
                 {
                     ratio = rIt->second;
                 }
 
-                //- override with the minimum thickness set for this edge
+                // override with the minimum thickness set for this edge
                 const std::map<word, scalar>::const_iterator tIt =
                     maxThicknessForPatch_.find(patchName);
-                if( tIt != maxThicknessForPatch_.end() )
+                if (tIt != maxThicknessForPatch_.end())
                 {
-                    if( overridenThickness )
+                    if (overridenThickness)
                     {
                         thickness = Foam::min(thickness, tIt->second);
                     }
@@ -402,12 +426,12 @@ void refineBoundaryLayers::generateNewVertices()
                 }
             }
 
-            //- store the information
+            // store the information
             firstLayerThickness[seI] = thickness;
             thicknessRatio[seI] = ratio;
             nLayersAtEdge[seI] = nLayers;
 
-            if( !specialMode_ )
+            if (!specialMode_)
             {
                 nNodesAtEdge[seI] = nLayers + 1;
             }
@@ -418,10 +442,10 @@ void refineBoundaryLayers::generateNewVertices()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- transfer the information over all processor for edges
-        //- at inter-processor boundaries
+        // transfer the information over all processor for edges
+        // at inter-processor boundaries
         const labelLongList& globalEdgeLabel =
             mesh_.addressingData().globalEdgeLabel();
         const VRWGraph& edgeAtProcs = mesh_.addressingData().edgeAtProcs();
@@ -431,11 +455,11 @@ void refineBoundaryLayers::generateNewVertices()
         const edgeList& edges = mesh_.addressingData().edges();
         const VRWGraph& pointEdges = mesh_.addressingData().pointEdges();
 
-        //- exchange point number of layers
-        std::map<label, LongList<labelPair> > exchangeNumLayers;
-        std::map<label, LongList<labelPair> > exchangeNumNodesAtEdge;
-        std::map<label, LongList<labelledScalar> > exchangeThickness;
-        std::map<label, LongList<labelledScalar> > exchangeRatio;
+        // exchange point number of layers
+        std::map<label, LongList<labelPair>> exchangeNumLayers;
+        std::map<label, LongList<labelPair>> exchangeNumNodesAtEdge;
+        std::map<label, LongList<labelledScalar>> exchangeThickness;
+        std::map<label, LongList<labelledScalar>> exchangeRatio;
         forAll(neiProcs, i)
         {
             exchangeNumNodesAtEdge.insert
@@ -456,7 +480,7 @@ void refineBoundaryLayers::generateNewVertices()
             );
         }
 
-        //- exchange the number of layers
+        // exchange the number of layers
         forAll(splitEdges_, seI)
         {
             const edge& se = splitEdges_[seI];
@@ -467,7 +491,7 @@ void refineBoundaryLayers::generateNewVertices()
             {
                 const label eI = pointEdges(s, peI);
 
-                if( edges[eI] == se )
+                if (edges[eI] == se)
                 {
                     edgeI = eI;
                     break;
@@ -476,14 +500,16 @@ void refineBoundaryLayers::generateNewVertices()
 
             const label geI = globalEdgeLabel[edgeI];
 
-            if( globalToLocal.found(geI) )
+            if (globalToLocal.found(geI))
             {
                 forAllRow(edgeAtProcs, edgeI, i)
                 {
                     const label neiProc = edgeAtProcs(edgeI, i);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
+                    {
                         continue;
+                    }
 
                     exchangeNumNodesAtEdge[neiProc].append
                     (
@@ -505,7 +531,7 @@ void refineBoundaryLayers::generateNewVertices()
             }
         }
 
-        //- exchange number of nodes at split edge
+        // exchange number of nodes at split edge
         LongList<labelPair> receivedNumLayers;
         help::exchangeMap(exchangeNumNodesAtEdge, receivedNumLayers);
 
@@ -518,7 +544,7 @@ void refineBoundaryLayers::generateNewVertices()
             forAllRow(splitEdgesAtPoint_, e.start(), i)
             {
                 const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
+                if (splitEdges_[seJ] == e)
                 {
                     seI = seJ;
                     break;
@@ -527,7 +553,7 @@ void refineBoundaryLayers::generateNewVertices()
             nNodesAtEdge[seI] = std::max(nNodesAtEdge[seI], lp.second());
         }
 
-        //- exchange number of layers
+        // exchange number of layers
         receivedNumLayers.clear();
         help::exchangeMap(exchangeNumLayers, receivedNumLayers);
 
@@ -540,7 +566,7 @@ void refineBoundaryLayers::generateNewVertices()
             forAllRow(splitEdgesAtPoint_, e.start(), i)
             {
                 const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
+                if (splitEdges_[seJ] == e)
                 {
                     seI = seJ;
                     break;
@@ -549,7 +575,7 @@ void refineBoundaryLayers::generateNewVertices()
             nLayersAtEdge[seI] = std::max(nLayersAtEdge[seI], lp.second());
         }
 
-        //- exchange thickness ratio
+        // exchange thickness ratio
         LongList<labelledScalar> receivedScalar;
         help::exchangeMap(exchangeRatio, receivedScalar);
 
@@ -562,7 +588,7 @@ void refineBoundaryLayers::generateNewVertices()
             forAllRow(splitEdgesAtPoint_, e.start(), i)
             {
                 const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
+                if (splitEdges_[seJ] == e)
                 {
                     seI = seJ;
                     break;
@@ -571,7 +597,7 @@ void refineBoundaryLayers::generateNewVertices()
             thicknessRatio[seI] = std::max(thicknessRatio[seI], ls.value());
         }
 
-        //- exchange maximum thickness of the first layer
+        // exchange maximum thickness of the first layer
         receivedScalar.clear();
         help::exchangeMap(exchangeThickness, receivedScalar);
 
@@ -584,7 +610,7 @@ void refineBoundaryLayers::generateNewVertices()
             forAllRow(splitEdgesAtPoint_, e.start(), i)
             {
                 const label seJ = splitEdgesAtPoint_(e.start(), i);
-                if( splitEdges_[seJ] == e )
+                if (splitEdges_[seJ] == e)
                 {
                     seI = seJ;
                     break;
@@ -595,8 +621,8 @@ void refineBoundaryLayers::generateNewVertices()
         }
     }
 
-    //- calculate the number of additional vertices which will be generated
-    //- on edges of the mesh
+    // calculate the number of additional vertices which will be generated
+    // on edges of the mesh
     DynList<label> numPointsAtThread;
     numPointsAtThread.setSize(nThreads);
     numPointsAtThread = 0;
@@ -615,11 +641,11 @@ void refineBoundaryLayers::generateNewVertices()
         numPointsAtThread[threadI] += nNodesAtEdge[seI] - 2;
     }
 
-    //- allocate the space in a graph storing ids of points on a split edge
+    // allocate the space in a graph storing ids of points on a split edge
     newVerticesForSplitEdge_.setSizeAndRowSize(nNodesAtEdge);
 
-    //- calculate the number of points which will be generated
-    //- on split edges
+    // calculate the number of points which will be generated
+    // on split edges
     label numPoints = points.size();
     forAll(numPointsAtThread, threadI)
     {
@@ -631,10 +657,10 @@ void refineBoundaryLayers::generateNewVertices()
     points.setSize(numPoints);
 
     # ifdef DEBUGLayer
-    Info << "Generating split vertices" << endl;
+    Info<< "Generating split vertices" << endl;
     # endif
 
-    //- generate vertices on split edges
+    // generate vertices on split edges
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
     # endif
@@ -659,14 +685,14 @@ void refineBoundaryLayers::generateNewVertices()
 
             const label nLayers = newVerticesForSplitEdge_.sizeOfRow(seI) - 1;
 
-            scalar firstThickness = magv / nLayersAtEdge[seI];
-            if( thicknessRatio[seI] > (1. + SMALL) )
+            scalar firstThickness = magv/nLayersAtEdge[seI];
+            if (thicknessRatio[seI] >(1. + SMALL))
             {
                 firstThickness =
                     magv /
                     (
                         (1 - Foam::pow(thicknessRatio[seI], nLayersAtEdge[seI]))
-                        / (1.0 - thicknessRatio[seI])
+                        /(1.0 - thicknessRatio[seI])
                     );
 
                 # ifdef DEBUGLayer
@@ -687,29 +713,31 @@ void refineBoundaryLayers::generateNewVertices()
                     firstThickness
                 );
 
-            if( specialMode_ )
+            if (specialMode_)
             {
                 scalar t = firstThickness;
 
-                for(label i=1;i<nLayersAtEdge[seI]-1;++i)
-                    t += firstThickness * Foam::pow(thicknessRatio[seI], i);
+                for (label i = 1; i < nLayersAtEdge[seI]-1; ++i)
+                {
+                    t += firstThickness*Foam::pow(thicknessRatio[seI], i);
+                }
 
                 firstThickness = t;
             }
 
-            //- generate vertices for this edge
+            // generate vertices for this edge
             newVerticesForSplitEdge_(seI, 0) = e.start();
 
             scalar param = firstThickness;
-            const vector vec = v / (magv + VSMALL);
+            const vector vec = v /(magv + VSMALL);
 
-            for(label pI=1;pI<nLayers;++pI)
+            for (label pI = 1; pI < nLayers; ++pI)
             {
-                //- generate the new vertex
-                const point newP = points[e.start()] + param * vec;
+                // generate the new vertex
+                const point newP = points[e.start()] + param*vec;
 
                 # ifdef DEBUGLayer
-                Pout << "Split edge " << seI << " edge points " << e
+                Pout<< "Split edge " << seI << " edge points " << e
                     << " start point " << points[e.start()]
                     << " end point " << points[e.end()]
                     << " param " << param
@@ -717,7 +745,7 @@ void refineBoundaryLayers::generateNewVertices()
                     << " has coordinates " << newP << endl;
                 # endif
 
-                param += firstThickness * Foam::pow(thicknessRatio[seI], pI);
+                param += firstThickness*Foam::pow(thicknessRatio[seI], pI);
 
                 newVerticesForSplitEdge_(seI, pI) = nPoints;
                 points[nPoints++] = newP;
@@ -727,18 +755,22 @@ void refineBoundaryLayers::generateNewVertices()
         }
     }
 
-    if( specialMode_ )
+    if (specialMode_)
     {
-        //- set the number of layers to 2
+        // set the number of layers to 2
         forAll(nLayersAtBndFace_, bfI)
-            if( nLayersAtBndFace_[bfI] > 1 )
+        {
+            if (nLayersAtBndFace_[bfI] > 1)
+            {
                 nLayersAtBndFace_[bfI] = 2;
+            }
+        }
     }
 
     # ifdef DEBUGLayer
-    for(label procI=0;procI<Pstream::nProcs();++procI)
+    for (label procI = 0; procI < Pstream::nProcs(); ++procI)
     {
-        if( procI == Pstream::myProcNo() )
+        if (procI == Pstream::myProcNo())
         {
             forAll(splitEdges_, seI)
             {
@@ -749,18 +781,22 @@ void refineBoundaryLayers::generateNewVertices()
                     << newVerticesForSplitEdge_[seI] << endl;
 
                 forAllRow(newVerticesForSplitEdge_, seI, i)
-                    Pout << "Point " << i << " on edge ha coordinates "
-                         << points[newVerticesForSplitEdge_(seI, i)] << endl;
+                {
+                    Pout<< "Point " << i << " on edge ha coordinates "
+                        << points[newVerticesForSplitEdge_(seI, i)] << endl;
+                }
             }
         }
 
         returnReduce(1, sumOp<label>());
     }
 
-    Info << "Finished generating vertices at split edges" << endl;
+    Info<< "Finished generating vertices at split edges" << endl;
     //::exit(1);
     # endif
+
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 
 \*---------------------------------------------------------------------------*/
@@ -45,29 +43,37 @@ label boundaryLayers::findNewNodeLabel
         label, std::map<std::pair<label, label>, label>
     >::const_iterator it = otherVrts_.find(pointI);
 
-    if( it != otherVrts_.end() )
+    if (it != otherVrts_.end())
     {
         const std::map<std::pair<label, label>, label>& m = it->second;
 
         std::map<std::pair<label, label>, label>::const_iterator mit;
-        if( m.size() == 2 )
+        if (m.size() == 2)
         {
-            for(mit=m.begin();mit!=m.end();++mit)
+            for (mit = m.begin(); mit!=m.end(); ++mit)
             {
-                if( mit->first.first != pKey )
+                if (mit->first.first != pKey)
+                {
                     return mit->second;
+                }
             }
         }
         else
         {
-            for(mit=m.begin();mit!=m.end();++mit)
+            for (mit = m.begin(); mit!=m.end(); ++mit)
             {
-                if( mit->first.first == pKey )
+                if (mit->first.first == pKey)
+                {
                     continue;
-                if( mit->first.second == pKey )
+                }
+                if (mit->first.second == pKey)
+                {
                     continue;
-                if( mit->first.first == mit->first.second )
+                }
+                if (mit->first.first == mit->first.second)
+                {
                     continue;
+                }
 
                 return mit->second;
             }
@@ -76,6 +82,7 @@ label boundaryLayers::findNewNodeLabel
 
     return newLabelForVertex_[pointI];
 }
+
 
 inline void boundaryLayers::createNewCellFromEdge
 (
@@ -91,21 +98,25 @@ inline void boundaryLayers::createNewCellFromEdge
         otherVrts_.find(e.end())->second;
 
     # ifdef DEBUGLayer
-    Info << "Creating cell for edge with nodes " << e << endl;
-    Info << "pKeyI " << pKeyI << endl;
-    Info << "pKeyJ " << pKeyJ << endl;
+    Info<< "Creating cell for edge with nodes " << e << endl;
+    Info<< "pKeyI " << pKeyI << endl;
+    Info<< "pKeyJ " << pKeyJ << endl;
     std::map<std::pair<label, label>, label>::const_iterator iter;
-    for(iter=ms.begin();iter!=ms.end();++iter)
-        Info << "1. Pair (" << iter->first.first << ", "
+    for (iter = ms.begin(); iter!=ms.end(); ++iter)
+    {
+        Info<< "1. Pair(" << iter->first.first << ", "
             << iter->first.second << ") has value " << iter->second << endl;
-    for(iter=me.begin();iter!=me.end();++iter)
-        Info << "2. Pair (" << iter->first.first << ", "
+    }
+    for (iter = me.begin(); iter!=me.end(); ++iter)
+    {
+        Info<< "2. Pair(" << iter->first.first << ", "
             << iter->first.second << ") has value " << iter->second << endl;
+    }
     # endif
 
     label p0s(-1), p1s(-1), ns(-1), p0e(-1), p1e(-1), ne(-1);
 
-    if( ms.size() == 2 )
+    if (ms.size() == 2)
     {
         p0s = ms.find(std::pair<label, label>(pKeyI, pKeyI))->second;
         p1s = ms.find(std::pair<label, label>(pKeyJ, pKeyJ))->second;
@@ -114,32 +125,35 @@ inline void boundaryLayers::createNewCellFromEdge
     else
     {
         std::map<std::pair<label, label>, label>::const_iterator it;
-        for(it=ms.begin();it!=ms.end();++it)
+        for (it = ms.begin(); it!=ms.end(); ++it)
         {
-            if(
+            if
+            (
                 (it->first.first != pKeyJ) && (it->first.second != pKeyJ)
-                && (it->first.first != it->first.second)
+             && (it->first.first != it->first.second)
             )
             {
                 p0s = it->second;
             }
-            else if(
+            else if
+            (
                 (it->first.first != pKeyI) && (it->first.second != pKeyI)
-                && (it->first.first != it->first.second)
+             && (it->first.first != it->first.second)
             )
             {
                 p1s = it->second;
             }
-            else if(
-                (it->first.first == it->first.second) &&
-                (it->first.first != pKeyI) && (it->first.first != pKeyJ)
+            else if
+            (
+                (it->first.first == it->first.second)
+             && (it->first.first != pKeyI) && (it->first.first != pKeyJ)
             )
             {
                 ns = it->second;
             }
         }
     }
-    if( me.size() == 2 )
+    if (me.size() == 2)
     {
         p0e = me.find(std::pair<label, label>(pKeyI, pKeyI))->second;
         p1e = me.find(std::pair<label, label>(pKeyJ, pKeyJ))->second;
@@ -148,25 +162,28 @@ inline void boundaryLayers::createNewCellFromEdge
     else
     {
         std::map<std::pair<label, label>, label>::const_iterator it;
-        for(it=me.begin();it!=me.end();++it)
+        for (it = me.begin(); it!=me.end(); ++it)
         {
-            if(
+            if
+            (
                 (it->first.first != pKeyJ) && (it->first.second != pKeyJ)
-                && (it->first.first != it->first.second)
+             && (it->first.first != it->first.second)
             )
             {
                 p0e = it->second;
             }
-            else if(
+            else if
+            (
                 (it->first.first != pKeyI) && (it->first.second != pKeyI)
-                && (it->first.first != it->first.second)
+             && (it->first.first != it->first.second)
             )
             {
                 p1e = it->second;
             }
-            else if(
-                (it->first.first == it->first.second) &&
-                (it->first.first != pKeyI) && (it->first.first != pKeyJ)
+            else if
+            (
+                (it->first.first == it->first.second)
+             && (it->first.first != pKeyI) && (it->first.first != pKeyJ)
             )
             {
                 ne = it->second;
@@ -220,12 +237,16 @@ inline void boundaryLayers::createNewCellFromEdge
                 cellFaces[fI][pI] < 0 ||
                 cellFaces[fI][pI] >= mesh_.points().size()
             )
+            {
                 FatalError << "Invalid point indices found!"
                            << abort(FatalError);
+            }
         }
     }
     # endif
+
 }
+
 
 inline void boundaryLayers::createNewCellFromNode
 (
@@ -249,7 +270,7 @@ inline void boundaryLayers::createNewCellFromNode
     std::pair<label, label> pr;
     pr.first = pKeys[0];
     pr.second = pKeys[1];
-    if( m.find(pr) == m.end() )
+    if (m.find(pr) == m.end())
     {
         pr.first = pKeys[1];
         pr.second = pKeys[0];
@@ -258,7 +279,7 @@ inline void boundaryLayers::createNewCellFromNode
 
     pr.first = pKeys[0];
     pr.second = pKeys[2];
-    if( m.find(pr) == m.end() )
+    if (m.find(pr) == m.end())
     {
         pr.first = pKeys[2];
         pr.second = pKeys[0];
@@ -267,7 +288,7 @@ inline void boundaryLayers::createNewCellFromNode
 
     pr.first = pKeys[1];
     pr.second = pKeys[2];
-    if( m.find(pr) == m.end() )
+    if (m.find(pr) == m.end())
     {
         pr.first = pKeys[2];
         pr.second = pKeys[1];
@@ -307,6 +328,7 @@ inline void boundaryLayers::createNewCellFromNode
     cellFaces[5][2] = n;
     cellFaces[5][3] = p11;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

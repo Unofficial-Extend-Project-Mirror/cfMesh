@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,13 +44,12 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Private member functions
 
 void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
         return;
 
     std::map<label, labelLongList> exchangeData;
@@ -77,20 +74,20 @@ void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
             exchangeData[neiProc].append(globalPointLabel[bpI]);
         }
     }
 
-    //- exchange data
+    // exchange data
     labelLongList receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
     forAll(receivedData, i)
     {
-        if( !selectedNode[globalToLocal[receivedData[i]]] )
+        if (!selectedNode[globalToLocal[receivedData[i]]])
         {
             selectedNode[globalToLocal[receivedData[i]]] = true;
             const_cast<labelLongList&>(selNodes).append
@@ -101,12 +98,13 @@ void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
     }
 }
 
+
 void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
         return;
 
-    std::map<label, LongList<parMapperHelper> > exchangeData;
+    std::map<label, LongList<parMapperHelper>> exchangeData;
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
     forAll(neiProcs, i)
         exchangeData.insert
@@ -130,7 +128,7 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
                 continue;
 
             exchangeData[neiProc].append
@@ -146,11 +144,11 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
         }
     }
 
-    //- exchange data
+    // exchange data
     LongList<parMapperHelper> receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
-    //- select the point with the smallest moving distance
+    // select the point with the smallest moving distance
     meshSurfaceEngineModifier surfModifier(surfaceEngine_);
     forAll(receivedData, i)
     {
@@ -159,13 +157,14 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
         const label bpI = globalToLocal[ph.globalLabel()];
 
         parMapperHelper& phOrig = parN[bpToList[bpI]];
-        if( phOrig.movingDistance() < ph.movingDistance() )
+        if (phOrig.movingDistance() < ph.movingDistance())
         {
             surfModifier.moveBoundaryVertexNoUpdate(bpI, ph.coordinates());
             phOrig = ph;
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -179,7 +178,7 @@ void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const point p = points[bPoints[bpI]];
 
-    if( patchI < 0 )
+    if (patchI < 0)
     {
         meshOctree_.findNearestSurfacePoint(mapPoint, dSq, nt, patch, p);
     }
@@ -199,9 +198,10 @@ void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
     surfModifier.moveBoundaryVertex(bpI, mapPoint);
 }
 
+
 void meshSurfaceMapper::mapVerticesOntoSurface()
 {
-    Info << "Mapping vertices onto surface" << endl;
+    Info<< "Mapping vertices onto surface" << endl;
 
     labelLongList nodesToMap(surfaceEngine_.boundaryPoints().size());
     forAll(nodesToMap, i)
@@ -209,16 +209,17 @@ void meshSurfaceMapper::mapVerticesOntoSurface()
 
     mapVerticesOntoSurface(nodesToMap);
 
-    Info << "Finished mapping vertices onto surface" << endl;
+    Info<< "Finished mapping vertices onto surface" << endl;
 }
+
 
 void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
 {
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
 
-    const VRWGraph* bpAtProcsPtr(NULL);
-    if( Pstream::parRun() )
+    const VRWGraph* bpAtProcsPtr(nullptr);
+    if (Pstream::parRun())
         bpAtProcsPtr = &surfaceEngine_.bpAtProcs();
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
@@ -226,15 +227,15 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
 
     # ifdef USE_OMP
     const label size = nodesToMap.size();
-    # pragma omp parallel for if( size > 1000 ) shared(parallelBndNodes) \
-    schedule(dynamic, Foam::max(1, size / (3 * omp_get_max_threads())))
+    # pragma omp parallel for if (size > 1000) shared(parallelBndNodes) \
+    schedule(dynamic, Foam::max(1, size/(3*omp_get_max_threads())))
     # endif
     forAll(nodesToMap, i)
     {
         const label bpI = nodesToMap[i];
 
         # ifdef DEBUGMapping
-        Info << nl << "Mapping vertex " << bpI << " with coordinates "
+        Info<< nl << "Mapping vertex " << bpI << " with coordinates "
             << points[boundaryPoints[bpI]] << endl;
         # endif
 
@@ -253,7 +254,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
 
         surfaceModifier.moveBoundaryVertexNoUpdate(bpI, mapPoint);
 
-        if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
+        if (bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI))
         {
             # ifdef USE_OMP
             # pragma omp critical
@@ -271,20 +272,21 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
         }
 
         # ifdef DEBUGMapping
-        Info << "Mapped point " << points[boundaryPoints[bpI]] << endl;
+        Info<< "Mapped point " << points[boundaryPoints[bpI]] << endl;
         # endif
     }
 
-    //- make sure that the points are at the nearest location on the surface
+    // make sure that the points are at the nearest location on the surface
     mapToSmallestDistance(parallelBndNodes);
 
-    //- re-calculate face normals, point normals, etc.
+    // re-calculate face normals, point normals, etc.
     surfaceModifier.updateGeometry(nodesToMap);
 }
 
+
 void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 {
-    Info << "Mapping vertices with respect to surface patches" << endl;
+    Info<< "Mapping vertices with respect to surface patches" << endl;
 
     labelLongList nodesToMap(surfaceEngine_.boundaryPoints().size());
     forAll(nodesToMap, i)
@@ -292,8 +294,9 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 
     mapVerticesOntoSurfacePatches(nodesToMap);
 
-    Info << "Finished mapping vertices with respect to surface patches" << endl;
+    Info<< "Finished mapping vertices with respect to surface patches" << endl;
 }
+
 
 void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 (
@@ -307,28 +310,28 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 
     boolList treatedPoint(surfaceEngine_.boundaryPoints().size(), false);
 
-    //- find corner and edge points
+    // find corner and edge points
     labelLongList selectedCorners, selectedEdges;
     forAll(nodesToMap, i)
     {
-        if( cornerPoints.found(nodesToMap[i]) )
+        if (cornerPoints.found(nodesToMap[i]))
         {
             treatedPoint[nodesToMap[i]] = true;
             selectedCorners.append(nodesToMap[i]);
         }
-        else if( edgePoints.found(nodesToMap[i]) )
+        else if (edgePoints.found(nodesToMap[i]))
         {
             treatedPoint[nodesToMap[i]] = true;
             selectedEdges.append(nodesToMap[i]);
         }
     }
 
-    //- map the remaining selected points
+    // map the remaining selected points
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
 
-    const VRWGraph* bpAtProcsPtr(NULL);
-    if( Pstream::parRun() )
+    const VRWGraph* bpAtProcsPtr(nullptr);
+    if (Pstream::parRun())
         bpAtProcsPtr = &surfaceEngine_.bpAtProcs();
 
     meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
@@ -336,14 +339,14 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 
     # ifdef USE_OMP
     const label size = nodesToMap.size();
-    # pragma omp parallel for if( size > 1000 ) shared(parallelBndNodes) \
-    schedule(dynamic, Foam::max(1, size / (3 * omp_get_max_threads())))
+    # pragma omp parallel for if (size > 1000) shared(parallelBndNodes) \
+    schedule(dynamic, Foam::max(1, size /(3*omp_get_max_threads())))
     # endif
     forAll(nodesToMap, nI)
     {
         const label bpI = nodesToMap[nI];
 
-        if( treatedPoint[bpI] )
+        if (treatedPoint[bpI])
             continue;
 
         const point& p = points[bPoints[bpI]];
@@ -361,7 +364,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
 
         surfaceModifier.moveBoundaryVertexNoUpdate(bpI, mapPoint);
 
-        if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
+        if (bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI))
         {
             # ifdef USE_OMP
             # pragma omp critical
@@ -381,23 +384,24 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
         }
 
         # ifdef DEBUGMapping
-        Info << "Mapped point " << points[boundaryPoints[bpI]] << endl;
+        Info<< "Mapped point " << points[boundaryPoints[bpI]] << endl;
         # endif
     }
 
-    //- map vertices at inter-processor boundaries to the nearest location
-    //- on the surface
+    // map vertices at inter-processor boundaries to the nearest location
+    // on the surface
     mapToSmallestDistance(parallelBndNodes);
 
-    //- update face normals, point normals, etc.
+    // update face normals, point normals, etc.
     surfaceModifier.updateGeometry(nodesToMap);
 
-    //- map edge nodes
+    // map edge nodes
     mapEdgeNodes(selectedEdges);
 
-    //- map corner vertices
+    // map corner vertices
     mapCorners(selectedCorners);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

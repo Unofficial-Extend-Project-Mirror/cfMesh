@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -34,11 +32,11 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 defineTypeNameAndDebug(boundaryPatch, 0);
 addToRunTimeSelectionTable(boundaryPatchBase, boundaryPatch, dictionary);
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -53,10 +51,12 @@ boundaryPatch::boundaryPatch
     boundaryPatchBase(n, t, nF, sF)
 {}
 
+
 boundaryPatch::boundaryPatch(const word& name, const dictionary& dict)
 :
     boundaryPatchBase(name, dict)
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,15 +72,18 @@ dictionary boundaryPatch::dict() const
     return dict;
 }
 
+
 void boundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
+
 void boundaryPatch::writeDict(Ostream& os) const
 {
     this->operator<<(os);
 }
+
 
 Ostream& boundaryPatch::operator<<(Ostream& os) const
 {
@@ -92,6 +95,7 @@ Ostream& boundaryPatch::operator<<(Ostream& os) const
 
     return os;
 }
+
 
 Istream& boundaryPatch::operator>>(Istream& is)
 {
@@ -105,6 +109,7 @@ Istream& boundaryPatch::operator>>(Istream& is)
     return is;
 }
 
+
 void boundaryPatch::operator=(const boundaryPatch& wp)
 {
     name_ = wp.name_;
@@ -113,23 +118,25 @@ void boundaryPatch::operator=(const boundaryPatch& wp)
     startFace_ = wp.startFace_;
 }
 
+
 bool boundaryPatch::operator!=(const boundaryPatch& wp) const
 {
-    if( name_ != wp.name_ )
+    if (name_ != wp.name_)
     {
         return true;
     }
-    else if( type_ != wp.name_ )
+    else if (type_ != wp.name_)
     {
         return true;
     }
-    else if( (nFaces_ != wp.nFaces_) || (startFace_ != wp.startFace_) )
+    else if ((nFaces_ != wp.nFaces_) || (startFace_ != wp.startFace_))
     {
         return true;
     }
 
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

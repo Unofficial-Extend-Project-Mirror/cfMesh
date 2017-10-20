@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeAutomaticRefinement
+    Foam::meshOctreeAutomaticRefinement
 
 Description
     Automatic octree for mesh generation. This class checks if the current
@@ -57,6 +57,7 @@ class meshOctreeAddressing;
 class meshOctreeAutomaticRefinement
 {
     // Private data
+
         //- reference to meshOctree
         meshOctree& octree_;
 
@@ -69,7 +70,9 @@ class meshOctreeAutomaticRefinement
         //- a flag for activating paired refinement
         bool hexRefinement_;
 
+
     // Private member functions
+
         //- meshOctreeAddressing pointer
         mutable meshOctreeAddressing* octreeAddressingPtr_;
 
@@ -87,11 +90,13 @@ class meshOctreeAutomaticRefinement
         //- curvature estimator pointer
         mutable triSurfaceCurvatureEstimator* curvaturePtr_;
 
-           //- calculate curvaturePtr_
+        //- calculate curvaturePtr_
         void createCurvatureEstimator() const;
         const triSurfaceCurvatureEstimator& curvature() const;
 
+
     // Functions and data performing automatic refinement
+
         //- maximum allowed refinement level
         direction maxRefLevel_;
 
@@ -129,30 +134,32 @@ class meshOctreeAutomaticRefinement
             const labelLongList&
         );
 
+
     // Private copy constructor
+
         //- Disallow default bitwise copy construct
         meshOctreeAutomaticRefinement(const meshOctreeAutomaticRefinement&);
 
         //- Disallow default bitwise assignment
         void operator=(const meshOctreeAutomaticRefinement&);
 
+
 public:
 
-    // Constructors
+    //- Construct from meshOctree, dictionary and boolean
+    meshOctreeAutomaticRefinement
+    (
+        meshOctree& mo,
+        const IOdictionary& dict,
+        bool useDATABoxes = false
+    );
 
-        //- Construct from meshOctree, dictionary and boolean
-        meshOctreeAutomaticRefinement
-        (
-            meshOctree& mo,
-            const IOdictionary& dict,
-            bool useDATABoxes = false
-        );
+    //- Destructor
+    ~meshOctreeAutomaticRefinement();
 
-    // Destructor
-
-        ~meshOctreeAutomaticRefinement();
 
     // Member Functions
+
         //- activate hex refinement
         void activateHexRefinement();
 
@@ -160,6 +167,7 @@ public:
         //- surface features
         void automaticRefinement();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

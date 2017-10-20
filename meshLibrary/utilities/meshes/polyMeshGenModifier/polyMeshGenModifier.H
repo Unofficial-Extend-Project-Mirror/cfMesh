@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenModifier
+    Foam::polyMeshGenModifier
 
 Description
     Modifier for polyMeshGen
@@ -53,13 +53,16 @@ class VRWGraphList;
 class polyMeshGenModifier
 {
     // Private data
+
         //- reference to the mesh
         polyMeshGen& mesh_;
 
         //- helper data for adding cells
         VRWGraph* pointFacesPtr_;
 
+
     // Private member functions
+
         //- calculate and return point faces
         inline void calculatePointFaces()
         {
@@ -75,35 +78,43 @@ class polyMeshGenModifier
         //- they should comea immediately after the internal faces
         void reorderProcBoundaryFaces();
 
+
 protected:
+
+    // Protected member functions
 
         VRWGraph& pointFaces()
         {
-            if( !pointFacesPtr_ )
+            if (!pointFacesPtr_)
+            {
                 calculatePointFaces();
+            }
 
             return *pointFacesPtr_;
         };
 
+
 public:
 
-    // Constructors
-        //- Construct from the reference to the mesh
-        polyMeshGenModifier(polyMeshGen& mesh)
-        :
-            mesh_(mesh),
-            pointFacesPtr_(NULL)
-        {
-            //mesh_.clearOut();
-        };
+    //- Construct from the reference to the mesh
+    polyMeshGenModifier(polyMeshGen& mesh)
+    :
+        mesh_(mesh),
+        pointFacesPtr_(nullptr)
+    {
+        //mesh_.clearOut();
+    };
 
-    // Destructor
-        ~polyMeshGenModifier()
-        {
-            this->clearOut();
-        };
+
+    //- Destructor
+    ~polyMeshGenModifier()
+    {
+        this->clearOut();
+    };
+
 
     // Member functions
+
         //- access to mesh points
         inline pointFieldPMG& pointsAccess()
         {
@@ -204,6 +215,7 @@ public:
             mesh_.clearOut();
         }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

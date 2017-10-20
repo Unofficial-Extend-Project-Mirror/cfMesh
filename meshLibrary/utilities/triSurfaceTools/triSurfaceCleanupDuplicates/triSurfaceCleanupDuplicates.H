@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfaceCleanupDuplicates
+    Foam::triSurfaceCleanupDuplicates
 
 Description
     Provides information regarding surface partitions on the surface
@@ -48,12 +48,13 @@ namespace Foam
 class meshOctree;
 
 /*---------------------------------------------------------------------------*\
-                Class triSurfaceCleanupDuplicates Declaration
+                 Class triSurfaceCleanupDuplicates Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurfaceCleanupDuplicates
 {
     // Private data
+
         //- tolerance for points
         const scalar tolerance_;
 
@@ -69,7 +70,9 @@ class triSurfaceCleanupDuplicates
         //- check if the operation has already been performed
         bool done_;
 
+
     // Private member functions
+
         //- Check duplicate triangles
         bool checkDuplicateTriangles();
 
@@ -85,20 +88,18 @@ class triSurfaceCleanupDuplicates
         //- Disallow default bitwise assignment
         void operator=(const triSurfaceCleanupDuplicates&);
 
+
 public:
 
-    // Constructors
+    //- Construct from meshOctree and tolerance
+    triSurfaceCleanupDuplicates
+    (
+        const meshOctree& octree,
+        const scalar tol = 1e-6
+    );
 
-        //- Construct from meshOctree and tolerance
-        triSurfaceCleanupDuplicates
-        (
-            const meshOctree& octree,
-            const scalar tol=1e-6
-        );
-
-    // Destructor
-
-        ~triSurfaceCleanupDuplicates();
+    //- Destructor
+    ~triSurfaceCleanupDuplicates();
 
 
     // Member Functions
@@ -106,6 +107,7 @@ public:
         //- merge duplicate vertices and triangles
         void mergeIdentities();
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

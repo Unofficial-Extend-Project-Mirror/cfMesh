@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctreeCreator
+    Foam::meshOctreeCreator
 
 Description
     Creates octree for mesh generation
@@ -52,7 +52,7 @@ namespace Foam
 class meshOctreeCube;
 
 /*---------------------------------------------------------------------------*\
-                    Class meshOctreeCreator Declaration
+                      Class meshOctreeCreator Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshOctreeCreator
@@ -60,6 +60,7 @@ class meshOctreeCreator
 protected:
 
     // Protected data
+
         //- Reference to meshOctree
         meshOctree& octree_;
 
@@ -72,10 +73,13 @@ protected:
         //- hex refinement flag
         bool hexRefinement_;
 
+
 private:
+
     // Private member functions
 
-    // Octree refinement
+        // Octree refinement
+
         //- refine boxes contained inside the objects for refinement
         void refineBoxesContainedInObjects();
 
@@ -98,7 +102,9 @@ private:
         void createInsideOutsideInformation();
         void refineInsideAndUnknownBoxes();
 
+
     // Private member functions for parallel runs
+
         //- move octree cubes from one processor to another until
         //- each processor contains the same number of leaves
         //- of the required type
@@ -109,17 +115,20 @@ private:
         direction globalRefLevel_;
 
         //- this list contains ref level for each surface triangle
-        List<DynList<std::pair<direction, scalar> > > surfRefLevel_;
+        List<DynList<std::pair<direction, scalar>>> surfRefLevel_;
 
         //- set the boundBox such that maxCellSize is achieved
         void setRootCubeSizeAndRefParameters();
 
+
     // Private copy constructor
+
         //- Disallow default bitwise copy construct
         meshOctreeCreator(const meshOctreeCreator&);
 
         //- Disallow default bitwise assignment
         void operator=(const meshOctreeCreator&);
+
 
 public:
 
@@ -131,12 +140,13 @@ public:
         //- Construct from meshOctree and dictionary
         meshOctreeCreator(meshOctree& mo, const IOdictionary& dict);
 
-    // Destructor
 
-        ~meshOctreeCreator();
+    //- Destructor
+    ~meshOctreeCreator();
 
 
     // Member Functions
+
         //- set the scaling factor
         void setScalingFactor(const scalar);
 

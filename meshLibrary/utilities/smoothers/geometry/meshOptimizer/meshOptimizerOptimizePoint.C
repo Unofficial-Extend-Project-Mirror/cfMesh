@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -52,7 +50,7 @@ void meshOptimizer::laplaceSmoother::laplacian
     const VRWGraph& pPoints = mesh_.addressingData().pointPoints();
     pointFieldPMG& points = mesh_.points();
 
-    for(label iterationI=0;iterationI<nIterations;++iterationI)
+    for (label iterationI = 0; iterationI < nIterations; ++iterationI)
     {
         labelLongList procPoints;
 
@@ -60,10 +58,10 @@ void meshOptimizer::laplaceSmoother::laplacian
         {
             const label pointI = smoothPoints[i];
 
-            if( vertexLocation_[pointI] & LOCKED )
+            if (vertexLocation_[pointI] & LOCKED)
                 continue;
 
-            if( vertexLocation_[pointI] & PARALLELBOUNDARY )
+            if (vertexLocation_[pointI] & PARALLELBOUNDARY)
             {
                 procPoints.append(pointI);
 
@@ -74,10 +72,10 @@ void meshOptimizer::laplaceSmoother::laplacian
 
             const label nPointPoints = pPoints.sizeOfRow(pointI);
 
-            if( nPointPoints == 0 )
+            if (nPointPoints == 0)
                 return;
 
-            for(label pI=0;pI<nPointPoints;++pI)
+            for (label pI = 0; pI < nPointPoints; ++pI)
                 newP += points[pPoints(pointI, pI)];
 
             newP /= pPoints.sizeOfRow(pointI);
@@ -90,6 +88,7 @@ void meshOptimizer::laplaceSmoother::laplacian
     updateMeshGeometry(smoothPoints);
 }
 
+
 void meshOptimizer::laplaceSmoother::laplacianSurface
 (
     const labelLongList& smoothPoints,
@@ -99,7 +98,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
     const VRWGraph& pPoints = mesh_.addressingData().pointPoints();
     pointFieldPMG& points = mesh_.points();
 
-    for(label iterationI=0;iterationI<nIterations;++iterationI)
+    for (label iterationI = 0; iterationI < nIterations; ++iterationI)
     {
         labelLongList procPoints;
 
@@ -107,10 +106,10 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
         {
             const label pointI = smoothPoints[i];
 
-            if( vertexLocation_[pointI] & LOCKED )
+            if (vertexLocation_[pointI] & LOCKED)
                 continue;
 
-            if( vertexLocation_[pointI] & PARALLELBOUNDARY )
+            if (vertexLocation_[pointI] & PARALLELBOUNDARY)
             {
                 procPoints.append(pointI);
 
@@ -123,14 +122,14 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
             forAllRow(pPoints, pointI, pI)
             {
                 const label pLabel = pPoints(pointI, pI);
-                if( vertexLocation_[pLabel] & INSIDE )
+                if (vertexLocation_[pLabel] & INSIDE)
                     continue;
 
                 newP += points[pLabel];
                 ++counter;
             }
 
-            if( counter != 0 )
+            if (counter != 0)
             {
                 newP /= counter;
                 points[pointI] = newP;
@@ -143,6 +142,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
     updateMeshGeometry(smoothPoints);
 }
 
+
 void meshOptimizer::laplaceSmoother::laplacianPC
 (
     const labelLongList& smoothPoints,
@@ -153,7 +153,7 @@ void meshOptimizer::laplaceSmoother::laplacianPC
     const vectorField& centres = mesh_.addressingData().cellCentres();
     pointFieldPMG& points = mesh_.points();
 
-    for(label iterationI=0;iterationI<nIterations;++iterationI)
+    for (label iterationI = 0; iterationI < nIterations; ++iterationI)
     {
         labelLongList procPoints;
 
@@ -164,13 +164,13 @@ void meshOptimizer::laplaceSmoother::laplacianPC
         {
             const label pointI = smoothPoints[i];
 
-            if( vertexLocation_[pointI] & LOCKED )
+            if (vertexLocation_[pointI] & LOCKED)
                 continue;
 
-            if( pointCells.sizeOfRow(pointI) == 0 )
+            if (pointCells.sizeOfRow(pointI) == 0)
                 continue;
 
-            if( vertexLocation_[pointI] & PARALLELBOUNDARY )
+            if (vertexLocation_[pointI] & PARALLELBOUNDARY)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -195,6 +195,7 @@ void meshOptimizer::laplaceSmoother::laplacianPC
     }
 }
 
+
 void meshOptimizer::laplaceSmoother::laplacianWPC
 (
     const labelLongList& smoothPoints,
@@ -207,7 +208,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
 
     pointFieldPMG& points = mesh_.points();
 
-    for(label iterationI=0;iterationI<nIterations;++iterationI)
+    for (label iterationI = 0; iterationI < nIterations; ++iterationI)
     {
         labelLongList procPoints;
 
@@ -218,13 +219,13 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
         {
             const label pointI = smoothPoints[i];
 
-            if( vertexLocation_[pointI] & LOCKED )
+            if (vertexLocation_[pointI] & LOCKED)
                 continue;
 
-            if( pointCells.sizeOfRow(pointI) == 0 )
+            if (pointCells.sizeOfRow(pointI) == 0)
                 continue;
 
-            if( vertexLocation_[pointI] & PARALLELBOUNDARY )
+            if (vertexLocation_[pointI] & PARALLELBOUNDARY)
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -240,7 +241,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
             {
                 const label cellI = pointCells(pointI, pcI);
                 const scalar w = Foam::max(volumes[cellI], VSMALL);
-                newP += w * centres[cellI];
+                newP += w*centres[cellI];
                 sumWeights += w;
             }
 
@@ -254,6 +255,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
     }
 }
 
+
 void meshOptimizer::laplaceSmoother::updateMeshGeometry
 (
     const labelLongList& smoothPoints
@@ -265,14 +267,14 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
     boolList chF(mesh_.faces().size(), false);
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( smoothPoints.size() > 100 ) \
+    # pragma omp parallel for if (smoothPoints.size() > 100) \
     schedule(dynamic, 20)
     # endif
     forAll(smoothPoints, i)
     {
         const label pointI = smoothPoints[i];
 
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             continue;
 
         forAllRow(pointCells, pointI, pcI)
@@ -284,7 +286,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
         }
     }
 
-    //- make sure that neighbouring processors get the same information
+    // make sure that neighbouring processors get the same information
     const PtrList<processorBoundaryPatch>& pBnd = mesh_.procBoundaries();
     forAll(pBnd, patchI)
     {
@@ -292,9 +294,9 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
         const label size = pBnd[patchI].patchSize();
 
         labelLongList sendData;
-        for(label faceI=0;faceI<size;++faceI)
+        for (label faceI = 0; faceI < size; ++faceI)
         {
-            if( chF[start+faceI] )
+            if (chF[start + faceI])
                 sendData.append(faceI);
         }
 
@@ -322,18 +324,18 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
 
         const label start = pBnd[patchI].patchStart();
         forAll(receivedData, i)
-            chF[start+receivedData[i]] = true;
+            chF[start + receivedData[i]] = true;
     }
 
-    //- update geometry information
+    // update geometry information
     const_cast<polyMeshGenAddressing&>
     (
         mesh_.addressingData()
     ).updateGeometry(chF);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Constructor of laplaceSmoother
 
 meshOptimizer::laplaceSmoother::laplaceSmoother
 (
@@ -345,13 +347,14 @@ meshOptimizer::laplaceSmoother::laplaceSmoother
     vertexLocation_(vertexLocation)
 {}
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 meshOptimizer::laplaceSmoother::~laplaceSmoother()
 {}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Member Functions
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
 {
@@ -359,12 +362,13 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
 
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & INSIDE )
+        if (vertexLocation_[pointI] & INSIDE)
             smoothPoints.append(pointI);
     }
 
     laplacian(smoothPoints, nIterations);
 }
+
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacian
 (
@@ -372,8 +376,9 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian
     const label /*nIterations*/
 )
 {
-    FatalError << "Not implemented " << exit(FatalError);
+    NotImplemented;
 }
+
 
 void meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
 (
@@ -381,8 +386,9 @@ void meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
     const label /*nIterations*/
 )
 {
-    FatalError << "Not implemented " << exit(FatalError);
+    NotImplemented;
 }
+
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 (
@@ -393,21 +399,23 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & INSIDE )
+        if (vertexLocation_[pointI] & INSIDE)
             smoothPoints.append(pointI);
     }
 
     laplacianPC(smoothPoints, nIterations);
 }
 
+
 void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 (
     const labelHashSet& /*badFaces*/,
     const label /*nIterations*/
 )
 {
-    FatalError << "Not implemented " << exit(FatalError);
+    NotImplemented;
 }
+
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 (
@@ -418,12 +426,13 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 
     forAll(vertexLocation_, pointI)
     {
-        if( vertexLocation_[pointI] & INSIDE )
+        if (vertexLocation_[pointI] & INSIDE)
             smoothPoints.append(pointI);
     }
 
     laplacianWPC(smoothPoints, nIterations);
 }
+
 
 void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 (
@@ -431,8 +440,9 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
     const label /*nIterations*/
 )
 {
-    FatalError << "Not implemented " << exit(FatalError);
+    NotImplemented;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

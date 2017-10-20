@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    processorBoundaryPatch
+    Foam::processorBoundaryPatch
 
 Description
     Writes information for a given processor patch
@@ -46,7 +46,8 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class processorBoundaryPatch
-:   public boundaryPatchBase
+:
+    public boundaryPatchBase
 {
     // private data
 
@@ -54,12 +55,16 @@ class processorBoundaryPatch
 
         label neighbProcNo_;
 
+
 public:
 
-    // Runtime type information
-        TypeName("processor");
+    //- Runtime type information
+    TypeName("processor");
 
-    // Construct from components
+
+    // Constructors
+
+        //- Construct from components
         processorBoundaryPatch
         (
             const word& name,
@@ -72,7 +77,7 @@ public:
 
         processorBoundaryPatch(const word& name, const dictionary&);
 
-    // Construct and return a clone
+        // Construct and return a clone
         virtual autoPtr<boundaryPatchBase> clone() const
         {
             return autoPtr<boundaryPatchBase>
@@ -108,7 +113,9 @@ public:
             );
         }
 
+
     // Member functions
+
         //- return the owner processor
         inline label myProcNo() const
         {
@@ -124,8 +131,10 @@ public:
         //- check if the processor is the owner of the interface
         inline bool owner() const
         {
-            if( myProcNo_ < neighbProcNo_ )
+            if (myProcNo_ < neighbProcNo_)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -133,14 +142,18 @@ public:
         //- Return as dictionary of entries
         dictionary dict() const;
 
+
     // Write
+
         //- write to Ostream
         void write(Ostream&) const;
 
         //- Write dictionary
         void writeDict(Ostream&) const;
 
+
     // Member operators
+
         Ostream& operator<<(Ostream&) const;
 
         Istream& operator>>(Istream&);
@@ -149,6 +162,7 @@ public:
 
         bool operator!=(const processorBoundaryPatch&) const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    LongList
+    Foam::LongList
 
 Description
     A dynamic list is a 1-D vector of objects of type T which resizes
@@ -50,7 +50,7 @@ SourceFiles
 namespace Foam
 {
 
-// * * * * * * Forward declaration of template friend fuctions * * * * * * * //
+// Forward declaration of template friend functions
 
 template<class T, label Offset>
 class LongList;
@@ -69,13 +69,14 @@ Istream& operator>>
 );
 
 /*---------------------------------------------------------------------------*\
-                           Class LongList Declaration
+                          Class LongList Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class T, label Offset = 19>
 class LongList
 {
     // Private data
+
         //- number of allocated elements
         label N_;
 
@@ -98,7 +99,9 @@ class LongList
         //- array of pointers to the blocks of data, each of the size WIDTH
         T** dataPtr_;
 
+
     // Private member functions
+
         //- check index
         void checkIndex(const label i) const;
 
@@ -110,6 +113,7 @@ class LongList
 
         //- delete all elements
         void clearOut();
+
 
 public:
 
@@ -124,12 +128,13 @@ public:
         //- Construct to given size and initialize
         explicit inline LongList(const label size, const T& t);
 
-        //- Copy contructor
+        //- Copy constructor
         inline LongList(const LongList<T, Offset>&);
 
-    // Destructor
 
-        inline ~LongList();
+    //- Destructor
+    inline ~LongList();
+
 
     // Member Functions
 
@@ -142,6 +147,7 @@ public:
             //  if the element is a primitive type
             //  i.e. contiguous<T>() == true
             inline label byteSize() const;
+
 
         // Edit
 
@@ -196,6 +202,7 @@ public:
 
 
     // IOstream operators
+
         //- Read from stream and append to the current content
         void appendFromStream(Istream&);
 

@@ -6,23 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
-
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,23 +35,22 @@ inline bool meshOctree::isQuadtree() const
     return isQuadtree_;
 }
 
-//- return octant vectors
+
 inline const FixedList<Vector<label>, 8>& meshOctree::octantVectors() const
 {
     return octantVectors_;
 }
 
-//- return leaves of the octree
+
 inline label meshOctree::numberOfLeaves() const
 {
-    if( leaves_.size() == 0 )
-        FatalErrorIn
-        (
-            "inline const label& meshOctree::numberOfLeaves() const"
-        ) << "Leaves are not yet created!!" << exit(FatalError);
+    if (leaves_.size() == 0)
+        FatalErrorInFunction
+            << "Leaves are not yet created!!" << exit(FatalError);
 
     return leaves_.size();
 }
+
 
 inline const meshOctreeCubeBasic& meshOctree::returnLeaf
 (
@@ -64,18 +60,21 @@ inline const meshOctreeCubeBasic& meshOctree::returnLeaf
     return *leaves_[leafI];
 }
 
+
 inline short meshOctree::leafAtProc(const label leafI) const
 {
     return leaves_[leafI]->procNo();
 }
 
+
 inline bool meshOctree::hasContainedTriangles(const label leafI) const
 {
-    if( leaves_[leafI]->hasContainedElements() )
+    if (leaves_[leafI]->hasContainedElements())
         return true;
 
     return false;
 }
+
 
 inline void meshOctree::containedTriangles
 (
@@ -85,7 +84,7 @@ inline void meshOctree::containedTriangles
 {
     triangles.clear();
 
-    if( !leaves_[leafI]->hasContainedElements() )
+    if (!leaves_[leafI]->hasContainedElements())
     {
         triangles.clear();
         return;
@@ -98,13 +97,15 @@ inline void meshOctree::containedTriangles
         triangles.append(elmts[elI]);
 }
 
+
 inline bool meshOctree::hasContainedEdges(const label leafI) const
 {
-    if( leaves_[leafI]->hasContainedEdges() )
+    if (leaves_[leafI]->hasContainedEdges())
         return true;
 
     return false;
 }
+
 
 inline void meshOctree::containedEdges
 (
@@ -114,7 +115,7 @@ inline void meshOctree::containedEdges
 {
     edges.clear();
 
-    if( !leaves_[leafI]->hasContainedEdges() )
+    if (!leaves_[leafI]->hasContainedEdges())
     {
         edges.clear();
         return;
@@ -127,15 +128,18 @@ inline void meshOctree::containedEdges
         edges.append(elmts[eI]);
 }
 
+
 inline const triSurf& meshOctree::surface() const
 {
     return surface_;
 }
 
+
 inline const boundBox& meshOctree::rootBox() const
 {
     return rootBox_;
 }
+
 
 inline const FixedList<meshOctreeCubeCoordinates, 26>&
 meshOctree::regularityPositions() const
@@ -143,16 +147,19 @@ meshOctree::regularityPositions() const
     return regularityPositions_;
 }
 
+
 inline const FixedList<FixedList<meshOctreeCubeCoordinates, 8>, 8>&
 meshOctree::positionsOfLeavesAtNodes() const
 {
     return vrtLeavesPos_;
 }
 
+
 inline const labelList& meshOctree::neiProcs() const
 {
     return neiProcs_;
 }
+
 
 inline label meshOctree::findNeighbourOverNode
 (
@@ -162,6 +169,7 @@ inline label meshOctree::findNeighbourOverNode
 {
     return findNeighbourOverNode(leaves_[leafI]->coordinates(), nodeI);
 }
+
 
 inline void meshOctree::findNeighboursOverEdge
 (
@@ -173,6 +181,7 @@ inline void meshOctree::findNeighboursOverEdge
     findNeighboursOverEdge(leaves_[leafI]->coordinates(), eI, neighbourLeaves);
 }
 
+
 inline void meshOctree::findNeighboursInDirection
 (
     const label leafI,
@@ -183,6 +192,7 @@ inline void meshOctree::findNeighboursInDirection
     findNeighboursInDirection(leaves_[leafI]->coordinates(), dir, neiLeaves);
 }
 
+
 inline void meshOctree::findNeighboursForLeaf
 (
     const label leafI,
@@ -192,6 +202,7 @@ inline void meshOctree::findNeighboursForLeaf
     findNeighboursForLeaf(leaves_[leafI]->coordinates(), neighbourLeaves);
 }
 
+
 inline void meshOctree::findAllLeafNeighbours
 (
     const label leafI,
@@ -200,6 +211,7 @@ inline void meshOctree::findAllLeafNeighbours
 {
     findAllLeafNeighbours(leaves_[leafI]->coordinates(), neighbourLeaves);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,7 +48,7 @@ namespace Foam
 
 void meshSurfaceMapper::preMapVertices(const label nIterations)
 {
-    Info << "Smoothing mesh surface before mapping." << endl;
+    Info<< "Smoothing mesh surface before mapping." << endl;
 
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -63,7 +61,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
     const triSurf& surf = meshOctree_.surface();
 
     List<labelledPointScalar> preMapPositions(boundaryPoints.size());
-    List<DynList<scalar, 6> > faceCentreDistances(bFaces.size());
+    List<DynList<scalar, 6>> faceCentreDistances(bFaces.size());
 
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 20)
@@ -81,10 +79,10 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         }
     }
 
-    for(label iterI=0;iterI<nIterations;++iterI)
+    for (label iterI = 0; iterI < nIterations; ++iterI)
     {
-        //- find patches in the vicinity of a boundary face
-        List<DynList<label> > boundaryPointPatches(boundaryPoints.size());
+        // find patches in the vicinity of a boundary face
+        List<DynList<label>> boundaryPointPatches(boundaryPoints.size());
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
@@ -127,7 +125,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             {
                 const scalar m = faceMetricInPatch(bfI, patches[ptchI]);
 
-                if( m < metric )
+                if (m < metric)
                 {
                     metric = m;
                     bestPatch = patches[ptchI];
@@ -138,7 +136,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 boundaryPointPatches[bp[bf[pI]]].appendIfNotIn(bestPatch);
         }
 
-        //- use the shrinking laplace first
+        // use the shrinking laplace first
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40)
         # endif
@@ -157,17 +155,17 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 (
                     max(magSqr(p - fc) / faceCentreDistances[bfI][pos], SMALL)
                 );
-                lp.coordinates() += w * faceCentres[bfI];
+                lp.coordinates() += w*faceCentres[bfI];
                 lp.scalarValue() += w;
             }
 
             preMapPositions[bpI] = lp;
         }
 
-        //- pointer needed in case of parallel calculation
-        const VRWGraph* bpAtProcsPtr(NULL);
+        // pointer needed in case of parallel calculation
+        const VRWGraph* bpAtProcsPtr(nullptr);
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
             bpAtProcsPtr = &bpAtProcs;
@@ -176,8 +174,8 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             const Map<label>& globalToLocal =
                 surfaceEngine_.globalToLocalBndPointAddressing();
 
-            //- collect data to be sent to other processors
-            std::map<label, LongList<labelledPointScalar> > exchangeData;
+            // collect data to be sent to other processors
+            std::map<label, LongList<labelledPointScalar>> exchangeData;
             forAll(surfaceEngine_.bpNeiProcs(), i)
                 exchangeData.insert
                 (
@@ -196,7 +194,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 {
                     const label neiProc = bpAtProcs(bpI, procI);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append
@@ -211,11 +209,11 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 }
             }
 
-            //- exchange data with other processors
+            // exchange data with other processors
             LongList<labelledPointScalar> receivedData;
             help::exchangeMap(exchangeData, receivedData);
 
-            //- combine collected data with the available data
+            // combine collected data with the available data
             forAll(receivedData, i)
             {
                 const labelledPointScalar& lps = receivedData[i];
@@ -228,7 +226,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             }
         }
 
-        //- create the surface modifier and move the surface points
+        // create the surface modifier and move the surface points
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
         LongList<parMapperHelper> parallelBndNodes;
 
@@ -247,7 +245,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             point pMap = p;
             scalar dSq;
 
-            if( boundaryPointPatches[bpI].size() == 1 )
+            if (boundaryPointPatches[bpI].size() == 1)
             {
                 label nt;
                 meshOctree_.findNearestSurfacePointInRegion
@@ -270,11 +268,11 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                 );
             }
 
-            const point newP = p + 0.5 * (pMap - p);
+            const point newP = p + 0.5*(pMap - p);
 
             surfaceModifier.moveBoundaryVertexNoUpdate(bpI, newP);
 
-            if( bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI) )
+            if (bpAtProcsPtr && bpAtProcsPtr->sizeOfRow(bpI))
             {
                 # ifdef USE_OMP
                 # pragma omp critical
@@ -292,11 +290,11 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
             }
         }
 
-        //- make sure that the vertices at inter-processor boundaries
-        //- are mapped onto the same location
+        // make sure that the vertices at inter-processor boundaries
+        // are mapped onto the same location
         mapToSmallestDistance(parallelBndNodes);
 
-        //- update the surface geometry of the
+        // update the surface geometry of the
         surfaceModifier.updateGeometry();
 
         meshSurfaceOptimizer(surfaceEngine_, meshOctree_).untangleSurface();
@@ -304,8 +302,9 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
         surfaceModifier.updateGeometry();
     }
 
-    Info << "Finished smoothing mesh surface before mapping." << endl;
+    Info<< "Finished smoothing mesh surface before mapping." << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

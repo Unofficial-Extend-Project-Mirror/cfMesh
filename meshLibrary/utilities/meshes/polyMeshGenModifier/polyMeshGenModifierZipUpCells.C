@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,12 +40,12 @@ namespace Foam
 void polyMeshGenModifier::zipUpCells()
 {
     this->clearOut();
-    
+
     Info<< "Zipping up topologically open cells" << endl;
-    
+
     const pointFieldPMG& points = mesh_.points();
     const cellListPMG& cells = mesh_.cells();
-    
+
     faceListPMG& faces = mesh_.faces_;
 
     // Algorithm:
@@ -67,7 +65,7 @@ void polyMeshGenModifier::zipUpCells()
     // pass.  It is therefore essential to discard the addressing
     // after every pass.  The algorithm is completed when the mesh
     // stops changing.
-    // 
+    //
 
     label nChangedFacesInMesh;
     label nCycles(0);
@@ -77,10 +75,10 @@ void polyMeshGenModifier::zipUpCells()
     do
     {
         nChangedFacesInMesh = 0;
-        
-        //- calculate pointFaces addressing
+
+        // calculate pointFaces addressing
         # ifdef DEBUG_ZIPUP
-        Info << "Starting pointFaces addressing " << endl;
+        Info<< "Starting pointFaces addressing " << endl;
         # endif
 
         List<direction> nUsage(points.size(), direction(0));
@@ -88,29 +86,35 @@ void polyMeshGenModifier::zipUpCells()
         {
             const face& f = faces[fI];
             forAll(f, pI)
+            {
                 ++nUsage[f[pI]];
+            }
         }
-        
+
         VRWGraph pFaces(points.size());
         forAll(nUsage, pI)
+        {
             pFaces.setRowSize(pI, nUsage[pI]);
-        
+        }
+
         nUsage = 0;
-        
+
         forAll(faces, fI)
         {
             const face& f = faces[fI];
             forAll(f, pI)
+            {
                 pFaces(f[pI], nUsage[f[pI]]++) = fI;
+            }
         }
-        
+
         nUsage.clear();
 
         # ifdef DEBUG_ZIPUP
-        Info << "Starting zipping cells " << endl;
+        Info<< "Starting zipping cells " << endl;
         # endif
 
-        forAll (cells, cellI)
+        forAll(cells, cellI)
         {
             const labelList& curFaces = cells[cellI];
             const edgeList cellEdges = cells[cellI].edges(faces);
@@ -120,15 +124,15 @@ void polyMeshGenModifier::zipUpCells()
 
             labelList edgeUsage(cellEdges.size(), 0);
 
-            forAll (curFaces, faceI)
+            forAll(curFaces, faceI)
             {
                 edgeList curFaceEdges = faces[curFaces[faceI]].edges();
 
-                forAll (curFaceEdges, faceEdgeI)
+                forAll(curFaceEdges, faceEdgeI)
                 {
                     const edge& curEdge = curFaceEdges[faceEdgeI];
 
-                    forAll (cellEdges, cellEdgeI)
+                    forAll(cellEdges, cellEdgeI)
                     {
                         if (cellEdges[cellEdgeI] == curEdge)
                         {
@@ -142,7 +146,7 @@ void polyMeshGenModifier::zipUpCells()
             edgeList singleEdges(cellEdges.size());
             label nSingleEdges = 0;
 
-            forAll (edgeUsage, edgeI)
+            forAll(edgeUsage, edgeI)
             {
                 if (edgeUsage[edgeI] == 1)
                 {
@@ -151,15 +155,14 @@ void polyMeshGenModifier::zipUpCells()
                 }
                 else if (edgeUsage[edgeI] != 2)
                 {
-                    Warning
-                        << "void polyMesh::zipUpCells() : "
+                    WarningInFunction
                         << "edge " << cellEdges[edgeI] << " in cell " << cellI
                         << " used " << edgeUsage[edgeI] << " times. " << nl
                         << "Should be 1 or 2 - serious error "
                         << "in mesh structure. " << endl;
 
 #           ifdef DEBUG_ZIPUP
-                    forAll (curFaces, faceI)
+                    forAll(curFaces, faceI)
                     {
                         Info<< "face: " << faces[curFaces[faceI]]
                             << endl;
@@ -169,7 +172,7 @@ void polyMeshGenModifier::zipUpCells()
                         << "Edge usage: " << edgeUsage << nl
                         << "Cell points: " << cellPoints << endl;
 
-                    forAll (cellPoints, cpI)
+                    forAll(cellPoints, cpI)
                     {
                         Info<< "vertex create \"" << cellPoints[cpI]
                             << "\" coordinates "
@@ -188,9 +191,9 @@ void polyMeshGenModifier::zipUpCells()
             singleEdges.setSize(nSingleEdges);
 
 #           ifdef DEBUG_ZIPUP
-            Info << "Cell " << cellI << endl;
+            Info<< "Cell " << cellI << endl;
 
-            forAll (curFaces, faceI)
+            forAll(curFaces, faceI)
             {
                 Info<< "face: " << faces[curFaces[faceI]] << endl;
             }
@@ -200,7 +203,7 @@ void polyMeshGenModifier::zipUpCells()
                 << "Single edges: " << singleEdges << nl
                 << "Cell points: " << cellPoints << endl;
 
-            forAll (cellPoints, cpI)
+            forAll(cellPoints, cpI)
             {
                 Info<< "vertex create \"" << cellPoints[cpI]
                     << "\" coordinates "
@@ -214,11 +217,11 @@ void polyMeshGenModifier::zipUpCells()
 
             labelList pointUsage(cellPoints.size(), 0);
 
-            forAll (singleEdges, edgeI)
+            forAll(singleEdges, edgeI)
             {
                 const edge& curEdge = singleEdges[edgeI];
 
-                forAll (cellPoints, pointI)
+                forAll(cellPoints, pointI)
                 {
                     if
                     (
@@ -235,7 +238,7 @@ void polyMeshGenModifier::zipUpCells()
 
             // loop through all edges and eliminate the ones that are
             // blocked out
-            forAll (singleEdges, edgeI)
+            forAll(singleEdges, edgeI)
             {
                 bool blockedHead = false;
                 bool blockedTail = false;
@@ -244,7 +247,7 @@ void polyMeshGenModifier::zipUpCells()
                 label newEdgeEnd = singleEdges[edgeI].end();
 
                 // check that the edge has not got all ends blocked
-                forAll (cellPoints, pointI)
+                forAll(cellPoints, pointI)
                 {
                     if (cellPoints[pointI] == newEdgeStart)
                     {
@@ -271,13 +274,13 @@ void polyMeshGenModifier::zipUpCells()
 
             // Go through the points and start from the point used twice
             // check all the edges to find the edges starting from this point
-            // add the 
+            // add the
 
             labelListList edgesToInsert(singleEdges.size());
             label nEdgesToInsert = 0;
 
             // Find a good edge
-            forAll (singleEdges, edgeI)
+            forAll(singleEdges, edgeI)
             {
                 SLList<label> pointChain;
 
@@ -301,25 +304,25 @@ void polyMeshGenModifier::zipUpCells()
 #                   endif
 
                     // Check if head or tail are blocked
-                    forAll (cellPoints, pointI)
+                    forAll(cellPoints, pointI)
                     {
                         if (cellPoints[pointI] == newEdgeStart)
                         {
                             if (pointUsage[pointI] > 2)
                             {
 #                               ifdef DEBUG_CHAIN
-                                Info << "start head blocked" << endl;
+                                Info<< "start head blocked" << endl;
 #                               endif
 
                                 blockHead = true;
                             }
                         }
-                        else if(cellPoints[pointI] == newEdgeEnd)
+                        else if (cellPoints[pointI] == newEdgeEnd)
                         {
                             if (pointUsage[pointI] > 2)
                             {
 #                               ifdef DEBUG_CHAIN
-                                Info << "start tail blocked" << endl;
+                                Info<< "start tail blocked" << endl;
 #                               endif
 
                                 blockTail = true;
@@ -334,7 +337,7 @@ void polyMeshGenModifier::zipUpCells()
                     {
                         stopSearching = false;
 
-                        forAll (singleEdges, addEdgeI)
+                        forAll(singleEdges, addEdgeI)
                         {
                             if (!singleEdgeUsage[addEdgeI])
                             {
@@ -396,25 +399,25 @@ void polyMeshGenModifier::zipUpCells()
                                     << " curEdgeEnd: " << curEdgeEnd << endl;
 #                               endif
 
-                                forAll (cellPoints, pointI)
+                                forAll(cellPoints, pointI)
                                 {
                                     if (cellPoints[pointI] == curEdgeStart)
                                     {
                                         if (pointUsage[pointI] > 2)
                                         {
 #                                           ifdef DEBUG_CHAIN
-                                            Info << "head blocked" << endl;
+                                            Info<< "head blocked" << endl;
 #                                           endif
 
                                             blockHead = true;
                                         }
                                     }
-                                    else if(cellPoints[pointI] == curEdgeEnd)
+                                    else if (cellPoints[pointI] == curEdgeEnd)
                                     {
                                         if (pointUsage[pointI] > 2)
                                         {
 #                                           ifdef DEBUG_CHAIN
-                                            Info << "tail blocked" << endl;
+                                            Info<< "tail blocked" << endl;
 #                                           endif
 
                                             blockTail = true;
@@ -426,7 +429,7 @@ void polyMeshGenModifier::zipUpCells()
                                 if (curEdgeStart == curEdgeEnd)
                                 {
 #                                   ifdef DEBUG_CHAIN
-                                    Info << "closed loop" << endl;
+                                    Info<< "closed loop" << endl;
 #                                   endif
 
                                     pointChain.removeHead();
@@ -449,7 +452,7 @@ void polyMeshGenModifier::zipUpCells()
                 }
 
 #               ifdef DEBUG_CHAIN
-                Info << "completed patch chain: " << pointChain << endl;
+                Info<< "completed patch chain: " << pointChain << endl;
 #               endif
 
                 if (pointChain.size() > 2)
@@ -462,17 +465,17 @@ void polyMeshGenModifier::zipUpCells()
             edgesToInsert.setSize(nEdgesToInsert);
 
 #           ifdef DEBUG_ZIPUP
-            Info << "edgesToInsert: " << edgesToInsert << endl;
+            Info<< "edgesToInsert: " << edgesToInsert << endl;
 #           endif
 
             // Insert the edges into a list of faces
-            forAll (edgesToInsert, edgeToInsertI)
+            forAll(edgesToInsert, edgeToInsertI)
             {
                 // Order the points of the edge
                 // Warning: the ordering must be parametric, because in
                 // the case of multiple point insertion onto the same edge
                 // it is possible to get non-cyclic loops
-                // 
+                //
 
                 const labelList& unorderedEdge = edgesToInsert[edgeToInsertI];
 
@@ -495,12 +498,12 @@ void polyMeshGenModifier::zipUpCells()
                 labelList orderedEdge(unorderedEdge.size(), -1);
                 boolList used(unorderedEdge.size(), false);
 
-                forAll (orderedEdge, epI)
+                forAll(orderedEdge, epI)
                 {
                     label nextPoint = -1;
                     scalar minDist = GREAT;
 
-                    forAll (dist, i)
+                    forAll(dist, i)
                     {
                         if (!used[i] && dist[i] < minDist)
                         {
@@ -520,7 +523,7 @@ void polyMeshGenModifier::zipUpCells()
 #               endif
 
                 // check for duplicate points in the ordered edge
-                forAll (orderedEdge, checkI)
+                forAll(orderedEdge, checkI)
                 {
                     for
                     (
@@ -531,8 +534,7 @@ void polyMeshGenModifier::zipUpCells()
                     {
                         if (orderedEdge[checkI] == orderedEdge[checkJ])
                         {
-                            Warning
-                                << "void polyMesh::zipUpCells() : "
+                            WarningInFunction
                                 << "Duplicate point found in edge to insert. "
                                 << nl << "Point: " << orderedEdge[checkI]
                                 << " edge: " << orderedEdge << endl;
@@ -552,19 +554,23 @@ void polyMeshGenModifier::zipUpCells()
                 // point-face addressing in two goes.
                 const label start = testEdge.start();
                 const label end = testEdge.end();
-                
+
                 labelList facesSharingEdge
                 (
                     pFaces.sizeOfRow(start) +
                     pFaces.sizeOfRow(end)
                 );
                 label nfse = 0;
-                
+
                 forAllRow(pFaces, start, pfI)
+                {
                     facesSharingEdge[nfse++] = pFaces(start, pfI);
-                
+                }
+
                 forAllRow(pFaces, end, pfI)
+                {
                     facesSharingEdge[nfse++] = pFaces(end, pfI);
+                }
 
                 forAll(facesSharingEdge, faceI)
                 {
@@ -576,7 +582,7 @@ void polyMeshGenModifier::zipUpCells()
                     const edgeList curFaceEdges =
                         faces[currentFaceIndex].edges();
 
-                    forAll (curFaceEdges, cfeI)
+                    forAll(curFaceEdges, cfeI)
                     {
                         if (curFaceEdges[cfeI] == testEdge)
                         {
@@ -604,11 +610,11 @@ void polyMeshGenModifier::zipUpCells()
 
                         bool allPointsPresent = true;
 
-                        forAll (orderedEdge, oeI)
+                        forAll(orderedEdge, oeI)
                         {
                             bool curPointFound = false;
 
-                            forAll (newFace, nfI)
+                            forAll(newFace, nfI)
                             {
                                 if (newFace[nfI] == orderedEdge[oeI])
                                 {
@@ -624,7 +630,7 @@ void polyMeshGenModifier::zipUpCells()
 #                       ifdef DEBUG_ZIPUP
                         if (allPointsPresent)
                         {
-                            Info << "All points present" << endl;
+                            Info<< "All points present" << endl;
                         }
 #                       endif
 
@@ -641,14 +647,14 @@ void polyMeshGenModifier::zipUpCells()
                             edgeList newFaceEdges = newFace.edges();
 
 #                           ifdef DEBUG_ZIPUP
-                            Info << "Not all points present." << endl;
+                            Info<< "Not all points present." << endl;
 #                           endif
 
                             label nNewFacePoints = 0;
 
                             bool edgeAdded = false;
 
-                            forAll (newFaceEdges, curFacEdgI)
+                            forAll(newFaceEdges, curFacEdgI)
                             {
                                 // Does the current edge change?
                                 if (newFaceEdges[curFacEdgI] == testEdge)
@@ -708,7 +714,7 @@ void polyMeshGenModifier::zipUpCells()
                                     nNewFacePoints++;
                                 }
                             }
-                            
+
                             forAll(newFace, pI)
                                 pFaces.appendIfNotIn
                                 (
@@ -721,9 +727,9 @@ void polyMeshGenModifier::zipUpCells()
                                 << faces[currentFaceIndex] << nl
                                 << "newFace: " << newFace << endl;
 #                           endif
- 
+
                             // Check for duplicate points in the new face
-                            forAll (newFace, checkI)
+                            forAll(newFace, checkI)
                             {
                                 for
                                 (
@@ -734,8 +740,7 @@ void polyMeshGenModifier::zipUpCells()
                                 {
                                     if (newFace[checkI] == newFace[checkJ])
                                     {
-                                        Warning
-                                            << "void polyMesh::zipUpCells()"
+                                        WarningInFunction
                                             << "Duplicate point found "
                                             << "in the new face. " << nl
                                             << "Point: "
@@ -770,7 +775,7 @@ void polyMeshGenModifier::zipUpCells()
             labelList toc(problemCells.toc());
             sort(toc);
 
-            FatalErrorIn("void polyMesh::zipUpCells()")
+            FatalErrorInFunction
                 << "Found " << problemCells.size() << " problem cells." << nl
                 << "Cells: " << toc
                 << abort(FatalError);
@@ -782,13 +787,14 @@ void polyMeshGenModifier::zipUpCells()
 
     if (nChangedFacesInMesh > 0)
     {
-        FatalErrorIn("void polyMesh::zipUpCells()")
-            << "cell zip-up failed after 100 cycles.  Probable problem "
+        FatalErrorInFunction
+            << "cell zip - up failed after 100 cycles.  Probable problem "
             << "with the original mesh"
             << abort(FatalError);
     }
-    Info << "Finished zipping the mesh." << endl;
+    Info<< "Finished zipping the mesh." << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

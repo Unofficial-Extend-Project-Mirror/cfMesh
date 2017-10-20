@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,86 +37,87 @@ void polyMeshGenAddressing::printAllocated() const
 {
     Pout << "polyMeshGenAddressing allocated :" << endl;
 
-    if( edgesPtr_ )
+    if (edgesPtr_)
     {
         Pout<< "    Edges" << endl;
     }
 
-    if( ccPtr_ )
+    if (ccPtr_)
     {
-        Pout<< "    Cell-cells" << endl;
+        Pout<< "    Cell - cells" << endl;
     }
 
-    if( ecPtr_ )
+    if (ecPtr_)
     {
         Pout<< "    Edge-cells" << endl;
     }
 
     if (pcPtr_)
     {
-        Pout<< "    Point-cells" << endl;
+        Pout<< "    Point - cells" << endl;
     }
 
-    if( efPtr_ )
+    if (efPtr_)
     {
         Pout<< "    Edge-faces" << endl;
     }
 
     if (pfPtr_)
     {
-        Pout<< "    Point-faces" << endl;
+        Pout<< "    Point - faces" << endl;
     }
 
-    if( cePtr_ )
+    if (cePtr_)
     {
-        Pout<< "    Cell-edges" << endl;
+        Pout<< "    Cell - edges" << endl;
     }
 
-    if( fePtr_ )
+    if (fePtr_)
     {
         Pout<< "    Face-edges" << endl;
     }
 
-    if( pePtr_ )
+    if (pePtr_)
     {
-        Pout<< "    Point-edges" << endl;
+        Pout<< "    Point - edges" << endl;
     }
 
-    if( ppPtr_ )
+    if (ppPtr_)
     {
-        Pout<< "    Point-point" << endl;
+        Pout<< "    Point - point" << endl;
     }
 
-    if( cpPtr_ )
+    if (cpPtr_)
     {
-        Pout<< "    Cell-point" << endl;
+        Pout<< "    Cell - point" << endl;
     }
 
     // Geometry
-    if( cellCentresPtr_ )
+    if (cellCentresPtr_)
     {
-        Pout<< "    Cell-centres" << endl;
+        Pout<< "    Cell - centres" << endl;
     }
 
-    if( faceCentresPtr_ )
+    if (faceCentresPtr_)
     {
         Pout<< "    Face-centres" << endl;
     }
 
-    if( cellVolumesPtr_ )
+    if (cellVolumesPtr_)
     {
-        Pout<< "    Cell-volumes" << endl;
+        Pout<< "    Cell - volumes" << endl;
     }
 
-    if( faceAreasPtr_ )
+    if (faceAreasPtr_)
     {
         Pout<< "    Face-areas" << endl;
     }
 }
 
+
 void polyMeshGenAddressing::clearGeom()
 {
-    if( debug )
+    if (debug)
     {
         Pout<< "polyMeshGenAddressing::clearGeom() : "
             << "clearing geometric data"
@@ -129,9 +130,10 @@ void polyMeshGenAddressing::clearGeom()
     deleteDemandDrivenData(faceAreasPtr_);
 }
 
+
 void polyMeshGenAddressing::clearAddressing()
 {
-    if( debug )
+    if (debug)
     {
         Pout<< "polyMeshGenAddressing::clearAddressing() : "
             << "clearing topology"
@@ -154,6 +156,7 @@ void polyMeshGenAddressing::clearAddressing()
     deleteDemandDrivenData(cpPtr_);
 }
 
+
 void polyMeshGenAddressing::clearParallelAddressing()
 {
     deleteDemandDrivenData(globalPointLabelPtr_);
@@ -169,6 +172,7 @@ void polyMeshGenAddressing::clearParallelAddressing()
     deleteDemandDrivenData(edgeNeiProcsPtr_);
 }
 
+
 void polyMeshGenAddressing::clearOut()
 {
     clearGeom();
@@ -183,6 +187,7 @@ void polyMeshGenAddressing::clearAll()
     clearAddressing();
     clearParallelAddressing();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

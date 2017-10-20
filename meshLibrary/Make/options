@@ -14,16 +14,6 @@ ifeq (OpenFOAM,$(findstring OpenFOAM,$(WM_PROJECT)))
     endif
 endif
 
-ifeq ($(WM_PROJECT), foam)
-    VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
-    ifeq ($(VER), 1)
-        CFMESH_MACROS = -DExtendSpecific -std=c++11
-        LIBS = -lmeshTools -ledgeMesh
-    else
-        CFMESH_MACROS =
-    endif
-endif
-
 EXE_INC = \
     $(OMP_FLAGS) $(CFMESH_MACROS) \
     -I$(LIB_SRC)/triSurface/lnInclude \

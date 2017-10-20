@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -70,6 +68,7 @@ const label meshOctreeCube::hOrder_[24][8] =
     {4, 7, 3, 0, 1, 2, 6, 5}
 };
 
+
 const label meshOctreeCube::hOrient_[24][8] =
 {
     {0, 0, 0, 0, 0, 0, 0, 0}, // Morton addressing Z-order
@@ -99,18 +98,19 @@ const label meshOctreeCube::hOrient_[24][8] =
     {21, 22, 23, 0, 9, 23, 14, 2}
 };
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from coordinates and level
 meshOctreeCube::meshOctreeCube(const meshOctreeCubeCoordinates& cc)
 :
     meshOctreeCubeBasic(cc),
-    activeSlotPtr_(NULL),
-    subCubesPtr_(NULL),
+    activeSlotPtr_(nullptr),
+    subCubesPtr_(nullptr),
     cubeLabel_(-1),
     containedElementsLabel_(-1),
     containedEdgesLabel_(-1)
 {}
+
 
 meshOctreeCube::meshOctreeCube
 (
@@ -121,7 +121,7 @@ meshOctreeCube::meshOctreeCube
 :
     meshOctreeCubeBasic(cc),
     activeSlotPtr_(slotPtr),
-    subCubesPtr_(NULL),
+    subCubesPtr_(nullptr),
     cubeLabel_(0),
     containedElementsLabel_(0),
     containedEdgesLabel_(-1)
@@ -130,33 +130,39 @@ meshOctreeCube::meshOctreeCube
     slotPtr->containedTriangles_.setRowSize(0, nElmts),
     slotPtr->containedEdges_.setSize(0);
 
-    for(label i=0;i<nElmts;++i)
+    for (label i = 0; i < nElmts; ++i)
+    {
         slotPtr->containedTriangles_(0, i) = i;
+    }
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 meshOctreeCube::~meshOctreeCube()
 {}
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 FixedList<meshOctreeCube*, 8> meshOctreeCube::subCubes() const
 {
-    if( !subCubesPtr_ )
-        FatalErrorIn
-        (
-            "inline  FixedList<meshOctreeCube*, 8>&"
-            " meshOctreeCube::subCubes() const"
-        ) << "Sub cubes do not exist!" << abort(FatalError);
+    if (!subCubesPtr_)
+    {
+        FatalErrorInFunction
+            << "Sub cubes do not exist!" << abort(FatalError);
+    }
 
     FixedList<meshOctreeCube*, 8> ret;
 
-    for(label i=0;i<8;++i)
+    for (label i = 0; i < 8; ++i)
+    {
         ret[i] = subCube(i);
+    }
 
     return ret;
 }
+
 
 Ostream& operator<<(Ostream& os, const meshOctreeCube& oc)
 {
@@ -165,6 +171,7 @@ Ostream& operator<<(Ostream& os, const meshOctreeCube& oc)
 
     return os;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

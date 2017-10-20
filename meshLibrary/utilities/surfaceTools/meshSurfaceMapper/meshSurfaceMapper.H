@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSurfaceMapper
+    Foam::meshSurfaceMapper
 
 Description
     Maps vertices to the nearest point on the geometry surface
@@ -54,12 +54,13 @@ class meshSurfacePartitioner;
 class triSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
-                    Class meshSurfaceMapper Declaration
+                      Class meshSurfaceMapper Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshSurfaceMapper
 {
     // Private data
+
         //- mesh surface
         const meshSurfaceEngine& surfaceEngine_;
 
@@ -73,12 +74,14 @@ class meshSurfaceMapper
         //- triSurface partitioner
         mutable triSurfacePartitioner* surfPartitionerPtr_;
 
+
     // Private member functions
+
         //- create and return mesh surface partitioner
         void createMeshSurfacePartitioner() const;
         inline const meshSurfacePartitioner& meshPartitioner() const
         {
-            if( !surfaceEnginePartitionerPtr_ )
+            if (!surfaceEnginePartitionerPtr_)
                 createMeshSurfacePartitioner();
 
             return *surfaceEnginePartitionerPtr_;
@@ -88,7 +91,7 @@ class meshSurfaceMapper
         void createTriSurfacePartitioner() const;
         inline const triSurfacePartitioner& surfacePartitioner() const
         {
-            if( !surfPartitionerPtr_ )
+            if (!surfPartitionerPtr_)
                 createTriSurfacePartitioner();
 
             return *surfPartitionerPtr_;
@@ -97,7 +100,9 @@ class meshSurfaceMapper
         //- delete surfaceEnginePartitionerPtr_ and surfPartitionerPtr_
         void clearOut();
 
+
     // Private member functions
+
         //- map corner nodes to the boundary
         void mapCorners(const labelLongList& nodesToMap);
 
@@ -105,11 +110,12 @@ class meshSurfaceMapper
         void findMappingDistance
         (
             const labelLongList& nodesToMap,
-            scalarList & mappingDistance
+            scalarList& mappingDistance
         ) const;
 
         //- calculate face metric
         scalar faceMetricInPatch(const label bfI, const label patchI) const;
+
 
     // Private member functions needed for parallel execution
 
@@ -126,6 +132,7 @@ class meshSurfaceMapper
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceMapper&);
 
+
 public:
 
     // Constructors
@@ -136,43 +143,46 @@ public:
         //- Construct from meshSurfacePartitioner and octree
         meshSurfaceMapper(const meshSurfacePartitioner&, const meshOctree&);
 
-    // Destructor
 
-        ~meshSurfaceMapper();
+    //- Destructor
+    ~meshSurfaceMapper();
+
 
     // Member Functions
+
         //- map the given surface node on the selected patch
-        //- this does not make sense for vertices at parallel boundaries
+        //  this does not make sense for vertices at parallel boundaries
         void mapNodeToPatch(const label bpI, const label patchI = -1);
 
         //- projects surface vertices onto their nearest location
-        //- on the surface mesh
+        //  on the surface mesh
         void mapVerticesOntoSurface();
 
         //- projects selected surface vertices to their nearest location
-        //- on the surface mesh
+        //  on the surface mesh
         void mapVerticesOntoSurface(const labelLongList& nodesToMap);
 
         //- projects corner and edge vertices onto their nearest location
-        //- on the surface mesh
+        //  on the surface mesh
         void mapCornersAndEdges();
 
         //- projects selected edge vertices onto their nearest
-        //- locations on the surface mesh
+        //  locations on the surface mesh
         void mapEdgeNodes(const labelLongList& nodesToMap);
 
         //- projects surface vertices onto the surface with respect
-        //- to the surface patch they belong to. Edges and corner are respected
+        //  to the surface patch they belong to. Edges and corner are respected
         void mapVerticesOntoSurfacePatches();
 
         //- projects selected surface vertices onto the surface with respect
-        //- to the surface patch they belong to. Edges and corner are respected
+        //  to the surface patch they belong to. Edges and corner are respected
         void mapVerticesOntoSurfacePatches(const labelLongList& nodesToMap);
 
         //- a combination of mapping and smoothing intended for better
-        //- feature capturing
+        //  feature capturing
         void preMapVertices(const label nIterations = 3);
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

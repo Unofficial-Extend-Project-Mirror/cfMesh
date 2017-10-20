@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -36,13 +36,15 @@ namespace Foam
 defineTypeNameAndDebug(boxScaling, 0);
 addToRunTimeSelectionTable(coordinateModification, boxScaling, dictionary);
 
+
 // * * * * * * * * * * * * * * Private member functions* * * * * * * * * * * //
 
 void boxScaling::calculateBndBox()
 {
-    pMin_ = centre_ - 0.5 * lengthVec_;
-    pMax_ = centre_ + 0.5 * lengthVec_;
+    pMin_ = centre_ - 0.5*lengthVec_;
+    pMax_ = centre_ + 0.5*lengthVec_;
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -57,6 +59,7 @@ boxScaling::boxScaling()
 {
     calculateBndBox();
 }
+
 
 boxScaling::boxScaling
 (
@@ -81,6 +84,7 @@ boxScaling::boxScaling
     setName(name);
 }
 
+
 boxScaling::boxScaling
 (
     const word& name,
@@ -92,6 +96,7 @@ boxScaling::boxScaling
     this->operator=(dict);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 point boxScaling::origin() const
@@ -99,38 +104,43 @@ point boxScaling::origin() const
     return centre_;
 }
 
+
 void boxScaling::translateAndModifyObject(const vector& disp)
 {
     centre_ += disp;
 
-    for(direction i=0;i<vector::nComponents;++i)
+    for (direction i = 0; i < vector::nComponents; ++i)
+    {
         lengthVec_[i] /= scaleVec_[i];
+    }
 
     calculateBndBox();
 }
+
 
 vector boxScaling::displacement(const point& p) const
 {
     vector disp;
 
-    for(direction i=0;i<vector::nComponents;++i)
+    for (direction i = 0; i < vector::nComponents; ++i)
     {
         const scalar dispVec = lengthVec_[i] * ((1.0/scaleVec_[i]) - 1.0);
         const scalar t = ((p[i] - pMin_[i]) / lengthVec_[i]);
 
         const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
 
-        disp[i] = tBnd * dispVec;
+        disp[i] = tBnd*dispVec;
     }
 
     return disp;
 }
 
+
 vector boxScaling::backwardDisplacement(const point& p) const
 {
     vector disp;
 
-    for(direction i=0;i<vector::nComponents;++i)
+    for (direction i = 0; i < vector::nComponents; ++i)
     {
         const scalar dispVec = lengthVec_[i] * (scaleVec_[i] - 1.0);
 
@@ -138,34 +148,36 @@ vector boxScaling::backwardDisplacement(const point& p) const
 
         const scalar tBnd = Foam::max(0.0, Foam::min(t, 1.0));
 
-        disp[i] = tBnd * dispVec;
+        disp[i] = tBnd*dispVec;
     }
 
     return disp;
 }
+
 
 bool boxScaling::combiningPossible() const
 {
     return true;
 }
 
+
 void boxScaling::boundingPlanes(PtrList<plane>&pl) const
 {
     pl.setSize(6);
     label counter(0);
-    if( Foam::mag(scaleVec_.x() - 1.0) > VSMALL )
+    if (Foam::mag(scaleVec_.x() - 1.0) > VSMALL)
     {
         pl.set(counter++, new plane(pMin_, vector(1, 0, 0)));
         pl.set(counter++, new plane(pMax_, vector(1, 0, 1)));
     }
 
-    if( Foam::mag(scaleVec_.y() - 1.0) > VSMALL )
+    if (Foam::mag(scaleVec_.y() - 1.0) > VSMALL)
     {
         pl.set(counter++, new plane(pMin_, vector(0, 1, 0)));
         pl.set(counter++, new plane(pMax_, vector(0, 1, 0)));
     }
 
-    if( Foam::mag(scaleVec_.z() - 1.0) > VSMALL )
+    if (Foam::mag(scaleVec_.z() - 1.0) > VSMALL)
     {
         pl.set(counter++, new plane(pMin_, vector(0, 0, 1)));
         pl.set(counter++, new plane(pMax_, vector(0, 0, 1)));
@@ -173,6 +185,7 @@ void boxScaling::boundingPlanes(PtrList<plane>&pl) const
 
     pl.setSize(counter);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -194,6 +207,7 @@ dictionary boxScaling::dict(bool /*ignoreType*/) const
     return dict;
 }
 
+
 void boxScaling::write(Ostream& os) const
 {
     os  << " type:   " << type()
@@ -207,32 +221,34 @@ void boxScaling::write(Ostream& os) const
         << endl;
 }
 
+
 void boxScaling::writeDict(Ostream& os, bool subDict) const
 {
-    if( subDict )
+    if (subDict)
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
 
     // only write type for derived types
-    if( type() != typeName_() )
+    if (type() != typeName_())
     {
-        os.writeKeyword("type") << type() << token::END_STATEMENT << nl;
+        os.writeEntry("type", type());
     }
 
-    os.writeKeyword("centre") << centre_ << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthX") << lengthVec_.x() << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthY") << lengthVec_.y() << token::END_STATEMENT << nl;
-    os.writeKeyword("lengthZ") << lengthVec_.z() << token::END_STATEMENT << nl;
-    os.writeKeyword("scaleX") << scaleVec_.x() << token::END_STATEMENT << nl;
-    os.writeKeyword("scaleY") << scaleVec_.y() << token::END_STATEMENT << nl;
-    os.writeKeyword("scaleZ") << scaleVec_.z() << token::END_STATEMENT << nl;
+    os.writeEntry("centre", centre_);
+    os.writeEntry("lengthX", lengthVec_.x());
+    os.writeEntry("lengthY", lengthVec_.y());
+    os.writeEntry("lengthZ", lengthVec_.z());
+    os.writeEntry("scaleX", scaleVec_.x());
+    os.writeEntry("scaleY", scaleVec_.y());
+    os.writeEntry("scaleZ", scaleVec_.z());
 
-    if( subDict )
+    if (subDict)
     {
         os << decrIndent << indent << token::END_BLOCK << endl;
     }
 }
+
 
 void boxScaling::operator=(const dictionary& d)
 {
@@ -245,63 +261,55 @@ void boxScaling::operator=(const dictionary& d)
     );
 
     // unspecified centre is (0 0 0)
-    if( dict.found("centre") )
+    if (dict.found("centre"))
     {
         dict.lookup("centre") >> centre_;
     }
     else
     {
-        FatalErrorIn
-        (
-            "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry centre is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
     // specify lengthX
-    if( dict.found("lengthX") )
+    if (dict.found("lengthX"))
     {
         lengthVec_.x() = readScalar(dict.lookup("lengthX"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthX is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry lengthX is not specified!" << exit(FatalError);
         lengthVec_.x() = 0.0;
     }
 
     // specify lengthY
-    if( dict.found("lengthY") )
+    if (dict.found("lengthY"))
     {
         lengthVec_.y() = readScalar(dict.lookup("lengthY"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthY is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry lengthY is not specified!" << exit(FatalError);
         lengthVec_.y() = 0.0;
     }
 
     // specify lengthZ
-    if( dict.found("lengthZ") )
+    if (dict.found("lengthZ"))
     {
         lengthVec_.z() = readScalar(dict.lookup("lengthZ"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void boxScaling::operator=(const dictionary& d)"
-        ) << "Entry lengthZ is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry lengthZ is not specified!" << exit(FatalError);
         lengthVec_.z() = 0.0;
     }
 
     // specify scaleX
-    if( dict.found("scaleX") )
+    if (dict.found("scaleX"))
     {
         scaleVec_.x() = readScalar(dict.lookup("scaleX"));
     }
@@ -311,7 +319,7 @@ void boxScaling::operator=(const dictionary& d)
     }
 
     // specify scaleY
-    if( dict.found("scaleY") )
+    if (dict.found("scaleY"))
     {
         scaleVec_.y() = readScalar(dict.lookup("scaleY"));
     }
@@ -321,7 +329,7 @@ void boxScaling::operator=(const dictionary& d)
     }
 
     // specify scaleX
-    if( dict.found("scaleZ") )
+    if (dict.found("scaleZ"))
     {
         scaleVec_.z() = readScalar(dict.lookup("scaleZ"));
     }
@@ -333,6 +341,7 @@ void boxScaling::operator=(const dictionary& d)
     calculateBndBox();
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Ostream& boxScaling::operator<<(Ostream& os) const
@@ -342,10 +351,12 @@ Ostream& boxScaling::operator<<(Ostream& os) const
     return os;
 }
 
+
 Ostream& operator<<(Ostream& os, const boxScaling& bs)
 {
     return bs.operator<<(os);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

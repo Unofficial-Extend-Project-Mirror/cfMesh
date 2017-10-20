@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Translates FOAM mesh to AVL's FPMA format
@@ -49,7 +49,7 @@ void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
 
     fileName postProcPath = time.path()/postProcDir;
 
-    if( !Foam::isDir(postProcPath) )
+    if (!Foam::isDir(postProcPath))
     {
         mkDir(postProcPath);
     }
@@ -57,7 +57,7 @@ void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
     // Open the Case file
     const fileName fpmaFileName = fName + ".fpma";
 
-    Info << "Writting mesh into " << fpmaFileName << endl;
+    Info<< "Writting mesh into " << fpmaFileName << endl;
 
 /*    OFstream fpmaGeometryFile
     (
@@ -75,16 +75,17 @@ void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
     Mesh.write(fpmaGeometryFile);
 }
 
+
 void createFIRESelections(polyMeshGen& mesh)
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
         return;
 
     const faceListPMG& faces = mesh.faces();
     const PtrList<processorBoundaryPatch>& procBoundaries =
         mesh.procBoundaries();
 
-    //- create face selections from proc patches
+    // create face selections from proc patches
     forAll(procBoundaries, patchI)
     {
         word sName = "InterFacesToProc";
@@ -93,18 +94,20 @@ void createFIRESelections(polyMeshGen& mesh)
 
         label faceI = procBoundaries[patchI].patchStart();
         const label end = faceI + procBoundaries[patchI].patchSize();
-        for(;faceI<end;++faceI)
+        for (; faceI < end; ++faceI)
+        {
             mesh.addFaceToSubset(sID, faceI);
+        }
     }
 
-    //- create cell selections
+    // create cell selections
     DynList<label> subsets;
     mesh.faceSubsetIndices(subsets);
     forAll(subsets, subsetI)
     {
         const word sName = mesh.faceSubsetName(subsets[subsetI]);
 
-        if( sName.substr(0, 10) == "processor_" )
+        if (sName.substr(0, 10) == "processor_")
         {
             const word newName = "Proc" + sName.substr(10, sName.size()-10);
 
@@ -112,22 +115,26 @@ void createFIRESelections(polyMeshGen& mesh)
             mesh.cellsInSubset(subsets[subsetI], cellsInSubset);
             const label subsetID = mesh.addCellSubset(newName);
             forAll(cellsInSubset, i)
+            {
                 mesh.addCellToSubset(subsetID, cellsInSubset[i]);
+            }
         }
     }
 
-    //- creating node selections
+    // creating node selections
     boolList bndVertex(mesh.points().size(), false);
     forAll(mesh.boundaries(), patchI)
     {
         label faceI = mesh.boundaries()[patchI].patchStart();
         const label end = faceI + mesh.boundaries()[patchI].patchSize();
-        for(;faceI<end;++faceI)
+        for (; faceI < end; ++faceI)
         {
             const face& f = mesh.faces()[faceI];
 
             forAll(f, pI)
+            {
                 bndVertex[f[pI]] = true;
+            }
         }
     }
 
@@ -139,19 +146,26 @@ void createFIRESelections(polyMeshGen& mesh)
 
         label faceI = procBoundaries[patchI].patchStart();
         const label end = faceI + procBoundaries[patchI].patchSize();
-        for(;faceI<end;++faceI)
+        for (; faceI < end; ++faceI)
         {
             const face& f = faces[faceI];
 
             forAll(f, pI)
             {
-                if( bndVertex[f[pI]] )
+                if (bndVertex[f[pI]])
+                {
                     mesh.addPointToSubset(subsetID, f[pI]);
+                }
             }
         }
     }
 }
 
-}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
 
 // ************************************************************************* //
+

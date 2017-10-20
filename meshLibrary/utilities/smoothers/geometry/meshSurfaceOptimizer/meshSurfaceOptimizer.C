@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,20 +44,20 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
     const labelHashSet& corners = partitionerPtr_->corners();
     const labelHashSet& edgePoints = partitionerPtr_->edgePoints();
 
-    //- set all vertices to partition
+    // set all vertices to partition
     vertexType_ = PARTITION;
 
-    //- set corners
+    // set corners
     forAllConstIter(labelHashSet, corners, it)
         vertexType_[it.key()] = CORNER;
 
-    //- set edges
+    // set edges
     forAllConstIter(labelHashSet, edgePoints, it)
         vertexType_[it.key()] = EDGE;
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- mark nodes at parallel boundaries
+        // mark nodes at parallel boundaries
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
 
@@ -72,6 +70,7 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
     }
 }
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
@@ -80,13 +79,14 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
     vertexType_(surface.boundaryPoints().size()),
     partitionerPtr_(new meshSurfacePartitioner(surface)),
     deletePartitioner_(true),
-    octreePtr_(NULL),
-    triMeshPtr_(NULL),
+    octreePtr_(nullptr),
+    triMeshPtr_(nullptr),
     enforceConstraints_(false),
     badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
+
 
 meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
 :
@@ -94,13 +94,14 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
     vertexType_(surfaceEngine_.boundaryPoints().size()),
     partitionerPtr_(&mPart),
     deletePartitioner_(true),
-    octreePtr_(NULL),
-    triMeshPtr_(NULL),
+    octreePtr_(nullptr),
+    triMeshPtr_(nullptr),
     enforceConstraints_(false),
     badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
+
 
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
@@ -113,12 +114,13 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     partitionerPtr_(new meshSurfacePartitioner(surface)),
     deletePartitioner_(true),
     octreePtr_(&octree),
-    triMeshPtr_(NULL),
+    triMeshPtr_(nullptr),
     enforceConstraints_(false),
     badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
+
 
 meshSurfaceOptimizer::meshSurfaceOptimizer
 (
@@ -131,12 +133,13 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
     partitionerPtr_(&partitioner),
     deletePartitioner_(false),
     octreePtr_(&octree),
-    triMeshPtr_(NULL),
+    triMeshPtr_(nullptr),
     enforceConstraints_(false),
     badPointsSubsetName_("invertedBoundaryPoints")
 {
     classifySurfaceVertices();
 }
+
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -144,9 +147,10 @@ meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
     deleteDemandDrivenData(triMeshPtr_);
 
-    if( deletePartitioner_ )
+    if (deletePartitioner_)
         deleteDemandDrivenData(partitionerPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -156,9 +160,10 @@ void meshSurfaceOptimizer::removeUserConstraints()
     # pragma omp parallel for schedule(dynamic, 100)
     # endif
     forAll(vertexType_, bpI)
-        if( vertexType_[bpI] & LOCKED )
+        if (vertexType_[bpI] & LOCKED)
             vertexType_[bpI] ^= LOCKED;
 }
+
 
 void meshSurfaceOptimizer::enforceConstraints(const word subsetName)
 {
@@ -166,6 +171,7 @@ void meshSurfaceOptimizer::enforceConstraints(const word subsetName)
 
     badPointsSubsetName_ = subsetName;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    VRWGraph
+    Foam::VRWGraph
 
 Description
     This class is an implementation of a graph with variable column width.
@@ -53,13 +53,17 @@ class VRWGraphModifier;
 class rowElement
 {
     // Private data
+
         //- starting element of the row
         label start_;
 
         //- number of elements in the row
         label size_;
 
-    public:
+
+public:
+
+    // Constructors
 
         inline rowElement()
         :
@@ -67,19 +71,26 @@ class rowElement
             size_()
         {}
 
+
         inline rowElement(const label i, const label j)
         :
             start_(i),
             size_(j)
         {}
 
-        inline ~rowElement()
-        {}
+
+    //- Destructor
+    inline ~rowElement()
+    {}
+
+
+    // Member functions
 
         inline label start() const
         {
             return start_;
         }
+
         inline label& start()
         {
             return start_;
@@ -89,30 +100,37 @@ class rowElement
         {
             return size_;
         }
+
         inline label& size()
         {
             return size_;
         }
 };
 
+
 /*---------------------------------------------------------------------------*\
-                           Class VRWGraph Declaration
+                          Class VRWGraph Declaration
 \*---------------------------------------------------------------------------*/
 
 class VRWGraph
 {
     // Private data
+
         //- list containing data
         labelLongList data_;
 
         //- number of rows
         LongList<rowElement> rows_;
 
+
     // Private member functions
+
         //- check index
         inline void checkIndex(const label i, const label j) const;
 
+
     // Enumerators
+
         enum typeOfEntries
         {
             NONE = 0,
@@ -121,11 +139,13 @@ class VRWGraph
             FREESTART=-12
         };
 
+
 public:
 
     // Friend classes
 
         friend class VRWGraphSMPModifier;
+
 
     // Constructors
 
@@ -150,12 +170,13 @@ public:
             const label t
         );
 
-        //- Copy contructor
+        //- Copy constructor
         inline VRWGraph(const VRWGraph&);
 
-    // Destructor
 
-        inline ~VRWGraph();
+    //- Destructor
+    inline ~VRWGraph();
+
 
     // Member Functions
 
@@ -166,6 +187,7 @@ public:
 
             //- Returns the number of elements in the given row
             inline label sizeOfRow(const label rowI) const;
+
 
         // Edit
 
@@ -189,6 +211,7 @@ public:
 
             //- Clear the graph
             inline void clear();
+
 
     // Member Operators
 
@@ -275,8 +298,8 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#define forAllRow(graph, rowI, index) \
-    for(Foam::label index=0;index<(graph).sizeOfRow(rowI);++index)
+#define forAllRow(graph, rowI, index)                                         \
+    for (Foam::label index = 0; index < (graph).sizeOfRow(rowI); ++index)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -8,10 +8,10 @@
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,8 +19,7 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
     Test for smoothers
@@ -71,17 +70,17 @@ int main(int argc, char *argv[])
 
     polyMeshGen pmg(runTime);
 
-    Info << "Starting reading mesh" << endl;
+    Info<< "Starting reading mesh" << endl;
     pmg.read();
 
-    Info << "Finished reading mesh" << endl;
+    Info<< "Finished reading mesh" << endl;
 
     forAll(pmg.points(), pointI)
     {
         const point& p = pmg.points()[pointI];
 
-        if( help::isnan(p) )
-            Info << "Vertex " << pointI << " is invalid " << p << endl;
+        if (help::isnan(p))
+            Info<< "Vertex " << pointI << " is invalid " << p << endl;
     }
 
     //boundaryLayers(pmg).addLayerForAllPatches();
@@ -99,7 +98,7 @@ int main(int argc, char *argv[])
     const cellListPMG& cells = pmg.cells();
     const faceListPMG& faces = pmg.faces();
 
-    Info << "Marking boundary layer cells" << endl;
+    Info<< "Marking boundary layer cells" << endl;
 
     labelLongList layerCells;
     boolList layerCell(pmg.cells().size(), false);
@@ -111,7 +110,7 @@ int main(int argc, char *argv[])
         layerCells.append(faceCell[bfI]);
     }
 
-    //- marking faces at the inner boundary of the boundary layer
+    // marking faces at the inner boundary of the boundary layer
     LongList<labelPair> front;
 
     forAll(faceCell, bfI)
@@ -123,25 +122,25 @@ int main(int argc, char *argv[])
         label faceOpposite(-1);
 
         forAll(c, fI)
-            if( !help::shareAnEdge(faces[c[fI]], bf) )
+            if (!help::shareAnEdge(faces[c[fI]], bf))
                 faceOpposite = c[fI];
 
         label cellI = owner[faceOpposite];
-        if( cellI == faceCell[bfI] )
+        if (cellI == faceCell[bfI])
             cellI = neighbour[faceOpposite];
 
-        if( layerCell[cellI] )
+        if (layerCell[cellI])
             continue;
 
         front.append(labelPair(faceOpposite, cellI));
     }
 
-    //- find points in boundary layer
+    // find points in boundary layer
     boolList pointInBoundaryLayer(pmg.points().size(), false);
 
     forAll(cells, cellI)
     {
-        if( layerCell[cellI] )
+        if (layerCell[cellI])
         {
             const cell& c = cells[cellI];
             forAll(c, fI)
@@ -154,11 +153,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    //- check if there exist faces with all vertices in the boundary layer
+    // check if there exist faces with all vertices in the boundary layer
     const label allPointsInLayerId = pmg.addCellSubset("allPointsInLayer");
     forAll(cells, cellI)
     {
-        if( !layerCell[cellI] )
+        if (!layerCell[cellI])
         {
             bool allInBndLayer(true);
 
@@ -171,21 +170,21 @@ int main(int argc, char *argv[])
                     allInBndLayer = false;
             }
 
-            if( allInBndLayer )
+            if (allInBndLayer)
             {
-                Info << "Cell " << cellI
+                Info<< "Cell " << cellI
                      << " has all points in the layer" << endl;
                 pmg.addCellToSubset(allPointsInLayerId, cellI);
             }
         }
     }
 
-    //Info << "Optimising boundary layer" << endl;
+    //Info<< "Optimising boundary layer" << endl;
     //blOpt.optimiseLayer();
 
     pmg.clearAddressingData();
 /*
-    //- refine boundary layers
+    // refine boundary layers
     refineBoundaryLayers refLayers(pmg);
 
     refineBoundaryLayers::readSettings(meshDict, refLayers);
@@ -193,9 +192,9 @@ int main(int argc, char *argv[])
     refLayers.refineLayers();
 */
 /*
-    //- check bad quality cells in the layer
+    // check bad quality cells in the layer
     boolList activeFace(pmg.faces().size(), false);
-    if( blCellsId > -1 )
+    if (blCellsId > -1)
     {
         labelLongList cellsInLayer;
         pmg.cellsInSubset(blCellsId, cellsInLayer);
@@ -212,7 +211,7 @@ int main(int argc, char *argv[])
     labelHashSet badFaces;
     polyMeshGenChecks::findBadFaces(pmg, badFaces, true, &activeFace);
 
-    if( returnReduce(badFaces.size(), sumOp<label>()) )
+    if (returnReduce(badFaces.size(), sumOp<label>()) )
     {
         const labelList& own = pmg.owner();
         const labelList& nei = pmg.neighbour();
@@ -220,28 +219,28 @@ int main(int argc, char *argv[])
         label badCellId(-1);
         forAllConstIter(labelHashSet, badFaces, it)
         {
-            if( badCellId < 0 )
+            if (badCellId < 0)
                 badCellId = pmg.addCellSubset("badBlCells");
             pmg.addCellToSubset(badCellId, own[it.key()]);
 
-            if( nei[it.key()] >= 0 )
+            if (nei[it.key()] >= 0)
                 pmg.addCellToSubset(badCellId, nei[it.key()]);
         }
 
-        if( returnReduce(pmg.cellSubsetIndex("badBlCells")>=0, maxOp<bool>()) )
+        if (returnReduce(pmg.cellSubsetIndex("badBlCells")>=0, maxOp<bool>()))
         {
-            Info << "Found bad quality bl cells" << endl;
+            Info<< "Found bad quality bl cells" << endl;
             pmg.write();
             returnReduce(1, sumOp<label>());
             ::exit(0);
         }
     }
 */
-    Info << "Extruding layer of cells" << endl;
+    Info<< "Extruding layer of cells" << endl;
     extrudeLayer(pmg, front);
     pmg.clearAddressingData();
 
-    Info << "Starting optimising mesh" << endl;
+    Info<< "Starting optimising mesh" << endl;
 //    meshOptimizer mOpt(pmg);
 //    mOpt.lockCellsInSubset("boundaryLayerCells");
 //    mOpt.optimizeLowQualityFaces(15);
@@ -254,13 +253,13 @@ int main(int argc, char *argv[])
     {
         const point& p = pmg.points()[pointI];
 
-        if( help::isnan(p) )
-            Info << "Vertex " << pointI << " is invalid " << p << endl;
+        if (help::isnan(p))
+            Info<< "Vertex " << pointI << " is invalid " << p << endl;
     }
 
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
     return 0;
 }
 

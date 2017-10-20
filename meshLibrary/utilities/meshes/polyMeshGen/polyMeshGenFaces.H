@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    polyMeshGenFaces
+    Foam::polyMeshGenFaces
 
 Description
     Mesh with geometry and faces. It can be used for volume and surface meshes
@@ -49,11 +49,13 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class polyMeshGenFaces
-: public polyMeshGenPoints
+:
+    public polyMeshGenPoints
 {
 protected:
 
     // Protected data
+
         //- list of faces
         faceListPMG faces_;
 
@@ -68,11 +70,14 @@ protected:
         //- face subsets
         std::map<label, meshSubset> faceSubsets_;
 
+
     // Addressing data
+
         //- number of internal faces, owner and neighbour
         mutable label nIntFaces_;
         mutable labelIOList* ownerPtr_;
         mutable labelIOList* neighbourPtr_;
+
 
     // Private member functions
 
@@ -82,16 +87,20 @@ protected:
         //- clear all pointer data
         void clearOut() const;
 
+
     // Disallow bitwise assignment
+
         void operator=(const polyMeshGenFaces&);
 
         polyMeshGenFaces(const polyMeshGenFaces&);
+
 
 public:
 
     friend class polyMeshGenModifier;
 
     // Constructors
+
         //- Null constructor
         polyMeshGenFaces(const Time&);
 
@@ -114,8 +123,10 @@ public:
             const labelList& nFacesInPatch
         );
 
-    // Destructor
-        virtual ~polyMeshGenFaces();
+
+    //- Destructor
+    virtual ~polyMeshGenFaces();
+
 
     // Member functions
 
@@ -128,6 +139,7 @@ public:
         //- owner and neighbour cells for faces
         inline const labelList& owner() const;
         inline const labelList& neighbour() const;
+
 
     // Boundary data
 
@@ -156,6 +168,7 @@ public:
         // name, expanding regular expressions
         labelList findPatches(const word& patchName) const;
 
+
     // Subsets
 
         label addFaceSubset(const word&);
@@ -172,12 +185,13 @@ public:
         inline void updateFaceSubsets(const ListType&);
         inline void updateFaceSubsets(const VRWGraph&);
 
-    // Read mesh
+        //- Read mesh
         void read();
 
-    // Write mesh
+        //- Write mesh
         void write() const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,21 +48,21 @@ void meshOctreeModifier::updateCommunicationPattern()
 
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
-    //- create the list which contains ranges of addresses at a given processor
-    List<Pair<meshOctreeCubeCoordinates> > range(Pstream::nProcs());
+    // create the list which contains ranges of addresses at a given processor
+    List<Pair<meshOctreeCubeCoordinates>> range(Pstream::nProcs());
 
-    //- create the range for the current processor
+    // create the range for the current processor
     range[Pstream::myProcNo()].first() = leaves[0]->coordinates();
     range[Pstream::myProcNo()].second() =
         leaves[leaves.size()-1]->coordinates();
 
-    //- communicate missing ranges
+    // communicate missing ranges
     Pstream::gatherList(range);
     Pstream::scatterList(range);
 
-    //- find missing child cubes in the tree. These coordinates are located on
-    //- other processors, and they must fit in the range of cubes located
-    //- on that processor.
+    // find missing child cubes in the tree. These coordinates are located on
+    // other processors, and they must fit in the range of cubes located
+    // on that processor.
     LongList<meshOctreeCubeCoordinates> migratedCubes;
     octree_.initialCubePtr_->findCoordinatesOfMissingCubes(migratedCubes);
 
@@ -74,15 +72,15 @@ void meshOctreeModifier::updateCommunicationPattern()
         const meshOctreeCubeCoordinates& cc = migratedCubes[mcI];
         forAll(range, procI)
         {
-            if( procI == Pstream::myProcNo() )
+            if (procI == Pstream::myProcNo())
                 continue;
 
-            if( (cc >= range[procI].first()) && (cc <= range[procI].second()) )
+            if ((cc >= range[procI].first()) && (cc <= range[procI].second()))
                 newNeiProcs.insert(procI);
         }
     }
 
-    //- create new neighbour procs and their range
+    // create new neighbour procs and their range
     octree_.neiProcs_ = newNeiProcs.toc();
 
     octree_.neiRange_.setSize(octree_.neiProcs_.size());
@@ -90,10 +88,11 @@ void meshOctreeModifier::updateCommunicationPattern()
         octree_.neiRange_[i] = range[octree_.neiProcs_[i]];
 
     # ifdef OCTREETiming
-    Info << "Time for updating communication pattern "
+    Info<< "Time for updating communication pattern "
         << (omp_get_wtime()-startTime) << endl;
     # endif
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

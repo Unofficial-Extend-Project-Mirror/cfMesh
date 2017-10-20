@@ -6,26 +6,22 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
-
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,6 +38,7 @@ inline label extrudeLayer::addressingCalculator::origFaceLabel
     return extrudedFaces_[extrudedI].second();
 }
 
+
 inline label extrudeLayer::addressingCalculator::positionInFace
 (
     const label extrudedI,
@@ -49,10 +46,11 @@ inline label extrudeLayer::addressingCalculator::positionInFace
 ) const
 {
     const face& f = faces_[extrudedFaces_[extrudedI].first()];
-    
+
     return f.which(pointI);
 }
-                
+
+
 inline label extrudeLayer::addressingCalculator::origPointLabel
 (
     const label extrudedI,
@@ -60,8 +58,8 @@ inline label extrudeLayer::addressingCalculator::origPointLabel
 ) const
 {
     const face& of = faces_[extrudedFaces_[extrudedI].second()];
-    
-    if( pairOrientation_[extrudedI] )
+
+    if (pairOrientation_[extrudedI])
     {
         return of[pos];
     }
@@ -69,15 +67,13 @@ inline label extrudeLayer::addressingCalculator::origPointLabel
     {
         return of[(of.size()-pos)%of.size()];
     }
-    
-    FatalErrorIn
-    (
-        "label extrudeLayer::addressingCalculator::origPointLabel"
-        "(const label, const label) const"
-    ) << "Cannot find point for the given position" << abort(FatalError);
-    
+
+    FatalErrorInFunction
+        << "Cannot find point for the given position" << abort(FatalError);
+
     return -1;
 }
+
 
 inline label extrudeLayer::addressingCalculator::origPoint
 (
@@ -88,8 +84,8 @@ inline label extrudeLayer::addressingCalculator::origPoint
     const face& f = faces_[extrudedFaces_[extrudedI].first()];
     const face& of = faces_[extrudedFaces_[extrudedI].second()];
     const label pos = f.which(pointI);
-    
-    if( pairOrientation_[extrudedI] )
+
+    if (pairOrientation_[extrudedI])
     {
         return of[pos];
     }
@@ -97,15 +93,13 @@ inline label extrudeLayer::addressingCalculator::origPoint
     {
         return of[(of.size()-pos)%of.size()];
     }
-    
-    FatalErrorIn
-    (
-        "label extrudeLayer::addressingCalculator::origPoint"
-        "(const label, const label) const"
-    ) << "Cannot find point for the given position" << abort(FatalError);
-    
+
+    FatalErrorInFunction
+        << "Cannot find point for the given position" << abort(FatalError);
+
     return -1;
 }
+
 
 inline label extrudeLayer::addressingCalculator::faceSharingEdge
 (
@@ -114,34 +108,36 @@ inline label extrudeLayer::addressingCalculator::faceSharingEdge
 ) const
 {
     const face& f = faces_[extrudedFaces_[extrudedI].first()];
-    
+
     const label pointI = f[eI];
     const label nextI = f.nextLabel(eI);
-    
+
     label otherFace(-1);
     forAllRow(pointExtruded_, pointI, pfI)
     {
         const label currFaceI = pointExtruded_(pointI, pfI);
-        
-        if( currFaceI == extrudedI )
-            continue;
-        
-        if( pointExtruded_.contains(nextI, currFaceI) )
+
+        if (currFaceI == extrudedI)
         {
-            if( otherFace != -1 )
-                FatalErrorIn
-                (
-                    "label extrudeLayer::addressingCalculator::faceSharingEdge"
-                    "(const label, const label) const"
-                ) << "Expected only one such face"
+            continue;
+        }
+
+        if (pointExtruded_.contains(nextI, currFaceI))
+        {
+            if (otherFace != -1)
+            {
+                FatalErrorInFunction
+                    << "Expected only one such face"
                     << abort(FatalError);
-            
+            }
+
             otherFace = currFaceI;
         }
     }
-    
+
     return otherFace;
 }
+
 
 inline void extrudeLayer::addressingCalculator::facesSharingEdge
 (
@@ -151,15 +147,18 @@ inline void extrudeLayer::addressingCalculator::facesSharingEdge
 ) const
 {
     edgeFaces.clear();
-    
+
     forAllRow(pointExtruded_, start, pfI)
     {
         const label currFaceI = pointExtruded_(start, pfI);
-        
-        if( pointExtruded_.contains(end, currFaceI) )
+
+        if (pointExtruded_.contains(end, currFaceI))
+        {
             edgeFaces.append(currFaceI);
+        }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

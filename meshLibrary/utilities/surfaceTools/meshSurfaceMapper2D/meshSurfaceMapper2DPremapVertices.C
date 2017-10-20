@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,7 +46,7 @@ namespace Foam
 
 void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 {
-    Info << "Smoothing mesh surface before mapping. Iteration:" << flush;
+    Info<< "Smoothing mesh surface before mapping. Iteration:" << flush;
 
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bp = surfaceEngine_.bp();
@@ -58,11 +56,11 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 
     List<labelledPoint> preMapPositions(activeBoundaryEdges_.size());
 
-    for(label iterI=0;iterI<nIterations;++iterI)
+    for (label iterI = 0; iterI < nIterations; ++iterI)
     {
         labelLongList parBndEdges;
 
-        //- use the shrinking laplace first
+        // use the shrinking laplace first
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 40)
         # endif
@@ -72,7 +70,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
 
             labelledPoint lp(0, vector::zero);
 
-            if( edgeFaces.sizeOfRow(beI) == 2 )
+            if (edgeFaces.sizeOfRow(beI) == 2)
             {
                 forAllRow(edgeFaces, beI, efI)
                 {
@@ -81,7 +79,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 }
 
             }
-            else if( edgeFaces.sizeOfRow(beI) == 1 )
+            else if (edgeFaces.sizeOfRow(beI) == 1)
             {
                 ++lp.pointLabel();
                 lp.coordinates() += faceCentres[edgeFaces(beI, 0)];
@@ -92,11 +90,11 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 parBndEdges.append(eI);
             }
 
-            //- store the information
+            // store the information
             preMapPositions[eI] = lp;
         }
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
             const VRWGraph& beAtProcs = surfaceEngine_.beAtProcs();
             const labelList& globalEdgeLabel =
@@ -104,8 +102,8 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
             const Map<label>& globalToLocal =
                 surfaceEngine_.globalToLocalBndEdgeAddressing();
 
-            //- collect data to be sent to other processors
-            std::map<label, LongList<refLabelledPoint> > exchangeData;
+            // collect data to be sent to other processors
+            std::map<label, LongList<refLabelledPoint>> exchangeData;
             forAll(surfaceEngine_.beNeiProcs(), i)
                 exchangeData.insert
                 (
@@ -126,7 +124,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 {
                     const label neiProc = beAtProcs(beI, procI);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append
@@ -140,11 +138,11 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
                 }
             }
 
-            //- exchange data with other processors
+            // exchange data with other processors
             LongList<refLabelledPoint> receivedData;
             help::exchangeMap(exchangeData, receivedData);
 
-            //- combine collected data with the available data
+            // combine collected data with the available data
             forAll(receivedData, i)
             {
                 const refLabelledPoint& rlp = receivedData[i];
@@ -159,7 +157,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
             }
         }
 
-        //- calculate coordinates of points for searching
+        // calculate coordinates of points for searching
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
@@ -167,7 +165,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
         {
             labelledPoint& lp = preMapPositions[eI];
 
-            if( lp.pointLabel() == 0 )
+            if (lp.pointLabel() == 0)
             {
                 Warning << "Surface edge " << activeBoundaryEdges_[eI]
                     << " has no active faces" << endl;
@@ -177,7 +175,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
             lp.coordinates() /= lp.pointLabel();
         }
 
-        //- create the surface modifier and move the surface points
+        // create the surface modifier and move the surface points
         meshSurfaceEngineModifier surfaceModifier(surfaceEngine_);
 
         # ifdef USE_OMP
@@ -204,7 +202,7 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
             );
 
             pMap.z() = p.z();
-            point newP = 0.5 * (pMap + p);
+            point newP = 0.5*(pMap + p);
 
             surfaceModifier.moveBoundaryVertexNoUpdate(bp[e.start()], newP);
             newP.z() = points[e.end()].z();
@@ -214,11 +212,12 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
         surfaceModifier.updateGeometry();
         surfaceModifier.syncVerticesAtParallelBoundaries();
 
-        Info << "." << flush;
+        Info<< "." << flush;
     }
 
-    Info << endl;
+    Info<< endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

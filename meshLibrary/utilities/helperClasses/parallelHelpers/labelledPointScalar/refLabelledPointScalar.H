@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    refLabelledPointScalar
+    Foam::refLabelledPointScalar
 
 Description
     A class containing a label and labelledPointScalar. It is used for
@@ -43,21 +43,24 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class refLabelledPointScalar Declaration
+                   Class refLabelledPointScalar Declaration
 \*---------------------------------------------------------------------------*/
 
 class refLabelledPointScalar
 {
     // Private data
+
         //- point label
         label pLabel_;
 
         //- labelledPointScalar
         labelledPointScalar lps_;
 
-    public:
+
+public:
 
     // Constructors
+
         //- Null construct
         refLabelledPointScalar()
         :
@@ -72,11 +75,14 @@ class refLabelledPointScalar
             lps_(lps)
         {}
 
-    // Destructor
-        ~refLabelledPointScalar()
-        {}
+
+    //- Destructor
+    ~refLabelledPointScalar()
+    {}
+
 
     // Member functions
+
         //- return object label
         inline label objectLabel() const
         {
@@ -89,6 +95,7 @@ class refLabelledPointScalar
             return lps_;
         }
 
+
     // Member operators
 
         inline void operator=(const refLabelledPointScalar& lps)
@@ -99,8 +106,10 @@ class refLabelledPointScalar
 
         inline bool operator==(const refLabelledPointScalar& lps) const
         {
-            if( pLabel_ == lps.pLabel_ )
+            if (pLabel_ == lps.pLabel_)
+            {
                 return true;
+            }
 
             return false;
         }
@@ -110,15 +119,21 @@ class refLabelledPointScalar
             return !this->operator==(lps);
         }
 
+
     // Friend operators
-        friend Ostream& operator<<(Ostream& os, const refLabelledPointScalar& lps)
+
+        friend Ostream& operator<<
+        (
+            Ostream& os,
+            const refLabelledPointScalar& lps
+        )
         {
             os << token::BEGIN_LIST;
             os << lps.pLabel_ << token::SPACE;
             os << lps.lps_ << token::END_LIST;
 
             // Check state of Ostream
-            os.check("operator<<(Ostream&, const labelledPointScalarS&");
+            os.check(FUNCTION_NAME);
 
             return os;
         }
@@ -135,15 +150,20 @@ class refLabelledPointScalar
             is.readEnd("refLabelledPointScalar");
 
             // Check state of Istream
-            is.check("operator>>(Istream&, refLabelledPointScalar");
+            is.check(FUNCTION_NAME);
 
             return is;
         }
 };
 
+
 //- Specify data associated with refLabelledPointScalar type is contiguous
 template<>
-inline bool contiguous<refLabelledPointScalar>() {return true;}
+inline bool contiguous<refLabelledPointScalar>()
+{
+    return true;
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,6 +48,7 @@ void checkBoundaryFacesSharingTwoEdges::createMeshSurface() const
     meshSurfacePtr_ = new meshSurfaceEngine(mesh_);
 }
 
+
 void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
 {
     const meshSurfaceEngine& mse = meshSurface();
@@ -61,14 +60,14 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
     const label nIntFaces = mesh_.nInternalFaces();
     const faceListPMG& faces = mesh_.faces();
 
-    //- find the internal faces attached to the boundary points
+    // find the internal faces attached to the boundary points
     removeBndPoint_.setSize(pointEdges.size());
     removeBndPoint_ = true;
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( nIntFaces > 100 ) schedule(dynamic, 20)
+    # pragma omp parallel for if (nIntFaces > 100) schedule(dynamic, 20)
     # endif
-    for(label fI=0;fI<nIntFaces;++fI)
+    for (label fI = 0; fI < nIntFaces; ++fI)
     {
         const face& f = faces[fI];
 
@@ -76,10 +75,10 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         {
             const label bpI = bp[f[pI]];
 
-            if( bpI < 0 )
+            if (bpI < 0)
                 continue;
 
-            if( nBndFacesAtBndPoint_[bpI] == 2 )
+            if (nBndFacesAtBndPoint_[bpI] == 2)
             {
                 const edge ePrev = f.faceEdge(f.rcIndex(pI));
                 const edge eNext = f.faceEdge(pI);
@@ -89,17 +88,17 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
                 {
                     const label beI = pointEdges(bpI, peI);
 
-                    if( edges[beI] == ePrev )
+                    if (edges[beI] == ePrev)
                     {
                         foundPrev = true;
                     }
-                    else if( edges[beI] == eNext )
+                    else if (edges[beI] == eNext)
                     {
                         foundNext = true;
                     }
                 }
 
-                if( !(foundPrev && foundNext) )
+                if (!(foundPrev && foundNext))
                 {
                     removeBndPoint_[bpI] = false;
                 }
@@ -111,9 +110,9 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- check processor faces
+        // check processor faces
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
         forAll(procBoundaries, patchI)
@@ -124,7 +123,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
             # ifdef USE_OMP
             # pragma omp parallel for schedule(dynamic, 10)
             # endif
-            for(label faceI=start;faceI<end;++faceI)
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 const face& f = faces[faceI];
 
@@ -132,10 +131,10 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
                 {
                     const label bpI = bp[f[pI]];
 
-                    if( bpI < 0 )
+                    if (bpI < 0)
                         continue;
 
-                    if( nBndFacesAtBndPoint_[bpI] == 2 )
+                    if (nBndFacesAtBndPoint_[bpI] == 2)
                     {
                         const edge ePrev = f.faceEdge(f.rcIndex(pI));
                         const edge eNext = f.faceEdge(pI);
@@ -145,17 +144,17 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
                         {
                             const label beI = pointEdges(bpI, peI);
 
-                            if( edges[beI] == ePrev )
+                            if (edges[beI] == ePrev)
                             {
                                 foundPrev = true;
                             }
-                            else if( edges[beI] == eNext )
+                            else if (edges[beI] == eNext)
                             {
                                 foundNext = true;
                             }
                         }
 
-                        if( !(foundPrev && foundNext) )
+                        if (!(foundPrev && foundNext))
                             removeBndPoint_[bpI] = false;
                     }
                     else
@@ -166,7 +165,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
             }
         }
 
-        //- make sure that all processors have the same information
+        // make sure that all processors have the same information
         const DynList<label>& bpNei = mse.bpNeiProcs();
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
@@ -179,29 +178,30 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         {
             const label bpI = it();
 
-            if( removeBndPoint_[bpI] )
+            if (removeBndPoint_[bpI])
                 continue;
 
-            //- the point shall not be removed
+            // the point shall not be removed
             forAllRow(bpAtProcs, bpI, i)
             {
                 const label neiProc = bpAtProcs(bpI, i);
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 exchangeData[neiProc].append(it.key());
             }
         }
 
-        //- exchange data
+        // exchange data
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
-        //- set remove flag to false
+        // set remove flag to false
         forAll(receivedData, i)
             removeBndPoint_[globalToLocal[receivedData[i]]] = false;
     }
 }
+
 
 void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
 {
@@ -214,13 +214,13 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
     forAll(nBndFacesAtBndPoint_, bpI)
         nBndFacesAtBndPoint_[bpI] = pointFaces.sizeOfRow(bpI);
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         const DynList<label>& neiProcs = mse.bpNeiProcs();
 
-        //- create data that shall be exhcnaged
+        // create data that shall be exhcnaged
         std::map<label, labelLongList> exchangeData;
         forAll(neiProcs, i)
             exchangeData.insert(std::make_pair(neiProcs[i], labelLongList()));
@@ -232,7 +232,7 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
             forAllRow(bpAtProcs, bpI, i)
             {
                 const label neiProc = bpAtProcs(bpI, i);
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 labelLongList& data = exchangeData[neiProc];
@@ -241,12 +241,12 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
             }
         }
 
-        //- exchange data with other processors
+        // exchange data with other processors
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             nBndFacesAtBndPoint_[bpI] += receivedData[counter++];
@@ -254,19 +254,20 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
     }
 }
 
+
 void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
 {
     const labelList& bp = meshSurface().bp();
     const faceListPMG& faces = mesh_.faces();
 
-    //- remove points which can be safely be removed
-    //- internal faces
+    // remove points which can be safely be removed
+    // internal faces
     const label nIntFaces = mesh_.nInternalFaces();
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( nIntFaces > 100 ) schedule(dynamic, 10)
+    # pragma omp parallel for if (nIntFaces > 100) schedule(dynamic, 10)
     # endif
-    for(label faceI=0;faceI<nIntFaces;++faceI)
+    for (label faceI = 0; faceI < nIntFaces; ++faceI)
     {
         const face& f = faces[faceI];
 
@@ -275,7 +276,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
         {
             const label bpI = bp[f[pI]];
 
-            if(
+            if (
                 (bpI >= 0) && removeBndPoint_[bpI] &&
                 (nBndFacesAtBndPoint_[bpI] == 2)
             )
@@ -284,7 +285,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
             newF.append(f[pI]);
         }
 
-        if( newF.size() < f.size() )
+        if (newF.size() < f.size())
         {
             face& mf = const_cast<face&>(f);
             mf.setSize(newF.size());
@@ -293,17 +294,17 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
         }
     }
 
-    //- boundary faces
+    // boundary faces
     forAll(mesh_.boundaries(), patchI)
     {
         const label start = mesh_.boundaries()[patchI].patchStart();
         const label end = start + mesh_.boundaries()[patchI].patchSize();
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( end - start > 100 ) \
+        # pragma omp parallel for if (end - start > 100) \
         schedule(dynamic, 10)
         # endif
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
         {
             const face& f = faces[faceI];
 
@@ -312,13 +313,13 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
             {
                 const label bpI = bp[f[pI]];
 
-                if( removeBndPoint_[bpI] && (nBndFacesAtBndPoint_[bpI] == 2) )
+                if (removeBndPoint_[bpI] && (nBndFacesAtBndPoint_[bpI] == 2))
                     continue;
 
                 newF.append(f[pI]);
             }
 
-            if( newF.size() < f.size() )
+            if (newF.size() < f.size())
             {
                 face& mf = const_cast<face&>(f);
                 mf.setSize(newF.size());
@@ -328,7 +329,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
         }
     }
 
-    //- processor boundaries
+    // processor boundaries
     forAll(mesh_.procBoundaries(), patchI)
     {
         const processorBoundaryPatch& patch = mesh_.procBoundaries()[patchI];
@@ -336,10 +337,10 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
         const label end = start + patch.patchSize();
 
         # ifdef USE_OMP
-        # pragma omp parallel for if( patch.patchSize() > 100 ) \
+        # pragma omp parallel for if (patch.patchSize() > 100) \
         schedule(dynamic, 10)
         # endif
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
         {
             const face& f = faces[faceI];
 
@@ -348,7 +349,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
             {
                 const label bpI = bp[f[pI]];
 
-                if(
+                if (
                     (bpI >= 0) && removeBndPoint_[bpI] &&
                     (nBndFacesAtBndPoint_[bpI] == 2)
                 )
@@ -357,12 +358,12 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
                 newF.append(f[pI]);
             }
 
-            if( newF.size() < f.size() )
+            if (newF.size() < f.size())
             {
                 face& mf = const_cast<face&>(f);
                 mf.setSize(newF.size());
 
-                if( !patch.owner() && (newF[0] != f[0]) )
+                if (!patch.owner() && (newF[0] != f[0]))
                 {
                     forAll(mf, i)
                         mf[i] = newF[mf.rcIndex(i)];
@@ -377,6 +378,7 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
     }
 }
 
+
 label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
 (
     boolList& decomposeFace
@@ -390,7 +392,7 @@ label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
     const label nIntFaces = mesh_.nInternalFaces();
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( bFaces.size() > 100 ) \
+    # pragma omp parallel for if (bFaces.size() > 100) \
     schedule(dynamic, 10) reduction(+ : nDecomposed)
     # endif
     forAll(bFaces, bfI)
@@ -401,10 +403,10 @@ label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
         {
             const label bpI = bp[bf[pI]];
 
-            if( nBndFacesAtBndPoint_[bpI] == 2 )
+            if (nBndFacesAtBndPoint_[bpI] == 2)
             {
                 ++nDecomposed;
-                decomposeFace[nIntFaces+bfI] = true;
+                decomposeFace[nIntFaces + bfI] = true;
             }
         }
     }
@@ -413,6 +415,7 @@ label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
 
     return nDecomposed;
 }
+
 
 // * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
 // Constructors
@@ -423,11 +426,11 @@ checkBoundaryFacesSharingTwoEdges::checkBoundaryFacesSharingTwoEdges
 )
 :
     mesh_(mesh),
-    meshSurfacePtr_(NULL),
+    meshSurfacePtr_(nullptr),
     nBndFacesAtBndPoint_(),
     removeBndPoint_()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
 
@@ -435,6 +438,7 @@ checkBoundaryFacesSharingTwoEdges::~checkBoundaryFacesSharingTwoEdges()
 {
     deleteDemandDrivenData(meshSurfacePtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -447,12 +451,13 @@ void checkBoundaryFacesSharingTwoEdges::findPoints(labelHashSet& badPoints)
     const labelList& bPoints = meshSurface().boundaryPoints();
     forAll(nBndFacesAtBndPoint_, bpI)
     {
-        if( nBndFacesAtBndPoint_[bpI] != 2 )
+        if (nBndFacesAtBndPoint_[bpI] != 2)
             continue;
 
         badPoints.insert(bPoints[bpI]);
     }
 }
+
 
 bool checkBoundaryFacesSharingTwoEdges::improveTopology()
 {
@@ -467,26 +472,26 @@ bool checkBoundaryFacesSharingTwoEdges::improveTopology()
     boolList decomposeFace(mesh_.faces().size(), false);
     const label nDecomposed = findBndFacesForDecomposition(decomposeFace);
 
-    Info << "Marked " << nDecomposed << " faces for decomposition" << endl;
+    Info<< "Marked " << nDecomposed << " faces for decomposition" << endl;
 
-    if( nDecomposed != 0 )
+    if (nDecomposed != 0)
     {
-        //- delete the mesh surface engine
+        // delete the mesh surface engine
         deleteDemandDrivenData(meshSurfacePtr_);
 
-        //- find cells which will be decomposed
+        // find cells which will be decomposed
         boolList decomposeCell(mesh_.cells().size(), false);
         const labelList& owner = mesh_.owner();
         forAll(decomposeFace, faceI)
         {
-            if( decomposeFace[faceI] )
+            if (decomposeFace[faceI])
                 decomposeCell[owner[faceI]];
         }
 
-        //- decompose marked faces
+        // decompose marked faces
         decomposeFaces(mesh_).decomposeMeshFaces(decomposeFace);
 
-        //- decompose cells
+        // decompose cells
         VRWGraph pRegions(mesh_.points().size());
         decomposeCells dc(mesh_);
         dc.decomposeMesh(decomposeCell);
@@ -498,6 +503,7 @@ bool checkBoundaryFacesSharingTwoEdges::improveTopology()
 
     return changed;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

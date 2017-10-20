@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,7 +48,7 @@ partTriMeshSimplex::partTriMeshSimplex
     const LongList<labelledTri>& trias = tm.triangles();
     const VRWGraph& pt = tm.pointTriangles();
     const LongList<direction>& pType = tm.pointType();
-    
+
     //trias_.setSize(pt.sizeOfRow(pI));
     label counter(0);
 
@@ -58,35 +56,39 @@ partTriMeshSimplex::partTriMeshSimplex
     forAllRow(pt, pI, tI)
     {
         const labelledTri& tri = trias[pt(pI, tI)];
-        for(label i=0;i<3;++i)
+        for (label i = 0; i < 3; ++i)
         {
             const label tpI = tri[i];
 
-            if( !addr.found(tpI) )
+            if (!addr.found(tpI))
             {
                 addr.insert(tpI, counter);
                 pts_.append(points[tpI]);
                 ++counter;
             }
         }
-        
+
         # ifdef DEBUGSmooth
-        Info << "Tet " << tetI << " is " << tet << endl;
+        Info<< "Tet " << tetI << " is " << tet << endl;
         # endif
-        
+
         label pos(-1);
-        for(label i=0;i<3;++i)
-            if( tri[i] == pI )
+        for (label i = 0; i < 3; ++i)
+        {
+            if (tri[i] == pI)
             {
                 pos = i;
                 break;
             }
+        }
 
-        //- avoid using triangle serving as barriers for other points
-        if( !(pType[tri[2]] & partTriMesh::FACECENTRE) && (pos != 0) )
+        // avoid using triangle serving as barriers for other points
+        if (!(pType[tri[2]] & partTriMesh::FACECENTRE) && (pos != 0))
+        {
             continue;
+        }
 
-        switch( pos )
+        switch(pos)
         {
             case 0:
             {
@@ -111,30 +113,31 @@ partTriMeshSimplex::partTriMeshSimplex
             } break;
             default:
             {
-                FatalErrorIn
-                (
-                    "partTriMeshSimplex::partTriMeshSimplex("
-                    "(const partTriMesh& tm, const label pI)"
-                ) << "Point " << pI << " is not present in triangle" << tri
+                FatalErrorInFunction
+                    << "Point " << pI << " is not present in triangle" << tri
                     << abort(FatalError);
             }
         }
     }
 
     # ifdef DEBUGSmooth
-    Info << "Simplex at point " << pI << " points " << pts_ << endl;
-    Info << "Simplex at point " << pI << " triangles " << trias_ << endl;
+    Info<< "Simplex at point " << pI << " points " << pts_ << endl;
+    Info<< "Simplex at point " << pI << " triangles " << trias_ << endl;
     # endif
 
-    if( pts_.size() == 0 || trias_.size() == 0 )
+    if (pts_.size() == 0 || trias_.size() == 0)
+    {
         FatalError << "Simplex at point " << pI << " is not valid "
                    << pts_ << " triangles " << trias_ << abort(FatalError);
+    }
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 partTriMeshSimplex::~partTriMeshSimplex()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -149,7 +152,7 @@ vector partTriMeshSimplex::normal() const
 
         vector n
         (
-            0.5 * ((pts_[t[1]] - pts_[t[0]]) ^ (pts_[t[2]] - pts_[t[0]]))
+            0.5*((pts_[t[1]] - pts_[t[0]])^(pts_[t[2]] - pts_[t[0]]))
         );
         const scalar magn = mag(n);
 
@@ -157,8 +160,9 @@ vector partTriMeshSimplex::normal() const
         magN += magn;
     }
 
-    return (normal / (magN + VSMALL));
+    return (normal/(magN + VSMALL));
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

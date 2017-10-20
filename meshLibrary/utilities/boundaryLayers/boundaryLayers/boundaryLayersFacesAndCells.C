@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -44,7 +42,7 @@ namespace Foam
 
 void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 {
-    Info << "Starting creating layer cells" << endl;
+    Info<< "Starting creating layer cells" << endl;
 
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -53,28 +51,29 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
     const labelList& boundaryFacePatches = mse.boundaryFacePatches();
     const labelList& faceOwners = mse.faceOwners();
 
-    //- this is used for parallel runs
-    const Map<label>* otherProcPatchPtr(NULL);
+    // this is used for parallel runs
+    const Map<label>* otherProcPatchPtr(nullptr);
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         createNewFacesParallel(treatPatches);
 
         otherProcPatchPtr = &mse.otherEdgeFacePatch();
     }
 
-    //- create lists for new boundary faces
+    // create lists for new boundary faces
     VRWGraph newBoundaryFaces;
     labelLongList newBoundaryOwners;
     labelLongList newBoundaryPatches;
 
-    //- create storage for new cells
+    // create storage for new cells
     VRWGraphList cellsToAdd;
 
-    //- create layer cells and store boundary faces
+    // create layer cells and store boundary faces
     const label nOldCells = mesh_.cells().size();
     forAll(bFaces, bfI)
-        if( treatPatches[boundaryFacePatches[bfI]] )
+    {
+        if (treatPatches[boundaryFacePatches[bfI]])
         {
             const face& f = bFaces[bfI];
 
@@ -82,10 +81,10 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 
             label fI(0);
 
-            //- store boundary face
+            // store boundary face
             cellFaces[fI++] = f.reverseFace();
 
-            //- create parallel face
+            // create parallel face
             face newF(f.size());
             forAll(f, pI)
                 newF[pI] = newLabelForVertex_[f[pI]];
@@ -95,7 +94,7 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
             newBoundaryOwners.append(cellsToAdd.size() + nOldCells);
             newBoundaryPatches.append(boundaryFacePatches[bfI]);
 
-            //- create quad faces
+            // create quad faces
             newF.setSize(4);
             forAll(f, pI)
             {
@@ -106,26 +105,28 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 
                 cellFaces[fI++] = newF;
 
-                //- check if the face is at the boundary
-                //- of the treated partitions
+                // check if the face is at the boundary
+                // of the treated partitions
                 const label edgeI = faceEdges(bfI, pI);
-                if( edgeFaces.sizeOfRow(edgeI) == 2 )
+                if (edgeFaces.sizeOfRow(edgeI) == 2)
                 {
                     label neiFace = edgeFaces(edgeI, 0);
-                    if( neiFace == bfI )
+                    if (neiFace == bfI)
+                    {
                         neiFace = edgeFaces(edgeI, 1);
+                    }
 
-                    if( !treatPatches[boundaryFacePatches[neiFace]] )
+                    if (!treatPatches[boundaryFacePatches[neiFace]])
                     {
                         newBoundaryFaces.appendList(newF);
                         newBoundaryOwners.append(cellsToAdd.size() + nOldCells);
                         newBoundaryPatches.append(boundaryFacePatches[neiFace]);
                     }
                 }
-                else if( edgeFaces.sizeOfRow(edgeI) == 1 )
+                else if (edgeFaces.sizeOfRow(edgeI) == 1)
                 {
                     const Map<label>& otherProcPatch = *otherProcPatchPtr;
-                    if( !treatPatches[otherProcPatch[edgeI]] )
+                    if (!treatPatches[otherProcPatch[edgeI]])
                     {
                         newBoundaryFaces.appendList(newF);
                         newBoundaryOwners.append(cellsToAdd.size() + nOldCells);
@@ -139,7 +140,7 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
         else
         {
             # ifdef DEBUGLayer
-            Info << "Storing original boundary face "
+            Info<< "Storing original boundary face "
                 << bfI << " into patch " << boundaryFacePatches[bfI] << endl;
             # endif
 
@@ -147,8 +148,9 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
             newBoundaryOwners.append(faceOwners[bfI]);
             newBoundaryPatches.append(boundaryFacePatches[bfI]);
         }
+    }
 
-    //- create mesh modifier
+    // create mesh modifier
     polyMeshGenModifier meshModifier(mesh_);
 
     meshModifier.addCells(cellsToAdd);
@@ -164,17 +166,20 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 
     PtrList<boundaryPatch>& boundaries = meshModifier.boundariesAccess();
     forAll(boundaries, patchI)
+    {
         boundaries[patchI].patchType() = patchTypes_[patchI];
+    }
 
-    //- delete meshSurfaceEngine
+    // delete meshSurfaceEngine
     this->clearOut();
 
     # ifdef DEBUGLayer
     mesh_.addressingData().checkMesh(true);
     # endif
 
-    Info << "Finished creating layer cells" << endl;
+    Info<< "Finished creating layer cells" << endl;
 }
+
 
 void boundaryLayers::createNewFacesParallel
 (
@@ -192,12 +197,12 @@ void boundaryLayers::createNewFacesParallel
     const Map<label>& otherProcPatch = mse.otherEdgeFacePatch();
     const Map<label>& otherFaceProc = mse.otherEdgeFaceAtProc();
 
-    //- the next stage is the generation of processor faces
-    //- this step can be done without any communication, but only if the faces
-    //- are added in the same order on both processors
-    //- this will be achieved by sorting edges according to their global labes
-    //- another difficulty here is that new processor patches may occur
-    //- during this procedure
+    // the next stage is the generation of processor faces
+    // this step can be done without any communication, but only if the faces
+    // are added in the same order on both processors
+    // this will be achieved by sorting edges according to their global labes
+    // another difficulty here is that new processor patches may occur
+    // during this procedure
     Map<label> otherProcToProcPatch;
     forAll(mesh_.procBoundaries(), patchI)
     {
@@ -209,17 +214,20 @@ void boundaryLayers::createNewFacesParallel
     boolList treatEdge(edgeFaces.size(), false);
     for
     (
-        Map<label>::const_iterator iter=globalToLocal.begin();
+        Map<label>::const_iterator iter = globalToLocal.begin();
         iter!=globalToLocal.end();
         ++iter
     )
     {
         const label beI = iter();
 
-        if( edgeFaces.sizeOfRow(beI) != 1 )
+        if (edgeFaces.sizeOfRow(beI) != 1)
+        {
             continue;
+        }
 
-        if(
+        if
+        (
             treatPatches[boundaryFacePatches[edgeFaces(beI, 0)]] &&
             treatPatches[otherProcPatch[beI]]
         )
@@ -229,24 +237,26 @@ void boundaryLayers::createNewFacesParallel
         }
     }
 
-    //- create a list of treated edges and sort the list
+    // create a list of treated edges and sort the list
     labelList treatedEdgeLabels(nTreatedEdges);
     nTreatedEdges = 0;
     forAll(treatEdge, beI)
-        if( treatEdge[beI] )
+    {
+        if (treatEdge[beI])
         {
             treatedEdgeLabels[nTreatedEdges++] = globalEdgeLabel[beI];
         }
+    }
     treatedEdgeLabels.setSize(nTreatedEdges);
 
     sort(treatedEdgeLabels);
 
-    //- create additional processor patches if needed
+    // create additional processor patches if needed
     forAll(treatedEdgeLabels, eI)
     {
         const label beI = globalToLocal[treatedEdgeLabels[eI]];
 
-        if( !otherProcToProcPatch.found(otherFaceProc[beI]) )
+        if (!otherProcToProcPatch.found(otherFaceProc[beI]))
         {
             otherProcToProcPatch.insert
             (
@@ -259,7 +269,7 @@ void boundaryLayers::createNewFacesParallel
         }
     }
 
-    //- create new processor faces
+    // create new processor faces
     VRWGraph newProcFaces;
     labelLongList faceProcPatch;
     FixedList<label, 4> newF;
@@ -267,18 +277,20 @@ void boundaryLayers::createNewFacesParallel
     {
         const label beI = globalToLocal[treatedEdgeLabels[geI]];
 
-        if( edgeFaces.sizeOfRow(beI) == 0 )
+        if (edgeFaces.sizeOfRow(beI) == 0)
+        {
             continue;
+        }
 
         const label bfI = edgeFaces(beI, 0);
         const label pos = faceEdges.containsAtPosition(bfI, beI);
         const edge e = bFaces[bfI].faceEdge(pos);
 
-        if( otherFaceProc[beI] > Pstream::myProcNo() )
+        if (otherFaceProc[beI] > Pstream::myProcNo())
         {
             newF[0] = e.start();
             newF[1] = e.end();
-            if( patchKey_.size() != 0 )
+            if (patchKey_.size() != 0)
             {
                 newF[2] =
                     findNewNodeLabel(e.end(), patchKey_[otherProcPatch[beI]]);
@@ -294,7 +306,7 @@ void boundaryLayers::createNewFacesParallel
         else
         {
             newF[0] = e.end();
-            if( patchKey_.size() != 0 )
+            if (patchKey_.size() != 0)
             {
                 newF[1] =
                     findNewNodeLabel
@@ -321,9 +333,10 @@ void boundaryLayers::createNewFacesParallel
         faceProcPatch.append(otherProcToProcPatch[otherFaceProc[beI]]);
     }
 
-    //- add faces into the mesh
+    // add faces into the mesh
     polyMeshGenModifier(mesh_).addProcessorFaces(newProcFaces, faceProcPatch);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

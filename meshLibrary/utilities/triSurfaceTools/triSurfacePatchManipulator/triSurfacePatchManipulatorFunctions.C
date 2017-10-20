@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -45,7 +43,7 @@ void triSurfacePatchManipulator::allocateFeatureEdges()
     const edgeLongList& edges = surf_.edges();
     const VRWGraph& pEdges = surf_.pointEdges();
 
-    //- allocate featureEdges list
+    // allocate featureEdges list
     featureEdges_.setSize(edges.size());
     featureEdges_ = direction(0);
 
@@ -59,11 +57,12 @@ void triSurfacePatchManipulator::allocateFeatureEdges()
         {
             const label eI = pEdges(e.start(), peI);
 
-            if( edges[eI] == e )
+            if (edges[eI] == e)
                 featureEdges_[eI] |= 1;
         }
     }
 }
+
 
 void triSurfacePatchManipulator::createPatches()
 {
@@ -76,14 +75,14 @@ void triSurfacePatchManipulator::createPatches()
 
     forAll(facetInPatch_, triI)
     {
-        if( facetInPatch_[triI] != -1 )
+        if (facetInPatch_[triI] != -1)
             continue;
 
         labelLongList front;
         front.append(triI);
         facetInPatch_[triI] = nPatches_;
 
-        while( front.size() )
+        while (front.size())
         {
             const label fLabel = front.removeLastElement();
 
@@ -93,24 +92,24 @@ void triSurfacePatchManipulator::createPatches()
             {
                 const label edgeI = fEdges[feI];
 
-                //- check if th edges is marked as a feature edge
-                if( featureEdges_[edgeI] )
+                // check if th edges is marked as a feature edge
+                if (featureEdges_[edgeI])
                     continue;
 
                 const constRow eFaces = edgeFaces[edgeI];
 
-                //- stop at non-manifold edges
-                if( eFaces.size() != 2 )
+                // stop at non-manifold edges
+                if (eFaces.size() != 2)
                     continue;
 
                 label neiTri = eFaces[0];
-                if( neiTri == fLabel )
+                if (neiTri == fLabel)
                     neiTri = eFaces[1];
 
-                //- do not overwrite existing patch information
-                if( surf_[fLabel].region() != surf_[neiTri].region() )
+                // do not overwrite existing patch information
+                if (surf_[fLabel].region() != surf_[neiTri].region())
                     continue;
-                if( facetInPatch_[neiTri] != -1 )
+                if (facetInPatch_[neiTri] != -1)
                     continue;
 
                 facetInPatch_[neiTri] = nPatches_;
@@ -121,8 +120,9 @@ void triSurfacePatchManipulator::createPatches()
         ++nPatches_;
     }
 
-    Info << "Created " << nPatches_ << " surface patches" << endl;
+    Info<< "Created " << nPatches_ << " surface patches" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

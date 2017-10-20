@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,7 +44,7 @@ void meshOctreeModifier::reduceMemoryConsumption()
 
     forAll(octree_.dataSlots_, slotI)
     {
-        //- deleting triangles
+        // deleting triangles
         VRWGraph& containedTriangles =
             octree_.dataSlots_[slotI].containedTriangles_;
         label nElmts = containedTriangles.size();
@@ -55,19 +53,19 @@ void meshOctreeModifier::reduceMemoryConsumption()
         {
             const meshOctreeCube& oc = *leaves[leafI];
 
-            if(
+            if (
                 oc.hasContainedElements() &&
                 oc.slotPtr() == &octree_.dataSlots_[slotI]
             )
                 mayDeleteData[oc.containedElements()] = false;
         }
 
-        for(label i=0;i<nElmts;++i)
-            if( mayDeleteData[i] )
+        for (label i = 0; i < nElmts; ++i)
+            if (mayDeleteData[i])
                 containedTriangles.setRowSize(i, 0);
         containedTriangles.optimizeMemoryUsage();
 
-        //- deleting edges
+        // deleting edges
         VRWGraph& containedEdges =
             octree_.dataSlots_[slotI].containedEdges_;
         nElmts = containedEdges.size();
@@ -77,20 +75,22 @@ void meshOctreeModifier::reduceMemoryConsumption()
         {
             const meshOctreeCube& oc = *leaves[leafI];
 
-            if(
-                oc.hasContainedEdges() &&
-                oc.slotPtr() == &octree_.dataSlots_[slotI]
+            if
+            (
+                oc.hasContainedEdges()
+             && oc.slotPtr() == &octree_.dataSlots_[slotI]
             )
                 mayDeleteData[oc.containedEdges()] = false;
         }
 
-        for(label i=0;i<nElmts;++i)
-            if( mayDeleteData[i] )
+        for (label i = 0; i < nElmts; ++i)
+            if (mayDeleteData[i])
                 containedEdges.setRowSize(i, 0);
 
         containedEdges.optimizeMemoryUsage();
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

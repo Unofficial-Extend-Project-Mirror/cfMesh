@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    surfaceMeshGeometryModification
+    Foam::surfaceMeshGeometryModification
 
 Description
     Modifies geometry of surface meshes according to the anisotropic sources
@@ -50,44 +50,49 @@ class triSurf;
 class dictionary;
 
 /*---------------------------------------------------------------------------*\
-                Class surfaceMeshGeometryModification Declaration
+               Class surfaceMeshGeometryModification Declaration
 \*---------------------------------------------------------------------------*/
 
 class surfaceMeshGeometryModification
 {
     // Private data
+
         //- reference to triSurf
         const triSurf& surf_;
 
         //- length of box sides
         const dictionary& meshDict_;
 
-        //- contruct coordinate modification
+        //- construct coordinate modification
         coordinateModifier* coordinateModifierPtr_;
 
-        //- is mofdification active
+        //- is modification active
         bool modificationActive_;
 
 
     // Private member functions
+
         //- check existence of geometry modifiers
         void checkModification();
 
         //- disallow bitwise copy construct
-        surfaceMeshGeometryModification(const surfaceMeshGeometryModification&);
+        surfaceMeshGeometryModification
+        (
+            const surfaceMeshGeometryModification&
+        );
 
         //- disallow bitwise assignment
         void operator=(const surfaceMeshGeometryModification&);
 
+
 public:
 
-    // Constructors
+    //- Construct from triSurf and dictionary
+    surfaceMeshGeometryModification(const triSurf&, const dictionary&);
 
-        //- Construct from triSurf and dictionary
-        surfaceMeshGeometryModification(const triSurf&, const dictionary&);
+    //- Destructor
+    ~surfaceMeshGeometryModification();
 
-    // Destructor
-        ~surfaceMeshGeometryModification();
 
     // Member Functions
 

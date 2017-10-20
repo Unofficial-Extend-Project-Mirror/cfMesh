@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,6 +35,7 @@ namespace Foam
 defineTypeNameAndDebug(hollowConeRefinement, 0);
 addToRunTimeSelectionTable(objectRefinement, hollowConeRefinement, dictionary);
 
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 hollowConeRefinement::hollowConeRefinement()
@@ -47,6 +48,7 @@ hollowConeRefinement::hollowConeRefinement()
     r1Outer_(-1.0),
     r1Inner_(0.0)
 {}
+
 
 hollowConeRefinement::hollowConeRefinement
 (
@@ -76,6 +78,7 @@ hollowConeRefinement::hollowConeRefinement
     setAdditionalRefinementLevels(additionalRefLevels);
 }
 
+
 hollowConeRefinement::hollowConeRefinement
 (
     const word& name,
@@ -87,31 +90,33 @@ hollowConeRefinement::hollowConeRefinement
     this->operator=(dict);
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 bool hollowConeRefinement::intersectsObject(const boundBox& bb) const
 {
-    //- check if the centre is inside the cone
+    // check if the centre is inside the cone
     const point c = (bb.max() + bb.min()) / 2.0;
-    
+
     const vector v = p1_ - p0_;
     const scalar d = magSqr(v);
-    
-    if( d < VSMALL )
+
+    if (d < VSMALL)
         return false;
-    
+
     const scalar t = ((c - p0_) & v) / d;
-    if( (t > 1.0) || (t < 0.0) )
+    if ((t > 1.0) || (t < 0.0))
         return false;
-    
-    const scalar rOuter = r0Outer_ + (r1Outer_ - r0Outer_) * t;
-    const scalar rInner = r0Inner_ + (r1Inner_ - r0Inner_) * t;
-    
-    if(( mag(p0_ + t * v - c) < rOuter ) && ( mag(p0_ + t * v - c) > rInner ))
+
+    const scalar rOuter = r0Outer_ + (r1Outer_ - r0Outer_)*t;
+    const scalar rInner = r0Inner_ + (r1Inner_ - r0Inner_)*t;
+
+    if ((mag(p0_ + t*v - c) < rOuter) && (mag(p0_ + t*v - c) > rInner))
         return true;
-    
+
     return false;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -119,7 +124,7 @@ dictionary hollowConeRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
-    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+    if (additionalRefinementLevels() == 0 && cellSize() >= 0.0)
     {
         dict.add("cellSize", cellSize());
     }
@@ -140,6 +145,7 @@ dictionary hollowConeRefinement::dict(bool /*ignoreType*/) const
     return dict;
 }
 
+
 void hollowConeRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
@@ -151,14 +157,15 @@ void hollowConeRefinement::write(Ostream& os) const
         << " radius1_Inner: " << r1Inner_;
 }
 
+
 void hollowConeRefinement::writeDict(Ostream& os, bool subDict) const
 {
-    if( subDict )
+    if (subDict)
     {
         os << indent << token::BEGIN_BLOCK << incrIndent << nl;
     }
-    
-    if( additionalRefinementLevels() == 0 && cellSize() >= 0.0 )
+
+    if (additionalRefinementLevels() == 0 && cellSize() >= 0.0)
     {
         os.writeKeyword("cellSize") << cellSize() << token::END_STATEMENT << nl;
     }
@@ -170,7 +177,7 @@ void hollowConeRefinement::writeDict(Ostream& os, bool subDict) const
     }
 
     // only write type for derived types
-    if( type() != typeName_() )
+    if (type() != typeName_())
     {
         os.writeKeyword("type") << type() << token::END_STATEMENT << nl;
     }
@@ -181,12 +188,13 @@ void hollowConeRefinement::writeDict(Ostream& os, bool subDict) const
     os.writeKeyword("p1") << p1_ << token::END_STATEMENT << nl;
     os.writeKeyword("radius1_Outer") << r1Outer_ << token::END_STATEMENT << nl;
     os.writeKeyword("radius1_Inner") << r1Inner_ << token::END_STATEMENT << nl;
-    
-    if( subDict )
+
+    if (subDict)
     {
         os << decrIndent << indent << token::END_BLOCK << endl;
     }
 }
+
 
 void hollowConeRefinement::operator=(const dictionary& d)
 {
@@ -199,90 +207,84 @@ void hollowConeRefinement::operator=(const dictionary& d)
     );
 
     // unspecified centre is (0 0 0)
-    if( dict.found("p0") )
+    if (dict.found("p0"))
     {
         dict.lookup("p0") >> p0_;
     }
     else
     {
-        FatalErrorIn
-        (
-            "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry p0 is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry p0 is not specified!" << exit(FatalError);
+
         p0_ = vector::zero;
     }
 
     // specify radius
-    if( dict.found("radius0_Outer") )
+    if (dict.found("radius0_Outer"))
     {
         r0Outer_ = readScalar(dict.lookup("radius0_Outer"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry radius0_Outer is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry radius0_Outer is not specified!" << exit(FatalError);
+
         r0Outer_ = -1.0;
     }
 
     // specify radius
-    if( dict.found("radius0_Inner") )
+    if (dict.found("radius0_Inner"))
     {
         r0Inner_ = readScalar(dict.lookup("radius0_Inner"));
     }
     else
     {
-        FatalErrorIn
-        (
-     	    "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry radius0_Inner is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry radius0_Inner is not specified!" << exit(FatalError);
         r0Inner_ = -1.0;
     }
 
-    
+
     // unspecified centre is (0 0 0)
-    if( dict.found("p1") )
+    if (dict.found("p1"))
     {
         dict.lookup("p1") >> p1_;
     }
     else
     {
-        FatalErrorIn
-        (
-            "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry p1 is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry p1 is not specified!" << exit(FatalError);
+
         p1_ = vector::zero;
     }
 
     // specify radius
-    if( dict.found("radius1_Outer") )
+    if (dict.found("radius1_Outer"))
     {
         r1Outer_ = readScalar(dict.lookup("radius1_Outer"));
     }
     else
     {
-        FatalErrorIn
-        (
-            "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry radius1_Outer is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry radius1_Outer is not specified!" << exit(FatalError);
+
         r1Outer_ = -1.0;
     }
 
     // specify radius
-    if( dict.found("radius1_Inner") )
+    if (dict.found("radius1_Inner"))
     {
-     	r1Inner_ = readScalar(dict.lookup("radius1_Inner"));
+         r1Inner_ = readScalar(dict.lookup("radius1_Inner"));
     }
     else
     {
-     	FatalErrorIn
-        (
-            "void hollowConeRefinement::operator=(const dictionary& d)"
-        ) << "Entry radius1_Inner is not specified!" << exit(FatalError);
+        FatalErrorInFunction
+            << "Entry radius1_Inner is not specified!" << exit(FatalError);
+
         r1Inner_ = -1.0;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -295,9 +297,10 @@ Ostream& hollowConeRefinement::operator<<(Ostream& os) const
     write(os);
     return os;
 }
-        
+
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-        
+
 } // End namespace Foam
 
 // ************************************************************************* //

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurfaceCopyParts
+    Foam::triSurfaceCopyParts
 
 Description
     Copies user-selected surface parts into a new surface mesh
@@ -44,16 +44,19 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                Class triSurfaceCopyParts Declaration
+                     Class triSurfaceCopyParts Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurfaceCopyParts
 {
     // Private data
+
         //- reference to triSurf
         const triSurf& surf_;
 
+
     // Private member functions
+
         //- mark facets which shall be copied
         void markFacetsForCopying(const wordList&, boolList&) const;
 
@@ -66,16 +69,14 @@ class triSurfaceCopyParts
         //- Disallow default bitwise assignment
         void operator=(const triSurfaceCopyParts&);
 
+
 public:
 
-    // Constructors
+    //- Construct from octree
+    triSurfaceCopyParts(const triSurf& surface);
 
-        //- Construct from octree
-        triSurfaceCopyParts(const triSurf& surface);
-
-    // Destructor
-
-        ~triSurfaceCopyParts();
+    //- Destructor
+    ~triSurfaceCopyParts();
 
 
     // Member Functions
@@ -86,6 +87,7 @@ public:
         //- creates a new surface mesh and copies selected patches/subsets
         triSurf* copySurface(const wordList&) const;
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

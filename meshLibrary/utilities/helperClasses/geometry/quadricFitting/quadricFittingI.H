@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,7 +40,7 @@ void quadricFitting::calculateNormalVector()
     {
         const vector d = (otherPoints_[i] - origin_);
 
-        mat += symm(d * d);
+        mat += symm(d*d);
     }
 
     mat /= otherPoints_.size();
@@ -55,9 +53,10 @@ void quadricFitting::calculateNormalVector()
     normal_ = eigenVectors(mat, ev).x();
 }
 
+
 void quadricFitting::calculateCoordinateSystem()
 {
-    if( mag(normal_) < VSMALL )
+    if (mag(normal_) < VSMALL)
     {
         vecX_ = vecY_ = vector::zero;
         forAll(transformedPoints_, i)
@@ -71,12 +70,12 @@ void quadricFitting::calculateCoordinateSystem()
     bool valid(false);
 
     label pI(0);
-    while( !valid )
+    while (!valid)
     {
         const point vp = pl.nearestPoint(otherPoints_[pI]);
         vecX_ = vp - origin_;
 
-        if( magSqr(vecX_) < VSMALL )
+        if (magSqr(vecX_) < VSMALL)
         {
             ++pI;
             continue;
@@ -87,12 +86,10 @@ void quadricFitting::calculateCoordinateSystem()
         valid = true;
     }
 
-    if( !valid )
+    if (!valid)
     {
-        FatalErrorIn
-        (
-            "void quadricFitting::calculateCoordinateSystem()"
-        ) << "Cannot find a valid coordinate system!" << endl;
+        FatalErrorInFunction
+            << "Cannot find a valid coordinate system!" << endl;
 
         normal_ = vecX_ = vecY_ = vector::zero;
     }
@@ -111,9 +108,10 @@ void quadricFitting::calculateCoordinateSystem()
     }
 }
 
+
 void quadricFitting::calculateQuadricCoeffs()
 {
-    if( mag(normal_) < VSMALL )
+    if (mag(normal_) < VSMALL)
     {
         coefficients_.setSize(5);
         coefficients_ = 0.0;
@@ -130,42 +128,49 @@ void quadricFitting::calculateQuadricCoeffs()
 
         helper[0] = sqr(p.x());
         helper[1] = sqr(p.y());
-        helper[2] = p.x() * p.y();
+        helper[2] = p.x()*p.y();
         helper[3] = p.x();
         helper[4] = p.y();
 
-        for(label rowI=0;rowI<5;++rowI)
+        for (label rowI = 0; rowI < 5; ++rowI)
         {
-            for(label colI=rowI;colI<5;++colI)
-                mat[rowI][colI] += helper[rowI] * helper[colI];
+            for (label colI = rowI; colI < 5; ++colI)
+            {
+                mat[rowI][colI] += helper[rowI]*helper[colI];
+            }
 
-            mat.source()[rowI] += helper[rowI] * p.z();
+            mat.source()[rowI] += helper[rowI]*p.z();
         }
     }
 
-    for(label rowI=1;rowI<5;++rowI)
+    for (label rowI = 1; rowI < 5; ++rowI)
     {
-        for(label colI=0;colI<rowI;++colI)
+        for (label colI = 0; colI < rowI; ++colI)
+        {
             mat[rowI][colI] = mat[colI][rowI];
+        }
 
-        if( mag(mat[rowI][rowI]) < SMALL )
+        if (mag(mat[rowI][rowI]) < SMALL)
+        {
             mat[rowI][rowI] = SMALL;
+        }
     }
 
     coefficients_ = mat.LUsolve();
 }
 
+
 void quadricFitting::calculateBestFit()
 {
     label iteration(0);
 
-    while( iteration++ < 10 )
+    while (iteration++< 10)
     {
         calculateCoordinateSystem();
 
         calculateQuadricCoeffs();
 
-        if( (mag(coefficients_[3]) > SMALL) || (mag(coefficients_[4]) > SMALL) )
+        if ((mag(coefficients_[3]) > SMALL) || (mag(coefficients_[4]) > SMALL))
         {
             //- correct the normal
             const scalar d =
@@ -173,9 +178,9 @@ void quadricFitting::calculateBestFit()
 
             const vector newNormal
             (
-                normal_ / d -
-                coefficients_[3] * vecX_ / d -
-                coefficients_[4] * vecY_ / d
+                normal_/d -
+                coefficients_[3]*vecX_/d -
+                coefficients_[4]*vecY_/d
             );
 
             normal_ = newNormal;
@@ -187,12 +192,13 @@ void quadricFitting::calculateBestFit()
     }
 
     # ifdef DEBUGQuadric
-    Info << "Other points " << otherPoints_ << endl;
-    Info << "Transformed points " << transformedPoints_ << endl;
-    Info << "normal " << normal_ << endl;
-    Info << "Coefficients " << coefficients_ << endl;
+    Info<< "Other points " << otherPoints_ << endl;
+    Info<< "Transformed points " << transformedPoints_ << endl;
+    Info<< "normal " << normal_ << endl;
+    Info<< "Coefficients " << coefficients_ << endl;
     # endif
 }
+
 
 // * * * * * * * * * * * * * * * *  Constructors * * * * * * * * * * * * * * //
 
@@ -214,17 +220,14 @@ inline quadricFitting::quadricFitting
 {
     otherPoints_.setSize(otherPoints.size());
     forAll(otherPoints, i)
-        otherPoints_[i] = otherPoints[i];
-
-    if( magSqr(normal_) < VSMALL )
     {
-        FatalErrorIn
-        (
-            "template<class ListType>\n"
-            "inline quadricFitting::quadricFitting"
-            "(const point& origin, const vector normal,"
-            " const ListType& otherPoints)"
-        ) << "Cannot construct the quadric surface for point "
+        otherPoints_[i] = otherPoints[i];
+    }
+
+    if (magSqr(normal_) < VSMALL)
+    {
+        FatalErrorInFunction
+            << "Cannot construct the quadric surface for point "
             << origin_ << " because the normal does not exist!"
             << "\nThis indicates that the input"
             << " surface mesh is of poor quality" << exit(FatalError);
@@ -239,7 +242,7 @@ inline quadricFitting::quadricFitting
     calculateBestFit();
 }
 
-//- Construct from point and other points
+
 template<class ListType>
 inline quadricFitting::quadricFitting
 (
@@ -257,16 +260,19 @@ inline quadricFitting::quadricFitting
 {
     otherPoints_.setSize(otherPoints.size());
     forAll(otherPoints, i)
+    {
         otherPoints_[i] = otherPoints[i];
+    }
 
     calculateNormalVector();
 
     calculateBestFit();
 }
 
+
 inline quadricFitting::~quadricFitting()
-{
-}
+{}
+
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
@@ -275,7 +281,7 @@ inline const vector& quadricFitting::normal() const
     return normal_;
 }
 
-//- Return min curvature
+
 inline scalar quadricFitting::minCurvature() const
 {
     return
@@ -285,7 +291,7 @@ inline scalar quadricFitting::minCurvature() const
     );
 }
 
-//- Return max curvature
+
 inline scalar quadricFitting::maxCurvature() const
 {
     return
@@ -295,43 +301,44 @@ inline scalar quadricFitting::maxCurvature() const
     );
 }
 
-//- Return mean curvature
+
 inline scalar quadricFitting::meanCurvature() const
 {
-    return 0.5 * (minCurvature() + maxCurvature());
+    return 0.5*(minCurvature() + maxCurvature());
 }
 
-//- Return Gaussian curvature
+
 inline scalar quadricFitting::gaussianCurvature() const
 {
-    return minCurvature() * maxCurvature();
+    return minCurvature()*maxCurvature();
 }
 
-//- Return min curvature vector
+
 inline vector quadricFitting::minCurvatureVector() const
 {
     const scalar theta =
-    0.5 * Foam::atan
-    (
-        coefficients_[2] /
-        stabilise(coefficients_[0] - coefficients_[1], VSMALL)
-    );
-
-    return Foam::cos(theta) * vecX_ + Foam::sin(theta) * vecY_;
-}
-
-//- Return max curvature vector
-inline vector quadricFitting::maxCurvatureVector() const
-{
-    const scalar theta =
-        0.5 * Foam::atan
+        0.5*Foam::atan
         (
             coefficients_[2] /
             stabilise(coefficients_[0] - coefficients_[1], VSMALL)
         );
 
-    return Foam::sin(theta) * vecX_ + Foam::cos(theta) * vecY_;
+    return Foam::cos(theta)*vecX_ + Foam::sin(theta)*vecY_;
 }
+
+
+inline vector quadricFitting::maxCurvatureVector() const
+{
+    const scalar theta =
+        0.5*Foam::atan
+        (
+            coefficients_[2] /
+            stabilise(coefficients_[0] - coefficients_[1], VSMALL)
+        );
+
+    return Foam::sin(theta)*vecX_ + Foam::cos(theta)*vecY_;
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

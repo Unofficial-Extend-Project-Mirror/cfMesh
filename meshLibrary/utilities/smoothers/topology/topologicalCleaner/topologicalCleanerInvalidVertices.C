@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,14 +44,12 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
     labelHashSet* irregularNodesPtr
 )
 {
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         return;
 
-        FatalErrorIn
-        (
-            "void topologicalCleaner::checkInvalidConnectionsForVerticesCells()"
-        ) << "This does not run in parallel!" << exit(FatalError);
+        FatalErrorInFunction
+            << "This does not run in parallel!" << exit(FatalError);
     }
 
     polyMeshGenModifier meshModifier(mesh_);
@@ -76,7 +72,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
         const label pointI = bPoints[bpI];
 
         # ifdef DEBUGCheck
-        Info << "Checking point " << pointI << endl;
+        Info<< "Checking point " << pointI << endl;
         # endif
 
         label material(1);
@@ -84,7 +80,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
         labelList materialForCell(pointCells.sizeOfRow(pointI), 0);
 
         forAllRow(pointCells, pointI, cI)
-        if( !materialForCell[cI] )
+        if (!materialForCell[cI])
         {
             materialForCell[cI] = material;
 
@@ -104,10 +100,10 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
                     {
                         forAllRow(pointCells, pointI, pcI)
                         {
-                            if( materialForCell[pcI] )
+                            if (materialForCell[pcI])
                                 continue;
 
-                            if(
+                            if (
                                 cellCells(pointCellI, nI) ==
                                 pointCells(pointI, pcI)
                             )
@@ -122,20 +118,20 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
 
                 frontCells = newFrontCells;
 
-            } while( frontCells.size() != 0 );
+            } while (frontCells.size() != 0);
 
             ++material;
         }
 
         # ifdef DEBUGCheck
-        Info << "Number of materials for vertex is " << material << endl;
+        Info<< "Number of materials for vertex is " << material << endl;
         # endif
 
-        if( material > 2 )
+        if (material > 2)
         {
             ++nInvalidConnections;
 
-            if( irregularNodesPtr )
+            if (irregularNodesPtr)
             {
                 irregularNodesPtr->insert(pointI);
                 continue;
@@ -143,7 +139,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
 
             forAllRow(pointCells, pointI, pcI)
             {
-                if( materialForCell[pcI] == 1 )
+                if (materialForCell[pcI] == 1)
                     continue;
 
                 const cell& c = cells[pointCells(pointI, pcI)];
@@ -153,12 +149,12 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
                     face& f = faces[c[fI]];
 
                     forAll(f, pI)
-                        if( f[pI] == pointI )
+                        if (f[pI] == pointI)
                             f[pI] = nPoints + materialForCell[pcI] - 1;
                 }
             }
 
-            for(label i=1;i<material;++i)
+            for (label i = 1; i < material; ++i)
             {
                 const point p = points[pointI];
                 points.append(p);
@@ -167,14 +163,15 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
         }
     }
 
-    Info << "Found " << nInvalidConnections
+    Info<< "Found " << nInvalidConnections
         << " invalid cell connections" << endl;
 
     mesh_.clearAddressingData();
 
-    if( nInvalidConnections != 0 )
+    if (nInvalidConnections != 0)
         meshModifier.removeUnusedVertices();
 }
+
 
 void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
 (
@@ -193,7 +190,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
     # pragma omp parallel for schedule(static, 1)
     # endif
     forAll(edgeFaces, edgeI)
-        if( edgeFaces.sizeOfRow(edgeI) > 2 )
+        if (edgeFaces.sizeOfRow(edgeI) > 2)
         {
             forAllRow(edgeFaces, edgeI, fI)
                 removeCell[faceOwner[edgeFaces(edgeI, fI)]] = true;
@@ -201,9 +198,9 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
             changed = true;
         }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- boundary edges at processor boundaries
+        // boundary edges at processor boundaries
         Map<label> numFacesAtEdge;
         const labelList& globalEdgeLabel = mse.globalBoundaryEdgeLabel();
         const Map<label>& globalToLocal = mse.globalToLocalBndEdgeAddressing();
@@ -215,7 +212,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
 
         forAll(edgeFaces, eI)
         {
-            if( edgesAtProcs.sizeOfRow(eI) > 0 )
+            if (edgesAtProcs.sizeOfRow(eI) > 0)
             {
                 numFacesAtEdge.insert
                 (
@@ -227,11 +224,11 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
                 {
                     const label neiProc = edgesAtProcs(eI, procI);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     eIter = exchangeData.find(neiProc);
-                    if( eIter == exchangeData.end() )
+                    if (eIter == exchangeData.end())
                     {
                         neiProcs.append(neiProc);
                         exchangeData.insert
@@ -252,7 +249,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
             }
         }
 
-        //- send data to other processors
+        // send data to other processors
         forAll(neiProcs, procI)
         {
             eIter = exchangeData.find(neiProcs[procI]);
@@ -274,14 +271,14 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
                 fromOtherProc >> receivedData;
 
             label counter(0);
-            while( counter < receivedData.size() )
+            while (counter < receivedData.size())
             {
                 const label geI = receivedData[counter++];
                 const label nFaces = receivedData[counter++];
 
                 numFacesAtEdge[geI] += nFaces;
 
-                if( numFacesAtEdge[geI] > 2 )
+                if (numFacesAtEdge[geI] > 2)
                 {
                     const label edgeI = globalToLocal[geI];
                     forAllRow(edgeFaces, edgeI, fI)
@@ -295,7 +292,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
 
     reduce(changed, maxOp<bool>());
 
-    if( changed )
+    if (changed)
     {
         polyMeshGenModifier(mesh_).removeCells(removeCell);
 
@@ -303,6 +300,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
         decomposeCell_ = false;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

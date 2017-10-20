@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,9 +43,11 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
     graph_.rows_.setSize(s.size());
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( s.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (s.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
@@ -69,7 +71,9 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
         # pragma omp for schedule(static)
         # endif
         forAll(s, i)
+        {
             nLocalEntries += s[i];
+        }
 
         # ifdef USE_OMP
         # pragma omp critical
@@ -91,8 +95,10 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
 
         label start(0);
         # ifdef USE_OMP
-        for(label i=0;i<omp_get_thread_num();++i)
+        for (label i = 0; i < omp_get_thread_num(); ++i)
+        {
             start += procEntries[i];
+        }
         # endif
 
         # ifdef USE_OMP
@@ -107,6 +113,7 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
     }
 }
 
+
 template<class GraphType>
 void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
 {
@@ -114,15 +121,17 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
     labelLongList nAppearances;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( origGraph.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (origGraph.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
 
     label minRow(INT_MAX), maxRow(-1);
-    List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>>> dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
@@ -134,11 +143,11 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         const label threadI(0);
         # endif
 
-        List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
+        List<LongList<labelPair>>& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
 
-        //- find min and max entry in the graph
-        //- they are used for assigning ranges of values local for each process
+        // find min and max entry in the graph
+        // they are used for assigning ranges of values local for each process
         label localMinRow(INT_MAX), localMaxRow(-1);
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -168,21 +177,23 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- initialise appearances
+        // initialise appearances
         # pragma omp for schedule(static)
         # endif
-        for(label i=0;i<maxRow;++i)
+        for (label i = 0; i < maxRow; ++i)
+        {
             nAppearances[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
-        const label localMin = minRow + threadI * range;
+        const label localMin = minRow + threadI*range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
-        //- find the number of appearances of each element in the original graph
+        // find the number of appearances of each element in the original graph
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -194,7 +205,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
 
                 const label threadNo = (entryI - minRow) / range;
 
-                if( threadNo == threadI )
+                if (threadNo == threadI)
                 {
                     ++nAppearances[entryI];
                 }
@@ -209,20 +220,21 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         # pragma omp barrier
         # endif
 
-        //- count the appearances which are not local to the processor
-        for(label i=0;i<nThreads;++i)
+        // count the appearances which are not local to the processor
+        for (label i = 0; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
+            {
                 ++nAppearances[data[j].first()];
+            }
         }
 
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- allocate graph
+        // allocate graph
         # pragma omp master
         # endif
         setSizeAndRowSize(nAppearances);
@@ -231,17 +243,16 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         # pragma omp barrier
         # endif
 
-        for(label i=localMin;i<localMax;++i)
+        for (label i = localMin; i < localMax; ++i)
         {
             nAppearances[i] = 0;
         }
 
-        //- start filling reverse addressing graph
-        //- update data from processors with smaller labels
-        for(label i=0;i<threadI;++i)
+        // start filling reverse addressing graph
+        // update data from processors with smaller labels
+        for (label i = 0; i < threadI; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -250,7 +261,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
             }
         }
 
-        //- update data local to the processor
+        // update data local to the processor
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -260,16 +271,17 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
             {
                 const label entryI = origGraph[rowI][j];
 
-                if( (entryI >= localMin) && (entryI < localMax) )
+                if ((entryI >= localMin) && (entryI < localMax))
+                {
                     graph_(entryI, nAppearances[entryI]++) = rowI;
+                }
             }
         }
 
-        //- update data from the processors with higher labels
-        for(label i=threadI+1;i<nThreads;++i)
+        // update data from the processors with higher labels
+        for (label i = threadI + 1; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -279,6 +291,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
         }
     }
 }
+
 
 template<class ListType, class GraphType>
 void VRWGraphSMPModifier::reverseAddressing
@@ -290,15 +303,17 @@ void VRWGraphSMPModifier::reverseAddressing
     ListType nAppearances;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( origGraph.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (origGraph.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
 
     label minRow(INT_MAX), maxRow(-1);
-    List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>>> dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
@@ -310,11 +325,11 @@ void VRWGraphSMPModifier::reverseAddressing
         const label threadI(0);
         # endif
 
-        List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
+        List<LongList<labelPair>>& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
 
-        //- find min and max entry in the graph
-        //- they are used for assigning ranges of values local for each process
+        // find min and max entry in the graph
+        // they are used for assigning ranges of values local for each process
         label localMinRow(INT_MAX), localMaxRow(-1);
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -343,21 +358,23 @@ void VRWGraphSMPModifier::reverseAddressing
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- initialise appearances
+        // initialise appearances
         # pragma omp for schedule(static)
         # endif
-        for(label i=0;i<maxRow;++i)
+        for (label i = 0; i < maxRow; ++i)
+        {
             nAppearances[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
-        const label localMin = minRow + threadI * range;
+        const label localMin = minRow + threadI*range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
-        //- find the number of appearances of each element in the original graph
+        // find the number of appearances of each element in the original graph
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -369,7 +386,7 @@ void VRWGraphSMPModifier::reverseAddressing
 
                 const label threadNo = (entryI - minRow) / range;
 
-                if( threadNo == threadI )
+                if (threadNo == threadI)
                 {
                     ++nAppearances[entryI];
                 }
@@ -384,20 +401,21 @@ void VRWGraphSMPModifier::reverseAddressing
         # pragma omp barrier
         # endif
 
-        //- count the appearances which are not local to the processor
-        for(label i=0;i<nThreads;++i)
+        // count the appearances which are not local to the processor
+        for (label i = 0; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
+            {
                 ++nAppearances[data[j].first()];
+            }
         }
 
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- allocate graph
+        // allocate graph
         # pragma omp master
         # endif
         {
@@ -408,17 +426,16 @@ void VRWGraphSMPModifier::reverseAddressing
         # pragma omp barrier
         # endif
 
-        for(label i=localMin;i<localMax;++i)
+        for (label i = localMin; i < localMax; ++i)
         {
             nAppearances[i] = 0;
         }
 
-        //- start filling reverse addressing graph
-        //- update data from processors with smaller labels
-        for(label i=0;i<threadI;++i)
+        // start filling reverse addressing graph
+        // update data from processors with smaller labels
+        for (label i = 0; i < threadI; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -427,7 +444,7 @@ void VRWGraphSMPModifier::reverseAddressing
             }
         }
 
-        //- update data local to the processor
+        // update data local to the processor
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -437,16 +454,17 @@ void VRWGraphSMPModifier::reverseAddressing
             {
                 const label entryI = mapper[origGraph[rowI][j]];
 
-                if( (entryI >= localMin) && (entryI < localMax) )
+                if ((entryI >= localMin) && (entryI < localMax))
+                {
                     graph_(entryI, nAppearances[entryI]++) = rowI;
+                }
             }
         }
 
-        //- update data from the processors with higher labels
-        for(label i=threadI+1;i<nThreads;++i)
+        // update data from the processors with higher labels
+        for (label i = threadI + 1; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -456,6 +474,7 @@ void VRWGraphSMPModifier::reverseAddressing
         }
     }
 }
+
 
 template<class ListType>
 void VRWGraphSMPModifier::reverseAddressing
@@ -467,15 +486,17 @@ void VRWGraphSMPModifier::reverseAddressing
     ListType nAppearances;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( origGraph.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (origGraph.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
 
     label minRow(INT_MAX), maxRow(-1);
-    List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>> > dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
@@ -487,11 +508,11 @@ void VRWGraphSMPModifier::reverseAddressing
         const label threadI(0);
         # endif
 
-        List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
+        List<LongList<labelPair>>& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
 
-        //- find min and max entry in the graph
-        //- they are used for assigning ranges of values local for each process
+        // find min and max entry in the graph
+        // they are used for assigning ranges of values local for each process
         label localMinRow(INT_MAX), localMaxRow(-1);
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -520,21 +541,23 @@ void VRWGraphSMPModifier::reverseAddressing
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- initialise appearances
+        // initialise appearances
         # pragma omp for schedule(static)
         # endif
-        for(label i=0;i<maxRow;++i)
+        for (label i = 0; i < maxRow; ++i)
+        {
             nAppearances[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
-        const label localMin = minRow + threadI * range;
+        const label localMin = minRow + threadI*range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
-        //- find the number of appearances of each element in the original graph
+        // find the number of appearances of each element in the original graph
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -546,7 +569,7 @@ void VRWGraphSMPModifier::reverseAddressing
 
                 const label threadNo = (entryI - minRow) / range;
 
-                if( threadNo == threadI )
+                if (threadNo == threadI)
                 {
                     ++nAppearances[entryI];
                 }
@@ -561,20 +584,21 @@ void VRWGraphSMPModifier::reverseAddressing
         # pragma omp barrier
         # endif
 
-        //- count the appearances which are not local to the processor
-        for(label i=0;i<nThreads;++i)
+        // count the appearances which are not local to the processor
+        for (label i = 0; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
+            {
                 ++nAppearances[data[j].first()];
+            }
         }
 
         # ifdef USE_OMP
         # pragma omp barrier
 
-        //- allocate graph
+        // allocate graph
         # pragma omp master
         # endif
         {
@@ -584,15 +608,16 @@ void VRWGraphSMPModifier::reverseAddressing
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
-        for(label i=localMin;i<localMax;++i)
-            nAppearances[i] = 0;
-
-        //- start filling reverse addressing graph
-        //- update data from processors with smaller labels
-        for(label i=0;i<threadI;++i)
+        for (label i = localMin; i < localMax; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            nAppearances[i] = 0;
+        }
+
+        // start filling reverse addressing graph
+        // update data from processors with smaller labels
+        for (label i = 0; i < threadI; ++i)
+        {
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -601,7 +626,7 @@ void VRWGraphSMPModifier::reverseAddressing
             }
         }
 
-        //- update data local to the processor
+        // update data local to the processor
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -611,16 +636,17 @@ void VRWGraphSMPModifier::reverseAddressing
             {
                 const label entryI = mapper[origGraph(rowI, j)];
 
-                if( (entryI >= localMin) && (entryI < localMax) )
+                if ((entryI >= localMin) && (entryI < localMax))
+                {
                     graph_(entryI, nAppearances[entryI]++) = rowI;
+                }
             }
         }
 
-        //- update data from the processors with higher labels
-        for(label i=threadI+1;i<nThreads;++i)
+        // update data from the processors with higher labels
+        for (label i = threadI + 1; i < nThreads; ++i)
         {
-            const LongList<labelPair>& data =
-                dataForOtherThreads[i][threadI];
+            const LongList<labelPair>& data = dataForOtherThreads[i][threadI];
 
             forAll(data, j)
             {
@@ -630,6 +656,7 @@ void VRWGraphSMPModifier::reverseAddressing
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

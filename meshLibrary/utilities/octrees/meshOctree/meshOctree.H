@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshOctree
+    Foam::meshOctree
 
 Description
     Octree for mesh generation
@@ -50,12 +50,13 @@ namespace Foam
 class triSurf;
 
 /*---------------------------------------------------------------------------*\
-                           Class meshOctree Declaration
+                         Class meshOctree Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshOctree
 {
     // Private data
+
         //- Reference to surface to work on
         const triSurf& surface_;
 
@@ -66,7 +67,7 @@ class meshOctree
         //- this list contains the first the last octree box coordinates on
         //- a neighbour processor. They are used for parallel runs when the
         //- leaves are sorted in Morton's Z-order
-        List<Pair<meshOctreeCubeCoordinates> > neiRange_;
+        List<Pair<meshOctreeCubeCoordinates>> neiRange_;
 
         //- Root cube of the octree structure
         meshOctreeCube* initialCubePtr_;
@@ -92,7 +93,9 @@ class meshOctree
         //- a flag whether is true if is it a quadtree
         const bool isQuadtree_;
 
+
     // Private member functions
+
         //- set data needed for finding neighbours
         void setOctantVectorsAndPositions();
 
@@ -112,25 +115,25 @@ class meshOctree
             DynList<const meshOctreeCube*, 256>&
         ) const;
 
+
     // Private copy constructor
+
         //- Disallow default bitwise copy construct
         meshOctree(const meshOctree&);
 
         //- Disallow default bitwise assignment
         void operator=(const meshOctree&);
 
+
 public:
 
     friend class meshOctreeModifier;
 
-    // Constructors
+    //- Construct from surface
+    meshOctree(const triSurf&, const bool isQuadtree = false);
 
-        //- Construct from surface
-        meshOctree(const triSurf&, const bool isQuadtree = false);
-
-    // Destructor
-
-        ~meshOctree();
+    //- Destructor
+    ~meshOctree();
 
 
     // Member Functions

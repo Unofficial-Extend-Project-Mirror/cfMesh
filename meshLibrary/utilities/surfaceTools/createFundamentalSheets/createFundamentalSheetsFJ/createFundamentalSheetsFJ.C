@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -57,7 +55,7 @@ addToRunTimeSelectionTable
 
 void createFundamentalSheetsFJ::createInitialSheet()
 {
-    if( !createWrapperSheet_ )
+    if (!createWrapperSheet_)
         return;
 
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
@@ -69,20 +67,21 @@ void createFundamentalSheetsFJ::createInitialSheet()
         boundaries[boundaries.size()-1].patchSize()
     );
 
-    faceListPMG::subList bFaces(mesh_.faces(), end-start, start);
+    faceListPMG::subList bFaces(mesh_.faces(), end - start, start);
 
     const labelList& owner = mesh_.owner();
 
-    LongList<labelPair> extrudeFaces(end-start);
+    LongList<labelPair> extrudeFaces(end - start);
 
     # ifdef USE_OMP
     # pragma omp parallel for
     # endif
-    for(label faceI=start;faceI<end;++faceI)
-        extrudeFaces[faceI-start] = labelPair(faceI, owner[faceI]);
+    for (label faceI = start; faceI < end; ++faceI)
+        extrudeFaces[faceI - start] = labelPair(faceI, owner[faceI]);
 
     extrudeLayer(mesh_, extrudeFaces);
 }
+
 
 void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 {
@@ -99,25 +98,25 @@ void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
         const label start = boundaries[patchI].patchStart();
         const label end = start + boundaries[patchI].patchSize();
 
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
             patchCell[owner[faceI]] = true;
 
         LongList<labelPair> front;
 
-        for(label faceI=start;faceI<end;++faceI)
+        for (label faceI = start; faceI < end; ++faceI)
         {
             const cell& c = cells[owner[faceI]];
 
             forAll(c, fI)
             {
-                if( neighbour[c[fI]] < 0 )
+                if (neighbour[c[fI]] < 0)
                     continue;
 
                 label nei = owner[c[fI]];
-                if( nei == owner[faceI] )
+                if (nei == owner[faceI])
                     nei = neighbour[c[fI]];
 
-                if( !patchCell[nei] )
+                if (!patchCell[nei])
                     front.append(labelPair(c[fI], nei));
             }
         }
@@ -141,7 +140,7 @@ void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 //
 //     LongList<labelPair> front;
 //
-//     const label nThreads = 2 * omp_get_num_procs();
+//     const label nThreads = 2*omp_get_num_procs();
 //     # pragma omp parallel num_threads(nThreads)
 //     {
 //         # pragma omp for
@@ -154,7 +153,7 @@ void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 //         for(label faceI=start;faceI<end;++faceI)
 //             patchCell[owner[faceI]] = mesh_.faceIsInPatch(faceI);
 //
-//         //- create the front faces
+//         // create the front faces
 //         LongList<labelPair> localFront;
 //
 //         # pragma omp for
@@ -186,18 +185,19 @@ void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 //
 //         # pragma omp barrier
 //
-//         //- copy the local front into the global front
+//         // copy the local front into the global front
 //         forAll(localFront, lfI)
 //             front[frontStart+lfI] = localFront[lfI];
 //     }
 //
-//     //- extrude the layer
+//     // extrude the layer
 //     extrudeLayer(mesh_, front);
+
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
 createFundamentalSheetsFJ::createFundamentalSheetsFJ
 (
     polyMeshGen& mesh,
@@ -211,10 +211,12 @@ createFundamentalSheetsFJ::createFundamentalSheetsFJ
     createSheetsAtFeatureEdges();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 createFundamentalSheetsFJ::~createFundamentalSheetsFJ()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

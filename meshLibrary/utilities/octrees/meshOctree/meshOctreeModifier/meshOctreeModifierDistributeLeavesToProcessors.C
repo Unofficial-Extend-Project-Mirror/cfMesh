@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,51 +36,51 @@ namespace Foam
 
 void meshOctreeModifier::distributeLeavesToProcessors()
 {
-    if( octree_.neiProcs().size() != 0 )
+    if (octree_.neiProcs().size() != 0)
         return;
 
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
     const label nLeavesPerProcessor = leaves.size() / Pstream::nProcs();
 
-    Info << "Number of leaves per processor " << nLeavesPerProcessor << endl;
+    Info<< "Number of leaves per processor " << nLeavesPerProcessor << endl;
 
-    if( nLeavesPerProcessor == 0 )
+    if (nLeavesPerProcessor == 0)
         return;
 
-    Info << "Distributing leaves to processors" << endl;
-    //- leaf boxes are sorted in Z-ordering
-    //- initial distribution is performed by decomposing the list of leaves
-    //- into the equal-size chunks and allocate them to processors
-    List<Pair<meshOctreeCubeCoordinates> > procRange(Pstream::nProcs());
+    Info<< "Distributing leaves to processors" << endl;
+    // leaf boxes are sorted in Z-ordering
+    // initial distribution is performed by decomposing the list of leaves
+    // into the equal-size chunks and allocate them to processors
+    List<Pair<meshOctreeCubeCoordinates>> procRange(Pstream::nProcs());
     label balance = leaves.size() % Pstream::nProcs();
     label start = leaves.size() - 1;
-    for(short procI=Pstream::nProcs()-1;procI>=0;--procI)
+    for (short procI = Pstream::nProcs()-1; procI>=0; --procI)
     {
         label end = start - nLeavesPerProcessor;
-        if( balance )
+        if (balance)
         {
             --balance;
             --end;
         }
-        else if( procI == 0 )
+        else if (procI == 0)
         {
             end = -1;
         }
 
         procRange[procI].second() = leaves[start]->coordinates();
-        procRange[procI].first() = leaves[end+1]->coordinates();
+        procRange[procI].first() = leaves[end + 1]->coordinates();
 
-        for(;start>end;--start)
+        for (; start > end; --start)
             leaves[start]->setProcNo(procI);
     }
 
     # ifdef DEBUGSearch
     forAll(leaves, leafI)
-        Info << "Leaf " << leafI << " is in proc "
+        Info<< "Leaf " << leafI << " is in proc "
             << leaves[leafI]->procNo() << endl;
     # endif
 
-    //- find neighbouring processors of the current processor
+    // find neighbouring processors of the current processor
     DynList<label> neiProcs;
 
     forAll(leaves, leafI)
@@ -91,10 +89,10 @@ void meshOctreeModifier::distributeLeavesToProcessors()
 
         forAll(procRange, procI)
         {
-            if( procI == Pstream::myProcNo() )
+            if (procI == Pstream::myProcNo())
                 continue;
 
-            if(
+            if (
                 (cc >= procRange[procI].first()) &&
                 (cc <= procRange[procI].second())
             )
@@ -119,18 +117,19 @@ void meshOctreeModifier::distributeLeavesToProcessors()
     octree_.neiRange_.transfer(procRange);
 
     # ifdef DEBUGSearch
-    Info << "Nei procs " << octree_.neiProcs_ << endl;
-    Info << "Nei range " << octree_.neiRange_ << endl;
+    Info<< "Nei procs " << octree_.neiProcs_ << endl;
+    Info<< "Nei range " << octree_.neiRange_ << endl;
     # endif
 
-    //- delete cubes which are not local to the processor
+    // delete cubes which are not local to the processor
     octree_.initialCubePtr_->purgeProcessorCubes(Pstream::myProcNo());
 
-    //- update the list of leaves
+    // update the list of leaves
     createListOfLeaves();
 
-    Info << "Finished distributing leaves to processors" << endl;
+    Info<< "Finished distributing leaves to processors" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

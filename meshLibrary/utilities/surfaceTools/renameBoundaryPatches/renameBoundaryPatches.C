@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,7 +41,7 @@ namespace Foam
 
 void renameBoundaryPatches::calculateNewBoundary()
 {
-    Info << "Renaming boundary patches" << endl;
+    Info<< "Renaming boundary patches" << endl;
 
     const dictionary& dict = meshDict_.subDict("renameBoundary");
 
@@ -67,12 +65,12 @@ void renameBoundaryPatches::calculateNewBoundary()
     std::map<word, label> newNameToPos;
     label newPatchI(0);
 
-    //- read new patch names and types
-    if( dict.found("newPatchNames") )
+    // read new patch names and types
+    if (dict.found("newPatchNames"))
     {
         PtrList<entry> patchesToRename;
 
-        if( dict.isDict("newPatchNames") )
+        if (dict.isDict("newPatchNames"))
         {
             const dictionary& newPatchNames = dict.subDict("newPatchNames");
             const wordList keys = newPatchNames.toc();
@@ -103,13 +101,13 @@ void renameBoundaryPatches::calculateNewBoundary()
 
             const labelList matchedPatches = mesh_.findPatches(patchName);
 
-            if(matchedPatches.empty())
+            if (matchedPatches.empty())
             {
                 Warning << "No matches for " << patchName << " found!!" << endl;
                 continue;
             }
 
-            if( !patchesToRename[patchI].isDict() )
+            if (!patchesToRename[patchI].isDict())
             {
                 Warning << "Cannot rename patch " << patchName << endl;
                 Warning << "This is due to incorrect settings! Exitting."
@@ -123,20 +121,20 @@ void renameBoundaryPatches::calculateNewBoundary()
             {
                 word newName(mesh_.getPatchName(matchedPatches[matchI]));
 
-                if( pDict.found("newName") )
+                if (pDict.found("newName"))
                     newName = word(pDict.lookup("newName"));
 
-                if( newNameToPos.find(newName) != newNameToPos.end() )
+                if (newNameToPos.find(newName) != newNameToPos.end())
                 {
-                    //- patch with the same name already exists
+                    // patch with the same name already exists
                     patchToNew[matchedPatches[matchI]] = newNameToPos[newName];
                     continue;
                 }
 
-                //- add a new patch
+                // add a new patch
                 newNameToPos.insert(std::pair<word, label>(newName, newPatchI));
                 newPatchNames[newPatchI] = newName;
-                if( pDict.found("type") )
+                if (pDict.found("type"))
                 {
                     const word newType(pDict.lookup("type"));
                     newPatchTypes[newPatchI] = newType;
@@ -153,23 +151,23 @@ void renameBoundaryPatches::calculateNewBoundary()
     }
 
     word defaultName("walls");
-    if( dict.found("defaultName") )
+    if (dict.found("defaultName"))
         defaultName = word(dict.lookup("defaultName"));
     word defaultType("wall");
-    if( dict.found("defaultType") )
+    if (dict.found("defaultType"))
         defaultType = word(dict.lookup("defaultType"));
 
-    if( dict.found("defaultName") && (newPatchI < patchToNew.size()) )
+    if (dict.found("defaultName") && (newPatchI < patchToNew.size()))
     {
         bool addPatch(false);
         forAll(patchToNew, patchI)
-            if( patchToNew[patchI] == -1 )
+            if (patchToNew[patchI] == -1)
             {
                 addPatch = true;
                 break;
             }
 
-        if( addPatch )
+        if (addPatch)
         {
             newNameToPos.insert(std::pair<word, label>(defaultName, newPatchI));
             newPatchNames[newPatchI] = defaultName;
@@ -181,7 +179,7 @@ void renameBoundaryPatches::calculateNewBoundary()
     {
         forAll(patchToNew, patchI)
         {
-            if( patchToNew[patchI] != -1 )
+            if (patchToNew[patchI] != -1)
                 continue;
 
             patchToNew[patchI] = newPatchI;
@@ -191,13 +189,13 @@ void renameBoundaryPatches::calculateNewBoundary()
         }
     }
 
-    if( newPatchI == 0 )
+    if (newPatchI == 0)
         return;
 
     newPatchNames.setSize(newPatchI);
     newPatchTypes.setSize(newPatchI);
 
-    //- start creating new boundary
+    // start creating new boundary
     VRWGraph newBoundaryFaces;
     labelLongList newBoundaryOwners;
     labelLongList newBoundaryPatches;
@@ -211,20 +209,20 @@ void renameBoundaryPatches::calculateNewBoundary()
         const label start = wp.patchStart();
         const label end = start + wp.patchSize();
 
-        if( patchToNew[patchI] == -1 )
+        if (patchToNew[patchI] == -1)
         {
-            //- this patch is moved to the default patch
-            for(label faceI=start;faceI<end;++faceI)
+            // this patch is moved to the default patch
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 newBoundaryFaces.appendList(faces[faceI]);
-                newBoundaryPatches.append(newPatchI-1);
+                newBoundaryPatches.append(newPatchI - 1);
                 newBoundaryOwners.append(owner[faceI]);
             }
         }
         else
         {
-            //- this patch is renamed
-            for(label faceI=start;faceI<end;++faceI)
+            // this patch is renamed
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 newBoundaryFaces.appendList(faces[faceI]);
                 newBoundaryPatches.append(patchToNew[patchI]);
@@ -233,7 +231,7 @@ void renameBoundaryPatches::calculateNewBoundary()
         }
     }
 
-    //- execute the modifier
+    // execute the modifier
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.replaceBoundary
     (
@@ -246,8 +244,9 @@ void renameBoundaryPatches::calculateNewBoundary()
         meshModifier.boundariesAccess()[patchI].patchType() =
             newPatchTypes[patchI];
 
-    Info << "Finished renaming boundary patches" << endl;
+    Info<< "Finished renaming boundary patches" << endl;
 }
+
 
 void renameBoundaryPatches::checkEmptyPatches()
 {
@@ -256,12 +255,13 @@ void renameBoundaryPatches::checkEmptyPatches()
     forAll(mesh_.boundaries(), patchI)
     {
         boundaryPatch& patch = meshModifier.boundariesAccess()[patchI];
-        if( patch.patchType() == "empty" )
+        if (patch.patchType() == "empty")
         {
             patch.patchType() = "wall";
         }
     }
 }
+
 
 void renameBoundaryPatches::checkSymmetryPlanes()
 {
@@ -269,6 +269,7 @@ void renameBoundaryPatches::checkSymmetryPlanes()
 
     symmSmother.optimizeSymmetryPlanes();
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -282,10 +283,10 @@ renameBoundaryPatches::renameBoundaryPatches
     mesh_(mesh),
     meshDict_(meshDict)
 {
-    if( meshDict.found("renameBoundary") )
+    if (meshDict.found("renameBoundary"))
         calculateNewBoundary();
 
-    if( !allowEmptyPatches )
+    if (!allowEmptyPatches)
     {
         checkEmptyPatches();
     }
@@ -293,10 +294,12 @@ renameBoundaryPatches::renameBoundaryPatches
     checkSymmetryPlanes();
 }
 
+
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
 renameBoundaryPatches::~renameBoundaryPatches()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

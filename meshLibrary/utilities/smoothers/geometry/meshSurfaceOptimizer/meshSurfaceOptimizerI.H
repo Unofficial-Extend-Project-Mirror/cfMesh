@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,34 +48,32 @@ namespace Foam
 
 inline const partTriMesh& meshSurfaceOptimizer::triMesh() const
 {
-    if( !triMeshPtr_ )
+    if (!triMeshPtr_)
         calculateTrianglesAndAddressing();
 
     return *triMeshPtr_;
 }
 
+
 inline void meshSurfaceOptimizer::updateTriMesh(const labelLongList& selPoints)
 {
-    if( !triMeshPtr_ )
-        FatalErrorIn
-        (
-            "inline void meshSurfaceOptimizer::updateTriMesh"
-            "(const labelLongList&)"
-        ) << "triMeshPtr_ is not allocated " << abort(FatalError);
+    if (!triMeshPtr_)
+        FatalErrorInFunction
+            << "triMeshPtr_ is not allocated " << abort(FatalError);
 
     triMeshPtr_->updateVertices(selPoints);
 }
 
+
 inline void meshSurfaceOptimizer::updateTriMesh()
 {
-    if( !triMeshPtr_ )
-        FatalErrorIn
-        (
-            "inline void meshSurfaceOptimizer::updateTriMesh()"
-        ) << "triMeshPtr_ is not allocated " << abort(FatalError);
+    if (!triMeshPtr_)
+        FatalErrorInFunction
+            << "triMeshPtr_ is not allocated " << abort(FatalError);
 
     triMeshPtr_->updateVertices();
 }
+
 
 inline bool meshSurfaceOptimizer::transformIntoPlane
 (
@@ -95,7 +91,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
 
     const partTriMesh& triMesh = this->triMesh();
     const label triPointI = triMesh.meshSurfacePointLabelInTriMesh()[bpI];
-    if( triPointI < 0 )
+    if (triPointI < 0)
         return false;
 
     partTriMeshSimplex simplex(triMesh, triPointI);
@@ -110,7 +106,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     {
         const point sp = pl.nearestPoint(sPts[pI]);
         const scalar d = mag(sp - p);
-        if( d > VSMALL )
+        if (d > VSMALL)
         {
             vecX = sp - p;
             vecX /= d;
@@ -121,7 +117,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
         }
     }
 
-    if( !found )
+    if (!found)
         return false;
 
     trias = simplex.triangles();
@@ -147,11 +143,11 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     }
 
     # ifdef DEBUGSmooth
-    Info << "Original triangles " << endl;
+    Info<< "Original triangles " << endl;
     forAll(simplex.triangles(), triI)
-        Info << "Tri " << triI << " is " << simplex.triangles()[triI] << endl;
-    Info << "Transformed triangles are " << trias << endl;
-    Info << "Transformed vertices " << pts << endl;
+        Info<< "Tri " << triI << " is " << simplex.triangles()[triI] << endl;
+    Info<< "Transformed triangles are " << trias << endl;
+    Info<< "Transformed vertices " << pts << endl;
 
     triSurf surf;
     triSurfModifier sMod(surf);
@@ -183,6 +179,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     return found;
 }
 
+
 inline point meshSurfaceOptimizer::newPositionLaplacian
 (
     const label bpI,
@@ -193,15 +190,15 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
-    if( vertexType_[bpI] & LOCKED )
+    if (vertexType_[bpI] & LOCKED)
         return points[bPoints[bpI]];
 
     vector newP(vector::zero);
-    if( transformIntoPlane )
+    if (transformIntoPlane)
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
 
-        if( magSqr(pNormal) < VSMALL )
+        if (magSqr(pNormal) < VSMALL)
             return points[bPoints[bpI]];
 
         plane pl(points[bPoints[bpI]], pNormal);
@@ -228,6 +225,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
     return newP;
 }
 
+
 inline point meshSurfaceOptimizer::newPositionLaplacianFC
 (
     const label bpI,
@@ -239,16 +237,16 @@ inline point meshSurfaceOptimizer::newPositionLaplacianFC
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
-    if( vertexType_[bpI] & LOCKED )
+    if (vertexType_[bpI] & LOCKED)
         return points[bPoints[bpI]];
 
     vector newP(vector::zero);
 
-    if( transformIntoPlane )
+    if (transformIntoPlane)
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
 
-        if( magSqr(pNormal) < VSMALL )
+        if (magSqr(pNormal) < VSMALL)
             return points[bPoints[bpI]];
 
         plane pl(points[bPoints[bpI]], pNormal);
@@ -275,6 +273,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianFC
     return newP;
 }
 
+
 inline point meshSurfaceOptimizer::newPositionLaplacianWFC
 (
     const label bpI,
@@ -287,16 +286,16 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
     const vectorField& faceCentres = surfaceEngine_.faceCentres();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
-    if( vertexType_[bpI] & LOCKED )
+    if (vertexType_[bpI] & LOCKED)
         return points[bPoints[bpI]];
 
     vector newP(vector::zero);
 
-    if( transformIntoPlane )
+    if (transformIntoPlane)
     {
         const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
 
-        if( magSqr(pNormal) < VSMALL )
+        if (magSqr(pNormal) < VSMALL)
             return points[bPoints[bpI]];
 
         plane pl(points[bPoints[bpI]], pNormal);
@@ -312,7 +311,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
         {
             const label bfI = pointFaces(bpI, pI);
             const scalar w = (faceAreas[bfI] & faceAreas[bfI]);
-            newP += w * projectedPoints[pI];
+            newP += w*projectedPoints[pI];
             sumW += w;
         }
 
@@ -325,7 +324,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
         {
             const label bfI = pointFaces(bpI, pfI);
             const scalar w = (faceAreas[bfI] & faceAreas[bfI]);
-            newP += w * faceCentres[pointFaces(bpI, pfI)];
+            newP += w*faceCentres[pointFaces(bpI, pfI)];
             sumW += w;
         }
 
@@ -334,6 +333,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
 
     return newP;
 }
+
 
 inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
 (
@@ -344,7 +344,7 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
-    if( vertexType_[bpI] & LOCKED )
+    if (vertexType_[bpI] & LOCKED)
         return points[bPoints[bpI]];
 
     # ifdef DEBUGSmooth
@@ -355,7 +355,7 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
 
     //- project vertices onto the plane
     const vector& pNormal = surfaceEngine_.pointNormals()[bpI];
-    if( magSqr(pNormal) < VSMALL )
+    if (magSqr(pNormal) < VSMALL)
         return points[bPoints[bpI]];
 
     const plane pl(points[bPoints[bpI]], pNormal);
@@ -364,7 +364,7 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
     DynList<triFace> trias;
     vector vecX, vecY;
     bool success = this->transformIntoPlane(bpI, pl, vecX, vecY, pts, trias);
-    if( !success )
+    if (!success)
     {
         //Warning << "Cannot transform to plane" << endl;
         return points[bPoints[bpI]];
@@ -376,23 +376,21 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
     const point newP
     (
         points[bPoints[bpI]] +
-        vecX * newPoint.x() +
-        vecY * newPoint.y()
+        vecX*newPoint.x() +
+        vecY*newPoint.y()
     );
 
-    if( help::isnan(newP) || help::isinf(newP) )
+    if (help::isnan(newP) || help::isinf(newP))
     {
-        WarningIn
-        (
-            "inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer"
-            "(const label, const scalar) const"
-        ) << "Cannot move point " << bpI << endl;
+        WarningInFunction
+            << "Cannot move point " << bpI << endl;
 
         return points[bPoints[bpI]];
     }
 
     return newP;
 }
+
 
 inline point meshSurfaceOptimizer::newEdgePositionLaplacian
 (
@@ -404,7 +402,7 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
     const VRWGraph& bpEdges = surfaceEngine_.boundaryPointEdges();
     const pointFieldPMG& points = surfaceEngine_.points();
 
-    if( vertexType_[bpI] & LOCKED )
+    if (vertexType_[bpI] & LOCKED)
         return points[bPoints[bpI]];
 
     const labelHashSet& featureEdges = partitionerPtr_->featureEdges();
@@ -415,17 +413,17 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
     {
         const label beI = bpEdges(bpI, i);
 
-        if( featureEdges.found(beI) )
+        if (featureEdges.found(beI))
         {
             edgePoints.append(edges[beI].otherVertex(bPoints[bpI]));
         }
     }
 
-    if( edgePoints.size() != 2 )
+    if (edgePoints.size() != 2)
         return points[bPoints[bpI]];
 
     # ifdef DEBUGSearch
-    Info << "Edge points " << edgePoints << endl;
+    Info<< "Edge points " << edgePoints << endl;
     # endif
 
     vector pos(vector::zero);
@@ -436,6 +434,7 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
 
     return pos;
 }
+
 
 template<class labelListType>
 inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
@@ -456,7 +455,7 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
             vertexType_[bp[bf[pI]]] |= LOCKED;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
@@ -472,13 +471,13 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
         {
             const label bpI = it();
 
-            if( vertexType_[bpI] & LOCKED )
+            if (vertexType_[bpI] & LOCKED)
             {
                 forAllRow(bpAtProcs, bpI, i)
                 {
                     const label neiProc = bpAtProcs(bpI, i);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append(it.key());
@@ -497,6 +496,7 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
         }
     }
 }
+
 
 template<class labelListType>
 inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
@@ -511,7 +511,7 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
         vertexType_[bpI] |= LOCKED;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
@@ -527,13 +527,13 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
         {
             const label bpI = it();
 
-            if( vertexType_[bpI] & LOCKED )
+            if (vertexType_[bpI] & LOCKED)
             {
                 forAllRow(bpAtProcs, bpI, i)
                 {
                     const label neiProc = bpAtProcs(bpI, i);
 
-                    if( neiProc == Pstream::myProcNo() )
+                    if (neiProc == Pstream::myProcNo())
                         continue;
 
                     exchangeData[neiProc].append(it.key());
@@ -553,16 +553,17 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
     }
 }
 
-//- lock edge points
+
 inline void meshSurfaceOptimizer::lockFeatureEdges()
 {
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(vertexType_, bpI)
-        if( vertexType_[bpI] & (EDGE | CORNER) )
+        if (vertexType_[bpI] & (EDGE | CORNER))
             vertexType_[bpI] |= LOCKED;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

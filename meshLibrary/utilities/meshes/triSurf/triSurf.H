@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    triSurf
+    Foam::triSurf
 
 Description
     A class for triangulated surface used in the meshing process.
@@ -54,7 +54,7 @@ namespace Foam
 class triSurfModifier;
 
 /*---------------------------------------------------------------------------*\
-                        Class triSurf Declaration
+                           Class triSurf Declaration
 \*---------------------------------------------------------------------------*/
 
 class triSurf
@@ -65,6 +65,7 @@ class triSurf
     public triSurfAddressing
 {
     // Private member functions
+
         void readFromFTR(const fileName&);
         void writeToFTR(const fileName&) const;
 
@@ -79,10 +80,13 @@ class triSurf
         //- Disallow default bitwise assignment
         void operator=(const triSurf&);
 
+
 public:
 
     // Friend classes
+
         friend class triSurfModifer;
+
 
     // Constructors
 
@@ -101,12 +105,13 @@ public:
         //- Read from file
         triSurf(const fileName& fName);
 
-    // Destructor
 
-        ~triSurf();
+    //- Destructor
+    ~triSurf();
 
 
     // Member Functions
+
         //- read and write the surface
         void readSurface(const fileName&);
         void writeSurface(const fileName&) const;

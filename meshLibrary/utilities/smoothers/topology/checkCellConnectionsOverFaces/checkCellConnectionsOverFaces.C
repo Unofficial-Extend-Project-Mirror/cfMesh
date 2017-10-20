@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -61,6 +59,7 @@ public:
         mesh_(mesh)
     {}
 
+
     label size() const
     {
         return mesh_.cells().size();
@@ -79,10 +78,10 @@ public:
         {
             label nei = owner[c[fI]];
 
-            if( nei == cellI )
+            if (nei == cellI)
                 nei = neighbour[c[fI]];
 
-            if( nei >= 0 )
+            if (nei >= 0)
                 neighbourCells.append(nei);
         }
     }
@@ -90,7 +89,7 @@ public:
     template<class labelListType>
     void collectGroups
     (
-        std::map<label, DynList<label> >& neiGroups,
+        std::map<label, DynList<label>>& neiGroups,
         const labelListType& elementInGroup,
         const DynList<label>& localGroupLabel
     ) const
@@ -99,18 +98,18 @@ public:
             mesh_.procBoundaries();
         const labelList& owner = mesh_.owner();
 
-        //- send the data to other processors
+        // send the data to other processors
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label size = procBoundaries[patchI].patchSize();
 
             labelList groupOwner(procBoundaries[patchI].patchSize());
-            for(label faceI=0;faceI<size;++faceI)
+            for (label faceI = 0; faceI < size; ++faceI)
             {
-                const label groupI = elementInGroup[owner[start+faceI]];
+                const label groupI = elementInGroup[owner[start + faceI]];
 
-                if( groupI < 0 )
+                if (groupI < 0)
                 {
                     groupOwner[faceI] = -1;
                     continue;
@@ -129,7 +128,7 @@ public:
             toOtherProc << groupOwner;
         }
 
-        //- receive data from other processors
+        // receive data from other processors
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
@@ -146,36 +145,38 @@ public:
 
             forAll(receivedData, faceI)
             {
-                if( receivedData[faceI] < 0 )
+                if (receivedData[faceI] < 0)
                     continue;
 
-                const label groupI = elementInGroup[owner[start+faceI]];
+                const label groupI = elementInGroup[owner[start + faceI]];
 
-                if( groupI < 0 )
+                if (groupI < 0)
                     continue;
 
                 DynList<label>& ng = neiGroups[localGroupLabel[groupI]];
 
-                //- store the connection over the inter-processor boundary
+                // store the connection over the inter-processor boundary
                 ng.appendIfNotIn(receivedData[faceI]);
             }
         }
     }
 };
 
+
 class meshConnectionsSelectorOperator
 {
-
 public:
 
     meshConnectionsSelectorOperator()
     {}
+
 
     bool operator()(const label /*cellI*/) const
     {
         return true;
     }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -185,7 +186,7 @@ public:
 
 void checkCellConnectionsOverFaces::findCellGroups()
 {
-    Info << "Checking cell connections" << endl;
+    Info<< "Checking cell connections" << endl;
 
     mesh_.owner();
     nGroups_ =
@@ -196,11 +197,11 @@ void checkCellConnectionsOverFaces::findCellGroups()
             meshConnectionsHelper::meshConnectionsSelectorOperator()
         );
 
-    Info << "Finished checking cell connections" << endl;
+    Info<< "Finished checking cell connections" << endl;
 }
 
-// * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
-// Constructors
+
+// * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
 checkCellConnectionsOverFaces::checkCellConnectionsOverFaces(polyMeshGen& mesh)
 :
@@ -211,16 +212,18 @@ checkCellConnectionsOverFaces::checkCellConnectionsOverFaces(polyMeshGen& mesh)
     findCellGroups();
 }
 
-// * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
+
+// * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
 
 checkCellConnectionsOverFaces::~checkCellConnectionsOverFaces()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 bool checkCellConnectionsOverFaces::checkCellGroups()
 {
-    if( nGroups_ == 1 )
+    if (nGroups_ == 1)
         return false;
 
     Warning << "Mesh has " << nGroups_ << " unconnected regions" << endl;
@@ -230,31 +233,32 @@ bool checkCellConnectionsOverFaces::checkCellGroups()
     forAll(cellGroup_, cI)
         ++nCellsInGroup[cellGroup_[cI]];
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         forAll(nCellsInGroup, groupI)
             reduce(nCellsInGroup[groupI], sumOp<label>());
     }
 
-    //- find groups which has most cells this group will be kept
+    // find groups which has most cells this group will be kept
     label maxGroup(-1);
     forAll(nCellsInGroup, groupI)
-        if( nCellsInGroup[groupI] > maxGroup )
+        if (nCellsInGroup[groupI] > maxGroup)
         {
             maxGroup = nCellsInGroup[groupI];
             nGroups_ = groupI;
         }
 
-    //- remove cells which are not in the group which has max num of cells
+    // remove cells which are not in the group which has max num of cells
     boolList removeCell(mesh_.cells().size(), false);
     forAll(cellGroup_, cellI)
-        if( cellGroup_[cellI] != nGroups_ )
+        if (cellGroup_[cellI] != nGroups_)
             removeCell[cellI] = true;
 
     polyMeshGenModifier(mesh_).removeCells(removeCell);
 
     return true;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

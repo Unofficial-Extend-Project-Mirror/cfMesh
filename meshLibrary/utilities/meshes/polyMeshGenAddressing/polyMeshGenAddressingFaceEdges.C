@@ -6,20 +6,20 @@
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -39,9 +39,9 @@ namespace Foam
 
 void polyMeshGenAddressing::calcFaceEdges() const
 {
-    if( fePtr_ )
+    if (fePtr_)
     {
-        FatalErrorIn("polyMeshGenAddressing::calcFaceEdges() const")
+        FatalErrorInFunction
             << "faceEdges already calculated"
             << abort(FatalError);
     }
@@ -58,18 +58,20 @@ void polyMeshGenAddressing::calcFaceEdges() const
         labelList nfe(faces.size());
 
         # ifdef USE_OMP
-        const label nThreads = 3 * omp_get_num_procs();
+        const label nThreads = 3*omp_get_num_procs();
         # endif
 
         # ifdef USE_OMP
-        # pragma omp parallel num_threads(nThreads) if( faces.size() > 10000 )
+        # pragma omp parallel num_threads(nThreads) if (faces.size() > 10000)
         # endif
         {
             # ifdef USE_OMP
             # pragma omp for schedule(static)
             # endif
             forAll(faces, faceI)
+            {
                 nfe[faceI] = faces[faceI].size();
+            }
 
             # ifdef USE_OMP
             # pragma omp barrier
@@ -95,7 +97,7 @@ void polyMeshGenAddressing::calcFaceEdges() const
                     const face& f = faces[faceI];
                     forAll(f, eI)
                     {
-                        if( f.faceEdge(eI) == ee )
+                        if (f.faceEdge(eI) == ee)
                         {
                             faceEdgesAddr[faceI][eI] = edgeI;
                             break;
@@ -107,19 +109,20 @@ void polyMeshGenAddressing::calcFaceEdges() const
     }
 }
 
+
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 const VRWGraph& polyMeshGenAddressing::faceEdges() const
 {
-    if( !fePtr_ )
+    if (!fePtr_)
     {
         # ifdef USE_OMP
-        if( omp_in_parallel() )
-            FatalErrorIn
-            (
-                "const VRWGraph& polyMeshGenAddressing::faceEdges() const"
-            ) << "Calculating addressing inside a parallel region."
+        if (omp_in_parallel())
+        {
+            FatalErrorInFunction
+                << "Calculating addressing inside a parallel region."
                 << " This is not thread safe" << exit(FatalError);
+        }
         # endif
 
         calcFaceEdges();
@@ -127,6 +130,7 @@ const VRWGraph& polyMeshGenAddressing::faceEdges() const
 
     return *fePtr_;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

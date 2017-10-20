@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -63,7 +61,7 @@ void boundaryLayers::findPatchVertices
     pVertices = NONE;
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( pPatches.size() > 1000 ) \
+    # pragma omp parallel for if (pPatches.size() > 1000) \
     schedule(dynamic, Foam::max(10, pPatches.size()/(2*omp_get_num_threads())))
     # endif
     forAll(pPatches, bpI)
@@ -74,7 +72,7 @@ void boundaryLayers::findPatchVertices
         forAllRow(pPatches, bpI, patchI)
         {
             const label patch = pPatches(bpI, patchI);
-            if( treatPatches[patch] )
+            if (treatPatches[patch])
             {
                 hasTreated = true;
             }
@@ -84,23 +82,30 @@ void boundaryLayers::findPatchVertices
             }
         }
 
-        if( hasTreated )
+        if (hasTreated)
         {
             pVertices[bpI] |= PATCHNODE;
 
-            if( hasNotTreated )
+            if (hasNotTreated)
+            {
                 pVertices[bpI] |= EDGENODE;
+            }
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const VRWGraph& bpAtProcs = mse.bpAtProcs();
         forAll(pVertices, bpI)
-            if( pVertices[bpI] && (bpAtProcs.sizeOfRow(bpI) != 0) )
+        {
+            if (pVertices[bpI] && (bpAtProcs.sizeOfRow(bpI) != 0))
+            {
                 pVertices[bpI] |= PARALLELBOUNDARY;
+            }
+        }
     }
 }
+
 
 point boundaryLayers::createNewVertex
 (
@@ -123,32 +128,36 @@ point boundaryLayers::createNewVertex
     const pointFieldPMG& points = mesh_.points();
 
     # ifdef DEBUGLayer
-    Info << "Creating new vertex for boundary vertex " << bpI << endl;
-    Info << "Global vertex label " << bPoints[bpI] << endl;
+    Info<< "Creating new vertex for boundary vertex " << bpI << endl;
+    Info<< "Global vertex label " << bPoints[bpI] << endl;
     # endif
 
     vector normal(vector::zero);
     scalar dist(VGREAT);
     const point& p = points[bPoints[bpI]];
-    if( patchVertex[bpI] & EDGENODE )
+    if (patchVertex[bpI] & EDGENODE)
     {
         # ifdef DEBUGLayer
-        Info << "Vertex is on the border" << endl;
+        Info<< "Vertex is on the border" << endl;
         # endif
 
         DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
-            if( !treatPatches[pPatches(bpI, patchI)] )
+        {
+            if (!treatPatches[pPatches(bpI, patchI)])
+            {
                 otherPatches.appendIfNotIn
                 (
                     pPatches(bpI, patchI)
                 );
+            }
+        }
 
-        if( otherPatches.size() == 1 )
+        if (otherPatches.size() == 1)
         {
-            //- vertex is on an edge
+            // vertex is on an edge
             # ifdef DEBUGLayer
-            Info << "Vertex is on an edge" << endl;
+            Info<< "Vertex is on an edge" << endl;
             # endif
             vector v(vector::zero);
 
@@ -158,7 +167,7 @@ point boundaryLayers::createNewVertex
                 const label patchLabel =
                     boundaryFacePatches[pFaces(bpI, pfI)];
 
-                if( treatPatches[patchLabel] )
+                if (treatPatches[patchLabel])
                 {
                     normal += f.normal(points);
                 }
@@ -171,27 +180,31 @@ point boundaryLayers::createNewVertex
             const scalar magV = mag(v) + VSMALL;
             v /= magV;
 
-            normal -= (normal & v) * v;
+            normal -= (normal & v)*v;
 
             const scalar magN = mag(normal) + VSMALL;
             normal /= magN;
 
             forAllRow(pointPoints, bpI, ppI)
             {
-                if( patchVertex[pointPoints(bpI, ppI)] )
+                if (patchVertex[pointPoints(bpI, ppI)])
+                {
                     continue;
+                }
 
                 const vector vec = points[bPoints[pointPoints(bpI, ppI)]] - p;
-                const scalar prod = 0.5 * mag(vec & normal);
+                const scalar prod = 0.5*mag(vec & normal);
 
-                if( prod < dist )
+                if (prod < dist)
+                {
                     dist = prod;
+                }
             }
         }
-        else if( otherPatches.size() == 2 )
+        else if (otherPatches.size() == 2)
         {
             # ifdef DEBUGLayer
-            Info << "Vertex is a corner" << endl;
+            Info<< "Vertex is a corner" << endl;
             # endif
 
             label otherVertex(-1);
@@ -201,60 +214,50 @@ point boundaryLayers::createNewVertex
 
                 bool found(true);
                 forAll(otherPatches, opI)
-                    if( !pPatches.contains(bpJ, otherPatches[opI]) )
+                {
+                    if (!pPatches.contains(bpJ, otherPatches[opI]))
                     {
                         found = false;
                         break;
                     }
+                }
 
-                if( found )
+                if (found)
                 {
                     otherVertex = bpJ;
                     break;
                 }
             }
 
-            if( otherVertex == -1 )
+            if (otherVertex == -1)
             {
-                FatalErrorIn
-                (
-                    "void boundaryLayers::createNewVertices"
-                    "("
-                        "const boolList& treatPatches,"
-                        "labelList& newLabelForVertex"
-                    ")"
-                ) << "Cannot find moving vertex!" << exit(FatalError);
+                FatalErrorInFunction
+                    << "Cannot find moving vertex!" << exit(FatalError);
             }
 
-            //- normal vector is co-linear with that edge
+            // normal vector is co-linear with that edge
             normal = p - points[bPoints[otherVertex]];
-            dist = 0.5 * mag(normal) + VSMALL;
+            dist = 0.5*mag(normal) + VSMALL;
 
-            normal /= 2.0 * dist;
+            normal /= 2.0*dist;
         }
         else
         {
-            FatalErrorIn
-            (
-                "void boundaryLayers::createNewVertices"
-                "("
-                    "const boolList& treatPatches,"
-                    "labelList& newLabelForVertex"
-                ") const"
-            ) << "There are more than 3 patches meeting at this vertex!"
+            FatalErrorInFunction
+                << "There are more than 3 patches meeting at this vertex!"
                 << pPatches[bpI] << abort(FatalError);
         }
 
-        //- limit distances
+        // limit distances
         forAllRow(pFaces, bpI, pfI)
         {
             const label faceLabel = pFaces(bpI, pfI);
-            if( otherPatches.contains(boundaryFacePatches[faceLabel]) )
+            if (otherPatches.contains(boundaryFacePatches[faceLabel]))
             {
                 const face& f = bFaces[faceLabel];
                 const label pos = f.which(bPoints[bpI]);
 
-                if( pos != -1 )
+                if (pos != -1)
                 {
                     const point& ep1 = points[f.prevLabel(pos)];
                     const point& ep2 = points[f.nextLabel(pos)];
@@ -262,19 +265,15 @@ point boundaryLayers::createNewVertex
                     const scalar dst =
                         help::distanceOfPointFromTheEdge(ep1, ep2, p);
 
-                    if( dst < dist )
-                        dist = 0.9 * dst;
+                    if (dst < dist)
+                    {
+                        dist = 0.9*dst;
+                    }
                 }
                 else
                 {
-                    FatalErrorIn
-                    (
-                        "void boundaryLayers::createNewVertices"
-                        "("
-                            "const boolList& treatPatches,"
-                            "labelList& newLabelForVertex"
-                        ") const"
-                    ) << "Face does not contains this vertex!"
+                    FatalErrorInFunction
+                        << "Face does not contains this vertex!"
                         << abort(FatalError);
                 }
             }
@@ -287,36 +286,41 @@ point boundaryLayers::createNewVertex
         forAllRow(pointPoints, bpI, ppI)
         {
             const scalar d =
-            0.5 * mag
-            (
-                points[bPoints[pointPoints(bpI, ppI)]] -
-                p
-            );
+                0.5*mag
+                (
+                    points[bPoints[pointPoints(bpI, ppI)]] -
+                    p
+                );
 
-            if( d < dist )
+            if (d < dist)
+            {
                 dist = d;
+            }
         }
     }
 
-    //- create new vertex
+    // create new vertex
     # ifdef DEBUGLayer
-    Info << "Normal for vertex " << bpI << " is " << normal << endl;
-    Info << "Distance is " << dist << endl;
+    Info<< "Normal for vertex " << bpI << " is " << normal << endl;
+    Info<< "Distance is " << dist << endl;
     # endif
 
     dist = Foam::max(dist, VSMALL);
 
-    const point newP = p - dist * normal;
+    const point newP = p - dist*normal;
 
-    if( help::isnan(newP) || help::isinf(newP) )
+    if (help::isnan(newP) || help::isinf(newP))
+    {
         return p;
+    }
 
     return newP;
 }
 
+
 void boundaryLayers::createNewVertices(const boolList& treatPatches)
 {
-    Info << "Creating vertices for layer cells" << endl;
+    Info<< "Creating vertices for layer cells" << endl;
 
     List<direction> patchVertex;
     findPatchVertices(treatPatches, patchVertex);
@@ -324,9 +328,9 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
     const meshSurfaceEngine& mse = surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
 
-    //- the following is needed for parallel runs
-    //- it is ugly, but must stay for now :(
-    if( Pstream::parRun() )
+    // the following is needed for parallel runs
+    // it is ugly, but must stay for now :(
+    if (Pstream::parRun())
     {
         mse.pointNormals();
         mse.pointPoints();
@@ -336,16 +340,21 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
 
     label nExtrudedVertices(0);
     forAll(patchVertex, bpI)
-        if( patchVertex[bpI] )
+    {
+        if (patchVertex[bpI])
+        {
             ++nExtrudedVertices;
+        }
+    }
 
     points.setSize(points.size() + nExtrudedVertices);
 
     labelLongList procPoints;
     forAll(bPoints, bpI)
-        if( patchVertex[bpI] )
+    {
+        if (patchVertex[bpI])
         {
-            if( patchVertex[bpI] & PARALLELBOUNDARY )
+            if (patchVertex[bpI] & PARALLELBOUNDARY)
             {
                 procPoints.append(bpI);
                 continue;
@@ -355,8 +364,9 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
             newLabelForVertex_[bPoints[bpI]] = nPoints_;
             ++nPoints_;
         }
+    }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         createNewPartitionVerticesParallel
         (
@@ -373,11 +383,11 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
         );
     }
 
-    //- swap coordinates of new and old points
+    // swap coordinates of new and old points
     forAll(bPoints, bpI)
     {
         const label pLabel = newLabelForVertex_[bPoints[bpI]];
-        if( pLabel != -1 )
+        if (pLabel != -1)
         {
             const point p = points[pLabel];
             points[pLabel] = points[bPoints[bpI]];
@@ -385,19 +395,17 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
         }
     }
 
-    if( nPoints_ != points.size() )
-        FatalErrorIn
-        (
-            "void boundaryLayers::createNewVertices("
-            "const meshSurfaceEngine& mse,"
-            "const boolList& treatPatches,"
-            "labelList& newLabelForVertex)"
-        ) << "Number of vertices " << nPoints_
+    if (nPoints_ != points.size())
+    {
+        FatalErrorInFunction
+            << "Number of vertices " << nPoints_
             << " does not match the list size "
             << abort(FatalError);
+    }
 
-    Info << "Finished creating layer vertices" << endl;
+    Info<< "Finished creating layer vertices" << endl;
 }
+
 
 void boundaryLayers::createNewVertices(const labelList& patchLabels)
 {
@@ -412,8 +420,8 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
     const meshSurfacePartitioner& mPart = surfacePartitioner();
     const VRWGraph& pPatches = mPart.pointPatches();
 
-    //- the following is needed for parallel runs
-    //- it is ugly, but must stay for now :(
+    // the following is needed for parallel runs
+    // it is ugly, but must stay for now :(
     mse.boundaryFaces();
     mse.pointNormals();
     mse.pointFaces();
@@ -423,10 +431,10 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
     boolList treatPatches(mesh_.boundaries().size());
     List<direction> patchVertex(bPoints.size());
 
-    //- make sure than the points are never re-allocated during the process
-    points.reserve(points.size() + 2 * bPoints.size());
+    // make sure than the points are never re-allocated during the process
+    points.reserve(points.size() + 2*bPoints.size());
 
-    //- generate new layer vertices for each patch
+    // generate new layer vertices for each patch
     forAll(patchLabels, patchI)
     {
         const label pLabel = patchLabels[patchI];
@@ -438,7 +446,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             const label otherPatch = treatPatchesWithPatch_[pLabel][pI];
             treatPatches[otherPatch] = true;
 
-            if( patchKey_[otherPatch] == -1 )
+            if (patchKey_[otherPatch] == -1)
             {
                 patchKey_[otherPatch] = patchI;
             }
@@ -448,23 +456,27 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             }
         }
 
-        if( !treat )
+        if (!treat)
+        {
             continue;
+        }
 
         const label pKey = patchKey_[pLabel];
 
-        //- classify vertices belonging to this patch
+        // classify vertices belonging to this patch
         findPatchVertices(treatPatches, patchVertex);
 
-        //- create indices and allocate maps for new points
+        // create indices and allocate maps for new points
         labelLongList procPoints, patchPoints;
         forAll(bPoints, bpI)
         {
-            if( !patchVertex[bpI] )
+            if (!patchVertex[bpI])
+            {
                 continue;
+            }
 
-            //- skip vertices at parallel boundaries
-            if( patchVertex[bpI] & PARALLELBOUNDARY )
+            // skip vertices at parallel boundaries
+            if (patchVertex[bpI] & PARALLELBOUNDARY)
             {
                 procPoints.append(bpI);
 
@@ -474,9 +486,9 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             patchPoints.append(bpI);
             const label pointI = bPoints[bpI];
 
-            if( patchVertex[bpI] & EDGENODE )
+            if (patchVertex[bpI] & EDGENODE)
             {
-                if( otherVrts_.find(pointI) == otherVrts_.end() )
+                if (otherVrts_.find(pointI) == otherVrts_.end())
                 {
                     std::map<std::pair<label, label>, label> m;
 
@@ -488,15 +500,15 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             }
             else
             {
-                //- this the only new point
+                // this the only new point
                 newLabelForVertex_[pointI] = nPoints_++;
             }
         }
 
-        //- set the size of points
+        // set the size of points
         points.setSize(nPoints_);
 
-        //- calculate coordinates of new points
+        // calculate coordinates of new points
         # ifdef USE_OMP
         # pragma omp parallel for schedule(dynamic, 50)
         # endif
@@ -506,13 +518,13 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
 
             const label pointI = bPoints[bpI];
 
-            //- create new point
+            // create new point
             const point p = createNewVertex(bpI, treatPatches, patchVertex);
 
-            if( patchVertex[bpI] & EDGENODE )
+            if (patchVertex[bpI] & EDGENODE)
             {
-                //- set the new point or an edge point
-                if( otherVrts_.find(pointI) == otherVrts_.end() )
+                // set the new point or an edge point
+                if (otherVrts_.find(pointI) == otherVrts_.end())
                 {
                     std::map<std::pair<label, label>, label> m;
 
@@ -525,14 +537,14 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             }
             else
             {
-                //- set the new point
+                // set the new point
                 points[newLabelForVertex_[pointI]] = p;
             }
         }
 
-        if( Pstream::parRun() )
+        if (Pstream::parRun())
         {
-            points.setSize(nPoints_+procPoints.size());
+            points.setSize(nPoints_ + procPoints.size());
 
             createNewPartitionVerticesParallel
             (
@@ -550,14 +562,16 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
         }
     }
 
-    //- create missing vertices for edge and corner vertices
-    //- they should be stored in the otherNodes map
+    // create missing vertices for edge and corner vertices
+    // they should be stored in the otherNodes map
     forAll(bPoints, bpI)
     {
         const label pointI = bPoints[bpI];
 
-        if( otherVrts_.find(pointI) == otherVrts_.end() )
+        if (otherVrts_.find(pointI) == otherVrts_.end())
+        {
             continue;
+        }
 
         const point& p = points[pointI];
 
@@ -571,7 +585,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             const std::pair<label, label> pr(pKey, pKey);
             const std::map<std::pair<label, label>, label>::const_iterator it =
                 m.find(pr);
-            if( (it != m.end()) && !usedPatches.contains(pKey) )
+            if ((it != m.end()) && !usedPatches.contains(pKey))
             {
                 usedPatches.append(pKey);
                 newNodeLabel.append(it->second);
@@ -579,21 +593,21 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             }
         }
 
-        if( newNodeLabel.size() == 1 )
+        if (newNodeLabel.size() == 1)
         {
-            //- only one patch is treated
+            // only one patch is treated
             newLabelForVertex_[pointI] = newNodeLabel[0];
             otherVrts_.erase(pointI);
         }
-        else if( newNodeLabel.size() == 2 )
+        else if (newNodeLabel.size() == 2)
         {
-            //- point is located at an extrusion edge
-            //- create the new position for the existing point
+            // point is located at an extrusion edge
+            // create the new position for the existing point
             point newP(p);
             newP += newPatchPenetrationVector[0];
             newP += newPatchPenetrationVector[1];
 
-            if( !help::isnan(newP) && !help::isinf(newP) )
+            if (!help::isnan(newP) && !help::isinf(newP))
             {
                 points.append(newP);
             }
@@ -604,21 +618,21 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             newLabelForVertex_[pointI] = nPoints_;
             ++nPoints_;
         }
-        else if( newNodeLabel.size() == 3 )
+        else if (newNodeLabel.size() == 3)
         {
-            //- point is located at an extrusion corner
-            //- create 3 points and the new position for the existing point
+            // point is located at an extrusion corner
+            // create 3 points and the new position for the existing point
             point newP(p);
-            for(label i=0;i<3;++i)
+            for (label i = 0; i < 3; ++i)
             {
                 newP += newPatchPenetrationVector[i];
-                for(label j=i+1;j<3;++j)
+                for (label j = i + 1; j < 3; ++j)
                 {
                     const point np =
                         p + newPatchPenetrationVector[i] +
                         newPatchPenetrationVector[j];
 
-                    if( !help::isnan(np) && !help::isinf(np) )
+                    if (!help::isnan(np) && !help::isinf(np))
                     {
                         points.append(np);
                     }
@@ -639,8 +653,8 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
                 }
             }
 
-            //- create new position for the existing point
-            if( !help::isnan(newP) && !help::isinf(newP) )
+            // create new position for the existing point
+            if (!help::isnan(newP) && !help::isinf(newP))
             {
                 points.append(newP);
             }
@@ -654,26 +668,22 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
         }
         else
         {
-            FatalErrorIn
-            (
-                "void boundaryLayers::createNewVertices("
-                "const labelList& patchLabels, labelLongList& newLabelForVertex,"
-                "std::map<label, std::map<std::pair<label, label>, label> >&)"
-            ) << "Boundary node " << bpI << " is not at an edge!"
+            FatalErrorInFunction
+                << "Boundary node " << bpI << " is not at an edge!"
                 << abort(FatalError);
         }
     }
 
-    //- swap coordinates of new and old points
+    // swap coordinates of new and old points
     # ifdef USE_OMP
-    # pragma omp parallel for if( bPoints.size() > 1000 ) \
+    # pragma omp parallel for if (bPoints.size() > 1000) \
     schedule(dynamic, 100)
     # endif
     forAll(bPoints, bpI)
     {
         const label pLabel = newLabelForVertex_[bPoints[bpI]];
 
-        if( pLabel != -1 )
+        if (pLabel != -1)
         {
             const point p = points[pLabel];
             points[pLabel] = points[bPoints[bpI]];
@@ -682,6 +692,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
     }
 }
 
+
 void boundaryLayers::createNewPartitionVerticesParallel
 (
     const labelLongList& procPoints,
@@ -689,11 +700,15 @@ void boundaryLayers::createNewPartitionVerticesParallel
     const boolList& /*treatPatches*/
 )
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
+    {
         return;
+    }
 
-    if( returnReduce(procPoints.size(), sumOp<label>()) == 0 )
+    if (returnReduce(procPoints.size(), sumOp<label>()) == 0 )
+    {
         return;
+    }
 
     const meshSurfaceEngine& mse = surfaceEngine();
     pointFieldPMG& points = mesh_.points();
@@ -705,7 +720,7 @@ void boundaryLayers::createNewPartitionVerticesParallel
 
     scalarField penetrationDistances(bPoints.size(), VGREAT);
 
-    std::map<label, LongList<labelledScalar> > exchangeDistances;
+    std::map<label, LongList<labelledScalar>> exchangeDistances;
 
     forAll(procPoints, pointI)
     {
@@ -713,10 +728,12 @@ void boundaryLayers::createNewPartitionVerticesParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
+            }
 
-            if( exchangeDistances.find(neiProc) == exchangeDistances.end() )
+            if (exchangeDistances.find(neiProc) == exchangeDistances.end())
             {
                 exchangeDistances.insert
                 (
@@ -725,18 +742,22 @@ void boundaryLayers::createNewPartitionVerticesParallel
             }
         }
 
-        if( pVertices[bpI] & EDGENODE )
+        if (pVertices[bpI] & EDGENODE)
+        {
             continue;
+        }
 
         scalar dist(VGREAT);
         const point& p = points[bPoints[bpI]];
         forAllRow(pointPoints, bpI, ppI)
         {
             const scalar d =
-                0.5 * mag(points[bPoints[pointPoints(bpI, ppI)]] - p);
+                0.5*mag(points[bPoints[pointPoints(bpI, ppI)]] - p);
 
-            if( d < dist )
+            if (d < dist)
+            {
                 dist = d;
+            }
         }
 
         penetrationDistances[bpI] = dist;
@@ -744,8 +765,10 @@ void boundaryLayers::createNewPartitionVerticesParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
+            }
 
             exchangeDistances[neiProc].append
             (
@@ -754,29 +777,33 @@ void boundaryLayers::createNewPartitionVerticesParallel
         }
     }
 
-    //- exchange distances with other processors
+    // exchange distances with other processors
     LongList<labelledScalar> receivedData;
     help::exchangeMap(exchangeDistances, receivedData);
     forAll(receivedData, i)
     {
         const label bpI = globalToLocal[receivedData[i].scalarLabel()];
 
-        if( penetrationDistances[bpI] > receivedData[i].value() )
+        if (penetrationDistances[bpI] > receivedData[i].value())
+        {
             penetrationDistances[bpI] = receivedData[i].value();
+        }
     }
 
-    //- Finally, create the points
+    // Finally, create the points
     const vectorField& pNormals = mse.pointNormals();
     forAll(procPoints, pointI)
     {
         const label bpI = procPoints[pointI];
 
-        if( pVertices[bpI] & EDGENODE )
+        if (pVertices[bpI] & EDGENODE)
+        {
             continue;
+        }
 
         const point& p = points[bPoints[bpI]];
-        const point np = p - pNormals[bpI] * penetrationDistances[bpI];
-        if( !help::isnan(np) && !help::isinf(np) )
+        const point np = p - pNormals[bpI]*penetrationDistances[bpI];
+        if (!help::isnan(np) && !help::isinf(np))
         {
             points[nPoints_] = np;
         }
@@ -789,6 +816,7 @@ void boundaryLayers::createNewPartitionVerticesParallel
     }
 }
 
+
 void boundaryLayers::createNewEdgeVerticesParallel
 (
     const labelLongList& procPoints,
@@ -796,11 +824,15 @@ void boundaryLayers::createNewEdgeVerticesParallel
     const boolList& treatPatches
 )
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
+    {
         return;
+    }
 
-    if( returnReduce(procPoints.size(), sumOp<label>()) == 0 )
+    if (returnReduce(procPoints.size(), sumOp<label>()) == 0 )
+    {
         return;
+    }
 
     const meshSurfaceEngine& mse = surfaceEngine();
     pointFieldPMG& points = mesh_.points();
@@ -819,21 +851,25 @@ void boundaryLayers::createNewEdgeVerticesParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
+            }
 
             neiProcs.appendIfNotIn(neiProc);
         }
 
-        if( pVertices[bpI] & EDGENODE )
+        if (pVertices[bpI] & EDGENODE)
         {
             bpToEdgePoint.insert(bpI, edgePoints.size());
             edgePoints.append(bpI);
         }
     }
 
-    if( returnReduce(edgePoints.size(), sumOp<label>()) == 0 )
+    if (returnReduce(edgePoints.size(), sumOp<label>()) == 0 )
+    {
         return;
+    }
 
     const meshSurfacePartitioner& mPart = surfacePartitioner();
     const VRWGraph& pPatches = mPart.pointPatches();
@@ -847,14 +883,16 @@ void boundaryLayers::createNewEdgeVerticesParallel
     vectorField v(edgePoints.size(), vector::zero);
 
     label pKey(-1);
-    if( patchKey_.size() )
+    if (patchKey_.size())
     {
         forAll(treatPatches, patchI)
-            if( treatPatches[patchI] )
+        {
+            if (treatPatches[patchI])
             {
                 pKey = patchKey_[patchI];
                 break;
             }
+        }
     }
 
     forAll(edgePoints, epI)
@@ -862,14 +900,18 @@ void boundaryLayers::createNewEdgeVerticesParallel
         const label bpI = edgePoints[epI];
         const point& p = points[bPoints[bpI]];
 
-        //- find patches for the given point
+        // find patches for the given point
         DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
-            if( !treatPatches[pPatches(bpI, patchI)] )
+        {
+            if (!treatPatches[pPatches(bpI, patchI)])
+            {
                 otherPatches.appendIfNotIn(pPatches(bpI, patchI));
+            }
+        }
 
-        //- find local values of normals and v
-        if( otherPatches.size() == 1 )
+        // find local values of normals and v
+        if (otherPatches.size() == 1)
         {
             forAllRow(pFaces, bpI, pfI)
             {
@@ -877,7 +919,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
                 const label patchLabel =
                     boundaryFacePatches[pFaces(bpI, pfI)];
 
-                if( treatPatches[patchLabel] )
+                if (treatPatches[patchLabel])
                 {
                     normal[epI] += f.normal(points);
                 }
@@ -887,7 +929,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
                 }
             }
         }
-        else if( otherPatches.size() == 2 )
+        else if (otherPatches.size() == 2)
         {
             label otherVertex(-1);
             forAllRow(pointPoints, bpI, ppI)
@@ -896,48 +938,47 @@ void boundaryLayers::createNewEdgeVerticesParallel
 
                 bool found(true);
                 forAll(otherPatches, opI)
-                    if( !pPatches.contains(bpJ, otherPatches[opI]) )
+                {
+                    if (!pPatches.contains(bpJ, otherPatches[opI]))
                     {
                         found = false;
                         break;
                     }
+                }
 
-                if( found )
+                if (found)
                 {
                     otherVertex = bpJ;
                     break;
                 }
             }
 
-            if( otherVertex == -1 )
+            if (otherVertex == -1)
+            {
                 continue;
+            }
 
-            //- normal vector is co-linear with that edge
+            // normal vector is co-linear with that edge
             normal[epI] = p - points[bPoints[otherVertex]];
             dist[epI] = mag(normal[epI]);
         }
         else
         {
-            FatalErrorIn
-            (
-                "void boundaryLayers::createNewEdgeVerticesParallel("
-                    "const labelLongList& procPoints,"
-                    "const List<direction>& pVertices,"
-                    "const boolList& treatPatches,"
-                    "labelList& newLabelForVertex"
-                ") const"
-            ) << "There are more than 3 patches meeting at this vertex!"
+            FatalErrorInFunction
+                << "There are more than 3 patches meeting at this vertex!"
                 << abort(FatalError);
         }
     }
 
-    //- prepare normals and v for sending to other procs
-    std::map<label, LongList<labelledPoint> > exchangeNormals;
+    // prepare normals and v for sending to other procs
+    std::map<label, LongList<labelledPoint>> exchangeNormals;
     forAll(neiProcs, procI)
+    {
         exchangeNormals.insert
         (
             std::make_pair(neiProcs[procI], LongList<labelledPoint>())
         );
+    }
 
     forAll(edgePoints, epI)
     {
@@ -946,10 +987,12 @@ void boundaryLayers::createNewEdgeVerticesParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
+            }
 
-            //- store values in the list for sending
+            // store values in the list for sending
             LongList<labelledPoint>& dataToSend = exchangeNormals[neiProc];
             dataToSend.append
             (
@@ -959,13 +1002,13 @@ void boundaryLayers::createNewEdgeVerticesParallel
         }
     }
 
-    //- exchange data with other processors
+    // exchange data with other processors
     LongList<labelledPoint> receivedData;
     help::exchangeMap(exchangeNormals, receivedData);
     exchangeNormals.clear();
 
     label counter(0);
-    while( counter < receivedData.size() )
+    while (counter < receivedData.size())
     {
         const labelledPoint& otherNormal = receivedData[counter++];
         const labelledPoint& otherV = receivedData[counter++];
@@ -975,65 +1018,78 @@ void boundaryLayers::createNewEdgeVerticesParallel
         v[bpToEdgePoint[bpI]] += otherV.coordinates();
     }
 
-    //- calculate normals
+    // calculate normals
     forAll(normal, epI)
     {
         const label bpI = edgePoints[epI];
 
-        //- find patches for the given point
+        // find patches for the given point
         DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
-            if( !treatPatches[pPatches(bpI, patchI)] )
+        {
+            if (!treatPatches[pPatches(bpI, patchI)])
+            {
                 otherPatches.appendIfNotIn(pPatches(bpI, patchI));
+            }
+        }
 
-        if( otherPatches.size() == 1 )
+        if (otherPatches.size() == 1)
         {
             const scalar magV = mag(v[epI]) + VSMALL;
             v[epI] /= magV;
-            normal[epI] -= (normal[epI] & v[epI]) * v[epI];
+            normal[epI] -= (normal[epI] & v[epI])*v[epI];
         }
 
         const scalar magN = mag(normal[epI]) + VSMALL;
         normal[epI] /= magN;
     }
 
-    //- calculate distances
+    // calculate distances
     forAll(edgePoints, epI)
     {
         const label bpI = edgePoints[epI];
         const point& p = points[bPoints[bpI]];
 
-        //- find patches for the given point
+        // find patches for the given point
         DynList<label> otherPatches;
         forAllRow(pPatches, bpI, patchI)
-            if( !treatPatches[pPatches(bpI, patchI)] )
-                otherPatches.appendIfNotIn(pPatches(bpI, patchI));
-
-        if( otherPatches.size() == 1 )
         {
-            forAllRow(pointPoints, bpI, ppI)
+            if (!treatPatches[pPatches(bpI, patchI)])
             {
-                if( pVertices[pointPoints(bpI, ppI)] )
-                    continue;
-
-                const vector vec = points[bPoints[pointPoints(bpI, ppI)]] - p;
-                const scalar prod = 0.5 * mag(vec & normal[epI]);
-
-                if( prod < dist[epI] )
-                    dist[epI] = prod;
+                otherPatches.appendIfNotIn(pPatches(bpI, patchI));
             }
         }
 
-        //- limit distances
+
+        if (otherPatches.size() == 1)
+        {
+            forAllRow(pointPoints, bpI, ppI)
+            {
+                if (pVertices[pointPoints(bpI, ppI)])
+                {
+                    continue;
+                }
+
+                const vector vec = points[bPoints[pointPoints(bpI, ppI)]] - p;
+                const scalar prod = 0.5*mag(vec & normal[epI]);
+
+                if (prod < dist[epI])
+                {
+                    dist[epI] = prod;
+                }
+            }
+        }
+
+        // limit distances
         forAllRow(pFaces, bpI, pfI)
         {
             const label faceLabel = pFaces(bpI, pfI);
-            if( otherPatches.contains(boundaryFacePatches[faceLabel]) )
+            if (otherPatches.contains(boundaryFacePatches[faceLabel]))
             {
                 const face& f = bFaces[faceLabel];
                 const label pos = f.which(bPoints[bpI]);
 
-                if( pos != -1 )
+                if (pos != -1)
                 {
                     const point& ep1 = points[f.prevLabel(pos)];
                     const point& ep2 = points[f.nextLabel(pos)];
@@ -1041,34 +1097,30 @@ void boundaryLayers::createNewEdgeVerticesParallel
                     const scalar dst =
                         help::distanceOfPointFromTheEdge(ep1, ep2, p);
 
-                    if( dst < dist[epI] )
-                        dist[epI] = 0.9 * dst;
+                    if (dst < dist[epI])
+                    {
+                        dist[epI] = 0.9*dst;
+                    }
                 }
                 else
                 {
-                    FatalErrorIn
-                    (
-                        "void boundaryLayers::createNewEdgeVerticesParallel"
-                        "("
-                            "const labelLongList& procPoints,"
-                            "const List<direction>& pVertices,"
-                            "const boolList& treatPatches,"
-                            "labelList& newLabelForVertex"
-                        ") const"
-                    ) << "Face does not contains this vertex!"
+                    FatalErrorInFunction
+                        << "Face does not contains this vertex!"
                         << abort(FatalError);
                 }
             }
         }
     }
 
-    //- exchange distances with other processors
-    std::map<label, LongList<labelledScalar> > exchangeDistances;
+    // exchange distances with other processors
+    std::map<label, LongList<labelledScalar>> exchangeDistances;
     forAll(neiProcs, procI)
+    {
         exchangeDistances.insert
         (
             std::make_pair(neiProcs[procI], LongList<labelledScalar>())
         );
+    }
 
     forAll(edgePoints, epI)
     {
@@ -1076,15 +1128,17 @@ void boundaryLayers::createNewEdgeVerticesParallel
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
+            }
 
             LongList<labelledScalar>& ls = exchangeDistances[neiProc];
             ls.append(labelledScalar(globalPointLabel[bpI], dist[epI]));
         }
     }
 
-    //- exchange distances with other processors
+    // exchange distances with other processors
     LongList<labelledScalar> receivedDistances;
     help::exchangeMap(exchangeDistances, receivedDistances);
     exchangeDistances.clear();
@@ -1093,18 +1147,20 @@ void boundaryLayers::createNewEdgeVerticesParallel
     {
         const label bpI = globalToLocal[receivedDistances[i].scalarLabel()];
         const label epI = bpToEdgePoint[bpI];
-        if( dist[epI] > receivedDistances[i].value() )
+        if (dist[epI] > receivedDistances[i].value())
+        {
             dist[epI] = receivedDistances[i].value();
+        }
     }
 
-    //- Finally, create new points
+    // Finally, create new points
     forAll(edgePoints, epI)
     {
         const label bpI = edgePoints[epI];
 
         const point& p = points[bPoints[bpI]];
-        const point np = p - normal[epI] * dist[epI];
-        if( !help::isnan(np) && !help::isinf(np) )
+        const point np = p - normal[epI]*dist[epI];
+        if (!help::isnan(np) && !help::isinf(np))
         {
             points[nPoints_] = np;
         }
@@ -1113,16 +1169,16 @@ void boundaryLayers::createNewEdgeVerticesParallel
             points[nPoints_] = p;
         }
 
-        if( pKey == -1 )
+        if (pKey == -1)
         {
-            //- extrusion for one patch in a single go
+            // extrusion for one patch in a single go
             newLabelForVertex_[bPoints[bpI]] = nPoints_;
         }
         else
         {
             const label pointI = bPoints[bpI];
 
-            if( otherVrts_.find(pointI) == otherVrts_.end() )
+            if (otherVrts_.find(pointI) == otherVrts_.end())
             {
                 std::map<std::pair<label, label>, label> m;
                 otherVrts_.insert(std::make_pair(pointI, m));
@@ -1134,6 +1190,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
         ++nPoints_;
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

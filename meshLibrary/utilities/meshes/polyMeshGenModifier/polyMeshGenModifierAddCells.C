@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -36,14 +34,14 @@ namespace Foam
 
 void polyMeshGenModifier::addCells(const LongList<faceList>& cellFaces)
 {
-    Info << "Adding cells to the mesh" << endl;
+    Info<< "Adding cells to the mesh" << endl;
 
     faceListPMG& faces = mesh_.faces_;
     cellListPMG& cells = mesh_.cells_;
 
     VRWGraph& pointFaces = this->pointFaces();
 
-    //- start adding cells into the mesh
+    // start adding cells into the mesh
     label nFaces = faces.size();
     label nCells = cells.size();
 
@@ -65,20 +63,22 @@ void polyMeshGenModifier::addCells(const LongList<faceList>& cellFaces)
             {
                 const label faceI = pointFaces(pointI, pfI);
 
-                if( faces[faceI] == f )
+                if (faces[faceI] == f)
                 {
                     fLabel = faceI;
                     break;
                 }
             }
 
-            if( fLabel == -1 )
+            if (fLabel == -1)
             {
                 faces.append(f);
                 c[fI++] = nFaces;
 
                 forAll(f, pI)
+                {
                     pointFaces.append(f[pI], nFaces);
+                }
 
                 ++nFaces;
             }
@@ -95,19 +95,20 @@ void polyMeshGenModifier::addCells(const LongList<faceList>& cellFaces)
     this->clearOut();
     mesh_.clearOut();
 
-    Info << "Finished adding cells to the mesh" << endl;
+    Info<< "Finished adding cells to the mesh" << endl;
 }
+
 
 void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
 {
-    Info << "Adding " << cellFaces.size() << " cells to the mesh" << endl;
+    Info<< "Adding " << cellFaces.size() << " cells to the mesh" << endl;
 
     faceListPMG& faces = mesh_.faces_;
     cellListPMG& cells = mesh_.cells_;
 
     VRWGraph& pointFaces = this->pointFaces();
 
-    //- start adding cells into the mesh
+    // start adding cells into the mesh
     label nFaces = faces.size();
     label nCells = cells.size();
 
@@ -119,7 +120,9 @@ void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
             facesInCell[fI].setSize(cellFaces.sizeOfRow(cI, fI));
 
             forAll(facesInCell[fI], pI)
+            {
                 facesInCell[fI][pI] = cellFaces(cI, fI, pI);
+            }
         }
 
         label fI(0);
@@ -136,20 +139,22 @@ void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
             {
                 const label faceI = pointFaces(pointI, pfI);
 
-                if( faces[faceI] == f )
+                if (faces[faceI] == f)
                 {
                     fLabel = faceI;
                     break;
                 }
             }
 
-            if( fLabel == -1 )
+            if (fLabel == -1)
             {
                 faces.append(f);
                 c[fI++] = nFaces;
 
                 forAll(f, pI)
+                {
                     pointFaces.append(f[pI], nFaces);
+                }
 
                 ++nFaces;
             }
@@ -166,8 +171,9 @@ void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
     this->clearOut();
     mesh_.clearOut();
 
-    Info << "Finished adding cells to the mesh" << endl;
+    Info<< "Finished adding cells to the mesh" << endl;
 }
+
 
 void polyMeshGenModifier::addCell(const faceList& cellFaces)
 {
@@ -192,20 +198,22 @@ void polyMeshGenModifier::addCell(const faceList& cellFaces)
         {
             const label faceI = pointFaces(pointI, pfI);
 
-            if( faces[faceI] == f )
+            if (faces[faceI] == f)
             {
                 fLabel = faceI;
                 break;
             }
         }
 
-        if( fLabel == -1 )
+        if (fLabel == -1)
         {
             faces.append(f);
             c[fI++] = nFaces;
 
             forAll(f, pI)
+            {
                 pointFaces.append(f[pI], nFaces);
+            }
 
             ++nFaces;
         }
@@ -218,6 +226,7 @@ void polyMeshGenModifier::addCell(const faceList& cellFaces)
     cells.append(c);
     mesh_.clearOut();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

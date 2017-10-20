@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -49,7 +47,7 @@ partTetMeshSimplex::partTetMeshSimplex
     const LongList<point>& points = tm.points();
     const LongList<partTet>& tets = tm.tets();
     const VRWGraph& pt = tm.pointTets();
-    
+
     tets_.setSize(pt.sizeOfRow(pI));
     label counter(0);
 
@@ -57,23 +55,23 @@ partTetMeshSimplex::partTetMeshSimplex
     forAllRow(pt, pI, tetI)
     {
         const partTet& tet = tets[pt(pI, tetI)];
-        for(label i=0;i<4;++i)
+        for (label i = 0; i < 4; ++i)
         {
             const label tpI = tet[i];
-            if( !addr.found(tpI) )
+            if (!addr.found(tpI))
             {
                 addr.insert(tpI, counter);
                 pts_.append(points[tpI]);
                 ++counter;
             }
         }
-        
+
         # ifdef DEBUGSmooth
-        Info << "Tet " << tetI << " is " << tet << endl;
+        Info<< "Tet " << tetI << " is " << tet << endl;
         # endif
-        
+
         const label pos = tet.whichPosition(pI);
-        switch( pos )
+        switch(pos)
         {
             case 0:
             {
@@ -121,16 +119,14 @@ partTetMeshSimplex::partTetMeshSimplex
             } break;
             default:
             {
-                FatalErrorIn
-                (
-                    "partTetMeshSimplex::partTetMeshSimplex("
-                    "(const partTetMesh& tm, const label pI)"
-                ) << "Point " << pI << " is not present in tet" << tet
+                FatalErrorInFunction
+                    << "Point " << pI << " is not present in tet" << tet
                     << abort(FatalError);
             }
         }
     }
 }
+
 
 partTetMeshSimplex::partTetMeshSimplex
 (
@@ -143,27 +139,29 @@ partTetMeshSimplex::partTetMeshSimplex
 {
     tets_.setSize(pt.size());
     label pI(0);
-    
+
     Map<label> addr;
     forAll(pt, tetI)
     {
         const parPartTet& tet = pt[tetI];
-        
+
         label pos(-1);
-        for(label i=0;i<4;++i)
+        for (label i = 0; i < 4; ++i)
         {
-            if( !addr.found(tet[i].pointLabel()) )
+            if (!addr.found(tet[i].pointLabel()))
             {
                 addr.insert(tet[i].pointLabel(), pI);
                 pts_.append(tet[i].coordinates());
                 ++pI;
             }
-            
-            if( tet[i].pointLabel() == gpI )
+
+            if (tet[i].pointLabel() == gpI)
+            {
                 pos = i;
+            }
         }
-        
-        switch( pos )
+
+        switch(pos)
         {
             case 0:
             {
@@ -211,16 +209,14 @@ partTetMeshSimplex::partTetMeshSimplex
             } break;
             default:
             {
-                FatalErrorIn
-                (
-                    "partTetMeshSimplex::partTetMeshSimplex("
-                    "(const partTetMesh& tm, const label pI)"
-                ) << "Point " << gpI << " is not present in tet" << tet
+                FatalErrorInFunction
+                    << "Point " << gpI << " is not present in tet" << tet
                     << abort(FatalError);
             }
         }
     }
 }
+
 
 partTetMeshSimplex::partTetMeshSimplex
 (
@@ -238,7 +234,7 @@ partTetMeshSimplex::partTetMeshSimplex
 
         const label pos = tet.whichPosition(pointI);
 
-        switch( pos )
+        switch(pos)
         {
             case 0:
             {
@@ -286,22 +282,20 @@ partTetMeshSimplex::partTetMeshSimplex
             } break;
             default:
             {
-                FatalErrorIn
-                (
-                    "partTetMeshSimplex::partTetMeshSimplex"
-                    "(const DynList<point, 128>& pts,"
-                    "const DynList<partTet, 128>& tets, const label pointI)"
-                ) << "Point " << pointI << " is not present in tet" << tet
+                FatalErrorInFunction
+                    << "Point " << pointI << " is not present in tet" << tet
                     << abort(FatalError);
             }
         }
     }
 }
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    
+
 partTetMeshSimplex::~partTetMeshSimplex()
 {}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

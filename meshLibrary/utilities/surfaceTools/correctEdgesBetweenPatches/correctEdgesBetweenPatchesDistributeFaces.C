@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -47,12 +45,11 @@ Description
 
 namespace Foam
 {
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void correctEdgesBetweenPatches::decomposeProblematicFaces()
 {
-    Info << "Decomposing problematic faces" << endl;
+    Info<< "Decomposing problematic faces" << endl;
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bp = mse.bp();
     const edgeList& edges = mse.edges();
@@ -61,22 +58,22 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
     const VRWGraph& edgeFaces = mse.edgeFaces();
     const labelList& facePatches = mse.boundaryFacePatches();
 
-    //- mark feature edges
+    // mark feature edges
     boolList featureBndEdge(edgeFaces.size(), false);
 
     forAll(edgeFaces, beI)
     {
-        if( edgeFaces.sizeOfRow(beI) != 2 )
+        if (edgeFaces.sizeOfRow(beI) != 2)
             continue;
 
-        if( facePatches[edgeFaces(beI, 0)] != facePatches[edgeFaces(beI, 1)] )
+        if (facePatches[edgeFaces(beI, 0)] != facePatches[edgeFaces(beI, 1)])
             featureBndEdge[beI] = true;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- find feature edges at parallel boundaries and propagate the
-        //- information to all processors
+        // find feature edges at parallel boundaries and propagate the
+        // information to all processors
         const Map<label>& globalToLocalEdge =
             mse.globalToLocalBndEdgeAddressing();
         const VRWGraph& beAtProcs = mse.beAtProcs();
@@ -85,13 +82,13 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         {
             const label beI = it();
 
-            if( edgeFaces.sizeOfRow(beI) != 1 )
+            if (edgeFaces.sizeOfRow(beI) != 1)
                 continue;
-            if( facePatches[edgeFaces(beI, 0)] != otherProcPatch[beI] )
+            if (facePatches[edgeFaces(beI, 0)] != otherProcPatch[beI])
                 featureBndEdge[beI] = true;
         }
 
-        //- propagate information to all processors that need this information
+        // propagate information to all processors that need this information
         std::map<label, labelLongList> exchangeData;
         forAll(mse.beNeiProcs(), i)
             exchangeData.insert
@@ -99,18 +96,18 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
                 std::make_pair(mse.beNeiProcs()[i], labelLongList())
             );
 
-        //- append labels of feature edges that need to be sent to other
-        //- processors sharing that edge
+        // append labels of feature edges that need to be sent to other
+        // processors sharing that edge
         forAllConstIter(Map<label>, globalToLocalEdge, it)
         {
             const label beI = it();
 
-            if( featureBndEdge[beI] )
+            if (featureBndEdge[beI])
             {
                 forAllRow(beAtProcs, beI, i)
                 {
                     const label procI = beAtProcs(beI, i);
-                    if( procI == Pstream::myProcNo() )
+                    if (procI == Pstream::myProcNo())
                         continue;
 
                     exchangeData[procI].append(it.key());
@@ -122,7 +119,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             featureBndEdge[globalToLocalEdge[receivedData[counter++]]] = true;
         }
@@ -136,12 +133,12 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
     boolList decomposeFace(faces.size(), false);
     label nDecomposedFaces(0);
 
-    //- decompose internal faces with more than one feature edge
+    // decompose internal faces with more than one feature edge
     const label nIntFaces = mesh.nInternalFaces();
     # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
     # endif
-    for(label faceI=0;faceI<nIntFaces;++faceI)
+    for (label faceI = 0; faceI < nIntFaces; ++faceI)
     {
         const face& f = faces[faceI];
 
@@ -153,20 +150,20 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
             const label bs = bp[e[0]];
             const label be = bp[e[1]];
-            if( (bs != -1) && (be != -1) )
+            if ((bs != -1) && (be != -1))
             {
-                //- check if this edge is a boundary edges and a feature edge
+                // check if this edge is a boundary edges and a feature edge
                 forAllRow(pointEdges, bs, i)
                 {
                     const label beI = pointEdges(bs, i);
 
-                    if( (edges[beI] == e) && featureBndEdge[beI] )
+                    if ((edges[beI] == e) && featureBndEdge[beI])
                         ++nFeatureEdges;
                 }
             }
         }
 
-        if( nFeatureEdges > 1 )
+        if (nFeatureEdges > 1)
         {
             ++nDecomposedFaces;
             decomposeFace[faceI] = true;
@@ -175,8 +172,8 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         }
     }
 
-    //- decompose boundary faces in case the feature edges are not connected
-    //- into a single open chain of edges
+    // decompose boundary faces in case the feature edges are not connected
+    // into a single open chain of edges
     # ifdef USE_OMP
     # pragma omp parallel for schedule(guided) reduction(+ : nDecomposedFaces)
     # endif
@@ -185,20 +182,20 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         boolList featureEdge(faceEdges.sizeOfRow(bfI), false);
 
         forAllRow(faceEdges, bfI, feI)
-            if( featureBndEdge[faceEdges(bfI, feI)] )
+            if (featureBndEdge[faceEdges(bfI, feI)])
                 featureEdge[feI] = true;
 
-        if( !help::areElementsInChain(featureEdge) )
+        if (!help::areElementsInChain(featureEdge))
         {
             ++nDecomposedFaces;
-            decomposeFace[nIntFaces+bfI] = true;
-            decomposeCell_[owner[nIntFaces+bfI]] = true;
+            decomposeFace[nIntFaces + bfI] = true;
+            decomposeCell_[owner[nIntFaces + bfI]] = true;
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- decompose processor faces having more than one feature edge
+        // decompose processor faces having more than one feature edge
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh.procBoundaries();
 
@@ -211,7 +208,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             # pragma omp parallel for schedule(guided) \
             reduction(+ : nDecomposedFaces)
             # endif
-            for(label faceI=start;faceI<end;++faceI)
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 const face& f = faces[faceI];
 
@@ -223,21 +220,21 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
                     const label bs = bp[e[0]];
                     const label be = bp[e[1]];
-                    if( (bs != -1) && (be != -1) )
+                    if ((bs != -1) && (be != -1))
                     {
-                        //- check if this edge is a boundary edge
-                        //- and a feature edge
+                        // check if this edge is a boundary edge
+                        // and a feature edge
                         forAllRow(pointEdges, bs, i)
                         {
                             const label beI = pointEdges(bs, i);
 
-                            if( (edges[beI] == e) && featureBndEdge[beI] )
+                            if ((edges[beI] == e) && featureBndEdge[beI])
                                 ++nFeatureEdges;
                         }
                     }
                 }
 
-                if( nFeatureEdges > 1 )
+                if (nFeatureEdges > 1)
                 {
                     ++nDecomposedFaces;
                     decomposeFace[faceI] = true;
@@ -249,9 +246,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
     reduce(nDecomposedFaces, sumOp<label>());
 
-    if( nDecomposedFaces != 0 )
+    if (nDecomposedFaces != 0)
     {
-        Info << nDecomposedFaces << " faces decomposed into triangles" << endl;
+        Info<< nDecomposedFaces << " faces decomposed into triangles" << endl;
 
         decompose_ = true;
         decomposeFaces df(mesh_);
@@ -261,8 +258,9 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
         mesh_.clearAddressingData();
     }
 
-    Info << "Finished decomposing problematic faces" << endl;
+    Info<< "Finished decomposing problematic faces" << endl;
 }
+
 
 void correctEdgesBetweenPatches::decomposeConcaveFaces()
 {
@@ -274,11 +272,11 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
     const VRWGraph& bpEdges = mse.boundaryPointEdges();
     const labelList& facePatch = mse.boundaryFacePatches();
 
-    //- classify edges at the surface
+    // classify edges at the surface
     meshSurfaceCheckEdgeTypes edgeChecker(mse);
     const List<direction>& edgeType = edgeChecker.edgeTypes();
 
-    //- find concave points
+    // find concave points
     boolList concavePoint(bPoints.size(), false);
 
     labelList edgeInPatch(edges.size(), -1);
@@ -292,15 +290,15 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
     # endif
     forAll(edgeType, eI)
     {
-        if( edgeType[eI] & meshSurfaceCheckEdgeTypes::PATCHEDGE )
+        if (edgeType[eI] & meshSurfaceCheckEdgeTypes::PATCHEDGE)
         {
-            if( edgeFaces.sizeOfRow(eI) )
+            if (edgeFaces.sizeOfRow(eI))
                 edgeInPatch[eI] = facePatch[edgeFaces(eI, 0)];
 
             continue;
         }
 
-        if( edgeType[eI] & problematicTypes)
+        if (edgeType[eI] & problematicTypes)
         {
             const edge& e = edges[eI];
 
@@ -309,7 +307,7 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal =
             mse.globalToLocalBndEdgeAddressing();
@@ -323,14 +321,14 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         {
             const label beI = it();
 
-            if( edgeInPatch[beI] < 0 )
+            if (edgeInPatch[beI] < 0)
                 continue;
 
             forAllRow(beAtProcs, beI, i)
             {
                 const label neiProc = beAtProcs(beI, i);
 
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
                     continue;
 
                 labelLongList& dts = exchangeData[neiProc];
@@ -343,26 +341,24 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
-        for(label i=0;i<receivedData.size();)
+        for (label i = 0; i < receivedData.size(); )
         {
             const label beI = globalToLocal[receivedData[i++]];
             const label patchI = receivedData[i++];
-            if( edgeInPatch[beI] == -1 )
+            if (edgeInPatch[beI] == -1)
             {
                 edgeInPatch[beI] = patchI;
             }
-            else if( edgeInPatch[beI] != patchI )
+            else if (edgeInPatch[beI] != patchI)
             {
-                FatalErrorIn
-                (
-                    "void correctEdgesBetweenPatches::decomposeConcaveFaces()"
-                ) << "Invalid patch!" << abort(FatalError);
+                FatalErrorInFunction
+                    << "Invalid patch!" << abort(FatalError);
             }
         }
     }
 
-    //- decompose internal faces attached to concave vertices which have two
-    //- or more edges at the boundary
+    // decompose internal faces attached to concave vertices which have two
+    // or more edges at the boundary
     const faceListPMG& faces = mesh_.faces();
     const labelList& owner = mesh_.owner();
     const labelList& neighbour = mesh_.neighbour();
@@ -374,7 +370,7 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
     # pragma omp parallel for schedule(dynamic, 100) \
     reduction(+ : nDecomposed)
     # endif
-    for(label faceI=0;faceI<mesh_.nInternalFaces();++faceI)
+    for (label faceI = 0; faceI < mesh_.nInternalFaces(); ++faceI)
     {
         const face& f = faces[faceI];
 
@@ -386,14 +382,14 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         {
             const label bpI = bp[f[pI]];
 
-            if( bpI < 0 )
+            if (bpI < 0)
                 continue;
 
-            if( concavePoint[bpI] )
+            if (concavePoint[bpI])
                 hasConcave = true;
 
-            //- points is at a concave edge
-            //- count the number of boundary edge
+            // points is at a concave edge
+            // count the number of boundary edge
             const edge e = f.faceEdge(pI);
 
             forAllRow(bpEdges, bpI, bpeI)
@@ -401,7 +397,7 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
                 const label beI = bpEdges(bpI, bpeI);
                 const edge& ee = edges[beI];
 
-                if( e == ee )
+                if (e == ee)
                 {
                     ++nBndEdges;
                     bndEdgePatches.appendIfNotIn(edgeInPatch[beI]);
@@ -410,10 +406,10 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
             }
         }
 
-        if( hasConcave && (nBndEdges > 1) && (bndEdgePatches.size() > 1) )
+        if (hasConcave && (nBndEdges > 1) && (bndEdgePatches.size() > 1))
         {
-            //- the face has two or more edges at the boundary
-            //- Hence, it is marked for decomposition
+            // the face has two or more edges at the boundary
+            // Hence, it is marked for decomposition
             decomposeFace[faceI] = true;
 
             decomposeCell_[owner[faceI]] = true;
@@ -423,10 +419,10 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         }
     }
 
-    //- finally, perform decomposition of marked faces
-    if( returnReduce(nDecomposed, sumOp<label>()) != 0 )
+    // finally, perform decomposition of marked faces
+    if (returnReduce(nDecomposed, sumOp<label>()) != 0)
     {
-        Info << "Decomposing " << nDecomposed << " internal faces" << endl;
+        Info<< "Decomposing " << nDecomposed << " internal faces" << endl;
         decomposeFaces(mesh_).decomposeMeshFaces(decomposeFace);
 
         decompose_ = true;
@@ -436,9 +432,10 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
     }
 }
 
+
 void correctEdgesBetweenPatches::patchCorrection()
 {
-    Info << "Performing patch correction" << endl;
+    Info<< "Performing patch correction" << endl;
 
     const meshSurfaceEngine& mse = meshSurface();
 
@@ -452,20 +449,20 @@ void correctEdgesBetweenPatches::patchCorrection()
     const labelList& boundaryFaceOwners = mse.faceOwners();
     const labelList& facePatches = mse.boundaryFacePatches();
 
-    //- set flag 1 to corner vertices, flag 2 to edge vertices
+    // set flag 1 to corner vertices, flag 2 to edge vertices
     List<direction> nodeType(bPoints.size(), direction(0));
 
-    //- set corner flags
+    // set corner flags
     const labelHashSet& corners = surfacePartitioner.corners();
     forAllConstIter(labelHashSet, corners, it)
         nodeType[it.key()] |= 1;
 
-    //- set flgs to edge vertices
+    // set flgs to edge vertices
     const labelHashSet& edgePoints = surfacePartitioner.edgePoints();
     forAllConstIter(labelHashSet, edgePoints, it)
         nodeType[it.key()] |= 2;
 
-    //- set flags for feature edges
+    // set flags for feature edges
     boolList featureEdge(edgeFaces.size(), false);
 
     # ifdef USE_OMP
@@ -473,24 +470,24 @@ void correctEdgesBetweenPatches::patchCorrection()
     # endif
     forAll(edgeFaces, eI)
     {
-        if( edgeFaces.sizeOfRow(eI) != 2 )
+        if (edgeFaces.sizeOfRow(eI) != 2)
             continue;
 
-        if( facePatches[edgeFaces(eI, 0)] != facePatches[edgeFaces(eI, 1)] )
+        if (facePatches[edgeFaces(eI, 0)] != facePatches[edgeFaces(eI, 1)])
             featureEdge[eI] = true;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- set flags for edges at parallel boundaries
+        // set flags for edges at parallel boundaries
         const Map<label>& otherProcPatch = mse.otherEdgeFacePatch();
 
         forAllConstIter(Map<label>, otherProcPatch, it)
-            if( facePatches[edgeFaces(it.key(), 0)] != it() )
+            if (facePatches[edgeFaces(it.key(), 0)] != it())
                 featureEdge[it.key()] = true;
     }
 
-    //- decompose bad faces into triangles
+    // decompose bad faces into triangles
     newBoundaryFaces_.clear();
     newBoundaryOwners_.clear();
     newBoundaryPatches_.clear();
@@ -505,20 +502,21 @@ void correctEdgesBetweenPatches::patchCorrection()
 
         forAll(bf, i)
         {
-            if(
-                (nodeType[bp[bf[i]]] == direction(2)) &&
-                featureEdge[faceEdges(bfI, i)] &&
-                featureEdge[faceEdges(bfI, bf.rcIndex(i))]
+            if
+            (
+                (nodeType[bp[bf[i]]] == direction(2))
+             && featureEdge[faceEdges(bfI, i)]
+             && featureEdge[faceEdges(bfI, bf.rcIndex(i))]
             )
             {
-                if( bf.size() > 4 )
+                if (bf.size() > 4)
                 {
                     store = false;
                     ++nDecomposedFaces;
                     decomposeCell_[boundaryFaceOwners[bfI]] = true;
                     decompose_ = true;
 
-                    //- decompose into triangles
+                    // decompose into triangles
                     const point p = bf.centre(mesh_.points());
                     triF[2] = mesh_.points().size();
                     mesh_.points().append(p);
@@ -535,23 +533,23 @@ void correctEdgesBetweenPatches::patchCorrection()
 
                     break;
                 }
-                else if( bf.size() == 4 )
+                else if (bf.size() == 4)
                 {
                     store = false;
                     ++nDecomposedFaces;
                     decomposeCell_[boundaryFaceOwners[bfI]] = true;
                     decompose_ = true;
 
-                    //- decompose the quad into 2 triangles
+                    // decompose the quad into 2 triangles
                     triF[0] = bf[i];
 
                     triF[1] = bf.nextLabel(i);
-                    triF[2] = bf[(i+2)%4];
+                    triF[2] = bf[(i + 2)%4];
                     newBoundaryFaces_.appendList(triF);
                     newBoundaryOwners_.append(boundaryFaceOwners[bfI]);
                     newBoundaryPatches_.append(facePatches[bfI]);
 
-                    triF[1] = bf[(i+2)%4];
+                    triF[1] = bf[(i + 2)%4];
                     triF[2] = bf.prevLabel(i);
                     newBoundaryFaces_.appendList(triF);
                     newBoundaryOwners_.append(boundaryFaceOwners[bfI]);
@@ -562,9 +560,9 @@ void correctEdgesBetweenPatches::patchCorrection()
             }
         }
 
-        if( store )
+        if (store)
         {
-            //- face has not been altered
+            // face has not been altered
             newBoundaryFaces_.appendList(bf);
             newBoundaryOwners_.append(boundaryFaceOwners[bfI]);
             newBoundaryPatches_.append(facePatches[bfI]);
@@ -573,15 +571,16 @@ void correctEdgesBetweenPatches::patchCorrection()
 
     reduce(decompose_, maxOp<bool>());
 
-    if( returnReduce(nDecomposedFaces, sumOp<label>()) != 0 )
+    if (returnReduce(nDecomposedFaces, sumOp<label>()) != 0)
     {
         replaceBoundary();
         clearMeshSurface();
         mesh_.clearAddressingData();
     }
 
-    Info << "Finished with patch correction" << endl;
+    Info<< "Finished with patch correction" << endl;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

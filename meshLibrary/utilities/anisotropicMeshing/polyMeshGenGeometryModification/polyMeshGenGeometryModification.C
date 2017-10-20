@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -33,7 +33,7 @@ namespace Foam
 
 void polyMeshGenGeometryModification::checkModification()
 {
-    if( meshDict_.found("anisotropicSources") )
+    if (meshDict_.found("anisotropicSources"))
     {
         modificationActive_ = true;
 
@@ -43,6 +43,7 @@ void polyMeshGenGeometryModification::checkModification()
         coordinateModifierPtr_ = new coordinateModifier(anisotropicDict);
     }
 }
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -54,16 +55,18 @@ polyMeshGenGeometryModification::polyMeshGenGeometryModification
 :
     mesh_(mesh),
     meshDict_(meshDict),
-    coordinateModifierPtr_(NULL),
+    coordinateModifierPtr_(nullptr),
     modificationActive_(false)
 {
     checkModification();
 }
 
+
 polyMeshGenGeometryModification::~polyMeshGenGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,15 +75,13 @@ bool polyMeshGenGeometryModification::activeModification() const
     return modificationActive_;
 }
 
+
 void polyMeshGenGeometryModification::modifyGeometry()
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const triSurf* polyMeshGenGeometryModification"
-            "::modifyGeometry() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
         return;
     }
@@ -91,18 +92,18 @@ void polyMeshGenGeometryModification::modifyGeometry()
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         pts[pointI] = coordinateModifierPtr_->modifiedPoint(pts[pointI]);
+    }
 }
+
 
 void polyMeshGenGeometryModification::revertGeometryModification()
 {
-    if( !modificationActive_ )
+    if (!modificationActive_)
     {
-        WarningIn
-        (
-            "const triSurf* polyMeshGenGeometryModification"
-            "::revertGeometryModification() const"
-        ) << "Modification is not active" << endl;
+        WarningInFunction
+            << "Modification is not active" << endl;
 
         return;
     }
@@ -113,9 +114,12 @@ void polyMeshGenGeometryModification::revertGeometryModification()
     # pragma omp parallel for schedule(dynamic, 50)
     # endif
     forAll(pts, pointI)
+    {
         pts[pointI] =
             coordinateModifierPtr_->backwardModifiedPoint(pts[pointI]);
+    }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

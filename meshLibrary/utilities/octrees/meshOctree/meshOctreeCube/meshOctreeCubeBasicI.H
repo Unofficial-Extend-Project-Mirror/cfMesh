@@ -6,23 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
-
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,6 +39,7 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic()
     procNo_(ALLPROCS)
 {}
 
+
 inline meshOctreeCubeBasic::meshOctreeCubeBasic
 (
     const meshOctreeCubeCoordinates& cc
@@ -51,6 +49,7 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic
     cubeType_(UNKNOWN),
     procNo_(ALLPROCS)
 {}
+
 
 inline meshOctreeCubeBasic::meshOctreeCubeBasic
 (
@@ -64,33 +63,38 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic
     procNo_(procNo)
 {}
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Member functions
+
+// * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * * //
 
 inline void meshOctreeCubeBasic::setCubeType(const direction ct)
 {
     cubeType_ = ct;
 }
 
+
 inline direction meshOctreeCubeBasic::cubeType() const
 {
     return cubeType_;
 }
+
 
 inline short meshOctreeCubeBasic::procNo() const
 {
     return procNo_;
 }
 
+
 inline void meshOctreeCubeBasic::setProcNo(const short n)
 {
     procNo_ = n;
 }
 
+
 inline const meshOctreeCubeCoordinates& meshOctreeCubeBasic::coordinates() const
 {
     return *this;
 }
+
 
 inline void meshOctreeCubeBasic::operator=(const meshOctreeCubeBasic& ocb)
 {
@@ -100,6 +104,7 @@ inline void meshOctreeCubeBasic::operator=(const meshOctreeCubeBasic& ocb)
     static_cast<meshOctreeCubeCoordinates&>(*this) =
         static_cast<const meshOctreeCubeCoordinates&>(ocb);
 }
+
 
 inline Ostream& operator<<
 (
@@ -116,10 +121,11 @@ inline Ostream& operator<<
     os << token::END_LIST;
 
     // Check state of Ostream
-    os.check("operator<<(Ostream&, const meshOctreeCubeBasic");
+    os.check(FUNCTION_NAME);
 
     return os;
 }
+
 
 inline Istream& operator>>
 (
@@ -141,10 +147,11 @@ inline Istream& operator>>
     is.readEnd("meshOctreeCubeBasic");
 
     // Check state of Istream
-    is.check("operator>>(Istream&, meshOctreeCubeBasic");
+    is.check(FUNCTION_NAME);
 
     return is;
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

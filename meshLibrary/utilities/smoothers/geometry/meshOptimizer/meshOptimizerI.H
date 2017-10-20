@@ -6,23 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
-
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,7 +45,7 @@ inline void meshOptimizer::lockCells(const labelListType& l)
             lockedFace[c[fI]] = true;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
@@ -58,11 +55,11 @@ inline void meshOptimizer::lockCells(const labelListType& l)
             labelLongList dataToSend;
 
             const label start = procBoundaries[patchI].patchStart();
-            const label end = start+procBoundaries[patchI].patchSize();
+            const label end = start + procBoundaries[patchI].patchSize();
 
-            for(label faceI=start;faceI<end;++faceI)
-                if( lockedFace[faceI] )
-                    dataToSend.append(faceI-start);
+            for (label faceI = start; faceI < end; ++faceI)
+                if (lockedFace[faceI])
+                    dataToSend.append(faceI - start);
 
             OPstream toOtherProc
             (
@@ -88,7 +85,7 @@ inline void meshOptimizer::lockCells(const labelListType& l)
             fromOtherProc >> receivedData;
 
             forAll(receivedData, i)
-                lockedFace[start+receivedData[i]];
+                lockedFace[start + receivedData[i]];
         }
     }
 
@@ -96,7 +93,7 @@ inline void meshOptimizer::lockCells(const labelListType& l)
     const faceListPMG& faces = mesh_.faces();
     forAll(lockedFace, faceI)
     {
-        if( lockedFace[faceI] )
+        if (lockedFace[faceI])
         {
             lockedFaces_.append(faceI);
 
@@ -114,10 +111,12 @@ inline void meshOptimizer::lockCells(const labelListType& l)
 
     const label lockPointsI = mesh_.addPointSubset("lockedPoints");
     forAll(vertexLocation_, pointI)
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             mesh_.addPointToSubset(lockPointsI, pointI);
     # endif
+
 }
+
 
 template<class labelListType>
 inline void meshOptimizer::lockFaces(const labelListType& lf)
@@ -128,7 +127,7 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
         lockedFace[lf[lfI]] = true;
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
@@ -138,11 +137,11 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
             labelLongList dataToSend;
 
             const label start = procBoundaries[patchI].patchStart();
-            const label end = start+procBoundaries[patchI].patchSize();
+            const label end = start + procBoundaries[patchI].patchSize();
 
-            for(label faceI=start;faceI<end;++faceI)
-                if( lockedFace[faceI] )
-                    dataToSend.append(faceI-start);
+            for (label faceI = start; faceI < end; ++faceI)
+                if (lockedFace[faceI])
+                    dataToSend.append(faceI - start);
 
             OPstream toOtherProc
             (
@@ -168,7 +167,7 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
             fromOtherProc >> receivedData;
 
             forAll(receivedData, i)
-                lockedFace[start+receivedData[i]];
+                lockedFace[start + receivedData[i]];
         }
     }
 
@@ -176,7 +175,7 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
     const faceListPMG& faces = mesh_.faces();
     forAll(lockedFace, faceI)
     {
-        if( lockedFace[faceI] )
+        if (lockedFace[faceI])
         {
             lockedFaces_.append(faceI);
 
@@ -194,10 +193,12 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
 
     const label lockPointsI = mesh_.addPointSubset("lockedPoints");
     forAll(vertexLocation_, pointI)
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             mesh_.addPointToSubset(lockPointsI, pointI);
     # endif
+
 }
+
 
 template<class labelListType>
 inline void meshOptimizer::lockPoints(const labelListType& lp)
@@ -205,7 +206,7 @@ inline void meshOptimizer::lockPoints(const labelListType& lp)
     forAll(lp, lpI)
         vertexLocation_[lp[lpI]] |= LOCKED;
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
@@ -216,18 +217,18 @@ inline void meshOptimizer::lockPoints(const labelListType& lp)
             labelLongList dataToSend;
 
             const label start = procBoundaries[patchI].patchStart();
-            const label end = start+procBoundaries[patchI].patchSize();
+            const label end = start + procBoundaries[patchI].patchSize();
 
-            for(label faceI=start;faceI<end;++faceI)
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 const face& f = faces[faceI];
 
                 forAll(f, pI)
                 {
-                    if( vertexLocation_[pI] & LOCKED )
+                    if (vertexLocation_[pI] & LOCKED)
                     {
                         // send the face lable and the location in the face
-                        dataToSend.append(faceI-start);
+                        dataToSend.append(faceI - start);
                         dataToSend.append((f.size()-pI)%f.size());
                     }
                 }
@@ -257,9 +258,9 @@ inline void meshOptimizer::lockPoints(const labelListType& lp)
             fromOtherProc >> receivedData;
 
             label counter(0);
-            while( counter < receivedData.size() )
+            while (counter < receivedData.size())
             {
-                const face& f = faces[start+receivedData[counter++]];
+                const face& f = faces[start + receivedData[counter++]];
                 vertexLocation_[f[receivedData[counter++]]] |= LOCKED;
             }
         }
@@ -268,10 +269,11 @@ inline void meshOptimizer::lockPoints(const labelListType& lp)
     # ifdef DEBUGSmoothing
     const label lockPointsI = mesh_.addPointSubset("lockedPoints");
     forAll(vertexLocation_, pointI)
-        if( vertexLocation_[pointI] & LOCKED )
+        if (vertexLocation_[pointI] & LOCKED)
             mesh_.addPointToSubset(lockPointsI, pointI);
     # endif
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

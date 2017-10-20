@@ -6,20 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Scales the mesh into other units.
@@ -43,15 +43,15 @@ int main(int argc, char *argv[])
 
     const scalar scalingFactor(help::textToScalar(args.args()[1]));
 
-    Info << "Scaling mesh vertices by a factor " << scalingFactor << endl;
+    Info<< "Scaling mesh vertices by a factor " << scalingFactor << endl;
 
-    //- read the mesh from disk
+    // read the mesh from disk
     polyMeshGen pmg(runTime);
 
-    Info << "Reading mesh" << endl;
+    Info<< "Reading mesh" << endl;
     pmg.read();
 
-    //- scale the points
+    // scale the points
     pointFieldPMG& pts = pmg.points();
 
     # ifdef USE_OMP
@@ -60,11 +60,11 @@ int main(int argc, char *argv[])
     forAll(pts, pointI)
         pts[pointI] *= scalingFactor;
 
-    //- write the mesh back on disk
-    Info << "Writting scaled mesh" << endl;
+    // write the mesh back on disk
+    Info<< "Writting scaled mesh" << endl;
     pmg.write();
 
-    Info << "End\n" << endl;
+    Info<< "End\n" << endl;
 
     return 0;
 }

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    partTetMesh
+    Foam::partTetMesh
 
 Description
     Mesh smoothing without any topological changes
@@ -54,12 +54,13 @@ class polyMeshGen;
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
-                        Class partTetMesh Declaration
+                         Class partTetMesh Declaration
 \*---------------------------------------------------------------------------*/
 
 class partTetMesh
 {
     // Private data
+
         //- reference to the original mesh
         polyMeshGen& origMesh_;
 
@@ -84,7 +85,9 @@ class partTetMesh
         //- boundary point ordering for parallel runs
         mutable VRWGraph* boundaryPointsOrderPtr_;
 
+
     // Private data for parallel runs
+
         //- global point label
         mutable labelLongList* globalPointLabelPtr_;
 
@@ -102,6 +105,7 @@ class partTetMesh
 
         //- labels of points serving as buffer layers on other processors
         mutable labelLongList* pAtBufferLayersPtr_;
+
 
     // Private member functions
 
@@ -129,9 +133,11 @@ class partTetMesh
         //- create order of boundary points for parallel execution
         void createBOUNDARYPointsOrdering() const;
 
+
 public:
 
     // Constructors
+
         //- construct from polyMeshGen and locked points
         partTetMesh(polyMeshGen& mesh, const labelLongList& lockedPoints);
 
@@ -154,6 +160,7 @@ public:
             const direction additionalLayers = 0
         );
 
+
     // Enumerators
 
         enum vertexTypes
@@ -167,10 +174,13 @@ public:
             LOCKED = 32
         };
 
-    // Destructor
-        ~partTetMesh();
+
+    //- Destructor
+    ~partTetMesh();
+
 
     // Member functions
+
         //- access to points, tets and other data
         inline const LongList<point>& points() const
         {
@@ -197,7 +207,9 @@ public:
             return nodeLabelInOrigMesh_;
         }
 
+
     // Access to point ordering for Gauss-Seidel type of iteration
+
         //- return vertex ordering which can be executed in parallel
         //- the points in each row can be treated in parallel
         //- make sure that points added to different rows of this graph are
@@ -207,10 +219,12 @@ public:
         //- return vertex ordering for boundary points
         const VRWGraph& boundaryPointOrdering() const;
 
+
     // Access to parallel data
+
         inline const labelLongList& globalPointLabel() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *globalPointLabelPtr_;
@@ -218,7 +232,7 @@ public:
 
         inline const VRWGraph& pointAtProcs() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *pAtProcsPtr_;
@@ -226,7 +240,7 @@ public:
 
         inline const Map<label>& globalToLocalPointAddressing() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *globalToLocalPointAddressingPtr_;
@@ -234,7 +248,7 @@ public:
 
         inline const DynList<label>& neiProcs() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *neiProcsPtr_;
@@ -242,7 +256,7 @@ public:
 
         inline const labelLongList& pointsAtProcessorBoundaries() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *pAtParallelBoundariesPtr_;
@@ -250,11 +264,12 @@ public:
 
         inline const labelLongList& bufferLayerPoints() const
         {
-            if( !Pstream::parRun() )
+            if (!Pstream::parRun())
                 FatalError << "This is a serial run" << abort(FatalError);
 
             return *pAtBufferLayersPtr_;
         }
+
 
     // Modifiers
 
@@ -263,10 +278,10 @@ public:
 
         //- move vertices to their new positions
         //- intended for SMP parallelisation
-        void updateVerticesSMP(const List<LongList<labelledPoint> >&);
+        void updateVerticesSMP(const List<LongList<labelledPoint>>&);
 
         //- updates the vertices of the original polyMeshGen
-        void updateOrigMesh(boolList* changedFacePtr = NULL);
+        void updateOrigMesh(boolList* changedFacePtr = nullptr);
 
         //- creates polyMeshGen from this partTetMesh
         void createPolyMesh(polyMeshGen& pmg) const;
@@ -276,9 +291,12 @@ public:
         void lockPoints(const labelListType& l)
         {
             forAll(l, pI)
+            {
                 smoothVertex_[l[pI]] |= LOCKED;
+            }
         }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    detectBoundaryLayers
+    Foam::detectBoundaryLayers
 
 Description
     Check the cells attached to the surface of the volume mesh and check
@@ -54,11 +54,13 @@ namespace Foam
 class meshSurfacePartitioner;
 
 /*---------------------------------------------------------------------------*\
-                Class detectBoundaryLayers Declaration
+                    Class detectBoundaryLayers Declaration
 \*---------------------------------------------------------------------------*/
 
 class detectBoundaryLayers
 {
+    // Private data
+
         //- Reference to the meshSurfacePartitioner
         const meshSurfacePartitioner& meshSurface_;
 
@@ -70,18 +72,20 @@ class detectBoundaryLayers
         labelList layerAtBndFace_;
 
         //- layer at a boundary patch
-        List<DynList<label> > layerAtPatch_;
+        List<DynList<label>> layerAtPatch_;
 
         //- hair edges found in the mesh
         edgeLongList hairEdges_;
 
-        //- hair edges at a boudary point
+        //- hair edges at a boundary point
         VRWGraph hairEdgesAtBoundaryPoint_;
 
         //- is it a 2D  mesh
         const bool is2DMesh_;
 
+
     // Private member functions
+
         //- analyse layers to check their topology
         void analyseLayers();
 
@@ -97,22 +101,23 @@ class detectBoundaryLayers
         //- Disallow bitwise assignment
         void operator=(const detectBoundaryLayers&);
 
+
 public:
 
-    // Constructors
+    //- Construct from meshSurfacePartitioner and a bool providing
+    //- information whether the mesh is a 2D mesh. The default is false.
+    detectBoundaryLayers
+    (
+        const meshSurfacePartitioner& meshSurface,
+        const bool is2DMesh = false
+    );
 
-        //- Construct from meshSurfacePartitioner and a bool providing
-        //- information whether the mesh is a 2D mesh. The default is false.
-        detectBoundaryLayers
-        (
-            const meshSurfacePartitioner& meshSurface,
-            const bool is2DMesh = false
-        );
+    //- Destructor
+    ~detectBoundaryLayers();
 
-    // Destructor
-        ~detectBoundaryLayers();
 
     // Public member functions
+
         //- return hair edges found in the detection process
         inline const edgeLongList& hairEdges() const
         {
@@ -137,6 +142,7 @@ public:
             return layerAtBndFace_;
         }
 };
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -62,7 +60,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
     const triSurf& surf = meshOctree_.surface();
     const geometricSurfacePatchList& surfPatches = surf.patches();
 
-    //- copy boundary faces and their owner face
+    // copy boundary faces and their owner face
     VRWGraph bndFaces;
     labelLongList origFaceLabel;
 
@@ -71,7 +69,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
         const label start = boundaries[patchI].patchStart();
         const label size = boundaries[patchI].patchSize();
 
-        for(label fI=0;fI<size;++fI)
+        for (label fI = 0; fI < size; ++fI)
         {
             const label faceI = start + fI;
             const face& bf = faces[faceI];
@@ -81,7 +79,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
         }
     }
 
-    //- project face centres onto their nearest location on the surface mesh
+    // project face centres onto their nearest location on the surface mesh
     wordList patchNames(surfPatches.size()+2);
     wordList patchTypes(surfPatches.size()+2);
     forAll(surfPatches, ptchI)
@@ -111,23 +109,23 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
 
         bndFaceOwner[bfI] = owner[faceI];
 
-        if( !activeFace[faceI] )
+        if (!activeFace[faceI])
         {
-            if( zMinPoint[f[0]] )
+            if (zMinPoint[f[0]])
             {
                 bndFacePatch[bfI] = bottomEmptyId;
             }
-            else if( zMaxPoint[f[0]] )
+            else if (zMaxPoint[f[0]])
             {
                 bndFacePatch[bfI] = topEmptyId;
             }
         }
         else
         {
-            //- this face is active
+            // this face is active
             const point c = f.centre(points);
 
-            //- find the patch index of the nearest location on the surface mesh
+            // find the patch index of the nearest location on the surface mesh
             point mapPoint;
             scalar distSq;
             label patchI, nt;
@@ -137,7 +135,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
         }
     }
 
-    //- replace the boundary
+    // replace the boundary
     polyMeshGenModifier meshModifier(mesh_);
 
     meshModifier.replaceBoundary
@@ -148,11 +146,12 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
         bndFacePatch
     );
 
-    //- set correct patch types
+    // set correct patch types
     PtrList<boundaryPatch>& modBnd = meshModifier.boundariesAccess();
     forAll(patchTypes, patchI)
         modBnd[patchI].patchType() = patchTypes[patchI];
 }
+
 
 void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
 {
@@ -163,6 +162,7 @@ void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
 
     mapper.mapVerticesOntoSurfacePatches();
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

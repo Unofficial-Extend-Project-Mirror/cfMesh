@@ -6,22 +6,20 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
-
-Description
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
@@ -49,17 +47,19 @@ namespace Foam
 
 void meshSurfaceEngine::calculateBoundaryFaces() const
 {
-    if( mesh_.boundaries().size() != 0 )
+    if (mesh_.boundaries().size() != 0)
     {
         const faceListPMG& faces = mesh_.faces();
         const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
         label nBoundaryFaces(0);
-        if( activePatch_ < 0 )
+        if (activePatch_ < 0)
         {
-            //- take all patches
+            // take all patches
             forAll(boundaries, patchI)
+            {
                 nBoundaryFaces += boundaries[patchI].patchSize();
+            }
 
             boundaryFacesPtr_ =
                 new faceList::subList
@@ -69,7 +69,7 @@ void meshSurfaceEngine::calculateBoundaryFaces() const
                     boundaries[0].patchStart()
                 );
         }
-        else if( activePatch_ < boundaries.size() )
+        else if (activePatch_ < boundaries.size())
         {
             nBoundaryFaces = boundaries[activePatch_].patchSize();
 
@@ -83,25 +83,22 @@ void meshSurfaceEngine::calculateBoundaryFaces() const
         }
         else
         {
-            FatalErrorIn
-            (
-                "void meshSurfaceEngine::calculateBoundaryFaces() const"
-            ) << "Cannot select boundary faces. Invalid patch index "
-              << activePatch_ << exit(FatalError);
+            FatalErrorInFunction
+                << "Cannot select boundary faces. Invalid patch index "
+                << activePatch_ << exit(FatalError);
         }
 
         reduce(nBoundaryFaces, sumOp<label>());
-        Info << "Found " << nBoundaryFaces << " boundary faces " << endl;
+        Info<< "Found " << nBoundaryFaces << " boundary faces " << endl;
     }
     else
     {
-        FatalErrorIn
-        (
-            "void meshSurfaceEngine::calculateBoundaryFaces() const"
-        ) << "Boundary faces are not at the end of the face list!"
+        FatalErrorInFunction
+            << "Boundary faces are not at the end of the face list!"
             << exit(FatalError);
     }
 }
+
 
 void meshSurfaceEngine::calculateBoundaryOwners() const
 {
@@ -109,8 +106,10 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
 
     const faceList::subList& boundaryFaces = this->boundaryFaces();
 
-    if( !boundaryFaceOwnersPtr_ )
-    boundaryFaceOwnersPtr_ = new labelList(boundaryFaces.size());
+    if (!boundaryFaceOwnersPtr_)
+    {
+        boundaryFaceOwnersPtr_ = new labelList(boundaryFaces.size());
+    }
 
     labelList& owners = *boundaryFaceOwnersPtr_;
 
@@ -120,15 +119,18 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
     # pragma omp parallel for schedule(static, 1)
     # endif
     forAll(boundaryFaces, fI)
-    owners[fI] = owner[start+fI];
+    owners[fI] = owner[start + fI];
 }
+
 
 void meshSurfaceEngine::calculateBoundaryNodes() const
 {
-    //- mark boundary points
+    // mark boundary points
     label pointI(0);
-    if( !bppPtr_ )
+    if (!bppPtr_)
+    {
         bppPtr_ = new labelList(mesh_.points().size(), -1);
+    }
     labelList& bp = *bppPtr_;
 
     const faceList::subList& boundaryFaces = this->boundaryFaces();
@@ -136,7 +138,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
     boolList isBndPoint(bp.size(), false);
 
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
     # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
     # endif
     forAll(boundaryFaces, bfI)
@@ -144,29 +146,33 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
         const face& bf = boundaryFaces[bfI];
 
         forAll(bf, pI)
+        {
             isBndPoint[bf[pI]] = true;
+        }
     }
 
     forAll(isBndPoint, pI)
     {
-        if( isBndPoint[pI] )
+        if (isBndPoint[pI])
+        {
             bp[pI] = pointI++;
+        }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const faceListPMG& faces = mesh_.faces();
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
-        //- exchange information with processors
-        //- this is need sometimes to find all nodes at the boundary
+        // exchange information with processors
+        // this is need sometimes to find all nodes at the boundary
         bool found;
         do
         {
             found = false;
 
-            //- send bnd nodes to other processor
+            // send bnd nodes to other processor
             forAll(procBoundaries, patchI)
             {
                 const label start = procBoundaries[patchI].patchStart();
@@ -174,20 +180,22 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
 
                 labelLongList dts;
                 labelHashSet addedPoint;
-                for(label faceI=start;faceI<end;++faceI)
+                for (label faceI = start; faceI < end; ++faceI)
                 {
                     const face& f = faces[faceI];
                     forAll(f, pI)
-                        if( (bp[f[pI]] != -1) && !addedPoint.found(f[pI]) )
+                    {
+                        if ((bp[f[pI]] != -1) && !addedPoint.found(f[pI]))
                         {
                             addedPoint.insert(f[pI]);
 
-                            //- data is sent as follows
-                            //- 1. local face label in patch
-                            //- 2. local node in face
-                            dts.append(faceI-start);
+                            // data is sent as follows
+                            // 1. local face label in patch
+                            // 2. local node in face
+                            dts.append(faceI - start);
                             dts.append((f.size() - pI) % f.size());
                         }
+                    }
                 }
 
                 OPstream toOtherProc
@@ -199,7 +207,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
                 toOtherProc << dts;
             }
 
-            //- receive data and update positions if needed
+            // receive data and update positions if needed
             forAll(procBoundaries, patchI)
             {
                 const label start = procBoundaries[patchI].patchStart();
@@ -212,14 +220,14 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
                 fromOtherProc >> receiveData;
 
                 label counter(0);
-                while( counter < receiveData.size() )
+                while (counter < receiveData.size())
                 {
                     const label fI = receiveData[counter++];
                     const label pI = receiveData[counter++];
 
-                    if( bp[faces[start+fI][pI]] == -1 )
+                    if (bp[faces[start + fI][pI]] == -1)
                     {
-                        bp[faces[start+fI][pI]] = pointI++;
+                        bp[faces[start + fI][pI]] = pointI++;
                         found = true;
                     }
                 }
@@ -227,25 +235,29 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
 
             reduce(found, maxOp<bool>());
 
-        } while( found );
+        } while (found);
     }
 
-    if( !boundaryPointsPtr_ )
+    if (!boundaryPointsPtr_)
+    {
         boundaryPointsPtr_ = new labelList();
-
+    }
     labelList& boundaryPoints = *boundaryPointsPtr_;
     boundaryPoints.setSize(pointI);
 
-    //- fill the boundaryPoints list
+    // fill the boundaryPoints list
     # ifdef USE_OMP
     # pragma omp parallel for num_threads(nThreads) schedule(static, 1)
     # endif
     forAll(bp, bpI)
     {
-        if( bp[bpI] != -1 )
+        if (bp[bpI] != -1)
+        {
             boundaryPoints[bp[bpI]] = bpI;
+        }
     }
 }
+
 
 void meshSurfaceEngine::calculateBoundaryFacePatches() const
 {
@@ -258,7 +270,7 @@ void meshSurfaceEngine::calculateBoundaryFacePatches() const
     forAll(boundaries, patchI)
     {
         const label nFaces = boundaries[patchI].patchSize();
-        for(label patchFaceI=0;patchFaceI<nFaces;++patchFaceI)
+        for (label patchFaceI = 0; patchFaceI < nFaces; ++patchFaceI)
         {
             facePatch[faceI] = patchI;
             ++faceI;
@@ -266,35 +278,42 @@ void meshSurfaceEngine::calculateBoundaryFacePatches() const
     }
 }
 
+
 void meshSurfaceEngine::calculatePointFaces() const
 {
-    //- fill pointFacesAddr
-    if( !pointFacesPtr_ )
+    // fill pointFacesAddr
+    if (!pointFacesPtr_)
+    {
         pointFacesPtr_ = new VRWGraph();
+    }
     VRWGraph& pointFacesAddr = *pointFacesPtr_;
 
-    if( !pointInFacePtr_ )
+    if (!pointInFacePtr_)
+    {
         pointInFacePtr_ = new VRWGraph();
+    }
     VRWGraph& pointInFaceAddr = *pointInFacePtr_;
 
     const labelList& bPoints = this->boundaryPoints();
     const faceList::subList& bFaces = this->boundaryFaces();
 
-    //- create boundary points
+    // create boundary points
     const labelList& bp = this->bp();
 
     labelLongList npf;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( bPoints.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (bPoints.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
 
     label minRow(INT_MAX), maxRow(0);
-    List<List<LongList<labelPair> > > dataForOtherThreads(nThreads);
+    List<List<LongList<labelPair>>> dataForOtherThreads(nThreads);
 
     # ifdef USE_OMP
     # pragma omp parallel num_threads(nThreads)
@@ -306,11 +325,11 @@ void meshSurfaceEngine::calculatePointFaces() const
         const label threadI(0);
         # endif
 
-        List<LongList<labelPair> >& dot = dataForOtherThreads[threadI];
+        List<LongList<labelPair>>& dot = dataForOtherThreads[threadI];
         dot.setSize(nThreads);
 
-        //- find min and max entry in the graph
-        //- they are used for assigning ranges of values local for each process
+        // find min and max entry in the graph
+        // they are used for assigning ranges of values local for each process
         label localMinRow(minRow), localMaxRow(0);
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -343,22 +362,23 @@ void meshSurfaceEngine::calculatePointFaces() const
         # pragma omp barrier
         # endif
 
-        //- initialise appearances
+        // initialise appearances
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
-        for(label i=0;i<maxRow;++i)
+        for (label i = 0; i < maxRow; ++i)
+        {
             npf[i] = 0;
-
+        }
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
         const label range = (maxRow - minRow) / nThreads + 1;
-        const label localMin = minRow + threadI * range;
+        const label localMin = minRow + threadI*range;
         const label localMax = Foam::min(localMin + range, maxRow);
 
-        //- find the number of appearances of each element in the original graph
+        // find the number of appearances of each element in the original graph
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -372,7 +392,7 @@ void meshSurfaceEngine::calculatePointFaces() const
 
                 const label threadNo = (bpI - minRow) / range;
 
-                if( threadNo == threadI )
+                if (threadNo == threadI)
                 {
                     ++npf[bpI];
                 }
@@ -387,21 +407,23 @@ void meshSurfaceEngine::calculatePointFaces() const
         # pragma omp barrier
         # endif
 
-        //- count the appearances which are not local to the processor
-        for(label i=0;i<nThreads;++i)
+        // count the appearances which are not local to the processor
+        for (label i = 0; i < nThreads; ++i)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
 
             forAll(data, j)
+            {
                 ++npf[data[j].first()];
+            }
         }
 
         # ifdef USE_OMP
         # pragma omp barrier
         # endif
 
-        //- allocate graph
+        // allocate graph
         # ifdef USE_OMP
         # pragma omp master
         # endif
@@ -414,12 +436,14 @@ void meshSurfaceEngine::calculatePointFaces() const
         # pragma omp barrier
         # endif
 
-        for(label i=localMin;i<localMax;++i)
+        for (label i = localMin; i < localMax; ++i)
+        {
             npf[i] = 0;
+        }
 
-        //- start filling reverse addressing graph
-        //- update data from processors with smaller labels
-        for(label i=0;i<threadI;++i)
+        // start filling reverse addressing graph
+        // update data from processors with smaller labels
+        for (label i = 0; i < threadI; ++i)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
@@ -437,7 +461,7 @@ void meshSurfaceEngine::calculatePointFaces() const
             }
         }
 
-        //- update data local to the processor
+        // update data local to the processor
         # ifdef USE_OMP
         # pragma omp for schedule(static)
         # endif
@@ -449,7 +473,7 @@ void meshSurfaceEngine::calculatePointFaces() const
             {
                 const label bpI = bp[bf[pI]];
 
-                if( (bpI >= localMin) && (bpI < localMax) )
+                if ((bpI >= localMin) && (bpI < localMax))
                 {
                     pointInFaceAddr(bpI, npf[bpI]) = pI;
                     pointFacesAddr(bpI, npf[bpI]++) = bfI;
@@ -457,8 +481,8 @@ void meshSurfaceEngine::calculatePointFaces() const
             }
         }
 
-        //- update data from the processors with higher labels
-        for(label i=threadI+1;i<nThreads;++i)
+        // update data from the processors with higher labels
+        for (label i = threadI + 1; i < nThreads; ++i)
         {
             const LongList<labelPair>& data =
                 dataForOtherThreads[i][threadI];
@@ -481,17 +505,20 @@ void meshSurfaceEngine::calculatePointFaces() const
     pointInFaceAddr.setSize(bPoints.size());
 }
 
+
 void meshSurfaceEngine::calculatePointPatches() const
 {
-    if( !pointPatchesPtr_ )
+    if (!pointPatchesPtr_)
+    {
         pointPatchesPtr_ = new VRWGraph();
+    }
     VRWGraph& pPatches = *pointPatchesPtr_;
 
     const labelList& facePatch = boundaryFacePatches();
     const VRWGraph& pFaces = pointFaces();
 
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
     # endif
 
     labelList npPatches(pFaces.size());
@@ -504,7 +531,9 @@ void meshSurfaceEngine::calculatePointPatches() const
         # pragma omp for schedule(static)
         # endif
         forAll(npPatches, i)
+        {
             npPatches[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -513,7 +542,9 @@ void meshSurfaceEngine::calculatePointPatches() const
         {
             DynList<label> pf;
             forAllRow(pFaces, bpI, pfI)
+            {
                 pf.appendIfNotIn(facePatch[pFaces(bpI, pfI)]);
+            }
 
             npPatches[bpI] = pf.size();
         }
@@ -534,13 +565,15 @@ void meshSurfaceEngine::calculatePointPatches() const
         {
             DynList<label> pf;
             forAllRow(pFaces, bpI, pfI)
+            {
                 pf.appendIfNotIn(facePatch[pFaces(bpI, pfI)]);
+            }
 
             pPatches.setRow(bpI, pf);
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const labelList& globalPointLabel = globalBoundaryPointLabel();
         const VRWGraph& bpAtProcs = this->bpAtProcs();
@@ -555,10 +588,12 @@ void meshSurfaceEngine::calculatePointPatches() const
             forAllRow(bpAtProcs, bpI, procI)
             {
                 const label neiProc = bpAtProcs(bpI, procI);
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
+                {
                     continue;
+                }
 
-                if( exchangeData.find(neiProc) == exchangeData.end() )
+                if (exchangeData.find(neiProc) == exchangeData.end())
                 {
                     exchangeData.insert
                     (
@@ -568,37 +603,44 @@ void meshSurfaceEngine::calculatePointPatches() const
 
                 labelLongList& dataToSend = exchangeData[neiProc];
 
-                //- prepare data which will be sent
-                //- data is sent as follows
-                //- 1. global point label
-                //- 2. number of local patches for point
-                //- 3. patch labels for a given point
+                // prepare data which will be sent
+                // data is sent as follows
+                // 1. global point label
+                // 2. number of local patches for point
+                // 3. patch labels for a given point
                 dataToSend.append(globalPointLabel[bpI]);
                 dataToSend.append(pPatches.sizeOfRow(bpI));
                 forAllRow(pPatches, bpI, patchI)
+                {
                     dataToSend.append(pPatches(bpI, patchI));
+                }
             }
         }
 
-        //- exchange data with other processors
+        // exchange data with other processors
         labelLongList receivedData;
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             const label nPatches = receivedData[counter++];
-            for(label i=0;i<nPatches;++i)
+            for (label i = 0; i < nPatches; ++i)
+            {
                 pPatches.appendIfNotIn(bpI, receivedData[counter++]);
+            }
         }
     }
 }
 
+
 void meshSurfaceEngine::calculatePointPoints() const
 {
-    if( !pointPointsPtr_ )
+    if (!pointPointsPtr_)
+    {
         pointPointsPtr_ = new VRWGraph();
+    }
 
     VRWGraph& pointPoints = *pointPointsPtr_;
 
@@ -608,7 +650,7 @@ void meshSurfaceEngine::calculatePointPoints() const
     const labelList& bp = this->bp();
 
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
     # endif
 
     labelList npp(boundaryPoints.size());
@@ -621,7 +663,9 @@ void meshSurfaceEngine::calculatePointPoints() const
         # pragma omp for schedule(static)
         # endif
         forAll(npp, i)
+        {
             npp[i] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -673,12 +717,12 @@ void meshSurfaceEngine::calculatePointPoints() const
         }
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
-        //- this is needed to make the connection matrix symmetric
-        //- on all processors. In some cases the points on a given processor
-        //- may not be connected because of a single layer of faces on some
-        //- other processor. P0, P0 | P1 | P0 P0
+        // this is needed to make the connection matrix symmetric
+        // on all processors. In some cases the points on a given processor
+        // may not be connected because of a single layer of faces on some
+        // other processor. P0, P0 | P1 | P0 P0
         const labelList& globalPointLabel = this->globalBoundaryPointLabel();
         const Map<label>& globalToLocal =
             this->globalToLocalBndPointAddressing();
@@ -693,26 +737,37 @@ void meshSurfaceEngine::calculatePointPoints() const
             forAllRow(pointPoints, bpI, j)
             {
                 const label bpJ = pointPoints(bpI, j);
-                if( bpAtProcs.sizeOfRow(bpJ) != 0 )
+                if (bpAtProcs.sizeOfRow(bpJ) != 0)
+                {
                     neiToSend.append(bpJ);
+                }
             }
 
             forAllRow(bpAtProcs, bpI, procI)
             {
                 const label neiProc = bpAtProcs(bpI, procI);
-                if( neiProc == Pstream::myProcNo() )
+                if (neiProc == Pstream::myProcNo())
+                {
                     continue;
+                }
 
-                if( exchangeData.find(neiProc) == exchangeData.end() )
-                    exchangeData.insert(std::make_pair(neiProc,labelLongList()));
+                if (exchangeData.find(neiProc) == exchangeData.end())
+                {
+                    exchangeData.insert
+                    (
+                        std::make_pair(neiProc, labelLongList())
+                    );
+                }
 
-                if( neiToSend.size() != 0 )
+                if (neiToSend.size() != 0)
                 {
                     labelLongList& dts = exchangeData[neiProc];
                     dts.append(globalPointLabel[bpI]);
                     dts.append(neiToSend.size());
                     forAll(neiToSend, i)
+                    {
                         dts.append(globalPointLabel[neiToSend[i]]);
+                    }
                 }
             }
         }
@@ -721,19 +776,22 @@ void meshSurfaceEngine::calculatePointPoints() const
         help::exchangeMap(exchangeData, receivedData);
 
         label counter(0);
-        while( counter < receivedData.size() )
+        while (counter < receivedData.size())
         {
             const label bpI = globalToLocal[receivedData[counter++]];
             const label size = receivedData[counter++];
-            for(label i=0;i<size;++i)
+            for (label i = 0; i < size; ++i)
             {
                 const label gpI = receivedData[counter++];
-                if( globalToLocal.found(gpI) )
+                if (globalToLocal.found(gpI))
+                {
                     pointPoints.appendIfNotIn(bpI, globalToLocal[gpI]);
+                }
             }
         }
     }
 }
+
 
 void meshSurfaceEngine::calculatePointNormals() const
 {
@@ -743,17 +801,19 @@ void meshSurfaceEngine::calculatePointNormals() const
     pointNormalsPtr_ = new vectorField(pFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( pFaces.size() > 1000 ) schedule(dynamic, 50)
+    # pragma omp parallel for if (pFaces.size() > 1000) schedule(dynamic, 50)
     # endif
     forAll(pFaces, pI)
     {
         vector normal(vector::zero);
 
         forAllRow(pFaces, pI, pfI)
+        {
             normal += fNormals[pFaces(pI, pfI)];
+        }
 
         const scalar d = mag(normal);
-        if( d > VSMALL )
+        if (d > VSMALL)
         {
             normal /= d;
         }
@@ -768,6 +828,7 @@ void meshSurfaceEngine::calculatePointNormals() const
     updatePointNormalsAtProcBoundaries();
 }
 
+
 void meshSurfaceEngine::calculateFaceNormals() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
@@ -776,7 +837,7 @@ void meshSurfaceEngine::calculateFaceNormals() const
     faceNormalsPtr_ = new vectorField(bFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( bFaces.size() > 1000 )
+    # pragma omp parallel for if (bFaces.size() > 1000)
     # endif
     forAll(bFaces, bfI)
     {
@@ -786,6 +847,7 @@ void meshSurfaceEngine::calculateFaceNormals() const
     }
 }
 
+
 void meshSurfaceEngine::calculateFaceCentres() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
@@ -794,16 +856,21 @@ void meshSurfaceEngine::calculateFaceCentres() const
     faceCentresPtr_ = new vectorField(bFaces.size());
 
     # ifdef USE_OMP
-    # pragma omp parallel for if( bFaces.size() > 1000 )
+    # pragma omp parallel for if (bFaces.size() > 1000)
     # endif
     forAll(bFaces, bfI)
+    {
         faceCentresPtr_->operator[](bfI) = bFaces[bfI].centre(points);
+    }
 }
+
 
 void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
 {
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
+    {
         return;
+    }
 
     const VRWGraph& pFaces = pointFaces();
     const vectorField& fNormals = faceNormals();
@@ -814,8 +881,8 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
 
     vectorField& pNormals = *pointNormalsPtr_;
 
-    //- create data which will be sent to other processors
-    std::map<label, LongList<labelledPoint> > exchangeData;
+    // create data which will be sent to other processors
+    std::map<label, LongList<labelledPoint>> exchangeData;
 
     forAllConstIter(Map<label>, globalToLocal, iter)
     {
@@ -825,14 +892,18 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
         n = vector::zero;
 
         forAllRow(pFaces, bpI, pfI)
+        {
             n += fNormals[pFaces(bpI, pfI)];
+        }
 
         forAllRow(bpAtProcs, bpI, procI)
         {
             const label neiProc = bpAtProcs(bpI, procI);
-            if( neiProc == Pstream::myProcNo() )
+            if (neiProc == Pstream::myProcNo())
+            {
                 continue;
-            if( exchangeData.find(neiProc) == exchangeData.end() )
+            }
+            if (exchangeData.find(neiProc) == exchangeData.end())
             {
                 exchangeData.insert
                 (
@@ -847,7 +918,7 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
         }
     }
 
-    //- exchange data with other procs
+    // exchange data with other procs
     LongList<labelledPoint> receivedData;
     help::exchangeMap(exchangeData, receivedData);
 
@@ -857,19 +928,21 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
         pNormals[bpI] += receivedData[i].coordinates();
     }
 
-    //- normalize vectors
+    // normalize vectors
     # ifdef USE_OMP
-    # pragma omp parallel for if( bpAtProcs.size() > 1000 ) \
+    # pragma omp parallel for if (bpAtProcs.size() > 1000) \
     schedule(guided)
     # endif
     forAll(bpAtProcs, bpI)
     {
-        if( bpAtProcs.sizeOfRow(bpI) == 0 )
+        if (bpAtProcs.sizeOfRow(bpI) == 0)
+        {
             continue;
+        }
 
         vector normal = pNormals[bpI];
         const scalar d = mag(normal);
-        if( d > VSMALL )
+        if (d > VSMALL)
         {
             normal /= d;
         }
@@ -881,6 +954,7 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
         pNormals[bpI] = normal;
     }
 }
+
 
 void meshSurfaceEngine::calculateEdgesAndAddressing() const
 {
@@ -896,9 +970,11 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
     VRWGraph& bpEdges = *bpEdgesPtr_;
 
     # ifdef USE_OMP
-    label nThreads = 3 * omp_get_num_procs();
-    if( pFaces.size() < 1000 )
+    label nThreads = 3*omp_get_num_procs();
+    if (pFaces.size() < 1000)
+    {
         nThreads = 1;
+    }
     # else
     const label nThreads(1);
     # endif
@@ -918,7 +994,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
         # endif
         forAll(pFaces, bpI)
         {
-            std::set<std::pair<label, label> > edgesAtPoint;
+            std::set<std::pair<label, label>> edgesAtPoint;
 
             forAllRow(pFaces, bpI, pfI)
             {
@@ -927,14 +1003,14 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 
                 const label pos = bf.which(bPoints[bpI]);
 
-                if( bp[bf.nextLabel(pos)] >= bpI )
+                if (bp[bf.nextLabel(pos)] >= bpI)
                 {
                     edgesAtPoint.insert
                     (
                         std::make_pair(bf[pos], bf.nextLabel(pos))
                     );
                 }
-                if( bp[bf.prevLabel(pos)] >= bpI )
+                if (bp[bf.prevLabel(pos)] >= bpI)
                 {
                     edgesAtPoint.insert
                     (
@@ -943,13 +1019,15 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
                 }
             }
 
-            std::set<std::pair<label, label> >::const_iterator it;
-            for(it=edgesAtPoint.begin();it!=edgesAtPoint.end();++it)
+            std::set<std::pair<label, label>>::const_iterator it;
+            for (it = edgesAtPoint.begin(); it!=edgesAtPoint.end(); ++it)
+            {
                 edgesHelper.append(edge(it->first, it->second));
+            }
         }
 
-        //- this enables other threads to see the number of edges
-        //- generated by each thread
+        // this enables other threads to see the number of edges
+        // generated by each thread
         # ifdef USE_OMP
         const label threadI = omp_get_thread_num();
         # else
@@ -973,60 +1051,70 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
         # pragma omp barrier
         # endif
 
-        //- find the starting position of the edges generated by this thread
-        //- in the global list of edges
+        // find the starting position of the edges generated by this thread
+        // in the global list of edges
         label localStart(0);
-        for(label i=0;i<threadI;++i)
+        for (label i = 0; i < threadI; ++i)
+        {
             localStart += nEdgesForThread[i];
+        }
 
-        //- store edges into the global list
+        // store edges into the global list
         forAll(edgesHelper, i)
-            edgesPtr_->operator[](localStart+i) = edgesHelper[i];
+        {
+            edgesPtr_->operator[](localStart + i) = edgesHelper[i];
+        }
     }
 
-    //- set the bpEdges
+    // set the bpEdges
     VRWGraphSMPModifier(bpEdges).reverseAddressing(bp, edges);
     bpEdges.setSize(pFaces.size());
 
-    if( !Pstream::parRun() )
+    if (!Pstream::parRun())
+    {
         return;
+    }
 
     bool addEdges;
     do
     {
         addEdges = false;
 
-        //- mark boundary edges for processors which do not contain
-        //- boundary faces. This procedure is needed to identify boundary
-        //- edges which are not part of any boundary face on their processor
+        // mark boundary edges for processors which do not contain
+        // boundary faces. This procedure is needed to identify boundary
+        // edges which are not part of any boundary face on their processor
         const faceListPMG& faces = mesh_.faces();
         const PtrList<processorBoundaryPatch>& procBoundaries =
             mesh_.procBoundaries();
 
-        //- send boundary edges to neighbour processors
+        // send boundary edges to neighbour processors
         forAll(procBoundaries, patchI)
         {
             const label start = procBoundaries[patchI].patchStart();
             const label end = start + procBoundaries[patchI].patchSize();
 
             labelLongList dts;
-            for(label faceI=start;faceI<end;++faceI)
+            for (label faceI = start; faceI < end; ++faceI)
             {
                 const face& f = faces[faceI];
                 forAll(f, eI)
                 {
                     const edge e = f.faceEdge(eI);
                     const label s = bp[e.start()];
-                    if( s < 0 )
+                    if (s < 0)
+                    {
                         continue;
+                    }
 
                     forAllRow(bpEdges, s, peI)
-                        if( edges[bpEdges(s, peI)] == e )
+                    {
+                        if (edges[bpEdges(s, peI)] == e)
                         {
-                            dts.append(faceI-start);
-                            dts.append((f.size()-1-eI)%f.size());
+                            dts.append(faceI - start);
+                            dts.append((f.size()-1 - eI)%f.size());
                             break;
                         }
+                    }
                 }
             }
 
@@ -1039,8 +1127,8 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
             toOtherProc << dts;
         }
 
-        //- receive data from other processors. Mark edges which are not yet
-        //- marked as boundary edges
+        // receive data from other processors. Mark edges which are not yet
+        // marked as boundary edges
         forAll(procBoundaries, patchI)
         {
             labelList receivedEdges;
@@ -1053,9 +1141,9 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 
             const label start = procBoundaries[patchI].patchStart();
             label nReceivedEdges(0);
-            while( nReceivedEdges < receivedEdges.size() )
+            while (nReceivedEdges < receivedEdges.size())
             {
-                const face& f = faces[start+receivedEdges[nReceivedEdges++]];
+                const face& f = faces[start + receivedEdges[nReceivedEdges++]];
                 const label eI = receivedEdges[nReceivedEdges++];
 
                 const edge e = f.faceEdge(eI);
@@ -1063,15 +1151,17 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 
                 bool found(false);
                 forAllRow(bpEdges, s, peI)
-                    if( edges[bpEdges(s, peI)] == e )
+                {
+                    if (edges[bpEdges(s, peI)] == e)
                     {
                         found = true;
                         break;
                     }
+                }
 
-                if( !found )
+                if (!found)
                 {
-                    //- create a new edge
+                    // create a new edge
                     addEdges = true;
                     edges.newElmt(edgeI) = e;
 
@@ -1083,10 +1173,11 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
         }
 
         reduce(addEdges, maxOp<bool>());
-    } while( addEdges );
+    } while (addEdges);
 
     edges.setSize(edgeI);
 }
+
 
 void meshSurfaceEngine::calculateFaceEdgesAddressing() const
 {
@@ -1101,7 +1192,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
     labelList nfe(bFaces.size());
 
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
 
     # pragma omp parallel num_threads(nThreads)
     # endif
@@ -1110,7 +1201,9 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
         # pragma omp for schedule(static)
         # endif
         forAll(bFaces, bfI)
+        {
             nfe[bfI] = bFaces[bfI].size();
+        }
 
         # ifdef USE_OMP
         # pragma omp barrier
@@ -1143,7 +1236,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
                     const label beI = bpEdges(bps, peI);
                     const edge& ee = edges[beI];
 
-                    if( e == ee )
+                    if (e == ee)
                     {
                         faceEdges(bfI, eI) = beI;
                         break;
@@ -1153,6 +1246,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
         }
     }
 }
+
 
 void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 {
@@ -1167,7 +1261,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
     labelList nef(edges.size());
 
     # ifdef USE_OMP
-    const label nThreads = 3 * omp_get_num_procs();
+    const label nThreads = 3*omp_get_num_procs();
 
     # pragma omp parallel num_threads(nThreads)
     # endif
@@ -1176,7 +1270,9 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
         # pragma omp for schedule(static)
         # endif
         forAll(nef, edgeI)
+        {
             nef[edgeI] = 0;
+        }
 
         # ifdef USE_OMP
         # pragma omp for schedule(static)
@@ -1194,7 +1290,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 
                 forAll(bf, eI)
                 {
-                    if( bf.faceEdge(eI) == ee )
+                    if (bf.faceEdge(eI) == ee)
                     {
                         ++nef[edgeI];
                         break;
@@ -1220,7 +1316,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
             const edge& ee = edges[edgeI];
             const label bpI = bp[ee.start()];
 
-            //- find boundary faces attached to this edge
+            // find boundary faces attached to this edge
             DynList<label> eFaces;
             forAllRow(pointFaces, bpI, pfI)
             {
@@ -1230,7 +1326,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 
                 forAll(bf, eI)
                 {
-                    if( bf.faceEdge(eI) == ee )
+                    if (bf.faceEdge(eI) == ee)
                     {
                         eFaces.append(bfI);
                         break;
@@ -1238,17 +1334,17 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
                 }
             }
 
-            //- the face that owns the edge shall be the first one in the list
+            // the face that owns the edge shall be the first one in the list
             // TODO: find out whether this will be necessary
-            if( eFaces.size() == 2 )
+            if (eFaces.size() == 2)
             {
                 const face& bf = bFaces[eFaces[1]];
 
                 const label pos = bf.which(ee.start());
 
-                if( bf.nextLabel(pos) == ee.end() )
+                if (bf.nextLabel(pos) == ee.end())
                 {
-                    //- this face shall be the first one in the list
+                    // this face shall be the first one in the list
                     const label helper = eFaces[0];
                     eFaces[0] = eFaces[1];
                     eFaces[1] = helper;
@@ -1259,6 +1355,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
         }
     }
 }
+
 
 void meshSurfaceEngine::calculateEdgePatchesAddressing() const
 {
@@ -1284,7 +1381,7 @@ void meshSurfaceEngine::calculateEdgePatchesAddressing() const
         edgePatches.setRow(eI, ePatches);
     }
 
-    if( Pstream::parRun() )
+    if (Pstream::parRun())
     {
         const Map<label>& globalToLocal = globalToLocalBndEdgeAddressing();
         const Map<label>& otherPatch = this->otherEdgeFacePatch();
@@ -1298,6 +1395,7 @@ void meshSurfaceEngine::calculateEdgePatchesAddressing() const
     }
 }
 
+
 void meshSurfaceEngine::calculateFaceFacesAddressing() const
 {
     const VRWGraph& edgeFaces = this->edgeFaces();
@@ -1307,13 +1405,15 @@ void meshSurfaceEngine::calculateFaceFacesAddressing() const
     VRWGraph& faceFaces = *faceFacesPtr_;
 
     forAll(bFaces, bfI)
+    {
         faceFaces.setRowSize(bfI, bFaces[bfI].size());
+    }
 
     labelList nAppearances(bFaces.size(), 0);
 
     forAll(edgeFaces, efI)
     {
-        if( edgeFaces.sizeOfRow(efI) == 2 )
+        if (edgeFaces.sizeOfRow(efI) == 2)
         {
             const label f0 = edgeFaces(efI, 0);
             const label f1 = edgeFaces(efI, 1);
@@ -1321,23 +1421,22 @@ void meshSurfaceEngine::calculateFaceFacesAddressing() const
             faceFaces(f0, nAppearances[f0]++) = f1;
             faceFaces(f1, nAppearances[f1]++) = f0;
         }
-        else if( Pstream::parRun() && (edgeFaces.sizeOfRow(efI) == 1) )
+        else if (Pstream::parRun() && (edgeFaces.sizeOfRow(efI) == 1))
         {
             const label f0 = edgeFaces(efI, 0);
             faceFaces(f0, nAppearances[f0]++) = -1;
         }
-        else if( Pstream::parRun() && (edgeFaces.sizeOfRow(efI) != 0 ) )
+        else if (Pstream::parRun() && (edgeFaces.sizeOfRow(efI) != 0))
         {
-            FatalErrorIn
-            (
-                "void meshSurfaceEngine::calculateFaceFacesAddressing() const"
-            ) << "The surface of the mesh is invalid!"
+            FatalErrorInFunction
+                << "The surface of the mesh is invalid!"
                 << " The number of faces containing edge " << efI
                 << " is " << edgeFaces.sizeOfRow(efI)
                 << " Cannot continue" << exit(FatalError);
         }
     }
 }
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

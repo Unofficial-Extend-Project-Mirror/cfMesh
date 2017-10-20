@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    coordinateModifier
+    Foam::coordinateModifier
 
 Description
     Base class for modification of point coordinates
@@ -49,7 +49,7 @@ namespace Foam
 class boundBox;
 
 /*---------------------------------------------------------------------------*\
-                   Class coordinateModifier Declaration
+                     Class coordinateModifier Declaration
 \*---------------------------------------------------------------------------*/
 
 class coordinateModifier
@@ -65,9 +65,12 @@ class coordinateModifier
         //- list of backward coordinate modifiers
         coordinateModificationList backwardModifiers_;
 
+
     // Private member functions
-        //- check if the comibination of modifiers has a valid inverse
+
+        //- check if the combination of modifiers has a valid inverse
         void checkForValidInverse() const;
+
 
 public:
 
@@ -76,9 +79,8 @@ public:
         //- Construct from dictionary
         coordinateModifier(const dictionary&);
 
-    // Destructor
-
-        ~coordinateModifier();
+    //- Destructor
+    ~coordinateModifier();
 
 
     // Member Functions

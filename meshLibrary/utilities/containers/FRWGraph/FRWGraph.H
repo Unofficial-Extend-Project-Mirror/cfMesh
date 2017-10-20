@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    FRWGraph
+    Foam::FRWGraph
 
 Description
     This class is an implementation of a graph with the fixed row width.
@@ -48,7 +48,7 @@ SourceFiles
 namespace Foam
 {
 
-// * * * * * * Forward declaration of template friend fuctions * * * * * * * //
+// Forward declaration of template friend functions
 
 template<class T, label width>
 class FRWGraph;
@@ -67,22 +67,25 @@ Istream& operator>>
 );
 
 /*---------------------------------------------------------------------------*\
-                           Class FRWGraph Declaration
+                          Class FRWGraph Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class T, label width>
 class FRWGraph
 {
     // Private data
+
         //- list containing the data
         LongList<T> data_;
 
         //- number of rows
         label nRows_;
 
+
     // Private member functions
         //- check index
         void checkIndex(const label i, const label j) const;
+
 
 public:
 
@@ -97,12 +100,13 @@ public:
         //- Construct to given size and initialize
         explicit inline FRWGraph(const label size, const T& t);
 
-        //- Copy contructor
+        //- Copy constructor
         inline FRWGraph(const FRWGraph<T, width>&);
 
-    // Destructor
 
-        inline ~FRWGraph();
+    //- Destructor
+    inline ~FRWGraph();
+
 
     // Member Functions
 
@@ -114,6 +118,7 @@ public:
             //- Returns the size of a given row (obsolete)
             inline label sizeOfRow(const label rowI) const;
 
+
         // Edit
 
             //- Reset the number of rows
@@ -122,6 +127,7 @@ public:
             //- Clear the graph
             //  Allocated size does not change
             void clear();
+
 
     // Member Operators
 

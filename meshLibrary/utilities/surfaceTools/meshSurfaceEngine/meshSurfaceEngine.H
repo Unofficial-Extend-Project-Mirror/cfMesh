@@ -6,23 +6,23 @@
      \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
-    This file is part of cfMesh.
+    This file is part of OpenFOAM.
 
-    cfMesh is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 3 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
-    cfMesh is distributed in the hope that it will be useful, but WITHOUT
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with cfMesh.  If not, see <http://www.gnu.org/licenses/>.
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    meshSurfaceEngine
+    Foam::meshSurfaceEngine
 
 Description
     Calculates surface of the mesh
@@ -49,12 +49,13 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                           Class meshSurfaceEngine Declaration
+                      Class meshSurfaceEngine Declaration
 \*---------------------------------------------------------------------------*/
 
 class meshSurfaceEngine
 {
     // Private data
+
         //- reference to the mesh
         polyMeshGen& mesh_;
 
@@ -113,6 +114,7 @@ class meshSurfaceEngine
         //- face centres
         mutable vectorField* faceCentresPtr_;
 
+
     // Private data for parallel execution
 
         //- global boundary point label
@@ -146,6 +148,7 @@ class meshSurfaceEngine
         //- global label for boundary faces
         mutable labelList* globalBoundaryFaceLabelPtr_;
 
+
     // Private member functions
 
         //- calculate boundary nodes, faces and addressing
@@ -173,12 +176,14 @@ class meshSurfaceEngine
         void calculateEdgePatchesAddressing() const;
         void calculateFaceFacesAddressing() const;
 
+
     // Private member functions for parallel runs
 
         void calcGlobalBoundaryPointLabels() const;
         void calcGlobalBoundaryEdgeLabels() const;
         void calcAddressingForProcEdges() const;
         void calcGlobalBoundaryFaceLabels() const;
+
 
     // Private member functions
 
@@ -190,9 +195,11 @@ class meshSurfaceEngine
         //- Disallow default bitwise assignment
         void operator=(const meshSurfaceEngine&);
 
+
 public:
 
         friend class meshSurfaceEngineModifier;
+
 
     // Constructors
 
@@ -202,11 +209,12 @@ public:
         //- Construct from mesh and patch
         meshSurfaceEngine(polyMeshGen &mesh, const label patchI);
 
-    // Destructor
+    //- Destructor
+    ~meshSurfaceEngine();
 
-        ~meshSurfaceEngine();
 
     // Member Functions
+
         inline const polyMeshGen& mesh() const;
         inline const pointFieldPMG& points() const;
         inline const faceListPMG& faces() const;
@@ -248,7 +256,9 @@ public:
 
         inline const VRWGraph& faceFaces() const;
 
+
     // Functions for parallel runs
+
         //- global boundary point label
         inline const labelList& globalBoundaryPointLabel() const;
 
