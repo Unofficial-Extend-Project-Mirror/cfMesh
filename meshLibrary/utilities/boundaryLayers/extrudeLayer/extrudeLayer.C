@@ -555,7 +555,7 @@ void extrudeLayer::createNewVertices()
 
                 while (front.size() != 0)
                 {
-                    const label eLabel = front.removeLastElement();
+                    const label eLabel = front.remove();
 
                     forAll(dEdges, eJ)
                     {
@@ -693,7 +693,7 @@ void extrudeLayer::createNewVertices()
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 const label own = owner[pointFaces(pointI, fLabel)];
                 const label nei = neighbour[pointFaces(pointI, fLabel)];
@@ -1278,7 +1278,7 @@ void extrudeLayer::createLayerCells()
 
             // find another face attached to the edge eI
             const label fFace = adc.faceSharingEdge(extI, eI);
-            const label pos = pointFaces.containsAtPosition(pointI, fFace);
+            const label pos = pointFaces.find(pointI, fFace);
 
             // find an extrusion face attached to the edge consisting of points
             // origFacePointI and origFaceNextI
@@ -1432,9 +1432,9 @@ void extrudeLayer::updateBoundary()
             forAllRow(pointPatches, bpI, ppI)
             {
                 const label patchI = pointPatches(bpI, ppI);
-                if (patches.contains(patchI))
+                if (patches.found(patchI))
                 {
-                    ++nAppearances[patches.containsAtPosition(patchI)];
+                    ++nAppearances[patches.find(patchI)];
                 }
                 else
                 {

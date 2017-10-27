@@ -172,15 +172,22 @@ public:
         //- present in the list (takes linear time)
         inline void appendIfNotIn(const T& e);
 
-        //- check if the element is in the list (takes linear time)
-        inline bool contains(const T& e) const;
-        inline label containsAtPosition(const T& e) const;
+        //- Find and return location of element in list
+        inline label find(const T& val) const;
+
+        //- Check if the element is in the list
+        inline bool found(const T& e) const;
+
+        //- return a const reference to the first element
+        inline const T& first() const;
 
         //- return a const reference to the last element
-        inline const T& lastElement() const;
+        inline const T& last() const;
 
         //- Return and remove the last element
-        inline T removeLastElement();
+        inline T remove();
+
+        //- Return and remove the element
         inline T removeElement(const label i);
 
         //- return a reference to the element. Resize the list if necessary
@@ -195,21 +202,12 @@ public:
         inline T& operator[](const label);
 
         //- return forward and reverse circular indices
-        inline label fcIndex(const label index, const label offset = 1) const;
-        inline label rcIndex(const label index, const label offset = 1) const;
+        inline label fcIndex(const label index) const;
+        inline label rcIndex(const label index) const;
 
         //- return forward and reverse circular elements
-        inline const T& fcElement
-        (
-            const label index,
-            const label offset = 1
-        ) const;
-
-        inline const T& rcElement
-        (
-            const label index,
-            const label offset = 1
-        ) const;
+        inline const T& fcValue(const label index) const;
+        inline const T& rcValue(const label index) const;
 
         //- Assignment of all entries to the given value
         inline void operator=(const T&);

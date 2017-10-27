@@ -513,13 +513,13 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
             for (label i = 0; i < pFaces.size(); ++i)
             {
                 const DynList<label, 8>& bf = pFaces[i];
-                const label pos = bf.containsAtPosition(gpI);
+                const label pos = bf.find(gpI);
                 const edge e(bf[pos], bf[bf.fcIndex(pos)]);
 
                 for (label j = i + 1; j < pFaces.size(); ++j)
                 {
-                    const DynList<label, 8>& obf = pFaces[j];
-                    if (obf.contains(e.start()) && obf.contains(e.end()))
+                    const auto& obf = pFaces[j];
+                    if (obf.found(e.start()) && obf.found(e.end()))
                     {
                         DynList<label, 8> add;
                         add = pFaces[i + 1];

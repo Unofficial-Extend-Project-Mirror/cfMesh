@@ -279,10 +279,10 @@ bool workflowControls::runCurrentStep(const word& stepName)
 {
     if
     (
-        completedStepsBeforeRestart_.size() &&
-        completedStepsBeforeRestart_.contains(currentStep_) &&
-        restartRequested() &&
-        !isRestarted_
+        completedStepsBeforeRestart_.size()
+     && completedStepsBeforeRestart_.found(currentStep_)
+     && restartRequested()
+     && !isRestarted_
     )
     {
         Info<< "Step " << currentStep_ << " has already been executed" << endl;

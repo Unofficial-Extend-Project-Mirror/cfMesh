@@ -252,7 +252,7 @@ point boundaryLayers::createNewVertex
         forAllRow(pFaces, bpI, pfI)
         {
             const label faceLabel = pFaces(bpI, pfI);
-            if (otherPatches.contains(boundaryFacePatches[faceLabel]))
+            if (otherPatches.found(boundaryFacePatches[faceLabel]))
             {
                 const face& f = bFaces[faceLabel];
                 const label pos = f.which(bPoints[bpI]);
@@ -585,7 +585,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
             const std::pair<label, label> pr(pKey, pKey);
             const std::map<std::pair<label, label>, label>::const_iterator it =
                 m.find(pr);
-            if ((it != m.end()) && !usedPatches.contains(pKey))
+            if ((it != m.end()) && !usedPatches.found(pKey))
             {
                 usedPatches.append(pKey);
                 newNodeLabel.append(it->second);
@@ -1084,7 +1084,7 @@ void boundaryLayers::createNewEdgeVerticesParallel
         forAllRow(pFaces, bpI, pfI)
         {
             const label faceLabel = pFaces(bpI, pfI);
-            if (otherPatches.contains(boundaryFacePatches[faceLabel]))
+            if (otherPatches.found(boundaryFacePatches[faceLabel]))
             {
                 const face& f = bFaces[faceLabel];
                 const label pos = f.which(bPoints[bpI]);

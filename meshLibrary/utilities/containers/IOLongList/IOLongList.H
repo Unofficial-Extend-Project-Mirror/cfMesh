@@ -48,7 +48,7 @@ namespace Foam
                          Class IOLongList Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, label Offset = 19>
+template<class T, int Offset = 19>
 class IOLongList
 :
     public regIOobject,

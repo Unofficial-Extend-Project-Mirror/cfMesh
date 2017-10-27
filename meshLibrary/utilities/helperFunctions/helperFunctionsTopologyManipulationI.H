@@ -332,7 +332,7 @@ inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
 
         forAll(edges, eI)
         {
-            const label pos = cellEdges.containsAtPosition(edges[eI]);
+            const label pos = cellEdges.find(edges[eI]);
 
             if (pos == -1)
             {
@@ -554,7 +554,7 @@ inline void zipOpenChain(DynList<edge>& bEdges)
         const edge& e = bEdges[eI];
         forAll(e, pI)
         {
-            const label pos = chainVertices.containsAtPosition(e[pI]);
+            const label pos = chainVertices.find(e[pI]);
 
             if (pos == -1)
             {

@@ -117,7 +117,7 @@ inline bool isSharedEdgeConvex
 
         forAll(triOwn, pJ)
         {
-            if (!triNei.contains(triOwn[pJ]))
+            if (!triNei.found(triOwn[pJ]))
             {
                 tetrahedron<point, point> tet
                 (
@@ -185,7 +185,7 @@ inline scalar angleBetweenFaces
 
         forAll(triOwn, pJ)
         {
-            if (!triNei.contains(triOwn[pJ]))
+            if (!triNei.found(triOwn[pJ]))
             {
                 tetrahedron<point, point> tet
                 (
@@ -1169,34 +1169,34 @@ inline bool doTrianglesOverlap
                 {
                     newPoly2D.append(poly2D[pI]);
 
-                    if (distance.fcElement(pI) < 0.0)
+                    if (distance.fcValue(pI) < 0.0)
                     {
                         //- this is very sensitive to floaing point tolerances
                         const point2D newP =
                             (
-                                mag(distance[pI])*poly2D.fcElement(pI) +
-                                mag(distance.fcElement(pI))*poly2D[pI]
+                                mag(distance[pI])*poly2D.fcValue(pI) +
+                                mag(distance.fcValue(pI))*poly2D[pI]
                             ) /
                             (
                                 mag(distance[pI]) +
-                                mag(distance.fcElement(pI)) +
+                                mag(distance.fcValue(pI)) +
                                 VSMALL
                             );
 
                         newPoly2D.append(newP);
                     }
                 }
-                else if (distance.fcElement(pI) >= 0.0)
+                else if (distance.fcValue(pI) >= 0.0)
                 {
                     //- this is very sensitive to floaing point tolerances
                     const point2D newP =
                         (
-                            mag(distance[pI])*poly2D.fcElement(pI) +
-                            mag(distance.fcElement(pI))*poly2D[pI]
+                            mag(distance[pI])*poly2D.fcValue(pI) +
+                            mag(distance.fcValue(pI))*poly2D[pI]
                         ) /
                         (
                             mag(distance[pI]) +
-                            mag(distance.fcElement(pI)) +
+                            mag(distance.fcValue(pI)) +
                             VSMALL
                         );
 
@@ -1847,7 +1847,7 @@ inline label numberOfFaceGroups
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAllRow(faceEdges, fLabel, feI)
                 {
@@ -1943,7 +1943,7 @@ inline label numberOfEdgeGroups
 
             while (front.size())
             {
-                const label eLabel = front.removeLastElement();
+                const label eLabel = front.remove();
                 const edge& e = edges[eLabel];
 
                 for (label i = 0; i < 2; ++i)

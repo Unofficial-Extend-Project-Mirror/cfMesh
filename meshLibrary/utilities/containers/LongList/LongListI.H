@@ -25,7 +25,7 @@ License
 
 #include "contiguous.H"
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::checkIndex(const label i) const
 {
     if ((i < 0) || (i >= nextFree_))
@@ -37,7 +37,7 @@ void Foam::LongList<T, Offset>::checkIndex(const label i) const
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::initializeParameters()
 {
     unsigned int t = sizeof(T);
@@ -55,7 +55,7 @@ void Foam::LongList<T, Offset>::initializeParameters()
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::allocateSize(const label s)
 {
     if (s == 0)
@@ -113,7 +113,7 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::clearOut()
 {
     for (label i = 0; i < numBlocks_; ++i)
@@ -136,7 +136,7 @@ void Foam::LongList<T, Offset>::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>::LongList()
 :
     N_(0),
@@ -151,7 +151,7 @@ inline Foam::LongList<T, Offset>::LongList()
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>::LongList(const label s)
 :
     N_(0),
@@ -167,7 +167,7 @@ inline Foam::LongList<T, Offset>::LongList(const label s)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>::LongList(const label s, const T& t)
 :
     N_(0),
@@ -184,7 +184,7 @@ inline Foam::LongList<T, Offset>::LongList(const label s, const T& t)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>::LongList(const LongList<T, Offset>& ol)
 :
     N_(0),
@@ -199,7 +199,7 @@ inline Foam::LongList<T, Offset>::LongList(const LongList<T, Offset>& ol)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>::~LongList()
 {
     clearOut();
@@ -208,14 +208,14 @@ inline Foam::LongList<T, Offset>::~LongList()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::label Foam::LongList<T, Offset>::size() const
 {
     return nextFree_;
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::label Foam::LongList<T, Offset>::byteSize() const
 {
     if (!contiguous<T>())
@@ -230,7 +230,7 @@ inline Foam::label Foam::LongList<T, Offset>::byteSize() const
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::setSize(const label i)
 {
     allocateSize(i);
@@ -238,14 +238,14 @@ inline void Foam::LongList<T, Offset>::setSize(const label i)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::clear()
 {
     nextFree_ = 0;
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline Foam::LongList<T, Offset>&
 Foam::LongList<T, Offset>::shrink()
 {
@@ -254,7 +254,7 @@ Foam::LongList<T, Offset>::shrink()
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::transfer(LongList<T, Offset>& ol)
 {
     clearOut();
@@ -274,7 +274,7 @@ inline void Foam::LongList<T, Offset>::transfer(LongList<T, Offset>& ol)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::append(const T& e)
 {
     if (nextFree_ >= N_)
@@ -286,33 +286,32 @@ inline void Foam::LongList<T, Offset>::append(const T& e)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::appendIfNotIn(const T& e)
 {
-    if (!contains(e))
+    if (!found(e))
     {
         append(e);
     }
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline bool Foam::LongList<T, Offset>::contains(const T& e) const
 {
-    for (label i = 0; i < nextFree_; ++i)
-    {
-        if ((*this)[i] == e)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return (this->find(e) >= 0);
 }
 
 
-template<class T, Foam::label Offset>
-inline Foam::label Foam::LongList<T, Offset>::containsAtPosition
+template<class T, int Offset>
+inline bool Foam::LongList<T, Offset>::found(const T& e) const
+{
+    return (this->find(e) >= 0);
+}
+
+
+template<class T, int Offset>
+inline Foam::label Foam::LongList<T, Offset>::find
 (
     const T& e
 ) const
@@ -329,7 +328,7 @@ inline Foam::label Foam::LongList<T, Offset>::containsAtPosition
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline T Foam::LongList<T, Offset>::remove(const label i)
 {
     if (nextFree_ == 0)
@@ -345,8 +344,8 @@ inline T Foam::LongList<T, Offset>::remove(const label i)
 }
 
 
-template<class T, Foam::label Offset>
-inline T Foam::LongList<T, Offset>::removeLastElement()
+template<class T, int Offset>
+inline T Foam::LongList<T, Offset>::remove()
 {
     if (nextFree_ == 0)
     {
@@ -362,7 +361,7 @@ inline T Foam::LongList<T, Offset>::removeLastElement()
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline const T& Foam::LongList<T, Offset>::operator[](const label i) const
 {
     #ifdef FULLDEBUG
@@ -373,7 +372,7 @@ inline const T& Foam::LongList<T, Offset>::operator[](const label i) const
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline T& Foam::LongList<T, Offset>::operator[](const label i)
 {
     #ifdef FULLDEBUG
@@ -384,7 +383,7 @@ inline T& Foam::LongList<T, Offset>::operator[](const label i)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline T& Foam::LongList<T, Offset>::operator()(const label i)
 {
     if (i >= nextFree_)
@@ -396,14 +395,14 @@ inline T& Foam::LongList<T, Offset>::operator()(const label i)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline T& Foam::LongList<T, Offset>::newElmt(const label i)
 {
     return operator()(i);
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::operator=(const T& t)
 {
     for (label i = 0; i < nextFree_; ++i)
@@ -413,7 +412,7 @@ inline void Foam::LongList<T, Offset>::operator=(const T& t)
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 inline void Foam::LongList<T, Offset>::operator=(const LongList<T, Offset>& l)
 {
     setSize(l.size());

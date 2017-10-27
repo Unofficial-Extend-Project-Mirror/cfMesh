@@ -352,7 +352,7 @@ inline void Foam::DynList<T, staticSize>::appendIfNotIn(const T& e)
     checkAllocation();
     # endif
 
-    if (!contains(e))
+    if (!found(e))
     {
          append(e);
     }
@@ -364,26 +364,7 @@ inline void Foam::DynList<T, staticSize>::appendIfNotIn(const T& e)
 
 
 template<class T, Foam::label staticSize>
-inline bool Foam::DynList<T, staticSize>::contains(const T& e) const
-{
-    # ifdef DEBUG
-    checkAllocation();
-    # endif
-
-    for (label i = 0; i < nextFree_; ++i)
-    {
-        if (this->operator[](i) == e)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition
+inline Foam::label Foam::DynList<T, staticSize>::find
 (
     const T& e
 ) const
@@ -405,7 +386,26 @@ inline Foam::label Foam::DynList<T, staticSize>::containsAtPosition
 
 
 template<class T, Foam::label staticSize>
-inline const T& Foam::DynList<T, staticSize>::lastElement() const
+inline bool Foam::DynList<T, staticSize>::found(const T& e) const
+{
+    return this->find(e) != -1;
+}
+
+
+
+template<class T, Foam::label staticSize>
+inline const T& Foam::DynList<T, staticSize>::first() const
+{
+    # ifdef DEBUG
+    checkAllocation();
+    # endif
+
+    return this->operator[](0);
+}
+
+
+template<class T, Foam::label staticSize>
+inline const T& Foam::DynList<T, staticSize>::last() const
 {
     # ifdef DEBUG
     checkAllocation();
@@ -416,7 +416,7 @@ inline const T& Foam::DynList<T, staticSize>::lastElement() const
 
 
 template<class T, Foam::label staticSize>
-inline T Foam::DynList<T, staticSize>::removeLastElement()
+inline T Foam::DynList<T, staticSize>::remove()
 {
     # ifdef DEBUG
     checkAllocation();
@@ -521,44 +521,40 @@ inline T& Foam::DynList<T, staticSize>::operator[](const label i)
 template<class T, Foam::label staticSize>
 inline Foam::label Foam::DynList<T, staticSize>::fcIndex
 (
-    const label index,
-    const label offset
+    const label index
 ) const
 {
-    return (index + offset) % nextFree_;
+    return (index + 1) % nextFree_;
 }
 
 
 template<class T, Foam::label staticSize>
 inline Foam::label Foam::DynList<T, staticSize>::rcIndex
 (
-    const label index,
-    const label offset
+    const label index
 ) const
 {
-    return (index + nextFree_ - offset) % nextFree_;
+    return (index + nextFree_ - 1) % nextFree_;
 }
 
 
 template<class T, Foam::label staticSize>
-inline const T& Foam::DynList<T, staticSize>::fcElement
+inline const T& Foam::DynList<T, staticSize>::fcValue
 (
-    const label index,
-    const label offset
+    const label index
 ) const
 {
-    return operator[](fcIndex(index, offset));
+    return operator[](fcIndex(index));
 }
 
 
 template<class T, Foam::label staticSize>
-inline const T& Foam::DynList<T, staticSize>::rcElement
+inline const T& Foam::DynList<T, staticSize>::rcValue
 (
-    const label index,
-    const label offset
+    const label index
 ) const
 {
-    return operator[](rcIndex(index, offset));
+    return operator[](rcIndex(index));
 }
 
 

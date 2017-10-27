@@ -29,26 +29,23 @@ License
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::writeEntry(Ostream& os) const
 {
-    if
-    (
-        size()
-     && token::compound::isCompound
-        (
-            "LongList<" + word(pTraits<T>::typeName) + '>'
-        )
-    )
+    if (size())
     {
-        os  << word("LongList<" + word(pTraits<T>::typeName) + '>') << " ";
+        const word tag = "LongList<" + word(pTraits<T>::typeName) + '>';
+        if (token::compound::isCompound(tag))
+        {
+            os  << tag << ' ';
+        }
     }
 
     os << *this;
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::writeEntry
 (
     const word& keyword,
@@ -61,7 +58,7 @@ void Foam::LongList<T, Offset>::writeEntry
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 Foam::Ostream& Foam::operator<<
 (
     Ostream& os,
@@ -78,7 +75,7 @@ Foam::Ostream& Foam::operator<<
             // Write list contents
             forAll(DL, i)
             {
-                if (i != 0) os << token::SPACE;
+                if (i) os << token::SPACE;
                 os << DL[i];
             }
 
@@ -88,16 +85,16 @@ Foam::Ostream& Foam::operator<<
         else
         {
             // Write size of list and start contents delimiter
-            os << nl << DL.size() << nl << token::BEGIN_LIST;
+            os << nl << DL.size() << nl << token::BEGIN_LIST << nl;
 
             // Write list contents
             forAll(DL, i)
             {
-                os << nl << DL[i];
+                os << DL[i] << nl;
             }
 
             // Write end of contents delimiter
-            os << nl << token::END_LIST << nl;
+            os << token::END_LIST << nl;
         }
     }
     else
@@ -132,7 +129,7 @@ Foam::Ostream& Foam::operator<<
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 Foam::Istream& Foam::operator>>
 (
     Istream& is,
@@ -148,7 +145,8 @@ Foam::Istream& Foam::operator>>
 
     is.fatalCheck
     (
-        "operator>>(Istream&, LongList<T, Offset>&) : reading first token"
+        "operator>>(Istream&, LongList<T, Offset>&) : "
+        "reading first token"
     );
 
     if (firstToken.isLabel())
@@ -192,8 +190,8 @@ Foam::Istream& Foam::operator>>
 
                     is.fatalCheck
                     (
-                        "operator>>(Istream&, LongList<T, Offset>&)"
-                        " : reading entry"
+                        "operator>>(Istream&, LongList<T, Offset>&) : "
+                        "reading entry"
                     );
                 }
             }
@@ -204,8 +202,8 @@ Foam::Istream& Foam::operator>>
 
                 is.fatalCheck
                 (
-                    "operator>>(Istream&, LongList<T, Offset>&)"
-                    ": reading the single entry"
+                    "operator>>(Istream&, LongList<T, Offset>&) : "
+                    "reading the single entry"
                 );
 
                 for (label i = 0; i < size; ++i)
@@ -240,8 +238,8 @@ Foam::Istream& Foam::operator>>
 
             is.fatalCheck
             (
-                "operator>>(Istream&, LongList<T, Offset>&)"
-                ": reading the binary block"
+                "operator>>(Istream&, LongList<T, Offset>&) : "
+                "reading the binary block"
             );
         }
     }
@@ -257,7 +255,7 @@ Foam::Istream& Foam::operator>>
 }
 
 
-template<class T, Foam::label Offset>
+template<class T, int Offset>
 void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 {
     is.fatalCheck(FUNCTION_NAME);
@@ -299,7 +297,8 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
                     is.fatalCheck
                     (
-                        "appendFromStream(Istream&) : reading entry"
+                        "appendFromStream(Istream&) : "
+                        "reading entry"
                     );
                 }
             }
@@ -310,7 +309,8 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
                 is.fatalCheck
                 (
-                    "appendFromStream(Istream&) : reading the single entry"
+                    "appendFromStream(Istream&) : "
+                    "reading the single entry"
                 );
 
                 for (label i = 0; i < size; ++i)
@@ -335,7 +335,8 @@ void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
 
             is.fatalCheck
             (
-                "appendFromStream(Istream&) : reading the binary block"
+                "appendFromStream(Istream&) : "
+                "reading the binary block"
             );
         }
     }

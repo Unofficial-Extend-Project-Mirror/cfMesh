@@ -283,7 +283,7 @@ void boundaryLayers::createNewFacesParallel
         }
 
         const label bfI = edgeFaces(beI, 0);
-        const label pos = faceEdges.containsAtPosition(bfI, beI);
+        const label pos = faceEdges.find(bfI, beI);
         const edge e = bFaces[bfI].faceEdge(pos);
 
         if (otherFaceProc[beI] > Pstream::myProcNo())

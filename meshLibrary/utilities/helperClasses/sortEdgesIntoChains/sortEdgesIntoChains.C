@@ -176,12 +176,12 @@ void sortEdgesIntoChains::shrinkEdges(const DynList<bool>& chainEdges)
             const edge& e = bEdges_[eI];
             edgesAtPoint_[newNodeLabel_[e.start()]].removeElement
             (
-                edgesAtPoint_[newNodeLabel_[e.start()]].containsAtPosition(eI)
+                edgesAtPoint_[newNodeLabel_[e.start()]].find(eI)
             );
 
             edgesAtPoint_[newNodeLabel_[e.end()]].removeElement
             (
-                edgesAtPoint_[newNodeLabel_[e.end()]].containsAtPosition(eI)
+                edgesAtPoint_[newNodeLabel_[e.end()]].find(eI)
             );
         }
     }

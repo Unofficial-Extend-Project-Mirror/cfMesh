@@ -44,15 +44,19 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
 
     forAll(patches, patchI)
     {
-        if (selectedEntities_.contains(patches[patchI].name()))
+        if (selectedEntities_.found(patches[patchI].name()))
+        {
             removePatch[patchI] = true;
+        }
     }
 
     // select facets affected by the deletion of a patch
     forAll(surf_, triI)
     {
         if (removePatch[surf_[triI].region()])
+        {
             removeFacet[triI] = true;
+        }
     }
 
     // mark facets contained in selected subsets
@@ -63,7 +67,7 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
     {
         const word fsName = surf_.facetSubsetName(facetSubsetsIDs[i]);
 
-        if (selectedEntities_.contains(fsName))
+        if (selectedEntities_.found(fsName))
         {
             labelLongList containedFacets;
             surf_.facetsInSubset(facetSubsetsIDs[i], containedFacets);

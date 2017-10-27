@@ -118,13 +118,24 @@ inline bool Foam::subGraph<graphType>::contains
 
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::containsAtPosition
+inline bool Foam::subGraph<graphType>::found
 (
     const label rowI,
     const label e
 ) const
 {
-    return data_.containsAtPosition(start_ + rowI, e);
+    return data_.found(start_ + rowI, e);
+}
+
+
+template<class graphType>
+inline Foam::label Foam::subGraph<graphType>::find
+(
+    const label rowI,
+    const label e
+) const
+{
+    return data_.find(start_ + rowI, e);
 }
 
 

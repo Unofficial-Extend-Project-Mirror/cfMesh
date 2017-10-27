@@ -516,7 +516,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                         const label neiPointI = neiPoints[i];
 
                         const label pos =
-                            pointPatches[neiPointI].containsAtPosition(cPatch);
+                            pointPatches[neiPointI].find(cPatch);
 
                         minCurv += minCurvature_[neiPointI][pos];
                         maxCurv += maxCurvature_[neiPointI][pos];

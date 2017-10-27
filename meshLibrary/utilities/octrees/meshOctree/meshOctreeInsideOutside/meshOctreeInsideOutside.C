@@ -191,7 +191,7 @@ void meshOctreeInsideOutside::frontalMarking()
 
             while (frontCubes.size())
             {
-                const label fLabel = frontCubes.removeLastElement();
+                const label fLabel = frontCubes.remove();
                 octree.findNeighboursForLeaf(fLabel, neighbours);
 
                 forAll(neighbours, neiI)

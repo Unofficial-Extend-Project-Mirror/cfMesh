@@ -51,17 +51,18 @@ namespace Foam
 {
 
 // Forward declaration of template friend functions
+class Istream;
+class Ostream;
 
-template<class T, label Offset>
-class LongList;
+template<class T, int Offset> class LongList;
 
-template<class T, label Offset>
+template<class T, int Offset>
 Ostream& operator<<
 (
     Ostream&,
     const LongList<T, Offset>&
 );
-template<class T, label Offset>
+template<class T, int Offset>
 Istream& operator>>
 (
     Istream&,
@@ -72,7 +73,7 @@ Istream& operator>>
                           Class LongList Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, label Offset = 19>
+template<class T, int Offset = 19>
 class LongList
 {
     // Private data
@@ -176,11 +177,14 @@ public:
 
         //- check if the element is in the list (takes linear time)
         inline bool contains(const T& e) const;
-        inline label containsAtPosition(const T& e) const;
+        inline bool found(const T& e) const;
+        inline label find(const T& e) const;
 
         //- Return and remove the element
         inline T remove(const label i);
-        inline T removeLastElement();
+
+        //- Remove and return the last element
+        inline T remove();
 
         //- get and set operators
         inline const T& operator[](const label i) const;

@@ -111,7 +111,8 @@ public:
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label e) const;
-        inline label containsAtPosition(const label e) const;
+        inline bool found(const label e) const;
+        inline label find(const label e) const;
 
         //- set and get operators
         inline label operator[](const label) const;

@@ -83,7 +83,7 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
                 const face& f = faces[c[fI]];
                 forAll(f, eI)
                 {
-                    const label pos = edges.containsAtPosition(f.faceEdge(eI));
+                    const label pos = edges.find(f.faceEdge(eI));
 
                     if (pos == -1)
                     {

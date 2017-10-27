@@ -279,7 +279,7 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
                 const DynList<label>& cPatches = cornerPatches[scI];
                 forAll(patches, i)
                 {
-                    if (!cPatches.contains(patches[i]))
+                    if (!cPatches.found(patches[i]))
                     {
                         store = false;
                         break;

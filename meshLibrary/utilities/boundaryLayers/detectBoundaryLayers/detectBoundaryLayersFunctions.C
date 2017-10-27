@@ -548,7 +548,7 @@ bool detectBoundaryLayers::findHairsForFace
         {
             const edge e = f.faceEdge(eI);
 
-            label pos = edges.containsAtPosition(e);
+            label pos = edges.find(e);
 
             if (pos < 0)
             {
@@ -605,8 +605,8 @@ bool detectBoundaryLayers::findHairsForFace
         {
             if
             (
-                edgeFaces[commonEdge].contains(otherNextFace) &&
-                edgeFaces[commonEdge].contains(otherPrevFace)
+                edgeFaces[commonEdge].found(otherNextFace)
+             && edgeFaces[commonEdge].found(otherPrevFace)
             )
             {
                 break;

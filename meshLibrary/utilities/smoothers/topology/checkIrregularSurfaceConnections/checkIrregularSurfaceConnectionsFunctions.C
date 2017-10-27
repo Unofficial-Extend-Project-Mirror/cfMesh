@@ -103,7 +103,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
             while (frontCells.size() != 0)
             {
-                const label cLabel = frontCells.removeLastElement();
+                const label cLabel = frontCells.remove();
 
                 forAllRow(cellCells, cLabel, nI)
                 {
@@ -383,7 +383,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
                 while (frontCells.size() != 0)
                 {
-                    const label cLabel = frontCells.removeLastElement();
+                    const label cLabel = frontCells.remove();
 
                     const DynList<label>& attachedEdges = bpEdges[cLabel];
                     forAll(attachedEdges, aeI)
@@ -651,7 +651,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
 
             while (front.size() != 0)
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAllRow(faceFaces, fLabel, ffI)
                 {
@@ -883,7 +883,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
 
                 while (front.size() != 0)
                 {
-                    const label cLabel = front.removeLastElement();
+                    const label cLabel = front.remove();
 
                     const DynList<label>& attachedEdges = bpEdges[cLabel];
                     forAll(attachedEdges, aeI)

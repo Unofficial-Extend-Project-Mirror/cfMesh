@@ -366,7 +366,7 @@ inline void Foam::VRWGraph::append(const label rowI, const label el)
 
 inline void Foam::VRWGraph::appendIfNotIn(const label rowI, const label el)
 {
-    if (!contains(rowI, el))
+    if (!found(rowI, el))
     {
         append(rowI, el);
     }
@@ -561,26 +561,21 @@ inline bool Foam::VRWGraph::contains
     const label e
 ) const
 {
-    const label start = rows_[rowI].start();
-    if (start == INVALIDROW)
-    {
-        return false;
-    }
-    const label size = rows_[rowI].size();
-
-    for (label i = 0; i < size; ++i)
-    {
-        if (data_[start + i] == e)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return (this->find(rowI, e) >= 0);
 }
 
 
-inline Foam::label Foam::VRWGraph::containsAtPosition
+inline bool Foam::VRWGraph::found
+(
+    const label rowI,
+    const label e
+) const
+{
+    return (this->find(rowI, e) >= 0);
+}
+
+
+inline Foam::label Foam::VRWGraph::find
 (
     const label rowI,
     const label e

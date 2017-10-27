@@ -140,7 +140,7 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
 
                 while (front.size() != 0)
                 {
-                    const label fLabel = front.removeLastElement();
+                    const label fLabel = front.remove();
 
                     forAllRow(faceEdges, fLabel, feI)
                     {

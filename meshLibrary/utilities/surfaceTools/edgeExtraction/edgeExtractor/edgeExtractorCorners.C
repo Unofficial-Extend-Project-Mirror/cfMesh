@@ -601,7 +601,7 @@ void edgeExtractor::cornerEvaluator::createParallelAddressing()
             {
                 const DynList<labelledPoint, 6>& olpf = pFaces[j];
 
-                if (olpf.contains(lpf[lpf.rcIndex(pos)]))
+                if (olpf.found(lpf[lpf.rcIndex(pos)]))
                 {
                     label helper = faceProc[j];
                     faceProc[j] = faceProc[i + 1];
@@ -638,7 +638,7 @@ void edgeExtractor::cornerEvaluator::sortedFacesAtPoint
     forAll(pFaces, i)
     {
         const face& bf = bFaces[pFaces[i]];
-        const label pos = pointFaces.containsAtPosition(bpI, pFaces[i]);
+        const label pos = pointFaces.find(bpI, pFaces[i]);
 
         const edge e = bf.faceEdge(bf.rcIndex(pointInFace(bpI, pos)));
 
@@ -802,11 +802,13 @@ void edgeExtractor::cornerEvaluator::improveCorners
 
             bool allPatchesRemain(true);
             forAll(edgePatches, i)
-                if (!newFacePatches.contains(edgePatches[i].first()))
+            {
+                if (!newFacePatches.found(edgePatches[i].first()))
                 {
                     allPatchesRemain = false;
                     break;
                 }
+            }
 
             Info<< "New patches at point" << newFacePatches << endl;
             if (allPatchesRemain)
@@ -1262,7 +1264,7 @@ bool edgeExtractor::checkCorners()
 
             while (front.size())
             {
-                const label fI = front.removeLastElement();
+                const label fI = front.remove();
                 const label bfI = pointFaces(bpI, fI);
 
                 pFaces.append(bfI);
@@ -1278,10 +1280,10 @@ bool edgeExtractor::checkCorners()
                 if (nei == bfI)
                     nei = edgeFaces(beI, 1);
 
-                if (pFaces.contains(nei) || (nei < 0))
+                if (pFaces.found(nei) || (nei < 0))
                     continue;
 
-                front.append(pointFaces.containsAtPosition(bpI, nei));
+                front.append(pointFaces.find(bpI, nei));
             }
 
             # ifdef DEBUGEdgeExtractor
@@ -1367,7 +1369,7 @@ bool edgeExtractor::checkCorners()
 
                 while (front.size() != 0)
                 {
-                    const label currIndex = front.removeLastElement();
+                    const label currIndex = front.remove();
 
                     const label nbeI = pEdges[currIndex];
                     const label pbeI = pEdges[pFaces.rcIndex(currIndex)];
@@ -1410,18 +1412,18 @@ bool edgeExtractor::checkCorners()
 
                 if (beI == bestEdge)
                 {
-                    label pos = pFaces.containsAtPosition(edgeFaces(beI, 0));
+                    label pos = pFaces.find(edgeFaces(beI, 0));
                     groupsForChanging.first() = faceInGroup[pos];
-                    pos = pFaces.containsAtPosition(edgeFaces(beI, 1));
+                    pos = pFaces.find(edgeFaces(beI, 1));
                     groupsForChanging.second() = faceInGroup[pos];
                 }
                 else if (featureEdge.found(beI))
                 {
                     labelPair lp, lpp;
-                    label pos = pFaces.containsAtPosition(edgeFaces(beI, 0));
+                    label pos = pFaces.find(edgeFaces(beI, 0));
                     lpp.first() = facePatch_[pFaces[pos]];
                     lp.first() = faceInGroup[pos];
-                    pos = pFaces.containsAtPosition(edgeFaces(beI, 1));
+                    pos = pFaces.find(edgeFaces(beI, 1));
                     lpp.second() = facePatch_[pFaces[pos]];
                     lp.second() = faceInGroup[pos];
 
@@ -1518,7 +1520,7 @@ bool edgeExtractor::checkCorners()
                             if (nei == bfI)
                                 nei = edgeFaces(beI, 1);
 
-                            const label posNei = pFaces.containsAtPosition(nei);
+                            const label posNei = pFaces.find(nei);
                             if
                             (
                                 (posNei < 0) ||
@@ -1655,7 +1657,7 @@ bool edgeExtractor::checkCorners()
                             if (nei == bfI)
                                 nei = edgeFaces(beI, 1);
 
-                            const label posNei = pFaces.containsAtPosition(nei);
+                            const label posNei = pFaces.find(nei);
                             if
                             (
                                 (posNei < 0) ||

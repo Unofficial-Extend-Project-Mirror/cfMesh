@@ -456,7 +456,7 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
                             {
                                 edge e(tet[i], tet[(i + 1)%3]);
 
-                                const label pos = bEdges.containsAtPosition(e);
+                                const label pos = bEdges.find(e);
                                 if (pos < 0)
                                 {
                                     bEdges.append(e);
@@ -604,7 +604,7 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
                         for (label i = 0; i < 3; ++i)
                         {
                             const edge e(tet[i], tet[(i + 1)%3]);
-                            const label pos = bndEdges.containsAtPosition(e);
+                            const label pos = bndEdges.find(e);
 
                             if (pos < 0)
                             {

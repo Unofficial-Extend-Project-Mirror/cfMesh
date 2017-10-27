@@ -460,7 +460,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
         while (front.size())
         {
-            const label fPatch = front.removeLastElement();
+            const label fPatch = front.remove();
 
             forAll(treatPatchesWithPatch_[fPatch], i)
             {

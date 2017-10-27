@@ -160,22 +160,23 @@ inline bool Foam::FRWGraph<T, width>::contains
     const T& e
 ) const
 {
-    const label start = rowI*width;
-
-    for (label i = 0; i < width; ++i)
-    {
-        if (data_[start + i] == e)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return (this->find(rowI, e) >= 0);
 }
 
 
 template<class T, Foam::label width>
-inline Foam::label Foam::FRWGraph<T, width>::containsAtPosition
+inline bool Foam::FRWGraph<T, width>::found
+(
+    const label rowI,
+    const T& e
+) const
+{
+    return (this->find(rowI, e) >= 0);
+}
+
+
+template<class T, Foam::label width>
+inline Foam::label Foam::FRWGraph<T, width>::find
 (
     const label rowI,
     const T& e

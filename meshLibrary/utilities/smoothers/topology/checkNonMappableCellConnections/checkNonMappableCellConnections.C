@@ -124,7 +124,7 @@ void checkNonMappableCellConnections::findCellTypes()
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAll(internalFaces, j)
                 {

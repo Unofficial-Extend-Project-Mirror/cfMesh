@@ -177,7 +177,7 @@ void edgeExtractor::calculateSingleCellEdge()
                     const label beI = bpEdges(bps, i);
                     const edge& be = edges[beI];
 
-                    if ((e == be) && !foundEdge.contains(be))
+                    if ((e == be) && !foundEdge.found(be))
                     {
                         foundEdge.append(be);
 
@@ -296,7 +296,7 @@ void edgeExtractor::findFeatureEdgesNearEdge()
             meshOctree_.findEdgesInBox(bb, nearEdges);
             forAllReverse(nearEdges, i)
             {
-                const label pos = nearEdges.containsAtPosition(nearEdges[i]);
+                const label pos = nearEdges.find(nearEdges[i]);
 
                 if (pos < i)
                     nearEdges.removeElement(i);

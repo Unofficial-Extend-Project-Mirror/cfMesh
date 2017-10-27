@@ -66,7 +66,7 @@ void frontalMarking
     // start with frontal marking
     while (front.size())
     {
-        const label eLabel = front.removeLastElement();
+        const label eLabel = front.remove();
 
         // find neighbours of the current element
         DynList<label> neighbours;
@@ -233,7 +233,7 @@ label groupMarking
 
             while (front.size())
             {
-                const label eLabel = front.removeLastElement();
+                const label eLabel = front.remove();
 
                 DynList<label> neighbours;
                 neighbourCalculator(eLabel, neighbours);

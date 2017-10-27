@@ -1009,7 +1009,7 @@ void refineBoundaryLayers::generateNewFaces()
 
             forAll(currLayers, i)
             {
-                if (neiLayers.contains(currLayers[i]))
+                if (neiLayers.found(currLayers[i]))
                 {
                     foundSame = true;
                     break;

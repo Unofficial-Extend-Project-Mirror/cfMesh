@@ -110,12 +110,19 @@ inline bool Foam::graphRow<graphType>::contains(const label e) const
 
 
 template<class graphType>
-inline Foam::label Foam::graphRow<graphType>::containsAtPosition
+inline bool Foam::graphRow<graphType>::found(const label e) const
+{
+    return data_.found(rowI_, e);
+}
+
+
+template<class graphType>
+inline Foam::label Foam::graphRow<graphType>::find
 (
     const label e
 ) const
 {
-    return data_.containsAtPosition(rowI_, e);
+    return data_.find(rowI_, e);
 }
 
 
