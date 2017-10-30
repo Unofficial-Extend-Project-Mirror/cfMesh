@@ -138,7 +138,7 @@ partTriMesh::partTriMesh
                 meshSurface.globalToLocalBndPointAddressing();
 
             std::map<label, labelLongList> eData;
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label bpI = iter();
 

@@ -203,12 +203,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         const labelList& bPoints = mse.boundaryPoints();
 
-        for
-        (
-            Map<label>::const_iterator iter = globalToLocal.begin();
-            iter!=globalToLocal.end();
-            ++iter
-        )
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
             procPoint[bPoints[bpI]] = true;
@@ -376,8 +371,6 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     // create cells for corner nodes
-    typedef std::map<std::pair<label, label>, label> mPairToLabelType;
-    typedef std::map<label, mPairToLabelType> mPointsType;
     typedef std::map<label, DynList<label, 3>> ppType;
 
     ppType nodePatches;
@@ -397,7 +390,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         ppfType parPointFaces;
         ppType parPointPatches;
 
-        forAllConstIter(mPointsType, otherVrts_, iter)
+        forAllConstIters(otherVrts_, iter)
         {
             // skip points on feature edges
             if (iter->second.size() == 2)
@@ -504,7 +497,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
         }
 
         // sort faces sharing corners at the parallel boundaries
-        forAllIter(ppfType, parPointFaces, iter)
+        forAllIters(parPointFaces, iter)
         {
             DynList<DynList<label, 8>, 8>& pFaces = iter->second;
             DynList<label, 3>& fPatches = parPointPatches[iter->first];
@@ -545,7 +538,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     // sort out point which are not at inter-processor boundaries
-    forAllConstIter(mPointsType, otherVrts_, iter)
+    forAllConstIters(otherVrts_, iter)
     {
         if (iter->second.size() == 2)
         {
@@ -598,7 +591,7 @@ void boundaryLayers::createLayerCells(const labelList& patchLabels)
     }
 
     // create layer cells for corner nodes
-    forAllIter(ppType, nodePatches, iter)
+    forAllIters(nodePatches, iter)
     {
         const DynList<label, 3>& patchIDs = iter->second;
         DynList<label, 3> pKeys;
@@ -812,13 +805,7 @@ void boundaryLayers::createNewFacesFromPointsParallel
     help::exchangeMap(exchangeData, receivedMap);
     exchangeData.clear();
 
-    for
-    (
-        std::map<label, List<labelledPair>>::const_iterator
-        iter = receivedMap.begin();
-        iter!=receivedMap.end();
-        ++iter
-    )
+    forAllConstIters(receivedMap, iter)
     {
         const List<labelledPair>& receivedData = iter->second;
 

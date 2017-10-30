@@ -141,23 +141,17 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
                 const labelledTri& tri = surf_[triI];
 
                 forAll(tri, i)
+                {
                     points.insert(tri[i]);
+                }
             }
 
-            for
-            (
-                std::set<label>::const_iterator it = points.begin();
-                it!=points.end();
-            )
+            for (auto it = points.cbegin(); it != points.cend(); /*nil*/)
             {
                 const label pointI = *it;
 
-                for
-                (
-                    std::set<label>::const_iterator nIt=++it;
-                    nIt!=points.end();
-                    ++nIt
-                )
+                for (auto nIt = ++it; nIt != points.cend(); ++nIt)
+                {
                     if (magSqr(pts[pointI] - pts[*nIt]) < sqr(tolerance_))
                     {
                         foundDuplicates = true;
@@ -166,6 +160,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
                         # endif
                         newPointLabel[*nIt] = pointI;
                     }
+                }
             }
         }
     }
@@ -177,6 +172,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
     // remove vertices and update node labels
     label counter(0);
     forAll(pts, pI)
+    {
         if (newPointLabel[pI] == pI)
         {
             newPointLabel[pI] = counter;
@@ -189,6 +185,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
             const label origI = newPointLabel[pI];
             newPointLabel[pI] = newPointLabel[origI];
         }
+    }
 
     Info<< "Found " << (pts.size() - counter) << "duplicate points" << endl;
 

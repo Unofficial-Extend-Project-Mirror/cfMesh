@@ -621,7 +621,7 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
     }
 
     // refine leaves
-    forAllConstIter(lMap, leavesMap, it)
+    forAllConstIters(leavesMap, it)
     {
         const label nLayers = it->first.second;
         const direction levelI = it->first.first;

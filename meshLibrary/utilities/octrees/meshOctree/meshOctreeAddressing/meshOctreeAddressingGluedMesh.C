@@ -139,9 +139,8 @@ void meshOctreeAddressing::checkGluedRegions()
             } while (!finished);
 
             labelHashSet permissibleNeighbours;
-            forAllConstIter(labelHashSet, innerNodes, it)
+            for (const label nodeI : innerNodes)
             {
-                const label nodeI = it.key();
                 forAllRow(nodeLeaves, nodeI, nlI)
                 {
                     permissibleNeighbours.insert(nodeLeaves(nodeI, nlI));

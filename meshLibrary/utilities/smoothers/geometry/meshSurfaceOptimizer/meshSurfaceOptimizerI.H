@@ -467,7 +467,7 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
             exchangeData[bpNeiProcs[i]].clear();
 
         //- prepare data which will be sent to other processors
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -523,7 +523,7 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
             exchangeData[bpNeiProcs[i]].clear();
 
         //- prepare data which will be sent to other processors
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 

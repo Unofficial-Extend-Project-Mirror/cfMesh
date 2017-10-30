@@ -352,12 +352,7 @@ label polyMeshGenCells::addCellSubset(const word& selName)
     }
 
     id = 0;
-    for
-    (
-        std::map<label, meshSubset>::const_iterator it = cellSubsets_.begin();
-        it != cellSubsets_.end();
-        ++it
-    )
+    forAllConstIters(cellSubsets_, it)
     {
         id = Foam::max(id, it->first + 1);
     }
@@ -402,8 +397,7 @@ word polyMeshGenCells::cellSubsetName(const label setI) const
 
 label polyMeshGenCells::cellSubsetIndex(const word& selName) const
 {
-    std::map<label, meshSubset>::const_iterator it;
-    for (it = cellSubsets_.begin(); it != cellSubsets_.end(); ++it)
+    forAllConstIters(cellSubsets_, it)
     {
         if (it->second.name() == selName)
         {
@@ -496,8 +490,7 @@ void polyMeshGenCells::write() const
     polyMeshGenFaces::write();
 
     // write cell subsets
-    std::map<label, meshSubset>::const_iterator setIt;
-    for (setIt = cellSubsets_.begin(); setIt != cellSubsets_.end(); ++setIt)
+    forAllConstIters(cellSubsets_, setIt)
     {
         cellSet set
         (

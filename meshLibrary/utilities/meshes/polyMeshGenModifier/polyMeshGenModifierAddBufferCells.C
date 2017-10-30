@@ -79,13 +79,13 @@ void polyMeshGenModifier::addBufferCells()
 
         faceI = 0;
         List<labelledPoint> ptsToSend(pointsToSend.size());
-        forAllConstIter(labelHashSet, pointsToSend, it)
+        for (const label pointi : pointsToSend)
         {
             ptsToSend[faceI++] =
                 labelledPoint
                 (
-                    globalPointLabel[it.key()],
-                    points[it.key()]
+                    globalPointLabel[pointi],
+                    points[pointi]
                 );
         }
 
@@ -143,9 +143,9 @@ void polyMeshGenModifier::addBufferCells()
         }
 
         labelLongList flattenedCells;
-        forAllConstIter(labelHashSet, cellsToSend, it)
+        for (const label celli : cellsToSend)
         {
-            const cell& c = cells[it.key()];
+            const cell& c = cells[celli];
 
             // the number of faces in the cell
             flattenedCells.append(c.size());

@@ -111,18 +111,15 @@ void writeSurfaceToVTK
         }
     }
 
-    forAllConstIter(labelHashSet, labels, it)
-        newPointLabel[it.key()];
+    for (const label it : labels)
+    {
+        newPointLabel[it];
+    }
 
     const pointField& points = surf.points();
     file << "POINTS " << label(newPointLabel.size()) << " float\n";
     label counter(0);
-    for
-    (
-        std::map<label, label>::iterator it = newPointLabel.begin();
-        it!=newPointLabel.end();
-        ++it
-    )
+    forAllIters(newPointLabel, it)
     {
         it->second = counter++;
 
@@ -351,7 +348,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             }
         }
 
-        forAllConstIter(Map<labelHashSet>, otherLabels, it)
+        forAllConstIters(otherLabels, it)
         {
             const labelHashSet& currLabels = it();
 
@@ -359,9 +356,8 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 continue;
 
             labelHashSet additionalPoints;
-            forAllConstIter(labelHashSet, currLabels, lit)
+            for (const label neiPointI : currLabels)
             {
-                const label neiPointI = lit.key();
                 const constRow pTriangles = pointTriangles[neiPointI];
 
                 forAll(pTriangles, ptI)
@@ -376,14 +372,18 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
                 }
             }
 
-            forAllConstIter(labelHashSet, additionalPoints, aIter)
-                otherLabels[it.key()].insert(aIter.key());
+            for (const label aIter : additionalPoints)
+            {
+                otherLabels[it.key()].insert(aIter);
+            }
         }
 
-        forAllIter(Map<vector>, normals, nit)
+        forAllIters(normals, nit)
+        {
             nit() /= (Foam::mag(nit()) + VSMALL);
+        }
 
-        forAllConstIter(Map<labelHashSet>, otherLabels, it)
+        forAllConstIters(otherLabels, it)
         {
             const labelHashSet& labels = it();
 
@@ -412,8 +412,10 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
             // store point coordinates
             DynList<point> op;
 
-            forAllConstIter(labelHashSet, labels, lit)
-                op.append(points[lit.key()]);
+            for (const label lit : labels)
+            {
+                op.append(points[lit]);
+            }
 
             // fit the quadric patch to the surface
             quadricFitting qfit(points[pointI], normals[it.key()], op);
@@ -800,7 +802,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
         std::map<label, scalar>& mc = meanCurvature_[patchI];
         Map<label>& nn = nNeighbours[patchI];
 
-        forAllIter(Map<label>, nn, it)
+        forAllIters(nn, it)
         {
             if (it() == 0)
             {

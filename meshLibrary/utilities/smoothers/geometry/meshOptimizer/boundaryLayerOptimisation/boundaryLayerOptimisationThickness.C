@@ -487,7 +487,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
             forAll(eNeiProcs, i)
                 exchangeData[eNeiProcs[i]].clear();
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

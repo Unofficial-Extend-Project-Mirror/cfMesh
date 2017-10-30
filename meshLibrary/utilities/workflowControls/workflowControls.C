@@ -302,12 +302,13 @@ bool workflowControls::runCurrentStep(const word& stepName)
     }
 
     // check if the requested step exists in the database of steps
-    std::map<word, label>::const_iterator it = workflowSteps_.find(stepName);
-    if (it == workflowSteps_.end())
+    if (workflowSteps_.find(stepName) == workflowSteps_.end())
     {
         DynList<word> toc;
-        for (it = workflowSteps_.begin(); it!=workflowSteps_.end(); ++it)
+        forAllConstIters(workflowSteps_, it)
+        {
             toc.append(it->first);
+        }
 
         FatalErrorInFunction
             << "Step " << stepName << " is not a valid name."

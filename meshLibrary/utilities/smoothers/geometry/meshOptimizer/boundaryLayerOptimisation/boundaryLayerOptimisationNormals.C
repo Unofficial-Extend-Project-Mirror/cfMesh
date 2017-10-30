@@ -115,7 +115,7 @@ void boundaryLayerOptimisation::calculateNormalVectors
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -130,7 +130,8 @@ void boundaryLayerOptimisation::calculateNormalVectors
                     if (neiProc == Pstream::myProcNo())
                         continue;
 
-                    forAllConstIter(patchNormalType, patchNormal, pIt)
+                    forAllConstIters(patchNormal, pIt)
+                    {
                         exchangeData[neiProc].append
                         (
                             refLabelledPointScalar
@@ -144,6 +145,7 @@ void boundaryLayerOptimisation::calculateNormalVectors
                                 )
                             )
                         );
+                    }
                 }
             }
         }
@@ -169,7 +171,7 @@ void boundaryLayerOptimisation::calculateNormalVectors
     # pragma omp parallel
     # pragma omp single nowait
     # endif
-    forAllIter(pointNormalsType, pointPatchNormal, it)
+    forAllIters(pointPatchNormal, it)
     {
         # ifdef USE_OMP
         # pragma omp task firstprivate(it)
@@ -178,7 +180,7 @@ void boundaryLayerOptimisation::calculateNormalVectors
 
         patchNormalType& patchNormal = it->second;
 
-        forAllIter(patchNormalType, patchNormal, pIt)
+        forAllIters(patchNormal, pIt)
         {
             pIt->second.first /= pIt->second.second;
             //pIt->second.first /= (mag(pIt->second.first) + VSMALL);
@@ -444,7 +446,7 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
         forAll(eNeiProcs, i)
             exchangeData[eNeiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -679,7 +681,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
             forAll(eNeiProcs, i)
                 exchangeData[eNeiProcs[i]].clear();
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 
@@ -849,7 +851,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
 
                 label counter(0);
                 const patchNormalType& patchNormals = pointPatchNormal[bpI];
-                forAllConstIter(patchNormalType, patchNormals, pIt)
+                forAllConstIters(patchNormals, pIt)
                 {
                     hv -= pIt->second.first;
                     ++counter;
@@ -1028,9 +1030,11 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
 
             std::map<label, LongList<labelledPoint>> exchangeData;
             forAll(eNeiProcs, i)
+            {
                 exchangeData[eNeiProcs[i]].clear();
+            }
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

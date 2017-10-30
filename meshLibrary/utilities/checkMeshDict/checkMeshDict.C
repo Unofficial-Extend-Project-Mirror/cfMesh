@@ -1074,13 +1074,7 @@ void checkMeshDict::updateRenameBoundary
                 // current state of the dictionary
                 const dictionary& patchDicts = dict.subDict("newPatchNames");
 
-                std::map<word, wordList>::const_iterator it;
-                for
-                (
-                    it = patchesFromPatch.begin();
-                    it!=patchesFromPatch.end();
-                    ++it
-                )
+                forAllConstIters(patchesFromPatch, it)
                 {
                     const word& pName = it->first;
                     const wordList& newNames = it->second;
@@ -1154,8 +1148,7 @@ void checkMeshDict::updateRenameBoundary
                     }
                 }
 
-                std::map<word, wordList>::const_iterator it;
-                for (it = patchesFromPatch.begin(); it!=patchesFromPatch.end(); ++it)
+                forAllConstIters(patchesFromPatch, it)
                 {
                     const word& pName = it->first;
                     const wordList& newNames = it->second;
@@ -1186,8 +1179,7 @@ void checkMeshDict::updateRenameBoundary
             // newPatchNames is not used
             dictionary& newPatchesDict = newDict.subDict("newPatchNames");
 
-            std::map<word, wordList>::const_iterator it;
-            for (it = patchesFromPatch.begin(); it!=patchesFromPatch.end(); ++it)
+            forAllConstIters(patchesFromPatch, it)
             {
                 const wordList& newPatchNames = it->second;
 
@@ -1213,8 +1205,7 @@ void checkMeshDict::updateRenameBoundary
         // create the dictionary if it has not existed before
         dictionary& newPatchesDict = newDict.subDict("newPatchNames");
 
-        std::map<word, wordList>::const_iterator it;
-        for (it = patchesFromPatch.begin(); it!=patchesFromPatch.end(); ++it)
+        forAllConstIters(patchesFromPatch, it)
         {
             const wordList& newPatchNames = it->second;
 

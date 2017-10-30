@@ -153,7 +153,7 @@ partTetMesh::partTetMesh
                 mesh.addressingData().globalToLocalPointAddressing();
 
             std::map<label, LongList<label>> eData;
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label pointI = iter();
 
@@ -295,7 +295,7 @@ partTetMesh::partTetMesh
                 mesh.addressingData().globalToLocalPointAddressing();
 
             std::map<label, LongList<label>> eData;
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label pointI = iter();
 

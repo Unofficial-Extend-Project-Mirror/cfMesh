@@ -1821,12 +1821,12 @@ inline label numberOfFaceGroups
 
     labelHashSet triaInRange(containedElements.size());
     const scalar rangeSq = range*range;
-    forAllConstIter(labelHashSet, containedElements, it)
+    for (const label elemi : containedElements)
     {
-        const point p = nearestPointOnTheTriangle(it.key(), surface, centre);
+        const point p = nearestPointOnTheTriangle(elemi, surface, centre);
         if (magSqr(p - centre) < rangeSq)
         {
-            triaInRange.insert(it.key());
+            triaInRange.insert(elemi);
         }
     }
 
@@ -1837,13 +1837,13 @@ inline label numberOfFaceGroups
 
     DynList<label> front;
 
-    forAllConstIter(labelHashSet, triaInRange, it)
+    for (const label triIdx : triaInRange)
     {
-        if (!elGroup.found(it.key()))
+        if (!elGroup.found(triIdx))
         {
             front.clear();
-            front.append(it.key());
-            elGroup.insert(it.key(), nGroups);
+            front.append(triIdx);
+            elGroup.insert(triIdx, nGroups);
 
             while (front.size())
             {
@@ -1913,16 +1913,16 @@ inline label numberOfEdgeGroups
 
     const scalar rangeSq = range*range;
     labelHashSet edgesInRange(containedEdges.size());
-    forAllConstIter(labelHashSet, containedEdges, it)
+    for (const label edgei : containedEdges)
     {
-        const edge& e = edges[it.key()];
-        const point& sp = points[e[0]];
-        const point& ep = points[e[1]];
+        const edge& e = edges[edgei];
+        const point& sp = points[e.first()];
+        const point& ep = points[e.second()];
 
         const point p = nearestPointOnTheEdgeExact(sp, ep, centre);
         if (magSqr(p - centre) < rangeSq)
         {
-            edgesInRange.insert(it.key());
+            edgesInRange.insert(edgei);
         }
     }
 
@@ -1933,13 +1933,13 @@ inline label numberOfEdgeGroups
 
     DynList<label> front;
 
-    forAllConstIter(labelHashSet, edgesInRange, it)
+    for (const label edgei : edgesInRange)
     {
-        if (!elGroup.found(it.key()))
+        if (!elGroup.found(edgei))
         {
             front.clear();
-            front.append(it.key());
-            elGroup.insert(it.key(), nGroups);
+            front.append(edgei);
+            elGroup.insert(edgei, nGroups);
 
             while (front.size())
             {

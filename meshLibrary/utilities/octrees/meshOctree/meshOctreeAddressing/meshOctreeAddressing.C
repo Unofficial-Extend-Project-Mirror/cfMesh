@@ -210,7 +210,7 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
         }
     }
 
-    forAllConstIter(Map<label>, nAppearances, iter)
+    forAllConstIters(nAppearances, iter)
     {
         if (iter() == 2)
         {
@@ -294,7 +294,7 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
         }
     }
 
-    forAllConstIter(Map<label>, nAppearances, iter)
+    forAllConstIters(nAppearances, iter)
     {
         if (iter() == edgeCubes.sizeOfRow(eI))
         {
@@ -371,7 +371,7 @@ void meshOctreeAddressing::edgeIntersections
 
     point intersection(vector::zero);
 
-    forAllConstIter(Map<label>, nAppearances, iter)
+    forAllConstIters(nAppearances, iter)
     {
         if (iter() == edgeCubes.sizeOfRow(eI))
         {

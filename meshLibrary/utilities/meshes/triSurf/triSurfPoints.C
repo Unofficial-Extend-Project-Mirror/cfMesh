@@ -62,7 +62,7 @@ label triSurfPoints::addPointSubset(const word& subsetName)
     }
 
     id = 0;
-    forAllConstIter(Map<meshSubset>, pointSubsets_, it)
+    forAllConstIters(pointSubsets_, it)
     {
         id = Foam::max(id, it.key()+1);
     }
@@ -103,7 +103,7 @@ word triSurfPoints::pointSubsetName(const label subsetID) const
 
 label triSurfPoints::pointSubsetIndex(const word& subsetName) const
 {
-    forAllConstIter(Map<meshSubset>, pointSubsets_, it)
+    forAllConstIters(pointSubsets_, it)
     {
         if (it().name() == subsetName)
         {

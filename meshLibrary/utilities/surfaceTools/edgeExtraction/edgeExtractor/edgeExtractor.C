@@ -87,7 +87,7 @@ void edgeExtractor::calculateValence()
                 std::make_pair(bpNeiProcs[i], LongList<labelPair>())
             );
 
-        forAllConstIter(Map<label>, globalToLocal, iter)
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
 
@@ -361,7 +361,7 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
                 std::make_pair(neiProcs[procI], labelLongList())
             );
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 
@@ -626,7 +626,7 @@ void edgeExtractor::findOtherFacePatchesParallel
                 std::make_pair(neiProcs[procI], labelLongList())
             );
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 
@@ -782,7 +782,7 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
             forAll(neiProcs, i)
                 exchangeData[i] = LongList<refLabelledPoint>();
 
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label bpI = iter();
 
@@ -1756,7 +1756,7 @@ bool edgeExtractor::checkFacePatchesTopology()
 
             newPatch = -1;
             label nNeiEdges(0);
-            forAllConstIter(Map<label>, nNeiInPatch, it)
+            forAllConstIters(nNeiInPatch, it)
             {
                 if (it() > nNeiEdges)
                 {
@@ -1881,7 +1881,7 @@ class featureEdgesNeiOp
                     exchangeData[neiProcs[i]].clear();
 
                 // fill the data from sending
-                forAllConstIter(Map<label>, globalToLocal, it)
+                forAllConstIters(globalToLocal, it)
                 {
                     const label bpI = it();
 
@@ -1991,7 +1991,7 @@ public:
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -2134,10 +2134,10 @@ bool edgeExtractor::checkFacePatchesGeometry()
         // untangle the surface
         activePointLabel.clear();
         activePoints = false;
-        forAllConstIter(labelHashSet, invertedPoints, it)
+        for (const label pointi : invertedPoints)
         {
-            activePointLabel.append(bp[it.key()]);
-            activePoints[bp[it.key()]] = true;
+            activePointLabel.append(bp[pointi]);
+            activePoints[bp[pointi]] = true;
         }
 
         // untangle the surface
@@ -2294,7 +2294,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
             );
 
         // collect the data distributed to others
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 

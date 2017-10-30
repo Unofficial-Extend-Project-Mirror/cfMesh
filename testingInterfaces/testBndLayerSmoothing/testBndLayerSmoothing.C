@@ -211,20 +211,20 @@ int main(int argc, char *argv[])
     labelHashSet badFaces;
     polyMeshGenChecks::findBadFaces(pmg, badFaces, true, &activeFace);
 
-    if (returnReduce(badFaces.size(), sumOp<label>()) )
+    if (returnReduce(badFaces.size(), sumOp<label>()))
     {
         const labelList& own = pmg.owner();
         const labelList& nei = pmg.neighbour();
 
         label badCellId(-1);
-        forAllConstIter(labelHashSet, badFaces, it)
+        for (const label facei : badFaces)
         {
             if (badCellId < 0)
                 badCellId = pmg.addCellSubset("badBlCells");
-            pmg.addCellToSubset(badCellId, own[it.key()]);
+            pmg.addCellToSubset(badCellId, own[facei]);
 
-            if (nei[it.key()] >= 0)
-                pmg.addCellToSubset(badCellId, nei[it.key()]);
+            if (nei[facei] >= 0)
+                pmg.addCellToSubset(badCellId, nei[facei]);
         }
 
         if (returnReduce(pmg.cellSubsetIndex("badBlCells")>=0, maxOp<bool>()))

@@ -237,8 +237,10 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 
             label counter(0);
 
-            forAllConstIter(labelHashSet, patchToNewPatches[patchI], it)
-                patchesForPatch[pName][counter++] = newPatches[it.key()].name();
+            for (const label it : patchToNewPatches[patchI])
+            {
+                patchesForPatch[pName][counter++] = newPatches[it].name();
+            }
         }
 
         reduce(foundProblematic, maxOp<bool>());

@@ -96,12 +96,7 @@ inline void triSurfFacets::facetInSubsets
 {
     facetSubsets.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        facetSubsets_,
-        it
-    )
+    forAllConstIters(facetSubsets_, it)
     {
         if (it().contains(triI))
         {
@@ -115,12 +110,7 @@ inline void triSurfFacets::facetSubsetIndices(DynList<label>& indices) const
 {
     indices.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        facetSubsets_,
-        it
-    )
+    forAllConstIters(facetSubsets_, it)
     {
         indices.append(it.key());
     }
@@ -149,12 +139,7 @@ inline void triSurfFacets::facetsInSubset
 template<class ListType>
 inline void triSurfFacets::updateFacetsSubsets(const ListType& newFacetsLabels)
 {
-    for
-    (
-        Map<meshSubset>::iterator it = facetSubsets_.begin();
-        it!=facetSubsets_.end();
-        ++it
-    )
+    forAllIters(facetSubsets_, it)
     {
         it().updateSubset(newFacetsLabels);
     }

@@ -581,7 +581,7 @@ void meshSurfaceEngine::calculatePointPatches() const
 
         std::map<label, labelLongList> exchangeData;
 
-        forAllConstIter(Map<label>, globalToLocal, iter)
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
 
@@ -729,7 +729,7 @@ void meshSurfaceEngine::calculatePointPoints() const
         const VRWGraph& bpAtProcs = this->bpAtProcs();
 
         std::map<label, labelLongList> exchangeData;
-        forAllConstIter(Map<label>, globalToLocal, iter)
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
 
@@ -884,7 +884,7 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
     // create data which will be sent to other processors
     std::map<label, LongList<labelledPoint>> exchangeData;
 
-    forAllConstIter(Map<label>, globalToLocal, iter)
+    forAllConstIters(globalToLocal, iter)
     {
         const label bpI = iter();
 
@@ -1019,8 +1019,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
                 }
             }
 
-            std::set<std::pair<label, label>>::const_iterator it;
-            for (it = edgesAtPoint.begin(); it!=edgesAtPoint.end(); ++it)
+            forAllConstIters(edgesAtPoint, it)
             {
                 edgesHelper.append(edge(it->first, it->second));
             }
@@ -1386,7 +1385,7 @@ void meshSurfaceEngine::calculateEdgePatchesAddressing() const
         const Map<label>& globalToLocal = globalToLocalBndEdgeAddressing();
         const Map<label>& otherPatch = this->otherEdgeFacePatch();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 

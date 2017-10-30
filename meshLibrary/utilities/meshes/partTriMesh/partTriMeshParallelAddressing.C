@@ -106,7 +106,7 @@ void partTriMesh::createParallelAddressing
     // make sure that the same vertices are marked for smoothing on all procs
     // this is performed by sending the labels of vertices which are not used
     // for tet mesh creation and the tet mesh vertices which are not moved
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -146,7 +146,7 @@ void partTriMesh::createParallelAddressing
         pointType_[nodeLabelForPoint[pointI]] = NONE;
     }
 
-    for (iter = exchangeData.begin(); iter!=exchangeData.end(); ++iter)
+    forAllIters(exchangeData, iter)
     {
         iter->second.clear();
     }
@@ -156,7 +156,7 @@ void partTriMesh::createParallelAddressing
     label startPoint(0), nLocalPoints(0), nSharedPoints(0);
 
     // count the number of points at processor boundaries
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -195,7 +195,7 @@ void partTriMesh::createParallelAddressing
     }
 
     // create global labels for points at processor boundaries
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -293,7 +293,7 @@ void partTriMesh::createParallelAddressing
     }
     DynList<label>& neiProcs = *neiProcsPtr_;
 
-    for (iter = exchangeData.begin(); iter!=exchangeData.end(); ++iter)
+    forAllConstIters(exchangeData, iter)
     {
         neiProcs.append(iter->first);
     }
@@ -389,13 +389,7 @@ void partTriMesh::createBufferLayers()
     Map<label> newGlobalToLocal;
     std::map<label, point> addCoordinates;
     label nPoints = pts.size();
-    for
-    (
-        std::map<label, List<parTriFace>>::const_iterator it =
-        receivedTriangles.begin();
-        it!=receivedTriangles.end();
-        ++it
-    )
+    forAllConstIters(receivedTriangles, it)
     {
         const List<parTriFace>& receivedTrias = it->second;
 
@@ -471,12 +465,7 @@ void partTriMesh::createBufferLayers()
 
     // store newly added points
     pts.setSize(nPoints);
-    for
-    (
-        std::map<label, point>::const_iterator it = addCoordinates.begin();
-        it!=addCoordinates.end();
-        ++it
-    )
+    forAllConstIters(addCoordinates, it)
     {
         pts[it->first] = it->second;
     }
@@ -485,8 +474,10 @@ void partTriMesh::createBufferLayers()
 
     // insert the global labels of the buffer points
     // into the globalToLocal map
-    forAllConstIter(Map<label>, newGlobalToLocal, it)
+    forAllConstIters(newGlobalToLocal, it)
+    {
         globalToLocal.insert(it.key(), it());
+    }
 
     // update addressing of the surface mesh
     surf_.clearAddressing();

@@ -154,7 +154,7 @@ public:
             exchangeData[mse_.beNeiProcs()[procI]].clear();
         }
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 
@@ -467,12 +467,7 @@ void detectBoundaryLayers::analyseLayers()
         layerAtPatch_[i].clear();
     }
 
-    for
-    (
-        patchToLayerType::const_iterator it = patchToLayer.begin();
-        it!=patchToLayer.end();
-        ++it
-    )
+    forAllConstIters(patchToLayer, it)
     {
         const DynList<label>& layersAtPatch = it->second;
 

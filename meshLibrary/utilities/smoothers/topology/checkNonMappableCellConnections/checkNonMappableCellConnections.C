@@ -309,8 +309,10 @@ bool checkNonMappableCellConnections::removeCells()
         if (nRemoved != 0)
         {
             boolList removeCell(mesh_.cells().size(), false);
-            forAllConstIter(labelHashSet, badCells, it)
-                removeCell[it.key()] = true;
+            for (const label celli : badCells)
+            {
+                removeCell[celli] = true;
+            }
 
             polyMeshGenModifier(mesh_).removeCells(removeCell);
 

@@ -410,10 +410,8 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             const procEdgeMap& procBndEdges = facesWithProcBndEdges[patchI];
 
             labelLongList dts;
-            forAllConstIter(procEdgeMap, procBndEdges, it)
+            for (const std::pair<label,label>& fPair : procBndEdges)
             {
-                const std::pair<label, label>& fPair = *it;
-
                 const face& f = faces[fPair.first];
                 const edge e = f.faceEdge(fPair.second);
 
@@ -548,7 +546,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
             const procEdgeMap& procBndEdges = facesWithProcBndEdges[patchI];
 
             labelLongList dts;
-            forAllConstIter(procEdgeMap, procBndEdges, it)
+            forAllConstIters(procBndEdges, it)
             {
                 const label faceI = it->first;
                 const face& f = faces[faceI];
@@ -667,7 +665,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
 
     // check if it the surface is manifold over inter-processor edges
     Map<label> nFacesAtEdge;
-    forAllConstIter(Map<label>, globalToLocal, iter)
+    forAllConstIters(globalToLocal, iter)
     {
         const label beI = iter();
         nFacesAtEdge.insert(beI, eFaces.sizeOfRow(beI));
@@ -693,7 +691,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
         nFacesAtEdge[beI] += receivedData[counter++];
     }
 
-    forAllConstIter(Map<label>, nFacesAtEdge, iter)
+    forAllConstIters(nFacesAtEdge, iter)
     {
         if (iter() != 2)
             FatalErrorInFunction
@@ -707,7 +705,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
     forAll(beNeiProcs, i)
         exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
 
-    forAllConstIter(Map<label>, globalToLocal, iter)
+    forAllConstIters(globalToLocal, iter)
     {
         const label beI = iter();
 
@@ -738,12 +736,8 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
     otherEdgeFacePatchPtr_ = new Map<label>();
     Map<label>& otherProcPatches = *otherEdgeFacePatchPtr_;
     Map<label>& otherFaceProc = *otherEdgeFaceAtProcPtr_;
-    for
-    (
-        std::map<label, labelList>::const_iterator iter = receivedMap.begin();
-        iter!=receivedMap.end();
-        ++iter
-    )
+
+    forAllConstIters(receivedMap, iter)
     {
         const labelList& receivedData = iter->second;
 

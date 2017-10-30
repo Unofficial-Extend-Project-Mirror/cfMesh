@@ -154,13 +154,7 @@ inline void polyMeshGenFaces::faceInSubsets
 {
     faceSubsets.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = faceSubsets_.begin();
-        it!=faceSubsets_.end();
-        ++it
-    )
+    forAllConstIters(faceSubsets_, it)
     {
         if (it->second.contains(faceI))
         {
@@ -174,13 +168,7 @@ inline void polyMeshGenFaces::faceSubsetIndices(DynList<label>& indices) const
 {
     indices.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = faceSubsets_.begin();
-        it!=faceSubsets_.end();
-        ++it
-    )
+    forAllConstIters(faceSubsets_, it)
     {
         indices.append(it->first);
     }
@@ -196,8 +184,7 @@ inline void polyMeshGenFaces::facesInSubset
 {
     faceLabels.clear();
 
-    std::map<label, meshSubset>::const_iterator it =
-        faceSubsets_.find(setI);
+    std::map<label, meshSubset>::const_iterator it = faceSubsets_.find(setI);
     if (it == faceSubsets_.end())
     {
         return;
@@ -210,12 +197,7 @@ inline void polyMeshGenFaces::facesInSubset
 template<class ListType>
 inline void polyMeshGenFaces::updateFaceSubsets(const ListType& newFaceLabels)
 {
-    for
-    (
-        std::map<label, meshSubset>::iterator it = faceSubsets_.begin();
-        it!=faceSubsets_.end();
-        ++it
-    )
+    forAllIters(faceSubsets_, it)
     {
         it->second.updateSubset(newFaceLabels);
     }
@@ -224,12 +206,7 @@ inline void polyMeshGenFaces::updateFaceSubsets(const ListType& newFaceLabels)
 
 inline void polyMeshGenFaces::updateFaceSubsets(const VRWGraph& newFacesForFace)
 {
-    for
-    (
-        std::map<label, meshSubset>::iterator it = faceSubsets_.begin();
-        it!=faceSubsets_.end();
-        ++it
-    )
+    forAllIters(faceSubsets_, it)
     {
         it->second.updateSubset(newFacesForFace);
     }

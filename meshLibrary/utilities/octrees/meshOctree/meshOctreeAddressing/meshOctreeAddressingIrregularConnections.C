@@ -208,9 +208,9 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
         if (Pstream::parRun() && (nIrregular != 0))
         {
             LongList<meshOctreeCubeCoordinates> exchangeData;
-            forAllConstIter(labelHashSet, changedBoxType, it)
+            for (const label it : changedBoxType)
             {
-                exchangeData.append(octree_.returnLeaf(it.key()).coordinates());
+                exchangeData.append(octree_.returnLeaf(it).coordinates());
             }
 
             LongList<meshOctreeCubeCoordinates> receivedData;

@@ -496,8 +496,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
     // now the global leaf labels shall be sent from the processors
     // that own the leaves to the processors that also contain them
     std::map<label, labelLongList> exchangeLabels;
-    std::map<label, LongList<meshOctreeCubeBasic>>::iterator it;
-    for (it = exchangeData.begin(); it!=exchangeData.end(); ++it)
+    forAllIters(exchangeData, it)
     {
         it->second.clear();
         exchangeLabels.insert(std::make_pair(it->first, labelLongList()));
@@ -551,7 +550,7 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
         exchangeLabels.insert(std::make_pair(neiProcs[procI], labelLongList()));
     }
 
-    forAllConstIter(Map<label>, globalToLocal, iter)
+    forAllConstIters(globalToLocal, iter)
     {
         const label leafI = iter();
 

@@ -78,7 +78,7 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
         forAll(neiProcs, i)
                 exchangeData[neiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 

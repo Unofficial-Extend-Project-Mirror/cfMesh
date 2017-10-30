@@ -45,7 +45,7 @@ inline void polyMeshGenCells::addCellToSubset
     const label cellI
 )
 {
-    std::map<label, meshSubset>::iterator it = cellSubsets_.find(selID);
+    auto it = cellSubsets_.find(selID);
     if (it == cellSubsets_.end())
     {
         return;
@@ -61,7 +61,7 @@ inline void polyMeshGenCells::removeCellFromSubset
     const label cellI
 )
 {
-    std::map<label, meshSubset>::iterator it = cellSubsets_.find(selID);
+    auto it = cellSubsets_.find(selID);
     if (it == cellSubsets_.end())
     {
         return;
@@ -79,13 +79,7 @@ inline void polyMeshGenCells::cellInSubsets
 {
     cellSubsets.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = cellSubsets_.begin();
-        it!=cellSubsets_.end();
-        ++it
-    )
+    forAllConstIters(cellSubsets_, it)
     {
         if (it->second.contains(cellI))
         {
@@ -99,13 +93,7 @@ inline void polyMeshGenCells::cellSubsetIndices(DynList<label>& indices) const
 {
     indices.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = cellSubsets_.begin();
-        it!=cellSubsets_.end();
-        ++it
-    )
+    forAllConstIters(cellSubsets_, it)
     {
         indices.append(it->first);
     }
@@ -121,8 +109,7 @@ inline void polyMeshGenCells::cellsInSubset
 {
     cellLabels.clear();
 
-    std::map<label, meshSubset>::const_iterator it =
-        cellSubsets_.find(selID);
+    auto it = cellSubsets_.find(selID);
     if (it == cellSubsets_.end())
     {
         return;
@@ -138,12 +125,7 @@ inline void polyMeshGenCells::updateCellSubsets
     const ListType& newCellLabels
 )
 {
-    for
-    (
-        std::map<label, meshSubset>::iterator it = cellSubsets_.begin();
-        it!=cellSubsets_.end();
-        ++it
-    )
+    forAllIters(cellSubsets_, it)
     {
         it->second.updateSubset(newCellLabels);
     }
@@ -155,12 +137,7 @@ inline void polyMeshGenCells::updateCellSubsets
     const VRWGraph& newCellsForCell
 )
 {
-    for
-    (
-        std::map<label, meshSubset>::iterator it = cellSubsets_.begin();
-        it!=cellSubsets_.end();
-        ++it
-    )
+    forAllIters(cellSubsets_, it)
     {
         it->second.updateSubset(newCellsForCell);
     }

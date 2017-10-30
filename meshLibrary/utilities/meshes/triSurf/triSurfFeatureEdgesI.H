@@ -91,12 +91,7 @@ inline void triSurfFeatureEdges::edgeInSubsets
 {
     edgeSubsets.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        featureEdgeSubsets_,
-        it
-    )
+    forAllConstIters(featureEdgeSubsets_, it)
     {
         if (it().contains(eI))
         {
@@ -113,12 +108,7 @@ inline void triSurfFeatureEdges::edgeSubsetIndices
 {
     indices.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        featureEdgeSubsets_,
-        it
-    )
+    forAllConstIters(featureEdgeSubsets_, it)
     {
         indices.append(it.key());
     }
@@ -150,12 +140,7 @@ inline void triSurfFeatureEdges::updateEdgeSubsets
     const ListType& newEdgeLabels
 )
 {
-    for
-    (
-        Map<meshSubset>::iterator it = featureEdgeSubsets_.begin();
-        it!=featureEdgeSubsets_.end();
-        ++it
-    )
+    forAllIters(featureEdgeSubsets_, it)
     {
         it().updateSubset(newEdgeLabels);
     }

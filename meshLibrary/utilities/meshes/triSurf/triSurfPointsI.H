@@ -92,12 +92,7 @@ inline void triSurfPoints::pointInSubsets
 {
     pointSubsets.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        pointSubsets_,
-        it
-    )
+    forAllConstIters(pointSubsets_, it)
     {
         if (it().contains(pointI))
         {
@@ -111,12 +106,7 @@ inline void triSurfPoints::pointSubsetIndices(DynList<label>& indices) const
 {
     indices.clear();
 
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        pointSubsets_,
-        it
-    )
+    forAllConstIters(pointSubsets_, it)
     {
         indices.append(it.key());
     }
@@ -146,12 +136,7 @@ inline void triSurfPoints::pointsInSubset
 template<class ListType>
 inline void triSurfPoints::updatePointSubsets(const ListType& newNodeLabels)
 {
-    for
-    (
-        Map<meshSubset>::iterator it = pointSubsets_.begin();
-        it!=pointSubsets_.end();
-        ++it
-    )
+    forAllIters(pointSubsets_, it)
     {
         it().updateSubset(newNodeLabels);
     }

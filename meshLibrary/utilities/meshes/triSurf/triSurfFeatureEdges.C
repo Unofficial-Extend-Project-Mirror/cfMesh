@@ -62,7 +62,7 @@ label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
     }
 
     id = 0;
-    forAllConstIter(Map<meshSubset>, featureEdgeSubsets_, it)
+    forAllConstIters(featureEdgeSubsets_, it)
     {
         id = Foam::max(id, it.key()+1);
     }
@@ -103,7 +103,7 @@ word triSurfFeatureEdges::edgeSubsetName(const label subsetID) const
 
 label triSurfFeatureEdges::edgeSubsetIndex(const word& subsetName) const
 {
-    forAllConstIter(Map<meshSubset>, featureEdgeSubsets_, it)
+    forAllConstIters(featureEdgeSubsets_, it)
     {
         if (it().name() == subsetName)
         {

@@ -301,12 +301,7 @@ void refineBoundaryLayers::activateSpecialMode()
 void refineBoundaryLayers::refineLayers()
 {
     bool refinePatch(false);
-    for
-    (
-        std::map<word, label>::const_iterator it = numLayersForPatch_.begin();
-        it!=numLayersForPatch_.end();
-        ++it
-    )
+    forAllConstIters(numLayersForPatch_, it)
     {
         if (it->second > 1)
         {

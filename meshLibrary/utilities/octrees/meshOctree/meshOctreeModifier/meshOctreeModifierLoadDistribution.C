@@ -186,13 +186,10 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
     labelListList sendToProcesssors(Pstream::nProcs());
     sendToProcesssors[Pstream::myProcNo()].setSize(leavesToSend.size());
     label counter(0);
-    for
-    (
-        std::map<label, labelLongList>::const_iterator it = leavesToSend.begin();
-        it!=leavesToSend.end();
-        ++it
-    )
+    forAllConstIters(leavesToSend, it)
+    {
         sendToProcesssors[Pstream::myProcNo()][counter++] = it->first;
+    }
 
     Pstream::gatherList(sendToProcesssors);
     Pstream::scatterList(sendToProcesssors);
@@ -205,14 +202,14 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
 
     // receive coordinates from processors with lower labels
     LongList<meshOctreeCubeBasic> migratedCubes;
-    forAllConstIter(labelHashSet, receiveFrom, iter)
+    for (const label fromi : receiveFrom)
     {
-        if (iter.key() >= Pstream::myProcNo())
+        if (fromi >= Pstream::myProcNo())
             continue;
 
         List<meshOctreeCubeBasic> mc;
 
-        IPstream fromOtherProc(Pstream::commsTypes::blocking, iter.key());
+        IPstream fromOtherProc(Pstream::commsTypes::blocking, fromi);
 
         fromOtherProc >> mc;
 
@@ -261,14 +258,14 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
     }
 
     // receive data sent from processors with greater label
-    forAllConstIter(labelHashSet, receiveFrom, iter)
+    for (const label fromi : receiveFrom)
     {
-        if (iter.key() <= Pstream::myProcNo())
+        if (fromi <= Pstream::myProcNo())
             continue;
 
         List<meshOctreeCubeBasic> mc;
 
-        IPstream fromOtherProc(Pstream::commsTypes::blocking, iter.key());
+        IPstream fromOtherProc(Pstream::commsTypes::blocking, fromi);
 
         fromOtherProc >> mc;
 
