@@ -21,7 +21,7 @@ endif
 ifeq ($(WM_PROJECT), foam)
     VER := $(shell expr `echo $(WM_PROJECT_VERSION)` \>= 3.2)
     ifeq ($(VER), 1)
-        CFMESH_MACROS = -DExtendSpecific
+        CFMESH_MACROS = -DExtendSpecific -std=c++11
         LIBS = -lmeshTools -ledgeMesh
     else
         CFMESH_MACROS =
@@ -31,6 +31,7 @@ endif
 EXE_INC = \
     $(OMP_FLAGS) $(CFMESH_MACROS) \
     -I$(LIB_SRC)/triSurface/lnInclude \
+    -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/edgeMesh/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 

@@ -117,7 +117,7 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 
             OPstream toOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo(),
                 decFace.byteSize()
             );
@@ -132,7 +132,7 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 
             IPstream fromOtherProc
             (
-                Pstream::blocking,
+                Pstream::commsTypes::blocking,
                 procBoundaries[patchI].neiProcNo()
             );
 
