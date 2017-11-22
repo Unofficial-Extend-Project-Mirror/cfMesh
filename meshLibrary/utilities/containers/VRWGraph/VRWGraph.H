@@ -26,7 +26,7 @@ Class
 
 Description
     This class is an implementation of a graph with variable column width.
-    The imoplementation is memory efficient.
+    The implementation is memory efficient.
 
 SourceFiles
     VRWGraphI.H
@@ -48,7 +48,7 @@ SourceFiles
 namespace Foam
 {
 
-class VRWGraphModifier;
+class VRWGraph;
 
 class rowElement
 {
@@ -80,8 +80,7 @@ public:
 
 
     //- Destructor
-    inline ~rowElement()
-    {}
+    ~rowElement() = default;
 
 
     // Member functions
@@ -106,6 +105,11 @@ public:
             return size_;
         }
 };
+
+
+// Useful typedefs
+typedef const graphRow<const VRWGraph> constRow;
+typedef graphRow<VRWGraph> row;
 
 
 /*---------------------------------------------------------------------------*\
@@ -175,7 +179,7 @@ public:
 
 
     //- Destructor
-    inline ~VRWGraph();
+    ~VRWGraph() = default;
 
 
     // Member Functions

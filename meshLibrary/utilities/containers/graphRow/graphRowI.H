@@ -60,11 +60,6 @@ inline Foam::graphRow<graphType>::graphRow
 {}
 
 
-template<class graphType>
-inline Foam::graphRow<graphType>::~graphRow()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>

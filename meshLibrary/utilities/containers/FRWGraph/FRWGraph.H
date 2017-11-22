@@ -105,7 +105,7 @@ public:
 
 
     //- Destructor
-    inline ~FRWGraph();
+    ~FRWGraph() = default;
 
 
     // Member Functions

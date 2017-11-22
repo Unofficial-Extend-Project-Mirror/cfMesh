@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::raphRow
+    Foam::graphRow
 
 Description
     This class provides access to a row of a graph
@@ -43,8 +43,6 @@ SourceFiles
 
 namespace Foam
 {
-
-class VRWGraph;
 
 template<class graphType>
 class graphRow;
@@ -79,25 +77,25 @@ public:
     // Constructors
 
         //- Construct from graph and row number
-        inline graphRow(graphType&, const label);
+        inline graphRow(graphType& g, const label i);
 
         //- Copy contructor
         inline graphRow(const graphRow<graphType>&);
 
 
     //- Destructor
-    inline ~graphRow();
+    ~graphRow() = default;
 
 
     // Member Functions
 
-        //- Returns the number of rows
+        //- Returns the number of elements in the row
         inline label size() const;
 
-        //- Reset the number of rows
-        inline void setSize(const label size);
+        //- Reset the number of elements in the row
+        inline void setSize(const label s);
 
-        //- Clear the graph
+        //- Clear the row
         inline void clear();
 
 
@@ -134,19 +132,7 @@ public:
             const graphRow<graphType>&
         );
 
-        //- Read from Istream, discarding contents of existing graphRow.
-/*        friend Istream& operator>> <T, width>
-        (
-            Istream&,
-            graphRow<T, width>&
-        );
-*/
-
 };
-
-
-typedef const graphRow<const VRWGraph> constRow;
-typedef graphRow<VRWGraph> row;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

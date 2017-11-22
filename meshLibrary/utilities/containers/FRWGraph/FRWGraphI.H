@@ -86,11 +86,6 @@ inline Foam::FRWGraph<T, width>::FRWGraph
 {}
 
 
-template<class T, Foam::label width>
-inline Foam::FRWGraph<T, width>::~FRWGraph()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class T, Foam::label width>

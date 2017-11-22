@@ -67,11 +67,6 @@ inline Foam::subGraph<graphType>::subGraph
 {}
 
 
-template<class graphType>
-inline Foam::subGraph<graphType>::~subGraph()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>
@@ -179,7 +174,7 @@ Foam::subGraph<graphType>::operator[]
 
 
 template<class graphType>
-inline Foam::graphRow <graphType>
+inline Foam::graphRow<graphType>
 Foam::subGraph<graphType>::operator[](const label i)
 {
     return data_[start_ + i];

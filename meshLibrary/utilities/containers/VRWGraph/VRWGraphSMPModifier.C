@@ -43,10 +43,6 @@ VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
 {}
 
 
-VRWGraphSMPModifier::~VRWGraphSMPModifier()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)

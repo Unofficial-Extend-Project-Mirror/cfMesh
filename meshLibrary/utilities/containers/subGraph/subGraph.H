@@ -88,7 +88,7 @@ public:
 
 
     //- Destructor
-    inline ~subGraph();
+    ~subGraph() = default;
 
 
     // Member Functions

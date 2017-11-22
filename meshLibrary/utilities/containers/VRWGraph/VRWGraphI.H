@@ -111,10 +111,6 @@ inline Foam::VRWGraph::VRWGraph
 {}
 
 
-inline Foam::VRWGraph::~VRWGraph()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 inline Foam::label Foam::VRWGraph::size() const
