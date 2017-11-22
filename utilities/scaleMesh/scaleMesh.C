@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    const scalar scalingFactor(readScalar(args[1]));
+    // const scalar scalingFactor(readScalar(args[1]));
+    const scalar scalingFactor(args.argRead<scalar>(1));
 
     Info<< "Scaling mesh vertices by a factor " << scalingFactor << endl;
 

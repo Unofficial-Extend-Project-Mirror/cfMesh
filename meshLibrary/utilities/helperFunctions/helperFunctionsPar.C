@@ -276,7 +276,13 @@ void exchangeMap
         }
 
         // receive data from processors with greater ids
-        forAllConstReverseIters(m, riter)
+//        forAllConstReverseIters(m, riter)
+        for
+        (
+            auto riter = m.rbegin();
+            riter != m.rend();
+            ++riter
+        )
         {
             if (riter->first <= Pstream::myProcNo())
             {
@@ -297,7 +303,13 @@ void exchangeMap
         }
 
         // send data to processors with lower ids
-        forAllConstReverseIters(m, riter)
+//        forAllConstReverseIters(m, riter)
+        for
+        (
+            auto riter = m.rbegin();
+            riter != m.rend();
+            ++riter
+        )
         {
             if (riter->first >= Pstream::myProcNo())
             {

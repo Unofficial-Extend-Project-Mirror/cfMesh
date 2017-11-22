@@ -1916,8 +1916,8 @@ inline label numberOfEdgeGroups
     for (const label edgei : containedEdges)
     {
         const edge& e = edges[edgei];
-        const point& sp = points[e.first()];
-        const point& ep = points[e.second()];
+        const point& sp = points[e.start()];
+        const point& ep = points[e.end()];
 
         const point p = nearestPointOnTheEdgeExact(sp, ep, centre);
         if (magSqr(p - centre) < rangeSq)
