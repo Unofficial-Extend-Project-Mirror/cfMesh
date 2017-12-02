@@ -496,7 +496,7 @@ bool meshSurfaceOptimizer::untangleSurface
             surfaceModifier.updateGeometry(movedPoints);
 
             //- use surface optimizer
-            smoothSurfaceOptimizer(movedPoints, procBndPoints);
+            //smoothSurfaceOptimizer(movedPoints, procBndPoints);
 
             if( remapVertex && mapperPtr )
                 mapperPtr->mapVerticesOntoSurface(movedPoints);
@@ -645,14 +645,14 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
     {
         smoothLaplacianFC(partitionPoints, procPoints, true);
 
-        smoothSurfaceOptimizer(partitionPoints, procPoints);
+        //smoothSurfaceOptimizer(partitionPoints, procPoints);
 
         Info << "." << flush;
     }
 
     Info << endl;
 
-    untangleSurface(0);
+//    untangleSurface(0);
 }
 
 void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
