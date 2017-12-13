@@ -1,3 +1,3 @@
 patchesToSubsets.C
 
-EXE = $(FOAM_USER_APPBIN)/patchesToSubsets
+EXE = $(FOAM_APPBIN)/patchesToSubsets

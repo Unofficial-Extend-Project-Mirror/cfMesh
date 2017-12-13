@@ -1,4 +1,3 @@
-
 meshSurfaceEngine  =  utilities/surfaceTools/meshSurfaceEngine
 meshSurfacePartitioner = utilities/surfaceTools/meshSurfacePartitioner
 
@@ -466,4 +465,4 @@ $(writeAsFPMA)/fpmaMesh.C
 
 $(workflowControls)/workflowControls.C
 
-LIB = $(FOAM_USER_LIBBIN)/libmeshLibrary
+LIB = $(FOAM_LIBBIN)/libmeshLibrary
