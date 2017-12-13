@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::DynList
+    Foam::Module::DynList
 
 Description
     A dynamic list is a 1-D vector of objects of type T which resizes
@@ -46,6 +46,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declaration of template friend
@@ -71,7 +73,7 @@ Istream& operator>>
                            Class DynList Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, label staticSize = 16>
+template<class T, Foam::label staticSize = 16>
 class DynList
 {
     // Private data
@@ -244,6 +246,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

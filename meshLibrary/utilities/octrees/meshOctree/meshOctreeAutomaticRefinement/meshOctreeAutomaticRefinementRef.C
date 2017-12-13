@@ -50,18 +50,13 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeAutomaticRefinement::activateHexRefinement()
+void Foam::Module::meshOctreeAutomaticRefinement::activateHexRefinement()
 {
     hexRefinement_ = true;
 }
 
 
-void meshOctreeAutomaticRefinement::automaticRefinement()
+void Foam::Module::meshOctreeAutomaticRefinement::automaticRefinement()
 {
     Info<< "Performing automatic refinement" << endl;
 
@@ -78,7 +73,7 @@ void meshOctreeAutomaticRefinement::automaticRefinement()
 }
 
 
-bool meshOctreeAutomaticRefinement::curvatureRefinement()
+bool Foam::Module::meshOctreeAutomaticRefinement::curvatureRefinement()
 {
     labelList refineBox(octree_.numberOfLeaves(), direction(0));
     labelLongList refinementCandidates;
@@ -96,7 +91,7 @@ bool meshOctreeAutomaticRefinement::curvatureRefinement()
 }
 
 
-bool meshOctreeAutomaticRefinement::proximityRefinement()
+bool Foam::Module::meshOctreeAutomaticRefinement::proximityRefinement()
 {
     bool refine(false);
     labelList refineBox(octree_.numberOfLeaves(), direction(0));
@@ -140,7 +135,7 @@ bool meshOctreeAutomaticRefinement::proximityRefinement()
 }
 
 
-bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
+bool Foam::Module::meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 (
     labelList& refineBox,
     const labelLongList& refCandidates
@@ -249,7 +244,8 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedCorners
 }
 
 
-bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
+bool Foam::Module::meshOctreeAutomaticRefinement::
+refineBasedOnContainedPartitions
 (
     labelList& refineBox,
     const labelLongList& refCandidates
@@ -370,7 +366,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnContainedPartitions
 }
 
 
-bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
+bool Foam::Module::meshOctreeAutomaticRefinement::refineBasedOnCurvature
 (
     labelList& refineBox,
     const labelLongList& refCandidates
@@ -451,7 +447,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnCurvature
 }
 
 
-bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
+bool Foam::Module::meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 (
     labelList& refineBox,
     const labelLongList& refCandidates
@@ -526,7 +522,7 @@ bool meshOctreeAutomaticRefinement::refineBasedOnProximityTests
 }
 
 
-void meshOctreeAutomaticRefinement::refineSelectedBoxes
+void Foam::Module::meshOctreeAutomaticRefinement::refineSelectedBoxes
 (
     labelList& refineBox,
     labelLongList& refCandidates
@@ -596,9 +592,5 @@ void meshOctreeAutomaticRefinement::refineSelectedBoxes
     refineBox = direction(0);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::coordinateModification
+    Foam::Module::coordinateModification
 
 Description
     Base class for modifiers of point coordinates.
@@ -44,10 +44,12 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
 class boundBox;
 class plane;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                    Class coordinateModification Declaration
@@ -97,7 +99,7 @@ public:
     );
 
     //- Destructor
-    virtual ~coordinateModification();
+    virtual ~coordinateModification() = default;
 
 
     // Member Functions
@@ -163,6 +165,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

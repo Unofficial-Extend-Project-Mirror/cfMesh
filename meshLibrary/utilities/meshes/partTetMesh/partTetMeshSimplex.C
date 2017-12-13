@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-partTetMeshSimplex::partTetMeshSimplex
+Foam::Module::partTetMeshSimplex::partTetMeshSimplex
 (
     const partTetMesh& tm,
     const label pI
@@ -128,7 +123,7 @@ partTetMeshSimplex::partTetMeshSimplex
 }
 
 
-partTetMeshSimplex::partTetMeshSimplex
+Foam::Module::partTetMeshSimplex::partTetMeshSimplex
 (
     const DynList<parPartTet>& pt,
     const label gpI
@@ -218,7 +213,7 @@ partTetMeshSimplex::partTetMeshSimplex
 }
 
 
-partTetMeshSimplex::partTetMeshSimplex
+Foam::Module::partTetMeshSimplex::partTetMeshSimplex
 (
     const DynList<point, 128>& pts,
     const DynList<partTet, 128>& tets,
@@ -290,15 +285,5 @@ partTetMeshSimplex::partTetMeshSimplex
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-partTetMeshSimplex::~partTetMeshSimplex()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

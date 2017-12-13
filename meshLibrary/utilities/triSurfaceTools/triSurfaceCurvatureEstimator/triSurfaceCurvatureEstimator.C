@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfaceCurvatureEstimator::triSurfaceCurvatureEstimator
+Foam::Module::triSurfaceCurvatureEstimator::triSurfaceCurvatureEstimator
 (
     const triSurf& surface
 )
@@ -62,19 +57,21 @@ triSurfaceCurvatureEstimator::triSurfaceCurvatureEstimator
 }
 
 
-triSurfaceCurvatureEstimator::~triSurfaceCurvatureEstimator()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scalar triSurfaceCurvatureEstimator::edgePointCurvature(const label pI) const
+Foam::scalar Foam::Module::triSurfaceCurvatureEstimator::edgePointCurvature
+(
+    const label pI
+) const
 {
     return edgePointCurvature_[pI];
 }
 
 
-scalar triSurfaceCurvatureEstimator::curvatureAtEdge(const label edgeI) const
+Foam::scalar Foam::Module::triSurfaceCurvatureEstimator::curvatureAtEdge
+(
+    const label edgeI
+) const
 {
     const edge& edg = surface_.edges()[edgeI];
 
@@ -85,7 +82,8 @@ scalar triSurfaceCurvatureEstimator::curvatureAtEdge(const label edgeI) const
 }
 
 
-scalar triSurfaceCurvatureEstimator::gaussianCurvatureAtTriangle
+Foam::scalar
+Foam::Module::triSurfaceCurvatureEstimator::gaussianCurvatureAtTriangle
 (
     const label triI
 ) const
@@ -101,7 +99,7 @@ scalar triSurfaceCurvatureEstimator::gaussianCurvatureAtTriangle
 }
 
 
-scalar triSurfaceCurvatureEstimator::meanCurvatureAtTriangle
+Foam::scalar Foam::Module::triSurfaceCurvatureEstimator::meanCurvatureAtTriangle
 (
     const label triI
 ) const
@@ -117,7 +115,7 @@ scalar triSurfaceCurvatureEstimator::meanCurvatureAtTriangle
 }
 
 
-scalar triSurfaceCurvatureEstimator::maxCurvatureAtTriangle
+Foam::scalar Foam::Module::triSurfaceCurvatureEstimator::maxCurvatureAtTriangle
 (
     const label triI
 ) const
@@ -133,7 +131,7 @@ scalar triSurfaceCurvatureEstimator::maxCurvatureAtTriangle
 }
 
 
-scalar triSurfaceCurvatureEstimator::minCurvatureAtTriangle
+Foam::scalar Foam::Module::triSurfaceCurvatureEstimator::minCurvatureAtTriangle
 (
     const label triI
 ) const
@@ -149,7 +147,8 @@ scalar triSurfaceCurvatureEstimator::minCurvatureAtTriangle
 }
 
 
-vector triSurfaceCurvatureEstimator::maxCurvatureVectorAtTriangle
+Foam::vector
+Foam::Module::triSurfaceCurvatureEstimator::maxCurvatureVectorAtTriangle
 (
     const label triI
 ) const
@@ -165,7 +164,8 @@ vector triSurfaceCurvatureEstimator::maxCurvatureVectorAtTriangle
 }
 
 
-vector triSurfaceCurvatureEstimator::minCurvatureVectorAtTriangle
+Foam::vector
+Foam::Module::triSurfaceCurvatureEstimator::minCurvatureVectorAtTriangle
 (
     const label triI
 ) const
@@ -180,9 +180,5 @@ vector triSurfaceCurvatureEstimator::minCurvatureVectorAtTriangle
     return curv;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

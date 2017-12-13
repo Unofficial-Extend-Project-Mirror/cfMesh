@@ -24,7 +24,11 @@ License
 \*---------------------------------------------------------------------------*/
 
 template<class T, Foam::label width>
-void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
+void Foam::Module::FRWGraph<T, width>::checkIndex
+(
+    const label i,
+    const label j
+) const
 {
     if ((i < 0) || (i >= nRows_))
     {
@@ -45,7 +49,7 @@ void Foam::FRWGraph<T, width>::checkIndex(const label i, const label j) const
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class T, Foam::label width>
-inline Foam::FRWGraph<T, width>::FRWGraph()
+inline Foam::Module::FRWGraph<T, width>::FRWGraph()
 :
     data_(),
     nRows_(0)
@@ -53,7 +57,7 @@ inline Foam::FRWGraph<T, width>::FRWGraph()
 
 
 template<class T, Foam::label width>
-inline Foam::FRWGraph<T, width>::FRWGraph
+inline Foam::Module::FRWGraph<T, width>::FRWGraph
 (
     const label s
 )
@@ -64,7 +68,7 @@ inline Foam::FRWGraph<T, width>::FRWGraph
 
 
 template<class T, Foam::label width>
-inline Foam::FRWGraph<T, width>::FRWGraph
+inline Foam::Module::FRWGraph<T, width>::FRWGraph
 (
     const label s,
     const T& t
@@ -76,7 +80,7 @@ inline Foam::FRWGraph<T, width>::FRWGraph
 
 
 template<class T, Foam::label width>
-inline Foam::FRWGraph<T, width>::FRWGraph
+inline Foam::Module::FRWGraph<T, width>::FRWGraph
 (
     const FRWGraph<T, width>& ol
 )
@@ -89,21 +93,24 @@ inline Foam::FRWGraph<T, width>::FRWGraph
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class T, Foam::label width>
-inline Foam::label Foam::FRWGraph<T, width>::size() const
+inline Foam::label Foam::Module::FRWGraph<T, width>::size() const
 {
     return nRows_;
 }
 
 
 template<class T, Foam::label width>
-inline Foam::label Foam::FRWGraph<T, width>::sizeOfRow(const label) const
+inline Foam::label Foam::Module::FRWGraph<T, width>::sizeOfRow
+(
+    const label
+) const
 {
     return width;
 }
 
 
 template<class T, Foam::label width>
-inline void Foam::FRWGraph<T, width>::setSize(const label i)
+inline void Foam::Module::FRWGraph<T, width>::setSize(const label i)
 {
     data_.setSize(i*width);
     nRows_ = i;
@@ -111,7 +118,7 @@ inline void Foam::FRWGraph<T, width>::setSize(const label i)
 
 
 template<class T, Foam::label width>
-inline void Foam::FRWGraph<T, width>::clear()
+inline void Foam::Module::FRWGraph<T, width>::clear()
 {
     data_.clear();
     nRows_ = 0;
@@ -119,7 +126,7 @@ inline void Foam::FRWGraph<T, width>::clear()
 
 
 template<class T, Foam::label width>
-inline void Foam::FRWGraph<T, width>::appendFixedList
+inline void Foam::Module::FRWGraph<T, width>::appendFixedList
 (
     const FixedList<T, width>& l
 )
@@ -134,7 +141,7 @@ inline void Foam::FRWGraph<T, width>::appendFixedList
 
 
 template<class T, Foam::label width>
-inline void Foam::FRWGraph<T, width>::setRow
+inline void Foam::Module::FRWGraph<T, width>::setRow
 (
     const label rowI,
     const FixedList<T, width>& l
@@ -149,7 +156,7 @@ inline void Foam::FRWGraph<T, width>::setRow
 
 
 template<class T, Foam::label width>
-inline bool Foam::FRWGraph<T, width>::contains
+inline bool Foam::Module::FRWGraph<T, width>::contains
 (
     const label rowI,
     const T& e
@@ -160,7 +167,7 @@ inline bool Foam::FRWGraph<T, width>::contains
 
 
 template<class T, Foam::label width>
-inline bool Foam::FRWGraph<T, width>::found
+inline bool Foam::Module::FRWGraph<T, width>::found
 (
     const label rowI,
     const T& e
@@ -171,7 +178,7 @@ inline bool Foam::FRWGraph<T, width>::found
 
 
 template<class T, Foam::label width>
-inline Foam::label Foam::FRWGraph<T, width>::find
+inline Foam::label Foam::Module::FRWGraph<T, width>::find
 (
     const label rowI,
     const T& e
@@ -194,7 +201,7 @@ inline Foam::label Foam::FRWGraph<T, width>::find
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class T, Foam::label width>
-inline const T& Foam::FRWGraph<T, width>::operator()
+inline const T& Foam::Module::FRWGraph<T, width>::operator()
 (
     const label i,
     const label j
@@ -209,7 +216,7 @@ inline const T& Foam::FRWGraph<T, width>::operator()
 
 
 template<class T, Foam::label width>
-inline T& Foam::FRWGraph<T, width>::operator()
+inline T& Foam::Module::FRWGraph<T, width>::operator()
 (
     const label i, const label j
 )
@@ -223,7 +230,7 @@ inline T& Foam::FRWGraph<T, width>::operator()
 
 
 template<class T, Foam::label width>
-inline void Foam::FRWGraph<T, width>::operator=
+inline void Foam::Module::FRWGraph<T, width>::operator=
 (
     const FRWGraph<T, width>& l
 )

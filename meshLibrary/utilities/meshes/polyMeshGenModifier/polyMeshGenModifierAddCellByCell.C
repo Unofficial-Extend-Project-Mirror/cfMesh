@@ -26,12 +26,9 @@ License
 #include "polyMeshGenModifierAddCellByCell.H"
 #include "demandDrivenData.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-polyMeshGenModifierAddCellByCell::polyMeshGenModifierAddCellByCell
+Foam::Module::polyMeshGenModifierAddCellByCell::polyMeshGenModifierAddCellByCell
 (
     polyMeshGen& mesh
 )
@@ -53,7 +50,8 @@ polyMeshGenModifierAddCellByCell::polyMeshGenModifierAddCellByCell
 };
 
 
-polyMeshGenModifierAddCellByCell::~polyMeshGenModifierAddCellByCell()
+Foam::Module::polyMeshGenModifierAddCellByCell::
+~polyMeshGenModifierAddCellByCell()
 {
     faceListPMG& faces = this->facesAccess();
     faces.setSize(nFaces_);
@@ -69,7 +67,10 @@ polyMeshGenModifierAddCellByCell::~polyMeshGenModifierAddCellByCell()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGenModifierAddCellByCell::addCell(const faceList& cellFaces)
+void Foam::Module::polyMeshGenModifierAddCellByCell::addCell
+(
+    const faceList& cellFaces
+)
 {
     cell c(cellFaces.size());
 
@@ -114,9 +115,5 @@ void polyMeshGenModifierAddCellByCell::addCell(const faceList& cellFaces)
     ++nCells_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

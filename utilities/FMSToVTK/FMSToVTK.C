@@ -38,6 +38,7 @@ Author
 #include "xmlTag.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

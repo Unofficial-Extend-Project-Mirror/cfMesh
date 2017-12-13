@@ -27,14 +27,9 @@ License
 #include "dictionary.H"
 #include "demandDrivenData.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
+Foam::Module::triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
 (
     polyMeshGen& mesh
 )
@@ -46,21 +41,18 @@ triangulateNonPlanarBaseFaces::triangulateNonPlanarBaseFaces
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triangulateNonPlanarBaseFaces::~triangulateNonPlanarBaseFaces()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triangulateNonPlanarBaseFaces::setRelativeTolerance(const scalar tol)
+void Foam::Module::triangulateNonPlanarBaseFaces::setRelativeTolerance
+(
+    const scalar tol
+)
 {
     tol_ = tol;
 }
 
 
-void triangulateNonPlanarBaseFaces::triangulateLayers()
+void Foam::Module::triangulateNonPlanarBaseFaces::triangulateLayers()
 {
     if (findNonPlanarBoundaryFaces())
     {
@@ -77,7 +69,7 @@ void triangulateNonPlanarBaseFaces::triangulateLayers()
 }
 
 
-void triangulateNonPlanarBaseFaces::readSettings
+void Foam::Module::triangulateNonPlanarBaseFaces::readSettings
 (
     const dictionary& meshDict,
     triangulateNonPlanarBaseFaces& triangulator
@@ -101,9 +93,5 @@ void triangulateNonPlanarBaseFaces::readSettings
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

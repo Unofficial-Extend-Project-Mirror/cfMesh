@@ -42,12 +42,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::markAdditionalLayers
+void Foam::Module::meshOctreeModifier::markAdditionalLayers
 (
     labelList& refineBox,
     const label nLayers
@@ -143,7 +138,7 @@ void meshOctreeModifier::markAdditionalLayers
 }
 
 
-void meshOctreeModifier::markAdditionalLayersOfFaceNeighbours
+void Foam::Module::meshOctreeModifier::markAdditionalLayersOfFaceNeighbours
 (
     labelList& refineBox,
     const label nLayers
@@ -241,7 +236,11 @@ void meshOctreeModifier::markAdditionalLayersOfFaceNeighbours
 
 
 # ifdef DEBUGSearch
-void writeLeaves
+namespace Foam
+{
+namespace Module
+{
+static void writeLeaves
 (
     const fileName& fName,
     const meshOctree& octree,
@@ -299,10 +298,11 @@ void writeLeaves
     file << "\n";
 }
 
-
+} // End namespace Module
+} // End namespace Foam
 # endif
 
-label meshOctreeModifier::markAdditionalLayers
+Foam::label Foam::Module::meshOctreeModifier::markAdditionalLayers
 (
     labelList& refineBox,
     labelList& nLayers,
@@ -427,7 +427,7 @@ label meshOctreeModifier::markAdditionalLayers
 }
 
 
-void meshOctreeModifier::refineSelectedBoxes
+void Foam::Module::meshOctreeModifier::refineSelectedBoxes
 (
     labelList& refineBox,
     const bool hexRefinement
@@ -505,7 +505,7 @@ void meshOctreeModifier::refineSelectedBoxes
 }
 
 
-void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
+void Foam::Module::meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
 (
     labelList& refineBox,
     const scalarList& refThickness
@@ -717,9 +717,5 @@ void meshOctreeModifier::refineSelectedBoxesAndAdditionalLayers
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -31,14 +31,22 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(boxRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, boxRefinement, dictionary);
+namespace Module
+{
+    defineTypeNameAndDebug(boxRefinement, 0);
+    addToRunTimeSelectionTable
+    (
+        objectRefinement,
+        boxRefinement,
+        dictionary
+    );
+}
+}
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boxRefinement::boxRefinement()
+Foam::Module::boxRefinement::boxRefinement()
 :
     objectRefinement(),
     centre_(),
@@ -48,7 +56,7 @@ boxRefinement::boxRefinement()
 {}
 
 
-boxRefinement::boxRefinement
+Foam::Module::boxRefinement::boxRefinement
 (
     const word& name,
     const scalar cellSize,
@@ -71,7 +79,7 @@ boxRefinement::boxRefinement
 }
 
 
-boxRefinement::boxRefinement
+Foam::Module::boxRefinement::boxRefinement
 (
     const word& name,
     const dictionary& dict
@@ -85,7 +93,7 @@ boxRefinement::boxRefinement
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool boxRefinement::intersectsObject(const boundBox& bb) const
+bool Foam::Module::boxRefinement::intersectsObject(const boundBox& bb) const
 {
     vector v(0.5*lengthX_, 0.5*lengthY_, 0.5*lengthZ_);
     boundBox box(centre_ - v, centre_ + v);
@@ -99,7 +107,7 @@ bool boxRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary boxRefinement::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::boxRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -123,7 +131,7 @@ dictionary boxRefinement::dict(bool /*ignoreType*/) const
 }
 
 
-void boxRefinement::write(Ostream& os) const
+void Foam::Module::boxRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " centre: " << centre_
@@ -133,7 +141,11 @@ void boxRefinement::write(Ostream& os) const
 }
 
 
-void boxRefinement::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::boxRefinement::writeDict
+(
+    Ostream& os,
+    bool subDict
+) const
 {
     if (subDict)
     {
@@ -169,7 +181,7 @@ void boxRefinement::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void boxRefinement::operator=(const dictionary& d)
+void Foam::Module::boxRefinement::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -215,7 +227,10 @@ void boxRefinement::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& boxRefinement::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::boxRefinement::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
@@ -225,9 +240,5 @@ Ostream& boxRefinement::operator<<(Ostream& os) const
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

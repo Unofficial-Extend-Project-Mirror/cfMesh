@@ -27,16 +27,9 @@ License
 #include "triSurf.H"
 #include "demandDrivenData.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctree::findBoundaryPatchesForLeaf
+void Foam::Module::meshOctree::findBoundaryPatchesForLeaf
 (
     const label leafI,
     DynList<label>& patches
@@ -57,9 +50,5 @@ void meshOctree::findBoundaryPatchesForLeaf
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

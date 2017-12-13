@@ -32,13 +32,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 template<class ListType>
-void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
+void Foam::Module::VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
 {
     graph_.rows_.setSize(s.size());
 
@@ -115,7 +110,10 @@ void VRWGraphSMPModifier::setSizeAndRowSize(const ListType& s)
 
 
 template<class GraphType>
-void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
+void Foam::Module::VRWGraphSMPModifier::reverseAddressing
+(
+    const GraphType& origGraph
+)
 {
     graph_.setSize(0);
     labelLongList nAppearances;
@@ -294,7 +292,7 @@ void VRWGraphSMPModifier::reverseAddressing(const GraphType& origGraph)
 
 
 template<class ListType, class GraphType>
-void VRWGraphSMPModifier::reverseAddressing
+void Foam::Module::VRWGraphSMPModifier::reverseAddressing
 (
     const ListType& mapper,
     const GraphType& origGraph
@@ -477,7 +475,7 @@ void VRWGraphSMPModifier::reverseAddressing
 
 
 template<class ListType>
-void VRWGraphSMPModifier::reverseAddressing
+void Foam::Module::VRWGraphSMPModifier::reverseAddressing
 (
     const ListType& mapper,
     const VRWGraph& origGraph
@@ -657,9 +655,5 @@ void VRWGraphSMPModifier::reverseAddressing
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

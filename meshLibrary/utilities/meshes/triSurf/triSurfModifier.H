@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfModifier
+    Foam::Module::triSurfModifier
 
 Description
     A class allowing non-const access to the member of the surface mesh
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -69,7 +71,7 @@ public:
     triSurfModifier(triSurf& surface);
 
     //- Destructor
-    ~triSurfModifier();
+    ~triSurfModifier() = default;
 
 
     // Member Functions
@@ -90,6 +92,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

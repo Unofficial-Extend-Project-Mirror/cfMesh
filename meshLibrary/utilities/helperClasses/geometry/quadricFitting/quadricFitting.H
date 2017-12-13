@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::quadricFitting
+    Foam::Module::quadricFitting
 
 Description
     A class for fitting a quadric surface through the set of points. It is
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -105,7 +107,7 @@ public:
 
 
     //- Destructor
-    ~quadricFitting();
+    ~quadricFitting() = default;
 
 
     // Member Functions
@@ -137,6 +139,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -31,22 +31,17 @@ License
 #include "IOdictionary.H"
 #include "triSurf.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-void meshOctreeAutomaticRefinement::createOctreeAddressing() const
+void Foam::Module::meshOctreeAutomaticRefinement::createOctreeAddressing() const
 {
     octreeAddressingPtr_ =
         new meshOctreeAddressing(octree_, meshDict_, useDATABoxes_);
 }
 
 
-const meshOctreeAddressing& meshOctreeAutomaticRefinement::octreeAddressing()
-const
+const Foam::Module::meshOctreeAddressing&
+Foam::Module::meshOctreeAutomaticRefinement::octreeAddressing() const
 {
     if (!octreeAddressingPtr_)
     {
@@ -65,13 +60,15 @@ const
 }
 
 
-void meshOctreeAutomaticRefinement::createSurfacePartitioner() const
+void Foam::Module::meshOctreeAutomaticRefinement::createSurfacePartitioner()
+const
 {
     partitionerPtr_ = new triSurfacePartitioner(octree_.surface());
 }
 
 
-const triSurfacePartitioner& meshOctreeAutomaticRefinement::partitioner() const
+const Foam::Module::triSurfacePartitioner&
+Foam::Module::meshOctreeAutomaticRefinement::partitioner() const
 {
     if (!partitionerPtr_)
     {
@@ -90,14 +87,15 @@ const triSurfacePartitioner& meshOctreeAutomaticRefinement::partitioner() const
 }
 
 
-void meshOctreeAutomaticRefinement::createCurvatureEstimator() const
+void Foam::Module::meshOctreeAutomaticRefinement::createCurvatureEstimator()
+const
 {
     curvaturePtr_ = new triSurfaceCurvatureEstimator(octree_.surface());
 }
 
 
-const triSurfaceCurvatureEstimator& meshOctreeAutomaticRefinement::curvature()
-const
+const Foam::Module::triSurfaceCurvatureEstimator&
+Foam::Module::meshOctreeAutomaticRefinement::curvature() const
 {
     if (!curvaturePtr_)
     {
@@ -116,7 +114,7 @@ const
 }
 
 
-void meshOctreeAutomaticRefinement::setMaxRefLevel()
+void Foam::Module::meshOctreeAutomaticRefinement::setMaxRefLevel()
 {
     const boundBox& rootBox = octree_.rootBox();
     const scalar size = rootBox.max().x() - rootBox.min().x();
@@ -160,7 +158,7 @@ void meshOctreeAutomaticRefinement::setMaxRefLevel()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctreeAutomaticRefinement::meshOctreeAutomaticRefinement
+Foam::Module::meshOctreeAutomaticRefinement::meshOctreeAutomaticRefinement
 (
     meshOctree& mo,
     const IOdictionary& dict,
@@ -188,16 +186,12 @@ meshOctreeAutomaticRefinement::meshOctreeAutomaticRefinement
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshOctreeAutomaticRefinement::~meshOctreeAutomaticRefinement()
+Foam::Module::meshOctreeAutomaticRefinement::~meshOctreeAutomaticRefinement()
 {
     deleteDemandDrivenData(octreeAddressingPtr_);
     deleteDemandDrivenData(curvaturePtr_);
     deleteDemandDrivenData(partitionerPtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

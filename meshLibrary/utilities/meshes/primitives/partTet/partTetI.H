@@ -27,18 +27,9 @@ License
 #include "tetrahedron.H"
 #include "IOstreams.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-inline partTet::partTet()
-{}
-
-
-inline partTet::partTet
+inline Foam::Module::partTet::partTet
 (
     const label a,
     const label b,
@@ -53,43 +44,40 @@ inline partTet::partTet
 }
 
 
-inline partTet::~partTet()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline label partTet::a() const
+inline Foam::label Foam::Module::partTet::a() const
 {
     return data_[0];
 }
 
 
-inline label partTet::b() const
+inline Foam::label Foam::Module::partTet::b() const
 {
     return data_[1];
 }
 
 
-inline label partTet::c() const
+inline Foam::label Foam::Module::partTet::c() const
 {
     return data_[2];
 }
 
 
-inline label partTet::d() const
+inline Foam::label Foam::Module::partTet::d() const
 {
     return data_[3];
 }
 
 
-inline label partTet::size() const
+inline Foam::label Foam::Module::partTet::size() const
 {
     return 4;
 }
 
 
-inline label partTet::whichPosition(const label pointI) const
+inline Foam::label
+Foam::Module::partTet::whichPosition(const label pointI) const
 {
     for (label i = 0; i < 4; ++i)
     {
@@ -104,7 +92,7 @@ inline label partTet::whichPosition(const label pointI) const
 
 
 template<class PointField>
-inline vector partTet::Sa(const PointField& points) const
+inline Foam::vector Foam::Module::partTet::Sa(const PointField& points) const
 {
     triangle<point, point> tria
     (
@@ -119,7 +107,7 @@ inline vector partTet::Sa(const PointField& points) const
 
 
 template<class PointField>
-inline vector partTet::Sb(const PointField& points) const
+inline Foam::vector Foam::Module::partTet::Sb(const PointField& points) const
 {
     triangle<point, point> tria
     (
@@ -134,7 +122,7 @@ inline vector partTet::Sb(const PointField& points) const
 
 
 template<class PointField>
-inline vector partTet::Sc(const PointField& points) const
+inline Foam::vector Foam::Module::partTet::Sc(const PointField& points) const
 {
     triangle<point, point> tria
     (
@@ -149,7 +137,7 @@ inline vector partTet::Sc(const PointField& points) const
 
 
 template<class PointField>
-inline vector partTet::Sd(const PointField& points) const
+inline Foam::vector Foam::Module::partTet::Sd(const PointField& points) const
 {
     triangle<point, point> tria
     (
@@ -164,7 +152,7 @@ inline vector partTet::Sd(const PointField& points) const
 
 
 template<class PointField>
-inline scalar partTet::mag(const PointField& points) const
+inline Foam::scalar Foam::Module::partTet::mag(const PointField& points) const
 {
     tetrahedron<point, point> tet
     (
@@ -180,7 +168,8 @@ inline scalar partTet::mag(const PointField& points) const
 
 
 template<class PointField>
-inline point partTet::crcmCentre(const PointField& points) const
+inline Foam::point
+Foam::Module::partTet::crcmCentre(const PointField& points) const
 {
     tetrahedron<point, point> tet
     (
@@ -195,7 +184,8 @@ inline point partTet::crcmCentre(const PointField& points) const
 
 
 template<class PointField>
-inline scalar partTet::crcmRadius(const PointField& points) const
+inline Foam::scalar
+Foam::Module::partTet::crcmRadius(const PointField& points) const
 {
     tetrahedron<point, point> tet
     (
@@ -210,7 +200,8 @@ inline scalar partTet::crcmRadius(const PointField& points) const
 
 
 template<class PointField>
-inline point partTet::centroid(const PointField& points) const
+inline Foam::point
+Foam::Module::partTet::centroid(const PointField& points) const
 {
     point p = points[data_[0]];
     for (label i = 1; i < 4; ++i)
@@ -223,7 +214,7 @@ inline point partTet::centroid(const PointField& points) const
 }
 
 
-inline FixedList<edge, 6> partTet::edges() const
+inline Foam::FixedList<Foam::edge, 6> Foam::Module::partTet::edges() const
 {
     FixedList<edge, 6> edges;
     edges[0] = edge(data_[0], data_[1]);
@@ -237,7 +228,7 @@ inline FixedList<edge, 6> partTet::edges() const
 }
 
 
-inline edge partTet::getEdge(const label eI) const
+inline Foam::edge Foam::Module::partTet::getEdge(const label eI) const
 {
     switch(eI)
     {
@@ -274,13 +265,13 @@ inline edge partTet::getEdge(const label eI) const
 }
 
 
-inline label partTet::operator[](const label i) const
+inline Foam::label Foam::Module::partTet::operator[](const label i) const
 {
     return data_[i];
 }
 
 
-inline void partTet::operator=(const partTet& tet)
+inline void Foam::Module::partTet::operator=(const partTet& tet)
 {
     for (label i = 0; i < 4; ++i)
     {
@@ -289,7 +280,7 @@ inline void partTet::operator=(const partTet& tet)
 }
 
 
-inline bool partTet::operator==(const partTet& tet) const
+inline bool Foam::Module::partTet::operator==(const partTet& tet) const
 {
     if (this->a() != tet.a())
     {
@@ -312,7 +303,7 @@ inline bool partTet::operator==(const partTet& tet) const
 }
 
 
-inline bool partTet::operator!=(const partTet& tet) const
+inline bool Foam::Module::partTet::operator!=(const partTet& tet) const
 {
     return !this->operator==(tet);
 }
@@ -320,7 +311,11 @@ inline bool partTet::operator!=(const partTet& tet) const
 
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
-inline Ostream& operator<<(Ostream& os, const partTet& t)
+inline Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::partTet& t
+)
 {
     os  << nl
         << token::BEGIN_LIST
@@ -331,9 +326,5 @@ inline Ostream& operator<<(Ostream& os, const partTet& t)
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

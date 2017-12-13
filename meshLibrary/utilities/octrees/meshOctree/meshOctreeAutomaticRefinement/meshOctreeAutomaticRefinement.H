@@ -22,11 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeAutomaticRefinement
+    Foam::Module::meshOctreeAutomaticRefinement
 
 Description
     Automatic octree for mesh generation. This class checks if the current
-    octree resolution is enough to resolve all surface features
+    octree resolution is sufficient to resolve all surface features.
 
 SourceFiles
     meshOctreeAutomaticRefinement.C
@@ -44,7 +44,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class triSurfaceCurvatureEstimator;
 class triSurfacePartitioner;
@@ -171,6 +172,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

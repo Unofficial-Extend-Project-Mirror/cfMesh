@@ -33,7 +33,10 @@ Description
 
 namespace Foam
 {
+namespace Module
+{
     defineTypeNameWithName(pointFieldPMG, "vectorField");
+}
 }
 
 

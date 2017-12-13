@@ -28,12 +28,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
+void Foam::Module::meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
 {
     const labelList& bPoints = meshSurface_.boundaryPoints();
     const labelList& bp = meshSurface_.bp();
@@ -269,9 +264,5 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         << " edge points at the surface of the volume mesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

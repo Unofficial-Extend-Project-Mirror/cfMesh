@@ -31,28 +31,21 @@ License
 #include "demandDrivenData.H"
 #include "meshOctree.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceMapper::createMeshSurfacePartitioner() const
+void Foam::Module::meshSurfaceMapper::createMeshSurfacePartitioner() const
 {
     surfaceEnginePartitionerPtr_ = new meshSurfacePartitioner(surfaceEngine_);
 }
 
 
-void meshSurfaceMapper::createTriSurfacePartitioner() const
+void Foam::Module::meshSurfaceMapper::createTriSurfacePartitioner() const
 {
     surfPartitionerPtr_ = new triSurfacePartitioner(meshOctree_.surface());
 }
 
 
-void meshSurfaceMapper::clearOut()
+void Foam::Module::meshSurfaceMapper::clearOut()
 {
     if (deletePartitioner_)
         deleteDemandDrivenData(surfaceEnginePartitionerPtr_);
@@ -62,7 +55,7 @@ void meshSurfaceMapper::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceMapper::meshSurfaceMapper
+Foam::Module::meshSurfaceMapper::meshSurfaceMapper
 (
     const meshSurfaceEngine& mse,
     const meshOctree& octree
@@ -83,7 +76,7 @@ meshSurfaceMapper::meshSurfaceMapper
 }
 
 
-meshSurfaceMapper::meshSurfaceMapper
+Foam::Module::meshSurfaceMapper::meshSurfaceMapper
 (
     const meshSurfacePartitioner& mPart,
     const meshOctree& octree
@@ -106,14 +99,10 @@ meshSurfaceMapper::meshSurfaceMapper
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfaceMapper::~meshSurfaceMapper()
+Foam::Module::meshSurfaceMapper::~meshSurfaceMapper()
 {
     clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctree
+    Foam::Module::meshOctree
 
 Description
     Octree for mesh generation
@@ -44,6 +44,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -133,7 +135,7 @@ public:
     meshOctree(const triSurf&, const bool isQuadtree = false);
 
     //- Destructor
-    ~meshOctree();
+    ~meshOctree() = default;
 
 
     // Member Functions
@@ -361,6 +363,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

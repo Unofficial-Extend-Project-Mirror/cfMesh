@@ -28,12 +28,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenAddressing::calcGlobalPointLabels() const
+void Foam::Module::polyMeshGenAddressing::calcGlobalPointLabels() const
 {
     if (!Pstream::parRun())
     {
@@ -313,7 +308,7 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
 }
 
 
-void polyMeshGenAddressing::calcGlobalFaceLabels() const
+void Foam::Module::polyMeshGenAddressing::calcGlobalFaceLabels() const
 {
     if (!globalFaceLabelPtr_)
     {
@@ -449,7 +444,7 @@ void polyMeshGenAddressing::calcGlobalFaceLabels() const
 }
 
 
-void polyMeshGenAddressing::calcGlobalCellLabels() const
+void Foam::Module::polyMeshGenAddressing::calcGlobalCellLabels() const
 {
     if (!globalCellLabelPtr_)
     {
@@ -481,7 +476,7 @@ void polyMeshGenAddressing::calcGlobalCellLabels() const
 }
 
 
-void polyMeshGenAddressing::calcGlobalEdgeLabels() const
+void Foam::Module::polyMeshGenAddressing::calcGlobalEdgeLabels() const
 {
     if (!Pstream::parRun())
     {
@@ -775,7 +770,8 @@ void polyMeshGenAddressing::calcGlobalEdgeLabels() const
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const labelLongList& polyMeshGenAddressing::globalPointLabel() const
+const Foam::Module::labelLongList&
+Foam::Module::polyMeshGenAddressing::globalPointLabel() const
 {
     if (!globalPointLabelPtr_ || !pProcsPtr_)
     {
@@ -795,7 +791,8 @@ const labelLongList& polyMeshGenAddressing::globalPointLabel() const
 }
 
 
-const labelLongList& polyMeshGenAddressing::globalFaceLabel() const
+const Foam::Module::labelLongList&
+Foam::Module::polyMeshGenAddressing::globalFaceLabel() const
 {
     if (!globalFaceLabelPtr_)
     {
@@ -815,7 +812,8 @@ const labelLongList& polyMeshGenAddressing::globalFaceLabel() const
 }
 
 
-const labelLongList& polyMeshGenAddressing::globalCellLabel() const
+const Foam::Module::labelLongList&
+Foam::Module::polyMeshGenAddressing::globalCellLabel() const
 {
     if (!globalCellLabelPtr_)
     {
@@ -826,7 +824,8 @@ const labelLongList& polyMeshGenAddressing::globalCellLabel() const
 }
 
 
-const labelLongList& polyMeshGenAddressing::globalEdgeLabel() const
+const Foam::Module::labelLongList&
+Foam::Module::polyMeshGenAddressing::globalEdgeLabel() const
 {
     if (!globalEdgeLabelPtr_)
     {
@@ -846,7 +845,8 @@ const labelLongList& polyMeshGenAddressing::globalEdgeLabel() const
 }
 
 
-const VRWGraph& polyMeshGenAddressing::pointAtProcs() const
+const Foam::Module::VRWGraph&
+Foam::Module::polyMeshGenAddressing::pointAtProcs() const
 {
     if (!globalPointLabelPtr_)
     {
@@ -866,7 +866,8 @@ const VRWGraph& polyMeshGenAddressing::pointAtProcs() const
 }
 
 
-const DynList<label>& polyMeshGenAddressing::pointNeiProcs() const
+const Foam::Module::DynList<Foam::label>&
+Foam::Module::polyMeshGenAddressing::pointNeiProcs() const
 {
     if (!pointNeiProcsPtr_)
     {
@@ -886,7 +887,8 @@ const DynList<label>& polyMeshGenAddressing::pointNeiProcs() const
 }
 
 
-const Map<label>& polyMeshGenAddressing::globalToLocalPointAddressing() const
+const Foam::Map<Foam::label>&
+Foam::Module::polyMeshGenAddressing::globalToLocalPointAddressing() const
 {
     if (!globalToLocalPointAddressingPtr_)
     {
@@ -906,7 +908,8 @@ const Map<label>& polyMeshGenAddressing::globalToLocalPointAddressing() const
 }
 
 
-const VRWGraph& polyMeshGenAddressing::edgeAtProcs() const
+const Foam::Module::VRWGraph&
+Foam::Module::polyMeshGenAddressing::edgeAtProcs() const
 {
     if (!globalEdgeLabelPtr_)
     {
@@ -926,7 +929,8 @@ const VRWGraph& polyMeshGenAddressing::edgeAtProcs() const
 }
 
 
-const DynList<label>& polyMeshGenAddressing::edgeNeiProcs() const
+const Foam::Module::DynList<Foam::label>&
+Foam::Module::polyMeshGenAddressing::edgeNeiProcs() const
 {
     if (!edgeNeiProcsPtr_)
     {
@@ -946,7 +950,8 @@ const DynList<label>& polyMeshGenAddressing::edgeNeiProcs() const
 }
 
 
-const Map<label>& polyMeshGenAddressing::globalToLocalEdgeAddressing() const
+const Foam::Map<Foam::label>&
+Foam::Module::polyMeshGenAddressing::globalToLocalEdgeAddressing() const
 {
     if (!globalToLocalEdgeAddressingPtr_)
     {
@@ -965,9 +970,5 @@ const Map<label>& polyMeshGenAddressing::globalToLocalEdgeAddressing() const
     return *globalToLocalEdgeAddressingPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

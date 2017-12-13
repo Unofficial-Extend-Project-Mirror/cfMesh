@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfacePartitioner
+    Foam::Module::triSurfacePartitioner
 
 Description
     Provides information regarding surface partitions on the surface
@@ -45,6 +45,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -111,7 +113,7 @@ public:
     triSurfacePartitioner(const triSurf& surface);
 
     //- Destructor
-    ~triSurfacePartitioner();
+    ~triSurfacePartitioner() = default;
 
 
     // Member Functions
@@ -152,6 +154,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

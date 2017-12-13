@@ -25,14 +25,9 @@ License
 
 #include "quadricFitting.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * Private Member Functions * * * * * * * * * * * * * * * * //
 
-void quadricFitting::calculateNormalVector()
+void Foam::Module::quadricFitting::calculateNormalVector()
 {
     symmTensor mat(symmTensor::zero);
 
@@ -54,7 +49,7 @@ void quadricFitting::calculateNormalVector()
 }
 
 
-void quadricFitting::calculateCoordinateSystem()
+void Foam::Module::quadricFitting::calculateCoordinateSystem()
 {
     if (mag(normal_) < VSMALL)
     {
@@ -109,7 +104,7 @@ void quadricFitting::calculateCoordinateSystem()
 }
 
 
-void quadricFitting::calculateQuadricCoeffs()
+void Foam::Module::quadricFitting::calculateQuadricCoeffs()
 {
     if (mag(normal_) < VSMALL)
     {
@@ -160,7 +155,7 @@ void quadricFitting::calculateQuadricCoeffs()
 }
 
 
-void quadricFitting::calculateBestFit()
+void Foam::Module::quadricFitting::calculateBestFit()
 {
     label iteration(0);
 
@@ -203,7 +198,7 @@ void quadricFitting::calculateBestFit()
 // * * * * * * * * * * * * * * * *  Constructors * * * * * * * * * * * * * * //
 
 template<class ListType>
-inline quadricFitting::quadricFitting
+inline Foam::Module::quadricFitting::quadricFitting
 (
     const point& origin,
     const vector normal,
@@ -244,7 +239,7 @@ inline quadricFitting::quadricFitting
 
 
 template<class ListType>
-inline quadricFitting::quadricFitting
+inline Foam::Module::quadricFitting::quadricFitting
 (
     const point& origin,
     const ListType& otherPoints
@@ -270,19 +265,15 @@ inline quadricFitting::quadricFitting
 }
 
 
-inline quadricFitting::~quadricFitting()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline const vector& quadricFitting::normal() const
+inline const Foam::vector& Foam::Module::quadricFitting::normal() const
 {
     return normal_;
 }
 
 
-inline scalar quadricFitting::minCurvature() const
+inline Foam::scalar Foam::Module::quadricFitting::minCurvature() const
 {
     return
     (
@@ -292,7 +283,7 @@ inline scalar quadricFitting::minCurvature() const
 }
 
 
-inline scalar quadricFitting::maxCurvature() const
+inline Foam::scalar Foam::Module::quadricFitting::maxCurvature() const
 {
     return
     (
@@ -302,19 +293,19 @@ inline scalar quadricFitting::maxCurvature() const
 }
 
 
-inline scalar quadricFitting::meanCurvature() const
+inline Foam::scalar Foam::Module::quadricFitting::meanCurvature() const
 {
     return 0.5*(minCurvature() + maxCurvature());
 }
 
 
-inline scalar quadricFitting::gaussianCurvature() const
+inline Foam::scalar Foam::Module::quadricFitting::gaussianCurvature() const
 {
     return minCurvature()*maxCurvature();
 }
 
 
-inline vector quadricFitting::minCurvatureVector() const
+inline Foam::vector Foam::Module::quadricFitting::minCurvatureVector() const
 {
     const scalar theta =
         0.5*Foam::atan
@@ -327,7 +318,7 @@ inline vector quadricFitting::minCurvatureVector() const
 }
 
 
-inline vector quadricFitting::maxCurvatureVector() const
+inline Foam::vector Foam::Module::quadricFitting::maxCurvatureVector() const
 {
     const scalar theta =
         0.5*Foam::atan
@@ -339,9 +330,5 @@ inline vector quadricFitting::maxCurvatureVector() const
     return Foam::sin(theta)*vecX_ + Foam::cos(theta)*vecY_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

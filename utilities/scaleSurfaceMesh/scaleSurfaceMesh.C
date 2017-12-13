@@ -33,10 +33,10 @@ Description
 #include "triSurfModifier.H"
 #include <sstream>
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// Main program:
 using namespace Foam;
+using namespace Foam::Module;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {

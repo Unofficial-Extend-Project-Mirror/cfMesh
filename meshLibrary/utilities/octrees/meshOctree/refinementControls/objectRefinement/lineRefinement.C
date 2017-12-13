@@ -31,13 +31,16 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(lineRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, lineRefinement, dictionary);
-
+namespace Module
+{
+    defineTypeNameAndDebug(lineRefinement, 0);
+    addToRunTimeSelectionTable(objectRefinement, lineRefinement, dictionary);
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-lineRefinement::lineRefinement()
+Foam::Module::lineRefinement::lineRefinement()
 :
     objectRefinement(),
     p0_(),
@@ -45,7 +48,7 @@ lineRefinement::lineRefinement()
 {}
 
 
-lineRefinement::lineRefinement
+Foam::Module::lineRefinement::lineRefinement
 (
     const word& name,
     const scalar cellSize,
@@ -64,7 +67,7 @@ lineRefinement::lineRefinement
 }
 
 
-lineRefinement::lineRefinement
+Foam::Module::lineRefinement::lineRefinement
 (
     const word& name,
     const dictionary& dict
@@ -78,7 +81,7 @@ lineRefinement::lineRefinement
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool lineRefinement::intersectsObject(const boundBox& bb) const
+bool Foam::Module::lineRefinement::intersectsObject(const boundBox& bb) const
 {
     // check if the cube contains start point or end point
     const scalar l = bb.max().x() - bb.min().x();
@@ -224,7 +227,7 @@ bool lineRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary lineRefinement::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::lineRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -246,7 +249,7 @@ dictionary lineRefinement::dict(bool /*ignoreType*/) const
 }
 
 
-void lineRefinement::write(Ostream& os) const
+void Foam::Module::lineRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " p0: " << p0_
@@ -254,7 +257,7 @@ void lineRefinement::write(Ostream& os) const
 }
 
 
-void lineRefinement::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::lineRefinement::writeDict(Ostream& os, bool subDict) const
 {
     if (subDict)
     {
@@ -288,7 +291,7 @@ void lineRefinement::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void lineRefinement::operator=(const dictionary& d)
+void Foam::Module::lineRefinement::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -319,7 +322,10 @@ void lineRefinement::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& lineRefinement::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::lineRefinement::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
@@ -329,9 +335,5 @@ Ostream& lineRefinement::operator<<(Ostream& os) const
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

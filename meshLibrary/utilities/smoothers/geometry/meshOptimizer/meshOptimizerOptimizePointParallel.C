@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOptimizer::laplaceSmoother::laplacianParallel
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianParallel
 (
     const labelLongList& procPoints,
     const bool smoothOnlySurfaceNodes
@@ -188,7 +183,7 @@ void meshOptimizer::laplaceSmoother::laplacianParallel
 }
 
 
-void meshOptimizer::laplaceSmoother::laplacianPCParallel
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianPCParallel
 (
     const labelLongList& procPoints
 )
@@ -320,7 +315,7 @@ void meshOptimizer::laplaceSmoother::laplacianPCParallel
 }
 
 
-void meshOptimizer::laplaceSmoother::laplacianWPCParallel
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianWPCParallel
 (
     const labelLongList& procPoints
 )
@@ -462,9 +457,5 @@ void meshOptimizer::laplaceSmoother::laplacianWPCParallel
     # endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

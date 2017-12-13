@@ -29,16 +29,9 @@ License
 #include "meshSurfaceEngine.H"
 #include "triSurfModifier.H"
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void partTriMesh::createPointsAndTrias
+void Foam::Module::partTriMesh::createPointsAndTrias
 (
     const List<direction>& useFace
 )
@@ -203,9 +196,5 @@ void partTriMesh::createPointsAndTrias
     surf_.pointFacets();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

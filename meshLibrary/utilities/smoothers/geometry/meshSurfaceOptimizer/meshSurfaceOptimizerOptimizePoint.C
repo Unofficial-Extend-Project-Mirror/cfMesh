@@ -35,12 +35,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceOptimizer::nodeDisplacementLaplacian
+void Foam::Module::meshSurfaceOptimizer::nodeDisplacementLaplacian
 (
     const label bpI,
     const bool transformIntoPlane
@@ -56,7 +51,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacian
 }
 
 
-void meshSurfaceOptimizer::nodeDisplacementLaplacianFC
+void Foam::Module::meshSurfaceOptimizer::nodeDisplacementLaplacianFC
 (
     const label bpI,
     const bool transformIntoPlane
@@ -72,7 +67,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFC
 }
 
 
-void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizer
+void Foam::Module::meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizer
 (
     const label bpI,
     const scalar tol
@@ -121,7 +116,10 @@ void meshSurfaceOptimizer::nodeDisplacementSurfaceOptimizer
 }
 
 
-void meshSurfaceOptimizer::edgeNodeDisplacement(const label bpI) const
+void Foam::Module::meshSurfaceOptimizer::edgeNodeDisplacement
+(
+    const label bpI
+) const
 {
     if (vertexType_[bpI] & LOCKED)
         return;
@@ -139,9 +137,5 @@ void meshSurfaceOptimizer::edgeNodeDisplacement(const label bpI) const
     meshSurfaceEngineModifier(surfaceEngine_).moveBoundaryVertex(bpI, newP);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

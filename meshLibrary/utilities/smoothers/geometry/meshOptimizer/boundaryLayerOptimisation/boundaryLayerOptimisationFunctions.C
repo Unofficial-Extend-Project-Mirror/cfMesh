@@ -47,12 +47,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayerOptimisation::writeVTK
+void Foam::Module::boundaryLayerOptimisation::writeVTK
 (
     const fileName& fName,
     const pointField& origin,
@@ -96,7 +91,7 @@ void boundaryLayerOptimisation::writeVTK
 }
 
 
-void boundaryLayerOptimisation::writeHairEdges
+void Foam::Module::boundaryLayerOptimisation::writeHairEdges
 (
     const fileName& fName,
     const direction eType,
@@ -140,7 +135,7 @@ void boundaryLayerOptimisation::writeHairEdges
 }
 
 
-void boundaryLayerOptimisation::writeHairEdges
+void Foam::Module::boundaryLayerOptimisation::writeHairEdges
 (
     const fileName& fName,
     const direction eType
@@ -179,7 +174,8 @@ void boundaryLayerOptimisation::writeHairEdges
 }
 
 
-const meshSurfaceEngine& boundaryLayerOptimisation::meshSurface() const
+const Foam::Module::meshSurfaceEngine&
+Foam::Module::boundaryLayerOptimisation::meshSurface() const
 {
     if (!meshSurfacePtr_)
     {
@@ -196,8 +192,8 @@ const meshSurfaceEngine& boundaryLayerOptimisation::meshSurface() const
 }
 
 
-const meshSurfacePartitioner&
-boundaryLayerOptimisation::surfacePartitioner() const
+const Foam::Module::meshSurfacePartitioner&
+Foam::Module::boundaryLayerOptimisation::surfacePartitioner() const
 {
     if (!partitionerPtr_)
     {
@@ -215,7 +211,7 @@ boundaryLayerOptimisation::surfacePartitioner() const
 }
 
 
-void boundaryLayerOptimisation::calculateHairEdges()
+void Foam::Module::boundaryLayerOptimisation::calculateHairEdges()
 {
     const meshSurfaceEngine& mse = meshSurface();
     const edgeList& edges = mse.edges();
@@ -472,7 +468,7 @@ void boundaryLayerOptimisation::calculateHairEdges()
 }
 
 
-bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
+bool Foam::Module::boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 {
     bool modified(false);
 
@@ -525,7 +521,7 @@ bool boundaryLayerOptimisation::optimiseLayersAtExittingFaces()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void boundaryLayerOptimisation::optimiseLayer()
+void Foam::Module::boundaryLayerOptimisation::optimiseLayer()
 {
     // create surface smoother
     meshSurfaceOptimizer surfOpt(meshSurface());
@@ -584,9 +580,5 @@ void boundaryLayerOptimisation::optimiseLayer()
     } while (optimiseLayersAtExittingFaces() && (++nIter < maxNumIterations_));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

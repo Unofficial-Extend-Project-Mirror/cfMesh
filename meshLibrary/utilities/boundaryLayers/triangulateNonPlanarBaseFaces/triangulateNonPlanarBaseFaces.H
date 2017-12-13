@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triangulateNonPlanarBaseFaces
+    Foam::Module::triangulateNonPlanarBaseFaces
 
 Description
     Splits selected boundary layer cells into triangular prisms
@@ -42,9 +42,11 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
 class dictionary;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                 Class triangulateNonPlanarBaseFaces Declaration
@@ -95,7 +97,7 @@ public:
     triangulateNonPlanarBaseFaces(polyMeshGen& mesh);
 
     //- Destructor
-    ~triangulateNonPlanarBaseFaces();
+    ~triangulateNonPlanarBaseFaces() = default;
 
 
     // Public member functions
@@ -121,6 +123,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

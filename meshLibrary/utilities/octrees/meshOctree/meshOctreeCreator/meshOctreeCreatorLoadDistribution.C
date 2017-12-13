@@ -27,20 +27,12 @@ License
 #include "triSurf.H"
 #include "IOdictionary.H"
 
-//#define DEBUGBalancing
-
-# ifdef DEBUGBalancing
-#include <sstream>
-# endif
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * Private member functions  * * * * * * * * * * * * * //
 
-void meshOctreeCreator::loadDistribution(const bool distributeUsed)
+void Foam::Module::meshOctreeCreator::loadDistribution
+(
+    const bool distributeUsed
+)
 {
     if (octree_.neiProcs().size() == 0 || !meshDictPtr_)
     {
@@ -60,9 +52,5 @@ void meshOctreeCreator::loadDistribution(const bool distributeUsed)
     meshOctreeModifier(octree_).loadDistribution(usedType);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

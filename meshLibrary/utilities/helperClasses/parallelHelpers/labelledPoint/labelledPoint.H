@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::labelledPoint
+    Foam::Module::labelledPoint
 
 Description
     A class containing point label and its coordinates. It is used for
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -80,8 +82,7 @@ public:
 
 
     //- Destructor
-    ~labelledPoint()
-    {}
+    ~labelledPoint() = default;
 
 
     // Member functions
@@ -157,9 +158,14 @@ public:
 };
 
 
-//- Specify data associated with labelledPoint type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+
+//- Data for labelledPoint are contiguous
 template<>
-inline bool contiguous<labelledPoint>()
+inline bool contiguous<Module::labelledPoint>()
 {
     return true;
 }

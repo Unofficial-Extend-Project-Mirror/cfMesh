@@ -37,13 +37,15 @@ Description
 #include "labelledTri.H"
 
 using namespace Foam;
+using namespace Foam::Module;
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     polyMeshGen pmg(runTime);
     pmg.read();

@@ -36,12 +36,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-meshUntangler::meshUntangler
+Foam::Module::meshUntangler::meshUntangler
 (
     partTetMeshSimplex& simplex
 )
@@ -50,13 +45,9 @@ meshUntangler::meshUntangler
 {}
 
 
-meshUntangler::~meshUntangler()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshUntangler::optimizeNodePosition(const scalar /*tol*/)
+void Foam::Module::meshUntangler::optimizeNodePosition(const scalar /*tol*/)
 {
     # ifdef DEBUGSmooth
     Info<< "Untangling point " << pointI_ << endl;
@@ -111,9 +102,5 @@ void meshUntangler::optimizeNodePosition(const scalar /*tol*/)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

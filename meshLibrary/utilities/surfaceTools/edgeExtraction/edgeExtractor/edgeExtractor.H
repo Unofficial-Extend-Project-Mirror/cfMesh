@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Namespace
-    Foam::edgeExtractor
+    Foam::Module::edgeExtractor
 
 Description
     A class with a functions used to detect feature edges in the surface
@@ -49,6 +49,8 @@ SourceFiles
 #include "Map.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -326,7 +328,7 @@ class edgeExtractor
 
 
             //- Destructor
-            ~cornerEvaluator();
+            ~cornerEvaluator() = default;
 
 
             // Public member functions
@@ -418,6 +420,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 #endif

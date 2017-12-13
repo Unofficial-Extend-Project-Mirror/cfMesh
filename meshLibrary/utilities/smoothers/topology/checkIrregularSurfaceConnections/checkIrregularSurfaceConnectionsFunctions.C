@@ -36,12 +36,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
+bool Foam::Module::checkIrregularSurfaceConnections::
+checkAndFixCellGroupsAtBndVertices
 (
     labelHashSet& badVertices,
     const bool removeConnections
@@ -442,7 +438,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 }
 
 
-bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
+bool Foam::Module::checkIrregularSurfaceConnections::checkEdgeFaceConnections
 (
     labelHashSet& badVertices,
     const bool removeCells
@@ -584,7 +580,8 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
 }
 
 
-bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
+bool Foam::Module::checkIrregularSurfaceConnections::
+checkFaceGroupsAtBndVertices
 (
     labelHashSet& badVertices,
     const bool removeCells
@@ -907,9 +904,5 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

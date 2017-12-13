@@ -42,12 +42,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayers::findPatchVertices
+void Foam::Module::boundaryLayers::findPatchVertices
 (
     const boolList& treatPatches,
     List<direction>& pVertices
@@ -107,7 +102,7 @@ void boundaryLayers::findPatchVertices
 }
 
 
-point boundaryLayers::createNewVertex
+Foam::point Foam::Module::boundaryLayers::createNewVertex
 (
     const label bpI,
     const boolList& treatPatches,
@@ -318,7 +313,10 @@ point boundaryLayers::createNewVertex
 }
 
 
-void boundaryLayers::createNewVertices(const boolList& treatPatches)
+void Foam::Module::boundaryLayers::createNewVertices
+(
+    const boolList& treatPatches
+)
 {
     Info<< "Creating vertices for layer cells" << endl;
 
@@ -407,7 +405,10 @@ void boundaryLayers::createNewVertices(const boolList& treatPatches)
 }
 
 
-void boundaryLayers::createNewVertices(const labelList& patchLabels)
+void Foam::Module::boundaryLayers::createNewVertices
+(
+    const labelList& patchLabels
+)
 {
     otherVrts_.clear();
 
@@ -693,7 +694,7 @@ void boundaryLayers::createNewVertices(const labelList& patchLabels)
 }
 
 
-void boundaryLayers::createNewPartitionVerticesParallel
+void Foam::Module::boundaryLayers::createNewPartitionVerticesParallel
 (
     const labelLongList& procPoints,
     const List<direction>& pVertices,
@@ -817,7 +818,7 @@ void boundaryLayers::createNewPartitionVerticesParallel
 }
 
 
-void boundaryLayers::createNewEdgeVerticesParallel
+void Foam::Module::boundaryLayers::createNewEdgeVerticesParallel
 (
     const labelLongList& procPoints,
     const List<direction>& pVertices,
@@ -1191,9 +1192,5 @@ void boundaryLayers::createNewEdgeVerticesParallel
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

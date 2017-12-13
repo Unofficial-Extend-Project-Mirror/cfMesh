@@ -31,6 +31,7 @@ Description
 #include "vector.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

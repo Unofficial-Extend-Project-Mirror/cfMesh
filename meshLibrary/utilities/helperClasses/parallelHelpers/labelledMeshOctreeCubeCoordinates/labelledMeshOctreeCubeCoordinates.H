@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::labelledMeshOctreeCubeCoordinates
+    Foam::Module::labelledMeshOctreeCubeCoordinates
 
 Description
     A class containing point label and meshOctreeCubeCoordinates.
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -83,8 +85,7 @@ public:
 
 
     //- Destructor
-    ~labelledMeshOctreeCubeCoordinates()
-    {}
+    ~labelledMeshOctreeCubeCoordinates() = default;
 
 
     // Member functions
@@ -165,15 +166,16 @@ public:
 };
 
 
-//- Specify data associated with labelledMeshOctreeCubeCoordinates
-//- type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+//- Data for labelledMeshOctreeCubeCoordinates are contiguous
 template<>
-inline bool contiguous<labelledMeshOctreeCubeCoordinates>()
+inline bool contiguous<Module::labelledMeshOctreeCubeCoordinates>()
 {
     return true;
 }
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

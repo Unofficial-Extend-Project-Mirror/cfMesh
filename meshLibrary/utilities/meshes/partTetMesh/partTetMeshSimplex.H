@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::partTetMeshSimplex
+    Foam::Module::partTetMeshSimplex
 
 Description
     A simplex which is used for smoothing purposes
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -85,7 +87,7 @@ public:
 
 
     //- Destructor
-    ~partTetMeshSimplex();
+    ~partTetMeshSimplex() = default;
 
 
     // Member functions
@@ -118,11 +120,8 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-//#include "partTetMeshSimplexI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

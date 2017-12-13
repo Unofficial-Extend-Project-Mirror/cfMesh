@@ -39,12 +39,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshUntangler::cutRegion::createInitialConfiguration
+void Foam::Module::meshUntangler::cutRegion::createInitialConfiguration
 (
     const boundBox& bb
 )
@@ -161,7 +156,7 @@ void meshUntangler::cutRegion::createInitialConfiguration
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-meshUntangler::cutRegion::cutRegion(const boundBox& bb)
+Foam::Module::meshUntangler::cutRegion::cutRegion(const boundBox& bb)
 :
     pointsPtr_(nullptr),
     edgesPtr_(nullptr),
@@ -181,7 +176,7 @@ meshUntangler::cutRegion::cutRegion(const boundBox& bb)
 }
 
 
-meshUntangler::cutRegion::~cutRegion()
+Foam::Module::meshUntangler::cutRegion::~cutRegion()
 {
     deleteDemandDrivenData(pointsPtr_);
     deleteDemandDrivenData(edgesPtr_);
@@ -194,7 +189,7 @@ meshUntangler::cutRegion::~cutRegion()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshUntangler::cutRegion::planeCut(const plane& plane)
+void Foam::Module::meshUntangler::cutRegion::planeCut(const plane& plane)
 {
     if (!valid_)
         return;
@@ -240,7 +235,7 @@ void meshUntangler::cutRegion::planeCut(const plane& plane)
 }
 
 
-void meshUntangler::cutRegion::createPolyMeshFromRegion
+void Foam::Module::meshUntangler::cutRegion::createPolyMeshFromRegion
 (
     polyMeshGen& mesh
 ) const
@@ -281,9 +276,5 @@ void meshUntangler::cutRegion::createPolyMeshFromRegion
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

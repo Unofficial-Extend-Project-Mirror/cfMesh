@@ -35,12 +35,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayers::checkTopologyOfBoundaryFaces(const labelList& patchLabels)
+void Foam::Module::boundaryLayers::checkTopologyOfBoundaryFaces
+(
+    const labelList& patchLabels
+)
 {
     if (!patchWiseLayers_)
     {
@@ -291,9 +289,5 @@ void boundaryLayers::checkTopologyOfBoundaryFaces(const labelList& patchLabels)
     Info<< "Finished checking topology" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

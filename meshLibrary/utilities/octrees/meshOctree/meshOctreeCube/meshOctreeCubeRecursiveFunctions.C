@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeCube::leavesInBox
+void Foam::Module::meshOctreeCube::leavesInBox
 (
     const boundBox& rootBox,
     const boundBox& searchingBox,
@@ -84,7 +79,7 @@ void meshOctreeCube::leavesInBox
 }
 
 
-void meshOctreeCube::leavesInSphere
+void Foam::Module::meshOctreeCube::leavesInSphere
 (
     const boundBox& rootBox,
     const point& c,
@@ -131,7 +126,7 @@ void meshOctreeCube::leavesInSphere
 }
 
 
-void meshOctreeCube::markLeavesInSphere
+void Foam::Module::meshOctreeCube::markLeavesInSphere
 (
     const boundBox& rootBox,
     const point& c,
@@ -182,7 +177,10 @@ void meshOctreeCube::markLeavesInSphere
 }
 
 
-void meshOctreeCube::findLeaves(LongList<meshOctreeCube*>& leaves) const
+void Foam::Module::meshOctreeCube::findLeaves
+(
+    LongList<meshOctreeCube*>& leaves
+) const
 {
     if (this->isLeaf())
     {
@@ -205,7 +203,7 @@ void meshOctreeCube::findLeaves(LongList<meshOctreeCube*>& leaves) const
 }
 
 
-void meshOctreeCube::findCoordinatesOfMissingCubes
+void Foam::Module::meshOctreeCube::findCoordinatesOfMissingCubes
 (
     LongList<meshOctreeCubeCoordinates>& coordinates
 ) const
@@ -229,7 +227,7 @@ void meshOctreeCube::findCoordinatesOfMissingCubes
 }
 
 
-void meshOctreeCube::countChildCubes(label& counter) const
+void Foam::Module::meshOctreeCube::countChildCubes(label& counter) const
 {
     ++counter;
 
@@ -248,7 +246,7 @@ void meshOctreeCube::countChildCubes(label& counter) const
 }
 
 
-bool meshOctreeCube::purgeProcessorCubes(const short procNo)
+bool Foam::Module::meshOctreeCube::purgeProcessorCubes(const short procNo)
 {
     if (this->procNo() == ALLPROCS)
     {
@@ -297,9 +295,5 @@ bool meshOctreeCube::purgeProcessorCubes(const short procNo)
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

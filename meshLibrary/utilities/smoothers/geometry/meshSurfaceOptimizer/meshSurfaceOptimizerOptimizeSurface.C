@@ -45,16 +45,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-label meshSurfaceOptimizer::findInvertedVertices
+Foam::label Foam::Module::meshSurfaceOptimizer::findInvertedVertices
 (
     boolList& smoothVertex,
     const label nAdditionalLayers
@@ -154,7 +147,7 @@ label meshSurfaceOptimizer::findInvertedVertices
 }
 
 
-void meshSurfaceOptimizer::smoothEdgePoints
+void Foam::Module::meshSurfaceOptimizer::smoothEdgePoints
 (
     const labelLongList& edgePoints,
     const labelLongList& procEdgePoints
@@ -211,7 +204,7 @@ void meshSurfaceOptimizer::smoothEdgePoints
 }
 
 
-void meshSurfaceOptimizer::smoothLaplacianFC
+void Foam::Module::meshSurfaceOptimizer::smoothLaplacianFC
 (
     const labelLongList& selectedPoints,
     const labelLongList& selectedProcPoints,
@@ -280,7 +273,7 @@ void meshSurfaceOptimizer::smoothLaplacianFC
 }
 
 
-void meshSurfaceOptimizer::smoothSurfaceOptimizer
+void Foam::Module::meshSurfaceOptimizer::smoothSurfaceOptimizer
 (
     const labelLongList& selectedPoints,
     const labelLongList& selectedProcPoints
@@ -325,7 +318,7 @@ void meshSurfaceOptimizer::smoothSurfaceOptimizer
 }
 
 
-bool meshSurfaceOptimizer::untangleSurface
+bool Foam::Module::meshSurfaceOptimizer::untangleSurface
 (
     const labelLongList& selectedBoundaryPoints,
     const label nAdditionalLayers
@@ -573,7 +566,10 @@ bool meshSurfaceOptimizer::untangleSurface
 }
 
 
-bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
+bool Foam::Module::meshSurfaceOptimizer::untangleSurface
+(
+    const label nAdditionalLayers
+)
 {
     labelLongList selectedPts(surfaceEngine_.boundaryPoints().size());
     forAll(selectedPts, i)
@@ -583,7 +579,10 @@ bool meshSurfaceOptimizer::untangleSurface(const label nAdditionalLayers)
 }
 
 
-void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
+void Foam::Module::meshSurfaceOptimizer::optimizeSurface
+(
+    const label nIterations
+)
 {
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
 
@@ -661,7 +660,10 @@ void meshSurfaceOptimizer::optimizeSurface(const label nIterations)
 }
 
 
-void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
+void Foam::Module::meshSurfaceOptimizer::optimizeSurface2D
+(
+    const label nIterations
+)
 {
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
     const edgeList& edges = surfaceEngine_.edges();
@@ -763,7 +765,7 @@ void meshSurfaceOptimizer::optimizeSurface2D(const label nIterations)
 }
 
 
-void meshSurfaceOptimizer::untangleSurface2D()
+void Foam::Module::meshSurfaceOptimizer::untangleSurface2D()
 {
     const polyMeshGen& mesh = surfaceEngine_.mesh();
     const faceListPMG& faces = mesh.faces();
@@ -928,9 +930,5 @@ void meshSurfaceOptimizer::untangleSurface2D()
     mesh.clearAddressingData();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

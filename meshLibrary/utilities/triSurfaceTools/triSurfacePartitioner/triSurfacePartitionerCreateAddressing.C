@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfacePartitioner::calculatePatchAddressing()
+void Foam::Module::triSurfacePartitioner::calculatePatchAddressing()
 {
     calculateCornersAndAddressing();
 
@@ -53,7 +48,7 @@ void triSurfacePartitioner::calculatePatchAddressing()
 }
 
 
-void triSurfacePartitioner::calculateCornersAndAddressing()
+void Foam::Module::triSurfacePartitioner::calculateCornersAndAddressing()
 {
     const VRWGraph& pointFaces = surface_.pointFacets();
     const edgeLongList& edges = surface_.edges();
@@ -110,7 +105,7 @@ void triSurfacePartitioner::calculateCornersAndAddressing()
 }
 
 
-void triSurfacePartitioner::calculatePatchPatches()
+void Foam::Module::triSurfacePartitioner::calculatePatchPatches()
 {
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
@@ -131,7 +126,7 @@ void triSurfacePartitioner::calculatePatchPatches()
 }
 
 
-void triSurfacePartitioner::calculateEdgeGroups()
+void Foam::Module::triSurfacePartitioner::calculateEdgeGroups()
 {
     const edgeLongList& edges = surface_.edges();
     const VRWGraph& edgeFaces = surface_.edgeFacets();
@@ -211,7 +206,7 @@ void triSurfacePartitioner::calculateEdgeGroups()
 }
 
 
-void triSurfacePartitioner::calculatePatchToEdgeGroups()
+void Foam::Module::triSurfacePartitioner::calculatePatchToEdgeGroups()
 {
     const VRWGraph& edgeFaces = surface_.edgeFacets();
 
@@ -245,7 +240,7 @@ void triSurfacePartitioner::calculatePatchToEdgeGroups()
 }
 
 
-void triSurfacePartitioner::calculateEdgeGroupsToCorners()
+void Foam::Module::triSurfacePartitioner::calculateEdgeGroupsToCorners()
 {
     const VRWGraph& pointEdges = surface_.pointEdges();
 
@@ -287,9 +282,5 @@ void triSurfacePartitioner::calculateEdgeGroupsToCorners()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

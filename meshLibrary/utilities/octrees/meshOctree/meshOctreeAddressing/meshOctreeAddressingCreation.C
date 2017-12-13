@@ -41,15 +41,16 @@ License
 #include "OFstream.H"
 # endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * Local Functions * * * * * * * * * * * * * * //
+
+# ifdef DEBUGVrt
 
 namespace Foam
 {
+namespace Module
+{
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-# ifdef DEBUGVrt
-void writeOctreeToVTK
+static void writeOctreeToVTK
 (
     const fileName& fName,
     const meshOctree& octree,
@@ -57,13 +58,13 @@ void writeOctreeToVTK
     const direction bType
 )
 {
-    OFstream file(fName);
+    OFstream os(fName);
 
     // write the header
-    file << "# vtk DataFile Version 3.0\n";
-    file << "vtk output\n";
-    file << "ASCII\n";
-    file << "DATASET UNSTRUCTURED_GRID\n";
+    os << "# vtk DataFile Version 3.0\n";
+    os << "vtk output\n";
+    os << "ASCII\n";
+    os << "DATASET UNSTRUCTURED_GRID\n";
 
     label nBoxes(0);
     forAll(boxTypes, leafI)
@@ -75,7 +76,7 @@ void writeOctreeToVTK
     }
 
     // write points
-    file << "POINTS " << 8*nBoxes << " float\n";
+    os << "POINTS " << 8*nBoxes << " float\n";
     forAll(boxTypes, leafI)
     {
         if (boxTypes[leafI] & bType)
@@ -87,13 +88,13 @@ void writeOctreeToVTK
             {
                 const point& p = vertices[vI];
 
-                file << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
+                os << p.x() << ' ' << p.y() << ' ' << p.z() << nl;
             }
         }
     }
 
     // write boxes
-    file<< "\nCELLS " << nBoxes
+    os  << "\nCELLS " << nBoxes
         << " " << 9*nBoxes << nl;
 
     nBoxes = 0;
@@ -102,7 +103,7 @@ void writeOctreeToVTK
         if (boxTypes[leafI] & bType)
         {
             const label start = 8*nBoxes;
-            file << 8 << " " << start << " " << start + 1
+            os   << 8 << " " << start << " " << start + 1
                       << " " << start + 3 << " " << start + 2
                       << " " << start + 4 << " " << start + 5
                       << " " << start + 7 << " " << start + 6 << nl;
@@ -111,22 +112,27 @@ void writeOctreeToVTK
         }
     }
 
-    file << nl;
+    os << nl;
 
     // write cell types
-    file << "CELL_TYPES " << nBoxes << nl;
+    os << "CELL_TYPES " << nBoxes << nl;
     for (label i = 0; i < nBoxes; ++i)
     {
-        file << 12 << nl;
+        os << 12 << nl;
     }
 
-    file << nl;
+    os << nl;
 }
 
+} // End namespace Module
+} // End namespace Foam
 
 # endif
 
-void meshOctreeAddressing::createOctreePoints() const
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+void Foam::Module::meshOctreeAddressing::createOctreePoints() const
 {
     const VRWGraph& nodeLabels = this->nodeLabels();
     const boundBox& rootBox = octree_.rootBox();
@@ -159,7 +165,7 @@ void meshOctreeAddressing::createOctreePoints() const
 }
 
 
-void meshOctreeAddressing::createNodeLabels() const
+void Foam::Module::meshOctreeAddressing::createNodeLabels() const
 {
     const List<direction>& boxType = this->boxType();
 
@@ -370,7 +376,6 @@ void meshOctreeAddressing::createNodeLabels() const
         }
     }
     writeOctreeToVTK("badLeaves.vtk", octree_, badLeaves, 1);
-
     writeOctreeToVTK("meshCells.vtk", octree_, boxType, MESHCELL);
     writeOctreeToVTK("boundaryCells.vtk", octree_, boxType, BOUNDARY);
 
@@ -441,7 +446,7 @@ void meshOctreeAddressing::createNodeLabels() const
 }
 
 
-void meshOctreeAddressing::createNodeLeaves() const
+void Foam::Module::meshOctreeAddressing::createNodeLeaves() const
 {
     const List<direction>& boxType = this->boxType();
     const VRWGraph& nodeLabels = this->nodeLabels();
@@ -489,7 +494,7 @@ void meshOctreeAddressing::createNodeLeaves() const
 }
 
 
-void meshOctreeAddressing::findUsedBoxes() const
+void Foam::Module::meshOctreeAddressing::findUsedBoxes() const
 {
     boxTypePtr_ = new List<direction>(octree_.numberOfLeaves(), NONE);
     List<direction>& boxType = *boxTypePtr_;
@@ -784,7 +789,7 @@ void meshOctreeAddressing::findUsedBoxes() const
 }
 
 
-void meshOctreeAddressing::calculateNodeType() const
+void Foam::Module::meshOctreeAddressing::calculateNodeType() const
 {
     const FRWGraph<label, 8>& nodeLeaves = this->nodeLeaves();
 
@@ -830,7 +835,7 @@ void meshOctreeAddressing::calculateNodeType() const
 }
 
 
-void meshOctreeAddressing::createOctreeFaces() const
+void Foam::Module::meshOctreeAddressing::createOctreeFaces() const
 {
     octreeFacesPtr_ = new VRWGraph();
     octreeFacesOwnersPtr_ = new labelLongList();
@@ -1174,7 +1179,7 @@ void meshOctreeAddressing::createOctreeFaces() const
 }
 
 
-void meshOctreeAddressing::calculateLeafFaces() const
+void Foam::Module::meshOctreeAddressing::calculateLeafFaces() const
 {
     const labelLongList& owner = octreeFaceOwner();
     const labelLongList& neighbour = octreeFaceNeighbour();
@@ -1211,7 +1216,7 @@ void meshOctreeAddressing::calculateLeafFaces() const
 }
 
 
-void meshOctreeAddressing::calculateNodeFaces() const
+void Foam::Module::meshOctreeAddressing::calculateNodeFaces() const
 {
     const VRWGraph& octreeFaces = this->octreeFaces();
     nodeFacesPtr_ = new VRWGraph(numberOfNodes());
@@ -1222,7 +1227,7 @@ void meshOctreeAddressing::calculateNodeFaces() const
 }
 
 
-void meshOctreeAddressing::calculateLeafLeaves() const
+void Foam::Module::meshOctreeAddressing::calculateLeafLeaves() const
 {
     const labelLongList& owner = octreeFaceOwner();
     const labelLongList& neighbour = octreeFaceNeighbour();
@@ -1270,7 +1275,7 @@ void meshOctreeAddressing::calculateLeafLeaves() const
 }
 
 
-void meshOctreeAddressing::createOctreeEdges() const
+void Foam::Module::meshOctreeAddressing::createOctreeEdges() const
 {
     const VRWGraph& faces = this->octreeFaces();
 
@@ -1333,7 +1338,7 @@ void meshOctreeAddressing::createOctreeEdges() const
 }
 
 
-void meshOctreeAddressing::calculateLeafEdges() const
+void Foam::Module::meshOctreeAddressing::calculateLeafEdges() const
 {
     const VRWGraph& edgeLeaves = this->edgeLeaves();
 
@@ -1345,7 +1350,7 @@ void meshOctreeAddressing::calculateLeafEdges() const
 }
 
 
-void meshOctreeAddressing::calculateEdgeLeaves() const
+void Foam::Module::meshOctreeAddressing::calculateEdgeLeaves() const
 {
     const VRWGraph& edgeFaces = this->edgeFaces();
     const labelLongList& owner = this->octreeFaceOwner();
@@ -1375,7 +1380,7 @@ void meshOctreeAddressing::calculateEdgeLeaves() const
 }
 
 
-void meshOctreeAddressing::calculateEdgeFaces() const
+void Foam::Module::meshOctreeAddressing::calculateEdgeFaces() const
 {
     const VRWGraph& faceEdges = this->faceEdges();
     edgeFacesPtr_ = new VRWGraph(octreeEdges().size());
@@ -1385,9 +1390,5 @@ void meshOctreeAddressing::calculateEdgeFaces() const
     edgeFaces.setSize(octreeEdges().size());
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

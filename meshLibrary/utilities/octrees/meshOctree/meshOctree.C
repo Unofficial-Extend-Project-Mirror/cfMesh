@@ -34,14 +34,9 @@ License
 
 //#define DEBUGSearch
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
+Foam::Module::meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
 :
     surface_(ts),
     neiProcs_(),
@@ -64,15 +59,9 @@ meshOctree::meshOctree(const triSurf& ts, const bool isQuadtree)
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshOctree::~meshOctree()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctree::setOctantVectorsAndPositions()
+void Foam::Module::meshOctree::setOctantVectorsAndPositions()
 {
     octantVectors_[0] = Vector<label>(-1, -1, -1);
     octantVectors_[1] = Vector<label>(1, -1, -1);
@@ -188,7 +177,7 @@ void meshOctree::setOctantVectorsAndPositions()
 }
 
 
-void meshOctree::createInitialOctreeBox()
+void Foam::Module::meshOctree::createInitialOctreeBox()
 {
     // create initial octree box
     boundBox bb(surface_.points());
@@ -262,9 +251,5 @@ void meshOctree::createInitialOctreeBox()
     leaves_[0] = initialCubePtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

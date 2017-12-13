@@ -30,19 +30,14 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-faceIOGraph::faceIOGraph(const IOobject& io)
+Foam::Module::faceIOGraph::faceIOGraph(const IOobject& io)
 :
     regIOobject(io),
     VRWGraph()
 {}
 
 
-faceIOGraph::faceIOGraph
+Foam::Module::faceIOGraph::faceIOGraph
 (
     const IOobject& io,
     const label size
@@ -53,7 +48,7 @@ faceIOGraph::faceIOGraph
 {}
 
 
-faceIOGraph::faceIOGraph
+Foam::Module::faceIOGraph::faceIOGraph
 (
     const IOobject& io,
     const VRWGraph& g
@@ -64,19 +59,19 @@ faceIOGraph::faceIOGraph
 {}
 
 
-void faceIOGraph::operator=(const faceIOGraph& rhs)
+void Foam::Module::faceIOGraph::operator=(const faceIOGraph& rhs)
 {
     VRWGraph::operator=(rhs);
 }
 
 
-void faceIOGraph::operator=(const VRWGraph& rhs)
+void Foam::Module::faceIOGraph::operator=(const VRWGraph& rhs)
 {
     VRWGraph::operator=(rhs);
 }
 
 
-bool faceIOGraph::writeData(Ostream& os) const
+bool Foam::Module::faceIOGraph::writeData(Ostream& os) const
 {
     return (os << *this).good();
 }
@@ -84,10 +79,16 @@ bool faceIOGraph::writeData(Ostream& os) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+namespace Module
+{
+
 defineTypeNameWithName(faceIOGraph, "faceList");
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // ************************************************************************* //

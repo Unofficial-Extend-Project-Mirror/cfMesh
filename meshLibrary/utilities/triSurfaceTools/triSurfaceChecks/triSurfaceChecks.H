@@ -22,10 +22,9 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Namespace
-    Foam::triSurfaceChecks
+    Foam::Module::triSurfaceChecks
 
 Description
-
 
 SourceFiles
     triSurface2DCheck.C
@@ -41,9 +40,11 @@ SourceFiles
 
 namespace Foam
 {
-
-class triSurf;
 class boundBox;
+
+namespace Module
+{
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                     Namespace triSurfaceChecka Declaration
@@ -141,9 +142,7 @@ label checkOverlaps
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace triSurfaceChecks
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

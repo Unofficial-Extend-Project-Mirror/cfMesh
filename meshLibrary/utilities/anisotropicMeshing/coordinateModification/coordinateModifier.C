@@ -26,10 +26,7 @@ License
 #include "coordinateModifier.H"
 #include "plane.H"
 
-namespace Foam
-{
-
-void coordinateModifier::checkForValidInverse() const
+void Foam::Module::coordinateModifier::checkForValidInverse() const
 {
     if (modifiers_.size() > 1)
     {
@@ -136,7 +133,10 @@ void coordinateModifier::checkForValidInverse() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-coordinateModifier::coordinateModifier(const dictionary& geomModDict)
+Foam::Module::coordinateModifier::coordinateModifier
+(
+    const dictionary& geomModDict
+)
 :
     modificationDict_(geomModDict),
     modifiers_(),
@@ -178,15 +178,12 @@ coordinateModifier::coordinateModifier(const dictionary& geomModDict)
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-coordinateModifier::~coordinateModifier()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-point coordinateModifier::modifiedPoint(const point& p) const
+Foam::point Foam::Module::coordinateModifier::modifiedPoint
+(
+    const point& p
+) const
 {
     point pNew = p;
 
@@ -199,7 +196,10 @@ point coordinateModifier::modifiedPoint(const point& p) const
 }
 
 
-point coordinateModifier::backwardModifiedPoint(const point& p) const
+Foam::point Foam::Module::coordinateModifier::backwardModifiedPoint
+(
+    const point& p
+) const
 {
     point pNew = p;
 
@@ -212,16 +212,12 @@ point coordinateModifier::backwardModifiedPoint(const point& p) const
 }
 
 
-void coordinateModifier::printObjects() const
+void Foam::Module::coordinateModifier::printObjects() const
 {
     Info<< "Modification objects " << modifiers_ << endl;
 
     Info<< "Backward modification objects " << backwardModifiers_ << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

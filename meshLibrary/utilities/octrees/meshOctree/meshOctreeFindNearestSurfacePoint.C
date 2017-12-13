@@ -33,12 +33,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctree::findNearestSurfacePoint
+void Foam::Module::meshOctree::findNearestSurfacePoint
 (
     point& nearest,
     scalar& distSq,
@@ -126,7 +121,7 @@ void meshOctree::findNearestSurfacePoint
 }
 
 
-void meshOctree::findNearestSurfacePointInRegion
+void Foam::Module::meshOctree::findNearestSurfacePointInRegion
 (
     point& nearest,
     scalar& distSq,
@@ -208,7 +203,7 @@ void meshOctree::findNearestSurfacePointInRegion
 }
 
 
-bool meshOctree::findNearestEdgePoint
+bool Foam::Module::meshOctree::findNearestEdgePoint
 (
     point& edgePoint,
     scalar& distSq,
@@ -315,7 +310,7 @@ bool meshOctree::findNearestEdgePoint
 }
 
 
-bool meshOctree::findNearestPointToEdge
+bool Foam::Module::meshOctree::findNearestPointToEdge
 (
     point& nearest,
     scalar& distSq,
@@ -401,7 +396,7 @@ bool meshOctree::findNearestPointToEdge
 }
 
 
-bool meshOctree::findNearestCorner
+bool Foam::Module::meshOctree::findNearestCorner
 (
     point& nearest,
     scalar& distSq,
@@ -533,7 +528,7 @@ bool meshOctree::findNearestCorner
 }
 
 
-bool meshOctree::findNearestPointToPatches
+bool Foam::Module::meshOctree::findNearestPointToPatches
 (
     point& nearest,
     scalar& distSq,
@@ -579,9 +574,5 @@ bool meshOctree::findNearestPointToPatches
     return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

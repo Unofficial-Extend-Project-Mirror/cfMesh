@@ -27,12 +27,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates()
+inline Foam::Module::meshOctreeCubeCoordinates::meshOctreeCubeCoordinates()
 :
     posX_(-1),
     posY_(-1),
@@ -41,7 +36,7 @@ inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates()
 {}
 
 
-inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
+inline Foam::Module::meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
 (
     const label posX,
     const label posY,
@@ -56,7 +51,7 @@ inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
 {}
 
 
-inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
+inline Foam::Module::meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
 (
     const meshOctreeCubeCoordinates& cc
 )
@@ -70,31 +65,32 @@ inline meshOctreeCubeCoordinates::meshOctreeCubeCoordinates
 
 // * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * * //
 
-inline direction meshOctreeCubeCoordinates::level() const
+inline Foam::direction Foam::Module::meshOctreeCubeCoordinates::level() const
 {
     return level_;
 }
 
 
-inline label meshOctreeCubeCoordinates::posX() const
+inline Foam::label Foam::Module::meshOctreeCubeCoordinates::posX() const
 {
     return posX_;
 }
 
 
-inline label meshOctreeCubeCoordinates::posY() const
+inline Foam::label Foam::Module::meshOctreeCubeCoordinates::posY() const
 {
     return posY_;
 }
 
 
-inline label meshOctreeCubeCoordinates::posZ() const
+inline Foam::label Foam::Module::meshOctreeCubeCoordinates::posZ() const
 {
     return posZ_;
 }
 
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::refineForPosition
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::refineForPosition
 (
     const label i
 ) const
@@ -124,7 +120,8 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::refineForPosition
 }
 
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::reduceLevelBy
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::reduceLevelBy
 (
     const direction diff
 ) const
@@ -141,7 +138,8 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::reduceLevelBy
 }
 
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::reduceToLevel
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::reduceToLevel
 (
     const direction l
 ) const
@@ -152,7 +150,8 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::reduceToLevel
 }
 
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMin
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::increaseToLevelMin
 (
     const direction l
 ) const
@@ -168,7 +167,8 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMin
 }
 
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMax
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::increaseToLevelMax
 (
     const direction l
 ) const
@@ -184,7 +184,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::increaseToLevelMax
 }
 
 
-inline void meshOctreeCubeCoordinates::cubeBox
+inline void Foam::Module::meshOctreeCubeCoordinates::cubeBox
 (
     const boundBox& rootBox,
     point& min,
@@ -216,7 +216,7 @@ inline void meshOctreeCubeCoordinates::cubeBox
 }
 
 
-inline point meshOctreeCubeCoordinates::centre
+inline Foam::point Foam::Module::meshOctreeCubeCoordinates::centre
 (
     const boundBox& rootBox
 ) const
@@ -227,7 +227,7 @@ inline point meshOctreeCubeCoordinates::centre
 }
 
 
-inline scalar meshOctreeCubeCoordinates::size
+inline Foam::scalar Foam::Module::meshOctreeCubeCoordinates::size
 (
     const boundBox& rootBox
 ) const
@@ -238,7 +238,7 @@ inline scalar meshOctreeCubeCoordinates::size
 }
 
 
-inline void meshOctreeCubeCoordinates::neighbourRange
+inline void Foam::Module::meshOctreeCubeCoordinates::neighbourRange
 (
     meshOctreeCubeCoordinates& minCoord,
     meshOctreeCubeCoordinates& maxCoord
@@ -278,7 +278,8 @@ inline void meshOctreeCubeCoordinates::neighbourRange
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Operators
 
-inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::operator+
+inline Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::meshOctreeCubeCoordinates::operator+
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -295,7 +296,7 @@ inline meshOctreeCubeCoordinates meshOctreeCubeCoordinates::operator+
 }
 
 
-inline void meshOctreeCubeCoordinates::operator=
+inline void Foam::Module::meshOctreeCubeCoordinates::operator=
 (
     const meshOctreeCubeCoordinates& cc
 )
@@ -307,7 +308,7 @@ inline void meshOctreeCubeCoordinates::operator=
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator==
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator==
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -327,7 +328,7 @@ inline bool meshOctreeCubeCoordinates::operator==
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator!=
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator!=
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -347,7 +348,7 @@ inline bool meshOctreeCubeCoordinates::operator!=
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator<=
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator<=
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -407,7 +408,7 @@ inline bool meshOctreeCubeCoordinates::operator<=
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator>=
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator>=
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -467,7 +468,7 @@ inline bool meshOctreeCubeCoordinates::operator>=
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator<
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator<
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -527,7 +528,7 @@ inline bool meshOctreeCubeCoordinates::operator<
 }
 
 
-inline bool meshOctreeCubeCoordinates::operator>
+inline bool Foam::Module::meshOctreeCubeCoordinates::operator>
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -587,10 +588,10 @@ inline bool meshOctreeCubeCoordinates::operator>
 }
 
 
-inline Istream& operator>>
+inline Foam::Istream& Foam::Module::operator>>
 (
     Istream& is,
-    meshOctreeCubeCoordinates& cc
+    Foam::Module::meshOctreeCubeCoordinates& cc
 )
 {
     //- Read beginning of meshOctreeCubeCoordinates
@@ -618,10 +619,10 @@ inline Istream& operator>>
 }
 
 
-inline Ostream& operator<<
+inline Foam::Ostream& Foam::Module::operator<<
 (
     Ostream& os,
-    const meshOctreeCubeCoordinates& cc
+    const Foam::Module::meshOctreeCubeCoordinates& cc
 )
 {
     os << token::BEGIN_LIST;
@@ -640,9 +641,5 @@ inline Ostream& operator<<
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

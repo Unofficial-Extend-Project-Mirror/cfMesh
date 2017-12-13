@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenCells
+    Foam::Module::polyMeshGenCells
 
 Description
     Mesh with geometry and topology information
@@ -42,13 +42,16 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 class polyMeshGenAddressing;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class polyMeshGenCells
-: public polyMeshGenFaces
+:
+    public polyMeshGenFaces
 {
 protected:
 
@@ -156,6 +159,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

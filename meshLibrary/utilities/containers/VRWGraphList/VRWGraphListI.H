@@ -23,11 +23,9 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-namespace Foam
-{
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline void Foam::VRWGraphList::checkIndex
+inline void Foam::Module::VRWGraphList::checkIndex
 (
     const label i,
     const label j,
@@ -63,14 +61,14 @@ inline void Foam::VRWGraphList::checkIndex
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-inline Foam::VRWGraphList::VRWGraphList()
+inline Foam::Module::VRWGraphList::VRWGraphList()
 :
     data_(),
     rows_()
 {}
 
 
-inline Foam::VRWGraphList::VRWGraphList
+inline Foam::Module::VRWGraphList::VRWGraphList
 (
     const VRWGraphList& ol
 )
@@ -80,25 +78,24 @@ inline Foam::VRWGraphList::VRWGraphList
 {}
 
 
-inline Foam::VRWGraphList::~VRWGraphList()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline Foam::label Foam::VRWGraphList::size() const
+inline Foam::label Foam::Module::VRWGraphList::size() const
 {
     return rows_.size();
 }
 
 
-inline Foam::label Foam::VRWGraphList::sizeOfGraph(const label posI) const
+inline Foam::label Foam::Module::VRWGraphList::sizeOfGraph
+(
+    const label posI
+) const
 {
     return rows_[posI].size();
 }
 
 
-inline Foam::label Foam::VRWGraphList::sizeOfRow
+inline Foam::label Foam::Module::VRWGraphList::sizeOfRow
 (
     const label posI,
     const label rowI
@@ -108,7 +105,7 @@ inline Foam::label Foam::VRWGraphList::sizeOfRow
 }
 
 
-inline void Foam::VRWGraphList::clear()
+inline void Foam::Module::VRWGraphList::clear()
 {
     data_.setSize(0);
     rows_.setSize(0);
@@ -116,7 +113,7 @@ inline void Foam::VRWGraphList::clear()
 
 
 template<class GraphType>
-inline void Foam::VRWGraphList::appendGraph
+inline void Foam::Module::VRWGraphList::appendGraph
 (
     const GraphType& l
 )
@@ -134,7 +131,7 @@ inline void Foam::VRWGraphList::appendGraph
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-inline Foam::label Foam::VRWGraphList::operator()
+inline Foam::label Foam::Module::VRWGraphList::operator()
 (
     const label i,
     const label j,
@@ -149,7 +146,7 @@ inline Foam::label Foam::VRWGraphList::operator()
 }
 
 
-inline Foam::label& Foam::VRWGraphList::operator()
+inline Foam::label& Foam::Module::VRWGraphList::operator()
 (
     const label i,
     const label j,
@@ -164,24 +161,21 @@ inline Foam::label& Foam::VRWGraphList::operator()
 }
 
 
-inline const Foam::subGraph < const VRWGraph > Foam::VRWGraphList::operator[]
+inline const Foam::Module::subGraph<const Foam::Module::VRWGraph>
+Foam::Module::VRWGraphList::operator[]
 (
     const label i
 ) const
 {
-    return Foam::subGraph<const VRWGraph>(data_, i, rows_[i].size());
+    return Foam::Module::subGraph<const VRWGraph>(data_, i, rows_[i].size());
 }
 
 
-inline void Foam::VRWGraphList::operator=(const VRWGraphList& l)
+inline void Foam::Module::VRWGraphList::operator=(const VRWGraphList& l)
 {
     data_ = l.data_;
     rows_ = l.rows_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

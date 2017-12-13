@@ -23,7 +23,11 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-inline void Foam::VRWGraph::checkIndex(const label i, const label j) const
+inline void Foam::Module::VRWGraph::checkIndex
+(
+    const label i,
+    const label j
+) const
 {
     if (i < 0 || i >= rows_.size())
     {
@@ -45,14 +49,14 @@ inline void Foam::VRWGraph::checkIndex(const label i, const label j) const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-inline Foam::VRWGraph::VRWGraph()
+inline Foam::Module::VRWGraph::VRWGraph()
 :
     data_(),
     rows_()
 {}
 
 
-inline Foam::VRWGraph::VRWGraph
+inline Foam::Module::VRWGraph::VRWGraph
 (
     const label size
 )
@@ -68,7 +72,7 @@ inline Foam::VRWGraph::VRWGraph
 }
 
 
-inline Foam::VRWGraph::VRWGraph
+inline Foam::Module::VRWGraph::VRWGraph
 (
     const label nRows,
     const label nColumnsInRow
@@ -85,7 +89,7 @@ inline Foam::VRWGraph::VRWGraph
 }
 
 
-inline Foam::VRWGraph::VRWGraph
+inline Foam::Module::VRWGraph::VRWGraph
 (
     const label nRows,
     const label nColumnsInRow,
@@ -103,7 +107,7 @@ inline Foam::VRWGraph::VRWGraph
 }
 
 
-inline Foam::VRWGraph::VRWGraph
+inline Foam::Module::VRWGraph::VRWGraph
 (
     const VRWGraph& ol
 )
@@ -115,19 +119,19 @@ inline Foam::VRWGraph::VRWGraph
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline Foam::label Foam::VRWGraph::size() const
+inline Foam::label Foam::Module::VRWGraph::size() const
 {
     return rows_.size();
 }
 
 
-inline Foam::label Foam::VRWGraph::sizeOfRow(const label rowI) const
+inline Foam::label Foam::Module::VRWGraph::sizeOfRow(const label rowI) const
 {
     return rows_[rowI].size();
 }
 
 
-inline void Foam::VRWGraph::setSize(const label size)
+inline void Foam::Module::VRWGraph::setSize(const label size)
 {
     if (size > rows_.size())
     {
@@ -145,7 +149,7 @@ inline void Foam::VRWGraph::setSize(const label size)
 }
 
 
-void Foam::VRWGraph::setSizeAndColumnWidth
+void Foam::Module::VRWGraph::setSizeAndColumnWidth
 (
     const label newNumRows,
     const label rcWidth
@@ -176,7 +180,7 @@ void Foam::VRWGraph::setSizeAndColumnWidth
 
 
 template<class ListType>
-inline void Foam::VRWGraph::setSizeAndRowSize(const ListType& l)
+inline void Foam::Module::VRWGraph::setSizeAndRowSize(const ListType& l)
 {
     //- set the size of graph rows
     const label nRows = l.size();
@@ -203,7 +207,11 @@ inline void Foam::VRWGraph::setSizeAndRowSize(const ListType& l)
 }
 
 
-inline void Foam::VRWGraph::setRowSize(const label rowI, const label newSize)
+inline void Foam::Module::VRWGraph::setRowSize
+(
+    const label rowI,
+    const label newSize
+)
 {
     # ifdef FULLDEBUG
     if ((rowI < 0) || (rowI >= rows_.size()))
@@ -288,7 +296,7 @@ inline void Foam::VRWGraph::setRowSize(const label rowI, const label newSize)
 }
 
 
-inline void Foam::VRWGraph::clear()
+inline void Foam::Module::VRWGraph::clear()
 {
     data_.setSize(0);
     rows_.setSize(0);
@@ -296,7 +304,7 @@ inline void Foam::VRWGraph::clear()
 
 
 template<class ListType>
-inline void Foam::VRWGraph::appendList
+inline void Foam::Module::VRWGraph::appendList
 (
     const ListType& l
 )
@@ -317,7 +325,7 @@ inline void Foam::VRWGraph::appendList
 }
 
 
-inline void Foam::VRWGraph::append(const label rowI, const label el)
+inline void Foam::Module::VRWGraph::append(const label rowI, const label el)
 {
     rowElement& re = rows_[rowI];
 
@@ -362,7 +370,11 @@ inline void Foam::VRWGraph::append(const label rowI, const label el)
 }
 
 
-inline void Foam::VRWGraph::appendIfNotIn(const label rowI, const label el)
+inline void Foam::Module::VRWGraph::appendIfNotIn
+(
+    const label rowI,
+    const label el
+)
 {
     if (!found(rowI, el))
     {
@@ -372,7 +384,7 @@ inline void Foam::VRWGraph::appendIfNotIn(const label rowI, const label el)
 
 
 template<class ListType>
-inline void Foam::VRWGraph::setRow
+inline void Foam::Module::VRWGraph::setRow
 (
     const label rowI,
     const ListType& l
@@ -388,7 +400,10 @@ inline void Foam::VRWGraph::setRow
 }
 
 
-inline void Foam::VRWGraph::mergeGraphs(const List<VRWGraph>& graphParts)
+inline void Foam::Module::VRWGraph::mergeGraphs
+(
+    const List<VRWGraph>& graphParts
+)
 {
     const label nGraphs = graphParts.size();
     const label nRows = graphParts[0].size();
@@ -432,7 +447,7 @@ inline void Foam::VRWGraph::mergeGraphs(const List<VRWGraph>& graphParts)
 
 
 template<class GraphType>
-inline void Foam::VRWGraph::reverseAddressing
+inline void Foam::Module::VRWGraph::reverseAddressing
 (
     const label nRows,
     const GraphType& origGraph
@@ -474,7 +489,10 @@ inline void Foam::VRWGraph::reverseAddressing
 
 
 template<class GraphType>
-inline void Foam::VRWGraph::reverseAddressing(const GraphType& origGraph)
+inline void Foam::Module::VRWGraph::reverseAddressing
+(
+    const GraphType& origGraph
+)
 {
     const label size = origGraph.size();
     label maxValue(-1);
@@ -493,7 +511,7 @@ inline void Foam::VRWGraph::reverseAddressing(const GraphType& origGraph)
 }
 
 
-inline void Foam::VRWGraph::reverseAddressing
+inline void Foam::Module::VRWGraph::reverseAddressing
 (
     const label nRows,
     const VRWGraph& origGraph
@@ -534,7 +552,10 @@ inline void Foam::VRWGraph::reverseAddressing
 }
 
 
-inline void Foam::VRWGraph::reverseAddressing(const VRWGraph& origGraph)
+inline void Foam::Module::VRWGraph::reverseAddressing
+(
+    const VRWGraph& origGraph
+)
 {
     const label size = origGraph.size();
     label maxValue(-1);
@@ -553,7 +574,7 @@ inline void Foam::VRWGraph::reverseAddressing(const VRWGraph& origGraph)
 }
 
 
-inline bool Foam::VRWGraph::contains
+inline bool Foam::Module::VRWGraph::contains
 (
     const label rowI,
     const label e
@@ -563,7 +584,7 @@ inline bool Foam::VRWGraph::contains
 }
 
 
-inline bool Foam::VRWGraph::found
+inline bool Foam::Module::VRWGraph::found
 (
     const label rowI,
     const label e
@@ -573,7 +594,7 @@ inline bool Foam::VRWGraph::found
 }
 
 
-inline Foam::label Foam::VRWGraph::find
+inline Foam::label Foam::Module::VRWGraph::find
 (
     const label rowI,
     const label e
@@ -601,7 +622,7 @@ inline Foam::label Foam::VRWGraph::find
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-inline Foam::label Foam::VRWGraph::operator()
+inline Foam::label Foam::Module::VRWGraph::operator()
 (
     const label i,
     const label j
@@ -615,7 +636,7 @@ inline Foam::label Foam::VRWGraph::operator()
 }
 
 
-inline Foam::label& Foam::VRWGraph::operator()
+inline Foam::label& Foam::Module::VRWGraph::operator()
 (
     const label i, const label j
 )
@@ -628,19 +649,20 @@ inline Foam::label& Foam::VRWGraph::operator()
 }
 
 
-inline Foam::constRow Foam::VRWGraph::operator[](const label i) const
+inline Foam::Module::constRow
+Foam::Module::VRWGraph::operator[](const label i) const
 {
     return constRow(*this, i);
 }
 
 
-inline Foam::row Foam::VRWGraph::operator[](const label i)
+inline Foam::Module::row Foam::Module::VRWGraph::operator[](const label i)
 {
     return row(*this, i);
 }
 
 
-inline void Foam::VRWGraph::operator=
+inline void Foam::Module::VRWGraph::operator=
 (
     const VRWGraph& l
 )

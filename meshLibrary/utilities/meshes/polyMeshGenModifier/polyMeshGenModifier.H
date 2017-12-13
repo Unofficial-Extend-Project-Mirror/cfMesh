@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenModifier
+    Foam::Module::polyMeshGenModifier
 
 Description
     Modifier for polyMeshGen
@@ -44,7 +44,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class VRWGraphList;
 
@@ -72,7 +73,7 @@ class polyMeshGenModifier
             VRWGraph& pointFaces = *pointFacesPtr_;
 
             pointFaces.reverseAddressing(mesh_.points().size(), faces);
-        };
+        }
 
         //- re-order positions of processor boundary faces
         //- they should comea immediately after the internal faces
@@ -91,7 +92,7 @@ protected:
             }
 
             return *pointFacesPtr_;
-        };
+        }
 
 
 public:
@@ -103,14 +104,14 @@ public:
         pointFacesPtr_(nullptr)
     {
         //mesh_.clearOut();
-    };
+    }
 
 
     //- Destructor
     ~polyMeshGenModifier()
     {
         this->clearOut();
-    };
+    }
 
 
     // Member functions
@@ -119,19 +120,19 @@ public:
         inline pointFieldPMG& pointsAccess()
         {
             return mesh_.points_;
-        };
+        }
 
         //- access to mesh faces
         inline faceListPMG& facesAccess()
         {
             return mesh_.faces_;
-        };
+        }
 
         //- access to cells
         inline cellListPMG& cellsAccess()
         {
             return mesh_.cells_;
-        };
+        }
 
         //- access to processor boundary data
         inline PtrList<processorBoundaryPatch>& procBoundariesAccess()
@@ -219,6 +220,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::boundaryPatchBase
+    Foam::Module::boundaryPatchBase
 
 Description
     Writes information for a given boundary patch
@@ -44,6 +44,8 @@ SourceFiles
 #include "dictionary.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -187,6 +189,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

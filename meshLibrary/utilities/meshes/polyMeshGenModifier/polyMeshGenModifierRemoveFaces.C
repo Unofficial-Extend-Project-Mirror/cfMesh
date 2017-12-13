@@ -30,12 +30,9 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGenModifier::removeFaces(const boolList& removeFace)
+void Foam::Module::polyMeshGenModifier::removeFaces(const boolList& removeFace)
 {
     //mesh_.clearOut();
 
@@ -263,7 +260,7 @@ void polyMeshGenModifier::removeFaces(const boolList& removeFace)
 }
 
 
-void polyMeshGenModifier::removeDuplicateFaces()
+void Foam::Module::polyMeshGenModifier::removeDuplicateFaces()
 {
     VRWGraph& pointFaces = this->pointFaces();
 
@@ -390,9 +387,5 @@ void polyMeshGenModifier::removeDuplicateFaces()
     mesh_.clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

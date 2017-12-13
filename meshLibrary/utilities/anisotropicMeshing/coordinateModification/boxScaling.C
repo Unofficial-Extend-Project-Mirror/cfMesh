@@ -32,14 +32,16 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(boxScaling, 0);
-addToRunTimeSelectionTable(coordinateModification, boxScaling, dictionary);
-
+namespace Module
+{
+    defineTypeNameAndDebug(boxScaling, 0);
+    addToRunTimeSelectionTable(coordinateModification, boxScaling, dictionary);
+}
+}
 
 // * * * * * * * * * * * * * * Private member functions* * * * * * * * * * * //
 
-void boxScaling::calculateBndBox()
+void Foam::Module::boxScaling::calculateBndBox()
 {
     pMin_ = centre_ - 0.5*lengthVec_;
     pMax_ = centre_ + 0.5*lengthVec_;
@@ -48,7 +50,7 @@ void boxScaling::calculateBndBox()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boxScaling::boxScaling()
+Foam::Module::boxScaling::boxScaling()
 :
     coordinateModification(),
     centre_(),
@@ -61,7 +63,7 @@ boxScaling::boxScaling()
 }
 
 
-boxScaling::boxScaling
+Foam::Module::boxScaling::boxScaling
 (
     const word& name,
     const point& centre,
@@ -85,7 +87,7 @@ boxScaling::boxScaling
 }
 
 
-boxScaling::boxScaling
+Foam::Module::boxScaling::boxScaling
 (
     const word& name,
     const dictionary& dict
@@ -99,13 +101,13 @@ boxScaling::boxScaling
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-point boxScaling::origin() const
+Foam::point Foam::Module::boxScaling::origin() const
 {
     return centre_;
 }
 
 
-void boxScaling::translateAndModifyObject(const vector& disp)
+void Foam::Module::boxScaling::translateAndModifyObject(const vector& disp)
 {
     centre_ += disp;
 
@@ -118,7 +120,10 @@ void boxScaling::translateAndModifyObject(const vector& disp)
 }
 
 
-vector boxScaling::displacement(const point& p) const
+Foam::vector Foam::Module::boxScaling::displacement
+(
+    const point& p
+) const
 {
     vector disp;
 
@@ -136,7 +141,10 @@ vector boxScaling::displacement(const point& p) const
 }
 
 
-vector boxScaling::backwardDisplacement(const point& p) const
+Foam::vector Foam::Module::boxScaling::backwardDisplacement
+(
+    const point& p
+) const
 {
     vector disp;
 
@@ -155,13 +163,13 @@ vector boxScaling::backwardDisplacement(const point& p) const
 }
 
 
-bool boxScaling::combiningPossible() const
+bool Foam::Module::boxScaling::combiningPossible() const
 {
     return true;
 }
 
 
-void boxScaling::boundingPlanes(PtrList<plane>&pl) const
+void Foam::Module::boxScaling::boundingPlanes(PtrList<plane>&pl) const
 {
     pl.setSize(6);
     label counter(0);
@@ -189,7 +197,7 @@ void boxScaling::boundingPlanes(PtrList<plane>&pl) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary boxScaling::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::boxScaling::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -208,7 +216,7 @@ dictionary boxScaling::dict(bool /*ignoreType*/) const
 }
 
 
-void boxScaling::write(Ostream& os) const
+void Foam::Module::boxScaling::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " centre: " << centre_
@@ -222,7 +230,7 @@ void boxScaling::write(Ostream& os) const
 }
 
 
-void boxScaling::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::boxScaling::writeDict(Ostream& os, bool subDict) const
 {
     if (subDict)
     {
@@ -250,7 +258,7 @@ void boxScaling::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void boxScaling::operator=(const dictionary& d)
+void Foam::Module::boxScaling::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -298,7 +306,7 @@ void boxScaling::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& boxScaling::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::boxScaling::operator<<(Ostream& os) const
 {
     os << "name " << name() << nl;
     write(os);
@@ -306,14 +314,14 @@ Ostream& boxScaling::operator<<(Ostream& os) const
 }
 
 
-Ostream& operator<<(Ostream& os, const boxScaling& bs)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::boxScaling& bs
+)
 {
     return bs.operator<<(os);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

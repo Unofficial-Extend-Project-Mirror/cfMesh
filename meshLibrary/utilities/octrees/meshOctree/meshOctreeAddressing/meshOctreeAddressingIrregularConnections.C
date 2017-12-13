@@ -30,16 +30,9 @@ License
 
 #include <map>
 
-//#define DEBUGAutoRef
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeAddressing::checkAndFixIrregularConnections()
+void Foam::Module::meshOctreeAddressing::checkAndFixIrregularConnections()
 {
     Info<< "Checking the surface of the selected boxes" << endl;
 
@@ -242,9 +235,5 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
     Info<< "Finished checking the surface of the selected boxes" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

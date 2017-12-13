@@ -38,13 +38,13 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     // Polyhedral mesher cannot be run in parallel yet
     argList::noParallel();
 
-    voronoiMeshGenerator pmg(runTime);
+    Module::voronoiMeshGenerator pmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << endl;

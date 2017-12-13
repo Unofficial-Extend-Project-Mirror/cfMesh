@@ -34,59 +34,46 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
+void Foam::Module::triSurf::readFromFTR(const fileName& fName)
 {
+    IFstream is(fName);
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurf::readFromFTR(const fileName& fName)
-{
-    IFstream fStream(fName);
-
-    fStream >> triSurfFacets::patches_;
-
-    fStream >> triSurfPoints::points_;
-
-    fStream >> triSurfFacets::triangles_;
+    is >> triSurfFacets::patches_;
+    is >> triSurfPoints::points_;
+    is >> triSurfFacets::triangles_;
 }
 
 
-void triSurf::writeToFTR(const fileName& fName) const
+void Foam::Module::triSurf::writeToFTR(const fileName& fName) const
 {
-    OFstream fStream(fName);
+    OFstream os(fName);
 
-    fStream << triSurfFacets::patches_;
-
-    fStream << nl;
-
-    fStream << triSurfPoints::points_;
-
-    fStream << nl;
-
-    fStream << triSurfFacets::triangles_;
+    os << triSurfFacets::patches_ << nl;
+    os << triSurfPoints::points_ << nl;
+    os << triSurfFacets::triangles_;
 }
 
 
-void triSurf::readFromFMS(const fileName& fName)
+void Foam::Module::triSurf::readFromFMS(const fileName& fName)
 {
-    IFstream fStream(fName);
+    IFstream is(fName);
 
     // read the list of patches defined on the surface mesh
-    fStream >> triSurfFacets::patches_;
+    is >> triSurfFacets::patches_;
 
     // read points
-    fStream >> triSurfPoints::points_;
+    is >> triSurfPoints::points_;
 
     // read surface triangles
-    fStream >> triSurfFacets::triangles_;
+    is >> triSurfFacets::triangles_;
 
     // read feature edges
-    fStream >> triSurfFeatureEdges::featureEdges_;
+    is >> triSurfFeatureEdges::featureEdges_;
 
     List<meshSubset> subsets;
 
     // read point subsets
-    fStream >> subsets;
+    is >> subsets;
     forAll(subsets, subsetI)
     {
         triSurfPoints::pointSubsets_.insert(subsetI, subsets[subsetI]);
@@ -95,7 +82,7 @@ void triSurf::readFromFMS(const fileName& fName)
     subsets.clear();
 
     // read facet subsets
-    fStream >> subsets;
+    is >> subsets;
     forAll(subsets, subsetI)
     {
         triSurfFacets::facetSubsets_.insert(subsetI, subsets[subsetI]);
@@ -104,7 +91,7 @@ void triSurf::readFromFMS(const fileName& fName)
     subsets.clear();
 
     // read subsets on feature edges
-    fStream >> subsets;
+    is >> subsets;
     forAll(subsets, subsetI)
     {
         triSurfFeatureEdges::featureEdgeSubsets_.insert
@@ -116,29 +103,21 @@ void triSurf::readFromFMS(const fileName& fName)
 }
 
 
-void triSurf::writeToFMS(const fileName& fName) const
+void Foam::Module::triSurf::writeToFMS(const fileName& fName) const
 {
-    OFstream fStream(fName);
+    OFstream os(fName);
 
     // write patches
-    fStream << triSurfFacets::patches_;
-
-    fStream << nl;
+    os << triSurfFacets::patches_ << nl;
 
     // write points
-    fStream << triSurfPoints::points_;
-
-    fStream << nl;
+    os << triSurfPoints::points_ << nl;
 
     // write triangles
-    fStream << triSurfFacets::triangles_;
-
-    fStream << nl;
+    os << triSurfFacets::triangles_ << nl;
 
     // write feature edges
-    fStream << triSurfFeatureEdges::featureEdges_;
-
-    fStream << nl;
+    os << triSurfFeatureEdges::featureEdges_ << nl;
 
     // write point subsets
     List<meshSubset> subsets;
@@ -148,9 +127,9 @@ void triSurf::writeToFMS(const fileName& fName) const
     {
         subsets[i++] = it();
     }
-    fStream << subsets;
+    os << subsets;
 
-    fStream << nl;
+    os << nl;
 
     // write subsets of facets
     subsets.setSize(triSurfFacets::facetSubsets_.size());
@@ -159,9 +138,9 @@ void triSurf::writeToFMS(const fileName& fName) const
     {
         subsets[i++] = it();
     }
-    fStream << subsets;
+    os << subsets;
 
-    fStream << nl;
+    os << nl;
 
     // write subets of feature edges
     subsets.setSize(triSurfFeatureEdges::featureEdgeSubsets_.size());
@@ -170,11 +149,11 @@ void triSurf::writeToFMS(const fileName& fName) const
     {
         subsets[i++] = it();
     }
-    fStream << subsets;
+    os << subsets;
 }
 
 
-void triSurf::topologyCheck()
+void Foam::Module::triSurf::topologyCheck()
 {
     const pointField& pts = this->points();
     const LongList<labelledTri>& trias = this->facets();
@@ -347,7 +326,7 @@ void triSurf::topologyCheck()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurf::triSurf()
+Foam::Module::triSurf::triSurf()
 :
     triSurfPoints(),
     triSurfFacets(),
@@ -356,7 +335,7 @@ triSurf::triSurf()
 {}
 
 
-triSurf::triSurf
+Foam::Module::triSurf::triSurf
 (
     const LongList<labelledTri>& triangles,
     const geometricSurfacePatchList& patches,
@@ -373,7 +352,7 @@ triSurf::triSurf
 }
 
 
-triSurf::triSurf(const fileName& fName)
+Foam::Module::triSurf::triSurf(const fileName& fName)
 :
     triSurfPoints(),
     triSurfFacets(),
@@ -386,15 +365,9 @@ triSurf::triSurf(const fileName& fName)
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triSurf::~triSurf()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurf::readSurface(const fileName& fName)
+void Foam::Module::triSurf::readSurface(const fileName& fName)
 {
     if (fName.ext() == "fms" || fName.ext() == "FMS")
     {
@@ -428,7 +401,7 @@ void triSurf::readSurface(const fileName& fName)
 }
 
 
-void triSurf::writeSurface(const fileName& fName) const
+void Foam::Module::triSurf::writeSurface(const fileName& fName) const
 {
     if (fName.ext() == "fms" || fName.ext() == "FMS")
     {
@@ -455,9 +428,5 @@ void triSurf::writeSurface(const fileName& fName) const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

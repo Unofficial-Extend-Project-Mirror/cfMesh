@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::processorBoundaryPatch
+    Foam::Module::processorBoundaryPatch
 
 Description
     Writes information for a given processor patch
@@ -41,6 +41,8 @@ SourceFiles
 #include "typeInfo.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -166,6 +168,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenModifierAddCellByCell
+    Foam::Module::polyMeshGenModifierAddCellByCell
 
 Description
     Modifier for polyMeshGen
@@ -40,6 +40,8 @@ SourceFiles
 #include "polyMeshGenModifier.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -77,6 +79,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

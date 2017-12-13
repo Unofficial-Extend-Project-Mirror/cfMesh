@@ -34,10 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-void decomposeCells::decomposeMesh(const boolList& decomposeCell)
+void Foam::Module::decomposeCells::decomposeMesh(const boolList& decomposeCell)
 {
     checkFaceConnections(decomposeCell);
 
@@ -55,7 +52,10 @@ void decomposeCells::decomposeMesh(const boolList& decomposeCell)
 }
 
 
-void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
+void Foam::Module::decomposeCells::checkFaceConnections
+(
+    const boolList& decomposeCell
+)
 {
     const faceListPMG& faces = mesh_.faces();
     const cellListPMG& cells = mesh_.cells();
@@ -157,7 +157,10 @@ void decomposeCells::checkFaceConnections(const boolList& decomposeCell)
 }
 
 
-void decomposeCells::createPointsAndCellFaces(const boolList& decomposeCell)
+void Foam::Module::decomposeCells::createPointsAndCellFaces
+(
+    const boolList& decomposeCell
+)
 {
     facesOfNewCells_.clear();
 
@@ -171,7 +174,10 @@ void decomposeCells::createPointsAndCellFaces(const boolList& decomposeCell)
 }
 
 
-void decomposeCells::storeBoundaryFaces(const boolList& /*decomposeCell*/)
+void Foam::Module::decomposeCells::storeBoundaryFaces
+(
+    const boolList& /*decomposeCell*/
+)
 {
     meshSurfaceEngine mse(mesh_);
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -185,7 +191,10 @@ void decomposeCells::storeBoundaryFaces(const boolList& /*decomposeCell*/)
 }
 
 
-void decomposeCells::removeDecomposedCells(const boolList& decomposeCell)
+void Foam::Module::decomposeCells::removeDecomposedCells
+(
+    const boolList& decomposeCell
+)
 {
     # ifdef DEBUGDecompose
     Info<< "Number of cells before removal " << mesh_.cells().size() << endl;
@@ -200,7 +209,7 @@ void decomposeCells::removeDecomposedCells(const boolList& decomposeCell)
 }
 
 
-void decomposeCells::addNewCells()
+void Foam::Module::decomposeCells::addNewCells()
 {
     Info<< "Adding new cells " << endl;
     polyMeshGenModifier(mesh_).addCells(facesOfNewCells_);
@@ -248,7 +257,7 @@ void decomposeCells::addNewCells()
             {
                 # ifdef DEBUGDecompose
                 Info<< "Boundary face " << bf << " is in cell "
-                    << owner[fLabel]] << endl;
+                    << owner[fLabel] << endl;
                 # endif
 
                 newBoundaryOwners.append(owner[fLabel]);
@@ -275,9 +284,5 @@ void decomposeCells::addNewCells()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -28,11 +28,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
+void Foam::Module::triSurfaceRemoveFacets::markFacetsForRemoval
+(
+    boolList& removeFacet
+) const
 {
     removeFacet.setSize(surf_.size());
     removeFacet = false;
@@ -79,7 +78,7 @@ void triSurfaceRemoveFacets::markFacetsForRemoval(boolList& removeFacet) const
 }
 
 
-void triSurfaceRemoveFacets::removeFacets()
+void Foam::Module::triSurfaceRemoveFacets::removeFacets()
 {
     boolList removeFacet;
     markFacetsForRemoval(removeFacet);
@@ -212,9 +211,5 @@ void triSurfaceRemoveFacets::removeFacets()
     selectedEntities_.clear();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

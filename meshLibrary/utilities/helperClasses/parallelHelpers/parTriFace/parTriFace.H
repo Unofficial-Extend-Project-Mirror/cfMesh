@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::parTriFace
+    Foam::Module::parTriFace
 
 Description
     Hold point labels and their coordinates. It is used for exchanging data
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -85,8 +87,7 @@ public:
 
 
     //- Destructor
-    ~parTriFace()
-    {}
+    ~parTriFace() = default;
 
 
     // Member functions
@@ -143,16 +144,17 @@ public:
         }
 };
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//- Specify data associated with parTriFace type is contiguous
+} // End namespace Module
+
+//- Data for parTriFace are contiguous
 template<>
-inline bool contiguous<parTriFace>()
+inline bool contiguous<Module::parTriFace>()
 {
     return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

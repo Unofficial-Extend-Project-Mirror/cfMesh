@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreCubeCoordinatesScalar
+    Foam::Module::meshOctreCubeCoordinatesScalar
 
 Description
     A class containing meshOctreeCubeCoordinates and a scalar value.
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -84,8 +86,7 @@ public:
 
 
     //- Destructor
-    ~meshOctreeCubeCoordinatesScalar()
-    {}
+    ~meshOctreeCubeCoordinatesScalar() = default;
 
 
     // Member functions
@@ -180,16 +181,16 @@ public:
 };
 
 
-//- Specify data associated with meshOctreCubeCoordinatesScalar
-//- type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for meshOctreCubeCoordinatesScalar are contiguous
 template<>
-inline bool contiguous<meshOctreeCubeCoordinatesScalar>()
+inline bool contiguous<Module::meshOctreeCubeCoordinatesScalar>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

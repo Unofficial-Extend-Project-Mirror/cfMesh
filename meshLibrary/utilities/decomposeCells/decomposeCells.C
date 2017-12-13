@@ -25,14 +25,9 @@ License
 
 #include "decomposeCells.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * //
 
-decomposeCells::decomposeCells(polyMeshGen& mesh)
+Foam::Module::decomposeCells::decomposeCells(polyMeshGen& mesh)
 :
     mesh_(mesh),
     patchNames_(mesh.boundaries().size()),
@@ -49,15 +44,5 @@ decomposeCells::decomposeCells(polyMeshGen& mesh)
     }
 }
 
-
-// * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
-
-decomposeCells::~decomposeCells()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

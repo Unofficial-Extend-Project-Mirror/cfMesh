@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool meshOctreeCube::hasContainedTriangles
+bool Foam::Module::meshOctreeCube::hasContainedTriangles
 (
     const triSurf& surface,
     const boundBox& rootBox,
@@ -68,9 +63,5 @@ bool meshOctreeCube::hasContainedTriangles
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

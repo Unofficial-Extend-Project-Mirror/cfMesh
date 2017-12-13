@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam
+    Foam::Module
 
 Description
     Write mesh into fpma format
@@ -43,6 +43,9 @@ SourceFiles
 namespace Foam
 {
 
+namespace Module
+{
+
 class polyMeshGen;
 
 void writeMeshFPMA(const polyMeshGen& mesh, const word& fName);
@@ -51,6 +54,7 @@ void createFIRESelections(polyMeshGen& mesh);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

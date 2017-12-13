@@ -23,19 +23,19 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-namespace Foam
-{
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline void tetCreatorOctree::checkAndAppendTet(const partTet pt)
+inline void Foam::Module::tetCreatorOctree::checkAndAppendTet(const partTet pt)
 {
     bool valid(true);
     for (label n = 0; n < 4; ++n)
+    {
         if (pt[n] < 0)
         {
             valid = false;
             break;
         }
+    }
 
     if (valid)
     {
@@ -48,9 +48,5 @@ inline void tetCreatorOctree::checkAndAppendTet(const partTet pt)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

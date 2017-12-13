@@ -27,22 +27,20 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-inline bool meshOctree::isQuadtree() const
+inline bool Foam::Module::meshOctree::isQuadtree() const
 {
     return isQuadtree_;
 }
 
 
-inline const FixedList<Vector<label>, 8>& meshOctree::octantVectors() const
+inline const Foam::FixedList<Foam::Vector<Foam::label>, 8>&
+Foam::Module::meshOctree::octantVectors() const
 {
     return octantVectors_;
 }
 
 
-inline label meshOctree::numberOfLeaves() const
+inline Foam::label Foam::Module::meshOctree::numberOfLeaves() const
 {
     if (leaves_.size() == 0)
         FatalErrorInFunction
@@ -52,7 +50,8 @@ inline label meshOctree::numberOfLeaves() const
 }
 
 
-inline const meshOctreeCubeBasic& meshOctree::returnLeaf
+inline const Foam::Module::meshOctreeCubeBasic&
+Foam::Module::meshOctree::returnLeaf
 (
     const label leafI
 ) const
@@ -61,13 +60,19 @@ inline const meshOctreeCubeBasic& meshOctree::returnLeaf
 }
 
 
-inline short meshOctree::leafAtProc(const label leafI) const
+inline short Foam::Module::meshOctree::leafAtProc
+(
+    const label leafI
+) const
 {
     return leaves_[leafI]->procNo();
 }
 
 
-inline bool meshOctree::hasContainedTriangles(const label leafI) const
+inline bool Foam::Module::meshOctree::hasContainedTriangles
+(
+    const label leafI
+) const
 {
     if (leaves_[leafI]->hasContainedElements())
         return true;
@@ -76,7 +81,7 @@ inline bool meshOctree::hasContainedTriangles(const label leafI) const
 }
 
 
-inline void meshOctree::containedTriangles
+inline void Foam::Module::meshOctree::containedTriangles
 (
     const label leafI,
     DynList<label>& triangles
@@ -98,7 +103,10 @@ inline void meshOctree::containedTriangles
 }
 
 
-inline bool meshOctree::hasContainedEdges(const label leafI) const
+inline bool Foam::Module::meshOctree::hasContainedEdges
+(
+    const label leafI
+) const
 {
     if (leaves_[leafI]->hasContainedEdges())
         return true;
@@ -107,7 +115,7 @@ inline bool meshOctree::hasContainedEdges(const label leafI) const
 }
 
 
-inline void meshOctree::containedEdges
+inline void Foam::Module::meshOctree::containedEdges
 (
     const label leafI,
     DynList<label>& edges
@@ -129,39 +137,43 @@ inline void meshOctree::containedEdges
 }
 
 
-inline const triSurf& meshOctree::surface() const
+inline const Foam::Module::triSurf& Foam::Module::meshOctree::surface() const
 {
     return surface_;
 }
 
 
-inline const boundBox& meshOctree::rootBox() const
+inline const Foam::boundBox& Foam::Module::meshOctree::rootBox() const
 {
     return rootBox_;
 }
 
 
-inline const FixedList<meshOctreeCubeCoordinates, 26>&
-meshOctree::regularityPositions() const
+inline const Foam::FixedList<Foam::Module::meshOctreeCubeCoordinates, 26>&
+Foam::Module::meshOctree::regularityPositions() const
 {
     return regularityPositions_;
 }
 
 
-inline const FixedList<FixedList<meshOctreeCubeCoordinates, 8>, 8>&
-meshOctree::positionsOfLeavesAtNodes() const
+inline const Foam::FixedList
+<
+    Foam::FixedList<Foam::Module::meshOctreeCubeCoordinates, 8>,
+    8
+>&
+Foam::Module::meshOctree::positionsOfLeavesAtNodes() const
 {
     return vrtLeavesPos_;
 }
 
 
-inline const labelList& meshOctree::neiProcs() const
+inline const Foam::labelList& Foam::Module::meshOctree::neiProcs() const
 {
     return neiProcs_;
 }
 
 
-inline label meshOctree::findNeighbourOverNode
+inline Foam::label Foam::Module::meshOctree::findNeighbourOverNode
 (
     const label leafI,
     const label nodeI
@@ -171,7 +183,7 @@ inline label meshOctree::findNeighbourOverNode
 }
 
 
-inline void meshOctree::findNeighboursOverEdge
+inline void Foam::Module::meshOctree::findNeighboursOverEdge
 (
     const label leafI,
     const label eI,
@@ -182,7 +194,7 @@ inline void meshOctree::findNeighboursOverEdge
 }
 
 
-inline void meshOctree::findNeighboursInDirection
+inline void Foam::Module::meshOctree::findNeighboursInDirection
 (
     const label leafI,
     const label dir,
@@ -193,7 +205,7 @@ inline void meshOctree::findNeighboursInDirection
 }
 
 
-inline void meshOctree::findNeighboursForLeaf
+inline void Foam::Module::meshOctree::findNeighboursForLeaf
 (
     const label leafI,
     DynList<label>& neighbourLeaves
@@ -203,7 +215,7 @@ inline void meshOctree::findNeighboursForLeaf
 }
 
 
-inline void meshOctree::findAllLeafNeighbours
+inline void Foam::Module::meshOctree::findAllLeafNeighbours
 (
     const label leafI,
     DynList<label>& neighbourLeaves
@@ -212,9 +224,5 @@ inline void meshOctree::findAllLeafNeighbours
     findAllLeafNeighbours(leaves_[leafI]->coordinates(), neighbourLeaves);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

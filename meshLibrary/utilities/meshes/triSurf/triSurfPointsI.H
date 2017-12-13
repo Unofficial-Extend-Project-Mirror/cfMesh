@@ -25,26 +25,19 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "triSurfPoints.H"
-
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline label triSurfPoints::nPoints() const
+inline Foam::label Foam::Module::triSurfPoints::nPoints() const
 {
     return points_.size();
 }
 
 
-inline const pointField& triSurfPoints::points() const
+inline const Foam::pointField& Foam::Module::triSurfPoints::points() const
 {
     return points_;
 }
 
 
-inline void triSurfPoints::appendVertex(const point& p)
+inline void Foam::Module::triSurfPoints::appendVertex(const point& p)
 {
     const label s = points_.size();
     points_.setSize(s + 1);
@@ -52,7 +45,7 @@ inline void triSurfPoints::appendVertex(const point& p)
 }
 
 
-inline void triSurfPoints::addPointToSubset
+inline void Foam::Module::triSurfPoints::addPointToSubset
 (
     const label setI,
     const label pointI
@@ -68,7 +61,7 @@ inline void triSurfPoints::addPointToSubset
 }
 
 
-inline void triSurfPoints::removePointFromSubset
+inline void Foam::Module::triSurfPoints::removePointFromSubset
 (
     const label setI,
     const label pointI
@@ -84,7 +77,7 @@ inline void triSurfPoints::removePointFromSubset
 }
 
 
-inline void triSurfPoints::pointInSubsets
+inline void Foam::Module::triSurfPoints::pointInSubsets
 (
     const label pointI,
     DynList<label>& pointSubsets
@@ -102,7 +95,10 @@ inline void triSurfPoints::pointInSubsets
 }
 
 
-inline void triSurfPoints::pointSubsetIndices(DynList<label>& indices) const
+inline void Foam::Module::triSurfPoints::pointSubsetIndices
+(
+    DynList<label>& indices
+) const
 {
     indices.clear();
 
@@ -114,7 +110,7 @@ inline void triSurfPoints::pointSubsetIndices(DynList<label>& indices) const
 
 
 template<class ListType>
-inline void triSurfPoints::pointsInSubset
+inline void Foam::Module::triSurfPoints::pointsInSubset
 (
     const label setI,
     ListType& pointLabels
@@ -122,7 +118,7 @@ inline void triSurfPoints::pointsInSubset
 {
     pointLabels.clear();
 
-    Map<meshSubset>::const_iterator it = pointSubsets_.find(setI);
+    Map<meshSubset>::const_iterator it = pointSubsets_.cfind(setI);
 
     if (it == pointSubsets_.end())
     {
@@ -134,7 +130,10 @@ inline void triSurfPoints::pointsInSubset
 
 
 template<class ListType>
-inline void triSurfPoints::updatePointSubsets(const ListType& newNodeLabels)
+inline void Foam::Module::triSurfPoints::updatePointSubsets
+(
+    const ListType& newNodeLabels
+)
 {
     forAllIters(pointSubsets_, it)
     {
@@ -142,9 +141,5 @@ inline void triSurfPoints::updatePointSubsets(const ListType& newNodeLabels)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

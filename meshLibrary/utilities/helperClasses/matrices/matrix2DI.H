@@ -21,22 +21,11 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Class
-    matrix2D
-
-Description
-    Implementation od 2 x 2 matrix
-
 \*---------------------------------------------------------------------------*/
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline void matrix2D::calculateDeterminant()
+inline void Foam::Module::matrix2D::calculateDeterminant()
 {
     if (calculatedDet_)
     {
@@ -52,14 +41,14 @@ inline void matrix2D::calculateDeterminant()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline matrix2D::matrix2D()
+inline Foam::Module::matrix2D::matrix2D()
 :
     det_(),
     calculatedDet_(false)
 {}
 
 
-inline matrix2D::matrix2D(const matrix2D& m)
+inline Foam::Module::matrix2D::matrix2D(const matrix2D& m)
 :
     FixedList<FixedList<scalar, 2>, 2>(m),
     det_(m.det_),
@@ -67,13 +56,9 @@ inline matrix2D::matrix2D(const matrix2D& m)
 {}
 
 
-inline matrix2D::~matrix2D()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline scalar matrix2D::determinant()
+inline Foam::scalar Foam::Module::matrix2D::determinant()
 {
     calculateDeterminant();
 
@@ -81,7 +66,7 @@ inline scalar matrix2D::determinant()
 }
 
 
-inline matrix2D matrix2D::inverse()
+inline Foam::Module::matrix2D Foam::Module::matrix2D::inverse()
 {
     calculateDeterminant();
 
@@ -97,7 +82,7 @@ inline matrix2D matrix2D::inverse()
 }
 
 
-inline FixedList<scalar, 2> matrix2D::solve
+inline Foam::FixedList<Foam::scalar, 2> Foam::Module::matrix2D::solve
 (
     const FixedList<scalar, 2>& source
 )
@@ -110,7 +95,10 @@ inline FixedList<scalar, 2> matrix2D::solve
 }
 
 
-inline scalar matrix2D::solveFirst(const FixedList<scalar, 2>& source)
+inline Foam::scalar Foam::Module::matrix2D::solveFirst
+(
+    const FixedList<scalar, 2>& source
+)
 {
     calculateDeterminant();
 
@@ -124,7 +112,10 @@ inline scalar matrix2D::solveFirst(const FixedList<scalar, 2>& source)
 }
 
 
-inline scalar matrix2D::solveSecond(const FixedList<scalar, 2>& source)
+inline Foam::scalar Foam::Module::matrix2D::solveSecond
+(
+    const FixedList<scalar, 2>& source
+)
 {
     calculateDeterminant();
 
@@ -137,9 +128,5 @@ inline scalar matrix2D::solveSecond(const FixedList<scalar, 2>& source)
     ) / det_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -29,10 +29,10 @@ License
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
-Foam::Ostream& Foam::operator<<
+Foam::Ostream& Foam::Module::operator<<
 (
-    Foam::Ostream& os,
-    const Foam::VRWGraph& DL
+    Ostream& os,
+    const Foam::Module::VRWGraph& DL
 )
 {
     os << DL.size() << nl << token::BEGIN_LIST << nl;
@@ -61,10 +61,10 @@ Foam::Ostream& Foam::operator<<
 
 /*
 template<class T, Foam::label width>
-Foam::Istream& Foam::operator>>
+Foam::Istream& Foam::Module::operator>>
 (
-    Foam::Istream& is,
-    Foam::VRWGraph<T, width>& DL
+    Istream& is,
+    Foam::Module::VRWGraph<T, width>& DL
 )
 {
     label size;
@@ -82,7 +82,7 @@ Foam::Istream& Foam::operator>>
 */
 
 
-void Foam::VRWGraph::optimizeMemoryUsage()
+void Foam::Module::VRWGraph::optimizeMemoryUsage()
 {
     labelLongList newPosForNode(data_.size());
     label pos(0), nElements;

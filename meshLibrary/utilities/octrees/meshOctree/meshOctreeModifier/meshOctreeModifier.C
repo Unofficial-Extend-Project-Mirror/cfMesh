@@ -24,19 +24,10 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "meshOctreeModifier.H"
-#include "demandDrivenData.H"
-
-
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctreeModifier::meshOctreeModifier
+Foam::Module::meshOctreeModifier::meshOctreeModifier
 (
     meshOctree& octree
 )
@@ -44,15 +35,5 @@ meshOctreeModifier::meshOctreeModifier
     octree_(octree)
 {}
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshOctreeModifier::~meshOctreeModifier()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

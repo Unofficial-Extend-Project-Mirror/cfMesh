@@ -29,7 +29,8 @@ License
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
+Foam::autoPtr<Foam::Module::objectRefinement>
+Foam::Module::objectRefinement::New
 (
     const word& name,
     const dictionary& dict

@@ -31,14 +31,23 @@ License
 
 namespace Foam
 {
+namespace Module
+{
 
-defineTypeNameAndDebug(sphereRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, sphereRefinement, dictionary);
+    defineTypeNameAndDebug(sphereRefinement, 0);
+    addToRunTimeSelectionTable
+    (
+        objectRefinement,
+        sphereRefinement,
+        dictionary
+    );
+}
+}
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-sphereRefinement::sphereRefinement()
+Foam::Module::sphereRefinement::sphereRefinement()
 :
     objectRefinement(),
     centre_(),
@@ -46,7 +55,7 @@ sphereRefinement::sphereRefinement()
 {}
 
 
-sphereRefinement::sphereRefinement
+Foam::Module::sphereRefinement::sphereRefinement
 (
     const word& name,
     const scalar cellSize,
@@ -65,7 +74,7 @@ sphereRefinement::sphereRefinement
 }
 
 
-sphereRefinement::sphereRefinement
+Foam::Module::sphereRefinement::sphereRefinement
 (
     const word& name,
     const dictionary& dict
@@ -79,7 +88,7 @@ sphereRefinement::sphereRefinement
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool sphereRefinement::intersectsObject(const boundBox& bb) const
+bool Foam::Module::sphereRefinement::intersectsObject(const boundBox& bb) const
 {
     const point c = (bb.max() + bb.min()) / 2.0;
 
@@ -92,7 +101,8 @@ bool sphereRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary sphereRefinement::dict(bool /*ignoreType*/) const
+Foam::dictionary
+Foam::Module::sphereRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -114,7 +124,7 @@ dictionary sphereRefinement::dict(bool /*ignoreType*/) const
 }
 
 
-void sphereRefinement::write(Ostream& os) const
+void Foam::Module::sphereRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " centre: " << centre_
@@ -122,7 +132,11 @@ void sphereRefinement::write(Ostream& os) const
 }
 
 
-void sphereRefinement::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::sphereRefinement::writeDict
+(
+    Ostream& os,
+    bool subDict
+) const
 {
     if (subDict)
     {
@@ -156,7 +170,7 @@ void sphereRefinement::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void sphereRefinement::operator=(const dictionary& d)
+void Foam::Module::sphereRefinement::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -187,7 +201,10 @@ void sphereRefinement::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& sphereRefinement::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::sphereRefinement::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
@@ -197,9 +214,5 @@ Ostream& sphereRefinement::operator<<(Ostream& os) const
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

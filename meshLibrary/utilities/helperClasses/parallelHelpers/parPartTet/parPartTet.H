@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::parPartTet
+    Foam::Module::parPartTet
 
 Description
     Holds labels and coordinates of points making a tet.
@@ -42,6 +42,8 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                          Class parPartTet Declaration
@@ -58,9 +60,7 @@ public:
 
     // Constructors
 
-        inline parPartTet()
-        {}
-
+        parPartTet() = default;
 
         explicit inline parPartTet
         (
@@ -78,8 +78,7 @@ public:
 
 
     //- Destructor
-    ~parPartTet()
-    {}
+    ~parPartTet() = default;
 
 
     // Member operators
@@ -130,15 +129,16 @@ public:
 };
 
 
-//- Specify data associated with parPartTet type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for parPartTet are contiguous
 template<>
-inline bool contiguous<parPartTet>()
+inline bool contiguous<Module::parPartTet>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

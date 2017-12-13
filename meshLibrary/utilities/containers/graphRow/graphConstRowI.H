@@ -28,7 +28,7 @@ License
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::graphConstRow<graphType>::graphConstRow
+inline Foam::Module::graphConstRow<graphType>::graphConstRow
 (
     const graphType& g,
     const label i
@@ -40,7 +40,7 @@ inline Foam::graphConstRow<graphType>::graphConstRow
 
 
 template<class graphType>
-inline Foam::graphConstRow<graphType>::graphConstRow
+inline Foam::Module::graphConstRow<graphType>::graphConstRow
 (
     const graphConstRow<graphType>& r
 )
@@ -51,7 +51,7 @@ inline Foam::graphConstRow<graphType>::graphConstRow
 
 
 template<class graphType>
-inline Foam::graphConstRow<graphType>::graphConstRow
+inline Foam::Module::graphConstRow<graphType>::graphConstRow
 (
     const graphRow<graphType>& r
 )
@@ -64,28 +64,31 @@ inline Foam::graphConstRow<graphType>::graphConstRow
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::graphConstRow<graphType>::size() const
+inline Foam::label Foam::Module::graphConstRow<graphType>::size() const
 {
     return data_.sizeOfRow(rowI_);
 }
 
 
 template<class graphType>
-inline bool Foam::graphConstRow<graphType>::contains(const label e) const
+inline bool Foam::Module::graphConstRow<graphType>::contains
+(
+    const label e
+) const
 {
     return data_.contains(rowI_, e);
 }
 
 
 template<class graphType>
-inline bool Foam::graphConstRow<graphType>::found(const label e) const
+inline bool Foam::Module::graphConstRow<graphType>::found(const label e) const
 {
     return data_.found(rowI_, e);
 }
 
 
 template<class graphType>
-inline Foam::label Foam::graphConstRow<graphType>::find
+inline Foam::label Foam::Module::graphConstRow<graphType>::find
 (
     const label e
 ) const
@@ -97,7 +100,7 @@ inline Foam::label Foam::graphConstRow<graphType>::find
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::graphConstRow<graphType>::operator[]
+inline Foam::label Foam::Module::graphConstRow<graphType>::operator[]
 (
     const label i
 ) const
@@ -107,10 +110,10 @@ inline Foam::label Foam::graphConstRow<graphType>::operator[]
 
 
 template<class graphType>
-inline Foam::Ostream& Foam::operator<<
+inline Foam::Ostream& Foam::Module::operator<<
 (
     Ostream& os,
-    const Foam::graphConstRow<graphType>& r
+    const Foam::Module::graphConstRow<graphType>& r
 )
 {
     const label len = r.size();

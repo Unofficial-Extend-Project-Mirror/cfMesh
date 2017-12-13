@@ -39,6 +39,7 @@ Author
 
 #include "OStringStream.H"
 #include "HashTable.H"
+#include "LongList.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -99,8 +100,7 @@ public:
 
 
     //- Destructor
-    ~xmlTag()
-    {}
+    ~xmlTag() = default;
 
 
     // Member Functions
@@ -137,7 +137,7 @@ public:
         {
             children_.append(tag);
 
-            return children_[children_.size()-1];
+            return children_.last();
         };
 
         //- Create and add a new child
@@ -172,7 +172,7 @@ public:
         friend xmlTag& operator<<(xmlTag&, const FixedList<T, Size>&);
 
         template<class T>
-        friend xmlTag& operator<<(xmlTag&, const LongList<T>&);
+        friend xmlTag& operator<<(xmlTag&, const Module::LongList<T>&);
 
         template<class T>
         friend xmlTag& operator<<(xmlTag&, const UList<T>&);
@@ -188,14 +188,9 @@ Ostream& operator<<(Ostream& os, const xmlTag& tag)
     os << indent << '<' << tag.name_;
 
     // Attributes and text
-    for
-    (
-        HashTable<string>::const_iterator iter = tag.attributes_.cbegin();
-        iter != tag.attributes_.cend();
-        ++iter
-    )
+    forAllConstIters(tag.attributes_, iter)
     {
-        os << token::SPACE << iter.key() << '=' << iter();
+        os << token::SPACE << iter.key() << '=' << iter.object();
     }
 
     if (tag.str().size() || tag.children_.size())
@@ -244,7 +239,7 @@ xmlTag& operator<<(xmlTag& tag, const UList<T>& data)
 
 //- Append the supplied data to the tag text
 template<class T>
-xmlTag& operator<<(xmlTag& tag, const LongList<T>& data)
+xmlTag& operator<<(xmlTag& tag, const Module::LongList<T>& data)
 {
     forAll(data, i)
     {

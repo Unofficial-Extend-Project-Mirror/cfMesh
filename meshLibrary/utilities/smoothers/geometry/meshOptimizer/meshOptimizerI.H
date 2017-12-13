@@ -27,13 +27,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 template<class labelListType>
-inline void meshOptimizer::lockCells(const labelListType& l)
+inline void Foam::Module::meshOptimizer::lockCells(const labelListType& l)
 {
     boolList lockedFace(mesh_.faces().size(), false);
     const cellListPMG& cells = mesh_.cells();
@@ -119,7 +114,7 @@ inline void meshOptimizer::lockCells(const labelListType& l)
 
 
 template<class labelListType>
-inline void meshOptimizer::lockFaces(const labelListType& lf)
+inline void Foam::Module::meshOptimizer::lockFaces(const labelListType& lf)
 {
     boolList lockedFace(mesh_.faces().size(), false);
     forAll(lf, lfI)
@@ -201,7 +196,7 @@ inline void meshOptimizer::lockFaces(const labelListType& lf)
 
 
 template<class labelListType>
-inline void meshOptimizer::lockPoints(const labelListType& lp)
+inline void Foam::Module::meshOptimizer::lockPoints(const labelListType& lp)
 {
     forAll(lp, lpI)
         vertexLocation_[lp[lpI]] |= LOCKED;
@@ -274,9 +269,5 @@ inline void meshOptimizer::lockPoints(const labelListType& lp)
     # endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

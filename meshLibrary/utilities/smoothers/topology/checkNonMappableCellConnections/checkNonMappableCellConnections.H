@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::checkNonMappableCellConnections
+    Foam::Module::checkNonMappableCellConnections
 
 Description
     Checks cell connections at the surface. Cells with all vertices at
@@ -45,6 +45,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -93,7 +95,7 @@ public:
 
 
     //- Destructor
-    ~checkNonMappableCellConnections();
+    ~checkNonMappableCellConnections() = default;
 
 
     // Member Functions
@@ -108,6 +110,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

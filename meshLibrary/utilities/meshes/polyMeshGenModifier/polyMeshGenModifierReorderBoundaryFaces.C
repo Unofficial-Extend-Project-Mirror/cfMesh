@@ -30,16 +30,9 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::reorderBoundaryFaces()
+void Foam::Module::polyMeshGenModifier::reorderBoundaryFaces()
 {
     Info<< "Reordering boundary faces " << endl;
 
@@ -242,7 +235,7 @@ void polyMeshGenModifier::reorderBoundaryFaces()
 }
 
 
-void polyMeshGenModifier::reorderProcBoundaryFaces()
+void Foam::Module::polyMeshGenModifier::reorderProcBoundaryFaces()
 {
     PtrList<processorBoundaryPatch>& procBoundaries = mesh_.procBoundaries_;
     if (procBoundaries.size() == 0)
@@ -361,9 +354,5 @@ void polyMeshGenModifier::reorderProcBoundaryFaces()
     this->clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

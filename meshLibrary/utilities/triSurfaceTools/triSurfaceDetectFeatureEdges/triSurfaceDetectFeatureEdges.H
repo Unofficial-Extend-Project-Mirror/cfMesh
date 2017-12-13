@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceDetectFeatureEdges
+    Foam::Module::triSurfaceDetectFeatureEdges
 
 Description
     Divides the surface mesh into regions bounded by feature edges
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -77,7 +79,7 @@ class triSurfaceDetectFeatureEdges
 
 public:
 
-    //- Construct from triSurface and tolerance
+    //- Construct from triSurface and angle tolerance (degrees)
     triSurfaceDetectFeatureEdges
     (
         triSurf& surface,
@@ -86,7 +88,7 @@ public:
 
 
     //- Destructor
-    ~triSurfaceDetectFeatureEdges();
+    ~triSurfaceDetectFeatureEdges() = default;
 
 
     // Member Functions
@@ -98,6 +100,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

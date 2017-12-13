@@ -36,16 +36,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-partTriMesh::partTriMesh(const meshSurfacePartitioner& mPart)
+Foam::Module::partTriMesh::partTriMesh(const meshSurfacePartitioner& mPart)
 :
     mPart_(mPart),
     surf_(),
@@ -66,7 +59,7 @@ partTriMesh::partTriMesh(const meshSurfacePartitioner& mPart)
 }
 
 
-partTriMesh::partTriMesh
+Foam::Module::partTriMesh::partTriMesh
 (
     const meshSurfacePartitioner& mPart,
     const labelHashSet& invertedPoints,
@@ -106,7 +99,12 @@ partTriMesh::partTriMesh
     }
 
     // add additional layer of cells
-    for (direction layerI = 1; layerI<(additionalLayers + direction(1)); ++layerI)
+    for
+    (
+        direction layerI = 1;
+        layerI<(additionalLayers + direction(1));
+        ++layerI
+    )
     {
         forAll(useFace, bfI)
         {
@@ -193,7 +191,7 @@ partTriMesh::partTriMesh
 }
 
 
-partTriMesh::~partTriMesh()
+Foam::Module::partTriMesh::~partTriMesh()
 {
     deleteDemandDrivenData(globalPointLabelPtr_);
     deleteDemandDrivenData(pAtProcsPtr_);
@@ -206,7 +204,7 @@ partTriMesh::~partTriMesh()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void partTriMesh::updateVertex(const label pI, const point& newP)
+void Foam::Module::partTriMesh::updateVertex(const label pI, const point& newP)
 {
     triSurfModifier sMod(surf_);
     pointField& pts = sMod.pointsAccess();
@@ -260,7 +258,10 @@ void partTriMesh::updateVertex(const label pI, const point& newP)
 }
 
 
-void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint>>& np)
+void Foam::Module::partTriMesh::updateVerticesSMP
+(
+    const List<LongList<labelledPoint>>& np
+)
 {
     triSurfModifier sMod(surf_);
     pointField& pts = sMod.pointsAccess();
@@ -401,7 +402,7 @@ void partTriMesh::updateVerticesSMP(const List<LongList<labelledPoint>>& np)
 }
 
 
-void partTriMesh::updateVertices()
+void Foam::Module::partTriMesh::updateVertices()
 {
     const meshSurfaceEngine& mse = mPart_.surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
@@ -415,7 +416,7 @@ void partTriMesh::updateVertices()
 }
 
 
-void partTriMesh::updateVertices(const labelLongList& movedPoints)
+void Foam::Module::partTriMesh::updateVertices(const labelLongList& movedPoints)
 {
     const meshSurfaceEngine& mse = mPart_.surfaceEngine();
     const pointFieldPMG& points = mse.points();
@@ -560,9 +561,5 @@ void partTriMesh::updateVertices(const labelLongList& movedPoints)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

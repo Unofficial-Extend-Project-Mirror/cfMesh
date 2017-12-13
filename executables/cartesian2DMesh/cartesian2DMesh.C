@@ -40,13 +40,13 @@ using namespace Foam;
 
 int main(int argc, char *argv[])
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     // 2d cartesian mesher cannot be run in parallel
     argList::noParallel();
 
-    cartesian2DMeshGenerator cmg(runTime);
+    Module::cartesian2DMeshGenerator cmg(runTime);
 
     Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
         << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;

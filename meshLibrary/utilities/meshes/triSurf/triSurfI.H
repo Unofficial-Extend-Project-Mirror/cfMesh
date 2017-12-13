@@ -23,28 +23,24 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline LongList<labelledTri>& triSurf::accessToFacets()
+inline Foam::Module::LongList<Foam::labelledTri>&
+Foam::Module::triSurf::accessToFacets()
 {
     return triSurfFacets::triangles_;
 }
 
 
-inline geometricSurfacePatchList& triSurf::accessToPatches()
+inline Foam::geometricSurfacePatchList&
+Foam::Module::triSurf::accessToPatches()
 {
     return triSurfFacets::patches_;
 }
 
 
 /*
-inline label triSurf::numberOfFaceGroups() const
+inline Foam::label Foam::Module::triSurf::numberOfFaceGroups() const
 {
     if (!faceGroupPtr_)
     {
@@ -54,7 +50,8 @@ inline label triSurf::numberOfFaceGroups() const
     return nFaceGroups_;
 }
 
-inline const labelLongList& triSurf::faceGroups() const
+inline const Foam::Module::labelLongList&
+Foam::Module::triSurf::faceGroups() const
 {
     if (!faceGroupPtr_)
     {
@@ -65,8 +62,5 @@ inline const labelLongList& triSurf::faceGroups() const
 }
 */
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

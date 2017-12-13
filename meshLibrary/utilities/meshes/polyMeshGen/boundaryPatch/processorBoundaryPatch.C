@@ -30,9 +30,12 @@ License
 #include "Istream.H"
 #include "token.H"
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 namespace Foam
 {
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+namespace Module
+{
 
 defineTypeNameAndDebug(processorBoundaryPatch, 0);
 addToRunTimeSelectionTable
@@ -42,10 +45,13 @@ addToRunTimeSelectionTable
     dictionary
 );
 
+} // End namespace Module
+} // End namespace Foam
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-processorBoundaryPatch::processorBoundaryPatch
+Foam::Module::processorBoundaryPatch::processorBoundaryPatch
 (
     const word& name,
     const word& type,
@@ -61,7 +67,7 @@ processorBoundaryPatch::processorBoundaryPatch
 {}
 
 
-processorBoundaryPatch::processorBoundaryPatch
+Foam::Module::processorBoundaryPatch::processorBoundaryPatch
 (
     const word& name,
     const dictionary& dict
@@ -75,7 +81,7 @@ processorBoundaryPatch::processorBoundaryPatch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary processorBoundaryPatch::dict() const
+Foam::dictionary Foam::Module::processorBoundaryPatch::dict() const
 {
     dictionary dict;
 
@@ -90,17 +96,20 @@ dictionary processorBoundaryPatch::dict() const
 }
 
 
-void processorBoundaryPatch::write(Ostream& os) const
+void Foam::Module::processorBoundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
 
-void processorBoundaryPatch::writeDict(Ostream& /*os*/) const
+void Foam::Module::processorBoundaryPatch::writeDict(Ostream& /*os*/) const
 {}
 
 
-Ostream& processorBoundaryPatch::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::processorBoundaryPatch::operator<<
+(
+    Ostream& os
+) const
 {
     os  << patchName() << nl << token::BEGIN_BLOCK << nl
         << "    type         " << patchType() << token::END_STATEMENT << nl
@@ -115,7 +124,7 @@ Ostream& processorBoundaryPatch::operator<<(Ostream& os) const
 }
 
 
-Istream& processorBoundaryPatch::operator>>(Istream& is)
+Foam::Istream& Foam::Module::processorBoundaryPatch::operator>>(Istream& is)
 {
     token t;
     is >> name_ >> t;
@@ -130,7 +139,10 @@ Istream& processorBoundaryPatch::operator>>(Istream& is)
 }
 
 
-void processorBoundaryPatch::operator=(const processorBoundaryPatch& wp)
+void Foam::Module::processorBoundaryPatch::operator=
+(
+    const processorBoundaryPatch& wp
+)
 {
     name_ = wp.name_;
     type_ = wp.type_;
@@ -141,7 +153,10 @@ void processorBoundaryPatch::operator=(const processorBoundaryPatch& wp)
 }
 
 
-bool processorBoundaryPatch::operator!=(const processorBoundaryPatch& wp) const
+bool Foam::Module::processorBoundaryPatch::operator!=
+(
+    const processorBoundaryPatch& wp
+) const
 {
     if (name_ != wp.name_)
     {
@@ -166,9 +181,5 @@ bool processorBoundaryPatch::operator!=(const processorBoundaryPatch& wp) const
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

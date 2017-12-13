@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::correctEdgesBetweenPatches
+    Foam::Module::correctEdgesBetweenPatches
 
 Description
     Changes mesh surface until every boundary face shares only one edge with
@@ -44,7 +44,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshOctree;
 class meshSurfaceEngine;
@@ -119,6 +120,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -34,12 +34,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
+void
+Foam::Module::triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
 {
     const scalar tol = Foam::cos(angleTolerance_*M_PI/180.0);
 
@@ -99,9 +95,5 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdgesAngleCriterion()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

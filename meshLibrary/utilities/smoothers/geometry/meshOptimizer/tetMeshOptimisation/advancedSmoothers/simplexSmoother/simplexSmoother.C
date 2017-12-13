@@ -27,16 +27,9 @@ License
 #include "tetrahedron.H"
 #include "partTetMeshSimplex.H"
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-simplexSmoother::simplexSmoother(partTetMeshSimplex& simplex)
+Foam::Module::simplexSmoother::simplexSmoother(partTetMeshSimplex& simplex)
 :
     points_(simplex.pts()),
     tets_(simplex.tets()),
@@ -69,18 +62,5 @@ simplexSmoother::simplexSmoother(partTetMeshSimplex& simplex)
     bb_.min() = min;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-simplexSmoother::~simplexSmoother()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-// Member functions
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

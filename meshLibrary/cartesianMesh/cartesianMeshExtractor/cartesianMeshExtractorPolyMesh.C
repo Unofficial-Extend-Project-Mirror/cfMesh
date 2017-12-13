@@ -41,12 +41,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void cartesianMeshExtractor::createPolyMesh()
+void Foam::Module::cartesianMeshExtractor::createPolyMesh()
 {
     Info<< "Creating polyMesh from octree" << endl;
 
@@ -410,9 +405,5 @@ void cartesianMeshExtractor::createPolyMesh()
     Info<< "Finished creating polyMesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

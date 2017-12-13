@@ -36,14 +36,9 @@ License
 #include "polyMeshGenAddressing.H"
 # endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Constructor * * * * * * * * * * * * * * * * //
 
-decomposeFaces::decomposeFaces(polyMeshGen& mesh)
+Foam::Module::decomposeFaces::decomposeFaces(polyMeshGen& mesh)
 :
     mesh_(mesh),
     newFacesForFace_(),
@@ -51,15 +46,12 @@ decomposeFaces::decomposeFaces(polyMeshGen& mesh)
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-decomposeFaces::~decomposeFaces()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
+void Foam::Module::decomposeFaces::decomposeMeshFaces
+(
+    const boolList& decomposeFace
+)
 {
     done_ = false;
 
@@ -338,7 +330,7 @@ void decomposeFaces::decomposeMeshFaces(const boolList& decomposeFace)
 }
 
 
-void decomposeFaces::decomposeConcaveInternalFaces
+void Foam::Module::decomposeFaces::decomposeConcaveInternalFaces
 (
     const boolList& concaveVertex
 )
@@ -531,7 +523,8 @@ void decomposeFaces::decomposeConcaveInternalFaces
 }
 
 
-const VRWGraph& decomposeFaces::newFacesForFace() const
+const Foam::Module::VRWGraph&
+Foam::Module::decomposeFaces::newFacesForFace() const
 {
     if (!done_)
     {
@@ -542,9 +535,5 @@ const VRWGraph& decomposeFaces::newFacesForFace() const
     return newFacesForFace_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // ************************************************************************* //

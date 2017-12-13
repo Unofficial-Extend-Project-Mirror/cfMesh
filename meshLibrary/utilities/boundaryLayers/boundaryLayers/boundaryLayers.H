@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::boundaryLayers
+    Foam::Module::boundaryLayers
 
 Description
     Creates boundary layers
@@ -49,7 +49,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshSurfaceEngine;
 class meshSurfacePartitioner;
@@ -61,7 +62,7 @@ class meshSurfacePartitioner;
 class boundaryLayers
 {
     // Private data
-    //
+
         //- Reference to the mesh
         polyMeshGen& mesh_;
 
@@ -287,6 +288,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

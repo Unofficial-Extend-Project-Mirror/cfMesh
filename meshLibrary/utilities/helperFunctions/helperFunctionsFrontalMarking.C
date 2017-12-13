@@ -33,18 +33,89 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
+namespace Foam
+{
+namespace Module
+{
 namespace help
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
+class graphNeiOp
+{
+    // Private data
+
+        // const reference to VRWGraph
+        const VRWGraph& neiGroups_;
+
+public:
+
+    // Constructors
+
+        // Construct from VRWGraph
+        inline graphNeiOp(const VRWGraph& neiGroups)
+        :
+            neiGroups_(neiGroups)
+        {}
+
+
+    // Public member functions
+
+        //- The size of the graph
+        inline label size() const
+        {
+            return neiGroups_.size();
+        }
+
+        // operator for finding neighbours
+        inline void operator()(const label groupI, DynList<label>& ng) const
+        {
+            ng.setSize(neiGroups_.sizeOfRow(groupI));
+            forAllRow(neiGroups_, groupI, i)
+                ng[i] = neiGroups_(groupI, i);
+        }
+};
+
+
+class graphSelectorOp
+{
+    // Private data
+
+        // const reference to VRWGraph
+        const VRWGraph& neiGroups_;
+
+
+public:
+
+    // Constructors
+
+        // Construct from VRWGraph
+        inline graphSelectorOp(const VRWGraph& neiGroups)
+        :
+            neiGroups_(neiGroups)
+        {}
+
+
+    // Public member functions
+
+        // operator for selecting elements
+        inline bool operator()(const label groupI) const
+        {
+            if ((groupI < 0) || (groupI >= neiGroups_.size()))
+                return false;
+
+            return true;
+        }
+};
+
+} // End namespace help
+} // End namespace Module
+} // End namespace Foam
+
 
 template<class labelListType, class neiOp, class filterOp>
-void frontalMarking
+void Foam::Module::help::frontalMarking
 (
     labelListType& result,
     const label startingIndex,
@@ -96,79 +167,8 @@ void frontalMarking
 }
 
 
-class graphNeiOp
-{
-    // Private data
-
-        // const reference to VRWGraph
-        const VRWGraph& neiGroups_;
-
-
-public:
-
-    // Constructors
-
-        // Construct from VRWGraph
-        inline graphNeiOp(const VRWGraph& neiGroups)
-        :
-            neiGroups_(neiGroups)
-        {}
-
-
-
-    // Public member functions
-
-        // return the size of the graph
-        inline label size() const
-        {
-            return neiGroups_.size();
-        }
-
-        // operator for finding neighbours
-        inline void operator()(const label groupI, DynList<label>& ng) const
-        {
-            ng.setSize(neiGroups_.sizeOfRow(groupI));
-            forAllRow(neiGroups_, groupI, i)
-                ng[i] = neiGroups_(groupI, i);
-        }
-};
-
-
-class graphSelectorOp
-{
-    // Private data
-
-        // const reference to VRWGraph
-        const VRWGraph& neiGroups_;
-
-
-public:
-
-    // Constructors
-
-        // Construct from VRWGraph
-        inline graphSelectorOp(const VRWGraph& neiGroups)
-        :
-            neiGroups_(neiGroups)
-        {}
-
-
-
-    // Public member functions
-
-        // operator for selecting elements
-        inline bool operator()(const label groupI) const
-        {
-            if ((groupI < 0) || (groupI >= neiGroups_.size()))
-                return false;
-
-            return true;
-        }
-};
-
-
 template<class labelListType, class neiOp, class filterOp>
-label groupMarking
+Foam::label Foam::Module::help::groupMarking
 (
     labelListType& elementInGroup,
     const neiOp& neighbourCalculator,
@@ -549,13 +549,5 @@ label groupMarking
     return nGroups;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace help
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

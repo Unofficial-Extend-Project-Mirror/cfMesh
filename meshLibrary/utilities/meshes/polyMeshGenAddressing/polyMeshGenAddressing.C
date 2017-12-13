@@ -28,16 +28,25 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(polyMeshGenAddressing, 0);
+namespace Foam
+{
+namespace Module
+{
+
+    defineTypeNameAndDebug(polyMeshGenAddressing, 0);
+
+} // End namespace Module
+} // End namespace Foam
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-polyMeshGenAddressing::polyMeshGenAddressing(const polyMeshGenCells& mesh)
+Foam::Module::polyMeshGenAddressing::polyMeshGenAddressing
+(
+    const polyMeshGenCells& mesh
+)
 :
     mesh_(mesh),
     edgesPtr_(nullptr),
@@ -71,14 +80,10 @@ polyMeshGenAddressing::polyMeshGenAddressing(const polyMeshGenCells& mesh)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-polyMeshGenAddressing::~polyMeshGenAddressing()
+Foam::Module::polyMeshGenAddressing::~polyMeshGenAddressing()
 {
     clearAll();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

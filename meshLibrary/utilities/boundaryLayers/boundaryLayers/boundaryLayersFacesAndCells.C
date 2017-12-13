@@ -35,12 +35,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
+void Foam::Module::boundaryLayers::createNewFacesAndCells
+(
+    const boolList& treatPatches
+)
 {
     Info<< "Starting creating layer cells" << endl;
 
@@ -181,7 +179,7 @@ void boundaryLayers::createNewFacesAndCells(const boolList& treatPatches)
 }
 
 
-void boundaryLayers::createNewFacesParallel
+void Foam::Module::boundaryLayers::createNewFacesParallel
 (
     const boolList& treatPatches
 )
@@ -332,9 +330,5 @@ void boundaryLayers::createNewFacesParallel
     polyMeshGenModifier(mesh_).addProcessorFaces(newProcFaces, faceProcPatch);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

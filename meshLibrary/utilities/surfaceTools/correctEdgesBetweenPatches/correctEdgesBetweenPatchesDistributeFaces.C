@@ -39,15 +39,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void correctEdgesBetweenPatches::decomposeProblematicFaces()
+void Foam::Module::correctEdgesBetweenPatches::decomposeProblematicFaces()
 {
     Info<< "Decomposing problematic faces" << endl;
     const meshSurfaceEngine& mse = meshSurface();
@@ -262,7 +256,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 }
 
 
-void correctEdgesBetweenPatches::decomposeConcaveFaces()
+void Foam::Module::correctEdgesBetweenPatches::decomposeConcaveFaces()
 {
     const meshSurfaceEngine& mse = meshSurface();
     const labelList& bPoints = mse.boundaryPoints();
@@ -433,7 +427,7 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
 }
 
 
-void correctEdgesBetweenPatches::patchCorrection()
+void Foam::Module::correctEdgesBetweenPatches::patchCorrection()
 {
     Info<< "Performing patch correction" << endl;
 
@@ -589,9 +583,5 @@ void correctEdgesBetweenPatches::patchCorrection()
     Info<< "Finished with patch correction" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

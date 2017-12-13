@@ -31,12 +31,16 @@ License
 
 namespace Foam
 {
-defineTypeNameAndDebug(objectRefinement, 0);
-defineRunTimeSelectionTable(objectRefinement, dictionary);
+namespace Module
+{
+    defineTypeNameAndDebug(objectRefinement, 0);
+    defineRunTimeSelectionTable(objectRefinement, dictionary);
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-objectRefinement::objectRefinement()
+Foam::Module::objectRefinement::objectRefinement()
 :
     name_(),
     cellSize_(-1.0),
@@ -45,7 +49,7 @@ objectRefinement::objectRefinement()
 {}
 
 
-objectRefinement::objectRefinement
+Foam::Module::objectRefinement::objectRefinement
 (
     const word& name,
     const dictionary& dict
@@ -82,15 +86,13 @@ objectRefinement::objectRefinement
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-objectRefinement::~objectRefinement()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Ostream& operator<<(Ostream& os, const objectRefinement& obr)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::objectRefinement& obr
+)
 {
     os << obr.name() << nl;
     obr.writeDict(os, true);
@@ -98,7 +100,10 @@ Ostream& operator<<(Ostream& os, const objectRefinement& obr)
 }
 
 
-void objectRefinement::calculateAdditionalRefLevels(const scalar globalCellSize)
+void Foam::Module::objectRefinement::calculateAdditionalRefLevels
+(
+    const scalar globalCellSize
+)
 {
     if (cellSize_ < 0.0 || additionalRefLevel_ != 0)
         return;
@@ -121,9 +126,5 @@ void objectRefinement::calculateAdditionalRefLevels(const scalar globalCellSize)
     } while (nMarked != 0);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

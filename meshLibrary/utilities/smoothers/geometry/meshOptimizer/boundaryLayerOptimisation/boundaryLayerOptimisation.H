@@ -22,10 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::bondaryLayerOptimisation
+    Foam::Module::bondaryLayerOptimisation
 
 Description
-    A class intended for improving quality of boundary layer cells. It is intended
+    A class intended for improving quality of boundary layer cells.
+    It is intended
     to be used on meshes with one boundary layer which can later be refined.
 
 SourceFiles
@@ -49,12 +50,14 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
+class dictionary;
+
+namespace Module
+{
 class polyMeshGen;
 class meshSurfaceEngine;
 class meshSurfacePartitioner;
-class dictionary;
 
 /*---------------------------------------------------------------------------*\
                   Class boundaryLayerOptimisation Declaration
@@ -281,6 +284,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

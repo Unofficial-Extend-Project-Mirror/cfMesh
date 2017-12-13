@@ -28,30 +28,28 @@ License
 
 #include "triSurfFeatureEdges.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline label triSurfFeatureEdges::nFeatureEdges() const
+inline Foam::label Foam::Module::triSurfFeatureEdges::nFeatureEdges() const
 {
     return featureEdges_.size();
 }
 
 
-inline const edgeLongList& triSurfFeatureEdges::featureEdges() const
+inline const Foam::Module::edgeLongList&
+Foam::Module::triSurfFeatureEdges::featureEdges() const
 {
     return featureEdges_;
 }
 
 
-inline void triSurfFeatureEdges::appendFeatureEdge(const edge& e)
+inline void Foam::Module::triSurfFeatureEdges::appendFeatureEdge(const edge& e)
 {
     featureEdges_.append(e);
 }
 
 
-inline void triSurfFeatureEdges::addEdgeToSubset
+inline void Foam::Module::triSurfFeatureEdges::addEdgeToSubset
 (
     const label setI,
     const label eI
@@ -67,7 +65,7 @@ inline void triSurfFeatureEdges::addEdgeToSubset
 }
 
 
-inline void triSurfFeatureEdges::removeEdgeFromSubset
+inline void Foam::Module::triSurfFeatureEdges::removeEdgeFromSubset
 (
     const label setI,
     const label eI
@@ -83,7 +81,7 @@ inline void triSurfFeatureEdges::removeEdgeFromSubset
 }
 
 
-inline void triSurfFeatureEdges::edgeInSubsets
+inline void Foam::Module::triSurfFeatureEdges::edgeInSubsets
 (
     const label eI,
     DynList<label>& edgeSubsets
@@ -101,7 +99,7 @@ inline void triSurfFeatureEdges::edgeInSubsets
 }
 
 
-inline void triSurfFeatureEdges::edgeSubsetIndices
+inline void Foam::Module::triSurfFeatureEdges::edgeSubsetIndices
 (
     DynList<label>& indices
 ) const
@@ -116,7 +114,7 @@ inline void triSurfFeatureEdges::edgeSubsetIndices
 
 
 template<class ListType>
-inline void triSurfFeatureEdges::edgesInSubset
+inline void Foam::Module::triSurfFeatureEdges::edgesInSubset
 (
     const label setI,
     ListType& edgeLabels
@@ -135,7 +133,7 @@ inline void triSurfFeatureEdges::edgesInSubset
 
 
 template<class ListType>
-inline void triSurfFeatureEdges::updateEdgeSubsets
+inline void Foam::Module::triSurfFeatureEdges::updateEdgeSubsets
 (
     const ListType& newEdgeLabels
 )
@@ -146,9 +144,5 @@ inline void triSurfFeatureEdges::updateEdgeSubsets
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

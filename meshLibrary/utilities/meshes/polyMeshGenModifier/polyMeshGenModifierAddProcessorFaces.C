@@ -30,12 +30,7 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::addProcessorFaces
+void Foam::Module::polyMeshGenModifier::addProcessorFaces
 (
     const VRWGraph& procFaces,
     const labelLongList& facePatches
@@ -145,7 +140,10 @@ void polyMeshGenModifier::addProcessorFaces
 }
 
 
-label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
+Foam::label Foam::Module::polyMeshGenModifier::addProcessorPatch
+(
+    const label otherProcLabel
+)
 {
     const label nProcPatches = mesh_.procBoundaries().size();
 
@@ -178,7 +176,7 @@ label polyMeshGenModifier::addProcessorPatch(const label otherProcLabel)
 }
 
 
-bool polyMeshGenModifier::removeEmptyProcessorPatches()
+bool Foam::Module::polyMeshGenModifier::removeEmptyProcessorPatches()
 {
     PtrList<processorBoundaryPatch>& procBoundaries =
         this->procBoundariesAccess();
@@ -217,9 +215,5 @@ bool polyMeshGenModifier::removeEmptyProcessorPatches()
     return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

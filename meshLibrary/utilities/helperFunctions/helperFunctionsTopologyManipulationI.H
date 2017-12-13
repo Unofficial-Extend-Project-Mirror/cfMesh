@@ -30,18 +30,10 @@ License
 #include "boolList.H"
 #include "cellList.H"
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-namespace help
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 template<class faceType1, class faceType2>
-bool areFacesEqual(const faceType1& f1, const faceType2& f2)
+bool Foam::Module::help::areFacesEqual(const faceType1& f1, const faceType2& f2)
 {
     //- their size mut be equal
     if (f1.size() != f2.size())
@@ -105,7 +97,7 @@ bool areFacesEqual(const faceType1& f1, const faceType2& f2)
 
 
 template<class T, class ListType>
-label positionInList(const T& elmt, const ListType& l)
+Foam::label Foam::Module::help::positionInList(const T& elmt, const ListType& l)
 {
     for (label i = 0; i < l.size(); ++i)
     {
@@ -120,7 +112,7 @@ label positionInList(const T& elmt, const ListType& l)
 
 
 template<class faceType>
-faceType reverseFace(const faceType& f)
+faceType Foam::Module::help::reverseFace(const faceType& f)
 {
     faceType rf;
     rf.setSize(f.size());
@@ -138,7 +130,11 @@ faceType reverseFace(const faceType& f)
 
 
 template<class faceType1, class faceType2>
-inline face mergeTwoFaces(const faceType1& f1, const faceType2& f2)
+inline Foam::face Foam::Module::help::mergeTwoFaces
+(
+    const faceType1& f1,
+    const faceType2& f2
+)
 {
     DynList<bool> ce1, ce2;
     ce1.setSize(f1.size());
@@ -186,7 +182,11 @@ inline face mergeTwoFaces(const faceType1& f1, const faceType2& f2)
 }
 
 
-inline edgeList modifyFacesToShareOneEdge(face& f1, face& f2)
+inline Foam::edgeList Foam::Module::help::modifyFacesToShareOneEdge
+(
+    face& f1,
+    face& f2
+)
 {
     const edgeList edg1 = f1.edges();
     const edgeList edg2 = f2.edges();
@@ -243,7 +243,11 @@ inline edgeList modifyFacesToShareOneEdge(face& f1, face& f2)
 }
 
 
-inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut)
+inline Foam::face Foam::Module::help::createFaceFromRemovedPart
+(
+    const face& fOrig,
+    const face& fCut
+)
 {
     if (fCut.size() == 0)
     {
@@ -284,7 +288,7 @@ inline face createFaceFromRemovedPart(const face& fOrig, const face& fCut)
 }
 
 
-inline face removeEdgesFromFace
+inline Foam::face Foam::Module::help::removeEdgesFromFace
 (
     const face& fOrig,
     const DynList<edge>& removeEdges
@@ -321,7 +325,11 @@ inline face removeEdgesFromFace
 }
 
 
-inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
+inline void Foam::Module::help::findOpenEdges
+(
+    const faceList& cellFaces,
+    DynList<edge>& openEdges
+)
 {
     DynList<edge> cellEdges;
     DynList<label> nAppearances;
@@ -366,7 +374,11 @@ inline void findOpenEdges(const faceList& cellFaces, DynList<edge>& openEdges)
 
 
 template<class faceType1, class faceType2>
-inline bool shareAnEdge(const faceType1& f1, const faceType2& f2)
+inline bool Foam::Module::help::shareAnEdge
+(
+    const faceType1& f1,
+    const faceType2& f2
+)
 {
     forAll(f1, eI)
     {
@@ -388,7 +400,11 @@ inline bool shareAnEdge(const faceType1& f1, const faceType2& f2)
 
 
 template<class faceType1, class faceType2>
-inline edge sharedEdge(const faceType1& f1, const faceType2& f2)
+inline Foam::edge Foam::Module::help::sharedEdge
+(
+    const faceType1& f1,
+    const faceType2& f2
+)
 {
     forAll(f1, eI)
     {
@@ -410,7 +426,11 @@ inline edge sharedEdge(const faceType1& f1, const faceType2& f2)
 
 
 template<class faceType>
-inline label positionOfEdgeInFace(const edge& e, const faceType& f)
+inline Foam::label Foam::Module::help::positionOfEdgeInFace
+(
+    const edge& e,
+    const faceType& f
+)
 {
     forAll(f, eI)
     {
@@ -427,7 +447,11 @@ inline label positionOfEdgeInFace(const edge& e, const faceType& f)
 
 
 template<class faceType1, class faceType2>
-inline label sharedVertex(const faceType1& f1, const faceType2& f2)
+inline Foam::label Foam::Module::help::sharedVertex
+(
+    const faceType1& f1,
+    const faceType2& f2
+)
 {
     forAll(f1, pI)
     {
@@ -445,7 +469,11 @@ inline label sharedVertex(const faceType1& f1, const faceType2& f2)
 
 
 template<class faceType1, class faceType2>
-inline bool shareAVertex(const faceType1& f1, const faceType2& f2)
+inline bool Foam::Module::help::shareAVertex
+(
+    const faceType1& f1,
+    const faceType2& f2
+)
 {
     forAll(f1, pI)
     {
@@ -463,7 +491,7 @@ inline bool shareAVertex(const faceType1& f1, const faceType2& f2)
 
 
 template<class faceListType>
-inline label sharedVertex(const faceListType& fcs)
+inline Foam::label Foam::Module::help::sharedVertex(const faceListType& fcs)
 {
     forAll(fcs[0], pI)
     {
@@ -498,7 +526,7 @@ inline label sharedVertex(const faceListType& fcs)
 
 
 template<class boolListType>
-inline bool areElementsInChain(const boolListType& sel)
+inline bool Foam::Module::help::areElementsInChain(const boolListType& sel)
 {
     DynList<bool> selInChain(sel.size(), false);
 
@@ -544,7 +572,7 @@ inline bool areElementsInChain(const boolListType& sel)
 }
 
 
-inline void zipOpenChain(DynList<edge>& bEdges)
+inline void Foam::Module::help::zipOpenChain(DynList<edge>& bEdges)
 {
     //- close the chain if open
     DynList<label> chainVertices;
@@ -604,7 +632,10 @@ inline void zipOpenChain(DynList<edge>& bEdges)
 }
 
 
-inline labelList sortEdgeChain(const DynList<edge>& bEdges)
+inline Foam::labelList Foam::Module::help::sortEdgeChain
+(
+    const DynList<edge>& bEdges
+)
 {
     boolList sorted(bEdges.size(), false);
 
@@ -648,13 +679,5 @@ inline labelList sortEdgeChain(const DynList<edge>& bEdges)
     return sortPoints;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace help
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

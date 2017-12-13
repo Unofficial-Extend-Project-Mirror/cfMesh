@@ -27,59 +27,60 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-inline const meshOctree& meshOctreeModifier::octree() const
+inline const Foam::Module::meshOctree&
+Foam::Module::meshOctreeModifier::octree() const
 {
     return octree_;
 }
 
 
-inline labelList& meshOctreeModifier::neiProcsAccess()
+inline Foam::labelList& Foam::Module::meshOctreeModifier::neiProcsAccess()
 {
     return octree_.neiProcs_;
 }
 
 
-inline boundBox& meshOctreeModifier::rootBoxAccess()
+inline Foam::boundBox& Foam::Module::meshOctreeModifier::rootBoxAccess()
 {
     return octree_.rootBox_;
 }
 
 
-inline bool& meshOctreeModifier::isRootInitialisedAccess()
+inline bool& Foam::Module::meshOctreeModifier::isRootInitialisedAccess()
 {
     return octree_.isRootInitialised_;
 }
 
 
-inline scalar& meshOctreeModifier::searchRangeAccess()
+inline Foam::scalar& Foam::Module::meshOctreeModifier::searchRangeAccess()
 {
     return octree_.searchRange_;
 }
 
 
-inline List<Pair<meshOctreeCubeCoordinates>>&
-meshOctreeModifier::neiRangeAccess()
+inline Foam::List<Foam::Pair<Foam::Module::meshOctreeCubeCoordinates>>&
+Foam::Module::meshOctreeModifier::neiRangeAccess()
 {
     return octree_.neiRange_;
 }
 
 
-inline meshOctreeCube& meshOctreeModifier::initialCubeAccess()
+inline Foam::Module::meshOctreeCube&
+Foam::Module::meshOctreeModifier::initialCubeAccess()
 {
     return *octree_.initialCubePtr_;
 }
 
 
-inline List<meshOctreeSlot>& meshOctreeModifier::dataSlotsAccess()
+inline Foam::List<Foam::Module::meshOctreeSlot>&
+Foam::Module::meshOctreeModifier::dataSlotsAccess()
 {
     return octree_.dataSlots_;
 }
 
 
-inline meshOctreeCube* meshOctreeModifier::findCubeForPosition
+inline Foam::Module::meshOctreeCube*
+Foam::Module::meshOctreeModifier::findCubeForPosition
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -88,7 +89,7 @@ inline meshOctreeCube* meshOctreeModifier::findCubeForPosition
 }
 
 
-inline void meshOctreeModifier::findLeavesContainedInBox
+inline void Foam::Module::meshOctreeModifier::findLeavesContainedInBox
 (
     const boundBox& bb,
     DynList<const meshOctreeCube*, 256>& containedLeaves
@@ -99,22 +100,19 @@ inline void meshOctreeModifier::findLeavesContainedInBox
 }
 
 
-inline LongList<meshOctreeCube*>& meshOctreeModifier::leavesAccess()
+inline Foam::Module::LongList<Foam::Module::meshOctreeCube*>&
+Foam::Module::meshOctreeModifier::leavesAccess()
 {
     return octree_.leaves_;
 }
 
 
-inline void meshOctreeModifier::createListOfLeaves()
+inline void Foam::Module::meshOctreeModifier::createListOfLeaves()
 {
     octree_.leaves_.clear();
 
     octree_.initialCubePtr_->findLeaves(octree_.leaves_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -38,17 +38,11 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace polyMeshGenChecks
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool checkGeometry(const polyMeshGen& mesh, const bool report)
+bool Foam::Module::polyMeshGenChecks::checkGeometry
+(
+    const polyMeshGen& mesh,
+    const bool report
+)
 {
     label noFailedChecks(0);
 
@@ -71,16 +65,17 @@ bool checkGeometry(const polyMeshGen& mesh, const bool report)
 
         return false;
     }
-    else
-    {
-        Info<< "Failed " << noFailedChecks << " mesh geometry checks." << endl;
 
-        return true;
-    }
+    Info<< "Failed " << noFailedChecks << " mesh geometry checks." << endl;
+    return true;
 }
 
 
-bool checkTopology(const polyMeshGen& mesh, const bool report)
+bool Foam::Module::polyMeshGenChecks::checkTopology
+(
+    const polyMeshGen& mesh,
+    const bool report
+)
 {
     label noFailedChecks(0);
 
@@ -98,16 +93,17 @@ bool checkTopology(const polyMeshGen& mesh, const bool report)
 
         return false;
     }
-    else
-    {
-        Info<< "Failed " << noFailedChecks << " mesh topology checks." << endl;
 
-        return true;
-    }
+    Info<< "Failed " << noFailedChecks << " mesh topology checks." << endl;
+    return true;
 }
 
 
-bool checkMesh(const polyMeshGen& mesh, const bool report)
+bool Foam::Module::polyMeshGenChecks::checkMesh
+(
+    const polyMeshGen& mesh,
+    const bool report
+)
 {
     bool failedChecks = checkTopology(mesh, report);
     failedChecks |= checkGeometry(mesh, report);
@@ -121,21 +117,10 @@ bool checkMesh(const polyMeshGen& mesh, const bool report)
 
         return false;
     }
-    else
-    {
-        Info<< "Failed some mesh checks." << endl;
 
-        return true;
-    }
+    Info<< "Failed some mesh checks." << endl;
+    return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace polyMeshGenChecks
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -38,14 +38,12 @@ License
 #include <sstream>
 # endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void meshOctreeModifier::loadDistribution(const direction usedType)
+void Foam::Module::meshOctreeModifier::loadDistribution
+(
+    const direction usedType
+)
 {
     if (octree_.neiProcs().size() == 0)
         return;
@@ -359,9 +357,5 @@ void meshOctreeModifier::loadDistribution(const direction usedType)
     Info<< "Finished distributing load between processors" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

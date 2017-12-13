@@ -35,12 +35,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
+bool Foam::Module::triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 {
     labelLongList newTriangleLabel(surf_.size(), -1);
 
@@ -100,7 +95,7 @@ bool triSurfaceCleanupDuplicates::checkDuplicateTriangles()
 }
 
 
-bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
+bool Foam::Module::triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 {
     pointField& pts = const_cast<pointField&>(surf_.points());
     labelLongList newPointLabel(surf_.nPoints());
@@ -239,7 +234,7 @@ bool triSurfaceCleanupDuplicates::mergeDuplicatePoints()
 }
 
 
-void triSurfaceCleanupDuplicates::updateTriangleLabels
+void Foam::Module::triSurfaceCleanupDuplicates::updateTriangleLabels
 (
     const labelLongList& newTriangleLabel
 )
@@ -254,9 +249,5 @@ void triSurfaceCleanupDuplicates::updateTriangleLabels
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

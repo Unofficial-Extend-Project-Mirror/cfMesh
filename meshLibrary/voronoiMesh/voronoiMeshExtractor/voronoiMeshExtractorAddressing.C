@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void voronoiMeshExtractor::createAddressing() const
+void Foam::Module::voronoiMeshExtractor::createAddressing() const
 {
     if (pointEdgesPtr_ || edgeTetsPtr_ || boundaryEdgePtr_ || edgesPtr_)
         return;
@@ -187,7 +182,8 @@ void voronoiMeshExtractor::createAddressing() const
 }
 
 
-const VRWGraph& voronoiMeshExtractor::pointEdges() const
+const Foam::Module::VRWGraph&
+Foam::Module::voronoiMeshExtractor::pointEdges() const
 {
     if (!pointEdgesPtr_)
         createAddressing();
@@ -196,7 +192,8 @@ const VRWGraph& voronoiMeshExtractor::pointEdges() const
 }
 
 
-const LongList<edge>& voronoiMeshExtractor::edges() const
+const Foam::Module::LongList<Foam::edge>&
+Foam::Module::voronoiMeshExtractor::edges() const
 {
     if (!edgesPtr_)
         createAddressing();
@@ -205,7 +202,8 @@ const LongList<edge>& voronoiMeshExtractor::edges() const
 }
 
 
-const VRWGraph& voronoiMeshExtractor::edgeTets() const
+const Foam::Module::VRWGraph&
+Foam::Module::voronoiMeshExtractor::edgeTets() const
 {
     if (!edgeTetsPtr_)
         createAddressing();
@@ -214,7 +212,7 @@ const VRWGraph& voronoiMeshExtractor::edgeTets() const
 }
 
 
-const boolList& voronoiMeshExtractor::boundaryEdge() const
+const Foam::boolList& Foam::Module::voronoiMeshExtractor::boundaryEdge() const
 {
     if (!boundaryEdgePtr_)
         createAddressing();
@@ -222,9 +220,5 @@ const boolList& voronoiMeshExtractor::boundaryEdge() const
     return *boundaryEdgePtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

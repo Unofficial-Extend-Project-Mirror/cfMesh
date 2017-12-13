@@ -47,14 +47,9 @@ License
 
 //#define DEBUG
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
-void voronoiMeshGenerator::createVoronoiMesh()
+void Foam::Module::voronoiMeshGenerator::createVoronoiMesh()
 {
     // create voronoi mesh from octree and Delaunay tets
     voronoiMeshExtractor vme(*octreePtr_, meshDict_, mesh_);
@@ -68,7 +63,7 @@ void voronoiMeshGenerator::createVoronoiMesh()
 }
 
 
-void voronoiMeshGenerator::surfacePreparation()
+void Foam::Module::voronoiMeshGenerator::surfacePreparation()
 {
     // removes unnecessary cells and morphs the boundary
     // such that there exists only one boundary face per cell
@@ -84,7 +79,7 @@ void voronoiMeshGenerator::surfacePreparation()
 }
 
 
-void voronoiMeshGenerator::mapMeshToSurface()
+void Foam::Module::voronoiMeshGenerator::mapMeshToSurface()
 {
     // calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
@@ -111,7 +106,7 @@ void voronoiMeshGenerator::mapMeshToSurface()
 }
 
 
-void voronoiMeshGenerator::extractPatches()
+void Foam::Module::voronoiMeshGenerator::extractPatches()
 {
     edgeExtractor extractor(mesh_, *octreePtr_);
 
@@ -122,7 +117,7 @@ void voronoiMeshGenerator::extractPatches()
 }
 
 
-void voronoiMeshGenerator::mapEdgesAndCorners()
+void Foam::Module::voronoiMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorFUN(mesh_, *octreePtr_, false);
 
@@ -133,7 +128,7 @@ void voronoiMeshGenerator::mapEdgesAndCorners()
 }
 
 
-void voronoiMeshGenerator::optimiseMeshSurface()
+void Foam::Module::voronoiMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer surfOptimiser(mse, *octreePtr_);
@@ -147,7 +142,7 @@ void voronoiMeshGenerator::optimiseMeshSurface()
 }
 
 
-void voronoiMeshGenerator::generateBoudaryLayers()
+void Foam::Module::voronoiMeshGenerator::generateBoudaryLayers()
 {
     boundaryLayers bl(mesh_);
 
@@ -184,7 +179,7 @@ void voronoiMeshGenerator::generateBoudaryLayers()
 }
 
 
-void voronoiMeshGenerator::refBoundaryLayers()
+void Foam::Module::voronoiMeshGenerator::refBoundaryLayers()
 {
     if (meshDict_.isDict("boundaryLayers"))
     {
@@ -204,7 +199,7 @@ void voronoiMeshGenerator::refBoundaryLayers()
 }
 
 
-void voronoiMeshGenerator::optimiseFinalMesh()
+void Foam::Module::voronoiMeshGenerator::optimiseFinalMesh()
 {
     // untangle the surface if needed
     const bool enforceConstraints =
@@ -261,7 +256,7 @@ void voronoiMeshGenerator::optimiseFinalMesh()
 }
 
 
-void voronoiMeshGenerator::projectSurfaceAfterBackScaling()
+void Foam::Module::voronoiMeshGenerator::projectSurfaceAfterBackScaling()
 {
     if (!meshDict_.found("anisotropicSources"))
         return;
@@ -288,7 +283,7 @@ void voronoiMeshGenerator::projectSurfaceAfterBackScaling()
 }
 
 
-void voronoiMeshGenerator::replaceBoundaries()
+void Foam::Module::voronoiMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
 
@@ -299,7 +294,7 @@ void voronoiMeshGenerator::replaceBoundaries()
 }
 
 
-void voronoiMeshGenerator::renumberMesh()
+void Foam::Module::voronoiMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
 
@@ -310,7 +305,7 @@ void voronoiMeshGenerator::renumberMesh()
 }
 
 
-void voronoiMeshGenerator::generateMesh()
+void Foam::Module::voronoiMeshGenerator::generateMesh()
 {
     if (controller_.runCurrentStep("templateGeneration"))
     {
@@ -364,7 +359,7 @@ void voronoiMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
+Foam::Module::voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(nullptr),
@@ -449,7 +444,7 @@ voronoiMeshGenerator::voronoiMeshGenerator(const Time& time)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-voronoiMeshGenerator::~voronoiMeshGenerator()
+Foam::Module::voronoiMeshGenerator::~voronoiMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(modSurfacePtr_);
@@ -460,14 +455,10 @@ voronoiMeshGenerator::~voronoiMeshGenerator()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void voronoiMeshGenerator::writeMesh() const
+void Foam::Module::voronoiMeshGenerator::writeMesh() const
 {
     mesh_.write();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

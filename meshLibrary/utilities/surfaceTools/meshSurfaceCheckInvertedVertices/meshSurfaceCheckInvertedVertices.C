@@ -38,12 +38,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceCheckInvertedVertices::checkVertices()
+void Foam::Module::meshSurfaceCheckInvertedVertices::checkVertices()
 {
     const labelList& facePatch = surfacePartitioner_.boundaryFacePatches();
     const meshSurfaceEngine& mse = surfacePartitioner_.surfaceEngine();
@@ -404,7 +399,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
+Foam::Module::meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 (
     const meshSurfacePartitioner& mpart
 )
@@ -417,7 +412,7 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 }
 
 
-meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
+Foam::Module::meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
 (
     const meshSurfacePartitioner& mpart,
     const boolList& activePoints
@@ -430,15 +425,5 @@ meshSurfaceCheckInvertedVertices::meshSurfaceCheckInvertedVertices
     checkVertices();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceCheckInvertedVertices::~meshSurfaceCheckInvertedVertices()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

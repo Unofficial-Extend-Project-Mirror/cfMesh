@@ -30,19 +30,17 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-label voronoiMeshExtractor::sameOrientation_[6] = {3, 1, 2, 2, 3, 0};
+Foam::label Foam::Module::voronoiMeshExtractor::sameOrientation_[6]
+    = {3, 1, 2, 2, 3, 0};
 
 
-label voronoiMeshExtractor::oppositeOrientation_[6] = {2, 3, 1, 0, 0, 1};
+Foam::label Foam::Module::voronoiMeshExtractor::oppositeOrientation_[6]
+    = {2, 3, 1, 0, 0, 1};
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void voronoiMeshExtractor::clearOut()
+void Foam::Module::voronoiMeshExtractor::clearOut()
 {
     deleteDemandDrivenData(pointEdgesPtr_);
     deleteDemandDrivenData(edgesPtr_);
@@ -53,7 +51,7 @@ void voronoiMeshExtractor::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-voronoiMeshExtractor::voronoiMeshExtractor
+Foam::Module::voronoiMeshExtractor::voronoiMeshExtractor
 (
     const meshOctree& octree,
     const IOdictionary& meshDict,
@@ -71,7 +69,7 @@ voronoiMeshExtractor::voronoiMeshExtractor
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-voronoiMeshExtractor::~voronoiMeshExtractor()
+Foam::Module::voronoiMeshExtractor::~voronoiMeshExtractor()
 {
     clearOut();
 }
@@ -79,7 +77,7 @@ voronoiMeshExtractor::~voronoiMeshExtractor()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void voronoiMeshExtractor::createMesh()
+void Foam::Module::voronoiMeshExtractor::createMesh()
 {
     Info<< "Extracting voronoi mesh" << endl;
 
@@ -100,9 +98,5 @@ void voronoiMeshExtractor::createMesh()
     Info<< "Finished extracting voronoi mesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

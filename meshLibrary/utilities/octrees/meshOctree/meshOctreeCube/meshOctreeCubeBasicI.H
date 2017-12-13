@@ -27,12 +27,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline meshOctreeCubeBasic::meshOctreeCubeBasic()
+inline Foam::Module::meshOctreeCubeBasic::meshOctreeCubeBasic()
 :
     meshOctreeCubeCoordinates(),
     cubeType_(UNKNOWN),
@@ -40,7 +35,7 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic()
 {}
 
 
-inline meshOctreeCubeBasic::meshOctreeCubeBasic
+inline Foam::Module::meshOctreeCubeBasic::meshOctreeCubeBasic
 (
     const meshOctreeCubeCoordinates& cc
 )
@@ -51,7 +46,7 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic
 {}
 
 
-inline meshOctreeCubeBasic::meshOctreeCubeBasic
+inline Foam::Module::meshOctreeCubeBasic::meshOctreeCubeBasic
 (
     const meshOctreeCubeCoordinates& cc,
     const direction cubeType,
@@ -66,37 +61,41 @@ inline meshOctreeCubeBasic::meshOctreeCubeBasic
 
 // * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * * //
 
-inline void meshOctreeCubeBasic::setCubeType(const direction ct)
+inline void Foam::Module::meshOctreeCubeBasic::setCubeType(const direction ct)
 {
     cubeType_ = ct;
 }
 
 
-inline direction meshOctreeCubeBasic::cubeType() const
+inline Foam::direction Foam::Module::meshOctreeCubeBasic::cubeType() const
 {
     return cubeType_;
 }
 
 
-inline short meshOctreeCubeBasic::procNo() const
+inline short Foam::Module::meshOctreeCubeBasic::procNo() const
 {
     return procNo_;
 }
 
 
-inline void meshOctreeCubeBasic::setProcNo(const short n)
+inline void Foam::Module::meshOctreeCubeBasic::setProcNo(const short n)
 {
     procNo_ = n;
 }
 
 
-inline const meshOctreeCubeCoordinates& meshOctreeCubeBasic::coordinates() const
+inline const Foam::Module::meshOctreeCubeCoordinates&
+Foam::Module::meshOctreeCubeBasic::coordinates() const
 {
     return *this;
 }
 
 
-inline void meshOctreeCubeBasic::operator=(const meshOctreeCubeBasic& ocb)
+inline void Foam::Module::meshOctreeCubeBasic::operator=
+(
+    const meshOctreeCubeBasic& ocb
+)
 {
     cubeType_ = ocb.cubeType_;
     procNo_ = ocb.procNo_;
@@ -106,10 +105,10 @@ inline void meshOctreeCubeBasic::operator=(const meshOctreeCubeBasic& ocb)
 }
 
 
-inline Ostream& operator<<
+inline Foam::Ostream& Foam::Module::operator<<
 (
     Ostream& os,
-    const meshOctreeCubeBasic& ocb
+    const Foam::Module::meshOctreeCubeBasic& ocb
 )
 {
     os << token::BEGIN_LIST;
@@ -125,10 +124,10 @@ inline Ostream& operator<<
 }
 
 
-inline Istream& operator>>
+inline Foam::Istream& Foam::Module::operator>>
 (
     Istream& is,
-    meshOctreeCubeBasic& ocb
+    Foam::Module::meshOctreeCubeBasic& ocb
 )
 {
     // Read beginning of meshOctreeCubeBasic
@@ -148,9 +147,5 @@ inline Istream& operator>>
     return is;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

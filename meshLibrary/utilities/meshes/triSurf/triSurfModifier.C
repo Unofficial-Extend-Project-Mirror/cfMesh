@@ -24,29 +24,13 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "triSurfModifier.H"
-#include "demandDrivenData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfModifier::triSurfModifier(triSurf& surface)
+Foam::Module::triSurfModifier::triSurfModifier(triSurf& surface)
 :
     surface_(surface)
 {}
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triSurfModifier::~triSurfModifier()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

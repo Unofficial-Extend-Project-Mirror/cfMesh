@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::refLabelledPoint
+    Foam::Module::refLabelledPoint
 
 Description
     A class containing the label of the object it is associated to and
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -78,8 +80,7 @@ public:
 
 
     //- Destructor
-    ~refLabelledPoint()
-    {}
+    ~refLabelledPoint() = default;
 
 
     // Member functions
@@ -145,15 +146,16 @@ public:
 };
 
 
-//- Specify data associated with refLabelledPoint type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for refLabelledPoint are contiguous
 template<>
-inline bool contiguous<refLabelledPoint>()
+inline bool contiguous<Module::refLabelledPoint>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

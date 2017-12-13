@@ -33,12 +33,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void cartesianMeshExtractor::decomposeSplitHexesIntoTetsAndPyramids()
+void Foam::Module::cartesianMeshExtractor::
+decomposeSplitHexesIntoTetsAndPyramids()
 {
     if (!decomposeSplitHexes_) return;
 
@@ -101,9 +97,5 @@ void cartesianMeshExtractor::decomposeSplitHexesIntoTetsAndPyramids()
     Info<< "Finished decomposing split - hex cells" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

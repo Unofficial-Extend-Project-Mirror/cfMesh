@@ -26,7 +26,7 @@ License
 #include "contiguous.H"
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::checkIndex(const label i) const
+void Foam::Module::LongList<T, Offset>::checkIndex(const label i) const
 {
     if ((i < 0) || (i >= nextFree_))
     {
@@ -38,7 +38,7 @@ void Foam::LongList<T, Offset>::checkIndex(const label i) const
 
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::initializeParameters()
+void Foam::Module::LongList<T, Offset>::initializeParameters()
 {
     unsigned int t = sizeof(T);
     label it(0);
@@ -56,7 +56,7 @@ void Foam::LongList<T, Offset>::initializeParameters()
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::allocateSize(const label s)
+inline void Foam::Module::LongList<T, Offset>::allocateSize(const label s)
 {
     if (s == 0)
     {
@@ -114,7 +114,7 @@ inline void Foam::LongList<T, Offset>::allocateSize(const label s)
 
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::clearOut()
+void Foam::Module::LongList<T, Offset>::clearOut()
 {
     for (label i = 0; i < numBlocks_; ++i)
     {
@@ -137,7 +137,7 @@ void Foam::LongList<T, Offset>::clearOut()
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>::LongList()
+inline Foam::Module::LongList<T, Offset>::LongList()
 :
     N_(0),
     nextFree_(0),
@@ -152,7 +152,7 @@ inline Foam::LongList<T, Offset>::LongList()
 
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>::LongList(const label s)
+inline Foam::Module::LongList<T, Offset>::LongList(const label s)
 :
     N_(0),
     nextFree_(0),
@@ -168,7 +168,7 @@ inline Foam::LongList<T, Offset>::LongList(const label s)
 
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>::LongList(const label s, const T& t)
+inline Foam::Module::LongList<T, Offset>::LongList(const label s, const T& t)
 :
     N_(0),
     nextFree_(0),
@@ -185,7 +185,7 @@ inline Foam::LongList<T, Offset>::LongList(const label s, const T& t)
 
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>::LongList(const LongList<T, Offset>& ol)
+inline Foam::Module::LongList<T, Offset>::LongList(const LongList<T, Offset>& ol)
 :
     N_(0),
     nextFree_(0),
@@ -200,7 +200,7 @@ inline Foam::LongList<T, Offset>::LongList(const LongList<T, Offset>& ol)
 
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>::~LongList()
+inline Foam::Module::LongList<T, Offset>::~LongList()
 {
     clearOut();
 }
@@ -209,14 +209,14 @@ inline Foam::LongList<T, Offset>::~LongList()
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class T, int Offset>
-inline Foam::label Foam::LongList<T, Offset>::size() const
+inline Foam::label Foam::Module::LongList<T, Offset>::size() const
 {
     return nextFree_;
 }
 
 
 template<class T, int Offset>
-inline Foam::label Foam::LongList<T, Offset>::byteSize() const
+inline Foam::label Foam::Module::LongList<T, Offset>::byteSize() const
 {
     if (!contiguous<T>())
     {
@@ -231,7 +231,7 @@ inline Foam::label Foam::LongList<T, Offset>::byteSize() const
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::setSize(const label i)
+inline void Foam::Module::LongList<T, Offset>::setSize(const label i)
 {
     allocateSize(i);
     nextFree_ = i;
@@ -239,15 +239,15 @@ inline void Foam::LongList<T, Offset>::setSize(const label i)
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::clear()
+inline void Foam::Module::LongList<T, Offset>::clear()
 {
     nextFree_ = 0;
 }
 
 
 template<class T, int Offset>
-inline Foam::LongList<T, Offset>&
-Foam::LongList<T, Offset>::shrink()
+inline Foam::Module::LongList<T, Offset>&
+Foam::Module::LongList<T, Offset>::shrink()
 {
     setSize(nextFree_);
     return *this;
@@ -255,7 +255,7 @@ Foam::LongList<T, Offset>::shrink()
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::transfer(LongList<T, Offset>& ol)
+inline void Foam::Module::LongList<T, Offset>::transfer(LongList<T, Offset>& ol)
 {
     clearOut();
     dataPtr_ = ol.dataPtr_;
@@ -275,7 +275,7 @@ inline void Foam::LongList<T, Offset>::transfer(LongList<T, Offset>& ol)
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::append(const T& e)
+inline void Foam::Module::LongList<T, Offset>::append(const T& e)
 {
     if (nextFree_ >= N_)
     {
@@ -287,7 +287,7 @@ inline void Foam::LongList<T, Offset>::append(const T& e)
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::appendIfNotIn(const T& e)
+inline void Foam::Module::LongList<T, Offset>::appendIfNotIn(const T& e)
 {
     if (!found(e))
     {
@@ -297,21 +297,21 @@ inline void Foam::LongList<T, Offset>::appendIfNotIn(const T& e)
 
 
 template<class T, int Offset>
-inline bool Foam::LongList<T, Offset>::contains(const T& e) const
+inline bool Foam::Module::LongList<T, Offset>::contains(const T& e) const
 {
     return (this->find(e) >= 0);
 }
 
 
 template<class T, int Offset>
-inline bool Foam::LongList<T, Offset>::found(const T& e) const
+inline bool Foam::Module::LongList<T, Offset>::found(const T& e) const
 {
     return (this->find(e) >= 0);
 }
 
 
 template<class T, int Offset>
-inline Foam::label Foam::LongList<T, Offset>::find
+inline Foam::label Foam::Module::LongList<T, Offset>::find
 (
     const T& e
 ) const
@@ -329,7 +329,7 @@ inline Foam::label Foam::LongList<T, Offset>::find
 
 
 template<class T, int Offset>
-inline T Foam::LongList<T, Offset>::remove(const label i)
+inline T Foam::Module::LongList<T, Offset>::remove(const label i)
 {
     if (nextFree_ == 0)
     {
@@ -345,7 +345,7 @@ inline T Foam::LongList<T, Offset>::remove(const label i)
 
 
 template<class T, int Offset>
-inline T Foam::LongList<T, Offset>::remove()
+inline T Foam::Module::LongList<T, Offset>::remove()
 {
     if (nextFree_ == 0)
     {
@@ -362,7 +362,10 @@ inline T Foam::LongList<T, Offset>::remove()
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class T, int Offset>
-inline const T& Foam::LongList<T, Offset>::operator[](const label i) const
+inline const T& Foam::Module::LongList<T, Offset>::operator[]
+(
+    const label i
+) const
 {
     #ifdef FULLDEBUG
     checkIndex(i);
@@ -373,7 +376,7 @@ inline const T& Foam::LongList<T, Offset>::operator[](const label i) const
 
 
 template<class T, int Offset>
-inline T& Foam::LongList<T, Offset>::operator[](const label i)
+inline T& Foam::Module::LongList<T, Offset>::operator[](const label i)
 {
     #ifdef FULLDEBUG
     checkIndex(i);
@@ -384,7 +387,7 @@ inline T& Foam::LongList<T, Offset>::operator[](const label i)
 
 
 template<class T, int Offset>
-inline T& Foam::LongList<T, Offset>::operator()(const label i)
+inline T& Foam::Module::LongList<T, Offset>::operator()(const label i)
 {
     if (i >= nextFree_)
     {
@@ -396,14 +399,14 @@ inline T& Foam::LongList<T, Offset>::operator()(const label i)
 
 
 template<class T, int Offset>
-inline T& Foam::LongList<T, Offset>::newElmt(const label i)
+inline T& Foam::Module::LongList<T, Offset>::newElmt(const label i)
 {
     return operator()(i);
 }
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::operator=(const T& t)
+inline void Foam::Module::LongList<T, Offset>::operator=(const T& t)
 {
     for (label i = 0; i < nextFree_; ++i)
     {
@@ -413,7 +416,10 @@ inline void Foam::LongList<T, Offset>::operator=(const T& t)
 
 
 template<class T, int Offset>
-inline void Foam::LongList<T, Offset>::operator=(const LongList<T, Offset>& l)
+inline void Foam::Module::LongList<T, Offset>::operator=
+(
+    const LongList<T, Offset>& l
+)
 {
     setSize(l.size());
 

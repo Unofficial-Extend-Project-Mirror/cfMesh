@@ -41,12 +41,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline const partTriMesh& meshSurfaceOptimizer::triMesh() const
+inline const Foam::Module::partTriMesh&
+Foam::Module::meshSurfaceOptimizer::triMesh() const
 {
     if (!triMeshPtr_)
         calculateTrianglesAndAddressing();
@@ -55,7 +51,10 @@ inline const partTriMesh& meshSurfaceOptimizer::triMesh() const
 }
 
 
-inline void meshSurfaceOptimizer::updateTriMesh(const labelLongList& selPoints)
+inline void Foam::Module::meshSurfaceOptimizer::updateTriMesh
+(
+    const labelLongList& selPoints
+)
 {
     if (!triMeshPtr_)
         FatalErrorInFunction
@@ -65,7 +64,7 @@ inline void meshSurfaceOptimizer::updateTriMesh(const labelLongList& selPoints)
 }
 
 
-inline void meshSurfaceOptimizer::updateTriMesh()
+inline void Foam::Module::meshSurfaceOptimizer::updateTriMesh()
 {
     if (!triMeshPtr_)
         FatalErrorInFunction
@@ -75,7 +74,7 @@ inline void meshSurfaceOptimizer::updateTriMesh()
 }
 
 
-inline bool meshSurfaceOptimizer::transformIntoPlane
+inline bool Foam::Module::meshSurfaceOptimizer::transformIntoPlane
 (
     const label bpI,
     const plane& pl,
@@ -180,7 +179,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
 }
 
 
-inline point meshSurfaceOptimizer::newPositionLaplacian
+inline Foam::point Foam::Module::meshSurfaceOptimizer::newPositionLaplacian
 (
     const label bpI,
     const bool transformIntoPlane
@@ -226,7 +225,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacian
 }
 
 
-inline point meshSurfaceOptimizer::newPositionLaplacianFC
+inline Foam::point Foam::Module::meshSurfaceOptimizer::newPositionLaplacianFC
 (
     const label bpI,
     const bool transformIntoPlane
@@ -274,7 +273,7 @@ inline point meshSurfaceOptimizer::newPositionLaplacianFC
 }
 
 
-inline point meshSurfaceOptimizer::newPositionLaplacianWFC
+inline Foam::point Foam::Module::meshSurfaceOptimizer::newPositionLaplacianWFC
 (
     const label bpI,
     const bool transformIntoPlane
@@ -335,7 +334,8 @@ inline point meshSurfaceOptimizer::newPositionLaplacianWFC
 }
 
 
-inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
+inline Foam::point
+Foam::Module::meshSurfaceOptimizer::newPositionSurfaceOptimizer
 (
     const label bpI,
     const scalar tol
@@ -392,7 +392,7 @@ inline point meshSurfaceOptimizer::newPositionSurfaceOptimizer
 }
 
 
-inline point meshSurfaceOptimizer::newEdgePositionLaplacian
+inline Foam::point Foam::Module::meshSurfaceOptimizer::newEdgePositionLaplacian
 (
     const label bpI
 ) const
@@ -437,7 +437,10 @@ inline point meshSurfaceOptimizer::newEdgePositionLaplacian
 
 
 template<class labelListType>
-inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
+inline void Foam::Module::meshSurfaceOptimizer::lockBoundaryFaces
+(
+    const labelListType& l
+)
 {
     lockedSurfaceFaces_ = l;
 
@@ -499,7 +502,10 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
 
 
 template<class labelListType>
-inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
+inline void Foam::Module::meshSurfaceOptimizer::lockBoundaryPoints
+(
+    const labelListType& l
+)
 {
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
@@ -554,7 +560,7 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
 }
 
 
-inline void meshSurfaceOptimizer::lockFeatureEdges()
+inline void Foam::Module::meshSurfaceOptimizer::lockFeatureEdges()
 {
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 50)
@@ -564,9 +570,5 @@ inline void meshSurfaceOptimizer::lockFeatureEdges()
             vertexType_[bpI] |= LOCKED;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

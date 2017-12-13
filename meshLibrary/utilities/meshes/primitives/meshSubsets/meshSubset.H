@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSubset
+    Foam::Module::meshSubset
 
 Description
     A class containing labels of elements
@@ -45,8 +45,10 @@ SourceFiles
 
 namespace Foam
 {
-
 class Ostream;
+
+namespace Module
+{
 class VRWGraph;
 
 /*---------------------------------------------------------------------------*\
@@ -107,7 +109,7 @@ public:
 
 
     //- Destructor
-    ~meshSubset();
+    ~meshSubset() = default;
 
 
     // Member Functions
@@ -166,6 +168,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

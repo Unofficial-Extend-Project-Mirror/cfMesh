@@ -31,12 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetCreatorOctree::createTetsAroundSplitEdges()
+void Foam::Module::tetCreatorOctree::createTetsAroundSplitEdges()
 {
     Info<< "Creating tets around split edges " << endl;
 
@@ -387,9 +382,5 @@ void tetCreatorOctree::createTetsAroundSplitEdges()
 
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

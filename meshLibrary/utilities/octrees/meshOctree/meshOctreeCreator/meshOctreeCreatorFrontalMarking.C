@@ -26,25 +26,14 @@ License
 #include "meshOctreeCreator.H"
 #include "meshOctreeInsideOutside.H"
 
-//#define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeCreator::createInsideOutsideInformation()
+void Foam::Module::meshOctreeCreator::createInsideOutsideInformation()
 {
     Info<< "Marking inside/outside." << endl;
 
     meshOctreeInsideOutside insideOutside(octree_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -34,10 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-void meshOctreeAddressing::clearOut()
+void Foam::Module::meshOctreeAddressing::clearOut()
 {
     clearNodeAddressing();
     clearBoxTypes();
@@ -47,7 +44,7 @@ void meshOctreeAddressing::clearOut()
 }
 
 
-void meshOctreeAddressing::clearNodeAddressing()
+void Foam::Module::meshOctreeAddressing::clearNodeAddressing()
 {
     nNodes_ = 0;
     deleteDemandDrivenData(octreePointsPtr_);
@@ -58,13 +55,13 @@ void meshOctreeAddressing::clearNodeAddressing()
 }
 
 
-void meshOctreeAddressing::clearBoxTypes()
+void Foam::Module::meshOctreeAddressing::clearBoxTypes()
 {
     deleteDemandDrivenData(boxTypePtr_);
 }
 
 
-void meshOctreeAddressing::clearOctreeFaces()
+void Foam::Module::meshOctreeAddressing::clearOctreeFaces()
 {
     deleteDemandDrivenData(octreeFacesPtr_);
     deleteDemandDrivenData(octreeFacesOwnersPtr_);
@@ -72,7 +69,7 @@ void meshOctreeAddressing::clearOctreeFaces()
 }
 
 
-void meshOctreeAddressing::clearAddressing()
+void Foam::Module::meshOctreeAddressing::clearAddressing()
 {
     deleteDemandDrivenData(leafFacesPtr_);
     deleteDemandDrivenData(nodeFacesPtr_);
@@ -86,7 +83,7 @@ void meshOctreeAddressing::clearAddressing()
 }
 
 
-void meshOctreeAddressing::clearParallelAddressing()
+void Foam::Module::meshOctreeAddressing::clearParallelAddressing()
 {
     deleteDemandDrivenData(globalPointLabelPtr_);
     deleteDemandDrivenData(globalPointToLocalPtr_);
@@ -102,7 +99,7 @@ void meshOctreeAddressing::clearParallelAddressing()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctreeAddressing::meshOctreeAddressing
+Foam::Module::meshOctreeAddressing::meshOctreeAddressing
 (
     const meshOctree& mo,
     const dictionary& dict,
@@ -163,7 +160,7 @@ meshOctreeAddressing::meshOctreeAddressing
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshOctreeAddressing::~meshOctreeAddressing()
+Foam::Module::meshOctreeAddressing::~meshOctreeAddressing()
 {
     clearOut();
 }
@@ -171,7 +168,7 @@ meshOctreeAddressing::~meshOctreeAddressing()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool meshOctreeAddressing::isIntersectedFace(const label fI) const
+bool Foam::Module::meshOctreeAddressing::isIntersectedFace(const label fI) const
 {
     const labelLongList& owner = octreeFaceOwner();
     const labelLongList& neighbour = octreeFaceNeighbour();
@@ -254,7 +251,7 @@ bool meshOctreeAddressing::isIntersectedFace(const label fI) const
 }
 
 
-bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
+bool Foam::Module::meshOctreeAddressing::isIntersectedEdge(const label eI) const
 {
     const VRWGraph& edgeCubes = this->edgeLeaves();
 
@@ -329,7 +326,7 @@ bool meshOctreeAddressing::isIntersectedEdge(const label eI) const
 }
 
 
-void meshOctreeAddressing::edgeIntersections
+void Foam::Module::meshOctreeAddressing::edgeIntersections
 (
     const label eI,
     DynList<point>& intersections
@@ -407,7 +404,7 @@ void meshOctreeAddressing::edgeIntersections
 }
 
 
-void meshOctreeAddressing::cubesAroundEdge
+void Foam::Module::meshOctreeAddressing::cubesAroundEdge
 (
     const label leafI,
     const direction eI,
@@ -450,7 +447,7 @@ void meshOctreeAddressing::cubesAroundEdge
 }
 
 
-label meshOctreeAddressing::findEdgeCentre
+Foam::label Foam::Module::meshOctreeAddressing::findEdgeCentre
 (
     const label leafI,
     const direction eI
@@ -510,9 +507,5 @@ label meshOctreeAddressing::findEdgeCentre
     return -1;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

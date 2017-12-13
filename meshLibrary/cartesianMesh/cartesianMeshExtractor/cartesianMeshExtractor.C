@@ -26,15 +26,9 @@ License
 #include "cartesianMeshExtractor.H"
 #include "meshOctree.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void cartesianMeshExtractor::clearOut()
+void Foam::Module::cartesianMeshExtractor::clearOut()
 {
     deleteDemandDrivenData(leafCellLabelPtr_);
 }
@@ -42,7 +36,7 @@ void cartesianMeshExtractor::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-cartesianMeshExtractor::cartesianMeshExtractor
+Foam::Module::cartesianMeshExtractor::cartesianMeshExtractor
 (
     meshOctree& octree,
     const IOdictionary& meshDict,
@@ -58,7 +52,7 @@ cartesianMeshExtractor::cartesianMeshExtractor
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-cartesianMeshExtractor::~cartesianMeshExtractor()
+Foam::Module::cartesianMeshExtractor::~cartesianMeshExtractor()
 {
     clearOut();
 }
@@ -66,13 +60,13 @@ cartesianMeshExtractor::~cartesianMeshExtractor()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void cartesianMeshExtractor::decomposeSplitHexes()
+void Foam::Module::cartesianMeshExtractor::decomposeSplitHexes()
 {
     decomposeSplitHexes_ = true;
 }
 
 
-void cartesianMeshExtractor::createMesh()
+void Foam::Module::cartesianMeshExtractor::createMesh()
 {
     Info<< "Extracting polyMesh" << endl;
 
@@ -113,9 +107,5 @@ void cartesianMeshExtractor::createMesh()
     Info<< "Finished extracting polyMesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

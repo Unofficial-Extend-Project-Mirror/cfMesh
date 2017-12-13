@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeCreator
+    Foam::Module::meshOctreeCreator
 
 Description
     Creates octree for mesh generation
@@ -46,6 +46,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -142,7 +144,7 @@ public:
 
 
     //- Destructor
-    ~meshOctreeCreator();
+    ~meshOctreeCreator() = default;
 
 
     // Member Functions
@@ -170,6 +172,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

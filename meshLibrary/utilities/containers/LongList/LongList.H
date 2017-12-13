@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::LongList
+    Foam::Module::LongList
 
 Description
     A dynamic list is a 1-D vector of objects of type T which resizes
@@ -49,10 +49,12 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declaration of template friend functions
 class Istream;
 class Ostream;
+
+namespace Module
+{
 
 template<class T, int Offset> class LongList;
 
@@ -234,6 +236,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

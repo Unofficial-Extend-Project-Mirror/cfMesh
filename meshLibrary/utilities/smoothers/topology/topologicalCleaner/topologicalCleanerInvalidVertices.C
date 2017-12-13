@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void topologicalCleaner::checkInvalidConnectionsForVerticesCells
+void Foam::Module::topologicalCleaner::checkInvalidConnectionsForVerticesCells
 (
     labelHashSet* irregularNodesPtr
 )
@@ -173,7 +168,7 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesCells
 }
 
 
-void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
+void Foam::Module::topologicalCleaner::checkInvalidConnectionsForVerticesFaces
 (
     labelHashSet* /*irregularNodesPtr*/
 )
@@ -301,9 +296,5 @@ void topologicalCleaner::checkInvalidConnectionsForVerticesFaces
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

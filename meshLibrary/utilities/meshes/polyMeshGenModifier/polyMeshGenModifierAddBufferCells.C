@@ -29,16 +29,9 @@ License
 #include "labelledPoint.H"
 #include "helperFunctions.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::addBufferCells()
+void Foam::Module::polyMeshGenModifier::addBufferCells()
 {
     if (!Pstream::parRun())
     {
@@ -221,9 +214,5 @@ void polyMeshGenModifier::addBufferCells()
     Info<< "Finished adding buffer layers" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,12 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam::help
+    Foam::Module::help
 
 Description
     Functions used for exchanging data between processors
 
 SourceFiles
+    helperFunctionsFrontalMarking.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 namespace help
 {
 
@@ -84,6 +86,7 @@ label groupMarking
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 #ifdef NoRepository

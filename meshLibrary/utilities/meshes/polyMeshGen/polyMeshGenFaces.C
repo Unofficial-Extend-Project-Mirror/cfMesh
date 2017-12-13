@@ -31,12 +31,9 @@ License
 #include "demandDrivenData.H"
 #include "stringListOps.H"
 
-namespace Foam
-{
+// * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
-// * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
-
-void polyMeshGenFaces::clearOut() const
+void Foam::Module::polyMeshGenFaces::clearOut() const
 {
     deleteDemandDrivenData(ownerPtr_);
     deleteDemandDrivenData(neighbourPtr_);
@@ -45,7 +42,7 @@ void polyMeshGenFaces::clearOut() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-polyMeshGenFaces::polyMeshGenFaces(const Time& runTime)
+Foam::Module::polyMeshGenFaces::polyMeshGenFaces(const Time& runTime)
 :
     polyMeshGenPoints(runTime),
     faces_
@@ -68,7 +65,7 @@ polyMeshGenFaces::polyMeshGenFaces(const Time& runTime)
 {}
 
 
-polyMeshGenFaces::polyMeshGenFaces
+Foam::Module::polyMeshGenFaces::polyMeshGenFaces
 (
     const Time& runTime,
     const pointField& points,
@@ -96,7 +93,7 @@ polyMeshGenFaces::polyMeshGenFaces
 {}
 
 
-polyMeshGenFaces::polyMeshGenFaces
+Foam::Module::polyMeshGenFaces::polyMeshGenFaces
 (
     const Time& runTime,
     const pointField& points,
@@ -151,7 +148,7 @@ polyMeshGenFaces::polyMeshGenFaces
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-polyMeshGenFaces::~polyMeshGenFaces()
+Foam::Module::polyMeshGenFaces::~polyMeshGenFaces()
 {
     clearOut();
 }
@@ -159,7 +156,10 @@ polyMeshGenFaces::~polyMeshGenFaces()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label polyMeshGenFaces::faceIsInProcPatch(const label faceLabel) const
+Foam::label Foam::Module::polyMeshGenFaces::faceIsInProcPatch
+(
+    const label faceLabel
+) const
 {
     const label i = procBoundaries_.size() - 1;
     if
@@ -189,7 +189,10 @@ label polyMeshGenFaces::faceIsInProcPatch(const label faceLabel) const
 }
 
 
-label polyMeshGenFaces::faceIsInPatch(const label faceLabel) const
+Foam::label Foam::Module::polyMeshGenFaces::faceIsInPatch
+(
+    const label faceLabel
+) const
 {
     const label i = boundaries_.size() - 1;
     if (faceLabel >= (boundaries_[i].patchStart()+boundaries_[i].patchSize()))
@@ -209,7 +212,7 @@ label polyMeshGenFaces::faceIsInPatch(const label faceLabel) const
 }
 
 
-wordList polyMeshGenFaces::patchNames() const
+Foam::wordList Foam::Module::polyMeshGenFaces::patchNames() const
 {
     wordList t(boundaries_.size());
 
@@ -222,7 +225,10 @@ wordList polyMeshGenFaces::patchNames() const
 }
 
 
-label polyMeshGenFaces::getPatchID(const word& patchName) const
+Foam::label Foam::Module::polyMeshGenFaces::getPatchID
+(
+    const word& patchName
+) const
 {
     forAll(boundaries_, patchI)
     {
@@ -241,7 +247,10 @@ label polyMeshGenFaces::getPatchID(const word& patchName) const
 }
 
 
-word polyMeshGenFaces::getPatchName(const label patchID) const
+Foam::word Foam::Module::polyMeshGenFaces::getPatchName
+(
+    const label patchID
+) const
 {
     if ((patchID < 0) || (patchID >= boundaries_.size()))
     {
@@ -254,7 +263,10 @@ word polyMeshGenFaces::getPatchName(const label patchID) const
 }
 
 
-labelList polyMeshGenFaces::findPatches(const word& patchName) const
+Foam::labelList Foam::Module::polyMeshGenFaces::findPatches
+(
+    const word& patchName
+) const
 {
     wordList allPatches = patchNames();
 
@@ -270,7 +282,7 @@ labelList polyMeshGenFaces::findPatches(const word& patchName) const
 }
 
 
-label polyMeshGenFaces::addFaceSubset(const word& setName)
+Foam::label Foam::Module::polyMeshGenFaces::addFaceSubset(const word& setName)
 {
     label id = faceSubsetIndex(setName);
     if (id >= 0)
@@ -298,7 +310,7 @@ label polyMeshGenFaces::addFaceSubset(const word& setName)
 }
 
 
-void polyMeshGenFaces::removeFaceSubset(const label setI)
+void Foam::Module::polyMeshGenFaces::removeFaceSubset(const label setI)
 {
     if (faceSubsets_.find(setI) == faceSubsets_.end())
     {
@@ -309,7 +321,10 @@ void polyMeshGenFaces::removeFaceSubset(const label setI)
 }
 
 
-word polyMeshGenFaces::faceSubsetName(const label setI) const
+Foam::word Foam::Module::polyMeshGenFaces::faceSubsetName
+(
+    const label setI
+) const
 {
     std::map<label, meshSubset>::const_iterator it =
         faceSubsets_.find(setI);
@@ -323,7 +338,10 @@ word polyMeshGenFaces::faceSubsetName(const label setI) const
 }
 
 
-label polyMeshGenFaces::faceSubsetIndex(const word& setName) const
+Foam::label Foam::Module::polyMeshGenFaces::faceSubsetIndex
+(
+    const word& setName
+) const
 {
     forAllConstIters(faceSubsets_, it)
     {
@@ -337,7 +355,7 @@ label polyMeshGenFaces::faceSubsetIndex(const word& setName) const
 }
 
 
-void polyMeshGenFaces::read()
+void Foam::Module::polyMeshGenFaces::read()
 {
     polyMeshGenPoints::read();
 
@@ -474,7 +492,7 @@ void polyMeshGenFaces::read()
 }
 
 
-void polyMeshGenFaces::write() const
+void Foam::Module::polyMeshGenFaces::write() const
 {
     polyMeshGenPoints::write();
 
@@ -570,9 +588,5 @@ void polyMeshGenFaces::write() const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

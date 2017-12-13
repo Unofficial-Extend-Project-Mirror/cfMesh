@@ -29,12 +29,9 @@ License
 #include "pointSet.H"
 #include "stringListOps.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfFacets::triSurfFacets()
+Foam::Module::triSurfFacets::triSurfFacets()
 :
     triangles_(),
     patches_(),
@@ -42,7 +39,10 @@ triSurfFacets::triSurfFacets()
 {}
 
 
-triSurfFacets::triSurfFacets(const LongList<labelledTri>& triangles)
+Foam::Module::triSurfFacets::triSurfFacets
+(
+    const LongList<labelledTri>& triangles
+)
 :
     triangles_(triangles),
     patches_(1),
@@ -57,7 +57,7 @@ triSurfFacets::triSurfFacets(const LongList<labelledTri>& triangles)
 }
 
 
-triSurfFacets::triSurfFacets
+Foam::Module::triSurfFacets::triSurfFacets
 (
     const LongList<labelledTri>& triangles,
     const geometricSurfacePatchList& patches
@@ -69,15 +69,9 @@ triSurfFacets::triSurfFacets
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triSurfFacets::~triSurfFacets()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-wordList triSurfFacets::patchNames() const
+Foam::wordList Foam::Module::triSurfFacets::patchNames() const
 {
     wordList t(patches_.size());
 
@@ -90,7 +84,10 @@ wordList triSurfFacets::patchNames() const
 }
 
 
-labelList triSurfFacets::findPatches(const word& patchName) const
+Foam::labelList Foam::Module::triSurfFacets::findPatches
+(
+    const word& patchName
+) const
 {
     const wordList allPatches = patchNames();
 
@@ -108,7 +105,7 @@ labelList triSurfFacets::findPatches(const word& patchName) const
 }
 
 
-label triSurfFacets::addFacetSubset(const word& subsetName)
+Foam::label Foam::Module::triSurfFacets::addFacetSubset(const word& subsetName)
 {
     label id = facetSubsetIndex(subsetName);
     if (id >= 0)
@@ -133,7 +130,7 @@ label triSurfFacets::addFacetSubset(const word& subsetName)
 }
 
 
-void triSurfFacets::removeFacetSubset(const label subsetID)
+void Foam::Module::triSurfFacets::removeFacetSubset(const label subsetID)
 {
     if (facetSubsets_.find(subsetID) == facetSubsets_.end())
     {
@@ -144,9 +141,12 @@ void triSurfFacets::removeFacetSubset(const label subsetID)
 }
 
 
-word triSurfFacets::facetSubsetName(const label subsetID) const
+Foam::word Foam::Module::triSurfFacets::facetSubsetName
+(
+    const label subsetID
+) const
 {
-    Map<meshSubset>::const_iterator it = facetSubsets_.find(subsetID);
+    Map<meshSubset>::const_iterator it = facetSubsets_.cfind(subsetID);
     if (it == facetSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not a facet subset" << endl;
@@ -157,7 +157,10 @@ word triSurfFacets::facetSubsetName(const label subsetID) const
 }
 
 
-label triSurfFacets::facetSubsetIndex(const word& subsetName) const
+Foam::label Foam::Module::triSurfFacets::facetSubsetIndex
+(
+    const word& subsetName
+) const
 {
     forAllConstIters(facetSubsets_, it)
     {
@@ -170,9 +173,5 @@ label triSurfFacets::facetSubsetIndex(const word& subsetName) const
     return -1;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

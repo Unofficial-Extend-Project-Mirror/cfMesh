@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfacePatchManipulator
+    Foam::Module::triSurfacePatchManipulator
 
 Description
     Generates patches in the surface mesh based
@@ -45,6 +45,9 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
+
 /*---------------------------------------------------------------------------*\
                  Class triSurfacePatchManipulator Declaration
 \*---------------------------------------------------------------------------*/
@@ -93,7 +96,7 @@ public:
     triSurfacePatchManipulator(const triSurf& surface);
 
     //- Destructor
-    ~triSurfacePatchManipulator();
+    ~triSurfacePatchManipulator() = default;
 
 
     // Member Functions
@@ -112,6 +115,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

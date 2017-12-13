@@ -33,7 +33,6 @@ Description
 #include "demandDrivenData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 using namespace Foam;
 
 int main(int argc, char *argv[])
@@ -52,7 +51,7 @@ int main(int argc, char *argv[])
 
     fileName outFileName(inFileName.lessExt()+".fms");
 
-    const triSurf surface(inFileName);
+    const Module::triSurf surface(inFileName);
 
     surface.writeSurface(outFileName);
 

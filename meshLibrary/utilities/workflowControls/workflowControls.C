@@ -28,14 +28,14 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-const std::map<word, label> workflowControls::workflowSteps_ =
-    populateWorkflowSteps();
+const std::map<Foam::word, Foam::label>
+Foam::Module::workflowControls::workflowSteps_ =
+    Foam::Module::workflowControls::populateWorkflowSteps();
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool workflowControls::restartRequested() const
+bool Foam::Module::workflowControls::restartRequested() const
 {
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
@@ -58,7 +58,7 @@ bool workflowControls::restartRequested() const
 }
 
 
-void workflowControls::setStepCompleted() const
+void Foam::Module::workflowControls::setStepCompleted() const
 {
     if (mesh_.metaData().found("lastStep"))
     {
@@ -86,7 +86,7 @@ void workflowControls::setStepCompleted() const
 }
 
 
-bool workflowControls::isStepCompleted() const
+bool Foam::Module::workflowControls::isStepCompleted() const
 {
     const word latestStep = lastCompletedStep();
 
@@ -103,7 +103,7 @@ bool workflowControls::isStepCompleted() const
 }
 
 
-bool workflowControls::exitAfterCurrentStep() const
+bool Foam::Module::workflowControls::exitAfterCurrentStep() const
 {
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
@@ -129,7 +129,7 @@ bool workflowControls::exitAfterCurrentStep() const
 }
 
 
-word workflowControls::lastCompletedStep() const
+Foam::word Foam::Module::workflowControls::lastCompletedStep() const
 {
     if (mesh_.metaData().found("lastStep"))
     {
@@ -142,7 +142,8 @@ word workflowControls::lastCompletedStep() const
 }
 
 
-DynList<word> workflowControls::completedSteps() const
+Foam::Module::DynList<Foam::word> 
+Foam::Module::workflowControls::completedSteps() const
 {
     DynList<word> completedSteps;
 
@@ -155,14 +156,14 @@ DynList<word> workflowControls::completedSteps() const
 }
 
 
-void workflowControls::clearCompletedSteps()
+void Foam::Module::workflowControls::clearCompletedSteps()
 {
     mesh_.metaData().remove("completedSteps");
     mesh_.metaData().remove("lastStep");
 }
 
 
-bool workflowControls::stopAfterCurrentStep() const
+bool Foam::Module::workflowControls::stopAfterCurrentStep() const
 {
     setStepCompleted();
 
@@ -199,7 +200,7 @@ bool workflowControls::stopAfterCurrentStep() const
 }
 
 
-bool workflowControls::runAfterCurrentStep() const
+bool Foam::Module::workflowControls::runAfterCurrentStep() const
 {
     if (currentStep_ == restartAfterStep_)
     {
@@ -227,8 +228,10 @@ bool workflowControls::runAfterCurrentStep() const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-std::map<word, label> workflowControls::populateWorkflowSteps()
+std::map<Foam::word, Foam::label>
+Foam::Module::workflowControls::populateWorkflowSteps()
 {
+    // Note: can likely use initializer_list here
     std::map<word, label> workflowSteps;
     workflowSteps.insert(std::make_pair(word("start"), 0));
     workflowSteps.insert(std::make_pair(word("templateGeneration"), 1));
@@ -246,7 +249,7 @@ std::map<word, label> workflowControls::populateWorkflowSteps()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-workflowControls::workflowControls(polyMeshGen& mesh)
+Foam::Module::workflowControls::workflowControls(polyMeshGen& mesh)
 :
     mesh_(mesh),
     currentStep_("start"),
@@ -269,13 +272,7 @@ workflowControls::workflowControls(polyMeshGen& mesh)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-workflowControls::~workflowControls()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool workflowControls::runCurrentStep(const word& stepName)
+bool Foam::Module::workflowControls::runCurrentStep(const word& stepName)
 {
     if
     (
@@ -322,7 +319,7 @@ bool workflowControls::runCurrentStep(const word& stepName)
 }
 
 
-void workflowControls::workflowCompleted()
+void Foam::Module::workflowControls::workflowCompleted()
 {
     if (mesh_.metaData().found("lastStep"))
         mesh_.metaData().remove("lastStep");
@@ -331,9 +328,5 @@ void workflowControls::workflowCompleted()
         mesh_.metaData().remove("completedSteps");
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

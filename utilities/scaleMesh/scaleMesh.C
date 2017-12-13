@@ -30,17 +30,17 @@ Description
 #include "polyMeshGen.H"
 #include "helperFunctions.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-// Main program:
 using namespace Foam;
+using namespace Foam::Module;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
     argList::validArgs.append("scalingFactor");
 
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     // const scalar scalingFactor(readScalar(args[1]));
     const scalar scalingFactor(args.argRead<scalar>(1));

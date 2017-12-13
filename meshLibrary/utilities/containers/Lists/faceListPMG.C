@@ -33,7 +33,10 @@ Description
 
 namespace Foam
 {
-defineTypeNameWithName(faceListPMG, "faceList");
+namespace Module
+{
+    defineTypeNameWithName(faceListPMG, "faceList");
+}
 }
 
 

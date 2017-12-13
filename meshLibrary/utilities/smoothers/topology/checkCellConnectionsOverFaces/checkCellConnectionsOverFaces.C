@@ -36,11 +36,11 @@ License
 
 #include "helperFunctions.H"
 
-//#define DEBUGCheck
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * Private member functions * * * * * * * * * * * * * * * //
@@ -181,10 +181,13 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace meshConnectionsHelper
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkCellConnectionsOverFaces::findCellGroups()
+
+void Foam::Module::checkCellConnectionsOverFaces::findCellGroups()
 {
     Info<< "Checking cell connections" << endl;
 
@@ -203,7 +206,10 @@ void checkCellConnectionsOverFaces::findCellGroups()
 
 // * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
-checkCellConnectionsOverFaces::checkCellConnectionsOverFaces(polyMeshGen& mesh)
+Foam::Module::checkCellConnectionsOverFaces::checkCellConnectionsOverFaces
+(
+    polyMeshGen& mesh
+)
 :
     mesh_(mesh),
     cellGroup_(mesh.cells().size(), -1),
@@ -213,15 +219,9 @@ checkCellConnectionsOverFaces::checkCellConnectionsOverFaces(polyMeshGen& mesh)
 }
 
 
-// * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
-
-checkCellConnectionsOverFaces::~checkCellConnectionsOverFaces()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool checkCellConnectionsOverFaces::checkCellGroups()
+bool Foam::Module::checkCellConnectionsOverFaces::checkCellGroups()
 {
     if (nGroups_ == 1)
         return false;
@@ -259,9 +259,5 @@ bool checkCellConnectionsOverFaces::checkCellGroups()
     return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

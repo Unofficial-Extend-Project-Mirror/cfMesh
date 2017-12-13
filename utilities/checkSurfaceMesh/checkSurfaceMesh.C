@@ -33,9 +33,10 @@ Description
 #include "triSurfaceChecks.H"
 #include "boundBox.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 using namespace Foam;
+using namespace Foam::Module;
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {

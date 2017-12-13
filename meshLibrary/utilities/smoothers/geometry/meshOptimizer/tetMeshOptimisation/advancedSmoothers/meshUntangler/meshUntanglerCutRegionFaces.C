@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshUntangler::cutRegion::findNewFaces()
+void Foam::Module::meshUntangler::cutRegion::findNewFaces()
 {
     #ifdef DEBUGSmooth
     Info<< "Finding new faces " << endl;
@@ -205,9 +200,5 @@ void meshUntangler::cutRegion::findNewFaces()
     } while (!finished);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

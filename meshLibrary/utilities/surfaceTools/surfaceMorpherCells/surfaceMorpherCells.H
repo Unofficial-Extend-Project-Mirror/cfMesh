@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::surfaceMorpherCells
+    Foam::Module::surfaceMorpherCells
 
 Description
     Changes the boundary of the mesh template, such that each boundary cell
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -114,7 +116,7 @@ public:
     surfaceMorpherCells(polyMeshGen& mesh);
 
     //- Destructor
-    ~surfaceMorpherCells();
+    ~surfaceMorpherCells() = default;
 
 
     // Member Functions
@@ -125,6 +127,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

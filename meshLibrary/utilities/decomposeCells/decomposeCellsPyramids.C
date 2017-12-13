@@ -32,10 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-void decomposeCells::findAddressingForCell
+void Foam::Module::decomposeCells::findAddressingForCell
 (
     const label cellI,
     DynList<label, 32>& vrt,
@@ -130,7 +127,7 @@ void decomposeCells::findAddressingForCell
 }
 
 
-label decomposeCells::findTopVertex
+Foam::label Foam::Module::decomposeCells::findTopVertex
 (
     const label cellI,
     const DynList<label, 32>& /*vrt*/,
@@ -166,7 +163,7 @@ label decomposeCells::findTopVertex
 }
 
 
-void decomposeCells::decomposeCellIntoPyramids(const label cellI)
+void Foam::Module::decomposeCells::decomposeCellIntoPyramids(const label cellI)
 {
     const cellListPMG& cells = mesh_.cells();
     const faceListPMG& faces = mesh_.faces();
@@ -280,9 +277,5 @@ void decomposeCells::decomposeCellIntoPyramids(const label cellI)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // ************************************************************************* //

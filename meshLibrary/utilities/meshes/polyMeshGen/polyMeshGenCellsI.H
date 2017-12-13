@@ -26,20 +26,14 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "polyMeshGenCells.H"
-
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline const cellListPMG& polyMeshGenCells::cells() const
+inline const Foam::Module::cellListPMG&
+Foam::Module::polyMeshGenCells::cells() const
 {
     return cells_;
 }
 
 
-inline void polyMeshGenCells::addCellToSubset
+inline void Foam::Module::polyMeshGenCells::addCellToSubset
 (
     const label selID,
     const label cellI
@@ -55,7 +49,7 @@ inline void polyMeshGenCells::addCellToSubset
 }
 
 
-inline void polyMeshGenCells::removeCellFromSubset
+inline void Foam::Module::polyMeshGenCells::removeCellFromSubset
 (
     const label selID,
     const label cellI
@@ -71,7 +65,7 @@ inline void polyMeshGenCells::removeCellFromSubset
 }
 
 
-inline void polyMeshGenCells::cellInSubsets
+inline void Foam::Module::polyMeshGenCells::cellInSubsets
 (
     const label cellI,
     DynList<label>& cellSubsets
@@ -89,7 +83,10 @@ inline void polyMeshGenCells::cellInSubsets
 }
 
 
-inline void polyMeshGenCells::cellSubsetIndices(DynList<label>& indices) const
+inline void Foam::Module::polyMeshGenCells::cellSubsetIndices
+(
+    DynList<label>& indices
+) const
 {
     indices.clear();
 
@@ -101,7 +98,7 @@ inline void polyMeshGenCells::cellSubsetIndices(DynList<label>& indices) const
 
 
 template<class ListType>
-inline void polyMeshGenCells::cellsInSubset
+inline void Foam::Module::polyMeshGenCells::cellsInSubset
 (
     const label selID,
     ListType& cellLabels
@@ -120,7 +117,7 @@ inline void polyMeshGenCells::cellsInSubset
 
 
 template<class ListType>
-inline void polyMeshGenCells::updateCellSubsets
+inline void Foam::Module::polyMeshGenCells::updateCellSubsets
 (
     const ListType& newCellLabels
 )
@@ -132,7 +129,7 @@ inline void polyMeshGenCells::updateCellSubsets
 }
 
 
-inline void polyMeshGenCells::updateCellSubsets
+inline void Foam::Module::polyMeshGenCells::updateCellSubsets
 (
     const VRWGraph& newCellsForCell
 )
@@ -143,9 +140,5 @@ inline void polyMeshGenCells::updateCellSubsets
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

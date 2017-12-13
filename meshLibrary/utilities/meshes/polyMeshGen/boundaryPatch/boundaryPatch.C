@@ -30,17 +30,22 @@ License
 #include "dictionary.H"
 #include "addToRunTimeSelectionTable.H"
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 namespace Foam
 {
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+namespace Module
+{
 
 defineTypeNameAndDebug(boundaryPatch, 0);
 addToRunTimeSelectionTable(boundaryPatchBase, boundaryPatch, dictionary);
 
+}
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-boundaryPatch::boundaryPatch
+Foam::Module::boundaryPatch::boundaryPatch
 (
     const word& n,
     const word& t,
@@ -52,7 +57,11 @@ boundaryPatch::boundaryPatch
 {}
 
 
-boundaryPatch::boundaryPatch(const word& name, const dictionary& dict)
+Foam::Module::boundaryPatch::boundaryPatch
+(
+    const word& name,
+    const dictionary& dict
+)
 :
     boundaryPatchBase(name, dict)
 {}
@@ -60,12 +69,11 @@ boundaryPatch::boundaryPatch(const word& name, const dictionary& dict)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary boundaryPatch::dict() const
+Foam::dictionary Foam::Module::boundaryPatch::dict() const
 {
     dictionary dict;
 
     dict.add("type", type_);
-
     dict.add("nFaces", nFaces_);
     dict.add("startFace", startFace_);
 
@@ -73,19 +81,22 @@ dictionary boundaryPatch::dict() const
 }
 
 
-void boundaryPatch::write(Ostream& os) const
+void Foam::Module::boundaryPatch::write(Ostream& os) const
 {
     this->operator<<(os);
 }
 
 
-void boundaryPatch::writeDict(Ostream& os) const
+void Foam::Module::boundaryPatch::writeDict(Ostream& os) const
 {
     this->operator<<(os);
 }
 
 
-Ostream& boundaryPatch::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::boundaryPatch::operator<<
+(
+    Ostream& os
+) const
 {
     os  << name_ << nl << token::BEGIN_BLOCK << nl
         << "    type " << type_ << token::END_STATEMENT << nl
@@ -97,7 +108,10 @@ Ostream& boundaryPatch::operator<<(Ostream& os) const
 }
 
 
-Istream& boundaryPatch::operator>>(Istream& is)
+Foam::Istream& Foam::Module::boundaryPatch::operator>>
+(
+    Istream& is
+)
 {
     token t;
     is >> name_ >> t;
@@ -110,7 +124,7 @@ Istream& boundaryPatch::operator>>(Istream& is)
 }
 
 
-void boundaryPatch::operator=(const boundaryPatch& wp)
+void Foam::Module::boundaryPatch::operator=(const boundaryPatch& wp)
 {
     name_ = wp.name_;
     type_ = wp.type_;
@@ -119,7 +133,7 @@ void boundaryPatch::operator=(const boundaryPatch& wp)
 }
 
 
-bool boundaryPatch::operator!=(const boundaryPatch& wp) const
+bool Foam::Module::boundaryPatch::operator!=(const boundaryPatch& wp) const
 {
     if (name_ != wp.name_)
     {
@@ -137,9 +151,5 @@ bool boundaryPatch::operator!=(const boundaryPatch& wp) const
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

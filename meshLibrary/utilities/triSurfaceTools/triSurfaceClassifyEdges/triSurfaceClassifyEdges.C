@@ -27,12 +27,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfaceClassifyEdges::triSurfaceClassifyEdges
+Foam::Module::triSurfaceClassifyEdges::triSurfaceClassifyEdges
 (
     const meshOctree& octree
 )
@@ -47,20 +42,13 @@ triSurfaceClassifyEdges::triSurfaceClassifyEdges
 }
 
 
-triSurfaceClassifyEdges::~triSurfaceClassifyEdges()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const List<direction>& triSurfaceClassifyEdges::edgeTypes() const
+const Foam::List<Foam::direction>&
+Foam::Module::triSurfaceClassifyEdges::edgeTypes() const
 {
     return edgeTypes_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

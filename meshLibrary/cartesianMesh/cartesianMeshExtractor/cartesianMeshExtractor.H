@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::cartesianMeshExtractor
+    Foam::Module::cartesianMeshExtractor
 
 Description
     Generates the cartesian mesh template from the octree
@@ -43,6 +43,9 @@ SourceFiles
 namespace Foam
 {
 class IOdictionary;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                    Class cartesianMeshExtractor Declaration
@@ -115,6 +118,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

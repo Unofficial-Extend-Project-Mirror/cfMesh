@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceEdgeExtractorNonTopo
+    Foam::Module::meshSurfaceEdgeExtractorNonTopo
 
 Description
     Stores boundary faces into patches and captures edges and corners
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 // Forward declarations
 class meshOctree;
@@ -84,12 +86,13 @@ public:
     );
 
     //- Destructor
-    ~meshSurfaceEdgeExtractorNonTopo();
+    ~meshSurfaceEdgeExtractorNonTopo() = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

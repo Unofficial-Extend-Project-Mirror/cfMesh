@@ -36,20 +36,15 @@ License
 
 //#define DEBUGCheck
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * Private member functions * * * * * * * * * * * * * * * //
 
-void checkBoundaryFacesSharingTwoEdges::createMeshSurface() const
+void Foam::Module::checkBoundaryFacesSharingTwoEdges::createMeshSurface() const
 {
     meshSurfacePtr_ = new meshSurfaceEngine(mesh_);
 }
 
 
-void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
+void Foam::Module::checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
 {
     const meshSurfaceEngine& mse = meshSurface();
 
@@ -203,7 +198,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
 }
 
 
-void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
+void Foam::Module::checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
 {
     const meshSurfaceEngine& mse = meshSurface();
     const VRWGraph& pointFaces = mse.pointFaces();
@@ -255,7 +250,7 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
 }
 
 
-void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
+void Foam::Module::checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
 {
     const labelList& bp = meshSurface().bp();
     const faceListPMG& faces = mesh_.faces();
@@ -379,7 +374,8 @@ void checkBoundaryFacesSharingTwoEdges::removeExcessiveVertices()
 }
 
 
-label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
+Foam::label
+Foam::Module::checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
 (
     boolList& decomposeFace
 )
@@ -418,9 +414,9 @@ label checkBoundaryFacesSharingTwoEdges::findBndFacesForDecomposition
 
 
 // * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
-// Constructors
 
-checkBoundaryFacesSharingTwoEdges::checkBoundaryFacesSharingTwoEdges
+Foam::Module::checkBoundaryFacesSharingTwoEdges::
+checkBoundaryFacesSharingTwoEdges
 (
     polyMeshGen& mesh
 )
@@ -434,7 +430,8 @@ checkBoundaryFacesSharingTwoEdges::checkBoundaryFacesSharingTwoEdges
 
 // * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
 
-checkBoundaryFacesSharingTwoEdges::~checkBoundaryFacesSharingTwoEdges()
+Foam::Module::checkBoundaryFacesSharingTwoEdges::
+~checkBoundaryFacesSharingTwoEdges()
 {
     deleteDemandDrivenData(meshSurfacePtr_);
 }
@@ -442,7 +439,10 @@ checkBoundaryFacesSharingTwoEdges::~checkBoundaryFacesSharingTwoEdges()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkBoundaryFacesSharingTwoEdges::findPoints(labelHashSet& badPoints)
+void Foam::Module::checkBoundaryFacesSharingTwoEdges::findPoints
+(
+    labelHashSet& badPoints
+)
 {
     badPoints.clear();
 
@@ -459,7 +459,7 @@ void checkBoundaryFacesSharingTwoEdges::findPoints(labelHashSet& badPoints)
 }
 
 
-bool checkBoundaryFacesSharingTwoEdges::improveTopology()
+bool Foam::Module::checkBoundaryFacesSharingTwoEdges::improveTopology()
 {
     bool changed(false);
 
@@ -504,9 +504,5 @@ bool checkBoundaryFacesSharingTwoEdges::improveTopology()
     return changed;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

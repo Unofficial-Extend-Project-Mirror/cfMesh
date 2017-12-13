@@ -45,16 +45,9 @@ License
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
 
-//#define DEBUG
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
-void tetMeshGenerator::createTetMesh()
+void Foam::Module::tetMeshGenerator::createTetMesh()
 {
     // create tet Mesh from octree and Delaunay tets
     tetMeshExtractorOctree tme(*octreePtr_, meshDict_, mesh_);
@@ -63,7 +56,7 @@ void tetMeshGenerator::createTetMesh()
 }
 
 
-void tetMeshGenerator::surfacePreparation()
+void Foam::Module::tetMeshGenerator::surfacePreparation()
 {
     // removes unnecessary cells and morph the boundary
     // such that there is only one boundary face per cell
@@ -78,7 +71,7 @@ void tetMeshGenerator::surfacePreparation()
 }
 
 
-void tetMeshGenerator::mapMeshToSurface()
+void Foam::Module::tetMeshGenerator::mapMeshToSurface()
 {
     // calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
@@ -93,7 +86,7 @@ void tetMeshGenerator::mapMeshToSurface()
 }
 
 
-void tetMeshGenerator::extractPatches()
+void Foam::Module::tetMeshGenerator::extractPatches()
 {
     edgeExtractor extractor(mesh_, *octreePtr_);
 
@@ -104,20 +97,20 @@ void tetMeshGenerator::extractPatches()
 }
 
 
-void tetMeshGenerator::mapEdgesAndCorners()
+void Foam::Module::tetMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 }
 
 
-void tetMeshGenerator::optimiseMeshSurface()
+void Foam::Module::tetMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
 }
 
 
-void tetMeshGenerator::generateBoundaryLayers()
+void Foam::Module::tetMeshGenerator::generateBoundaryLayers()
 {
     if (meshDict_.found("boundaryLayers"))
     {
@@ -147,7 +140,7 @@ void tetMeshGenerator::generateBoundaryLayers()
 }
 
 
-void tetMeshGenerator::optimiseFinalMesh()
+void Foam::Module::tetMeshGenerator::optimiseFinalMesh()
 {
     // final optimisation
     const bool enforceConstraints =
@@ -187,7 +180,7 @@ void tetMeshGenerator::optimiseFinalMesh()
 }
 
 
-void tetMeshGenerator::projectSurfaceAfterBackScaling()
+void Foam::Module::tetMeshGenerator::projectSurfaceAfterBackScaling()
 {
     if (!meshDict_.found("anisotropicSources"))
         return;
@@ -214,7 +207,7 @@ void tetMeshGenerator::projectSurfaceAfterBackScaling()
 }
 
 
-void tetMeshGenerator::refBoundaryLayers()
+void Foam::Module::tetMeshGenerator::refBoundaryLayers()
 {
     if (meshDict_.isDict("boundaryLayers"))
     {
@@ -234,19 +227,19 @@ void tetMeshGenerator::refBoundaryLayers()
 }
 
 
-void tetMeshGenerator::replaceBoundaries()
+void Foam::Module::tetMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
 }
 
 
-void tetMeshGenerator::renumberMesh()
+void Foam::Module::tetMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
 }
 
 
-void tetMeshGenerator::generateMesh()
+void Foam::Module::tetMeshGenerator::generateMesh()
 {
     if (controller_.runCurrentStep("templateGeneration"))
     {
@@ -302,7 +295,7 @@ void tetMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-tetMeshGenerator::tetMeshGenerator(const Time& time)
+Foam::Module::tetMeshGenerator::tetMeshGenerator(const Time& time)
 :
     runTime_(time),
     surfacePtr_(nullptr),
@@ -388,7 +381,7 @@ tetMeshGenerator::tetMeshGenerator(const Time& time)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-tetMeshGenerator::~tetMeshGenerator()
+Foam::Module::tetMeshGenerator::~tetMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(octreePtr_);
@@ -398,14 +391,10 @@ tetMeshGenerator::~tetMeshGenerator()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void tetMeshGenerator::writeMesh() const
+void Foam::Module::tetMeshGenerator::writeMesh() const
 {
     mesh_.write();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

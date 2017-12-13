@@ -41,6 +41,8 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                        Class decomposeCells Declaration
@@ -112,7 +114,7 @@ public:
     decomposeCells(polyMeshGen& mesh);
 
     //- Destructor
-    ~decomposeCells();
+    ~decomposeCells() = default;
 
 
     // Member functions
@@ -124,6 +126,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

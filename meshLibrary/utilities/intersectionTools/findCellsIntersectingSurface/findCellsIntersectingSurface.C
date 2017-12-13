@@ -39,12 +39,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void findCellsIntersectingSurface::generateOctree(const triSurf& surf)
+void Foam::Module::findCellsIntersectingSurface::generateOctree
+(
+    const triSurf& surf
+)
 {
     octreePtr_ = new meshOctree(surf);
 
@@ -52,7 +50,7 @@ void findCellsIntersectingSurface::generateOctree(const triSurf& surf)
 }
 
 
-void findCellsIntersectingSurface::findIntersectedCells()
+void Foam::Module::findCellsIntersectingSurface::findIntersectedCells()
 {
     const pointFieldPMG& points = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
@@ -290,7 +288,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-findCellsIntersectingSurface::findCellsIntersectingSurface
+Foam::Module::findCellsIntersectingSurface::findCellsIntersectingSurface
 (
     polyMeshGen& mesh,
     const meshOctree& octree
@@ -306,7 +304,7 @@ findCellsIntersectingSurface::findCellsIntersectingSurface
 }
 
 
-findCellsIntersectingSurface::findCellsIntersectingSurface
+Foam::Module::findCellsIntersectingSurface::findCellsIntersectingSurface
 (
     polyMeshGen& mesh,
     const triSurf& surface
@@ -326,7 +324,7 @@ findCellsIntersectingSurface::findCellsIntersectingSurface
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-findCellsIntersectingSurface::~findCellsIntersectingSurface()
+Foam::Module::findCellsIntersectingSurface::~findCellsIntersectingSurface()
 {
     if (octreeGenerated_)
     {
@@ -337,19 +335,21 @@ findCellsIntersectingSurface::~findCellsIntersectingSurface()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const boolList& findCellsIntersectingSurface::intersectedCells() const
+const Foam::boolList&
+Foam::Module::findCellsIntersectingSurface::intersectedCells() const
 {
     return intersectedCells_;
 }
 
 
-const VRWGraph& findCellsIntersectingSurface::facetsIntersectingCells() const
+const Foam::Module::VRWGraph&
+Foam::Module::findCellsIntersectingSurface::facetsIntersectingCells() const
 {
     return facetsIntersectingCell_;
 }
 
 
-void findCellsIntersectingSurface::addIntersectedCellsToSubset
+void Foam::Module::findCellsIntersectingSurface::addIntersectedCellsToSubset
 (
     const word subsetName
 )
@@ -365,9 +365,5 @@ void findCellsIntersectingSurface::addIntersectedCellsToSubset
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

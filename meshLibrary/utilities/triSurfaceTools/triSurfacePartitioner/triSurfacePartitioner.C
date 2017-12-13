@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfacePartitioner::triSurfacePartitioner
+Foam::Module::triSurfacePartitioner::triSurfacePartitioner
 (
     const triSurf& surface
 )
@@ -55,43 +50,43 @@ triSurfacePartitioner::triSurfacePartitioner
 }
 
 
-triSurfacePartitioner::~triSurfacePartitioner()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const labelList& triSurfacePartitioner::corners() const
+const Foam::labelList& Foam::Module::triSurfacePartitioner::corners() const
 {
     return corners_;
 }
 
 
-const List<DynList<label>>& triSurfacePartitioner::cornerPatches() const
+const Foam::List<Foam::Module::DynList<Foam::label>>&
+Foam::Module::triSurfacePartitioner::cornerPatches() const
 {
     return cornerPatches_;
 }
 
 
-const List<labelHashSet>& triSurfacePartitioner::patchPatches() const
+const Foam::List<Foam::labelHashSet>&
+Foam::Module::triSurfacePartitioner::patchPatches() const
 {
     return patchPatches_;
 }
 
 
-const labelList& triSurfacePartitioner::edgeGroups() const
+const Foam::labelList&
+Foam::Module::triSurfacePartitioner::edgeGroups() const
 {
     return edgeGroups_;
 }
 
 
-const List<labelHashSet>& triSurfacePartitioner::edgeGroupEdgeGroups() const
+const Foam::List<Foam::labelHashSet>&
+Foam::Module::triSurfacePartitioner::edgeGroupEdgeGroups() const
 {
     return edgeGroupEdgeGroups_;
 }
 
 
-void triSurfacePartitioner::edgeGroupsSharedByPatches
+void Foam::Module::triSurfacePartitioner::edgeGroupsSharedByPatches
 (
     const label patch1,
     const label patch2,
@@ -121,7 +116,7 @@ void triSurfacePartitioner::edgeGroupsSharedByPatches
 }
 
 
-void triSurfacePartitioner::cornersSharedByEdgeGroups
+void Foam::Module::triSurfacePartitioner::cornersSharedByEdgeGroups
 (
     const label edgeGroup1,
     const label edgeGroup2,
@@ -149,9 +144,5 @@ void triSurfacePartitioner::cornersSharedByEdgeGroups
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

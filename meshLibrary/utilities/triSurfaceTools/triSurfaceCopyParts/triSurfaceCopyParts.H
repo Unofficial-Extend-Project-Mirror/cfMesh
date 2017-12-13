@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceCopyParts
+    Foam::Module::triSurfaceCopyParts
 
 Description
     Copies user-selected surface parts into a new surface mesh
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -76,7 +78,7 @@ public:
     triSurfaceCopyParts(const triSurf& surface);
 
     //- Destructor
-    ~triSurfaceCopyParts();
+    ~triSurfaceCopyParts() = default;
 
 
     // Member Functions
@@ -91,6 +93,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::surfaceMeshGeometryModification
+    Foam::Module::surfaceMeshGeometryModification
 
 Description
     Modifies geometry of surface meshes according to the anisotropic sources
@@ -45,9 +45,12 @@ SourceFiles
 
 namespace Foam
 {
-
-class triSurf;
 class dictionary;
+
+namespace Module
+{
+class triSurf;
+
 
 /*---------------------------------------------------------------------------*\
                Class surfaceMeshGeometryModification Declaration
@@ -109,6 +112,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

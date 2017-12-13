@@ -33,12 +33,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::refineTreeForCoordinates
+void Foam::Module::meshOctreeModifier::refineTreeForCoordinates
 (
     const meshOctreeCubeCoordinates& cc,
     const short procNo,
@@ -113,7 +108,7 @@ void meshOctreeModifier::refineTreeForCoordinates
 }
 
 
-void meshOctreeModifier::refineTreeForCoordinates
+void Foam::Module::meshOctreeModifier::refineTreeForCoordinates
 (
     const meshOctreeCubeCoordinates& cc,
     const labelList& /*containedTriangles*/,
@@ -193,7 +188,7 @@ void meshOctreeModifier::refineTreeForCoordinates
 }
 
 
-void meshOctreeModifier::addLayerFromNeighbouringProcessors()
+void Foam::Module::meshOctreeModifier::addLayerFromNeighbouringProcessors()
 {
     if (!Pstream::parRun())
         return;
@@ -339,9 +334,5 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
     Info<< "Finished adding an additional layer of octree cubes" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

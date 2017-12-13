@@ -33,12 +33,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfacePatchManipulator::allocateFeatureEdges()
+void Foam::Module::triSurfacePatchManipulator::allocateFeatureEdges()
 {
     const edgeLongList& edges = surf_.edges();
     const VRWGraph& pEdges = surf_.pointEdges();
@@ -64,7 +59,7 @@ void triSurfacePatchManipulator::allocateFeatureEdges()
 }
 
 
-void triSurfacePatchManipulator::createPatches()
+void Foam::Module::triSurfacePatchManipulator::createPatches()
 {
     nPatches_ = 0;
     facetInPatch_.setSize(surf_.size());
@@ -123,9 +118,5 @@ void triSurfacePatchManipulator::createPatches()
     Info<< "Created " << nPatches_ << " surface patches" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -36,15 +36,11 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace polyMeshGenChecks
-{
-
-bool checkClosedBoundary(const polyMeshGen& mesh, const bool report)
+bool Foam::Module::polyMeshGenChecks::checkClosedBoundary
+(
+    const polyMeshGen& mesh,
+    const bool report
+)
 {
     // Loop through all boundary faces and sum up the face area vectors.
     // For a closed boundary, this should be zero in all vector components
@@ -89,28 +85,26 @@ bool checkClosedBoundary(const polyMeshGen& mesh, const bool report)
 
         return true;
     }
-    else
+
+    if (report)
     {
-        if (report)
-        {
-            Info<< "Boundary openness in x - direction = "
-                << sumClosed.component(vector::X) << endl;
+        Info<< "Boundary openness in x - direction = "
+            << sumClosed.component(vector::X) << endl;
 
-            Info<< "Boundary openness in y - direction = "
-                << sumClosed.component(vector::Y) << endl;
+        Info<< "Boundary openness in y - direction = "
+            << sumClosed.component(vector::Y) << endl;
 
-            Info<< "Boundary openness in z - direction = "
-                << sumClosed.component(vector::Z) << endl;
+        Info<< "Boundary openness in z - direction = "
+            << sumClosed.component(vector::Z) << endl;
 
-            Info<< "Boundary closed(OK)." << endl;
-        }
-
-        return false;
+        Info<< "Boundary closed(OK)." << endl;
     }
+
+    return false;
 }
 
 
-bool checkClosedCells
+bool Foam::Module::polyMeshGenChecks::checkClosedCells
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -282,7 +276,7 @@ bool checkClosedCells
 }
 
 
-bool checkCellVolumes
+bool Foam::Module::polyMeshGenChecks::checkCellVolumes
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -334,22 +328,20 @@ bool checkCellVolumes
 
         return true;
     }
-    else
-    {
-        if (report)
-        {
-            Info<< "Min volume = " << minVolume
-                << ". Max volume = " << maxVolume
-                << ".  Total volume = " << sum(vols)
-                << ".  Cell volumes OK.\n" << endl;
-        }
 
-        return false;
+    if (report)
+    {
+        Info<< "Min volume = " << minVolume
+            << ". Max volume = " << maxVolume
+            << ".  Total volume = " << sum(vols)
+            << ".  Cell volumes OK.\n" << endl;
     }
+
+    return false;
 }
 
 
-bool checkFaceAreas
+bool Foam::Module::polyMeshGenChecks::checkFaceAreas
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -439,21 +431,19 @@ bool checkFaceAreas
 
         return true;
     }
-    else
-    {
-        if (report)
-        {
-            Info<< "Minumum face area = " << minArea
-                << ". Maximum face area = " << maxArea
-                << ".  Face area magnitudes OK.\n" << endl;
-        }
 
-        return false;
+    if (report)
+    {
+        Info<< "Minumum face area = " << minArea
+            << ". Maximum face area = " << maxArea
+            << ".  Face area magnitudes OK.\n" << endl;
     }
+
+    return false;
 }
 
 
-bool checkTetQuality
+bool Foam::Module::polyMeshGenChecks::checkTetQuality
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -652,7 +642,7 @@ bool checkTetQuality
 }
 
 
-bool checkMinTwist
+bool Foam::Module::polyMeshGenChecks::checkMinTwist
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -660,7 +650,6 @@ bool checkMinTwist
     labelHashSet* setPtr,
     const boolList* changedFacePtr
 )
-
 {
     if ((minTwist <(-1.-SMALL)) || (minTwist >(1.+SMALL)))
     {
@@ -924,14 +913,12 @@ bool checkMinTwist
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 
-bool checkCellDeterminant
+bool Foam::Module::polyMeshGenChecks::checkCellDeterminant
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -1069,14 +1056,12 @@ bool checkCellDeterminant
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 
-void checkMinVolRatio
+void Foam::Module::polyMeshGenChecks::checkMinVolRatio
 (
     const polyMeshGen& mesh,
     scalarField& volRatio,
@@ -1174,7 +1159,7 @@ void checkMinVolRatio
 }
 
 
-bool checkMinVolRatio
+bool Foam::Module::polyMeshGenChecks::checkMinVolRatio
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -1314,7 +1299,7 @@ bool checkMinVolRatio
 }
 
 
-bool checkTriangleTwist
+bool Foam::Module::polyMeshGenChecks::checkTriangleTwist
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -1449,14 +1434,12 @@ bool checkTriangleTwist
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 
-bool checkCellPartTetrahedra
+bool Foam::Module::polyMeshGenChecks::checkCellPartTetrahedra
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -1626,7 +1609,7 @@ bool checkCellPartTetrahedra
 }
 
 
-void checkFaceDotProduct
+void Foam::Module::polyMeshGenChecks::checkFaceDotProduct
 (
     const polyMeshGen& mesh,
     scalarField& faceDotProduct,
@@ -1732,7 +1715,7 @@ void checkFaceDotProduct
 }
 
 
-bool checkFaceDotProduct
+bool Foam::Module::polyMeshGenChecks::checkFaceDotProduct
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -1968,7 +1951,7 @@ bool checkFaceDotProduct
 }
 
 
-bool checkFacePyramids
+bool Foam::Module::polyMeshGenChecks::checkFacePyramids
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -2149,7 +2132,7 @@ bool checkFacePyramids
 }
 
 
-void checkFaceSkewness
+void Foam::Module::polyMeshGenChecks::checkFaceSkewness
 (
     const polyMeshGen& mesh,
     scalarField& faceSkewness,
@@ -2300,7 +2283,7 @@ void checkFaceSkewness
 }
 
 
-bool checkFaceSkewness
+bool Foam::Module::polyMeshGenChecks::checkFaceSkewness
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -2400,7 +2383,7 @@ bool checkFaceSkewness
 }
 
 
-void checkFaceUniformity
+void Foam::Module::polyMeshGenChecks::checkFaceUniformity
 (
     const polyMeshGen& mesh,
     scalarField& faceUniformity,
@@ -2492,7 +2475,7 @@ void checkFaceUniformity
 }
 
 
-bool checkFaceUniformity
+bool Foam::Module::polyMeshGenChecks::checkFaceUniformity
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -2633,7 +2616,7 @@ bool checkFaceUniformity
 }
 
 
-void checkVolumeUniformity
+void Foam::Module::polyMeshGenChecks::checkVolumeUniformity
 (
     const polyMeshGen& mesh,
     scalarField& faceUniformity,
@@ -2641,7 +2624,7 @@ void checkVolumeUniformity
 );
 
 
-bool checkVolumeUniformity
+bool Foam::Module::polyMeshGenChecks::checkVolumeUniformity
 (
     const polyMeshGen&,
     const bool /*report*/,
@@ -2654,7 +2637,7 @@ bool checkVolumeUniformity
 }
 
 
-bool checkFaceAngles
+bool Foam::Module::polyMeshGenChecks::checkFaceAngles
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -2805,7 +2788,7 @@ bool checkFaceAngles
 }
 
 
-bool checkFaceFlatness
+bool Foam::Module::polyMeshGenChecks::checkFaceFlatness
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -3037,14 +3020,12 @@ bool checkFaceFlatness
 
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 
-label findBadFacesAdditionalChecks
+Foam::label Foam::Module::polyMeshGenChecks::findBadFacesAdditionalChecks
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -3318,7 +3299,7 @@ label findBadFacesAdditionalChecks
 }
 
 
-label findBadFacesRelaxed
+Foam::label Foam::Module::polyMeshGenChecks::findBadFacesRelaxed
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
@@ -3360,7 +3341,7 @@ label findBadFacesRelaxed
 }
 
 
-label findBadFaces
+Foam::label Foam::Module::polyMeshGenChecks::findBadFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
@@ -3420,7 +3401,7 @@ label findBadFaces
 }
 
 
-label findLowQualityFaces
+Foam::label Foam::Module::polyMeshGenChecks::findLowQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
@@ -3462,7 +3443,7 @@ label findLowQualityFaces
 }
 
 
-label findWorstQualityFaces
+Foam::label Foam::Module::polyMeshGenChecks::findWorstQualityFaces
 (
     const polyMeshGen& mesh,
     labelHashSet& badFaces,
@@ -3532,13 +3513,5 @@ label findWorstQualityFaces
     return nBadFaces;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace polyMeshGenChecks
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

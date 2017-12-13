@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::partTetMesh
+    Foam::Module::partTetMesh
 
 Description
     Mesh smoothing without any topological changes
@@ -48,7 +48,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class polyMeshGen;
 class VRWGraph;
@@ -297,9 +298,9 @@ public:
         }
 };
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

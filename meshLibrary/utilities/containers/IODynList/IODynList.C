@@ -31,13 +31,8 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 template<class T, class IndexType>
-IODynList<T, IndexType>::IODynList(const IOobject& io)
+Foam::Module::IODynList<T, IndexType>::IODynList(const IOobject& io)
 :
     regIOobject(io),
     DynList<T, IndexType>()
@@ -55,7 +50,7 @@ IODynList<T, IndexType>::IODynList(const IOobject& io)
 
 
 template<class T, class IndexType>
-IODynList<T, IndexType>::IODynList
+Foam::Module::IODynList<T, IndexType>::IODynList
 (
     const IOobject& io,
     const IndexType size
@@ -67,7 +62,7 @@ IODynList<T, IndexType>::IODynList
 
 
 template<class T, class IndexType>
-IODynList<T, IndexType>::IODynList
+Foam::Module::IODynList<T, IndexType>::IODynList
 (
     const IOobject& io,
     const DynList<T, IndexType>& list
@@ -87,7 +82,7 @@ IODynList<T, IndexType>::IODynList
 
 
 template<class T, class IndexType>
-void IODynList<T, IndexType>::operator=
+void Foam::Module::IODynList<T, IndexType>::operator=
 (
     const IODynList<T, IndexType>& rhs
 )
@@ -97,7 +92,7 @@ void IODynList<T, IndexType>::operator=
 
 
 template<class T, class IndexType>
-void IODynList<T, IndexType>::operator=
+void Foam::Module::IODynList<T, IndexType>::operator=
 (
     const DynList<T, IndexType>& rhs
 )
@@ -107,14 +102,10 @@ void IODynList<T, IndexType>::operator=
 
 
 template<class T, class IndexType>
-bool IODynList<T, IndexType>::writeData(Ostream& os) const
+bool Foam::Module::IODynList<T, IndexType>::writeData(Ostream& os) const
 {
     return (os << *this).good();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

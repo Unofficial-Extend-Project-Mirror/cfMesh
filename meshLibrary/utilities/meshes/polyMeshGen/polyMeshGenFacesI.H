@@ -25,24 +25,20 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "polyMeshGenFaces.H"
-
 # ifdef USE_OMP
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline const faceListPMG& polyMeshGenFaces::faces() const
+inline const Foam::Module::faceListPMG&
+Foam::Module::polyMeshGenFaces::faces() const
 {
     return faces_;
 }
 
 
-inline label polyMeshGenFaces::nInternalFaces() const
+inline Foam::label Foam::Module::polyMeshGenFaces::nInternalFaces() const
 {
     if (!(ownerPtr_ && neighbourPtr_))
     {
@@ -62,7 +58,7 @@ inline label polyMeshGenFaces::nInternalFaces() const
 }
 
 
-inline const labelList& polyMeshGenFaces::owner() const
+inline const Foam::labelList& Foam::Module::polyMeshGenFaces::owner() const
 {
     if (!ownerPtr_)
     {
@@ -82,7 +78,7 @@ inline const labelList& polyMeshGenFaces::owner() const
 }
 
 
-inline const labelList& polyMeshGenFaces::neighbour() const
+inline const Foam::labelList& Foam::Module::polyMeshGenFaces::neighbour() const
 {
     if (!neighbourPtr_)
     {
@@ -102,20 +98,21 @@ inline const labelList& polyMeshGenFaces::neighbour() const
 }
 
 
-inline const PtrList<processorBoundaryPatch>&
-polyMeshGenFaces::procBoundaries() const
+inline const Foam::PtrList<Foam::Module::processorBoundaryPatch>&
+Foam::Module::polyMeshGenFaces::procBoundaries() const
 {
     return procBoundaries_;
 }
 
 
-inline const PtrList<boundaryPatch>& polyMeshGenFaces::boundaries() const
+inline const Foam::PtrList<Foam::Module::boundaryPatch>&
+Foam::Module::polyMeshGenFaces::boundaries() const
 {
     return boundaries_;
 }
 
 
-inline void polyMeshGenFaces::addFaceToSubset
+inline void Foam::Module::polyMeshGenFaces::addFaceToSubset
 (
     const label setID,
     const label faceI
@@ -131,7 +128,7 @@ inline void polyMeshGenFaces::addFaceToSubset
 }
 
 
-inline void polyMeshGenFaces::removeFaceFromSubset
+inline void Foam::Module::polyMeshGenFaces::removeFaceFromSubset
 (
     const label setI,
     const label faceI)
@@ -146,7 +143,7 @@ inline void polyMeshGenFaces::removeFaceFromSubset
 }
 
 
-inline void polyMeshGenFaces::faceInSubsets
+inline void Foam::Module::polyMeshGenFaces::faceInSubsets
 (
     const label faceI,
     DynList<label>& faceSubsets
@@ -164,7 +161,10 @@ inline void polyMeshGenFaces::faceInSubsets
 }
 
 
-inline void polyMeshGenFaces::faceSubsetIndices(DynList<label>& indices) const
+inline void Foam::Module::polyMeshGenFaces::faceSubsetIndices
+(
+    DynList<label>& indices
+) const
 {
     indices.clear();
 
@@ -176,7 +176,7 @@ inline void polyMeshGenFaces::faceSubsetIndices(DynList<label>& indices) const
 
 
 template<class ListType>
-inline void polyMeshGenFaces::facesInSubset
+inline void Foam::Module::polyMeshGenFaces::facesInSubset
 (
     const label setI,
     ListType& faceLabels
@@ -195,7 +195,10 @@ inline void polyMeshGenFaces::facesInSubset
 
 
 template<class ListType>
-inline void polyMeshGenFaces::updateFaceSubsets(const ListType& newFaceLabels)
+inline void Foam::Module::polyMeshGenFaces::updateFaceSubsets
+(
+    const ListType& newFaceLabels
+)
 {
     forAllIters(faceSubsets_, it)
     {
@@ -204,7 +207,10 @@ inline void polyMeshGenFaces::updateFaceSubsets(const ListType& newFaceLabels)
 }
 
 
-inline void polyMeshGenFaces::updateFaceSubsets(const VRWGraph& newFacesForFace)
+inline void Foam::Module::polyMeshGenFaces::updateFaceSubsets
+(
+    const VRWGraph& newFacesForFace
+)
 {
     forAllIters(faceSubsets_, it)
     {
@@ -212,9 +218,5 @@ inline void polyMeshGenFaces::updateFaceSubsets(const VRWGraph& newFacesForFace)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

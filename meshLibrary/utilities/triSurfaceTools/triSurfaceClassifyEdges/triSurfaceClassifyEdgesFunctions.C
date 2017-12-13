@@ -36,12 +36,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceClassifyEdges::checkOrientation()
+void Foam::Module::triSurfaceClassifyEdges::checkOrientation()
 {
     const triSurf& surf = octree_.surface();
     const boundBox& rootBox = octree_.rootBox();
@@ -272,7 +267,7 @@ void triSurfaceClassifyEdges::checkOrientation()
 }
 
 
-void triSurfaceClassifyEdges::classifyEdgesTypes()
+void Foam::Module::triSurfaceClassifyEdges::classifyEdgesTypes()
 {
     const triSurf& surf = octree_.surface();
     const pointField& points = surf.points();
@@ -394,9 +389,5 @@ void triSurfaceClassifyEdges::classifyEdgesTypes()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

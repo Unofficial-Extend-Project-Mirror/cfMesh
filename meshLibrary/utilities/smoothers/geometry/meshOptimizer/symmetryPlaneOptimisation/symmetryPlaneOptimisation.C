@@ -29,16 +29,9 @@ License
 #include "helperFunctions.H"
 #include "polyMeshGenChecks.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void symmetryPlaneOptimisation::detectSymmetryPlanes()
+void Foam::Module::symmetryPlaneOptimisation::detectSymmetryPlanes()
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     const pointFieldPMG& points = mesh_.points();
@@ -100,7 +93,10 @@ void symmetryPlaneOptimisation::detectSymmetryPlanes()
 }
 
 
-bool symmetryPlaneOptimisation::pointInPlanes(VRWGraph& pointInPlanes) const
+bool Foam::Module::symmetryPlaneOptimisation::pointInPlanes
+(
+    VRWGraph& pointInPlanes
+) const
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     const pointFieldPMG& points = mesh_.points();
@@ -200,7 +196,10 @@ bool symmetryPlaneOptimisation::pointInPlanes(VRWGraph& pointInPlanes) const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-symmetryPlaneOptimisation::symmetryPlaneOptimisation(polyMeshGen& mesh)
+Foam::Module::symmetryPlaneOptimisation::symmetryPlaneOptimisation
+(
+    polyMeshGen& mesh
+)
 :
     mesh_(mesh)
 {
@@ -208,15 +207,9 @@ symmetryPlaneOptimisation::symmetryPlaneOptimisation(polyMeshGen& mesh)
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-symmetryPlaneOptimisation::~symmetryPlaneOptimisation()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void symmetryPlaneOptimisation::optimizeSymmetryPlanes()
+void Foam::Module::symmetryPlaneOptimisation::optimizeSymmetryPlanes()
 {
     pointFieldPMG& points = mesh_.points();
 
@@ -303,9 +296,5 @@ void symmetryPlaneOptimisation::optimizeSymmetryPlanes()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

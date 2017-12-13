@@ -28,12 +28,9 @@ License
 
 #include "SubList.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
-inline pointFieldPMG::pointFieldPMG(const IOobject& io)
+inline Foam::Module::pointFieldPMG::pointFieldPMG(const IOobject& io)
 :
     regIOobject(io),
     pointField(readStream(typeName)),
@@ -43,7 +40,11 @@ inline pointFieldPMG::pointFieldPMG(const IOobject& io)
 }
 
 
-inline pointFieldPMG::pointFieldPMG(const IOobject& io, const label s)
+inline Foam::Module:: pointFieldPMG::pointFieldPMG
+(
+    const IOobject& io,
+    const label s
+)
 :
     regIOobject(io),
     pointField(s),
@@ -51,7 +52,11 @@ inline pointFieldPMG::pointFieldPMG(const IOobject& io, const label s)
 {}
 
 
-inline pointFieldPMG::pointFieldPMG(const IOobject& io, const pointField& pts)
+inline Foam::Module::pointFieldPMG::pointFieldPMG
+(
+    const IOobject& io,
+    const pointField& pts
+)
 :
     regIOobject(io),
     pointField(pts),
@@ -59,21 +64,15 @@ inline pointFieldPMG::pointFieldPMG(const IOobject& io, const pointField& pts)
 {}
 
 
-// * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
-
-inline pointFieldPMG::~pointFieldPMG()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline label pointFieldPMG::size() const
+inline Foam::label Foam::Module::pointFieldPMG::size() const
 {
     return nElmts_;
 }
 
 
-inline void pointFieldPMG::setSize(const label nElmts)
+inline void Foam::Module::pointFieldPMG::setSize(const label nElmts)
 {
     if (nElmts >= pointField::size())
     {
@@ -85,7 +84,7 @@ inline void pointFieldPMG::setSize(const label nElmts)
 }
 
 
-inline void pointFieldPMG::reserve(const label capacity)
+inline void Foam::Module::pointFieldPMG::reserve(const label capacity)
 {
     if (capacity > size())
     {
@@ -94,13 +93,13 @@ inline void pointFieldPMG::reserve(const label capacity)
 }
 
 
-inline void pointFieldPMG::clear()
+inline void Foam::Module::pointFieldPMG::clear()
 {
     nElmts_ = 0;
 }
 
 
-inline void pointFieldPMG::append(const point& p)
+inline void Foam::Module::pointFieldPMG::append(const point& p)
 {
     const label i = nElmts_;
     setSize(i + 1);
@@ -108,7 +107,7 @@ inline void pointFieldPMG::append(const point& p)
 }
 
 
-inline point& pointFieldPMG::newElmt(const label pI)
+inline Foam::point& Foam::Module::pointFieldPMG::newElmt(const label pI)
 {
     setSize(pI + 1);
     return this->operator[](pI);
@@ -117,13 +116,13 @@ inline point& pointFieldPMG::newElmt(const label pI)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline bool pointFieldPMG::writeData(Ostream& os) const
+inline bool Foam::Module::pointFieldPMG::writeData(Ostream& os) const
 {
     return (os << *this).good();
 }
 
 
-inline void pointFieldPMG::operator=(const pointField& pts)
+inline void Foam::Module::pointFieldPMG::operator=(const pointField& pts)
 {
     setSize(pts.size());
     forAll(pts, pI)
@@ -133,7 +132,11 @@ inline void pointFieldPMG::operator=(const pointField& pts)
 }
 
 
-inline Ostream& operator<<(Ostream& os, const pointFieldPMG& pts)
+inline Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::pointFieldPMG& pts
+)
 {
     SubList<point> p(pts, pts.nElmts_, 0);
 
@@ -142,7 +145,11 @@ inline Ostream& operator<<(Ostream& os, const pointFieldPMG& pts)
 }
 
 
-inline Istream& operator>>(Istream& is, pointFieldPMG& pts)
+inline Foam::Istream& Foam::Module::operator>>
+(
+    Istream& is,
+    Foam::Module::pointFieldPMG& pts
+)
 {
     pointField& points = static_cast<pointField&>(pts);
     is >> points;
@@ -153,5 +160,3 @@ inline Istream& operator>>(Istream& is, pointFieldPMG& pts)
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam

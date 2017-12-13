@@ -49,15 +49,9 @@ License
 #include "polyMeshGenGeometryModification.H"
 #include "surfaceMeshGeometryModification.H"
 
-//#define DEBUG
+// * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-// * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
-
-void cartesian2DMeshGenerator::createCartesianMesh()
+void Foam::Module::cartesian2DMeshGenerator::createCartesianMesh()
 {
     // create polyMesh from octree boxes
     cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
@@ -78,7 +72,7 @@ void cartesian2DMeshGenerator::createCartesianMesh()
 }
 
 
-void cartesian2DMeshGenerator::surfacePreparation()
+void Foam::Module::cartesian2DMeshGenerator::surfacePreparation()
 {
     // removes unnecessary cells and morph the boundary
     // such that there is only one boundary face per cell
@@ -104,7 +98,7 @@ void cartesian2DMeshGenerator::surfacePreparation()
 }
 
 
-void cartesian2DMeshGenerator::mapMeshToSurface()
+void Foam::Module::cartesian2DMeshGenerator::mapMeshToSurface()
 {
     // calculate mesh surface
     meshSurfaceEngine* msePtr = new meshSurfaceEngine(mesh_);
@@ -123,19 +117,19 @@ void cartesian2DMeshGenerator::mapMeshToSurface()
 }
 
 
-void cartesian2DMeshGenerator::extractPatches()
+void Foam::Module::cartesian2DMeshGenerator::extractPatches()
 {
     meshSurfaceEdgeExtractor2D(mesh_, *octreePtr_).distributeBoundaryFaces();
 }
 
 
-void cartesian2DMeshGenerator::mapEdgesAndCorners()
+void Foam::Module::cartesian2DMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractor2D(mesh_, *octreePtr_).remapBoundaryPoints();
 }
 
 
-void cartesian2DMeshGenerator::optimiseMeshSurface()
+void Foam::Module::cartesian2DMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer optimizer(mse, *octreePtr_);
@@ -144,7 +138,7 @@ void cartesian2DMeshGenerator::optimiseMeshSurface()
 }
 
 
-void cartesian2DMeshGenerator::generateBoundaryLayers()
+void Foam::Module::cartesian2DMeshGenerator::generateBoundaryLayers()
 {
     boundaryLayers bl(mesh_);
 
@@ -176,7 +170,7 @@ void cartesian2DMeshGenerator::generateBoundaryLayers()
 }
 
 
-void cartesian2DMeshGenerator::refBoundaryLayers()
+void Foam::Module::cartesian2DMeshGenerator::refBoundaryLayers()
 {
     if (meshDict_.isDict("boundaryLayers"))
     {
@@ -196,19 +190,19 @@ void cartesian2DMeshGenerator::refBoundaryLayers()
 }
 
 
-void cartesian2DMeshGenerator::replaceBoundaries()
+void Foam::Module::cartesian2DMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_, true);
 }
 
 
-void cartesian2DMeshGenerator::renumberMesh()
+void Foam::Module::cartesian2DMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
 }
 
 
-void cartesian2DMeshGenerator::generateMesh()
+void Foam::Module::cartesian2DMeshGenerator::generateMesh()
 {
     if (controller_.runCurrentStep("templateGeneration"))
     {
@@ -262,7 +256,10 @@ void cartesian2DMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
+Foam::Module::cartesian2DMeshGenerator::cartesian2DMeshGenerator
+(
+    const Time& time
+)
 :
     db_(time),
     surfacePtr_(nullptr),
@@ -291,7 +288,9 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
         fileName surfaceFile = meshDict_.lookup("surfaceFile");
         if (Pstream::parRun())
+        {
             surfaceFile = ".."/surfaceFile;
+        }
 
         surfacePtr_ = new triSurf(db_.path()/surfaceFile);
 
@@ -367,7 +366,7 @@ cartesian2DMeshGenerator::cartesian2DMeshGenerator(const Time& time)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-cartesian2DMeshGenerator::~cartesian2DMeshGenerator()
+Foam::Module::cartesian2DMeshGenerator::~cartesian2DMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(modSurfacePtr_);
@@ -377,14 +376,10 @@ cartesian2DMeshGenerator::~cartesian2DMeshGenerator()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void cartesian2DMeshGenerator::writeMesh() const
+void Foam::Module::cartesian2DMeshGenerator::writeMesh() const
 {
     mesh_.write();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -36,16 +36,13 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-partTetMesh::partTetMesh(polyMeshGen& mesh, const labelLongList& lockedPoints)
+Foam::Module::partTetMesh::partTetMesh
+(
+    polyMeshGen& mesh,
+    const labelLongList& lockedPoints
+)
 :
     origMesh_(mesh),
     points_(),
@@ -74,7 +71,7 @@ partTetMesh::partTetMesh(polyMeshGen& mesh, const labelLongList& lockedPoints)
 }
 
 
-partTetMesh::partTetMesh
+Foam::Module::partTetMesh::partTetMesh
 (
     polyMeshGen& mesh,
     const labelLongList& lockedPoints,
@@ -212,7 +209,7 @@ partTetMesh::partTetMesh
 }
 
 
-partTetMesh::partTetMesh
+Foam::Module::partTetMesh::partTetMesh
 (
     polyMeshGen& mesh,
     const labelLongList& lockedPoints,
@@ -356,7 +353,7 @@ partTetMesh::partTetMesh
 }
 
 
-partTetMesh::~partTetMesh()
+Foam::Module::partTetMesh::~partTetMesh()
 {
     deleteDemandDrivenData(internalPointsOrderPtr_);
     deleteDemandDrivenData(boundaryPointsOrderPtr_);
@@ -371,7 +368,8 @@ partTetMesh::~partTetMesh()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const VRWGraph& partTetMesh::internalPointOrdering() const
+const Foam::Module::VRWGraph&
+Foam::Module::partTetMesh::internalPointOrdering() const
 {
     # ifdef USE_OMP
     if (omp_in_parallel())
@@ -391,7 +389,8 @@ const VRWGraph& partTetMesh::internalPointOrdering() const
 }
 
 
-const VRWGraph& partTetMesh::boundaryPointOrdering() const
+const Foam::Module::VRWGraph& 
+Foam::Module::partTetMesh::boundaryPointOrdering() const
 {
     # ifdef USE_OMP
     if (omp_in_parallel())
@@ -411,7 +410,11 @@ const VRWGraph& partTetMesh::boundaryPointOrdering() const
 }
 
 
-void partTetMesh::updateVertex(const label pointI, const point& newP)
+void Foam::Module::partTetMesh::updateVertex
+(
+    const label pointI,
+    const point& newP
+)
 {
     points_[pointI] = newP;
 
@@ -491,7 +494,10 @@ void partTetMesh::updateVertex(const label pointI, const point& newP)
 }
 
 
-void partTetMesh::updateVerticesSMP(const List<LongList<labelledPoint>>& np)
+void Foam::Module::partTetMesh::updateVerticesSMP
+(
+    const List<LongList<labelledPoint>>& np
+)
 {
     List<direction> updateType(points_.size(), direction(0));
 
@@ -579,7 +585,7 @@ void partTetMesh::updateVerticesSMP(const List<LongList<labelledPoint>>& np)
 }
 
 
-void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
+void Foam::Module::partTetMesh::updateOrigMesh(boolList* changedFacePtr)
 {
     pointFieldPMG& pts = origMesh_.points();
 
@@ -687,7 +693,7 @@ void partTetMesh::updateOrigMesh(boolList* changedFacePtr)
 }
 
 
-void partTetMesh::createPolyMesh(polyMeshGen& pmg) const
+void Foam::Module::partTetMesh::createPolyMesh(polyMeshGen& pmg) const
 {
     polyMeshGenModifier meshModifier(pmg);
 
@@ -784,9 +790,5 @@ void partTetMesh::createPolyMesh(polyMeshGen& pmg) const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenPoints
+    Foam::Module::polyMeshGenPoints
 
 Description
     Mesh with geometry information
@@ -45,6 +45,8 @@ SourceFiles
 #include <map>
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -91,7 +93,7 @@ public:
 
 
     //- Destructor
-    ~polyMeshGenPoints();
+    ~polyMeshGenPoints() = default;
 
 
     // Member functions
@@ -132,6 +134,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

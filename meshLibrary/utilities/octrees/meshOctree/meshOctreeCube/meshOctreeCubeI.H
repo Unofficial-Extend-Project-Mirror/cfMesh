@@ -29,10 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-inline meshOctreeCube::meshOctreeCube()
+inline Foam::Module::meshOctreeCube::meshOctreeCube()
 :
     meshOctreeCubeBasic(),
     activeSlotPtr_(nullptr),
@@ -43,7 +40,7 @@ inline meshOctreeCube::meshOctreeCube()
 {}
 
 
-inline meshOctreeCube::meshOctreeCube(const meshOctreeCube& moc)
+inline Foam::Module::meshOctreeCube::meshOctreeCube(const meshOctreeCube& moc)
 :
     meshOctreeCubeBasic(moc.coordinates(), moc.cubeType(), moc.procNo()),
     activeSlotPtr_(moc.activeSlotPtr_),
@@ -54,13 +51,14 @@ inline meshOctreeCube::meshOctreeCube(const meshOctreeCube& moc)
 {}
 
 
-inline const meshOctreeSlot* meshOctreeCube::slotPtr() const
+inline const Foam::Module::meshOctreeSlot*
+Foam::Module::meshOctreeCube::slotPtr() const
 {
     return activeSlotPtr_;
 }
 
 
-inline bool meshOctreeCube::isLeaf() const
+inline bool Foam::Module::meshOctreeCube::isLeaf() const
 {
     if (!subCubesPtr_)
     {
@@ -71,19 +69,20 @@ inline bool meshOctreeCube::isLeaf() const
 }
 
 
-inline meshOctreeCube* meshOctreeCube::subCube(const label scI) const
+inline Foam::Module::meshOctreeCube*
+Foam::Module::meshOctreeCube::subCube(const label scI) const
 {
     return subCubesPtr_[scI];
 }
 
 
-inline label meshOctreeCube::cubeLabel() const
+inline Foam::label Foam::Module::meshOctreeCube::cubeLabel() const
 {
     return cubeLabel_;
 }
 
 
-inline bool meshOctreeCube::hasContainedElements() const
+inline bool Foam::Module::meshOctreeCube::hasContainedElements() const
 {
     if (containedElementsLabel_ == -1)
     {
@@ -94,13 +93,13 @@ inline bool meshOctreeCube::hasContainedElements() const
 }
 
 
-inline label meshOctreeCube::containedElements() const
+inline Foam::label Foam::Module::meshOctreeCube::containedElements() const
 {
     return containedElementsLabel_;
 }
 
 
-inline bool meshOctreeCube::hasContainedEdges() const
+inline bool Foam::Module::meshOctreeCube::hasContainedEdges() const
 {
     if (containedEdgesLabel_ == -1)
     {
@@ -111,13 +110,13 @@ inline bool meshOctreeCube::hasContainedEdges() const
 }
 
 
-inline label meshOctreeCube::containedEdges() const
+inline Foam::label Foam::Module::meshOctreeCube::containedEdges() const
 {
     return containedEdgesLabel_;
 }
 
 
-inline void meshOctreeCube::operator=(const meshOctreeCube& moc)
+inline void Foam::Module::meshOctreeCube::operator=(const meshOctreeCube& moc)
 {
     static_cast<meshOctreeCubeCoordinates&>(*this) = moc.coordinates();
     activeSlotPtr_ = moc.activeSlotPtr_;
@@ -127,9 +126,5 @@ inline void meshOctreeCube::operator=(const meshOctreeCube& moc)
     containedEdgesLabel_ = moc.containedEdgesLabel_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

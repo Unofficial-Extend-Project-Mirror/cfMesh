@@ -29,24 +29,21 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfaceExtrude2DEdges::triSurfaceExtrude2DEdges(const triSurf& surface)
+Foam::Module::triSurfaceExtrude2DEdges::triSurfaceExtrude2DEdges
+(
+    const triSurf& surface
+)
 :
     surf_(surface)
 {}
 
 
-triSurfaceExtrude2DEdges::~triSurfaceExtrude2DEdges()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceExtrude2DEdges::extrudeSurface(triSurf& newSurf) const
+void Foam::Module::triSurfaceExtrude2DEdges::extrudeSurface
+(
+    triSurf& newSurf
+) const
 {
     triSurfModifier sMod(newSurf);
 
@@ -94,7 +91,8 @@ void triSurfaceExtrude2DEdges::extrudeSurface(triSurf& newSurf) const
 }
 
 
-const triSurf* triSurfaceExtrude2DEdges::extrudeSurface() const
+const Foam::Module::triSurf*
+Foam::Module::triSurfaceExtrude2DEdges::extrudeSurface() const
 {
     triSurf* sPtr = new triSurf();
 
@@ -103,9 +101,5 @@ const triSurf* triSurfaceExtrude2DEdges::extrudeSurface() const
     return sPtr;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

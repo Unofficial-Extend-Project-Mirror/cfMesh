@@ -31,12 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void topologicalCleaner::checkNonConsecutiveBoundaryVertices()
+void Foam::Module::topologicalCleaner::checkNonConsecutiveBoundaryVertices()
 {
     Info<< "Checking for invalid face connections" << endl;
 
@@ -136,9 +131,5 @@ void topologicalCleaner::checkNonConsecutiveBoundaryVertices()
     Info<< "Finished checking for invalid face connections" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

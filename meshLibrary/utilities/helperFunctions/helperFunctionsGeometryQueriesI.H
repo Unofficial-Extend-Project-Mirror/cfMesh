@@ -37,18 +37,10 @@ License
 #include "Pair.H"
 #include "Map.H"
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-namespace help
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 template<class ListType>
-inline bool isnan(const ListType& l)
+inline bool Foam::Module::help::isnan(const ListType& l)
 {
     forAll(l, i)
     {
@@ -63,7 +55,7 @@ inline bool isnan(const ListType& l)
 
 
 template<class ListType>
-bool isinf(const ListType& l)
+bool Foam::Module::help::isinf(const ListType& l)
 {
     forAll(l, i)
     {
@@ -78,7 +70,7 @@ bool isinf(const ListType& l)
 
 
 template<class Face1, class Face2>
-inline bool isSharedEdgeConvex
+inline bool Foam::Module::help::isSharedEdgeConvex
 (
     const pointField& points,
     const Face1& f1,
@@ -143,7 +135,7 @@ inline bool isSharedEdgeConvex
 
 
 template<class Face1, class Face2>
-inline scalar angleBetweenFaces
+inline Foam::scalar Foam::Module::help::angleBetweenFaces
 (
     const pointField& points,
     const Face1& f1,
@@ -245,7 +237,7 @@ inline scalar angleBetweenFaces
 }
 
 
-inline faceList mergePatchFaces
+inline Foam::faceList Foam::Module::help::mergePatchFaces
 (
     const List<DynList<label>>& pfcs,
     const pointField& polyPoints
@@ -332,7 +324,12 @@ inline faceList mergePatchFaces
 }
 
 
-inline bool vertexOnLine(const point& p, const edge& e, const pointField& ep)
+inline bool Foam::Module::help::vertexOnLine
+(
+    const point& p,
+    const edge& e,
+    const pointField& ep
+)
 {
     vector v = e.vec(ep);
     v /= mag(v);
@@ -349,7 +346,11 @@ inline bool vertexOnLine(const point& p, const edge& e, const pointField& ep)
 }
 
 
-inline bool vertexInPlane(const point& p, const plane& pl)
+inline bool Foam::Module::help::vertexInPlane
+(
+    const point& p,
+    const plane& pl
+)
 {
     const vector& n = pl.normal();
     const point& fp = pl.refPoint();
@@ -369,7 +370,7 @@ inline bool vertexInPlane(const point& p, const plane& pl)
 }
 
 
-inline bool planeIntersectsEdge
+inline bool Foam::Module::help::planeIntersectsEdge
 (
     const point& start,
     const point& end,
@@ -399,7 +400,7 @@ inline bool planeIntersectsEdge
 }
 
 
-inline bool pointInTetrahedron
+inline bool Foam::Module::help::pointInTetrahedron
 (
     const point& p,
     const tetrahedron<point, point>& tet
@@ -462,7 +463,7 @@ inline bool pointInTetrahedron
 }
 
 
-inline bool nearestEdgePointToTheLine
+inline bool Foam::Module::help::nearestEdgePointToTheLine
 (
     const point& edgePoint0,
     const point& edgePoint1,
@@ -525,7 +526,7 @@ inline bool nearestEdgePointToTheLine
 }
 
 
-inline point nearestPointOnTheTriangle
+inline Foam::point Foam::Module::help::nearestPointOnTheTriangle
 (
     const triangle<point, point>& tri,
     const point& p
@@ -645,7 +646,7 @@ inline point nearestPointOnTheTriangle
 }
 
 
-inline point nearestPointOnTheTriangle
+inline Foam::point Foam::Module::help::nearestPointOnTheTriangle
 (
     const label tI,
     const triSurf& surface,
@@ -666,7 +667,7 @@ inline point nearestPointOnTheTriangle
 }
 
 
-inline bool findMinimizerPoint
+inline bool Foam::Module::help::findMinimizerPoint
 (
     const DynList<point>& origins,
     const DynList<vector>& normals,
@@ -707,7 +708,7 @@ inline bool findMinimizerPoint
 }
 
 
-inline bool triLineIntersection
+inline bool Foam::Module::help::triLineIntersection
 (
     const triangle<point, point>& tria,
     const point& lineStart,
@@ -764,7 +765,7 @@ inline bool triLineIntersection
 }
 
 
-inline bool triLineIntersection
+inline bool Foam::Module::help::triLineIntersection
 (
     const triSurf& surface,
     const label tI,
@@ -787,7 +788,7 @@ inline bool triLineIntersection
 }
 
 
-inline bool boundBoxLineIntersection
+inline bool Foam::Module::help::boundBoxLineIntersection
 (
     const point& s,
     const point& e,
@@ -847,7 +848,7 @@ inline bool boundBoxLineIntersection
 }
 
 
-inline bool lineFaceIntersection
+inline bool Foam::Module::help::lineFaceIntersection
 (
     const point& sp,
     const point& ep,
@@ -877,7 +878,7 @@ inline bool lineFaceIntersection
 }
 
 
-inline bool doFaceAndTriangleIntersect
+inline bool Foam::Module::help::doFaceAndTriangleIntersect
 (
     const triSurf& surface,
     const label triI,
@@ -949,7 +950,7 @@ inline bool doFaceAndTriangleIntersect
 }
 
 
-inline bool doEdgesOverlap
+inline bool Foam::Module::help::doEdgesOverlap
 (
     const point& e0p0,
     const point& e0p1,
@@ -1033,7 +1034,7 @@ inline bool doEdgesOverlap
 }
 
 
-inline bool doTrianglesOverlap
+inline bool Foam::Module::help::doTrianglesOverlap
 (
     const triangle<point, point>& tri0,
     const triangle<point, point>& tri1,
@@ -1230,7 +1231,7 @@ inline bool doTrianglesOverlap
 }
 
 
-inline bool doTrianglesIntersect
+inline bool Foam::Module::help::doTrianglesIntersect
 (
     const triangle<point, point> &tri0,
     const triangle<point, point> &tri1,
@@ -1311,7 +1312,7 @@ inline bool doTrianglesIntersect
 }
 
 
-inline bool doTrianglesIntersect
+inline bool Foam::Module::help::doTrianglesIntersect
 (
     const triangle<point, point>& tri0,
     const triangle<point, point>& tri1,
@@ -1599,7 +1600,7 @@ inline bool doTrianglesIntersect
 }
 
 
-inline bool pointInsideFace
+inline bool Foam::Module::help::pointInsideFace
 (
     const point& p,
     const face& f,
@@ -1633,7 +1634,7 @@ inline bool pointInsideFace
 }
 
 
-inline bool pointInsideFace
+inline bool Foam::Module::help::pointInsideFace
 (
     const point& p,
     const face& f,
@@ -1667,7 +1668,7 @@ inline bool pointInsideFace
 }
 
 
-inline bool isFaceConvexAndOk
+inline bool Foam::Module::help::isFaceConvexAndOk
 (
     const face& f,
     const pointField& fp,
@@ -1733,7 +1734,10 @@ inline bool isFaceConvexAndOk
 }
 
 
-inline scalar tetQuality(const tetrahedron<point, point>& tet)
+inline Foam::scalar Foam::Module::help::tetQuality
+(
+    const tetrahedron<point, point>& tet
+)
 {
     return
         tet.mag()
@@ -1745,7 +1749,7 @@ inline scalar tetQuality(const tetrahedron<point, point>& tet)
 }
 
 
-inline point nearestPointOnTheEdge
+inline Foam::point Foam::Module::help::nearestPointOnTheEdge
 (
     const point& edgePoint0,
     const point& edgePoint1,
@@ -1765,7 +1769,7 @@ inline point nearestPointOnTheEdge
 }
 
 
-inline point nearestPointOnTheEdgeExact
+inline Foam::point Foam::Module::help::nearestPointOnTheEdgeExact
 (
     const point& edgePoint0,
     const point& edgePoint1,
@@ -1795,7 +1799,7 @@ inline point nearestPointOnTheEdgeExact
 }
 
 
-inline scalar distanceOfPointFromTheEdge
+inline Foam::scalar Foam::Module::help::distanceOfPointFromTheEdge
 (
     const point& edgePoint0,
     const point& edgePoint1,
@@ -1806,7 +1810,7 @@ inline scalar distanceOfPointFromTheEdge
 }
 
 
-inline label numberOfFaceGroups
+inline Foam::label Foam::Module::help::numberOfFaceGroups
 (
     const labelHashSet& containedElements,
     const point& centre,
@@ -1899,7 +1903,7 @@ inline label numberOfFaceGroups
 }
 
 
-inline label numberOfEdgeGroups
+inline Foam::label Foam::Module::help::numberOfEdgeGroups
 (
     const labelHashSet& containedEdges,
     const point& centre,
@@ -1988,13 +1992,5 @@ inline label numberOfEdgeGroups
     return nGroups;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace help
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

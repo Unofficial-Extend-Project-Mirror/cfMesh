@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,14 +26,9 @@ License
 #include "polyMeshGenAddressing.H"
 #include "VRWGraphSMPModifier.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void polyMeshGenAddressing::calcPointEdges() const
+void Foam::Module::polyMeshGenAddressing::calcPointEdges() const
 {
     if (pePtr_)
     {
@@ -57,7 +52,8 @@ void polyMeshGenAddressing::calcPointEdges() const
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const VRWGraph& polyMeshGenAddressing::pointEdges() const
+const Foam::Module::VRWGraph&
+Foam::Module::polyMeshGenAddressing::pointEdges() const
 {
     if (!pePtr_)
     {
@@ -76,9 +72,5 @@ const VRWGraph& polyMeshGenAddressing::pointEdges() const
     return *pePtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

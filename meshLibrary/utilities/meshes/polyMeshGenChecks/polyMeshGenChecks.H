@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam::polyMeshGenChecks
+    Foam::Module::polyMeshGenChecks
 
 Description
     A set of functions used for mesh checking mesh quality
@@ -42,6 +42,9 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -344,11 +347,13 @@ label findWorstQualityFaces
     const boolList* activeFacePtr = nullptr,
     const scalar relativeThreshold = 0.1
 );
-}
+
+} // End namespace polyMeshGenChecks
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

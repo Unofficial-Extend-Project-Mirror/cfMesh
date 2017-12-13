@@ -29,12 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfaceCleanupDuplicates::triSurfaceCleanupDuplicates
+Foam::Module::triSurfaceCleanupDuplicates::triSurfaceCleanupDuplicates
 (
     const meshOctree& octree,
     const scalar tol
@@ -47,14 +42,9 @@ triSurfaceCleanupDuplicates::triSurfaceCleanupDuplicates
     done_(false)
 {}
 
-
-triSurfaceCleanupDuplicates::~triSurfaceCleanupDuplicates()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceCleanupDuplicates::mergeIdentities()
+void Foam::Module::triSurfaceCleanupDuplicates::mergeIdentities()
 {
     if (Pstream::parRun())
         FatalError << "Material detection does not run in parallel"
@@ -85,9 +75,5 @@ void triSurfaceCleanupDuplicates::mergeIdentities()
     done_ = true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

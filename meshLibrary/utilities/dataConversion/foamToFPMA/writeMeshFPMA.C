@@ -36,12 +36,9 @@ Description
 #include "writeMeshFPMA.H"
 #include "helperFunctions.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
+void Foam::Module::writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
 {
     const Time& time = mesh.returnTime();
 
@@ -57,7 +54,7 @@ void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
     // Open the Case file
     const fileName fpmaFileName = fName + ".fpma";
 
-    Info<< "Writting mesh into " << fpmaFileName << endl;
+    Info<< "Writing mesh into " << fpmaFileName << endl;
 
 /*    OFstream fpmaGeometryFile
     (
@@ -76,7 +73,7 @@ void writeMeshFPMA(const polyMeshGen& mesh, const word& fName)
 }
 
 
-void createFIRESelections(polyMeshGen& mesh)
+void Foam::Module::createFIRESelections(polyMeshGen& mesh)
 {
     if (!Pstream::parRun())
         return;
@@ -162,10 +159,4 @@ void createFIRESelections(polyMeshGen& mesh)
 }
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
-
-
 // ************************************************************************* //
-

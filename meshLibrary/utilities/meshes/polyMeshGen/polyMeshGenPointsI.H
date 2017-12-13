@@ -25,38 +25,33 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "polyMeshGenPoints.H"
-
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline const Time& polyMeshGenPoints::returnTime() const
+inline const Foam::Time& Foam::Module::polyMeshGenPoints::returnTime() const
 {
     return runTime_;
 }
 
 
-inline const pointFieldPMG& polyMeshGenPoints::points() const
+inline const Foam::Module::pointFieldPMG&
+Foam::Module::polyMeshGenPoints::points() const
 {
     return points_;
 }
 
 
-inline pointFieldPMG& polyMeshGenPoints::points()
+inline Foam::Module::pointFieldPMG&
+Foam::Module::polyMeshGenPoints::points()
 {
     return points_;
 }
 
 
-inline void polyMeshGenPoints::appendVertex(const point& p)
+inline void Foam::Module::polyMeshGenPoints::appendVertex(const point& p)
 {
     points_.append(p);
 }
 
 
-inline void polyMeshGenPoints::addPointToSubset
+inline void Foam::Module::polyMeshGenPoints::addPointToSubset
 (
     const label setI,
     const label pointI
@@ -72,7 +67,7 @@ inline void polyMeshGenPoints::addPointToSubset
 }
 
 
-inline void polyMeshGenPoints::removePointFromSubset
+inline void Foam::Module::polyMeshGenPoints::removePointFromSubset
 (
     const label setI,
     const label pointI
@@ -88,7 +83,7 @@ inline void polyMeshGenPoints::removePointFromSubset
 }
 
 
-inline void polyMeshGenPoints::pointInSubsets
+inline void Foam::Module::polyMeshGenPoints::pointInSubsets
 (
     const label pointI,
     DynList<label>& pointSubsets
@@ -106,7 +101,10 @@ inline void polyMeshGenPoints::pointInSubsets
 }
 
 
-inline void polyMeshGenPoints::pointSubsetIndices(DynList<label>& indices) const
+inline void Foam::Module::polyMeshGenPoints::pointSubsetIndices
+(
+    DynList<label>& indices
+) const
 {
     indices.clear();
 
@@ -118,7 +116,7 @@ inline void polyMeshGenPoints::pointSubsetIndices(DynList<label>& indices) const
 
 
 template<class ListType>
-inline void polyMeshGenPoints::pointsInSubset
+inline void Foam::Module::polyMeshGenPoints::pointsInSubset
 (
     const label setI,
     ListType& pointLabels
@@ -137,7 +135,10 @@ inline void polyMeshGenPoints::pointsInSubset
 
 
 template<class ListType>
-inline void polyMeshGenPoints::updatePointSubsets(const ListType& newNodeLabels)
+inline void Foam::Module::polyMeshGenPoints::updatePointSubsets
+(
+    const ListType& newNodeLabels
+)
 {
     forAllIters(pointSubsets_, it)
     {
@@ -145,9 +146,5 @@ inline void polyMeshGenPoints::updatePointSubsets(const ListType& newNodeLabels)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

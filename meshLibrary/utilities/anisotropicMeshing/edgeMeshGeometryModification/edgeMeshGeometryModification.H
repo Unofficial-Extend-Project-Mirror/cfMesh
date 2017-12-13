@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::edgeMeshGeometryModification
+    Foam::Module::edgeMeshGeometryModification
 
 Description
     Modifies geometry of edge meshes according to the anisotropic sources
@@ -45,9 +45,11 @@ SourceFiles
 
 namespace Foam
 {
-
 class edgeMesh;
 class dictionary;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                 Class edgeMeshGeometryModification Declaration
@@ -106,6 +108,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

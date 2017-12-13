@@ -33,12 +33,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfacePatchManipulator::triSurfacePatchManipulator(const triSurf& surface)
+Foam::Module::triSurfacePatchManipulator::triSurfacePatchManipulator
+(
+    const triSurf& surface
+)
 :
     surf_(surface),
     featureEdges_(surf_.edges().size(), direction(0)),
@@ -53,13 +51,9 @@ triSurfacePatchManipulator::triSurfacePatchManipulator(const triSurf& surface)
 }
 
 
-triSurfacePatchManipulator::~triSurfacePatchManipulator()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfacePatchManipulator::detectedSurfaceRegions
+void Foam::Module::triSurfacePatchManipulator::detectedSurfaceRegions
 (
     VRWGraph& graph
 ) const
@@ -84,7 +78,8 @@ void triSurfacePatchManipulator::detectedSurfaceRegions
 }
 
 
-const triSurf* triSurfacePatchManipulator::surfaceWithPatches
+const Foam::Module::triSurf*
+Foam::Module::triSurfacePatchManipulator::surfaceWithPatches
 (
     IOdictionary* meshDictPtr,
     const word prefix,
@@ -263,9 +258,5 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
     return newSurfPtr;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

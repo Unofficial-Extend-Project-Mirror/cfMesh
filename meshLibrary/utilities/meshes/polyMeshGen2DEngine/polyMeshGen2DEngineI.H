@@ -21,32 +21,12 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Class
-    Foam::polyMeshGen2DEngine
-
-Description
-    A simple engine which provides topological information of a 2D mesh
-    and allows for maintaining consistency
-
-SourceFiles
-    polyMeshGen2DEngine.C
-
 \*---------------------------------------------------------------------------*/
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "polyMeshGen2DEngine.H"
-#include "boolList.H"
-#include "labelList.H"
-#include "boundBox.H"
-#include "demandDrivenData.H"
-
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline const boolList& polyMeshGen2DEngine::activeFace() const
+inline const Foam::boolList&
+Foam::Module::polyMeshGen2DEngine::activeFace() const
 {
     if (!activeFacePtr_)
     {
@@ -57,7 +37,8 @@ inline const boolList& polyMeshGen2DEngine::activeFace() const
 }
 
 
-inline const labelList& polyMeshGen2DEngine::activeFaceLabels() const
+inline const Foam::labelList&
+Foam::Module::polyMeshGen2DEngine::activeFaceLabels() const
 {
     if (!activeFaceLabelsPtr_)
     {
@@ -68,7 +49,8 @@ inline const labelList& polyMeshGen2DEngine::activeFaceLabels() const
 }
 
 
-inline const boolList& polyMeshGen2DEngine::zMinPoints() const
+inline const Foam::boolList&
+Foam::Module::polyMeshGen2DEngine::zMinPoints() const
 {
     if (!zMinPointPtr_)
     {
@@ -79,7 +61,8 @@ inline const boolList& polyMeshGen2DEngine::zMinPoints() const
 }
 
 
-inline const labelList& polyMeshGen2DEngine::zMinPointLabels() const
+inline const Foam::labelList&
+Foam::Module::polyMeshGen2DEngine::zMinPointLabels() const
 {
     if (!zMinPointLabelsPtr_)
     {
@@ -90,7 +73,8 @@ inline const labelList& polyMeshGen2DEngine::zMinPointLabels() const
 }
 
 
-inline const labelList& polyMeshGen2DEngine::zMinToZMax() const
+inline const Foam::labelList&
+Foam::Module::polyMeshGen2DEngine::zMinToZMax() const
 {
     if (!zMinToZMaxPtr_)
     {
@@ -101,7 +85,8 @@ inline const labelList& polyMeshGen2DEngine::zMinToZMax() const
 }
 
 
-inline const boolList& polyMeshGen2DEngine::zMaxPoints() const
+inline const Foam::boolList&
+Foam::Module::polyMeshGen2DEngine::zMaxPoints() const
 {
     if (!zMaxPointPtr_)
     {
@@ -112,7 +97,8 @@ inline const boolList& polyMeshGen2DEngine::zMaxPoints() const
 }
 
 
-inline const labelList& polyMeshGen2DEngine::zMaxPointLabels() const
+inline const Foam::labelList&
+Foam::Module::polyMeshGen2DEngine::zMaxPointLabels() const
 {
     if (!zMaxPointLabelsPtr_)
     {
@@ -123,7 +109,8 @@ inline const labelList& polyMeshGen2DEngine::zMaxPointLabels() const
 }
 
 
-inline const labelList& polyMeshGen2DEngine::zMaxToZMin() const
+inline const Foam::labelList&
+Foam::Module::polyMeshGen2DEngine::zMaxToZMin() const
 {
     if (!zMaxToZMinPtr_)
     {
@@ -133,9 +120,5 @@ inline const labelList& polyMeshGen2DEngine::zMaxToZMin() const
     return *zMaxToZMinPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

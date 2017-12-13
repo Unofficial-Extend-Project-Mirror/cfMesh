@@ -27,16 +27,9 @@ License
 #include "triSurf.H"
 #include "demandDrivenData.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::reduceMemoryConsumption()
+void Foam::Module::meshOctreeModifier::reduceMemoryConsumption()
 {
     //createListOfLeaves();
 
@@ -91,9 +84,5 @@ void meshOctreeModifier::reduceMemoryConsumption()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

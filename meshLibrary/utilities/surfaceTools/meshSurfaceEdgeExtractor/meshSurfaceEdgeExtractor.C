@@ -26,16 +26,9 @@ License
 #include "meshSurfaceEdgeExtractor.H"
 #include "demandDrivenData.H"
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
+Foam::Module::meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
 (
     polyMeshGen& mesh,
     const meshOctree& octree,
@@ -61,15 +54,9 @@ meshSurfaceEdgeExtractor::meshSurfaceEdgeExtractor
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceEdgeExtractor::~meshSurfaceEdgeExtractor()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
+void Foam::Module::meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
 {
     const labelList neighbour_ = mesh_.neighbour();
     polyMeshGenModifier meshModifier_(mesh_);
@@ -102,9 +89,5 @@ void meshSurfaceEdgeExtractor::removeOldBoundaryFaces()
     meshModifier_.facesAccess().setSize(boundaries[0].patchStart());
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

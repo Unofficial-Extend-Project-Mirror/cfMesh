@@ -22,12 +22,12 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurf
+    Foam::Module::triSurf
 
 Description
     A class for triangulated surface used in the meshing process.
     It is derived from points and facets with some additional subsets.
-    Subsets are vert useful for local mesh refinement.
+    Subsets are very useful for local mesh refinement.
 
 SourceFiles
     triSurf.C
@@ -48,6 +48,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Froward declarations
@@ -107,7 +109,7 @@ public:
 
 
     //- Destructor
-    ~triSurf();
+    ~triSurf() = default;
 
 
     // Member Functions
@@ -120,6 +122,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

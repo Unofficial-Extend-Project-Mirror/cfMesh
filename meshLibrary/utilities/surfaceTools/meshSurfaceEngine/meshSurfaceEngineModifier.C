@@ -30,16 +30,9 @@ License
 #include "labelledPoint.H"
 #include "helperFunctionsPar.H"
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEngineModifier::meshSurfaceEngineModifier
+Foam::Module::meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
     meshSurfaceEngine& surfaceEngine
 )
@@ -48,7 +41,7 @@ meshSurfaceEngineModifier::meshSurfaceEngineModifier
 {}
 
 
-meshSurfaceEngineModifier::meshSurfaceEngineModifier
+Foam::Module::meshSurfaceEngineModifier::meshSurfaceEngineModifier
 (
     const meshSurfaceEngine& surfaceEngine
 )
@@ -57,15 +50,9 @@ meshSurfaceEngineModifier::meshSurfaceEngineModifier
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceEngineModifier::~meshSurfaceEngineModifier()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceEngineModifier::moveBoundaryVertexNoUpdate
+void Foam::Module::meshSurfaceEngineModifier::moveBoundaryVertexNoUpdate
 (
     const label bpI,
     const point& newP
@@ -75,7 +62,7 @@ void meshSurfaceEngineModifier::moveBoundaryVertexNoUpdate
 }
 
 
-void meshSurfaceEngineModifier::moveBoundaryVertex
+void Foam::Module::meshSurfaceEngineModifier::moveBoundaryVertex
 (
     const label bpI,
     const point& newP
@@ -160,7 +147,7 @@ void meshSurfaceEngineModifier::moveBoundaryVertex
 }
 
 
-void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
+void Foam::Module::meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
 {
     if (!Pstream::parRun())
         return;
@@ -177,7 +164,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
 }
 
 
-void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
+void Foam::Module::meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
 (
     const labelLongList& syncNodes
 )
@@ -237,7 +224,7 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries
 }
 
 
-void meshSurfaceEngineModifier::updateGeometry
+void Foam::Module::meshSurfaceEngineModifier::updateGeometry
 (
     const labelLongList& updateBndNodes
 )
@@ -438,7 +425,7 @@ void meshSurfaceEngineModifier::updateGeometry
 }
 
 
-void meshSurfaceEngineModifier::updateGeometry()
+void Foam::Module::meshSurfaceEngineModifier::updateGeometry()
 {
     labelLongList updateBndNodes(surfaceEngine_.boundaryPoints().size());
 
@@ -451,9 +438,5 @@ void meshSurfaceEngineModifier::updateGeometry()
     updateGeometry(updateBndNodes);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

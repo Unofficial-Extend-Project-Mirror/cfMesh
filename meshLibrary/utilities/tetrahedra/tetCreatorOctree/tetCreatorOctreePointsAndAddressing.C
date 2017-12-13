@@ -31,11 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetCreatorOctree::selectElements()
+void Foam::Module::tetCreatorOctree::selectElements()
 {
     const List<direction>& boxType = octreeCheck_.boxType();
     const meshOctree& octree = octreeCheck_.octree();
@@ -73,7 +69,7 @@ void tetCreatorOctree::selectElements()
 }
 
 
-void tetCreatorOctree::createPointsAndAddressing()
+void Foam::Module::tetCreatorOctree::createPointsAndAddressing()
 {
     selectElements();
 
@@ -176,7 +172,7 @@ void tetCreatorOctree::createPointsAndAddressing()
 }
 
 
-void tetCreatorOctree::createFaceCentreLabels()
+void Foam::Module::tetCreatorOctree::createFaceCentreLabels()
 {
     Info<< "Creating face centre labels " << endl;
     const labelList& cubeLabel = *cubeLabelPtr_;
@@ -298,9 +294,5 @@ void tetCreatorOctree::createFaceCentreLabels()
         }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

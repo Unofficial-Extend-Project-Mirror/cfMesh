@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::objectRefinement
+    Foam::Module::objectRefinement
 
 Description
     Base class for coordinate systems.
@@ -44,9 +44,11 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
 class boundBox;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                       Class objectRefinement Declaration
@@ -122,7 +124,7 @@ public:
     );
 
     //- Destructor
-    virtual ~objectRefinement();
+    virtual ~objectRefinement() = default;
 
 
     // Member Functions
@@ -197,6 +199,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

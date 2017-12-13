@@ -22,12 +22,14 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::detectBoundaryLayers
+    Foam::Module::detectBoundaryLayers
 
 Description
     Check the cells attached to the surface of the volume mesh and check
-    the existence o boundary layers. It also provides information how boundary
-    layers are connected over several patches.
+    the existence of boundary layers.
+
+    It also provides information how boundary layers are connected over
+    several patches.
 
 SourceFiles
     detectBoundaryLayers.C
@@ -48,6 +50,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -113,7 +117,7 @@ public:
     );
 
     //- Destructor
-    ~detectBoundaryLayers();
+    ~detectBoundaryLayers() = default;
 
 
     // Public member functions
@@ -146,6 +150,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

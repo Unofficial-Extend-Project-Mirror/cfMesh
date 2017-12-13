@@ -35,16 +35,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceMapper2D::preMapVertices(const label nIterations)
+void Foam::Module::meshSurfaceMapper2D::preMapVertices(const label nIterations)
 {
     Info<< "Smoothing mesh surface before mapping. Iteration:" << flush;
 
@@ -218,9 +211,5 @@ void meshSurfaceMapper2D::preMapVertices(const label nIterations)
     Info<< endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

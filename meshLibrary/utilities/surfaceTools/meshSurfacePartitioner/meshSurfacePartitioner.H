@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfacePartitioner
+    Foam::Module::meshSurfacePartitioner
 
 Description
     Finds corners and edge points at the surface of the volume mesh
@@ -44,6 +44,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -107,7 +109,7 @@ public:
 
 
     //- Destructor
-    ~meshSurfacePartitioner();
+    ~meshSurfacePartitioner() = default;
 
 
     // Member Functions
@@ -166,6 +168,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

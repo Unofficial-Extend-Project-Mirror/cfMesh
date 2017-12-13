@@ -22,12 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam::help
+    Foam::Module::help
 
 Description
     Geometry queries useful for mesh generation
 
 SourceFiles
+    helperFunctionsGeometryQueries.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,9 +47,11 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
 class boundBox;
 
-namespace Foam
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -317,6 +320,7 @@ namespace help
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

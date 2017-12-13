@@ -34,6 +34,7 @@ Description
 #include "OFstream.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
     fileName outFileName(args[2]);
 
     if (outFileName.ext() != "fms")
-        Warning << "The subsets cann only be saved in the .fms format" << endl;
+        Warning << "The subsets can only be saved in the .fms format" << endl;
 
     triSurf origSurf(inFileName);
 

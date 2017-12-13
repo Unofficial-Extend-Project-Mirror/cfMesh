@@ -32,16 +32,9 @@ License
 #include <map>
 #include <set>
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
+void Foam::Module::meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
 {
     if (!globalBoundaryPointLabelPtr_)
         globalBoundaryPointLabelPtr_ = new labelList();
@@ -316,7 +309,7 @@ void meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
 }
 
 
-void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
+void Foam::Module::meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
 {
     if (!globalBoundaryEdgeLabelPtr_)
         globalBoundaryEdgeLabelPtr_ = new labelList();
@@ -650,7 +643,7 @@ void meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
 }
 
 
-void meshSurfaceEngine::calcAddressingForProcEdges() const
+void Foam::Module::meshSurfaceEngine::calcAddressingForProcEdges() const
 {
     const labelList& globalEdgeLabel = this->globalBoundaryEdgeLabel();
     const labelList& boundaryFacePatches = this->boundaryFacePatches();
@@ -756,7 +749,7 @@ void meshSurfaceEngine::calcAddressingForProcEdges() const
 }
 
 
-void meshSurfaceEngine::calcGlobalBoundaryFaceLabels() const
+void Foam::Module::meshSurfaceEngine::calcGlobalBoundaryFaceLabels() const
 {
     const faceList::subList& bFaces = boundaryFaces();
 
@@ -778,9 +771,5 @@ void meshSurfaceEngine::calcGlobalBoundaryFaceLabels() const
         globalFaceLabel[fI] = startFace++;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

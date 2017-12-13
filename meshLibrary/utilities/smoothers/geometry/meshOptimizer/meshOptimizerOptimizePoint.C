@@ -32,16 +32,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGSmooth
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOptimizer::laplaceSmoother::laplacian
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacian
 (
     const labelLongList& smoothPoints,
     const label nIterations
@@ -89,7 +82,7 @@ void meshOptimizer::laplaceSmoother::laplacian
 }
 
 
-void meshOptimizer::laplaceSmoother::laplacianSurface
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianSurface
 (
     const labelLongList& smoothPoints,
     const label nIterations
@@ -143,7 +136,7 @@ void meshOptimizer::laplaceSmoother::laplacianSurface
 }
 
 
-void meshOptimizer::laplaceSmoother::laplacianPC
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianPC
 (
     const labelLongList& smoothPoints,
     const label nIterations
@@ -196,7 +189,7 @@ void meshOptimizer::laplaceSmoother::laplacianPC
 }
 
 
-void meshOptimizer::laplaceSmoother::laplacianWPC
+void Foam::Module::meshOptimizer::laplaceSmoother::laplacianWPC
 (
     const labelLongList& smoothPoints,
     const label nIterations
@@ -256,7 +249,7 @@ void meshOptimizer::laplaceSmoother::laplacianWPC
 }
 
 
-void meshOptimizer::laplaceSmoother::updateMeshGeometry
+void Foam::Module::meshOptimizer::laplaceSmoother::updateMeshGeometry
 (
     const labelLongList& smoothPoints
 )
@@ -337,7 +330,7 @@ void meshOptimizer::laplaceSmoother::updateMeshGeometry
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-meshOptimizer::laplaceSmoother::laplaceSmoother
+Foam::Module::meshOptimizer::laplaceSmoother::laplaceSmoother
 (
     polyMeshGen& mesh,
     const List<direction>& vertexLocation
@@ -348,15 +341,12 @@ meshOptimizer::laplaceSmoother::laplaceSmoother
 {}
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-meshOptimizer::laplaceSmoother::~laplaceSmoother()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacian
+(
+    const label nIterations
+)
 {
     labelLongList smoothPoints;
 
@@ -370,7 +360,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian(const label nIterations)
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacian
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacian
 (
     const labelHashSet& /*badFaces*/,
     const label /*nIterations*/
@@ -380,7 +370,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacian
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
 (
     const labelHashSet& /*badFaces*/,
     const label /*nIterations*/
@@ -390,7 +380,7 @@ void meshOptimizer::laplaceSmoother::optimizeSurfaceLaplacian
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 (
     const label nIterations
 )
@@ -407,7 +397,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 (
     const labelHashSet& /*badFaces*/,
     const label /*nIterations*/
@@ -417,7 +407,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianPC
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 (
     const label nIterations
 )
@@ -434,7 +424,7 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 }
 
 
-void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
+void Foam::Module::meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
 (
     const labelHashSet& /*badFaces*/,
     const label /*nIterations*/
@@ -443,9 +433,5 @@ void meshOptimizer::laplaceSmoother::optimizeLaplacianWPC
     NotImplemented;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

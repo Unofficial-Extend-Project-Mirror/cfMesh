@@ -24,15 +24,9 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-label boundaryLayers::findNewNodeLabel
+Foam::label Foam::Module::boundaryLayers::findNewNodeLabel
 (
     const label pointI,
     const label pKey
@@ -83,7 +77,7 @@ label boundaryLayers::findNewNodeLabel
 }
 
 
-inline void boundaryLayers::createNewCellFromEdge
+inline void Foam::Module::boundaryLayers::createNewCellFromEdge
 (
     const edge& e,
     const label pKeyI,
@@ -244,7 +238,7 @@ inline void boundaryLayers::createNewCellFromEdge
 }
 
 
-inline void boundaryLayers::createNewCellFromNode
+inline void Foam::Module::boundaryLayers::createNewCellFromNode
 (
     const label pointI,
     const DynList<label, 3>& pKeys,
@@ -325,9 +319,5 @@ inline void boundaryLayers::createNewCellFromNode
     cellFaces[5][3] = p11;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

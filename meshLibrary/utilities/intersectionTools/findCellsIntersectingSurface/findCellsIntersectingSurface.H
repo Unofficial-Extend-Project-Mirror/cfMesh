@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    findCellsIntersectingSurface
+    Foam::Module::findCellsIntersectingSurface
 
 Description
     Finds which cells in the mesh intersect the surface mesh
@@ -42,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 class polyMeshGen;
 class triSurf;
 class meshOctree;
@@ -121,6 +122,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

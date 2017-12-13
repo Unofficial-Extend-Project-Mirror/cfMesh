@@ -27,16 +27,9 @@ License
 #include "demandDrivenData.H"
 #include "DynList.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::replaceBoundary
+void Foam::Module::polyMeshGenModifier::replaceBoundary
 (
     const wordList& patchNames,
     const VRWGraph& boundaryFaces,
@@ -206,9 +199,5 @@ void polyMeshGenModifier::replaceBoundary
     this->clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -32,16 +32,16 @@ License
 
 namespace Foam
 {
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-defineTypeNameAndDebug(createFundamentalSheets, 0);
-defineRunTimeSelectionTable(createFundamentalSheets, polyMeshGen);
+namespace Module
+{
+    defineTypeNameAndDebug(createFundamentalSheets, 0);
+    defineRunTimeSelectionTable(createFundamentalSheets, polyMeshGen);
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh, octree, regions for boundary vertices
-createFundamentalSheets::createFundamentalSheets
+Foam::Module::createFundamentalSheets::createFundamentalSheets
 (
     polyMeshGen& mesh,
     const bool createWrapperSheet
@@ -51,15 +51,5 @@ createFundamentalSheets::createFundamentalSheets
     createWrapperSheet_(createWrapperSheet)
 {}
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-createFundamentalSheets::~createFundamentalSheets()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

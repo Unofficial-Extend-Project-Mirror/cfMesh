@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeModifier
+    Foam::Module::meshOctreeModifier
 
 Description
     Octree for mesh generation
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -79,7 +81,7 @@ public:
     meshOctreeModifier(meshOctree&);
 
     //- Destructor
-    ~meshOctreeModifier();
+    ~meshOctreeModifier() = default;
 
 
     // Member Functions
@@ -209,6 +211,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

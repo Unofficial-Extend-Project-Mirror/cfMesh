@@ -32,16 +32,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGCheck
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * Private member functions * * * * * * * * * * * * * * * //
 
-void checkNonMappableCellConnections::findCellTypes()
+void Foam::Module::checkNonMappableCellConnections::findCellTypes()
 {
     const faceListPMG& faces = mesh_.faces();
     const cellListPMG& cells = mesh_.cells();
@@ -152,7 +145,7 @@ void checkNonMappableCellConnections::findCellTypes()
 // * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * * * //
 // Constructors
 
-checkNonMappableCellConnections::checkNonMappableCellConnections
+Foam::Module::checkNonMappableCellConnections::checkNonMappableCellConnections
 (
     polyMeshGen& mesh
 )
@@ -162,15 +155,12 @@ checkNonMappableCellConnections::checkNonMappableCellConnections
 {}
 
 
-// * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * * * //
-
-checkNonMappableCellConnections::~checkNonMappableCellConnections()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
+void Foam::Module::checkNonMappableCellConnections::findCells
+(
+    labelHashSet& badCells
+)
 {
     badCells.clear();
 
@@ -290,7 +280,7 @@ void checkNonMappableCellConnections::findCells(labelHashSet& badCells)
 }
 
 
-bool checkNonMappableCellConnections::removeCells()
+bool Foam::Module::checkNonMappableCellConnections::removeCells()
 {
     labelHashSet badCells;
 
@@ -323,9 +313,5 @@ bool checkNonMappableCellConnections::removeCells()
     return changed;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

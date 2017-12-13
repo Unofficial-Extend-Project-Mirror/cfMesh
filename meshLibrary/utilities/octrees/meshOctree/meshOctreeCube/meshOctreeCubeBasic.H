@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeCubeBasic
+    Foam::Module::meshOctreeCubeBasic
 
 Description
     A cube stores information needed for mesh generation
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -83,8 +85,7 @@ public:
 
 
     //- Destructor
-    ~meshOctreeCubeBasic()
-    {}
+    ~meshOctreeCubeBasic() = default;
 
 
     // Enumerators
@@ -139,15 +140,16 @@ public:
 };
 
 
-//- Specify data associated with meshOctreeCubeBasic type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for meshOctreeCubeBasic are contiguous
 template<>
-inline bool contiguous<meshOctreeCubeBasic>()
+inline bool contiguous<Module::meshOctreeCubeBasic>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

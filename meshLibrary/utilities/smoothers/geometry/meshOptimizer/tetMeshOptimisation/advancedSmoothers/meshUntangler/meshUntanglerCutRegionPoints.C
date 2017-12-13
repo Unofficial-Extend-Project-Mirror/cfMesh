@@ -39,12 +39,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool meshUntangler::cutRegion::findNewVertices
+bool Foam::Module::meshUntangler::cutRegion::findNewVertices
 (
     const plane& plane
 )
@@ -111,7 +106,7 @@ bool meshUntangler::cutRegion::findNewVertices
 }
 
 
-void meshUntangler::cutRegion::removeCoincidentVertices()
+void Foam::Module::meshUntangler::cutRegion::removeCoincidentVertices()
 {
     const DynList<point, 64>& points = *pointsPtr_;
     DynList<edge, 128>& edges = *edgesPtr_;
@@ -188,9 +183,5 @@ void meshUntangler::cutRegion::removeCoincidentVertices()
     cFacesPtr_ = nullptr;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

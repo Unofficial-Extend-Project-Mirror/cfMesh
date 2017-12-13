@@ -42,14 +42,15 @@ License
 
 //#define DEBUGCurvatureEstimator
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * Local Functions * * * * * * * * * * * * * * //
 
+#ifdef DEBUGCurvatureEstimator
 namespace Foam
 {
+namespace Module
+{
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void writeSurfaceToVTK
+static void writeSurfaceToVTK
 (
     OFstream& file,
     const triSurf& surf
@@ -85,7 +86,7 @@ void writeSurfaceToVTK
 }
 
 
-void writeSurfaceToVTK
+static void writeSurfaceToVTK
 (
     OFstream& file,
     const triSurf& surf,
@@ -146,7 +147,7 @@ void writeSurfaceToVTK
 }
 
 
-void writeSurfaceToVTK
+static void writeSurfaceToVTK
 (
     const word& name,
     const triSurf& surf,
@@ -174,7 +175,7 @@ void writeSurfaceToVTK
 }
 
 
-void writeSurfaceToVTK
+static void writeSurfaceToVTK
 (
     const word& name,
     const triSurf& surf,
@@ -204,7 +205,15 @@ void writeSurfaceToVTK
 }
 
 
-void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
+} // End namespace Module
+} // End namespace Foam
+
+#endif // DEBUGCurvatureEstimator
+
+
+// * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+void Foam::Module::triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 {
     const pointField& points = surface_.points();
     const edgeLongList& edges = surface_.edges();
@@ -290,7 +299,7 @@ void triSurfaceCurvatureEstimator::calculateEdgeCurvature()
 }
 
 
-void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
+void Foam::Module::triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 {
     const VRWGraph& pointTriangles = surface_.pointFacets();
 
@@ -585,7 +594,7 @@ void triSurfaceCurvatureEstimator::calculateSurfaceCurvatures()
 
 
 /*
-void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
+void Foam::Module::triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 {
     gaussianCurvature_.setSize(surface_.patches().size());
 
@@ -706,7 +715,7 @@ void triSurfaceCurvatureEstimator::calculateGaussianCurvature()
 }
 
 
-void triSurfaceCurvatureEstimator::calculateMeanCurvature()
+void Foam::Module::triSurfaceCurvatureEstimator::calculateMeanCurvature()
 {
     const pointField& points = surface_.points();
 
@@ -869,7 +878,7 @@ void triSurfaceCurvatureEstimator::calculateMeanCurvature()
 }
 
 
-void triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
+void Foam::Module::triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
 {
     maxCurvature_.setSize(meanCurvature_.size());
     minCurvature_.setSize(meanCurvature_.size());
@@ -899,9 +908,5 @@ void triSurfaceCurvatureEstimator::calculateMinAndMaxCurvature()
 
 
 */
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

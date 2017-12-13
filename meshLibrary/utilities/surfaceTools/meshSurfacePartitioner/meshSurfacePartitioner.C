@@ -25,14 +25,9 @@ License
 
 #include "meshSurfacePartitioner.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfacePartitioner::meshSurfacePartitioner
+Foam::Module::meshSurfacePartitioner::meshSurfacePartitioner
 (
     const meshSurfaceEngine& meshSurface
 )
@@ -50,7 +45,7 @@ meshSurfacePartitioner::meshSurfacePartitioner
 }
 
 
-meshSurfacePartitioner::meshSurfacePartitioner
+Foam::Module::meshSurfacePartitioner::meshSurfacePartitioner
 (
     const meshSurfaceEngine& meshSurface,
     const labelList& facePatch
@@ -68,15 +63,5 @@ meshSurfacePartitioner::meshSurfacePartitioner
     calculateCornersEdgesAndAddressing();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfacePartitioner::~meshSurfacePartitioner()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

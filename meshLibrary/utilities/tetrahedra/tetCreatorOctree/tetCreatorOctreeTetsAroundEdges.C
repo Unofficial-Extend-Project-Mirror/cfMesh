@@ -31,11 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetCreatorOctree::createTetsAroundEdges()
+void Foam::Module::tetCreatorOctree::createTetsAroundEdges()
 {
     Info<< "Creating tets around edges" << endl;
 
@@ -291,9 +287,5 @@ void tetCreatorOctree::createTetsAroundEdges()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

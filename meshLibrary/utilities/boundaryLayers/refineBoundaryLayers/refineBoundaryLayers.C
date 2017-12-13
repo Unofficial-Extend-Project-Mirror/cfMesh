@@ -29,11 +29,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-const meshSurfaceEngine& refineBoundaryLayers::surfaceEngine() const
+const Foam::Module::meshSurfaceEngine&
+Foam::Module::refineBoundaryLayers::surfaceEngine() const
 {
     if (!msePtr_)
     {
@@ -46,7 +43,7 @@ const meshSurfaceEngine& refineBoundaryLayers::surfaceEngine() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
+Foam::Module::refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
 :
     mesh_(mesh),
     msePtr_(nullptr),
@@ -72,7 +69,7 @@ refineBoundaryLayers::refineBoundaryLayers(polyMeshGen& mesh)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-refineBoundaryLayers::~refineBoundaryLayers()
+Foam::Module::refineBoundaryLayers::~refineBoundaryLayers()
 {
     deleteDemandDrivenData(msePtr_);
 }
@@ -80,7 +77,7 @@ refineBoundaryLayers::~refineBoundaryLayers()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void refineBoundaryLayers::avoidRefinement()
+void Foam::Module::refineBoundaryLayers::avoidRefinement()
 {
     if (done_)
     {
@@ -93,7 +90,7 @@ void refineBoundaryLayers::avoidRefinement()
 }
 
 
-void refineBoundaryLayers::activate2DMode()
+void Foam::Module::refineBoundaryLayers::activate2DMode()
 {
     if (done_)
     {
@@ -105,7 +102,10 @@ void refineBoundaryLayers::activate2DMode()
 }
 
 
-void refineBoundaryLayers::setGlobalNumberOfLayers(const label nLayers)
+void Foam::Module::refineBoundaryLayers::setGlobalNumberOfLayers
+(
+    const label nLayers
+)
 {
     if (done_)
     {
@@ -126,7 +126,10 @@ void refineBoundaryLayers::setGlobalNumberOfLayers(const label nLayers)
 }
 
 
-void refineBoundaryLayers::setGlobalThicknessRatio(const scalar thicknessRatio)
+void Foam::Module::refineBoundaryLayers::setGlobalThicknessRatio
+(
+    const scalar thicknessRatio
+)
 {
     if (done_)
     {
@@ -146,7 +149,7 @@ void refineBoundaryLayers::setGlobalThicknessRatio(const scalar thicknessRatio)
 }
 
 
-void refineBoundaryLayers::setGlobalMaxThicknessOfFirstLayer
+void Foam::Module::refineBoundaryLayers::setGlobalMaxThicknessOfFirstLayer
 (
     const scalar maxThickness
 )
@@ -170,7 +173,7 @@ void refineBoundaryLayers::setGlobalMaxThicknessOfFirstLayer
 }
 
 
-void refineBoundaryLayers::setNumberOfLayersForPatch
+void Foam::Module::refineBoundaryLayers::setNumberOfLayersForPatch
 (
     const word& patchName,
     const label nLayers
@@ -200,7 +203,7 @@ void refineBoundaryLayers::setNumberOfLayersForPatch
 }
 
 
-void refineBoundaryLayers::setThicknessRatioForPatch
+void Foam::Module::refineBoundaryLayers::setThicknessRatioForPatch
 (
     const word& patchName,
     const scalar thicknessRatio
@@ -231,7 +234,7 @@ void refineBoundaryLayers::setThicknessRatioForPatch
 }
 
 
-void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
+void Foam::Module::refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
 (
     const word& patchName,
     const scalar maxThickness
@@ -262,7 +265,10 @@ void refineBoundaryLayers::setMaxThicknessOfFirstLayerForPatch
 }
 
 
-void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
+void Foam::Module::refineBoundaryLayers::setInteruptForPatch
+(
+    const word& patchName
+)
 {
     if (done_)
     {
@@ -280,7 +286,7 @@ void refineBoundaryLayers::setInteruptForPatch(const word& patchName)
 }
 
 
-void refineBoundaryLayers::setCellSubset(const word subsetName)
+void Foam::Module::refineBoundaryLayers::setCellSubset(const word subsetName)
 {
     if (done_)
     {
@@ -292,13 +298,13 @@ void refineBoundaryLayers::setCellSubset(const word subsetName)
 }
 
 
-void refineBoundaryLayers::activateSpecialMode()
+void Foam::Module::refineBoundaryLayers::activateSpecialMode()
 {
     specialMode_ = true;
 }
 
 
-void refineBoundaryLayers::refineLayers()
+void Foam::Module::refineBoundaryLayers::refineLayers()
 {
     bool refinePatch(false);
     forAllConstIters(numLayersForPatch_, it)
@@ -346,7 +352,10 @@ void refineBoundaryLayers::refineLayers()
 }
 
 
-void refineBoundaryLayers::pointsInBndLayer(labelLongList& layerPoints)
+void Foam::Module::refineBoundaryLayers::pointsInBndLayer
+(
+    labelLongList& layerPoints
+)
 {
     layerPoints.clear();
 
@@ -371,7 +380,7 @@ void refineBoundaryLayers::pointsInBndLayer(labelLongList& layerPoints)
 }
 
 
-void refineBoundaryLayers::pointsInBndLayer(const word subsetName)
+void Foam::Module::refineBoundaryLayers::pointsInBndLayer(const word subsetName)
 {
     label sId = mesh_.pointSubsetIndex(subsetName);
     if (sId < 0)
@@ -389,7 +398,7 @@ void refineBoundaryLayers::pointsInBndLayer(const word subsetName)
 }
 
 
-void refineBoundaryLayers::readSettings
+void Foam::Module::refineBoundaryLayers::readSettings
 (
     const dictionary& meshDict,
     refineBoundaryLayers& refLayers
@@ -510,9 +519,5 @@ void refineBoundaryLayers::readSettings
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -31,14 +31,9 @@ License
 #include <omp.h>
 # endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void polyMeshGenAddressing::calcCellEdges() const
+void Foam::Module::polyMeshGenAddressing::calcCellEdges() const
 {
     if (cePtr_)
     {
@@ -131,7 +126,8 @@ void polyMeshGenAddressing::calcCellEdges() const
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const VRWGraph& polyMeshGenAddressing::cellEdges() const
+const Foam::Module::VRWGraph&
+Foam::Module::polyMeshGenAddressing::cellEdges() const
 {
     if (!cePtr_)
     {
@@ -150,9 +146,5 @@ const VRWGraph& polyMeshGenAddressing::cellEdges() const
     return *cePtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

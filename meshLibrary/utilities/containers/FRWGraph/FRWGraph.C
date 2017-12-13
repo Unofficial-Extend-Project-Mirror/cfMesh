@@ -28,10 +28,10 @@ License
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
 template<class T, Foam::label width>
-Foam::Ostream& Foam::operator<<
+Foam::Ostream& Foam::Module::operator<<
 (
-    Foam::Ostream& os,
-    const Foam::FRWGraph<T, width>& DL
+    Ostream& os,
+    const Foam::Module::FRWGraph<T, width>& DL
 )
 {
     os << DL.size() << "(" << nl;
@@ -64,10 +64,10 @@ Foam::Ostream& Foam::operator<<
 
 /*
 template<class T, Foam::label width>
-Foam::Istream& Foam::operator>>
+Foam::Istream& Foam::Module::operator>>
 (
-    Foam::Istream& is,
-    Foam::FRWGraph<T, width>& DL
+    Istream& is,
+    Foam::Module::FRWGraph<T, width>& DL
 )
 {
     label size;

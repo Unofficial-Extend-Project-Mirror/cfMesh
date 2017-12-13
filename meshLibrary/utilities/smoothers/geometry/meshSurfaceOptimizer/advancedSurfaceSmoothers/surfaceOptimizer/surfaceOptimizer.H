@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::surfaceOptimizer
+    Foam::Module::surfaceOptimizer
 
 Description
     Performs optimisation of a central vertex in a simplex
@@ -43,6 +43,9 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
+
 /*---------------------------------------------------------------------------*\
                       Class surfaceOptimizer Declaration
 \*---------------------------------------------------------------------------*/
@@ -105,7 +108,7 @@ public:
 
 
     //- Destructor
-    ~surfaceOptimizer();
+    ~surfaceOptimizer() = default;
 
 
     // Member Functions
@@ -117,6 +120,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

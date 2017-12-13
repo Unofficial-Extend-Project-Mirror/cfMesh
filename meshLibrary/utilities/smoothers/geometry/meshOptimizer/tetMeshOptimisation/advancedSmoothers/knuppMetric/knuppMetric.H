@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::knuppMetric
+    Foam::Module::knuppMetric
 
 Description
     Mesh smoothing using Knupp's metric. The metric is non-zero for inverted
@@ -42,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class partTetMeshSimplex;
 
@@ -54,10 +55,10 @@ class knuppMetric
 :
     public simplexSmoother
 {
-// Private data
+    // Private data
 
-    //- free vertex
-    point& p_;
+        //- free vertex
+        point& p_;
 
         //- normals of triangles forming the outer hull
         DynList<vector, 64> normals_;
@@ -84,7 +85,7 @@ public:
     knuppMetric(partTetMeshSimplex& simplex);
 
     //- Destructor
-    ~knuppMetric();
+    ~knuppMetric() = default;
 
 
     // Member functions
@@ -97,6 +98,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

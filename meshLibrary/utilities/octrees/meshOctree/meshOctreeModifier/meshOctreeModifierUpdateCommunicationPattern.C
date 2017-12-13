@@ -35,12 +35,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::updateCommunicationPattern()
+void Foam::Module::meshOctreeModifier::updateCommunicationPattern()
 {
     # ifdef OCTREETiming
     const scalar startTime = omp_get_wtime();
@@ -93,9 +88,5 @@ void meshOctreeModifier::updateCommunicationPattern()
     # endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

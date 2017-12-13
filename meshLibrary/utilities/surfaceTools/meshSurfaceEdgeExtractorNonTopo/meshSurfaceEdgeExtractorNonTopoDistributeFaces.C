@@ -32,18 +32,13 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEdgeExtractorNonTopo::decomposeBoundaryFaces()
+void Foam::Module::meshSurfaceEdgeExtractorNonTopo::decomposeBoundaryFaces()
 {
     correctEdgesBetweenPatches featureEdges(mesh_);
 }
 
 
-void meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()
+void Foam::Module::meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceMapper mapper(mse, meshOctree_);
@@ -51,9 +46,5 @@ void meshSurfaceEdgeExtractorNonTopo::remapBoundaryPoints()
     mapper.mapVerticesOntoSurfacePatches();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

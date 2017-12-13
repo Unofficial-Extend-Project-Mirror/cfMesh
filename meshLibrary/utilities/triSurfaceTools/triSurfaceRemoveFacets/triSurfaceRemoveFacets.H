@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceRemoveFacets
+    Foam::Module::triSurfaceRemoveFacets
 
 Description
     Divides the surface mesh into regions bounded by feature edges
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 /*---------------------------------------------------------------------------*\
                    Class triSurfaceRemoveFacets Declaration
@@ -75,7 +77,7 @@ public:
     triSurfaceRemoveFacets(triSurf& surface);
 
     //- Destructor
-    ~triSurfaceRemoveFacets();
+    ~triSurfaceRemoveFacets() = default;
 
 
     // Member Functions
@@ -93,6 +95,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

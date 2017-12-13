@@ -28,12 +28,9 @@ License
 #include "dictionary.H"
 #include "edgeMesh.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * Private member functions* * * * * * * * * * * //
 
-void edgeMeshGeometryModification::checkModification()
+void Foam::Module::edgeMeshGeometryModification::checkModification()
 {
     if (meshDict_.found("anisotropicSources"))
     {
@@ -49,7 +46,7 @@ void edgeMeshGeometryModification::checkModification()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-edgeMeshGeometryModification::edgeMeshGeometryModification
+Foam::Module::edgeMeshGeometryModification::edgeMeshGeometryModification
 (
     const edgeMesh& em,
     const dictionary& meshDict
@@ -64,7 +61,7 @@ edgeMeshGeometryModification::edgeMeshGeometryModification
 }
 
 
-edgeMeshGeometryModification::~edgeMeshGeometryModification()
+Foam::Module::edgeMeshGeometryModification::~edgeMeshGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
@@ -72,13 +69,14 @@ edgeMeshGeometryModification::~edgeMeshGeometryModification()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool edgeMeshGeometryModification::activeModification() const
+bool Foam::Module::edgeMeshGeometryModification::activeModification() const
 {
     return modificationActive_;
 }
 
 
-const edgeMesh* edgeMeshGeometryModification::modifyGeometry() const
+const Foam::edgeMesh*
+Foam::Module::edgeMeshGeometryModification::modifyGeometry() const
 {
     if (!modificationActive_)
     {
@@ -106,8 +104,8 @@ const edgeMesh* edgeMeshGeometryModification::modifyGeometry() const
 }
 
 
-const edgeMesh* edgeMeshGeometryModification::
-revertGeometryModification() const
+const Foam::edgeMesh*
+Foam::Module::edgeMeshGeometryModification::revertGeometryModification() const
 {
     if (!modificationActive_)
     {
@@ -135,9 +133,5 @@ revertGeometryModification() const
     return newEdgeMeshPtr;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

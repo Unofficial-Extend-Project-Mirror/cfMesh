@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::symmetryPlaneOptimisation
+    Foam::Module::symmetryPlaneOptimisation
 
 Description
     Smoothing of symmetry planes in the mesh such that all points
@@ -48,6 +48,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -81,7 +83,7 @@ public:
 
 
     //- Destructor
-    ~symmetryPlaneOptimisation();
+    ~symmetryPlaneOptimisation() = default;
 
 
     // Member Functions
@@ -93,6 +95,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

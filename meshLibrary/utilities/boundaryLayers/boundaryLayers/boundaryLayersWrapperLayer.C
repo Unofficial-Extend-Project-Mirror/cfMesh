@@ -29,12 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayers::addWrapperLayer()
+void Foam::Module::boundaryLayers::addWrapperLayer()
 {
     createOTopologyLayers();
 
@@ -70,9 +65,5 @@ void boundaryLayers::addWrapperLayer()
     clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::VRWGraphSMPModifier
+    Foam::Module::VRWGraphSMPModifier
 
 Description
     This class is a modifier for VRWGraph which allows for multi-threaded
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -71,7 +73,7 @@ class VRWGraphSMPModifier
 public:
 
     //- Construct from reference to VRWGraph
-    VRWGraphSMPModifier(VRWGraph&);
+    VRWGraphSMPModifier(VRWGraph& graph);
 
     //- Destructor
     ~VRWGraphSMPModifier() = default;
@@ -114,6 +116,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

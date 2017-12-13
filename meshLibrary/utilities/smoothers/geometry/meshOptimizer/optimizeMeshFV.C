@@ -46,12 +46,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOptimizer::untangleMeshFV
+void Foam::Module::meshOptimizer::untangleMeshFV
 (
     const label maxNumGlobalIterations,
     const label maxNumIterations,
@@ -308,12 +303,15 @@ void meshOptimizer::untangleMeshFV
 }
 
 
-void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
+void Foam::Module::meshOptimizer::optimizeBoundaryLayer
+(
+    const bool addBufferLayer
+)
 {
-    if (mesh_.returnTime().foundObject <IOdictionary>("meshDict"))
+    if (mesh_.returnTime().foundObject<IOdictionary>("meshDict"))
     {
         const dictionary& meshDict =
-            mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
+            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
 
         bool smoothLayer(false);
 
@@ -411,13 +409,13 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
 }
 
 
-void meshOptimizer::untangleBoundaryLayer()
+void Foam::Module::meshOptimizer::untangleBoundaryLayer()
 {
     bool untangleLayer(true);
-    if (mesh_.returnTime().foundObject <IOdictionary>("meshDict"))
+    if (mesh_.returnTime().foundObject<IOdictionary>("meshDict"))
     {
         const dictionary& meshDict =
-            mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
+            mesh_.returnTime().lookupObject<IOdictionary>("meshDict");
 
         if (meshDict.found("boundaryLayers") )
         {
@@ -474,7 +472,10 @@ void meshOptimizer::untangleBoundaryLayer()
 }
 
 
-void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
+void Foam::Module::meshOptimizer::optimizeLowQualityFaces
+(
+    const label maxNumIterations
+)
 {
     label nBadFaces, nIter(0);
 
@@ -529,7 +530,7 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
 }
 
 
-void meshOptimizer::optimizeMeshNearBoundaries
+void Foam::Module::meshOptimizer::optimizeMeshNearBoundaries
 (
     const label maxNumIterations,
     const label numLayersOfCells
@@ -565,7 +566,7 @@ void meshOptimizer::optimizeMeshNearBoundaries
 }
 
 
-void meshOptimizer::optimizeMeshFV
+void Foam::Module::meshOptimizer::optimizeMeshFV
 (
     const label numLaplaceIterations,
     const label maxNumGlobalIterations,
@@ -589,7 +590,7 @@ void meshOptimizer::optimizeMeshFV
 }
 
 
-void meshOptimizer::optimizeMeshFVBestQuality
+void Foam::Module::meshOptimizer::optimizeMeshFVBestQuality
 (
     const label maxNumIterations,
     const scalar threshold
@@ -658,9 +659,5 @@ void meshOptimizer::optimizeMeshFVBestQuality
     } while ((nIter < minIter + 5) && (++nIter < maxNumIterations));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

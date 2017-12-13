@@ -51,12 +51,9 @@ License
 
 //#define DEBUGEdgeExtractor
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void edgeExtractor::calculateValence()
+void Foam::Module::edgeExtractor::calculateValence()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     pointValence_.setSize(mse.boundaryPoints().size());
@@ -118,7 +115,7 @@ void edgeExtractor::calculateValence()
 }
 
 
-void edgeExtractor::calculateSingleCellEdge()
+void Foam::Module::edgeExtractor::calculateSingleCellEdge()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const edgeList& edges = mse.edges();
@@ -193,7 +190,7 @@ void edgeExtractor::calculateSingleCellEdge()
 }
 
 
-void edgeExtractor::findPatchesNearSurfaceFace()
+void Foam::Module::edgeExtractor::findPatchesNearSurfaceFace()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const pointFieldPMG& points = mse.points();
@@ -265,7 +262,7 @@ void edgeExtractor::findPatchesNearSurfaceFace()
 }
 
 
-void edgeExtractor::findFeatureEdgesNearEdge()
+void Foam::Module::edgeExtractor::findFeatureEdgesNearEdge()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const pointFieldPMG& points = mse.points();
@@ -334,7 +331,7 @@ void edgeExtractor::findFeatureEdgesNearEdge()
 }
 
 
-void edgeExtractor::markPatchPoints(boolList& patchPoint)
+void Foam::Module::edgeExtractor::markPatchPoints(boolList& patchPoint)
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
@@ -461,7 +458,8 @@ void edgeExtractor::markPatchPoints(boolList& patchPoint)
 }
 
 
-const meshSurfaceEngine& edgeExtractor::surfaceEngine() const
+const Foam::Module::meshSurfaceEngine&
+Foam::Module::edgeExtractor::surfaceEngine() const
 {
     if (!surfaceEnginePtr_)
     {
@@ -480,7 +478,8 @@ const meshSurfaceEngine& edgeExtractor::surfaceEngine() const
 }
 
 
-const triSurfacePartitioner& edgeExtractor::partitioner() const
+const Foam::Module::triSurfacePartitioner&
+Foam::Module::edgeExtractor::partitioner() const
 {
     if (!surfPartitionerPtr_)
     {
@@ -500,7 +499,8 @@ const triSurfacePartitioner& edgeExtractor::partitioner() const
 }
 
 
-const triSurfaceClassifyEdges& edgeExtractor::edgeClassifier() const
+const Foam::Module::triSurfaceClassifyEdges&
+Foam::Module::edgeExtractor::edgeClassifier() const
 {
     if (!surfEdgeClassificationPtr_)
     {
@@ -512,7 +512,7 @@ const triSurfaceClassifyEdges& edgeExtractor::edgeClassifier() const
 }
 
 
-void edgeExtractor::findFaceCandidates
+void Foam::Module::edgeExtractor::findFaceCandidates
 (
     labelLongList& faceCandidates,
     const labelList* facePatchPtr,
@@ -596,7 +596,7 @@ void edgeExtractor::findFaceCandidates
 }
 
 
-void edgeExtractor::findOtherFacePatchesParallel
+void Foam::Module::edgeExtractor::findOtherFacePatchesParallel
 (
     Map<label>& otherFacePatch,
     const labelList* facePatchPtr
@@ -658,7 +658,7 @@ void edgeExtractor::findOtherFacePatchesParallel
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-edgeExtractor::edgeExtractor
+Foam::Module::edgeExtractor::edgeExtractor
 (
     polyMeshGen& mesh,
     const meshOctree& octree
@@ -690,7 +690,7 @@ edgeExtractor::edgeExtractor
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 // Destructor
 
-edgeExtractor::~edgeExtractor()
+Foam::Module::edgeExtractor::~edgeExtractor()
 {
     deleteDemandDrivenData(surfaceEnginePtr_);
     deleteDemandDrivenData(surfPartitionerPtr_);
@@ -700,7 +700,10 @@ edgeExtractor::~edgeExtractor()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
+void Foam::Module::edgeExtractor::moveVerticesTowardsDiscontinuities
+(
+    const label nIterations
+)
 {
     Info<< "Reducing Hausdorff distance:" << flush;
 
@@ -850,7 +853,7 @@ void edgeExtractor::moveVerticesTowardsDiscontinuities(const label nIterations)
 }
 
 
-void edgeExtractor::distributeBoundaryFaces()
+void Foam::Module::edgeExtractor::distributeBoundaryFaces()
 {
     const meshSurfaceEngine& mse = this->surfaceEngine();
     const labelList& bPoints = mse.boundaryPoints();
@@ -931,7 +934,7 @@ void edgeExtractor::distributeBoundaryFaces()
 }
 
 
-bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
+bool Foam::Module::edgeExtractor::distributeBoundaryFacesNormalAlignment()
 {
     bool changed(false);
 
@@ -1085,7 +1088,7 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
 }
 
 
-void edgeExtractor::findEdgeCandidates()
+void Foam::Module::edgeExtractor::findEdgeCandidates()
 {
     const triSurf& surface = meshOctree_.surface();
     const vectorField& sp = surface.points();
@@ -1277,7 +1280,7 @@ void edgeExtractor::findEdgeCandidates()
 }
 
 
-void edgeExtractor::findNeiPatches
+void Foam::Module::edgeExtractor::findNeiPatches
 (
     const label bfI,
     const Map<label>& otherProcPatch,
@@ -1311,7 +1314,7 @@ void edgeExtractor::findNeiPatches
 }
 
 
-scalar edgeExtractor::calculateAlignmentForEdge
+Foam::scalar Foam::Module::edgeExtractor::calculateAlignmentForEdge
 (
     const label beI,
     const label patch0,
@@ -1352,7 +1355,7 @@ scalar edgeExtractor::calculateAlignmentForEdge
 }
 
 
-scalar edgeExtractor::calculateDeformationMetricForEdge
+Foam::scalar Foam::Module::edgeExtractor::calculateDeformationMetricForEdge
 (
     const label beI,
     const label patch0,
@@ -1394,7 +1397,7 @@ scalar edgeExtractor::calculateDeformationMetricForEdge
 }
 
 
-scalar edgeExtractor::calculateDeformationMetricForFace
+Foam::scalar Foam::Module::edgeExtractor::calculateDeformationMetricForFace
 (
     const label bfI,
     const DynList<label>& neiPatches,
@@ -1428,7 +1431,7 @@ scalar edgeExtractor::calculateDeformationMetricForFace
 }
 
 
-bool edgeExtractor::checkConcaveEdgeCells()
+bool Foam::Module::edgeExtractor::checkConcaveEdgeCells()
 {
     bool changed(false);
 
@@ -1638,7 +1641,7 @@ bool edgeExtractor::checkConcaveEdgeCells()
 }
 
 
-bool edgeExtractor::checkFacePatchesTopology()
+bool Foam::Module::edgeExtractor::checkFacePatchesTopology()
 {
     bool changed(false);
 
@@ -1832,8 +1835,13 @@ bool edgeExtractor::checkFacePatchesTopology()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
+namespace Foam
+{
+namespace Module
+{
 namespace featureEdgeHelpers
 {
+
 class featureEdgesNeiOp
 {
     // Private data
@@ -2046,7 +2054,6 @@ class featureEdgesSelOp
         // reference to a list holding information which edge is afeture edge
         const boolList& isFeatureEdge_;
 
-
 public:
 
     featureEdgesSelOp(const boolList& isFeatureEdge)
@@ -2065,10 +2072,12 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 } // End namespace featureEdgeHelpers
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool edgeExtractor::checkFacePatchesGeometry()
+bool Foam::Module::edgeExtractor::checkFacePatchesGeometry()
 {
     bool changed(false);
 
@@ -2258,7 +2267,7 @@ bool edgeExtractor::checkFacePatchesGeometry()
 }
 
 
-void edgeExtractor::projectDeterminedFeatureVertices()
+void Foam::Module::edgeExtractor::projectDeterminedFeatureVertices()
 {
     List<DynList<label, 5>> pointPatches;
     pointPatches.setSize(pointValence_.size());
@@ -2400,7 +2409,7 @@ void edgeExtractor::projectDeterminedFeatureVertices()
 }
 
 
-bool edgeExtractor::untangleSurface()
+bool Foam::Module::edgeExtractor::untangleSurface()
 {
     bool changed(false);
 
@@ -2413,7 +2422,7 @@ bool edgeExtractor::untangleSurface()
 }
 
 
-void edgeExtractor::extractEdges()
+void Foam::Module::edgeExtractor::extractEdges()
 {
     distributeBoundaryFaces();
 
@@ -2462,7 +2471,8 @@ void edgeExtractor::extractEdges()
 }
 
 
-const triSurf* edgeExtractor::surfaceWithPatches() const
+const Foam::Module::triSurf*
+Foam::Module::edgeExtractor::surfaceWithPatches() const
 {
     // allocate the memory for the surface mesh
     triSurf* surfPtr = new triSurf();
@@ -2510,7 +2520,8 @@ const triSurf* edgeExtractor::surfaceWithPatches() const
 }
 
 
-const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
+const Foam::Module::triSurf*
+Foam::Module::edgeExtractor::surfaceWithPatches(const label bpI) const
 {
     // allocate the memory for the surface mesh
     triSurf* surfPtr = new triSurf();
@@ -2563,7 +2574,7 @@ const triSurf* edgeExtractor::surfaceWithPatches(const label bpI) const
 }
 
 
-void edgeExtractor::updateMeshPatches()
+void Foam::Module::edgeExtractor::updateMeshPatches()
 {
     const triSurf& surface = meshOctree_.surface();
     const geometricSurfacePatchList& surfPatches = surface.patches();
@@ -2607,9 +2618,5 @@ void edgeExtractor::updateMeshPatches()
         boundaries[patchI].patchType() = surfPatches[patchI].geometricType();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

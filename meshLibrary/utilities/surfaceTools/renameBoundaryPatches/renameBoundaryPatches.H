@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::renameBoundaryPatches
+    Foam::Module::renameBoundaryPatches
 
 Description
     Renames boundary patches based on user intput and sets correct patch types
@@ -41,9 +41,11 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
 class IOdictionary;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                     Class renameBoundaryPatches Declaration
@@ -90,12 +92,13 @@ public:
     );
 
     //- Destructor
-    ~renameBoundaryPatches();
+    ~renameBoundaryPatches() = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

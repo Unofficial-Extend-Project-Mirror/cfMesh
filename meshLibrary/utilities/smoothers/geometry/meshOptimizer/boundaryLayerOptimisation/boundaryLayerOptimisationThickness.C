@@ -30,20 +30,13 @@ License
 #include "labelledScalar.H"
 #include "polyMeshGenAddressing.H"
 
-//#define DEBUGLayer
-
 # ifdef USE_OMP
 #include <omp.h>
 # endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayerOptimisation::hairEdgesAtBndFace
+void Foam::Module::boundaryLayerOptimisation::hairEdgesAtBndFace
 (
     const label cellI,
     const label baseFaceI,
@@ -138,7 +131,7 @@ void boundaryLayerOptimisation::hairEdgesAtBndFace
 }
 
 
-scalar boundaryLayerOptimisation::calculateThickness
+Foam::scalar Foam::Module::boundaryLayerOptimisation::calculateThickness
 (
     const label heI,
     const label heJ
@@ -237,7 +230,7 @@ scalar boundaryLayerOptimisation::calculateThickness
 }
 
 
-scalar boundaryLayerOptimisation::calculateThicknessOverCell
+Foam::scalar Foam::Module::boundaryLayerOptimisation::calculateThicknessOverCell
 (
     const label heI,
     const label cellI,
@@ -289,7 +282,7 @@ scalar boundaryLayerOptimisation::calculateThicknessOverCell
 }
 
 
-void boundaryLayerOptimisation::optimiseThicknessVariation
+void Foam::Module::boundaryLayerOptimisation::optimiseThicknessVariation
 (
     const direction edgeType
 )
@@ -598,9 +591,5 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
     } while (changed && (++nIter < 1000));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

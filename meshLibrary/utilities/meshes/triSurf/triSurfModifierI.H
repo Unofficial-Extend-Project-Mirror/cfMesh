@@ -25,37 +25,31 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline pointField& triSurfModifier::pointsAccess()
+inline Foam::pointField& Foam::Module::triSurfModifier::pointsAccess()
 {
     return const_cast<pointField&>(surface_.points());
 }
 
 
-inline LongList<labelledTri>& triSurfModifier::facetsAccess()
+inline Foam::Module::LongList<Foam::labelledTri>&
+Foam::Module::triSurfModifier::facetsAccess()
 {
     return const_cast<LongList<labelledTri>&>(surface_.facets());
 }
 
 
-inline edgeLongList& triSurfModifier::featureEdgesAccess()
+inline Foam::Module::edgeLongList&
+Foam::Module::triSurfModifier::featureEdgesAccess()
 {
     return const_cast<edgeLongList&>(surface_.featureEdges());
 }
 
 
-inline geometricSurfacePatchList& triSurfModifier::patchesAccess()
+inline Foam::geometricSurfacePatchList&
+Foam::Module::triSurfModifier::patchesAccess()
 {
     return const_cast<geometricSurfacePatchList&>(surface_.patches());
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

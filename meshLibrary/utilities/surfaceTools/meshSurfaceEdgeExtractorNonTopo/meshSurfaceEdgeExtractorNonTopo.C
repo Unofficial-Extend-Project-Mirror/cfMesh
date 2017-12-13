@@ -26,16 +26,9 @@ License
 #include "meshSurfaceEdgeExtractorNonTopo.H"
 #include "demandDrivenData.H"
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
+Foam::Module::meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
 (
     polyMeshGen& mesh,
     const meshOctree& octree
@@ -49,15 +42,5 @@ meshSurfaceEdgeExtractorNonTopo::meshSurfaceEdgeExtractorNonTopo
     remapBoundaryPoints();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceEdgeExtractorNonTopo::~meshSurfaceEdgeExtractorNonTopo()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

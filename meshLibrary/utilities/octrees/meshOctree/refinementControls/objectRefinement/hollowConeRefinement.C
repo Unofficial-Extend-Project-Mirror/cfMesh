@@ -31,14 +31,21 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(hollowConeRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, hollowConeRefinement, dictionary);
-
+namespace Module
+{
+    defineTypeNameAndDebug(hollowConeRefinement, 0);
+    addToRunTimeSelectionTable
+    (
+        objectRefinement,
+        hollowConeRefinement,
+        dictionary
+    );
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-hollowConeRefinement::hollowConeRefinement()
+Foam::Module::hollowConeRefinement::hollowConeRefinement()
 :
     objectRefinement(),
     p0_(),
@@ -50,7 +57,7 @@ hollowConeRefinement::hollowConeRefinement()
 {}
 
 
-hollowConeRefinement::hollowConeRefinement
+Foam::Module::hollowConeRefinement::hollowConeRefinement
 (
     const word& name,
     const scalar cellSize,
@@ -79,7 +86,7 @@ hollowConeRefinement::hollowConeRefinement
 }
 
 
-hollowConeRefinement::hollowConeRefinement
+Foam::Module::hollowConeRefinement::hollowConeRefinement
 (
     const word& name,
     const dictionary& dict
@@ -93,7 +100,10 @@ hollowConeRefinement::hollowConeRefinement
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool hollowConeRefinement::intersectsObject(const boundBox& bb) const
+bool Foam::Module::hollowConeRefinement::intersectsObject
+(
+    const boundBox& bb
+) const
 {
     // check if the centre is inside the cone
     const point c = (bb.max() + bb.min()) / 2.0;
@@ -120,7 +130,10 @@ bool hollowConeRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary hollowConeRefinement::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::hollowConeRefinement::dict
+(
+    bool /*ignoreType*/
+) const
 {
     dictionary dict;
 
@@ -146,7 +159,7 @@ dictionary hollowConeRefinement::dict(bool /*ignoreType*/) const
 }
 
 
-void hollowConeRefinement::write(Ostream& os) const
+void Foam::Module::hollowConeRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " p0: " << p0_
@@ -158,7 +171,11 @@ void hollowConeRefinement::write(Ostream& os) const
 }
 
 
-void hollowConeRefinement::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::hollowConeRefinement::writeDict
+(
+    Ostream& os,
+    bool subDict
+) const
 {
     if (subDict)
     {
@@ -196,7 +213,7 @@ void hollowConeRefinement::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void hollowConeRefinement::operator=(const dictionary& d)
+void Foam::Module::hollowConeRefinement::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -259,7 +276,10 @@ void hollowConeRefinement::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& hollowConeRefinement::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::hollowConeRefinement::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
@@ -269,9 +289,5 @@ Ostream& hollowConeRefinement::operator<<(Ostream& os) const
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

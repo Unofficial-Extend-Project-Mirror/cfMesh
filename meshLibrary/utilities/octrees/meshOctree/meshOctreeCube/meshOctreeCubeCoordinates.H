@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeCubeCoordinates
+    Foam::Module::meshOctreeCubeCoordinates
 
 Description
     A cube stores information needed for mesh generation
@@ -45,9 +45,11 @@ SourceFiles
 
 namespace Foam
 {
-
-class triSurf;
 class boundBox;
+
+namespace Module
+{
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                   Class meshOctreeCubeCoordinates Declaration
@@ -111,8 +113,7 @@ public:
 
 
     //- Destructor
-    ~meshOctreeCubeCoordinates()
-    {}
+    ~meshOctreeCubeCoordinates() = default;
 
 
     // Member functions
@@ -230,14 +231,16 @@ public:
 };
 
 
-//- Specify data associated with meshOctreeCubeCoordinates type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for meshOctreeCubeCoordinates are contiguous
 template<>
-inline bool contiguous<meshOctreeCubeCoordinates>()
+inline bool contiguous<Module::meshOctreeCubeCoordinates>()
 {
     return true;
 }
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

@@ -28,49 +28,39 @@ License
 #include "Istream.H"
 #include "demandDrivenData.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-patchRefinement::patchRefinement()
+Foam::Module::patchRefinement::patchRefinement()
 :
     patchName_(),
     cellSize_(0.0)
 {}
 
 
-patchRefinement::patchRefinement(const word& n, const scalar s)
+Foam::Module::patchRefinement::patchRefinement(const word& n, const scalar s)
 :
     patchName_(n),
     cellSize_(s)
 {}
 
 
-patchRefinement::patchRefinement(Istream& is)
+Foam::Module::patchRefinement::patchRefinement(Istream& is)
 :
     patchName_(is),
     cellSize_(readScalar(is))
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-patchRefinement::~patchRefinement()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-word patchRefinement::patchName() const
+Foam::word Foam::Module::patchRefinement::patchName() const
 {
     return patchName_;
 }
 
 
-label patchRefinement::patchInSurface(const triSurf& ts) const
+Foam::label
+Foam::Module::patchRefinement::patchInSurface(const triSurf& ts) const
 {
     forAll(ts.patches(), patchI)
         if (ts.patches()[patchI].name() == patchName_)
@@ -85,7 +75,7 @@ label patchRefinement::patchInSurface(const triSurf& ts) const
 }
 
 
-scalar patchRefinement::cellSize() const
+Foam::scalar Foam::Module::patchRefinement::cellSize() const
 {
     return cellSize_;
 }
@@ -93,14 +83,18 @@ scalar patchRefinement::cellSize() const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void patchRefinement::operator=(const patchRefinement& pr)
+void Foam::Module::patchRefinement::operator=(const patchRefinement& pr)
 {
     patchName_ = pr.patchName_;
     cellSize_ = pr.cellSize_;
 }
 
 
-Istream& operator>>(Istream& is, patchRefinement& pr)
+Foam::Istream& Foam::Module::operator>>
+(
+    Istream& is,
+    Foam::Module::patchRefinement& pr
+)
 {
     pr.patchName_ = word(is);
     pr.cellSize_ = readScalar(is);
@@ -108,14 +102,22 @@ Istream& operator>>(Istream& is, patchRefinement& pr)
 }
 
 
-Ostream& operator<<(Ostream& os, const patchRefinement& pr)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::patchRefinement& pr
+)
 {
     os << pr.patchName_ << " " << pr.cellSize_ << nl;
     return os;
 }
 
 
-bool operator==(const patchRefinement& p1, const patchRefinement& p2)
+bool Foam::Module::operator==
+(
+    const Foam::Module::patchRefinement& p1,
+    const Foam::Module::patchRefinement& p2
+)
 {
     if (p1.patchName() == p2.patchName())
         return true;
@@ -124,14 +126,14 @@ bool operator==(const patchRefinement& p1, const patchRefinement& p2)
 }
 
 
-bool operator!=(const patchRefinement& p1, const patchRefinement& p2)
+bool Foam::Module::operator!=
+(
+    const Foam::Module::patchRefinement& p1,
+    const Foam::Module::patchRefinement& p2
+)
 {
     return !(p1 == p2);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

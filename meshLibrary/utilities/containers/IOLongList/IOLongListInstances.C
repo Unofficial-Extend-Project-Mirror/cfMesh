@@ -33,6 +33,8 @@ Description
 
 namespace Foam
 {
+namespace Module
+{
     defineCompoundTypeName(IOLongList<label>, labelIOListPMG);
     defineCompoundTypeName(IOLongList<point>, pointIOFieldPMG);
     //defineCompoundTypeName(IOLongList<face>, faceIOListPMG);
@@ -43,6 +45,7 @@ namespace Foam
     defineTemplateTypeNameAndDebugWithName(pointIOFieldPMG, "vectorField", 0);
     //defineTemplateTypeNameAndDebugWithName(faceIOListPMG, "faceList", 0);
     //defineTemplateTypeNameAndDebugWithName(cellIOListPMG, "cellList", 0);
+}
 }
 
 
