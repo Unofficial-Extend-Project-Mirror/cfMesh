@@ -27,12 +27,9 @@ License
 #include "demandDrivenData.H"
 #include "OFstream.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-polyMeshGen::polyMeshGen(const Time& t)
+Foam::Module::polyMeshGen::polyMeshGen(const Time& t)
 :
     polyMeshGenCells(t),
     metaDict_
@@ -50,7 +47,7 @@ polyMeshGen::polyMeshGen(const Time& t)
 {}
 
 
-polyMeshGen::polyMeshGen
+Foam::Module::polyMeshGen::polyMeshGen
 (
     const Time& t,
     const pointField& points,
@@ -74,7 +71,7 @@ polyMeshGen::polyMeshGen
 {}
 
 
-polyMeshGen::polyMeshGen
+Foam::Module::polyMeshGen::polyMeshGen
 (
     const Time& t,
     const pointField& points,
@@ -110,21 +107,15 @@ polyMeshGen::polyMeshGen
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-polyMeshGen::~polyMeshGen()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGen::read()
+void Foam::Module::polyMeshGen::read()
 {
     polyMeshGenCells::read();
 }
 
 
-void polyMeshGen::write() const
+void Foam::Module::polyMeshGen::write() const
 {
     // remove old mesh before writting
     const fileName meshDir = runTime_.path()/runTime_.constant()/"polyMesh";
@@ -158,9 +149,5 @@ void polyMeshGen::write() const
     metaDict_.writeData(fName);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

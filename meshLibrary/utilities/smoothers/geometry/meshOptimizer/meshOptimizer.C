@@ -31,15 +31,10 @@ License
 #include "polyMeshGenChecks.H"
 #include "labelLongList.H"
 
-// #define DEBUGSmoothing
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 // * * * * * * * * Private member functions * * * * * * * * * * * * * * * * * //
 
-const meshSurfaceEngine& meshOptimizer::meshSurface() const
+const Foam::Module::meshSurfaceEngine& 
+Foam::Module::meshOptimizer::meshSurface() const
 {
     if (!msePtr_)
         msePtr_ = new meshSurfaceEngine(mesh_);
@@ -48,13 +43,13 @@ const meshSurfaceEngine& meshOptimizer::meshSurface() const
 }
 
 
-void meshOptimizer::clearSurface()
+void Foam::Module::meshOptimizer::clearSurface()
 {
     deleteDemandDrivenData(msePtr_);
 }
 
 
-label meshOptimizer::findBadFaces
+Foam::label Foam::Module::meshOptimizer::findBadFaces
 (
     labelHashSet& badFaces,
     const boolList& changedFace
@@ -104,7 +99,7 @@ label meshOptimizer::findBadFaces
 }
 
 
-label meshOptimizer::findLowQualityFaces
+Foam::label Foam::Module::meshOptimizer::findLowQualityFaces
 (
     labelHashSet& badFaces,
     const boolList& /*changedFace*/
@@ -134,7 +129,7 @@ label meshOptimizer::findLowQualityFaces
 }
 
 
-void meshOptimizer::calculatePointLocations()
+void Foam::Module::meshOptimizer::calculatePointLocations()
 {
     vertexLocation_.setSize(mesh_.points().size());
     vertexLocation_ = INSIDE;
@@ -173,8 +168,7 @@ void meshOptimizer::calculatePointLocations()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// Construct from mesh
-meshOptimizer::meshOptimizer(polyMeshGen& mesh)
+Foam::Module::meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 :
     mesh_(mesh),
     vertexLocation_(),
@@ -189,7 +183,7 @@ meshOptimizer::meshOptimizer(polyMeshGen& mesh)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshOptimizer::~meshOptimizer()
+Foam::Module::meshOptimizer::~meshOptimizer()
 {
     clearSurface();
 }
@@ -197,7 +191,7 @@ meshOptimizer::~meshOptimizer()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOptimizer::enforceConstraints(const word subsetName)
+void Foam::Module::meshOptimizer::enforceConstraints(const word subsetName)
 {
     enforceConstraints_ = true;
 
@@ -205,7 +199,7 @@ void meshOptimizer::enforceConstraints(const word subsetName)
 }
 
 
-void meshOptimizer::lockCellsInSubset(const word& subsetName)
+void Foam::Module::meshOptimizer::lockCellsInSubset(const word& subsetName)
 {
     // lock the points in the cell subset with the given name
     label subsetI = mesh_.cellSubsetIndex(subsetName);
@@ -224,7 +218,7 @@ void meshOptimizer::lockCellsInSubset(const word& subsetName)
 }
 
 
-void meshOptimizer::lockFacesInSubset(const word& subsetName)
+void Foam::Module::meshOptimizer::lockFacesInSubset(const word& subsetName)
 {
     // lock the points in the face subset with the given name
     label subsetI = mesh_.faceSubsetIndex(subsetName);
@@ -243,7 +237,7 @@ void meshOptimizer::lockFacesInSubset(const word& subsetName)
 }
 
 
-void meshOptimizer::lockPointsInSubset(const word& subsetName)
+void Foam::Module::meshOptimizer::lockPointsInSubset(const word& subsetName)
 {
     // lock the points in the point subset with the given name
     label subsetI = mesh_.pointSubsetIndex(subsetName);
@@ -262,7 +256,7 @@ void meshOptimizer::lockPointsInSubset(const word& subsetName)
 }
 
 
-void meshOptimizer::removeUserConstraints()
+void Foam::Module::meshOptimizer::removeUserConstraints()
 {
     lockedFaces_.setSize(0);
 
@@ -277,9 +271,5 @@ void meshOptimizer::removeUserConstraints()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

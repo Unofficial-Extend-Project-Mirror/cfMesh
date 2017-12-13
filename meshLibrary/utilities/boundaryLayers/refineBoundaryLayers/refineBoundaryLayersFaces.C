@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void refineBoundaryLayers::refineFace
+void Foam::Module::refineBoundaryLayers::refineFace
 (
     const face& f,
     const FixedList<label, 2>& nLayersInDirection,
@@ -451,7 +446,7 @@ void refineBoundaryLayers::refineFace
 }
 
 
-void refineBoundaryLayers::sortFacePoints
+void Foam::Module::refineBoundaryLayers::sortFacePoints
 (
     const label faceI,
     DynList<DynList<label>>& facePoints,
@@ -701,7 +696,7 @@ void refineBoundaryLayers::sortFacePoints
 }
 
 
-void refineBoundaryLayers::sortFaceFaces
+void Foam::Module::refineBoundaryLayers::sortFaceFaces
 (
     const label faceI,
     DynList<DynList<label>>& faceFaces,
@@ -864,7 +859,7 @@ void refineBoundaryLayers::sortFaceFaces
 }
 
 
-void refineBoundaryLayers::generateNewFaces()
+void Foam::Module::refineBoundaryLayers::generateNewFaces()
 {
     // generate new boundary and inter-processor faces
     const meshSurfaceEngine& mse = surfaceEngine();
@@ -1360,9 +1355,5 @@ void refineBoundaryLayers::generateNewFaces()
     Info<< "Finished refining boundary - layer faces " << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

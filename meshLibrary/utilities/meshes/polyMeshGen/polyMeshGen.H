@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGen
+    Foam::Module::polyMeshGen
 
 Description
     Mesh with selections
@@ -41,6 +41,8 @@ SourceFiles
 #include "IOdictionary.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -85,7 +87,7 @@ public:
 
 
     //- Destructor
-    ~polyMeshGen();
+    ~polyMeshGen() = default;
 
 
     // Public member functions
@@ -112,6 +114,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

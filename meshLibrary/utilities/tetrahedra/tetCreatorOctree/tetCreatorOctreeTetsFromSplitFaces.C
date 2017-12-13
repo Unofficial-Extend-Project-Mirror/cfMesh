@@ -26,16 +26,9 @@ License
 #include "tetCreatorOctree.H"
 #include "demandDrivenData.H"
 
-//#define DEBUGTets
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetCreatorOctree::createTetsFromSplitFaces()
+void Foam::Module::tetCreatorOctree::createTetsFromSplitFaces()
 {
     Info<< "Creating tets from split faces" << endl;
 
@@ -83,9 +76,5 @@ void tetCreatorOctree::createTetsFromSplitFaces()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -28,12 +28,9 @@ License
 #include "dictionary.H"
 #include "triSurf.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * Private member functions* * * * * * * * * * * //
 
-void surfaceMeshGeometryModification::checkModification()
+void Foam::Module::surfaceMeshGeometryModification::checkModification()
 {
     if (meshDict_.found("anisotropicSources"))
     {
@@ -49,7 +46,7 @@ void surfaceMeshGeometryModification::checkModification()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-surfaceMeshGeometryModification::surfaceMeshGeometryModification
+Foam::Module::surfaceMeshGeometryModification::surfaceMeshGeometryModification
 (
     const triSurf& surf,
     const dictionary& meshDict
@@ -64,7 +61,8 @@ surfaceMeshGeometryModification::surfaceMeshGeometryModification
 }
 
 
-surfaceMeshGeometryModification::~surfaceMeshGeometryModification()
+Foam::Module::surfaceMeshGeometryModification::
+~surfaceMeshGeometryModification()
 {
     deleteDemandDrivenData(coordinateModifierPtr_);
 }
@@ -72,13 +70,14 @@ surfaceMeshGeometryModification::~surfaceMeshGeometryModification()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool surfaceMeshGeometryModification::activeModification() const
+bool Foam::Module::surfaceMeshGeometryModification::activeModification() const
 {
     return modificationActive_;
 }
 
 
-const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
+const Foam::Module::triSurf*
+Foam::Module::surfaceMeshGeometryModification::modifyGeometry() const
 {
     if (!modificationActive_)
     {
@@ -164,8 +163,9 @@ const triSurf* surfaceMeshGeometryModification::modifyGeometry() const
 }
 
 
-const triSurf* surfaceMeshGeometryModification::
-revertGeometryModification() const
+const Foam::Module::triSurf*
+Foam::Module::surfaceMeshGeometryModification::revertGeometryModification()
+const
 {
     if (!modificationActive_)
     {
@@ -251,9 +251,5 @@ revertGeometryModification() const
     return newSurf;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

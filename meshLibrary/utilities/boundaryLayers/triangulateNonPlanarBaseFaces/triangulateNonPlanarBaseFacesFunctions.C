@@ -38,11 +38,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool triangulateNonPlanarBaseFaces::findNonPlanarBoundaryFaces()
+bool Foam::Module::triangulateNonPlanarBaseFaces::findNonPlanarBoundaryFaces()
 {
     const pointFieldPMG& points = mesh_.points();
     const label nInternalFaces = mesh_.nInternalFaces();
@@ -109,7 +105,7 @@ bool triangulateNonPlanarBaseFaces::findNonPlanarBoundaryFaces()
 }
 
 
-void triangulateNonPlanarBaseFaces::decomposeBoundaryFaces()
+void Foam::Module::triangulateNonPlanarBaseFaces::decomposeBoundaryFaces()
 {
     // decompose base faces into triangles
     decomposeFaces triangulator(mesh_);
@@ -121,15 +117,11 @@ void triangulateNonPlanarBaseFaces::decomposeBoundaryFaces()
 }
 
 
-void triangulateNonPlanarBaseFaces::decomposeCellsIntoPyramids()
+void Foam::Module::triangulateNonPlanarBaseFaces::decomposeCellsIntoPyramids()
 {
     decomposeCells sc(mesh_);
     sc.decomposeMesh(invertedCell_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

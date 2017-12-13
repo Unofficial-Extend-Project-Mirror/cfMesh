@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-const vector volumeOptimizer::dirVecs[8] =
+const Foam::vector Foam::Module::volumeOptimizer::dirVecs[8] =
     {
         vector(-1.0, -1.0, -1.0),
         vector(1.0, -1.0, -1.0),
@@ -51,19 +46,15 @@ const vector volumeOptimizer::dirVecs[8] =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-volumeOptimizer::volumeOptimizer(partTetMeshSimplex& simplex)
+Foam::Module::volumeOptimizer::volumeOptimizer(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex)
 {}
 
 
-volumeOptimizer::~volumeOptimizer()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void volumeOptimizer::optimizeNodePosition(const scalar tol)
+void Foam::Module::volumeOptimizer::optimizeNodePosition(const scalar tol)
 {
     point& p = points_[pointI_];
 
@@ -93,9 +84,5 @@ void volumeOptimizer::optimizeNodePosition(const scalar tol)
     bb_.max() /= scale;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

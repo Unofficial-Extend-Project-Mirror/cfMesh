@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::checkCellConnectionsOverFaces
+    Foam::Module::checkCellConnectionsOverFaces
 
 Description
     Checks cells if all cells can be visited over face neighbours. Deletes
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -81,7 +83,7 @@ public:
 
 
     //- Destructor
-    ~checkCellConnectionsOverFaces();
+    ~checkCellConnectionsOverFaces() = default;
 
 
     // Member Functions
@@ -94,6 +96,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

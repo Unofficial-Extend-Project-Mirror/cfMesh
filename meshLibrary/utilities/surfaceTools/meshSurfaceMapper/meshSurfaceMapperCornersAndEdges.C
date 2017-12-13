@@ -38,16 +38,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceMapper::findMappingDistance
+void Foam::Module::meshSurfaceMapper::findMappingDistance
 (
     const labelLongList& nodesToMap,
     scalarList& mappingDistance
@@ -137,7 +130,7 @@ void meshSurfaceMapper::findMappingDistance
 }
 
 
-scalar meshSurfaceMapper::faceMetricInPatch
+Foam::scalar Foam::Module::meshSurfaceMapper::faceMetricInPatch
 (
     const label bfI,
     const label patchI
@@ -192,7 +185,10 @@ scalar meshSurfaceMapper::faceMetricInPatch
 }
 
 
-void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
+void Foam::Module::meshSurfaceMapper::mapCorners
+(
+    const labelLongList& nodesToMap
+)
 {
     const triSurfacePartitioner& sPartitioner = surfacePartitioner();
     const labelList& surfCorners = sPartitioner.corners();
@@ -307,7 +303,10 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
 }
 
 
-void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
+void Foam::Module::meshSurfaceMapper::mapEdgeNodes
+(
+    const labelLongList& nodesToMap
+)
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bPoints = surfaceEngine_.boundaryPoints();
@@ -429,7 +428,7 @@ void meshSurfaceMapper::mapEdgeNodes(const labelLongList& nodesToMap)
 }
 
 
-void meshSurfaceMapper::mapCornersAndEdges()
+void Foam::Module::meshSurfaceMapper::mapCornersAndEdges()
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
@@ -451,9 +450,5 @@ void meshSurfaceMapper::mapCornersAndEdges()
     mapEdgeNodes(selectedPoints);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -31,14 +31,22 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(coneRefinement, 0);
-addToRunTimeSelectionTable(objectRefinement, coneRefinement, dictionary);
+namespace Module
+{
+    defineTypeNameAndDebug(coneRefinement, 0);
+    addToRunTimeSelectionTable
+    (
+        objectRefinement,
+        coneRefinement,
+        dictionary
+    );
+}
+}
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-coneRefinement::coneRefinement()
+Foam::Module::coneRefinement::coneRefinement()
 :
     objectRefinement(),
     p0_(),
@@ -48,7 +56,7 @@ coneRefinement::coneRefinement()
 {}
 
 
-coneRefinement::coneRefinement
+Foam::Module::coneRefinement::coneRefinement
 (
     const word& name,
     const scalar cellSize,
@@ -71,7 +79,7 @@ coneRefinement::coneRefinement
 }
 
 
-coneRefinement::coneRefinement
+Foam::Module::coneRefinement::coneRefinement
 (
     const word& name,
     const dictionary& dict
@@ -85,7 +93,7 @@ coneRefinement::coneRefinement
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool coneRefinement::intersectsObject(const boundBox& bb) const
+bool Foam::Module::coneRefinement::intersectsObject(const boundBox& bb) const
 {
     // check if the centre is inside the cone
     const point c = (bb.max() + bb.min()) / 2.0;
@@ -111,7 +119,7 @@ bool coneRefinement::intersectsObject(const boundBox& bb) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary coneRefinement::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::coneRefinement::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -135,7 +143,7 @@ dictionary coneRefinement::dict(bool /*ignoreType*/) const
 }
 
 
-void coneRefinement::write(Ostream& os) const
+void Foam::Module::coneRefinement::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " p0: " << p0_
@@ -145,7 +153,7 @@ void coneRefinement::write(Ostream& os) const
 }
 
 
-void coneRefinement::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::coneRefinement::writeDict(Ostream& os, bool subDict) const
 {
     if (subDict)
     {
@@ -181,7 +189,7 @@ void coneRefinement::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void coneRefinement::operator=(const dictionary& d)
+void Foam::Module::coneRefinement::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -227,7 +235,10 @@ void coneRefinement::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& coneRefinement::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::coneRefinement::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     os << "cell size " << cellSize() << nl;
@@ -237,9 +248,5 @@ Ostream& coneRefinement::operator<<(Ostream& os) const
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

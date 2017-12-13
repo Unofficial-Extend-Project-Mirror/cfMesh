@@ -35,12 +35,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void surfaceMorpherCells::replaceMeshBoundary()
+void Foam::Module::surfaceMorpherCells::replaceMeshBoundary()
 {
     wordList patchNames(1);
     patchNames[0] = "defaultFaces";
@@ -57,7 +52,7 @@ void surfaceMorpherCells::replaceMeshBoundary()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-surfaceMorpherCells::surfaceMorpherCells
+Foam::Module::surfaceMorpherCells::surfaceMorpherCells
 (
     polyMeshGen& mesh
 )
@@ -72,13 +67,9 @@ surfaceMorpherCells::surfaceMorpherCells
 {}
 
 
-surfaceMorpherCells::~surfaceMorpherCells()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void surfaceMorpherCells::morphMesh()
+void Foam::Module::surfaceMorpherCells::morphMesh()
 {
     // perform surface morphing
     bool changed;
@@ -176,9 +167,5 @@ void surfaceMorpherCells::morphMesh()
     polyMeshGenModifier(mesh_).removeUnusedVertices();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

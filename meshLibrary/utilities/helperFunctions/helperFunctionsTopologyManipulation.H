@@ -22,12 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam::help
+    Foam::Module::help
 
 Description
     Topology modifiers and queries useful for mesh generation
 
 SourceFiles
+    helperFunctionsTopologyManipulation.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -42,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -125,12 +128,11 @@ namespace help
     //- creates closed edge chains from the open chain
     inline void zipOpenChain(DynList<edge>& bEdges);
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 } // End namespace help
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

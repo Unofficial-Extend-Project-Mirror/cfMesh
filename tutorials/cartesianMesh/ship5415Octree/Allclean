@@ -1,12 +1,9 @@
-#!/bin/bash
-
-# Klas Jareteg, 2012-10-13
-# Description:
-#   Script to run comparative case between coupled and segregated solvers.
-
-
-# Source tutorial run functions
-. $WM_PROJECT_DIR/bin/tools/CleanFunctions
+#!/bin/sh
+cd ${0%/*} || exit 1                        # Run from this directory
+. $WM_PROJECT_DIR/bin/tools/CleanFunctions  # Tutorial clean functions
 
 cleanCase
-rm -r constant/polyMesh
+rmdir constant 2>/dev/null
+rm -f ship5415-hull-and-box.ftr 2>/dev/null
+
+#------------------------------------------------------------------------------

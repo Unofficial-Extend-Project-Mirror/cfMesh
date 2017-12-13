@@ -30,14 +30,9 @@ License
 #include <omp.h>
 #endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void polyMeshGenAddressing::updateGeometry
+void Foam::Module::polyMeshGenAddressing::updateGeometry
 (
     const boolList& changedFace
 )
@@ -202,9 +197,5 @@ void polyMeshGenAddressing::updateGeometry
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

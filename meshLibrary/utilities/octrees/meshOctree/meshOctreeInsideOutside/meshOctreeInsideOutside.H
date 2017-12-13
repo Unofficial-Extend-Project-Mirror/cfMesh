@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeInsideOutside
+    Foam::Module::meshOctreeInsideOutside
 
 Description
     Creates inside/outside information for the octree
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -97,15 +99,17 @@ class meshOctreeInsideOutside
 public:
 
     //- Construct from octree
-    meshOctreeInsideOutside(meshOctree& octree );
+    meshOctreeInsideOutside(meshOctree& octree);
 
     //- Destructor
-    ~meshOctreeInsideOutside();
+    ~meshOctreeInsideOutside() = default;
+
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

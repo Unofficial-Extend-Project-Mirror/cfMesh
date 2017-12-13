@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void refineBoundaryLayers::generateNewCellsPrism
+void Foam::Module::refineBoundaryLayers::generateNewCellsPrism
 (
     const label cellI,
     DynList<DynList<DynList<label, 8>, 10>, 64>& cellsFromCell
@@ -232,7 +227,7 @@ void refineBoundaryLayers::generateNewCellsPrism
 }
 
 
-void refineBoundaryLayers::storeFacesIntoCells
+void Foam::Module::refineBoundaryLayers::storeFacesIntoCells
 (
     const label faceI,
     const bool reverseOrientation,
@@ -315,7 +310,8 @@ void refineBoundaryLayers::storeFacesIntoCells
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void refineBoundaryLayers::refineEdgeHexCell::determineFacesInDirections()
+void Foam::Module::refineBoundaryLayers::refineEdgeHexCell::
+determineFacesInDirections()
 {
     const labelList& nLayersAtBndFace = bndLayers_.nLayersAtBndFace_;
     const polyMeshGen& mesh = bndLayers_.mesh_;
@@ -471,7 +467,8 @@ void refineBoundaryLayers::refineEdgeHexCell::determineFacesInDirections()
 }
 
 
-void refineBoundaryLayers::refineEdgeHexCell::populateExistingFaces()
+void Foam::Module::refineBoundaryLayers::refineEdgeHexCell::
+populateExistingFaces()
 {
     const cell& c = bndLayers_.mesh_.cells()[cellI_];
     const VRWGraph& facesFromFace = bndLayers_.facesFromFace_;
@@ -539,7 +536,8 @@ void refineBoundaryLayers::refineEdgeHexCell::populateExistingFaces()
 }
 
 
-void refineBoundaryLayers::refineEdgeHexCell::generateMissingFaces()
+void Foam::Module::refineBoundaryLayers::refineEdgeHexCell::
+generateMissingFaces()
 {
     const cell& c = bndLayers_.mesh_.cells()[cellI_];
 
@@ -673,7 +671,7 @@ void refineBoundaryLayers::refineEdgeHexCell::generateMissingFaces()
 }
 
 
-refineBoundaryLayers::refineEdgeHexCell::refineEdgeHexCell
+Foam::Module::refineBoundaryLayers::refineEdgeHexCell::refineEdgeHexCell
 (
     const label cellI,
     const refineBoundaryLayers& ref
@@ -698,7 +696,8 @@ refineBoundaryLayers::refineEdgeHexCell::refineEdgeHexCell
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
+void Foam::Module::refineBoundaryLayers::refineCornerHexCell::
+determineFacesInDirections()
 {
     const polyMeshGen& mesh = bndLayers_.mesh_;
     const cell& c = mesh.cells()[cellI_];
@@ -902,7 +901,8 @@ void refineBoundaryLayers::refineCornerHexCell::determineFacesInDirections()
 }
 
 
-void refineBoundaryLayers::refineCornerHexCell::populateExistingFaces()
+void Foam::Module::refineBoundaryLayers::refineCornerHexCell::
+populateExistingFaces()
 {
     const cell& c = bndLayers_.mesh_.cells()[cellI_];
 
@@ -932,7 +932,8 @@ void refineBoundaryLayers::refineCornerHexCell::populateExistingFaces()
 }
 
 
-void refineBoundaryLayers::refineCornerHexCell::generateNewPoints()
+void Foam::Module::refineBoundaryLayers::refineCornerHexCell::
+generateNewPoints()
 {
     const cell& c = bndLayers_.mesh_.cells()[cellI_];
 
@@ -1082,7 +1083,8 @@ void refineBoundaryLayers::refineCornerHexCell::generateNewPoints()
 }
 
 
-void refineBoundaryLayers::refineCornerHexCell::generateMissingFaces()
+void Foam::Module::refineBoundaryLayers::refineCornerHexCell::
+generateMissingFaces()
 {
     // generate face in direction i
     for (label i = 1; i < nLayersI_; ++i)
@@ -1375,7 +1377,7 @@ void refineBoundaryLayers::refineCornerHexCell::generateMissingFaces()
 }
 
 
-refineBoundaryLayers::refineCornerHexCell::refineCornerHexCell
+Foam::Module::refineBoundaryLayers::refineCornerHexCell::refineCornerHexCell
 (
     const label cellI,
     const refineBoundaryLayers& ref
@@ -1405,7 +1407,7 @@ refineBoundaryLayers::refineCornerHexCell::refineCornerHexCell
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void refineBoundaryLayers::generateNewCells()
+void Foam::Module::refineBoundaryLayers::generateNewCells()
 {
     labelList nCellsFromCell(mesh_.cells().size(), 1);
     labelList refType(mesh_.cells().size(), 0);
@@ -2035,9 +2037,5 @@ void refineBoundaryLayers::generateNewCells()
     Info<< "Finished generating new cells " << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

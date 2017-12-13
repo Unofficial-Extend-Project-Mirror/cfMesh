@@ -29,16 +29,9 @@ License
 #include "meshOctree.H"
 #include "Map.H"
 
-#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEdgeExtractor::createEdgeVertices()
+void Foam::Module::meshSurfaceEdgeExtractor::createEdgeVertices()
 {
     pointFieldPMG& points = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
@@ -150,9 +143,5 @@ void meshSurfaceEdgeExtractor::createEdgeVertices()
     Info<< "Finished creating mesh edges" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

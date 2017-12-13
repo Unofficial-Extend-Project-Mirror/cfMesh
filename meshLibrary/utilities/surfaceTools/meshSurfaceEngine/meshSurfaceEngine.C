@@ -30,16 +30,9 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
+Foam::Module::meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
 :
     mesh_(mesh),
     activePatch_(-1),
@@ -79,7 +72,11 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen& mesh)
 }
 
 
-meshSurfaceEngine::meshSurfaceEngine(polyMeshGen &mesh, const label patchI)
+Foam::Module::meshSurfaceEngine::meshSurfaceEngine
+(
+    polyMeshGen &mesh,
+    const label patchI
+)
 :
     mesh_(mesh),
     activePatch_(patchI),
@@ -121,7 +118,7 @@ meshSurfaceEngine::meshSurfaceEngine(polyMeshGen &mesh, const label patchI)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfaceEngine::~meshSurfaceEngine()
+Foam::Module::meshSurfaceEngine::~meshSurfaceEngine()
 {
     clearOut();
 }
@@ -129,7 +126,7 @@ meshSurfaceEngine::~meshSurfaceEngine()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceEngine::clearOut()
+void Foam::Module::meshSurfaceEngine::clearOut()
 {
     deleteDemandDrivenData(boundaryPointsPtr_);
     deleteDemandDrivenData(boundaryFacesPtr_);
@@ -163,9 +160,5 @@ void meshSurfaceEngine::clearOut()
     deleteDemandDrivenData(globalBoundaryFaceLabelPtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

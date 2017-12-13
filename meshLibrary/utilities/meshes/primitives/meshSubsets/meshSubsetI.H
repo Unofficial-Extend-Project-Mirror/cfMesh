@@ -27,14 +27,9 @@ License
 #include "labelList.H"
 #include "IOstreams.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-inline meshSubset::meshSubset()
+inline Foam::Module::meshSubset::meshSubset()
 :
     name_(),
     type_(UNKNOWN),
@@ -42,7 +37,7 @@ inline meshSubset::meshSubset()
 {}
 
 
-inline meshSubset::meshSubset
+inline Foam::Module::meshSubset::meshSubset
 (
     const word& name,
     const meshSubset::subsetType_& t
@@ -55,7 +50,7 @@ inline meshSubset::meshSubset
 
 
 template<class ListType>
-inline meshSubset::meshSubset
+inline Foam::Module::meshSubset::meshSubset
 (
     const word& name,
     const meshSubset::subsetType_& type,
@@ -73,7 +68,7 @@ inline meshSubset::meshSubset
 }
 
 
-inline meshSubset::meshSubset(const meshSubset& ms)
+inline Foam::Module::meshSubset::meshSubset(const meshSubset& ms)
 :
     name_(ms.name_),
     type_(ms.type_),
@@ -83,7 +78,7 @@ inline meshSubset::meshSubset(const meshSubset& ms)
 }
 
 
-inline meshSubset::meshSubset(Istream& is)
+inline Foam::Module::meshSubset::meshSubset(Istream& is)
 :
     name_(),
     type_(UNKNOWN),
@@ -93,26 +88,22 @@ inline meshSubset::meshSubset(Istream& is)
 }
 
 
-inline meshSubset::~meshSubset()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-inline const word& meshSubset::name() const
+inline const Foam::word& Foam::Module::meshSubset::name() const
 {
     return name_;
 }
 
 
-inline label meshSubset::type() const
+inline Foam::label Foam::Module::meshSubset::type() const
 {
     return type_;
 }
 
 
 template<class ListType>
-inline void meshSubset::containedElements(ListType& l) const
+inline void Foam::Module::meshSubset::containedElements(ListType& l) const
 {
     l.setSize(data_.size());
 
@@ -124,20 +115,20 @@ inline void meshSubset::containedElements(ListType& l) const
 }
 
 
-inline void meshSubset::addElement(const label elmt)
+inline void Foam::Module::meshSubset::addElement(const label elmt)
 {
     data_.insert(elmt);
 }
 
 
-inline void meshSubset::removeElement(const label elmt)
+inline void Foam::Module::meshSubset::removeElement(const label elmt)
 {
     data_.erase(elmt);
 }
 
 
 template<class ListType>
-inline void meshSubset::updateSubset(const ListType& newLabels)
+inline void Foam::Module::meshSubset::updateSubset(const ListType& newLabels)
 {
     std::set<label> newData;
 
@@ -155,7 +146,7 @@ inline void meshSubset::updateSubset(const ListType& newLabels)
 }
 
 
-inline void meshSubset::updateSubset(const VRWGraph& newLabels)
+inline void Foam::Module::meshSubset::updateSubset(const VRWGraph& newLabels)
 {
     std::set<label> newData;
 
@@ -171,13 +162,13 @@ inline void meshSubset::updateSubset(const VRWGraph& newLabels)
 }
 
 
-inline bool meshSubset::contains(const label elmt) const
+inline bool Foam::Module::meshSubset::contains(const label elmt) const
 {
     return (data_.find(elmt) != data_.end());
 }
 
 
-inline void meshSubset::operator=(const meshSubset& ms)
+inline void Foam::Module::meshSubset::operator=(const meshSubset& ms)
 {
     name_ = ms.name_;
     type_ = ms.type_;
@@ -187,7 +178,7 @@ inline void meshSubset::operator=(const meshSubset& ms)
 }
 
 
-inline bool meshSubset::operator==(const meshSubset& ms) const
+inline bool Foam::Module::meshSubset::operator==(const meshSubset& ms) const
 {
     if (ms.name_ != name_)
     {
@@ -210,7 +201,7 @@ inline bool meshSubset::operator==(const meshSubset& ms) const
 }
 
 
-inline bool meshSubset::operator!=(const meshSubset& ms) const
+inline bool Foam::Module::meshSubset::operator!=(const meshSubset& ms) const
 {
     return !operator==(ms);
 }
@@ -218,7 +209,11 @@ inline bool meshSubset::operator!=(const meshSubset& ms) const
 
 // * * * * * * * * * * * * * * * Ostream Operator  * * * * * * * * * * * * * //
 
-inline Ostream& operator<<(Ostream& os, const meshSubset& sel)
+inline Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::meshSubset& sel
+)
 {
     os.check(FUNCTION_NAME);
 
@@ -237,7 +232,11 @@ inline Ostream& operator<<(Ostream& os, const meshSubset& sel)
 }
 
 
-inline Istream& operator>>(Istream& is, meshSubset& sel)
+inline Foam::Istream& Foam::Module::operator>>
+(
+    Istream& is,
+    Foam::Module::meshSubset& sel
+)
 {
     is.check(FUNCTION_NAME);
 
@@ -254,9 +253,5 @@ inline Istream& operator>>(Istream& is, meshSubset& sel)
     return is;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

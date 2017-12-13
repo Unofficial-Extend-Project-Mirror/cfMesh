@@ -28,12 +28,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceCleanupDuplicateTriangles::checkDuplicateTriangles()
+void Foam::Module::triSurfaceCleanupDuplicateTriangles::
+checkDuplicateTriangles()
 {
     labelLongList newTriangleLabel(surf_.size(), -1);
 
@@ -91,9 +87,5 @@ void triSurfaceCleanupDuplicateTriangles::checkDuplicateTriangles()
     surf_.clearGeometry();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

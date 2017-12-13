@@ -36,16 +36,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
+void Foam::Module::meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
 {
     polyMeshGen2DEngine mesh2DEngine(mesh_);
     const boolList& activeFace = mesh2DEngine.activeFace();
@@ -153,7 +146,7 @@ void meshSurfaceEdgeExtractor2D::distributeBoundaryFaces()
 }
 
 
-void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
+void Foam::Module::meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceMapper2D mapper(mse, meshOctree_);
@@ -163,9 +156,5 @@ void meshSurfaceEdgeExtractor2D::remapBoundaryPoints()
     mapper.mapVerticesOntoSurfacePatches();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

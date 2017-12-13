@@ -29,14 +29,9 @@ License
 
 //#define DEBUGSmooth
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-scalar quadricMetric::evaluateMetric() const
+Foam::scalar Foam::Module::quadricMetric::evaluateMetric() const
 {
     scalar val(0.0);
 
@@ -47,7 +42,11 @@ scalar quadricMetric::evaluateMetric() const
 }
 
 
-void quadricMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
+void Foam::Module::quadricMetric::evaluateGradients
+(
+    vector& grad,
+    tensor& gradGrad
+) const
 {
     grad = vector::zero;
     gradGrad = tensor::zero;
@@ -64,7 +63,7 @@ void quadricMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-quadricMetric::quadricMetric(partTetMeshSimplex& simplex)
+Foam::Module::quadricMetric::quadricMetric(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex),
     p_(simplex.pts()[simplex.tets()[0][3]]),
@@ -93,13 +92,12 @@ quadricMetric::quadricMetric(partTetMeshSimplex& simplex)
 }
 
 
-quadricMetric::~quadricMetric()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
+void Foam::Module::quadricMetric::optimizeNodePosition
+(
+    const scalar /*tolObsolete*/
+)
 {
     // Implementation of knupp metric untangling
     if (!bb_.contains(p_))
@@ -222,9 +220,5 @@ void quadricMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
     # endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

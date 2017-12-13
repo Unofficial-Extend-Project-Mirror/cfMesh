@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
+Foam::Module::VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
 :
     graph_(graph)
 {}
@@ -45,7 +40,10 @@ VRWGraphSMPModifier::VRWGraphSMPModifier(VRWGraph& graph)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
+void Foam::Module::VRWGraphSMPModifier::mergeGraphs
+(
+    const List<VRWGraph>& graphParts
+)
 {
     const label nGraphs = graphParts.size();
     const label nRows = graphParts[0].size();
@@ -96,7 +94,10 @@ void VRWGraphSMPModifier::mergeGraphs(const List<VRWGraph>& graphParts)
 }
 
 
-void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
+void Foam::Module::VRWGraphSMPModifier::reverseAddressing
+(
+    const VRWGraph& origGraph
+)
 {
     graph_.setSize(0);
     labelLongList nAppearances;
@@ -278,7 +279,7 @@ void VRWGraphSMPModifier::reverseAddressing(const VRWGraph& origGraph)
 }
 
 
-void VRWGraphSMPModifier::optimizeMemoryUsage()
+void Foam::Module::VRWGraphSMPModifier::optimizeMemoryUsage()
 {
     # ifdef USE_OMP
     label nThreads = 3*omp_get_num_procs();
@@ -385,7 +386,7 @@ void VRWGraphSMPModifier::optimizeMemoryUsage()
 }
 
 
-void VRWGraphSMPModifier::operator=(const VRWGraph& og)
+void Foam::Module::VRWGraphSMPModifier::operator=(const VRWGraph& og)
 {
     graph_.data_.setSize(og.data_.size());
     graph_.rows_.setSize(og.rows_.size());
@@ -412,9 +413,5 @@ void VRWGraphSMPModifier::operator=(const VRWGraph& og)
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

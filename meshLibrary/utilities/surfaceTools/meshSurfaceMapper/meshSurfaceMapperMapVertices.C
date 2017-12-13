@@ -41,13 +41,12 @@ License
 //#define DEBUGMapping
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Private member functions
 
-void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
+void Foam::Module::meshSurfaceMapper::selectNodesAtParallelBnd
+(
+    const labelLongList& selNodes
+)
 {
     if (!Pstream::parRun())
         return;
@@ -99,7 +98,10 @@ void meshSurfaceMapper::selectNodesAtParallelBnd(const labelLongList& selNodes)
 }
 
 
-void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
+void Foam::Module::meshSurfaceMapper::mapToSmallestDistance
+(
+    LongList<parMapperHelper>& parN
+)
 {
     if (!Pstream::parRun())
         return;
@@ -168,7 +170,11 @@ void meshSurfaceMapper::mapToSmallestDistance(LongList<parMapperHelper>& parN)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
+void Foam::Module::meshSurfaceMapper::mapNodeToPatch
+(
+    const label bpI,
+    const label patchI
+)
 {
     label patch, nt;
     point mapPoint;
@@ -199,7 +205,7 @@ void meshSurfaceMapper::mapNodeToPatch(const label bpI, const label patchI)
 }
 
 
-void meshSurfaceMapper::mapVerticesOntoSurface()
+void Foam::Module::meshSurfaceMapper::mapVerticesOntoSurface()
 {
     Info<< "Mapping vertices onto surface" << endl;
 
@@ -213,7 +219,10 @@ void meshSurfaceMapper::mapVerticesOntoSurface()
 }
 
 
-void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
+void Foam::Module::meshSurfaceMapper::mapVerticesOntoSurface
+(
+    const labelLongList& nodesToMap
+)
 {
     const labelList& boundaryPoints = surfaceEngine_.boundaryPoints();
     const pointFieldPMG& points = surfaceEngine_.points();
@@ -284,7 +293,7 @@ void meshSurfaceMapper::mapVerticesOntoSurface(const labelLongList& nodesToMap)
 }
 
 
-void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
+void Foam::Module::meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 {
     Info<< "Mapping vertices with respect to surface patches" << endl;
 
@@ -298,7 +307,7 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches()
 }
 
 
-void meshSurfaceMapper::mapVerticesOntoSurfacePatches
+void Foam::Module::meshSurfaceMapper::mapVerticesOntoSurfacePatches
 (
     const labelLongList& nodesToMap
 )
@@ -402,9 +411,5 @@ void meshSurfaceMapper::mapVerticesOntoSurfacePatches
     mapCorners(selectedCorners);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

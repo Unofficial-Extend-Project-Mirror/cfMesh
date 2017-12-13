@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::decomposeFaces
+    Foam::Module::decomposeFaces
 
 Description
     Decompose selected mesh faces into triangles using midnode subdivision
@@ -39,6 +39,8 @@ SourceFiles
 #include "DynList.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -71,7 +73,7 @@ public:
     decomposeFaces(polyMeshGen& mesh);
 
     //- Destructor
-    ~decomposeFaces();
+    ~decomposeFaces() = default;
 
 
     // Member functions
@@ -90,6 +92,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -26,14 +26,9 @@ License
 #include "polyMeshGenAddressing.H"
 #include "demandDrivenData.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void polyMeshGenAddressing::printAllocated() const
+void Foam::Module::polyMeshGenAddressing::printAllocated() const
 {
     Pout << "polyMeshGenAddressing allocated :" << endl;
 
@@ -115,7 +110,7 @@ void polyMeshGenAddressing::printAllocated() const
 }
 
 
-void polyMeshGenAddressing::clearGeom()
+void Foam::Module::polyMeshGenAddressing::clearGeom()
 {
     if (debug)
     {
@@ -131,7 +126,7 @@ void polyMeshGenAddressing::clearGeom()
 }
 
 
-void polyMeshGenAddressing::clearAddressing()
+void Foam::Module::polyMeshGenAddressing::clearAddressing()
 {
     if (debug)
     {
@@ -157,7 +152,7 @@ void polyMeshGenAddressing::clearAddressing()
 }
 
 
-void polyMeshGenAddressing::clearParallelAddressing()
+void Foam::Module::polyMeshGenAddressing::clearParallelAddressing()
 {
     deleteDemandDrivenData(globalPointLabelPtr_);
     deleteDemandDrivenData(globalFaceLabelPtr_);
@@ -173,7 +168,7 @@ void polyMeshGenAddressing::clearParallelAddressing()
 }
 
 
-void polyMeshGenAddressing::clearOut()
+void Foam::Module::polyMeshGenAddressing::clearOut()
 {
     clearGeom();
     clearAddressing();
@@ -181,16 +176,12 @@ void polyMeshGenAddressing::clearOut()
 }
 
 
-void polyMeshGenAddressing::clearAll()
+void Foam::Module::polyMeshGenAddressing::clearAll()
 {
     clearGeom();
     clearAddressing();
     clearParallelAddressing();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

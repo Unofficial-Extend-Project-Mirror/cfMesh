@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
+void Foam::Module::meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
 {
     if (triMeshPtr_)
         FatalErrorInFunction
@@ -88,9 +83,5 @@ void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
     # endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

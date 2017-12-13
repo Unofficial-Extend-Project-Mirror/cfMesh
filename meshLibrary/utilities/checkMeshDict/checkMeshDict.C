@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void checkMeshDict::checkBasicSettings() const
+void Foam::Module::checkMeshDict::checkBasicSettings() const
 {
     bool bval;
     scalar sval;
@@ -97,7 +92,7 @@ void checkMeshDict::checkBasicSettings() const
 }
 
 
-void checkMeshDict::checkPatchCellSize() const
+void Foam::Module::checkMeshDict::checkPatchCellSize() const
 {
     if (meshDict_.found("patchCellSize"))
     {
@@ -117,7 +112,7 @@ void checkMeshDict::checkPatchCellSize() const
 }
 
 
-void checkMeshDict::checkSubsetCellSize() const
+void Foam::Module::checkMeshDict::checkSubsetCellSize() const
 {
     if (meshDict_.found("subsetCellSize"))
     {
@@ -136,7 +131,7 @@ void checkMeshDict::checkSubsetCellSize() const
 }
 
 
-void checkMeshDict::checkLocalRefinementLevel() const
+void Foam::Module::checkMeshDict::checkLocalRefinementLevel() const
 {
     if (meshDict_.found("localRefinement"))
     {
@@ -198,7 +193,7 @@ void checkMeshDict::checkLocalRefinementLevel() const
 }
 
 
-void checkMeshDict::checkKeepCellsIntersectingPatches() const
+void Foam::Module::checkMeshDict::checkKeepCellsIntersectingPatches() const
 {
     if (meshDict_.found("keepCellsIntersectingPatches"))
     {
@@ -218,7 +213,7 @@ void checkMeshDict::checkKeepCellsIntersectingPatches() const
 }
 
 
-void checkMeshDict::checkRemoveCellsIntersectingPatches() const
+void Foam::Module::checkMeshDict::checkRemoveCellsIntersectingPatches() const
 {
     if (meshDict_.found("removeCellsIntersectingPatches"))
     {
@@ -238,7 +233,7 @@ void checkMeshDict::checkRemoveCellsIntersectingPatches() const
 }
 
 
-void checkMeshDict::checkObjectRefinements() const
+void Foam::Module::checkMeshDict::checkObjectRefinements() const
 {
     if (meshDict_.found("objectRefinements"))
     {
@@ -301,7 +296,7 @@ void checkMeshDict::checkObjectRefinements() const
 }
 
 
-void checkMeshDict::checkAnisotropicSources() const
+void Foam::Module::checkMeshDict::checkAnisotropicSources() const
 {
     if (meshDict_.found("anisotropicSources"))
     {
@@ -334,7 +329,7 @@ void checkMeshDict::checkAnisotropicSources() const
 }
 
 
-void checkMeshDict::checkSurfaceRefinements() const
+void Foam::Module::checkMeshDict::checkSurfaceRefinements() const
 {
     if (meshDict_.found("surfaceMeshRefinement"))
     {
@@ -422,7 +417,7 @@ void checkMeshDict::checkSurfaceRefinements() const
 }
 
 
-void checkMeshDict::checkEdgeMeshRefinements() const
+void Foam::Module::checkMeshDict::checkEdgeMeshRefinements() const
 {
     if (meshDict_.found("edgeMeshRefinement"))
     {
@@ -510,7 +505,7 @@ void checkMeshDict::checkEdgeMeshRefinements() const
 }
 
 
-void checkMeshDict::checkBoundaryLayers() const
+void Foam::Module::checkMeshDict::checkBoundaryLayers() const
 {
     if (meshDict_.found("boundaryLayers"))
     {
@@ -608,7 +603,7 @@ void checkMeshDict::checkBoundaryLayers() const
 }
 
 
-void checkMeshDict::checkRenameBoundary() const
+void Foam::Module::checkMeshDict::checkRenameBoundary() const
 {
     if (meshDict_.found("renameBoundary"))
     {
@@ -670,7 +665,7 @@ void checkMeshDict::checkRenameBoundary() const
 }
 
 
-void checkMeshDict::checkQualitySettings() const
+void Foam::Module::checkMeshDict::checkQualitySettings() const
 {
     scalar sval;
 
@@ -700,7 +695,7 @@ void checkMeshDict::checkQualitySettings() const
 }
 
 
-void checkMeshDict::checkEntries() const
+void Foam::Module::checkMeshDict::checkEntries() const
 {
     checkBasicSettings();
 
@@ -726,7 +721,7 @@ void checkMeshDict::checkEntries() const
 }
 
 
-void checkMeshDict::updatePatchCellSize
+void Foam::Module::checkMeshDict::updatePatchCellSize
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -806,14 +801,14 @@ void checkMeshDict::updatePatchCellSize
 }
 
 
-void checkMeshDict::updateSubsetCellSize
+void Foam::Module::checkMeshDict::updateSubsetCellSize
 (
     const std::map<word, wordList>& /*patchesFromPatch*/
 )
 {}
 
 
-void checkMeshDict::updateLocalRefinement
+void Foam::Module::checkMeshDict::updateLocalRefinement
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -856,7 +851,7 @@ void checkMeshDict::updateLocalRefinement
 }
 
 
-void checkMeshDict::updateKeepCellsIntersectingPatches
+void Foam::Module::checkMeshDict::updateKeepCellsIntersectingPatches
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -921,7 +916,7 @@ void checkMeshDict::updateKeepCellsIntersectingPatches
 }
 
 
-void checkMeshDict::updateRemoveCellsIntersectingPatches
+void Foam::Module::checkMeshDict::updateRemoveCellsIntersectingPatches
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -991,14 +986,14 @@ void checkMeshDict::updateRemoveCellsIntersectingPatches
 }
 
 
-void checkMeshDict::updateObjectRefinements
+void Foam::Module::checkMeshDict::updateObjectRefinements
 (
     const std::map<word, wordList>& /*patchesFromPatch*/
 )
 {}
 
 
-void checkMeshDict::updateBoundaryLayers
+void Foam::Module::checkMeshDict::updateBoundaryLayers
 (
     const std::map<word, wordList>& patchesFromPatch
 )
@@ -1040,7 +1035,7 @@ void checkMeshDict::updateBoundaryLayers
 }
 
 
-void checkMeshDict::updateRenameBoundary
+void Foam::Module::checkMeshDict::updateRenameBoundary
 (
     const std::map<word, wordList>& patchesFromPatch,
     const std::map<word, word>& patchTypes
@@ -1229,7 +1224,7 @@ void checkMeshDict::updateRenameBoundary
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-checkMeshDict::checkMeshDict
+Foam::Module::checkMeshDict::checkMeshDict
 (
     IOdictionary& meshDict
 )
@@ -1240,15 +1235,9 @@ checkMeshDict::checkMeshDict
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-checkMeshDict::~checkMeshDict()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkMeshDict::updateDictionaries
+void Foam::Module::checkMeshDict::updateDictionaries
 (
     const std::map<word, wordList>& patchesFromPatch,
     const std::map<word, word>& patchTypes,
@@ -1275,9 +1264,5 @@ void checkMeshDict::updateDictionaries
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

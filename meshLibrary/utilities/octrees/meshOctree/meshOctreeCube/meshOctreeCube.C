@@ -29,17 +29,9 @@ License
 #include "Ostream.H"
 #include "meshOctreeSlot.H"
 
-
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * Static data * * * * * * * * * * * * * * * * * * * //
 
-const label meshOctreeCube::hOrder_[24][8] =
+const Foam::label Foam::Module::meshOctreeCube::hOrder_[24][8] =
 {
     {0, 1, 3, 2, 4, 5, 7, 6}, // Morton addressing Z-order
     //{6, 7, 4, 5, 1, 0, 3, 2},
@@ -69,7 +61,7 @@ const label meshOctreeCube::hOrder_[24][8] =
 };
 
 
-const label meshOctreeCube::hOrient_[24][8] =
+const Foam::label Foam::Module::meshOctreeCube::hOrient_[24][8] =
 {
     {0, 0, 0, 0, 0, 0, 0, 0}, // Morton addressing Z-order
     //{1, 2, 0, 3, 4, 0, 5, 6},
@@ -101,7 +93,10 @@ const label meshOctreeCube::hOrient_[24][8] =
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctreeCube::meshOctreeCube(const meshOctreeCubeCoordinates& cc)
+Foam::Module::meshOctreeCube::meshOctreeCube
+(
+    const meshOctreeCubeCoordinates& cc
+)
 :
     meshOctreeCubeBasic(cc),
     activeSlotPtr_(nullptr),
@@ -112,7 +107,7 @@ meshOctreeCube::meshOctreeCube(const meshOctreeCubeCoordinates& cc)
 {}
 
 
-meshOctreeCube::meshOctreeCube
+Foam::Module::meshOctreeCube::meshOctreeCube
 (
     const meshOctreeCubeCoordinates& cc,
     const label nElmts,
@@ -137,15 +132,10 @@ meshOctreeCube::meshOctreeCube
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshOctreeCube::~meshOctreeCube()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-FixedList<meshOctreeCube*, 8> meshOctreeCube::subCubes() const
+Foam::FixedList<Foam::Module::meshOctreeCube*, 8>
+Foam::Module::meshOctreeCube::subCubes() const
 {
     if (!subCubesPtr_)
     {
@@ -164,7 +154,11 @@ FixedList<meshOctreeCube*, 8> meshOctreeCube::subCubes() const
 }
 
 
-Ostream& operator<<(Ostream& os, const meshOctreeCube& oc)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::meshOctreeCube& oc
+)
 {
     const meshOctreeCubeCoordinates cc(oc);
     os << cc;
@@ -172,9 +166,5 @@ Ostream& operator<<(Ostream& os, const meshOctreeCube& oc)
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

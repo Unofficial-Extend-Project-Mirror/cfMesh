@@ -23,17 +23,11 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 #include "SubList.H"
-
-namespace Foam
-{
 
 // * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * //
 
-inline faceListPMG::faceListPMG(const IOobject& io)
+inline Foam::Module::faceListPMG::faceListPMG(const IOobject& io)
 :
     regIOobject(io),
     faceList(readStream(typeName)),
@@ -41,7 +35,11 @@ inline faceListPMG::faceListPMG(const IOobject& io)
 {}
 
 
-inline faceListPMG::faceListPMG(const IOobject& io, const label s)
+inline Foam::Module::faceListPMG::faceListPMG
+(
+    const IOobject& io,
+    const label s
+)
 :
     regIOobject(io),
     faceList(s),
@@ -49,7 +47,11 @@ inline faceListPMG::faceListPMG(const IOobject& io, const label s)
 {}
 
 
-inline faceListPMG::faceListPMG(const IOobject& io, const faceList& fcs)
+inline Foam::Module::faceListPMG::faceListPMG
+(
+    const IOobject& io,
+    const faceList& fcs
+)
 :
     regIOobject(io),
     faceList(fcs),
@@ -57,21 +59,15 @@ inline faceListPMG::faceListPMG(const IOobject& io, const faceList& fcs)
 {}
 
 
-// * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * //
-
-inline faceListPMG::~faceListPMG()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline label faceListPMG::size() const
+inline Foam::label Foam::Module::faceListPMG::size() const
 {
     return nElmts_;
 }
 
 
-inline void faceListPMG::setSize(const label nElmts)
+inline void Foam::Module::faceListPMG::setSize(const label nElmts)
 {
     if (nElmts >= faceList::size())
     {
@@ -96,13 +92,13 @@ inline void faceListPMG::setSize(const label nElmts)
 }
 
 
-inline void faceListPMG::clear()
+inline void Foam::Module::faceListPMG::clear()
 {
     nElmts_ = 0;
 }
 
 
-inline void faceListPMG::append(const face& f)
+inline void Foam::Module::faceListPMG::append(const face& f)
 {
     const label i = nElmts_;
     setSize(i + 1);
@@ -110,7 +106,7 @@ inline void faceListPMG::append(const face& f)
 }
 
 
-inline face& faceListPMG::newElmt(const label fI)
+inline Foam::face& Foam::Module::faceListPMG::newElmt(const label fI)
 {
     setSize(fI + 1);
     return this->operator[](fI);
@@ -119,13 +115,13 @@ inline face& faceListPMG::newElmt(const label fI)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline bool faceListPMG::writeData(Ostream& os) const
+inline bool Foam::Module::faceListPMG::writeData(Ostream& os) const
 {
     return (os << *this).good();
 }
 
 
-inline void faceListPMG::operator=(const faceList& fcs)
+inline void Foam::Module::faceListPMG::operator=(const faceList& fcs)
 {
     setSize(fcs.size());
     forAll(fcs, fI)
@@ -135,7 +131,11 @@ inline void faceListPMG::operator=(const faceList& fcs)
 }
 
 
-inline Ostream& operator<<(Ostream& os, const faceListPMG& fcs)
+inline Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::faceListPMG& fcs
+)
 {
     SubList<face> f(fcs, fcs.nElmts_, 0);
 
@@ -144,7 +144,11 @@ inline Ostream& operator<<(Ostream& os, const faceListPMG& fcs)
 }
 
 
-inline Istream& operator>>(Istream& is, faceListPMG& fcs)
+inline Foam::Istream& Foam::Module::operator>>
+(
+    Istream& is,
+    Foam::Module::faceListPMG& fcs
+)
 {
     faceList& faces = static_cast<faceList&>(fcs);
     is >> faces;
@@ -153,9 +157,5 @@ inline Istream& operator>>(Istream& is, faceListPMG& fcs)
     return is;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

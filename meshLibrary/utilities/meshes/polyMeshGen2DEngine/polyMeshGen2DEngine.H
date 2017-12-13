@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGen2DEngine
+    Foam::Module::polyMeshGen2DEngine
 
 Description
     A simple engine which provides topological information of a 2D mesh
@@ -42,9 +42,10 @@ SourceFiles
 #include "boolList.H"
 #include "labelList.H"
 #include "boundBox.H"
-#include "demandDrivenData.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -165,6 +166,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

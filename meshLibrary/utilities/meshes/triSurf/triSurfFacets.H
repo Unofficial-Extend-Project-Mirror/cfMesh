@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfFacets
+    Foam::Module::triSurfFacets
 
 Description
     Facets for the triangulated surface
@@ -46,6 +46,8 @@ SourceFiles
 #include "Map.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -92,7 +94,7 @@ public:
 
 
     //- Destructor
-    ~triSurfFacets();
+    ~triSurfFacets() = default;
 
 
     // Member functions
@@ -140,6 +142,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

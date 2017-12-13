@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfFeatureEdges
+    Foam::Module::triSurfFeatureEdges
 
 Description
     User - selected list of feature edges used in the meshing process
@@ -42,6 +42,8 @@ SourceFiles
 #include "Map.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -78,7 +80,7 @@ public:
 
 
     //- Destructor
-    ~triSurfFeatureEdges();
+    ~triSurfFeatureEdges() = default;
 
 
     // Member functions
@@ -110,6 +112,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

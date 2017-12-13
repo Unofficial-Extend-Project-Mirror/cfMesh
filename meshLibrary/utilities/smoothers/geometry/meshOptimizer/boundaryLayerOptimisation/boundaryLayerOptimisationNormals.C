@@ -44,12 +44,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void boundaryLayerOptimisation::calculateNormalVectors
+void Foam::Module::boundaryLayerOptimisation::calculateNormalVectors
 (
     const direction eType,
     pointNormalsType& pointPatchNormal
@@ -193,7 +188,7 @@ void boundaryLayerOptimisation::calculateNormalVectors
 }
 
 
-void boundaryLayerOptimisation::calculateNormalVectorsSmother
+void Foam::Module::boundaryLayerOptimisation::calculateNormalVectorsSmother
 (
     const direction eType,
     pointNormalsType& pointPatchNormal
@@ -321,7 +316,7 @@ void boundaryLayerOptimisation::calculateNormalVectorsSmother
 }
 
 
-void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
+void Foam::Module::boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
 (
     vectorField& hairVecs
 )
@@ -544,7 +539,7 @@ void boundaryLayerOptimisation::calculateHairVectorsAtTheBoundary
 }
 
 
-void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
+void Foam::Module::boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
 {
     pointFieldPMG& points = mesh_.points();
 
@@ -815,7 +810,7 @@ void boundaryLayerOptimisation::optimiseHairNormalsAtTheBoundary()
 }
 
 
-void boundaryLayerOptimisation::optimiseHairNormalsInside()
+void Foam::Module::boundaryLayerOptimisation::optimiseHairNormalsInside()
 {
     pointFieldPMG& points = mesh_.points();
 
@@ -1159,9 +1154,5 @@ void boundaryLayerOptimisation::optimiseHairNormalsInside()
     Info<< "Finished smoothing internal hair vectors" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

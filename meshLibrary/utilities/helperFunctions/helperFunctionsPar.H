@@ -22,12 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 InNamespace
-    Foam::help
+    Foam::Module::help
 
 Description
     Functions used for exchanging data between processors
 
 SourceFiles
+    helperFunctionsPar.C
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,7 +44,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 namespace help
 {
 
@@ -81,6 +83,7 @@ void reverseAddressingSMP(const GraphType<RowType>&, GraphType<RowType>&);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 #ifdef NoRepository

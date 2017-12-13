@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::voronoiMeshGenerator
+    Foam::Module::voronoiMeshGenerator
 
 Description
     Creates voronoi mesh template from the octree
@@ -44,9 +44,12 @@ SourceFiles
 namespace Foam
 {
 // Forward declarations
-class triSurf;
-class meshOctree;
 class Time;
+
+namespace Module
+{
+class meshOctree;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                     Class voronoiMeshGenerator Declaration
@@ -153,6 +156,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

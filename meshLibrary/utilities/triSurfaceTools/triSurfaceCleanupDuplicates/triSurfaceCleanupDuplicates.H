@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceCleanupDuplicates
+    Foam::Module::triSurfaceCleanupDuplicates
 
 Description
     Provides information regarding surface partitions on the surface
@@ -43,7 +43,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declaration
 class meshOctree;
 
@@ -99,7 +100,7 @@ public:
     );
 
     //- Destructor
-    ~triSurfaceCleanupDuplicates();
+    ~triSurfaceCleanupDuplicates() = default;
 
 
     // Member Functions
@@ -111,6 +112,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -34,6 +34,7 @@ Description
 #include "refineBoundaryLayers.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -109,8 +110,8 @@ int main(int argc, char *argv[])
 {
     argList::addBoolOption("2DLayers");
 
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     IOdictionary meshDict
     (

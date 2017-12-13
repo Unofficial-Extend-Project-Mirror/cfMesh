@@ -34,26 +34,25 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+namespace Module
+{
+    defineTypeNameAndDebug(createFundamentalSheetsFJ, 0);
+    addToRunTimeSelectionTable
+    (
+        createFundamentalSheets,
+        createFundamentalSheetsFJ,
+        polyMeshGen
+    );
+}
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(createFundamentalSheetsFJ, 0);
-addToRunTimeSelectionTable
-(
-    createFundamentalSheets,
-    createFundamentalSheetsFJ,
-    polyMeshGen
-);
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void createFundamentalSheetsFJ::createInitialSheet()
+void Foam::Module::createFundamentalSheetsFJ::createInitialSheet()
 {
     if (!createWrapperSheet_)
         return;
@@ -83,7 +82,7 @@ void createFundamentalSheetsFJ::createInitialSheet()
 }
 
 
-void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
+void Foam::Module::createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
@@ -198,7 +197,7 @@ void createFundamentalSheetsFJ::createSheetsAtFeatureEdges()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-createFundamentalSheetsFJ::createFundamentalSheetsFJ
+Foam::Module::createFundamentalSheetsFJ::createFundamentalSheetsFJ
 (
     polyMeshGen& mesh,
     const bool createWrapperSheet
@@ -211,15 +210,5 @@ createFundamentalSheetsFJ::createFundamentalSheetsFJ
     createSheetsAtFeatureEdges();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-createFundamentalSheetsFJ::~createFundamentalSheetsFJ()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

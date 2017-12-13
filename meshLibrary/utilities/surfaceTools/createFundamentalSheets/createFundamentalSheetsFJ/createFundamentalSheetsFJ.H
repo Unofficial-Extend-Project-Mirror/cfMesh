@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::createFundamentalSheetsFJ
+    Foam::Module::createFundamentalSheetsFJ
 
 Description
     Inserts sheets at the boundary of the mesh to capture all feature edges.
@@ -48,7 +48,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshSurfaceEngine;
 
@@ -93,12 +94,13 @@ public:
 
 
     //- Destructor
-    ~createFundamentalSheetsFJ();
+    ~createFundamentalSheetsFJ() = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

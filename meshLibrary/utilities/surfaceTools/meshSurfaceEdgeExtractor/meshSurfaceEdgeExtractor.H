@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceEdgeExtractor
+    Foam::Module::meshSurfaceEdgeExtractor
 
 Description
     Extracts edges and corners to cornform the mesh to the geometry
@@ -42,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshOctree;
 class meshSurfaceEngine;
@@ -100,12 +101,13 @@ public:
     );
 
     //- Destructor
-    ~meshSurfaceEdgeExtractor();
+    ~meshSurfaceEdgeExtractor() = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

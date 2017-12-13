@@ -28,12 +28,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceCopyParts::markFacetsForCopying
+void Foam::Module::triSurfaceCopyParts::markFacetsForCopying
 (
     const wordList& parts,
     boolList& copyFacets
@@ -93,7 +88,7 @@ void triSurfaceCopyParts::markFacetsForCopying
 }
 
 
-void triSurfaceCopyParts::copySurfaceMesh
+void Foam::Module::triSurfaceCopyParts::copySurfaceMesh
 (
     const boolList& copyFacets,
     triSurf& s
@@ -272,19 +267,19 @@ void triSurfaceCopyParts::copySurfaceMesh
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfaceCopyParts::triSurfaceCopyParts(const triSurf& surface)
+Foam::Module::triSurfaceCopyParts::triSurfaceCopyParts(const triSurf& surface)
 :
     surf_(surface)
 {}
 
 
-triSurfaceCopyParts::~triSurfaceCopyParts()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceCopyParts::copySurface(const wordList& patches, triSurf& s) const
+void Foam::Module::triSurfaceCopyParts::copySurface
+(
+    const wordList& patches,
+    triSurf& s
+) const
 {
     boolList copyFacets(surf_.size(), false);
 
@@ -294,7 +289,10 @@ void triSurfaceCopyParts::copySurface(const wordList& patches, triSurf& s) const
 }
 
 
-triSurf* triSurfaceCopyParts::copySurface(const wordList& patches) const
+Foam::Module::triSurf* Foam::Module::triSurfaceCopyParts::copySurface
+(
+    const wordList& patches
+) const
 {
     boolList copyFacets(surf_.size(), false);
 
@@ -307,9 +305,5 @@ triSurf* triSurfaceCopyParts::copySurface(const wordList& patches) const
     return sPtr;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

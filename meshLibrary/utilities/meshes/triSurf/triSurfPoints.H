@@ -44,6 +44,8 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -79,7 +81,7 @@ public:
 
 
     //- Destructor
-    ~triSurfPoints();
+    ~triSurfPoints() = default;
 
 
     // Member functions
@@ -111,6 +113,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

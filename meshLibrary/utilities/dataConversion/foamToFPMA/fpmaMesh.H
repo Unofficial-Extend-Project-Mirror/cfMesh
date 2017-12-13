@@ -41,6 +41,8 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                           Class fpmaMesh Declaration
@@ -77,7 +79,7 @@ public:
 
 
     //- Destructor
-    ~fpmaMesh();
+    ~fpmaMesh() = default;
 
 
     // Member Functions
@@ -88,6 +90,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

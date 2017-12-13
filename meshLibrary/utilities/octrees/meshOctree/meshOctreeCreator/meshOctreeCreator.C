@@ -28,17 +28,9 @@ License
 #include "boundBox.H"
 #include "demandDrivenData.H"
 
-
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshOctreeCreator::meshOctreeCreator(meshOctree& mo)
+Foam::Module::meshOctreeCreator::meshOctreeCreator(meshOctree& mo)
 :
     octree_(mo),
     scalingFactor_(1.0),
@@ -49,7 +41,7 @@ meshOctreeCreator::meshOctreeCreator(meshOctree& mo)
 {}
 
 
-meshOctreeCreator::meshOctreeCreator
+Foam::Module::meshOctreeCreator::meshOctreeCreator
 (
     meshOctree& mo,
     const IOdictionary& dict
@@ -64,28 +56,18 @@ meshOctreeCreator::meshOctreeCreator
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshOctreeCreator::~meshOctreeCreator()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeCreator::setScalingFactor(const scalar s)
+void Foam::Module::meshOctreeCreator::setScalingFactor(const scalar s)
 {
     scalingFactor_ = s;
 }
 
 
-void meshOctreeCreator::activateHexRefinement()
+void Foam::Module::meshOctreeCreator::activateHexRefinement()
 {
     hexRefinement_ = true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

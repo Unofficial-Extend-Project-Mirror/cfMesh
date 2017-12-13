@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::labelledPair
+    Foam::Module::labelledPair
 
 Description
     A class containing point label and meshOctreeCubeCoordinates.
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -82,8 +84,7 @@ public:
 
 
     //- Destructor
-    ~labelledPair()
-    {}
+    ~labelledPair() = default;
 
 
     // Member functions
@@ -219,16 +220,16 @@ public:
 };
 
 
-//- Specify data associated with labelledPair
-//- type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for labelledPair are contiguous
 template<>
-inline bool contiguous<labelledPair>()
+inline bool contiguous<Module::labelledPair>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

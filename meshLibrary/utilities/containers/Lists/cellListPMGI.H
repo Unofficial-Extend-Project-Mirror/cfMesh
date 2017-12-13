@@ -24,38 +24,26 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 #include "SubList.H"
-
-namespace Foam
-{
 
 // * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * * //
 
-inline cellListPMG::cellListPMG()
+inline Foam::Module::cellListPMG::cellListPMG()
 :
     cellList(),
     nElmts_(0)
 {}
 
 
-// * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * * //
-
-inline cellListPMG::~cellListPMG()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline label cellListPMG::size() const
+inline Foam::label Foam::Module::cellListPMG::size() const
 {
     return nElmts_;
 }
 
 
-inline void cellListPMG::setSize(const label nElmts)
+inline void Foam::Module::cellListPMG::setSize(const label nElmts)
 {
     if (nElmts >= cellList::size())
     {
@@ -80,13 +68,13 @@ inline void cellListPMG::setSize(const label nElmts)
 }
 
 
-inline void cellListPMG::clear()
+inline void Foam::Module::cellListPMG::clear()
 {
     nElmts_ = 0;
 }
 
 
-inline void cellListPMG::append(const cell& c)
+inline void Foam::Module::cellListPMG::append(const cell& c)
 {
     const label i = nElmts_;
     setSize(i + 1);
@@ -94,7 +82,7 @@ inline void cellListPMG::append(const cell& c)
 }
 
 
-inline cell& cellListPMG::newElmt(const label cI)
+inline Foam::cell& Foam::Module::cellListPMG::newElmt(const label cI)
 {
     setSize(cI + 1);
     return this->operator[](cI);
@@ -103,7 +91,7 @@ inline cell& cellListPMG::newElmt(const label cI)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline void cellListPMG::operator=(const cellList& cls)
+inline void Foam::Module::cellListPMG::operator=(const cellList& cls)
 {
     setSize(cls.size());
     forAll(cls, cI)
@@ -113,7 +101,11 @@ inline void cellListPMG::operator=(const cellList& cls)
 }
 
 
-inline Ostream& operator<<(Ostream& os, const cellListPMG& cls)
+inline Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::cellListPMG& cls
+)
 {
     SubList<cell> c(cls, cls.nElmts_, 0);
 
@@ -122,7 +114,11 @@ inline Ostream& operator<<(Ostream& os, const cellListPMG& cls)
 }
 
 
-inline Istream& operator>>(Istream& is, cellListPMG& cls)
+inline Foam::Istream& Foam::Module::operator>>
+(
+    Istream& is,
+    Foam::Module::cellListPMG& cls
+)
 {
     cellList& cells = static_cast<cellList&>(cls);
     is >> cells;
@@ -131,9 +127,5 @@ inline Istream& operator>>(Istream& is, cellListPMG& cls)
     return is;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceClassifyEdges
+    Foam::Module::triSurfaceClassifyEdges
 
 Description
     Divides the surface mesh into regions bounded by feature edges
@@ -45,7 +45,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshOctree;
 
@@ -99,7 +100,7 @@ public:
     triSurfaceClassifyEdges(const meshOctree& octree);
 
     //- Destructor
-    ~triSurfaceClassifyEdges();
+    ~triSurfaceClassifyEdges() = default;
 
 
     // Member Functions
@@ -117,6 +118,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

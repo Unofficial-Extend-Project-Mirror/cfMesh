@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceImportSurfaceAsSubset::createOctree
+void Foam::Module::triSurfaceImportSurfaceAsSubset::createOctree
 (
     const triSurf& /*surf*/,
     meshOctree& /*octree*/
@@ -45,14 +40,18 @@ void triSurfaceImportSurfaceAsSubset::createOctree
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfaceImportSurfaceAsSubset::triSurfaceImportSurfaceAsSubset(triSurf& surface)
+Foam::Module::triSurfaceImportSurfaceAsSubset::triSurfaceImportSurfaceAsSubset
+(
+    triSurf& surface
+)
 :
     surf_(surface),
     octreePtr_(nullptr)
 {}
 
 
-triSurfaceImportSurfaceAsSubset::~triSurfaceImportSurfaceAsSubset()
+Foam::Module::triSurfaceImportSurfaceAsSubset::
+~triSurfaceImportSurfaceAsSubset()
 {
     deleteDemandDrivenData(octreePtr_);
 }
@@ -60,7 +59,7 @@ triSurfaceImportSurfaceAsSubset::~triSurfaceImportSurfaceAsSubset()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceImportSurfaceAsSubset::addSurfaceAsSubset
+void Foam::Module::triSurfaceImportSurfaceAsSubset::addSurfaceAsSubset
 (
     const triSurf& importSurf,
     const word& subsetName,
@@ -232,9 +231,5 @@ void triSurfaceImportSurfaceAsSubset::addSurfaceAsSubset
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

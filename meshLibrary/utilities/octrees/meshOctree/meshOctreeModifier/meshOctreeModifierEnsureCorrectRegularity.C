@@ -34,12 +34,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::ensureCorrectRegularity(labelList& refineBox)
+void Foam::Module::meshOctreeModifier::ensureCorrectRegularity
+(
+    labelList& refineBox
+)
 {
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
@@ -193,7 +191,10 @@ void meshOctreeModifier::ensureCorrectRegularity(labelList& refineBox)
 }
 
 
-bool meshOctreeModifier::ensureCorrectRegularitySons(labelList& refineBox)
+bool Foam::Module::meshOctreeModifier::ensureCorrectRegularitySons
+(
+    labelList& refineBox
+)
 {
     const LongList<meshOctreeCube*>& leaves = octree_.leaves_;
 
@@ -273,9 +274,5 @@ bool meshOctreeModifier::ensureCorrectRegularitySons(labelList& refineBox)
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

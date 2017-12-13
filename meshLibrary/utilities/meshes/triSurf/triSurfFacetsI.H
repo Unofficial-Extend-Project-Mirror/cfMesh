@@ -27,36 +27,38 @@ License
 
 #include "triSurfFacets.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline label triSurfFacets::size() const
+inline Foam::label Foam::Module::triSurfFacets::size() const
 {
     return triangles_.size();
 }
 
 
-inline const LongList<labelledTri>& triSurfFacets::facets() const
+inline const Foam::Module::LongList<Foam::labelledTri>&
+Foam::Module::triSurfFacets::facets() const
 {
     return triangles_;
 }
 
 
-inline const geometricSurfacePatchList& triSurfFacets::patches() const
+inline const Foam::geometricSurfacePatchList&
+Foam::Module::triSurfFacets::patches() const
 {
     return patches_;
 }
 
 
-inline void triSurfFacets::appendTriangle(const labelledTri& tri)
+inline void Foam::Module::triSurfFacets::appendTriangle
+(
+    const labelledTri& tri
+)
 {
     triangles_.append(tri);
 }
 
 
-inline void triSurfFacets::addFacetToSubset
+inline void Foam::Module::triSurfFacets::addFacetToSubset
 (
     const label setI,
     const label triI
@@ -72,7 +74,7 @@ inline void triSurfFacets::addFacetToSubset
 }
 
 
-inline void triSurfFacets::removeFacetFromSubset
+inline void Foam::Module::triSurfFacets::removeFacetFromSubset
 (
     const label setI,
     const label triI
@@ -88,7 +90,7 @@ inline void triSurfFacets::removeFacetFromSubset
 }
 
 
-inline void triSurfFacets::facetInSubsets
+inline void Foam::Module::triSurfFacets::facetInSubsets
 (
     const label triI,
     DynList<label>& facetSubsets
@@ -106,7 +108,10 @@ inline void triSurfFacets::facetInSubsets
 }
 
 
-inline void triSurfFacets::facetSubsetIndices(DynList<label>& indices) const
+inline void Foam::Module::triSurfFacets::facetSubsetIndices
+(
+    DynList<label>& indices
+) const
 {
     indices.clear();
 
@@ -118,7 +123,7 @@ inline void triSurfFacets::facetSubsetIndices(DynList<label>& indices) const
 
 
 template<class ListType>
-inline void triSurfFacets::facetsInSubset
+inline void Foam::Module::triSurfFacets::facetsInSubset
 (
     const label setI,
     ListType& facetsLabels
@@ -126,7 +131,7 @@ inline void triSurfFacets::facetsInSubset
 {
     facetsLabels.clear();
 
-    Map<meshSubset>::const_iterator it = facetSubsets_.find(setI);
+    Map<meshSubset>::const_iterator it = facetSubsets_.cfind(setI);
     if (it == facetSubsets_.end())
     {
         return;
@@ -137,7 +142,10 @@ inline void triSurfFacets::facetsInSubset
 
 
 template<class ListType>
-inline void triSurfFacets::updateFacetsSubsets(const ListType& newFacetsLabels)
+inline void Foam::Module::triSurfFacets::updateFacetsSubsets
+(
+    const ListType& newFacetsLabels
+)
 {
     forAllIters(facetSubsets_, it)
     {
@@ -146,14 +154,11 @@ inline void triSurfFacets::updateFacetsSubsets(const ListType& newFacetsLabels)
 }
 
 
-inline const labelledTri& triSurfFacets::operator[](const label triI) const
+inline const Foam::labelledTri&
+Foam::Module::triSurfFacets::operator[](const label triI) const
 {
     return triangles_[triI];
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

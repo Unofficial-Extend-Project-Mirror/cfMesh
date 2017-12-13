@@ -31,12 +31,11 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const vector surfaceOptimizer::dirVecs[4] =
+const Foam::vector Foam::Module::surfaceOptimizer::dirVecs[4] =
     {
         vector(-1.0, -1.0, 0.0),
         vector(1.0, -1.0, 0.0),
@@ -46,7 +45,7 @@ const vector surfaceOptimizer::dirVecs[4] =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scalar surfaceOptimizer::evaluateStabilisationFactor() const
+Foam::scalar Foam::Module::surfaceOptimizer::evaluateStabilisationFactor() const
 {
     // find the minimum area
     scalar Amin(VGREAT), LsqMax(0.0);
@@ -93,7 +92,7 @@ scalar surfaceOptimizer::evaluateStabilisationFactor() const
 }
 
 
-scalar surfaceOptimizer::evaluateFunc(const scalar K) const
+Foam::scalar Foam::Module::surfaceOptimizer::evaluateFunc(const scalar K) const
 {
     scalar func(0.0);
 
@@ -131,7 +130,7 @@ scalar surfaceOptimizer::evaluateFunc(const scalar K) const
 
 
 // evaluate gradients needed for optimisation
-void surfaceOptimizer::evaluateGradients
+void Foam::Module::surfaceOptimizer::evaluateGradients
 (
     const scalar K,
     vector& gradF,
@@ -206,7 +205,10 @@ void surfaceOptimizer::evaluateGradients
 }
 
 
-scalar surfaceOptimizer::optimiseDivideAndConquer(const scalar tol)
+Foam::scalar Foam::Module::surfaceOptimizer::optimiseDivideAndConquer
+(
+    const scalar tol
+)
 {
     point& pOpt = pts_[trias_[0][0]];
 
@@ -270,7 +272,10 @@ scalar surfaceOptimizer::optimiseDivideAndConquer(const scalar tol)
 }
 
 
-scalar surfaceOptimizer::optimiseSteepestDescent(const scalar tol)
+Foam::scalar Foam::Module::surfaceOptimizer::optimiseSteepestDescent
+(
+    const scalar tol
+)
 {
     point& pOpt = pts_[trias_[0][0]];
 
@@ -351,7 +356,7 @@ scalar surfaceOptimizer::optimiseSteepestDescent(const scalar tol)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-surfaceOptimizer::surfaceOptimizer
+Foam::Module::surfaceOptimizer::surfaceOptimizer
 (
     DynList<point>& pts,
     const DynList<triFace>& trias
@@ -378,13 +383,9 @@ surfaceOptimizer::surfaceOptimizer
 }
 
 
-surfaceOptimizer::~surfaceOptimizer()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-point surfaceOptimizer::optimizePoint(const scalar tol)
+Foam::point Foam::Module::surfaceOptimizer::optimizePoint(const scalar tol)
 {
     const scalar scale = mag(pMax_ - pMin_);
     forAll(pts_, i)
@@ -410,9 +411,5 @@ point surfaceOptimizer::optimizePoint(const scalar tol)
     return pOpt;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

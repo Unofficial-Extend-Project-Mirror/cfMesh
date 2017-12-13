@@ -27,14 +27,9 @@ License
 #include "meshSurfacePartitioner.H"
 #include "demandDrivenData.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-detectBoundaryLayers::detectBoundaryLayers
+Foam::Module::detectBoundaryLayers::detectBoundaryLayers
 (
     const meshSurfacePartitioner& meshSurface,
     const bool is2DMesh
@@ -57,15 +52,5 @@ detectBoundaryLayers::detectBoundaryLayers
     Info<< "Finished with bnd layer detection" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-detectBoundaryLayers::~detectBoundaryLayers()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

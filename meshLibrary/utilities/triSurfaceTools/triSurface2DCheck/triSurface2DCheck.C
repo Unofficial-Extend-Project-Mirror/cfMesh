@@ -29,12 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurface2DCheck::createCovarianceMatrix()
+void Foam::Module::triSurface2DCheck::createCovarianceMatrix()
 {
     const vectorField& fNormals = surf_.facetNormals();
 
@@ -53,7 +48,7 @@ void triSurface2DCheck::createCovarianceMatrix()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurface2DCheck::triSurface2DCheck(const triSurf& surface)
+Foam::Module::triSurface2DCheck::triSurface2DCheck(const triSurf& surface)
 :
     surf_(surface),
     covarianceMatrix_(symmTensor::zero)
@@ -62,13 +57,9 @@ triSurface2DCheck::triSurface2DCheck(const triSurf& surface)
 }
 
 
-triSurface2DCheck::~triSurface2DCheck()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool triSurface2DCheck::is2DSurface() const
+bool Foam::Module::triSurface2DCheck::is2DSurface() const
 {
     const pointField& points = surf_.points();
 
@@ -129,7 +120,7 @@ bool triSurface2DCheck::is2DSurface() const
 }
 
 
-void triSurface2DCheck::createSubsets()
+void Foam::Module::triSurface2DCheck::createSubsets()
 {
     const pointField& points = surf_.points();
     const vectorField& fNormals = surf_.facetNormals();
@@ -166,9 +157,5 @@ void triSurface2DCheck::createSubsets()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

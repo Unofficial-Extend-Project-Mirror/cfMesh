@@ -32,10 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-label faceDecomposition::concaveVertex() const
+Foam::label Foam::Module::faceDecomposition::concaveVertex() const
 {
     vector n = f_.normal(points_);
     n /= mag(n);
@@ -82,7 +79,7 @@ label faceDecomposition::concaveVertex() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-faceDecomposition::faceDecomposition
+Foam::Module::faceDecomposition::faceDecomposition
 (
     const face& f,
     const pointField& pts
@@ -93,13 +90,9 @@ faceDecomposition::faceDecomposition
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-faceDecomposition::~faceDecomposition()
-{}
-
-
-bool faceDecomposition::isFaceConvex() const
+bool Foam::Module::faceDecomposition::isFaceConvex() const
 {
     if (concaveVertex() == -1)
     {
@@ -110,9 +103,8 @@ bool faceDecomposition::isFaceConvex() const
 }
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool faceDecomposition::isFacePlanar(const scalar tol) const
+bool Foam::Module::faceDecomposition::isFacePlanar(const scalar tol) const
 {
     vector nref = f_.normal(points_);
     nref /= mag(nref);
@@ -132,7 +124,7 @@ bool faceDecomposition::isFacePlanar(const scalar tol) const
 }
 
 
-bool faceDecomposition::isFacePlanar() const
+bool Foam::Module::faceDecomposition::isFacePlanar() const
 {
     scalar tol(0.0);
 
@@ -148,7 +140,7 @@ bool faceDecomposition::isFacePlanar() const
 }
 
 
-faceList faceDecomposition::decomposeFace() const
+Foam::faceList Foam::Module::faceDecomposition::decomposeFace() const
 {
     faceList ff = decomposeFaceIntoTriangles();
 
@@ -251,7 +243,11 @@ faceList faceDecomposition::decomposeFace() const
 }
 
 
-faceList faceDecomposition::decomposeFaceIntoTriangles(const label cv) const
+Foam::faceList
+Foam::Module::faceDecomposition::decomposeFaceIntoTriangles
+(
+    const label cv
+) const
 {
     if (cv != -1)
     {
@@ -297,15 +293,12 @@ faceList faceDecomposition::decomposeFaceIntoTriangles(const label cv) const
 }
 
 
-faceList faceDecomposition::decomposeFaceIntoTriangles() const
+Foam::faceList
+Foam::Module::faceDecomposition::decomposeFaceIntoTriangles() const
 {
     const label cv = concaveVertex();
     return decomposeFaceIntoTriangles(cv);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // ************************************************************************* //

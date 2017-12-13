@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenGeometryModification
+    Foam::Module::polyMeshGenGeometryModification
 
 Description
     Modifies coordinates of points in the mesh to achieve anistropy
@@ -44,8 +44,10 @@ SourceFiles
 
 namespace Foam
 {
-
 class dictionary;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                Class polyMeshGenGeometryModification Declaration
@@ -107,6 +109,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

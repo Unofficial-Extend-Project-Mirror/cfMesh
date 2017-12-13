@@ -25,34 +25,31 @@ License
 
 #include "triSurfFeatureEdges.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfFeatureEdges::triSurfFeatureEdges()
+Foam::Module::triSurfFeatureEdges::triSurfFeatureEdges()
 :
     featureEdges_(),
     featureEdgeSubsets_()
 {}
 
 
-triSurfFeatureEdges::triSurfFeatureEdges(const edgeLongList& featureEdges)
+Foam::Module::triSurfFeatureEdges::triSurfFeatureEdges
+(
+    const edgeLongList& featureEdges
+)
 :
     featureEdges_(featureEdges),
     featureEdgeSubsets_()
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triSurfFeatureEdges::~triSurfFeatureEdges()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
+Foam::label Foam::Module::triSurfFeatureEdges::addEdgeSubset
+(
+    const word& subsetName
+)
 {
     label id = edgeSubsetIndex(subsetName);
     if (id >= 0)
@@ -77,7 +74,7 @@ label triSurfFeatureEdges::addEdgeSubset(const word& subsetName)
 }
 
 
-void triSurfFeatureEdges::removeEdgeSubset(const label subsetID)
+void Foam::Module::triSurfFeatureEdges::removeEdgeSubset(const label subsetID)
 {
     if (featureEdgeSubsets_.find(subsetID) == featureEdgeSubsets_.end())
     {
@@ -88,7 +85,10 @@ void triSurfFeatureEdges::removeEdgeSubset(const label subsetID)
 }
 
 
-word triSurfFeatureEdges::edgeSubsetName(const label subsetID) const
+Foam::word Foam::Module::triSurfFeatureEdges::edgeSubsetName
+(
+    const label subsetID
+) const
 {
     Map<meshSubset>::const_iterator it = featureEdgeSubsets_.find(subsetID);
     if (it == featureEdgeSubsets_.end())
@@ -101,7 +101,10 @@ word triSurfFeatureEdges::edgeSubsetName(const label subsetID) const
 }
 
 
-label triSurfFeatureEdges::edgeSubsetIndex(const word& subsetName) const
+Foam::label Foam::Module::triSurfFeatureEdges::edgeSubsetIndex
+(
+    const word& subsetName
+) const
 {
     forAllConstIters(featureEdgeSubsets_, it)
     {
@@ -114,9 +117,5 @@ label triSurfFeatureEdges::edgeSubsetIndex(const word& subsetName) const
     return -1;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -28,12 +28,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void cartesianMeshExtractor::createPointsAndAddressing()
+void Foam::Module::cartesianMeshExtractor::createPointsAndAddressing()
 {
     Info<< "Creating octree vertices" << endl;
 
@@ -52,9 +47,5 @@ void cartesianMeshExtractor::createPointsAndAddressing()
     Info<< "Finished creating octree vertices" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

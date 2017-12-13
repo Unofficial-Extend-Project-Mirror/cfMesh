@@ -25,12 +25,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline label extrudeLayer::addressingCalculator::origFaceLabel
+inline Foam::label
+Foam::Module::extrudeLayer::addressingCalculator::origFaceLabel
 (
     const label extrudedI
 ) const
@@ -39,7 +35,8 @@ inline label extrudeLayer::addressingCalculator::origFaceLabel
 }
 
 
-inline label extrudeLayer::addressingCalculator::positionInFace
+inline Foam::label
+Foam::Module::extrudeLayer::addressingCalculator::positionInFace
 (
     const label extrudedI,
     const label pointI
@@ -51,7 +48,8 @@ inline label extrudeLayer::addressingCalculator::positionInFace
 }
 
 
-inline label extrudeLayer::addressingCalculator::origPointLabel
+inline Foam::label
+Foam::Module::extrudeLayer::addressingCalculator::origPointLabel
 (
     const label extrudedI,
     const label pos
@@ -75,7 +73,8 @@ inline label extrudeLayer::addressingCalculator::origPointLabel
 }
 
 
-inline label extrudeLayer::addressingCalculator::origPoint
+inline Foam::label
+Foam::Module::extrudeLayer::addressingCalculator::origPoint
 (
     const label extrudedI,
     const label pointI
@@ -101,7 +100,8 @@ inline label extrudeLayer::addressingCalculator::origPoint
 }
 
 
-inline label extrudeLayer::addressingCalculator::faceSharingEdge
+inline Foam::label
+Foam::Module::extrudeLayer::addressingCalculator::faceSharingEdge
 (
     const label extrudedI,
     const label eI
@@ -139,7 +139,7 @@ inline label extrudeLayer::addressingCalculator::faceSharingEdge
 }
 
 
-inline void extrudeLayer::addressingCalculator::facesSharingEdge
+inline void Foam::Module::extrudeLayer::addressingCalculator::facesSharingEdge
 (
     const label start,
     const label end,
@@ -159,9 +159,5 @@ inline void extrudeLayer::addressingCalculator::facesSharingEdge
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

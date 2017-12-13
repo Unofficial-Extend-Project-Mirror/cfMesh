@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceOptimizer
+    Foam::Module::meshSurfaceOptimizer
 
 Description
     Surface smoothing without any topological changes
@@ -51,11 +51,13 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
+class plane;
+
+namespace Module
+{
 class meshOctree;
 class meshSurfaceMapper;
-class plane;
 
 /*---------------------------------------------------------------------------*\
                     Class meshSurfaceOptimizer Declaration
@@ -330,6 +332,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

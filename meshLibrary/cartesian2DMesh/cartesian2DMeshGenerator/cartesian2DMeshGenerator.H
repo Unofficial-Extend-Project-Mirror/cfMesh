@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::cartesian2DMeshGenerator
+    Foam::Module::cartesian2DMeshGenerator
 
 Description
     Creates a 2D cartesian mesh from the quadtree
@@ -44,9 +44,12 @@ SourceFiles
 namespace Foam
 {
 // Forward declarations
-class triSurf;
-class meshOctree;
 class Time;
+
+namespace Module
+{
+class meshOctree;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                   Class cartesian2DMeshGenerator Declaration
@@ -138,6 +141,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

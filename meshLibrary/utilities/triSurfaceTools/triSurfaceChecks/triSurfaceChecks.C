@@ -42,17 +42,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace triSurfaceChecks
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-label checkAngles
+Foam::label Foam::Module::triSurfaceChecks::checkAngles
 (
     const triSurf& surf,
     labelLongList& badTriangles,
@@ -95,7 +85,7 @@ label checkAngles
 }
 
 
-label checkAngles
+Foam::label Foam::Module::triSurfaceChecks::checkAngles
 (
     triSurf& surf,
     const word subsetName,
@@ -121,6 +111,10 @@ label checkAngles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+namespace Module
+{
 namespace manifoldOps
 {
 
@@ -195,9 +189,15 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace manifoldOps
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+namespace Module
+{
 namespace selectorOps
 {
 
@@ -221,11 +221,13 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace selectorOps
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 
-label checkSurfaceManifolds
+Foam::label Foam::Module::triSurfaceChecks::checkSurfaceManifolds
 (
     const triSurf& surf,
     labelLongList& triangleInManifold
@@ -246,7 +248,7 @@ label checkSurfaceManifolds
 }
 
 
-label checkSurfaceManifolds
+Foam::label Foam::Module::triSurfaceChecks::checkSurfaceManifolds
 (
     triSurf& surf,
     const word subsetPrefix
@@ -276,7 +278,11 @@ label checkSurfaceManifolds
 }
 
 
-label checkForHoles(const triSurf& surf, labelLongList& badTriangles)
+Foam::label Foam::Module::triSurfaceChecks::checkForHoles
+(
+    const triSurf& surf,
+    labelLongList& badTriangles
+)
 {
     badTriangles.clear();
 
@@ -300,7 +306,11 @@ label checkForHoles(const triSurf& surf, labelLongList& badTriangles)
 }
 
 
-label checkForHoles(triSurf& surf, const word subsetName)
+Foam::label Foam::Module::triSurfaceChecks::checkForHoles
+(
+    triSurf& surf,
+    const word subsetName
+)
 {
     labelLongList trianglesNearHoles;
 
@@ -319,7 +329,11 @@ label checkForHoles(triSurf& surf, const word subsetName)
 }
 
 
-label checkForNonManifoldEdges(const triSurf& surf, labelLongList& badTriangles)
+Foam::label Foam::Module::triSurfaceChecks::checkForNonManifoldEdges
+(
+    const triSurf& surf,
+    labelLongList& badTriangles
+)
 {
     badTriangles.clear();
 
@@ -346,7 +360,7 @@ label checkForNonManifoldEdges(const triSurf& surf, labelLongList& badTriangles)
 }
 
 
-label checkForNonManifoldEdges
+Foam::label Foam::Module::triSurfaceChecks::checkForNonManifoldEdges
 (
     triSurf& surf,
     const word subsetPrefix
@@ -371,6 +385,10 @@ label checkForNonManifoldEdges
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+namespace Module
+{
 namespace orientationOps
 {
 
@@ -463,10 +481,17 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace orientationOps
+} // End namespace Module
+} // End namespace Foam
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label checkOrientation(const triSurf& surf, labelLongList& triangleInGroup)
+Foam::label Foam::Module::triSurfaceChecks::checkOrientation
+(
+    const triSurf& surf,
+    labelLongList& triangleInGroup
+)
 {
     triangleInGroup.setSize(surf.size());
     triangleInGroup = -1;
@@ -488,7 +513,11 @@ label checkOrientation(const triSurf& surf, labelLongList& triangleInGroup)
 }
 
 
-label checkOrientation(triSurf& surf, const word subsetPrefix)
+Foam::label Foam::Module::triSurfaceChecks::checkOrientation
+(
+    triSurf& surf,
+    const word subsetPrefix
+)
 {
     labelLongList triangleInGroup;
 
@@ -517,6 +546,10 @@ label checkOrientation(triSurf& surf, const word subsetPrefix)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+namespace Foam
+{
+namespace Module
+{
 namespace connectionOps
 {
 
@@ -590,10 +623,12 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace orientationOps
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label checkDisconnectedParts
+Foam::label Foam::Module::triSurfaceChecks::checkDisconnectedParts
 (
     const triSurf& surf,
     labelLongList& triangleInRegion
@@ -618,7 +653,11 @@ label checkDisconnectedParts
 }
 
 
-label checkDisconnectedParts(triSurf& surf, const word subsetPrefix)
+Foam::label Foam::Module::triSurfaceChecks::checkDisconnectedParts
+(
+    triSurf& surf,
+    const word subsetPrefix
+)
 {
     labelLongList triangleInRegion;
 
@@ -645,14 +684,18 @@ label checkDisconnectedParts(triSurf& surf, const word subsetPrefix)
 }
 
 
-void calculateBoundingBox(const triSurf& surf, boundBox& bb)
+void Foam::Module::triSurfaceChecks::calculateBoundingBox
+(
+    const triSurf& surf,
+    boundBox& bb
+)
 {
     bb.min() = Foam::min(surf.points());
     bb.max() = Foam::max(surf.points());
 }
 
 
-label checkCollocatedPoints
+Foam::label Foam::Module::triSurfaceChecks::checkCollocatedPoints
 (
     const triSurf& surf,
     labelLongList& collocatedPoints,
@@ -719,7 +762,7 @@ label checkCollocatedPoints
 }
 
 
-label checkCollocatedPoints
+Foam::label Foam::Module::triSurfaceChecks::checkCollocatedPoints
 (
     triSurf& surf,
     const word subsetName,
@@ -743,7 +786,7 @@ label checkCollocatedPoints
 }
 
 
-label checkSelfIntersections
+Foam::label Foam::Module::triSurfaceChecks::checkSelfIntersections
 (
     const triSurf& surf,
     labelLongList& badFaces,
@@ -880,7 +923,7 @@ label checkSelfIntersections
 }
 
 
-label checkSelfIntersections
+Foam::label Foam::Module::triSurfaceChecks::checkSelfIntersections
 (
     triSurf& surf,
     const word subsetName,
@@ -904,7 +947,7 @@ label checkSelfIntersections
 }
 
 
-label checkOverlaps
+Foam::label Foam::Module::triSurfaceChecks::checkOverlaps
 (
     const triSurf& surf,
     labelLongList& badFaces,
@@ -1030,7 +1073,7 @@ label checkOverlaps
 }
 
 
-label checkOverlaps
+Foam::label Foam::Module::triSurfaceChecks::checkOverlaps
 (
     triSurf& surf,
     const word subsetName,
@@ -1054,13 +1097,5 @@ label checkOverlaps
     return badFaces.size();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace triSurfaceChecks
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

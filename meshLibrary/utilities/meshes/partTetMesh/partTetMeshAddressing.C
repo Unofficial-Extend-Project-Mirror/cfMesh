@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void partTetMesh::createPointsAndTets
+void Foam::Module::partTetMesh::createPointsAndTets
 (
     const List<direction>& useCell,
     const boolList& lockedPoints
@@ -422,7 +417,7 @@ void partTetMesh::createPointsAndTets
 }
 
 
-void partTetMesh::createSMOOTHPointsOrdering() const
+void Foam::Module::partTetMesh::createSMOOTHPointsOrdering() const
 {
     internalPointsOrderPtr_ = new VRWGraph();
     VRWGraph& internalPointsOrder = *internalPointsOrderPtr_;
@@ -510,7 +505,7 @@ void partTetMesh::createSMOOTHPointsOrdering() const
 }
 
 
-void partTetMesh::createBOUNDARYPointsOrdering() const
+void Foam::Module::partTetMesh::createBOUNDARYPointsOrdering() const
 {
     boundaryPointsOrderPtr_ = new VRWGraph();
     VRWGraph& boundaryPointsOrder = *boundaryPointsOrderPtr_;
@@ -597,9 +592,5 @@ void partTetMesh::createBOUNDARYPointsOrdering() const
     } while (found);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

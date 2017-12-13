@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -36,14 +36,9 @@ Description
 #include <omp.h>
 # endif
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void polyMeshGenAddressing::calcCellCentresAndVols() const
+void Foam::Module::polyMeshGenAddressing::calcCellCentresAndVols() const
 {
     if (cellCentresPtr_ || cellVolumesPtr_)
     {
@@ -67,7 +62,7 @@ void polyMeshGenAddressing::calcCellCentresAndVols() const
 }
 
 
-void polyMeshGenAddressing::makeCellCentresAndVols
+void Foam::Module::polyMeshGenAddressing::makeCellCentresAndVols
 (
     const vectorField& fCtrs,
     const vectorField& fAreas,
@@ -129,7 +124,8 @@ void polyMeshGenAddressing::makeCellCentresAndVols
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const vectorField& polyMeshGenAddressing::cellCentres() const
+const Foam::vectorField&
+Foam::Module::polyMeshGenAddressing::cellCentres() const
 {
     if (!cellCentresPtr_)
     {
@@ -149,7 +145,8 @@ const vectorField& polyMeshGenAddressing::cellCentres() const
 }
 
 
-const scalarField& polyMeshGenAddressing::cellVolumes() const
+const Foam::scalarField&
+Foam::Module::polyMeshGenAddressing::cellVolumes() const
 {
     if (!cellVolumesPtr_)
     {
@@ -168,9 +165,5 @@ const scalarField& polyMeshGenAddressing::cellVolumes() const
     return *cellVolumesPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

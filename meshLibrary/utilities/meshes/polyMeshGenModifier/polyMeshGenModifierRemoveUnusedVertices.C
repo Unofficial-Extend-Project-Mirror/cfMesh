@@ -27,11 +27,9 @@ License
 #include "demandDrivenData.H"
 #include "labelList.H"
 
-namespace Foam
-{
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGenModifier::removeUnusedVertices()
+void Foam::Module::polyMeshGenModifier::removeUnusedVertices()
 {
     faceListPMG& faces = mesh_.faces_;
     pointFieldPMG& points = mesh_.points_;
@@ -84,9 +82,5 @@ void polyMeshGenModifier::removeUnusedVertices()
     this->clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

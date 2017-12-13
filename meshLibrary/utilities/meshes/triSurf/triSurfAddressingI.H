@@ -23,20 +23,14 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#include "triSurfAddressing.H"
-
 # ifdef USE_OMP
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline const VRWGraph& triSurfAddressing::pointFacets() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::triSurfAddressing::pointFacets() const
 {
     if (!pointFacetsPtr_)
     {
@@ -55,7 +49,8 @@ inline const VRWGraph& triSurfAddressing::pointFacets() const
 }
 
 
-inline const edgeLongList& triSurfAddressing::edges() const
+inline const Foam::Module::edgeLongList&
+Foam::Module::triSurfAddressing::edges() const
 {
     if (!edgesPtr_)
     {
@@ -74,7 +69,8 @@ inline const edgeLongList& triSurfAddressing::edges() const
 }
 
 
-inline const VRWGraph& triSurfAddressing::facetEdges() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::triSurfAddressing::facetEdges() const
 {
     if (!facetEdgesPtr_)
     {
@@ -93,7 +89,8 @@ inline const VRWGraph& triSurfAddressing::facetEdges() const
 }
 
 
-inline const VRWGraph& triSurfAddressing::edgeFacets() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::triSurfAddressing::edgeFacets() const
 {
     if (!edgeFacetsPtr_)
     {
@@ -112,7 +109,8 @@ inline const VRWGraph& triSurfAddressing::edgeFacets() const
 }
 
 
-inline const VRWGraph& triSurfAddressing::pointEdges() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::triSurfAddressing::pointEdges() const
 {
     if (!pointEdgesPtr_)
     {
@@ -131,7 +129,8 @@ inline const VRWGraph& triSurfAddressing::pointEdges() const
 }
 
 
-inline const VRWGraph& triSurfAddressing::facetFacets() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::triSurfAddressing::facetFacets() const
 {
     if (!facetFacetsEdgesPtr_)
     {
@@ -150,7 +149,8 @@ inline const VRWGraph& triSurfAddressing::facetFacets() const
 }
 
 
-inline const vectorField& triSurfAddressing::pointNormals() const
+inline const Foam::vectorField&
+Foam::Module::triSurfAddressing::pointNormals() const
 {
     if (!pointNormalsPtr_)
     {
@@ -169,7 +169,8 @@ inline const vectorField& triSurfAddressing::pointNormals() const
 }
 
 
-inline const vectorField& triSurfAddressing::facetNormals() const
+inline const Foam::vectorField&
+Foam::Module::triSurfAddressing::facetNormals() const
 {
     if (!facetNormalsPtr_)
     {
@@ -188,7 +189,8 @@ inline const vectorField& triSurfAddressing::facetNormals() const
 }
 
 
-inline const vectorField& triSurfAddressing::facetCentres() const
+inline const Foam::vectorField&
+Foam::Module::triSurfAddressing::facetCentres() const
 {
     if (!facetCentresPtr_)
     {
@@ -206,9 +208,5 @@ inline const vectorField& triSurfAddressing::facetCentres() const
     return *facetCentresPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

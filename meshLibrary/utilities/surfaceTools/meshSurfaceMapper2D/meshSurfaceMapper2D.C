@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceMapper2D::findActiveBoundaryEdges()
+void Foam::Module::meshSurfaceMapper2D::findActiveBoundaryEdges()
 {
     const VRWGraph& edgeFaces = surfaceEngine_.edgeFaces();
 
@@ -102,26 +97,26 @@ void meshSurfaceMapper2D::findActiveBoundaryEdges()
 }
 
 
-void meshSurfaceMapper2D::create2DEngine() const
+void Foam::Module::meshSurfaceMapper2D::create2DEngine() const
 {
     polyMeshGen& mesh = const_cast<polyMeshGen&>(surfaceEngine_.mesh());
     mesh2DEnginePtr_ = new polyMeshGen2DEngine(mesh);
 }
 
 
-void meshSurfaceMapper2D::createTriSurfacePartitioner() const
+void Foam::Module::meshSurfaceMapper2D::createTriSurfacePartitioner() const
 {
     surfPartitionerPtr_ = new triSurfacePartitioner(meshOctree_.surface());
 }
 
 
-void meshSurfaceMapper2D::createMeshSurfacePartitioner() const
+void Foam::Module::meshSurfaceMapper2D::createMeshSurfacePartitioner() const
 {
     meshPartitionerPtr_ = new meshSurfacePartitioner(surfaceEngine_);
 }
 
 
-void meshSurfaceMapper2D::clearOut()
+void Foam::Module::meshSurfaceMapper2D::clearOut()
 {
     deleteDemandDrivenData(mesh2DEnginePtr_);
     deleteDemandDrivenData(surfPartitionerPtr_);
@@ -131,7 +126,7 @@ void meshSurfaceMapper2D::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceMapper2D::meshSurfaceMapper2D
+Foam::Module::meshSurfaceMapper2D::meshSurfaceMapper2D
 (
     const meshSurfaceEngine& mse,
     const meshOctree& octree
@@ -158,14 +153,10 @@ meshSurfaceMapper2D::meshSurfaceMapper2D
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfaceMapper2D::~meshSurfaceMapper2D()
+Foam::Module::meshSurfaceMapper2D::~meshSurfaceMapper2D()
 {
     clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

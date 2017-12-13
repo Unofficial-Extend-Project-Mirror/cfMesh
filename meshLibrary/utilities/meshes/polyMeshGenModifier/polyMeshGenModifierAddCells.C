@@ -27,12 +27,12 @@ License
 #include "VRWGraphList.H"
 #include "demandDrivenData.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGenModifier::addCells(const LongList<faceList>& cellFaces)
+void Foam::Module::polyMeshGenModifier::addCells
+(
+    const LongList<faceList>& cellFaces
+)
 {
     Info<< "Adding cells to the mesh" << endl;
 
@@ -99,7 +99,7 @@ void polyMeshGenModifier::addCells(const LongList<faceList>& cellFaces)
 }
 
 
-void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
+void Foam::Module::polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
 {
     Info<< "Adding " << cellFaces.size() << " cells to the mesh" << endl;
 
@@ -175,7 +175,7 @@ void polyMeshGenModifier::addCells(const VRWGraphList& cellFaces)
 }
 
 
-void polyMeshGenModifier::addCell(const faceList& cellFaces)
+void Foam::Module::polyMeshGenModifier::addCell(const faceList& cellFaces)
 {
     faceListPMG& faces = this->facesAccess();
     cellListPMG& cells = this->cellsAccess();
@@ -227,9 +227,5 @@ void polyMeshGenModifier::addCell(const faceList& cellFaces)
     mesh_.clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

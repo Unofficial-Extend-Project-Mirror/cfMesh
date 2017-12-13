@@ -39,16 +39,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
 {
     meshSurfaceEngine mse(mesh_);
 
@@ -113,15 +106,15 @@ void meshSurfaceEdgeExtractorFUN::distributeBoundaryFaces()
 }
 
 
-void meshSurfaceEdgeExtractorFUN::reviseCorners()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::reviseCorners()
 {}
 
 
-void meshSurfaceEdgeExtractorFUN::reviseEdges()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::reviseEdges()
 {}
 
 
-void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
 {
     meshSurfaceEngine& mse = surfaceEngine();
     meshSurfaceMapper mapper(mse, meshOctree_);
@@ -130,7 +123,7 @@ void meshSurfaceEdgeExtractorFUN::remapBoundaryPoints()
 }
 
 
-void meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
 {
     createFundamentalSheetsJFS edgeSheets(mesh_, createWrapperSheet_);
 
@@ -138,7 +131,7 @@ void meshSurfaceEdgeExtractorFUN::createBasicFundamentalSheets()
 }
 
 
-void meshSurfaceEdgeExtractorFUN::smoothMeshSurface()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::smoothMeshSurface()
 {
     meshSurfaceEngine& mse = surfaceEngine();
 
@@ -147,7 +140,8 @@ void meshSurfaceEdgeExtractorFUN::smoothMeshSurface()
 }
 
 
-void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::
+improveQualityOfFundamentalSheets()
 {
     const meshSurfaceEngine& mse = surfaceEngine();
     const edgeList& edges = mse.edges();
@@ -172,9 +166,5 @@ void meshSurfaceEdgeExtractorFUN::improveQualityOfFundamentalSheets()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

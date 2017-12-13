@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::extrudeLayer
+    Foam::Module::extrudeLayer
 
 Description
     Creates a sheet of prismatic cells from the selected faces in
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -133,7 +135,7 @@ class extrudeLayer
             );
 
             //- Destructor
-            ~addressingCalculator();
+            ~addressingCalculator() = default;
 
 
             // Member functions
@@ -211,6 +213,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

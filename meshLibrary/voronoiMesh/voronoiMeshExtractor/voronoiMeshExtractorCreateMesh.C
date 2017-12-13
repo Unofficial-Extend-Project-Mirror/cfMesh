@@ -36,11 +36,7 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void voronoiMeshExtractor::createPoints()
+void Foam::Module::voronoiMeshExtractor::createPoints()
 {
     const LongList<point>& tetPoints = tetCreator_.tetPoints();
     const LongList<partTet>& tets = tetCreator_.tets();
@@ -69,7 +65,7 @@ void voronoiMeshExtractor::createPoints()
 }
 
 
-void voronoiMeshExtractor::createPolyMesh()
+void Foam::Module::voronoiMeshExtractor::createPolyMesh()
 {
     const VRWGraph& pointEdges = this->pointEdges();
     const VRWGraph& edgeTets = this->edgeTets();
@@ -203,9 +199,5 @@ void voronoiMeshExtractor::createPolyMesh()
     mesh_.clearAddressingData();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

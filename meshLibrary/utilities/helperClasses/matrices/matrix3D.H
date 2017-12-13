@@ -22,13 +22,13 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::matrix3D
+    Foam::Module::matrix3D
 
 Description
-    Implementation of 3 x 3 matrix
+    Implementation of a 3 x 3 matrix
 
 SourceFiles
-    matrix3D.C
+    matrix3DI.H
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -75,7 +77,7 @@ public:
 
 
     //- Destructor
-    inline ~matrix3D();
+    ~matrix3D() = default;
 
 
     // Member functions
@@ -105,6 +107,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

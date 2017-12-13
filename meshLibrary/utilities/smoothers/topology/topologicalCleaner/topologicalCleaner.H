@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::topologicalCleaner
+    Foam::Module::topologicalCleaner
 
 Description
     Checks cells for invalid topologies. Decomposes bad cells into pyramids
@@ -43,6 +43,9 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
+
 /*---------------------------------------------------------------------------*\
                      Class topologicalCleaner Declaration
 \*---------------------------------------------------------------------------*/
@@ -86,7 +89,7 @@ public:
 
 
     //- Destructor
-    ~topologicalCleaner();
+    ~topologicalCleaner() = default;
 
 
     // Member Functions
@@ -110,6 +113,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

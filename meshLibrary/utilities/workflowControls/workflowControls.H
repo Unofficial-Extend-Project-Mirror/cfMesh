@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::workflowControls
+    Foam::Module::workflowControls
 
 Description
     A controller fo managing the mesh generation workflow. It allows the user
@@ -45,6 +45,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 class polyMeshGen;
 
@@ -119,12 +121,12 @@ public:
     workflowControls(polyMeshGen& mesh);
 
     //- Destructor
-    ~workflowControls();
+    ~workflowControls() = default;
 
     // Public member functions
 
         //- shall the process run the current step
-        bool runCurrentStep(const word&);
+        bool runCurrentStep(const word& stepName);
 
         //- set the workflow completed flag
         void workflowCompleted();
@@ -133,6 +135,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -32,18 +32,21 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(planeScaling, 0);
-addToRunTimeSelectionTable
-(
-    coordinateModification,
-    planeScaling,
-    dictionary
-);
+namespace Module
+{
+    defineTypeNameAndDebug(planeScaling, 0);
+    addToRunTimeSelectionTable
+    (
+        coordinateModification,
+        planeScaling,
+        dictionary
+    );
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-planeScaling::planeScaling()
+Foam::Module::planeScaling::planeScaling()
 :
     coordinateModification(),
     origin_(vector::zero),
@@ -53,7 +56,7 @@ planeScaling::planeScaling()
 {}
 
 
-planeScaling::planeScaling
+Foam::Module::planeScaling::planeScaling
 (
     const word& name,
     const point& origin,
@@ -80,7 +83,7 @@ planeScaling::planeScaling
 }
 
 
-planeScaling::planeScaling
+Foam::Module::planeScaling::planeScaling
 (
     const word& name,
     const dictionary& dict
@@ -94,13 +97,13 @@ planeScaling::planeScaling
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-point planeScaling::origin() const
+Foam::point Foam::Module::planeScaling::origin() const
 {
     return origin_;
 }
 
 
-void planeScaling::translateAndModifyObject(const vector& disp)
+void Foam::Module::planeScaling::translateAndModifyObject(const vector& disp)
 {
     origin_ += disp;
 
@@ -108,7 +111,10 @@ void planeScaling::translateAndModifyObject(const vector& disp)
 }
 
 
-vector planeScaling::displacement(const point& p) const
+Foam::vector Foam::Module::planeScaling::displacement
+(
+    const point& p
+) const
 {
     const scalar dist = (p - origin_) & normal_;
 
@@ -123,7 +129,10 @@ vector planeScaling::displacement(const point& p) const
 }
 
 
-vector planeScaling::backwardDisplacement(const point& p) const
+Foam::vector Foam::Module::planeScaling::backwardDisplacement
+(
+    const point& p
+) const
 {
     const scalar dist = (p - origin_) & normal_;
 
@@ -138,13 +147,13 @@ vector planeScaling::backwardDisplacement(const point& p) const
 }
 
 
-bool planeScaling::combiningPossible() const
+bool Foam::Module::planeScaling::combiningPossible() const
 {
     return true;
 }
 
 
-void planeScaling::boundingPlanes(PtrList<plane>& pl) const
+void Foam::Module::planeScaling::boundingPlanes(PtrList<plane>& pl) const
 {
     if (Foam::mag(scalingFactor_ - 1.0) > VSMALL)
     {
@@ -162,7 +171,7 @@ void planeScaling::boundingPlanes(PtrList<plane>& pl) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dictionary planeScaling::dict(bool /*ignoreType*/) const
+Foam::dictionary Foam::Module::planeScaling::dict(bool /*ignoreType*/) const
 {
     dictionary dict;
 
@@ -177,7 +186,7 @@ dictionary planeScaling::dict(bool /*ignoreType*/) const
 }
 
 
-void planeScaling::write(Ostream& os) const
+void Foam::Module::planeScaling::write(Ostream& os) const
 {
     os  << " type:   " << type()
         << " origin: " << origin_
@@ -187,7 +196,7 @@ void planeScaling::write(Ostream& os) const
 }
 
 
-void planeScaling::writeDict(Ostream& os, bool subDict) const
+void Foam::Module::planeScaling::writeDict(Ostream& os, bool subDict) const
 {
     if (subDict)
     {
@@ -212,7 +221,7 @@ void planeScaling::writeDict(Ostream& os, bool subDict) const
 }
 
 
-void planeScaling::operator=(const dictionary& d)
+void Foam::Module::planeScaling::operator=(const dictionary& d)
 {
     // allow as embedded sub-dictionary "coordinateSystem"
     const dictionary& dict =
@@ -257,7 +266,10 @@ void planeScaling::operator=(const dictionary& d)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Ostream& planeScaling::operator<<(Ostream& os) const
+Foam::Ostream& Foam::Module::planeScaling::operator<<
+(
+    Ostream& os
+) const
 {
     os << "name " << name() << nl;
     write(os);
@@ -265,14 +277,14 @@ Ostream& planeScaling::operator<<(Ostream& os) const
 }
 
 
-Ostream& operator<<(Ostream& os, const planeScaling& pt)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::planeScaling& pt
+)
 {
     return pt.operator<<(os);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

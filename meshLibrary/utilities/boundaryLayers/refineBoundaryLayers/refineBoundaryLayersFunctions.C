@@ -47,12 +47,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool refineBoundaryLayers::analyseLayers()
+bool Foam::Module::refineBoundaryLayers::analyseLayers()
 {
     const meshSurfaceEngine& mse = surfaceEngine();
     const faceList::subList& bFaces = mse.boundaryFaces();
@@ -341,7 +336,7 @@ bool refineBoundaryLayers::analyseLayers()
 }
 
 
-void refineBoundaryLayers::generateNewVertices()
+void Foam::Module::refineBoundaryLayers::generateNewVertices()
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
     pointFieldPMG& points = mesh_.points();
@@ -797,9 +792,5 @@ void refineBoundaryLayers::generateNewVertices()
 
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

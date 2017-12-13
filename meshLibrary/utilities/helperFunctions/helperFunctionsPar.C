@@ -33,18 +33,10 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-namespace help
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
 template<class sendOp, class combineOp, class T, class ListType>
-void combineData(const sendOp& sop, combineOp& cop)
+void Foam::Module::help::combineData(const sendOp& sop, combineOp& cop)
 {
     std::map<label, LongList<T>> sMap;
     sop(sMap);
@@ -58,7 +50,12 @@ void combineData(const sendOp& sop, combineOp& cop)
 
 
 template<class T, class ListType, class scatterOp, class gatherOp>
-void whisperReduce(const ListType& neis, const scatterOp& sop, gatherOp& gop)
+void Foam::Module::help::whisperReduce
+(
+    const ListType& neis,
+    const scatterOp& sop,
+    gatherOp& gop
+)
 {
     DynList<label> below, above;
     forAll(neis, i)
@@ -137,7 +134,7 @@ void whisperReduce(const ListType& neis, const scatterOp& sop, gatherOp& gop)
 
 
 template<class T, class ListType>
-void exchangeMap
+void Foam::Module::help::exchangeMap
 (
     const std::map<label, ListType>& m,
     LongList<T>& data,
@@ -358,7 +355,7 @@ void exchangeMap
 
 
 template<class T, class ListType>
-void exchangeMap
+void Foam::Module::help::exchangeMap
 (
     const std::map<label, ListType>& m,
     std::map<label, List<T>>&mOut
@@ -405,7 +402,7 @@ void exchangeMap
 
 
 template<class RowType, template<class ListTypeArg>class GraphType>
-void reverseAddressingSMP
+void Foam::Module::help::reverseAddressingSMP
 (
     const GraphType<RowType>& addr,
     GraphType<RowType>& reverseAddr
@@ -613,13 +610,5 @@ void reverseAddressingSMP
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace help
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

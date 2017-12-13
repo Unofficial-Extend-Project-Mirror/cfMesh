@@ -31,16 +31,10 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-meshSurfaceEngine& meshSurfaceEdgeExtractorFUN::surfaceEngine()
+Foam::Module::meshSurfaceEngine&
+Foam::Module::meshSurfaceEdgeExtractorFUN::surfaceEngine()
 {
     # ifdef USE_OMP
     if (omp_in_parallel())
@@ -56,7 +50,7 @@ meshSurfaceEngine& meshSurfaceEdgeExtractorFUN::surfaceEngine()
 }
 
 
-void meshSurfaceEdgeExtractorFUN::clearOut()
+void Foam::Module::meshSurfaceEdgeExtractorFUN::clearOut()
 {
     deleteDemandDrivenData(surfaceEnginePtr_);
 }
@@ -64,7 +58,7 @@ void meshSurfaceEdgeExtractorFUN::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
+Foam::Module::meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
 (
     polyMeshGen& mesh,
     const meshOctree& octree,
@@ -90,14 +84,10 @@ meshSurfaceEdgeExtractorFUN::meshSurfaceEdgeExtractorFUN
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfaceEdgeExtractorFUN::~meshSurfaceEdgeExtractorFUN()
+Foam::Module::meshSurfaceEdgeExtractorFUN::~meshSurfaceEdgeExtractorFUN()
 {
     deleteDemandDrivenData(surfaceEnginePtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

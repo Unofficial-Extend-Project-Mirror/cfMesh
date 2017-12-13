@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceExtrude2DEdges
+    Foam::Module::triSurfaceExtrude2DEdges
 
 Description
     Extrudes edges in x-y plane into a triangulation used for 2D meshing
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -70,7 +72,7 @@ public:
     triSurfaceExtrude2DEdges(const triSurf& surface);
 
     //- Destructor
-    ~triSurfaceExtrude2DEdges();
+    ~triSurfaceExtrude2DEdges() = default;
 
 
     // Member Functions
@@ -84,6 +86,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

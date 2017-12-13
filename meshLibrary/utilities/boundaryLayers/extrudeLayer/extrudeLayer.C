@@ -40,12 +40,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-extrudeLayer::addressingCalculator::addressingCalculator
+Foam::Module::extrudeLayer::addressingCalculator::addressingCalculator
 (
     const faceListPMG& faces,
     const LongList<labelPair>& extrudedFaces,
@@ -60,13 +55,12 @@ extrudeLayer::addressingCalculator::addressingCalculator
 {}
 
 
-extrudeLayer::addressingCalculator::~addressingCalculator()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
+void Foam::Module::extrudeLayer::createDuplicateFrontFaces
+(
+    const LongList<labelPair>& front
+)
 {
     polyMeshGenModifier meshModifier(mesh_);
 
@@ -218,7 +212,7 @@ void extrudeLayer::createDuplicateFrontFaces(const LongList<labelPair>& front)
 }
 
 
-void extrudeLayer::createNewVertices()
+void Foam::Module::extrudeLayer::createNewVertices()
 {
     polyMeshGenModifier meshModifier(mesh_);
     meshModifier.clearAll();
@@ -802,7 +796,7 @@ void extrudeLayer::createNewVertices()
 }
 
 
-void extrudeLayer::movePoints()
+void Foam::Module::extrudeLayer::movePoints()
 {
     pointFieldPMG& points = mesh_.points();
     const faceListPMG& faces = mesh_.faces();
@@ -1006,7 +1000,7 @@ void extrudeLayer::movePoints()
 }
 
 
-void extrudeLayer::createNewFacesParallel()
+void Foam::Module::extrudeLayer::createNewFacesParallel()
 {
     if (!Pstream::parRun())
     {
@@ -1021,7 +1015,7 @@ void extrudeLayer::createNewFacesParallel()
 }
 
 
-void extrudeLayer::createLayerCells()
+void Foam::Module::extrudeLayer::createLayerCells()
 {
     const faceListPMG& faces = mesh_.faces();
 
@@ -1337,7 +1331,7 @@ void extrudeLayer::createLayerCells()
 }
 
 
-void extrudeLayer::updateBoundary()
+void Foam::Module::extrudeLayer::updateBoundary()
 {
     wordList patchNames(mesh_.boundaries().size());
     wordList patchTypes(mesh_.boundaries().size());
@@ -1486,7 +1480,7 @@ void extrudeLayer::updateBoundary()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-extrudeLayer::extrudeLayer
+Foam::Module::extrudeLayer::extrudeLayer
 (
     polyMeshGen& mesh,
     const LongList<labelPair>& extrusionFront,
@@ -1522,14 +1516,10 @@ extrudeLayer::extrudeLayer
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-extrudeLayer::~extrudeLayer()
+Foam::Module::extrudeLayer::~extrudeLayer()
 {
     mesh_.clearAddressingData();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

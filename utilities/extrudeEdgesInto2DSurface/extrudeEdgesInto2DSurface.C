@@ -33,6 +33,7 @@ Description
 #include "demandDrivenData.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

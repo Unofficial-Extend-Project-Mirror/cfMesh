@@ -43,6 +43,9 @@ SourceFiles
 namespace Foam
 {
 class Ostream;
+
+namespace Module
+{
 template<class graphType> class graphRow;
 template<class graphType> class graphConstRow;
 
@@ -119,6 +122,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetMeshExtractorOctree::createPoints()
+void Foam::Module::tetMeshExtractorOctree::createPoints()
 {
     polyMeshGenModifier meshModifier(mesh_);
     pointFieldPMG& points = meshModifier.pointsAccess();
@@ -59,7 +54,7 @@ void tetMeshExtractorOctree::createPoints()
 }
 
 
-void tetMeshExtractorOctree::createPolyMesh()
+void Foam::Module::tetMeshExtractorOctree::createPolyMesh()
 {
     polyMeshGenModifier meshModifier(mesh_);
 
@@ -240,7 +235,7 @@ void tetMeshExtractorOctree::createPolyMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-tetMeshExtractorOctree::tetMeshExtractorOctree
+Foam::Module::tetMeshExtractorOctree::tetMeshExtractorOctree
 (
     const meshOctree& octree,
     const IOdictionary& meshDict,
@@ -252,15 +247,9 @@ tetMeshExtractorOctree::tetMeshExtractorOctree
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-tetMeshExtractorOctree::~tetMeshExtractorOctree()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void tetMeshExtractorOctree::createMesh()
+void Foam::Module::tetMeshExtractorOctree::createMesh()
 {
     Info<< "Extracting tetMesh" << endl;
 
@@ -281,9 +270,5 @@ void tetMeshExtractorOctree::createMesh()
     Info<< "Finished extracting tetMesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

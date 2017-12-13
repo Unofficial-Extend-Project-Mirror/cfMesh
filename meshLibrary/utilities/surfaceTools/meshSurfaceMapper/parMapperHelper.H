@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::parMapperHelper
+    Foam::Module::parMapperHelper
 
 Description
     A class containing point coordinates, moving distance,
@@ -41,6 +41,8 @@ Description
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -86,8 +88,7 @@ public:
 
 
     //- Destructor
-    ~parMapperHelper()
-    {};
+    ~parMapperHelper() = default;
 
 
     // Member functions
@@ -169,16 +170,17 @@ public:
         }
 };
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//- Specify data associated with parMapperHelper type is contiguous
+} // End namespace Module
+
+//- Data for parMapperHelper are contiguous
 template<>
-inline bool contiguous<parMapperHelper>()
+inline bool contiguous<Module::parMapperHelper>()
 {
     return true;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceCleanupDuplicateTriangles
+    Foam::Module::triSurfaceCleanupDuplicateTriangles
 
 Description
     Removes duplicate triangles from the surface.
@@ -41,6 +41,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -79,15 +81,16 @@ class triSurfaceCleanupDuplicateTriangles
 public:
 
     //- Construct from triSurf
-    triSurfaceCleanupDuplicateTriangles(triSurf&);
+    triSurfaceCleanupDuplicateTriangles(triSurf& surf);
 
     //- Destructor
-    ~triSurfaceCleanupDuplicateTriangles();
+    ~triSurfaceCleanupDuplicateTriangles() = default;
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

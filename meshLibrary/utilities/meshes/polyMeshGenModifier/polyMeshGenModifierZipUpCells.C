@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::zipUpCells()
+void Foam::Module::polyMeshGenModifier::zipUpCells()
 {
     this->clearOut();
 
@@ -795,9 +790,5 @@ void polyMeshGenModifier::zipUpCells()
     Info<< "Finished zipping the mesh." << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -32,14 +32,9 @@ Description
 
 #include "polyMeshGenAddressing.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void polyMeshGenAddressing::calcFaceCentresAndAreas() const
+void Foam::Module::polyMeshGenAddressing::calcFaceCentresAndAreas() const
 {
     if (faceCentresPtr_ || faceAreasPtr_)
     {
@@ -61,7 +56,7 @@ void polyMeshGenAddressing::calcFaceCentresAndAreas() const
 }
 
 
-void polyMeshGenAddressing::makeFaceCentresAndAreas
+void Foam::Module::polyMeshGenAddressing::makeFaceCentresAndAreas
 (
     const pointFieldPMG& p,
     vectorField& fCtrs,
@@ -122,7 +117,8 @@ void polyMeshGenAddressing::makeFaceCentresAndAreas
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const vectorField& polyMeshGenAddressing::faceCentres() const
+const Foam::vectorField&
+Foam::Module::polyMeshGenAddressing::faceCentres() const
 {
     if (!faceCentresPtr_)
     {
@@ -142,7 +138,7 @@ const vectorField& polyMeshGenAddressing::faceCentres() const
 }
 
 
-const vectorField& polyMeshGenAddressing::faceAreas() const
+const Foam::vectorField& Foam::Module::polyMeshGenAddressing::faceAreas() const
 {
     if (!faceAreasPtr_)
     {
@@ -161,9 +157,5 @@ const vectorField& polyMeshGenAddressing::faceAreas() const
     return *faceAreasPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

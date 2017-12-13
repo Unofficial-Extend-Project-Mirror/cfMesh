@@ -22,13 +22,12 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::partTriMeshSimplex
+    Foam::Module::partTriMeshSimplex
 
 Description
     A simplex which is used for smoothing purposes
 
 SourceFiles
-
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -67,7 +68,7 @@ public:
     partTriMeshSimplex(const partTriMesh& tm, const label pI);
 
     //- Destructor
-    ~partTriMeshSimplex();
+    ~partTriMeshSimplex() = default;
 
 
     // Member functions
@@ -103,6 +104,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

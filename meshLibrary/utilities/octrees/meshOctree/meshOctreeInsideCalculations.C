@@ -32,12 +32,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool meshOctree::isPointInside(const point& p) const
+bool Foam::Module::meshOctree::isPointInside(const point& p) const
 {
     # ifdef DEBUGSearch
     Info<< "Checking inside/outside for vertex " << p << endl;
@@ -56,7 +51,11 @@ bool meshOctree::isPointInside(const point& p) const
 }
 
 
-void meshOctree::findEdgesInBox(const boundBox& bb, DynList<label>& edges) const
+void Foam::Module::meshOctree::findEdgesInBox
+(
+    const boundBox& bb,
+    DynList<label>& edges
+) const
 {
     DynList<const meshOctreeCube*, 256> neighbours;
     findLeavesContainedInBox(bb, neighbours);
@@ -94,7 +93,7 @@ void meshOctree::findEdgesInBox(const boundBox& bb, DynList<label>& edges) const
 }
 
 
-void meshOctree::findTrianglesInBox
+void Foam::Module::meshOctree::findTrianglesInBox
 (
     const boundBox& bb,
     DynList<label>& triaLabels
@@ -128,7 +127,7 @@ void meshOctree::findTrianglesInBox
 }
 
 
-void meshOctree::findLeavesContainedInBox
+void Foam::Module::meshOctree::findLeavesContainedInBox
 (
     const boundBox& bb,
     DynList<const meshOctreeCube*, 256>& containedCubes
@@ -140,7 +139,7 @@ void meshOctree::findLeavesContainedInBox
 }
 
 
-void meshOctree::findLeavesContainedInBox
+void Foam::Module::meshOctree::findLeavesContainedInBox
 (
     const boundBox& bb,
     labelList& containedCubes
@@ -164,7 +163,7 @@ void meshOctree::findLeavesContainedInBox
 }
 
 
-void meshOctree::findLeavesContainedInBox
+void Foam::Module::meshOctree::findLeavesContainedInBox
 (
     const boundBox& bb,
     DynList<label>& containedCubes
@@ -182,9 +181,5 @@ void meshOctree::findLeavesContainedInBox
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

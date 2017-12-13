@@ -45,12 +45,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceMapper2D::findMappingDistance
+void Foam::Module::meshSurfaceMapper2D::findMappingDistance
 (
     const labelLongList& edgesToMap,
     std::map<label, scalar>& mappingDistance
@@ -135,7 +130,10 @@ void meshSurfaceMapper2D::findMappingDistance
 }
 
 
-void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
+void Foam::Module::meshSurfaceMapper2D::mapToSmallestDistance
+(
+    LongList<parMapperHelper>& parE
+)
 {
     if (!Pstream::parRun())
         return;
@@ -216,7 +214,7 @@ void meshSurfaceMapper2D::mapToSmallestDistance(LongList<parMapperHelper>& parE)
 }
 
 
-void meshSurfaceMapper2D::adjustZCoordinates()
+void Foam::Module::meshSurfaceMapper2D::adjustZCoordinates()
 {
     // create the bounding box of the surface mesh
     const boundBox sbb(meshOctree_.surface().points());
@@ -258,7 +256,7 @@ void meshSurfaceMapper2D::adjustZCoordinates()
 }
 
 
-void meshSurfaceMapper2D::mapVerticesOntoSurface()
+void Foam::Module::meshSurfaceMapper2D::mapVerticesOntoSurface()
 {
     labelLongList edgesToMap;
 
@@ -269,7 +267,10 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface()
 }
 
 
-void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap)
+void Foam::Module::meshSurfaceMapper2D::mapVerticesOntoSurface
+(
+    const labelLongList& edgesToMap
+)
 {
     const edgeList& edges = surfaceEngine_.edges();
     const labelList& bp = surfaceEngine_.bp();
@@ -352,7 +353,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurface(const labelLongList& edgesToMap
 }
 
 
-void meshSurfaceMapper2D::mapCorners()
+void Foam::Module::meshSurfaceMapper2D::mapCorners()
 {
     const edgeList& edges = surfaceEngine_.edges();
 
@@ -372,7 +373,10 @@ void meshSurfaceMapper2D::mapCorners()
 }
 
 
-void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
+void Foam::Module::meshSurfaceMapper2D::mapCorners
+(
+    const labelLongList& edgesToMap
+)
 {
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& corners = mPart.corners();
@@ -488,7 +492,7 @@ void meshSurfaceMapper2D::mapCorners(const labelLongList& edgesToMap)
 }
 
 
-void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
+void Foam::Module::meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
 {
     labelLongList edgesToMap;
 
@@ -499,7 +503,7 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches()
 }
 
 
-void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
+void Foam::Module::meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
 (
     const labelLongList& edgesToMap
 )
@@ -598,9 +602,5 @@ void meshSurfaceMapper2D::mapVerticesOntoSurfacePatches
     surfaceModifier.updateGeometry(selectedCorners);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

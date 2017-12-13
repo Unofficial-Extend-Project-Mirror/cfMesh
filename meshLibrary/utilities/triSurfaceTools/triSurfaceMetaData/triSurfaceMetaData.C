@@ -27,12 +27,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void triSurfaceMetaData::createMetaData()
+void Foam::Module::triSurfaceMetaData::createMetaData()
 {
     metaDict_.clear();
 
@@ -116,7 +111,7 @@ void triSurfaceMetaData::createMetaData()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfaceMetaData::triSurfaceMetaData(const triSurf& surface)
+Foam::Module::triSurfaceMetaData::triSurfaceMetaData(const triSurf& surface)
 :
     surf_(surface),
     metaDict_()
@@ -124,13 +119,5 @@ triSurfaceMetaData::triSurfaceMetaData(const triSurf& surface)
     createMetaData();
 }
 
-
-triSurfaceMetaData::~triSurfaceMetaData()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

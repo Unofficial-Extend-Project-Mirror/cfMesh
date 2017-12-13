@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshUntangler
+    Foam::Module::meshUntangler
 
 Description
     Mesh smoothing without any topological changes. The vertex is put
@@ -43,9 +43,11 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
 class plane;
+
+namespace Module
+{
 class partTetMeshSimplex;
 
 /*---------------------------------------------------------------------------*\
@@ -137,7 +139,7 @@ class meshUntangler
     meshUntangler(partTetMeshSimplex& simplex);
 
     //- Destructor
-    ~meshUntangler();
+    ~meshUntangler() = default;
 
 
     // Member functions
@@ -150,6 +152,7 @@ class meshUntangler
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

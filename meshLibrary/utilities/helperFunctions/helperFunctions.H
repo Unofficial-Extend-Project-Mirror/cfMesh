@@ -22,12 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Namespace
-    Foam::help
+    Foam::Module::help
 
 Description
     Helper functions useful for mesh generation
-
-SourceFiles
 
 \*---------------------------------------------------------------------------*/
 

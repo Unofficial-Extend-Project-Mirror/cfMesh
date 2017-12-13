@@ -47,12 +47,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeCreator::refineBoundary()
+void Foam::Module::meshOctreeCreator::refineBoundary()
 {
     meshOctreeModifier octreeModifier(octree_);
     const LongList<meshOctreeCube*>& leaves = octreeModifier.leavesAccess();
@@ -192,7 +187,7 @@ void meshOctreeCreator::refineBoundary()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeCreator::refineBoxesContainedInObjects()
+void Foam::Module::meshOctreeCreator::refineBoxesContainedInObjects()
 {
     if (!meshDictPtr_ || !meshDictPtr_->found("objectRefinements"))
     {
@@ -424,7 +419,7 @@ void meshOctreeCreator::refineBoxesContainedInObjects()
 }
 
 
-void meshOctreeCreator::refineBoxesIntersectingSurfaces()
+void Foam::Module::meshOctreeCreator::refineBoxesIntersectingSurfaces()
 {
     if (!meshDictPtr_ || !meshDictPtr_->found("surfaceMeshRefinement"))
     {
@@ -652,7 +647,7 @@ void meshOctreeCreator::refineBoxesIntersectingSurfaces()
 }
 
 
-void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
+void Foam::Module::meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 {
     if (!meshDictPtr_ || !meshDictPtr_->found("edgeMeshRefinement"))
     {
@@ -869,7 +864,10 @@ void meshOctreeCreator::refineBoxesIntersectingEdgeMeshes()
 }
 
 
-void meshOctreeCreator::refineBoxesNearDataBoxes(const label nLayers)
+void Foam::Module::meshOctreeCreator::refineBoxesNearDataBoxes
+(
+    const label nLayers
+)
 {
     # ifdef OCTREETiming
     const scalar startTime = omp_get_wtime();
@@ -1159,7 +1157,7 @@ void meshOctreeCreator::refineBoxesNearDataBoxes(const label nLayers)
 }
 
 
-void meshOctreeCreator::refineBoxes
+void Foam::Module::meshOctreeCreator::refineBoxes
 (
     const direction refLevel,
     const direction cubeType
@@ -1228,9 +1226,5 @@ void meshOctreeCreator::refineBoxes
     } while (nRefined != 0);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

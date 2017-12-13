@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::createFundamentalSheets
+    Foam::Module::createFundamentalSheets
 
 Description
     A base class for various method to generate fundamental sheets
@@ -44,7 +44,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshOctree;
 class meshSurfaceEngine;
@@ -114,7 +115,7 @@ public:
 
 
     //- Destructor
-    virtual ~createFundamentalSheets();
+    virtual ~createFundamentalSheets() = default;
 
 
     // Member Functions
@@ -129,6 +130,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

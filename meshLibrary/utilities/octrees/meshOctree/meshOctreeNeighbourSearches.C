@@ -28,14 +28,9 @@ License
 
 //#define OCTREE_DEBUG
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-label meshOctree::findLeafContainingVertex
+Foam::label Foam::Module::meshOctree::findLeafContainingVertex
 (
     const point& p
 ) const
@@ -95,7 +90,7 @@ label meshOctree::findLeafContainingVertex
 }
 
 
-void meshOctree::findLeavesInSphere
+void Foam::Module::meshOctree::findLeavesInSphere
 (
     const point& c,
     const scalar r,
@@ -108,7 +103,7 @@ void meshOctree::findLeavesInSphere
 }
 
 
-label meshOctree::findNeighbourOverNode
+Foam::label Foam::Module::meshOctree::findNeighbourOverNode
 (
     const meshOctreeCubeCoordinates& cc,
     const label nodeI
@@ -176,7 +171,7 @@ label meshOctree::findNeighbourOverNode
 }
 
 
-void meshOctree::findNeighboursOverEdge
+void Foam::Module::meshOctree::findNeighboursOverEdge
 (
     const meshOctreeCubeCoordinates& cc,
     const label eI,
@@ -255,7 +250,7 @@ void meshOctree::findNeighboursOverEdge
 }
 
 
-void meshOctree::findNeighboursInDirection
+void Foam::Module::meshOctree::findNeighboursInDirection
 (
     const meshOctreeCubeCoordinates& cc,
     const label dir,
@@ -367,7 +362,7 @@ void meshOctree::findNeighboursInDirection
 }
 
 
-void meshOctree::findNeighboursForLeaf
+void Foam::Module::meshOctree::findNeighboursForLeaf
 (
     const meshOctreeCubeCoordinates& cc,
     DynList<label>& neighbourLeaves
@@ -383,7 +378,7 @@ void meshOctree::findNeighboursForLeaf
 }
 
 
-void meshOctree::findAllLeafNeighbours
+void Foam::Module::meshOctree::findAllLeafNeighbours
 (
     const meshOctreeCubeCoordinates& cc,
     DynList<label>& neighbourLeaves
@@ -419,7 +414,7 @@ void meshOctree::findAllLeafNeighbours
 }
 
 
-void meshOctree::findLeavesForCubeVertex
+void Foam::Module::meshOctree::findLeavesForCubeVertex
 (
     const label leafI,
     const direction vrtI,
@@ -458,7 +453,8 @@ void meshOctree::findLeavesForCubeVertex
 }
 
 
-meshOctreeCube* meshOctree::findCubeForPosition
+Foam::Module::meshOctreeCube*
+Foam::Module::meshOctree::findCubeForPosition
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -517,7 +513,7 @@ meshOctreeCube* meshOctree::findCubeForPosition
 }
 
 
-label meshOctree::findLeafLabelForPosition
+Foam::label Foam::Module::meshOctree::findLeafLabelForPosition
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -546,9 +542,5 @@ label meshOctree::findLeafLabelForPosition
     return -1;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

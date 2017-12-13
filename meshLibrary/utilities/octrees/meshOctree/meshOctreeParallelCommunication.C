@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctree::exchangeRequestsWithNeighbourProcessors
+void Foam::Module::meshOctree::exchangeRequestsWithNeighbourProcessors
 (
     const LongList<meshOctreeCubeCoordinates>& dataToSend,
     LongList<meshOctreeCubeCoordinates>& dataToReceive
@@ -204,7 +199,7 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
 }
 
 
-void meshOctree::exchangeRequestsWithNeighbourProcessors
+void Foam::Module::meshOctree::exchangeRequestsWithNeighbourProcessors
 (
     const LongList<meshOctreeCubeCoordinates>& dataToSend,
     const LongList<scalar>& rangesToSend,
@@ -449,9 +444,5 @@ void meshOctree::exchangeRequestsWithNeighbourProcessors
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

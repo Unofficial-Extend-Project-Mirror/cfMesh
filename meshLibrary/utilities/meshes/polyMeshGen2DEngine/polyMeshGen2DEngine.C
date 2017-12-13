@@ -33,12 +33,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGen2DEngine::findActiveFaces() const
+void Foam::Module::polyMeshGen2DEngine::findActiveFaces() const
 {
     const faceListPMG& faces = mesh_.faces();
     const boolList& zMinPoints = this->zMinPoints();
@@ -65,7 +60,7 @@ void polyMeshGen2DEngine::findActiveFaces() const
 }
 
 
-void polyMeshGen2DEngine::findActiveFaceLabels() const
+void Foam::Module::polyMeshGen2DEngine::findActiveFaceLabels() const
 {
     const boolList& activeFace = this->activeFace();
 
@@ -92,7 +87,7 @@ void polyMeshGen2DEngine::findActiveFaceLabels() const
 }
 
 
-void polyMeshGen2DEngine::findZMinPoints() const
+void Foam::Module::polyMeshGen2DEngine::findZMinPoints() const
 {
     const pointFieldPMG& points = mesh_.points();
 
@@ -117,7 +112,7 @@ void polyMeshGen2DEngine::findZMinPoints() const
 }
 
 
-void polyMeshGen2DEngine::findZMinPointLabels() const
+void Foam::Module::polyMeshGen2DEngine::findZMinPointLabels() const
 {
     const boolList& zMinPoints = this->zMinPoints();
 
@@ -153,7 +148,7 @@ void polyMeshGen2DEngine::findZMinPointLabels() const
 }
 
 
-void polyMeshGen2DEngine::findZMinOffsetPoints() const
+void Foam::Module::polyMeshGen2DEngine::findZMinOffsetPoints() const
 {
     const boolList& zMinPoints = this->zMinPoints();
     const labelList& zMinPointLabels = this->zMinPointLabels();
@@ -191,7 +186,7 @@ void polyMeshGen2DEngine::findZMinOffsetPoints() const
 }
 
 
-void polyMeshGen2DEngine::findZMaxPoints() const
+void Foam::Module::polyMeshGen2DEngine::findZMaxPoints() const
 {
     const pointFieldPMG& points = mesh_.points();
 
@@ -216,7 +211,7 @@ void polyMeshGen2DEngine::findZMaxPoints() const
 }
 
 
-void polyMeshGen2DEngine::findZMaxPointLabels() const
+void Foam::Module::polyMeshGen2DEngine::findZMaxPointLabels() const
 {
     const boolList& zMaxPoints = this->zMaxPoints();
 
@@ -252,7 +247,7 @@ void polyMeshGen2DEngine::findZMaxPointLabels() const
 }
 
 
-void polyMeshGen2DEngine::findZMaxOffsetPoints() const
+void Foam::Module::polyMeshGen2DEngine::findZMaxOffsetPoints() const
 {
     const boolList& zMaxPoints = this->zMaxPoints();
     const labelList& zMaxPointLabels = this->zMaxPointLabels();
@@ -292,7 +287,7 @@ void polyMeshGen2DEngine::findZMaxOffsetPoints() const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
+Foam::Module::polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
 :
     mesh_(mesh),
     bb_(),
@@ -343,7 +338,7 @@ polyMeshGen2DEngine::polyMeshGen2DEngine(const polyMeshGen& mesh)
 }
 
 
-polyMeshGen2DEngine::~polyMeshGen2DEngine()
+Foam::Module::polyMeshGen2DEngine::~polyMeshGen2DEngine()
 {
     clearOut();
 }
@@ -351,7 +346,7 @@ polyMeshGen2DEngine::~polyMeshGen2DEngine()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGen2DEngine::correctPoints()
+void Foam::Module::polyMeshGen2DEngine::correctPoints()
 {
     pointFieldPMG& points = const_cast<pointFieldPMG&>(mesh_.points());
 
@@ -374,7 +369,7 @@ void polyMeshGen2DEngine::correctPoints()
 }
 
 
-void polyMeshGen2DEngine::clearOut()
+void Foam::Module::polyMeshGen2DEngine::clearOut()
 {
     deleteDemandDrivenData(activeFacePtr_);
     deleteDemandDrivenData(activeFaceLabelsPtr_);
@@ -386,9 +381,5 @@ void polyMeshGen2DEngine::clearOut()
     deleteDemandDrivenData(zMaxToZMinPtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

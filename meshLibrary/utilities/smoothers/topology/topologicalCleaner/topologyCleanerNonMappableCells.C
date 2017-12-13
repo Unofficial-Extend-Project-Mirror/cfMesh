@@ -28,16 +28,9 @@ License
 #include "decomposeFaces.H"
 #include "DynList.H"
 
-//#define DEBUGCleaner
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void topologicalCleaner::checkNonMappableCells()
+void Foam::Module::topologicalCleaner::checkNonMappableCells()
 {
     Info<< "Checking for non - mappable cells" << endl;
     // decompose cells with more than one boundary face
@@ -75,7 +68,7 @@ void topologicalCleaner::checkNonMappableCells()
 }
 
 
-void topologicalCleaner::checkNonMappableFaces()
+void Foam::Module::topologicalCleaner::checkNonMappableFaces()
 {
     Info<< "Checking for non - mappable faces" << endl;
 
@@ -222,9 +215,5 @@ void topologicalCleaner::checkNonMappableFaces()
     Info<< "Finished checking non - mappable faces" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

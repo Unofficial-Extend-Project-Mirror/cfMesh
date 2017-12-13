@@ -31,12 +31,10 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
+void Foam::Module::meshUntangler::cutRegion::tieBreak
+(
+    const DynList<label, 8>& f
+)
 {
     // There must be only one, singly connected region which is cut off
     // from the feasible region. This may not be the case if one operates in the
@@ -184,9 +182,5 @@ void meshUntangler::cutRegion::tieBreak(const DynList<label, 8>& f)
     findNewEdges();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

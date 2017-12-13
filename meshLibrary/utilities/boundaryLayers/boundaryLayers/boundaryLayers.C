@@ -44,12 +44,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-const meshSurfaceEngine& boundaryLayers::surfaceEngine() const
+const Foam::Module::meshSurfaceEngine&
+Foam::Module::boundaryLayers::surfaceEngine() const
 {
     if (!msePtr_)
     {
@@ -60,7 +56,8 @@ const meshSurfaceEngine& boundaryLayers::surfaceEngine() const
 }
 
 
-const meshSurfacePartitioner& boundaryLayers::surfacePartitioner() const
+const Foam::Module::meshSurfacePartitioner& 
+Foam::Module::boundaryLayers::surfacePartitioner() const
 {
     if (!meshPartitionerPtr_)
     {
@@ -71,7 +68,7 @@ const meshSurfacePartitioner& boundaryLayers::surfacePartitioner() const
 }
 
 
-void boundaryLayers::findPatchesToBeTreatedTogether()
+void Foam::Module::boundaryLayers::findPatchesToBeTreatedTogether()
 {
     if (geometryAnalysed_)
     {
@@ -540,7 +537,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 }
 
 
-void boundaryLayers::addLayerForPatch(const label patchLabel)
+void Foam::Module::boundaryLayers::addLayerForPatch(const label patchLabel)
 {
     if (treatedPatch_[patchLabel])
     {
@@ -594,7 +591,7 @@ void boundaryLayers::addLayerForPatch(const label patchLabel)
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boundaryLayers::boundaryLayers
+Foam::Module::boundaryLayers::boundaryLayers
 (
     polyMeshGen& mesh
 )
@@ -633,7 +630,7 @@ boundaryLayers::boundaryLayers
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-boundaryLayers::~boundaryLayers()
+Foam::Module::boundaryLayers::~boundaryLayers()
 {
     clearOut();
 
@@ -646,7 +643,7 @@ boundaryLayers::~boundaryLayers()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void boundaryLayers::addLayerForPatch(const word& patchName)
+void Foam::Module::boundaryLayers::addLayerForPatch(const word& patchName)
 {
     if (!geometryAnalysed_)
     {
@@ -665,19 +662,19 @@ void boundaryLayers::addLayerForPatch(const word& patchName)
 }
 
 
-void boundaryLayers::createOTopologyLayers()
+void Foam::Module::boundaryLayers::createOTopologyLayers()
 {
     patchWiseLayers_ = false;
 }
 
 
-void boundaryLayers::terminateLayersAtConcaveEdges()
+void Foam::Module::boundaryLayers::terminateLayersAtConcaveEdges()
 {
     terminateLayersAtConcaveEdges_ = true;
 }
 
 
-void boundaryLayers::activate2DMode()
+void Foam::Module::boundaryLayers::activate2DMode()
 {
     polyMeshGen2DEngine mesh2DEngine(mesh_);
     const boolList& zMinPoint = mesh2DEngine.zMinPoints();
@@ -735,7 +732,7 @@ void boundaryLayers::activate2DMode()
 }
 
 
-void boundaryLayers::addLayerForAllPatches()
+void Foam::Module::boundaryLayers::addLayerForAllPatches()
 {
     if (!geometryAnalysed_)
     {
@@ -786,9 +783,5 @@ void boundaryLayers::addLayerForAllPatches()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

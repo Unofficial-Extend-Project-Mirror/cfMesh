@@ -22,10 +22,9 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurface2DCheck
+    Foam::Module::triSurface2DCheck
 
 Description
-
 
 SourceFiles
     triSurface2DCheck.C
@@ -41,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -76,7 +77,7 @@ public:
     triSurface2DCheck(const triSurf& surface);
 
     //- Destructor
-    ~triSurface2DCheck();
+    ~triSurface2DCheck() = default;
 
 
     // Member Functions
@@ -91,6 +92,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

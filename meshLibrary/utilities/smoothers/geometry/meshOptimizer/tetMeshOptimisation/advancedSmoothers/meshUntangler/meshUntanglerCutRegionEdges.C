@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshUntangler::cutRegion::findNewEdges()
+void Foam::Module::meshUntangler::cutRegion::findNewEdges()
 {
     #ifdef DEBUGSmooth
     Info<< "Creating new edgesPtr_" << endl;
@@ -109,9 +104,5 @@ void meshUntangler::cutRegion::findNewEdges()
     #endif
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

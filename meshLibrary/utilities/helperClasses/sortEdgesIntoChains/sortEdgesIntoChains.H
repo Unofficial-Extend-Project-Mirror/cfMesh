@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::sortEdgesIntoChains
+    Foam::Module::sortEdgesIntoChains
 
 Description
     Creates boundary faces from a chain of open edges
@@ -41,6 +41,9 @@ SourceFiles
 #include "Map.H"
 
 namespace Foam
+{
+
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -88,7 +91,7 @@ public:
     );
 
     //- Destructor
-    ~sortEdgesIntoChains();
+    ~sortEdgesIntoChains() = default;
 
 
     // Member functions
@@ -100,6 +103,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

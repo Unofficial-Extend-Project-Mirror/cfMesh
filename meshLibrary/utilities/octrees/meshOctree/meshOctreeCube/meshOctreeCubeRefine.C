@@ -35,12 +35,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeCube::findContainedEdges
+void Foam::Module::meshOctreeCube::findContainedEdges
 (
     const triSurf& surface,
     const boundBox& rootBox
@@ -97,7 +92,7 @@ void meshOctreeCube::findContainedEdges
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeCube::refineCube2D
+void Foam::Module::meshOctreeCube::refineCube2D
 (
     const triSurf& surface,
     const boundBox& rootBox,
@@ -221,7 +216,7 @@ void meshOctreeCube::refineCube2D
 }
 
 
-void meshOctreeCube::refineCube
+void Foam::Module::meshOctreeCube::refineCube
 (
     const triSurf& surface,
     const boundBox& rootBox,
@@ -340,7 +335,7 @@ void meshOctreeCube::refineCube
 }
 
 
-void meshOctreeCube::refineMissingCube
+void Foam::Module::meshOctreeCube::refineMissingCube
 (
     const triSurf& ts,
     const boundBox& rootBox,
@@ -414,7 +409,7 @@ void meshOctreeCube::refineMissingCube
 }
 
 
-void meshOctreeCube::refineMissingCube
+void Foam::Module::meshOctreeCube::refineMissingCube
 (
     const label scI,
     const label elementsRowI,
@@ -453,9 +448,5 @@ void meshOctreeCube::refineMissingCube
     subCubesPtr_[scI]->containedEdgesLabel_ = edgesRowI;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

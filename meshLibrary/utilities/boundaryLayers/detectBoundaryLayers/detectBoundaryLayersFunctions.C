@@ -43,6 +43,8 @@ License
 
 namespace Foam
 {
+namespace Module
+{
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -364,10 +366,12 @@ public:
 
 
 } // End namespace bndLayerOps
+} // End namespace Module
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void detectBoundaryLayers::analyseLayers()
+void Foam::Module::detectBoundaryLayers::analyseLayers()
 {
     Info<< "Analysing mesh for bnd layer existence" << endl;
 
@@ -507,7 +511,7 @@ void detectBoundaryLayers::analyseLayers()
 }
 
 
-bool detectBoundaryLayers::findHairsForFace
+bool Foam::Module::detectBoundaryLayers::findHairsForFace
 (
     const label bfI,
     DynList<edge>& hairEdges
@@ -630,7 +634,7 @@ bool detectBoundaryLayers::findHairsForFace
 }
 
 
-void detectBoundaryLayers::generateHairEdges()
+void Foam::Module::detectBoundaryLayers::generateHairEdges()
 {
     hairEdges_.clear();
     hairEdgesAtBoundaryPoint_.clear();
@@ -765,9 +769,5 @@ void detectBoundaryLayers::generateHairEdges()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

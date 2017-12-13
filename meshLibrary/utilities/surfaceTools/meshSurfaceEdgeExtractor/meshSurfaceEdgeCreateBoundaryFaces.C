@@ -29,16 +29,9 @@ License
 #include "meshOctree.H"
 #include "triSurf.H"
 
-//#define DEBUGMapping
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEdgeExtractor::createBoundaryFaces()
+void Foam::Module::meshSurfaceEdgeExtractor::createBoundaryFaces()
 {
     boundaryFacesGenerator bfg
     (
@@ -52,9 +45,5 @@ void meshSurfaceEdgeExtractor::createBoundaryFaces()
     );
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

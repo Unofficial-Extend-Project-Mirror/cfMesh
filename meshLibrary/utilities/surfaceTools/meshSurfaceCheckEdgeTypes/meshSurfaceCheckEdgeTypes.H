@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceCheckEdgeTypes
+    Foam::Module::meshSurfaceCheckEdgeTypes
 
 Description
     Checks if any of the surface is tangled at any of its vertices. This
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -96,7 +98,7 @@ public:
     meshSurfaceCheckEdgeTypes(const meshSurfaceEngine&);
 
     //- Destructor
-    ~meshSurfaceCheckEdgeTypes();
+    ~meshSurfaceCheckEdgeTypes() = default;
 
 
     // Member Functions
@@ -117,6 +119,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

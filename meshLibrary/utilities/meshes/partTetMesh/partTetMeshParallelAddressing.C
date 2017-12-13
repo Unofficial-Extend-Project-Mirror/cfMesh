@@ -36,12 +36,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void partTetMesh::createParallelAddressing
+void Foam::Module::partTetMesh::createParallelAddressing
 (
     const labelLongList& nodeLabelForPoint,
     const labelLongList& /*nodeLabelForFace*/,
@@ -369,7 +364,7 @@ void partTetMesh::createParallelAddressing
 }
 
 
-void partTetMesh::createBufferLayers()
+void Foam::Module::partTetMesh::createBufferLayers()
 {
     VRWGraph& pProcs = *pAtProcsPtr_;
     labelLongList& globalTetPointLabel = *globalPointLabelPtr_;
@@ -536,9 +531,5 @@ void partTetMesh::createBufferLayers()
 
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

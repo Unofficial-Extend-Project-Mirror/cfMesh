@@ -30,40 +30,38 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline const polyMeshGen& meshSurfaceEngine::mesh() const
+inline const Foam::Module::polyMeshGen&
+Foam::Module::meshSurfaceEngine::mesh() const
 {
     return mesh_;
 }
 
 
-inline const pointFieldPMG& meshSurfaceEngine::points() const
+inline const Foam::Module::pointFieldPMG&
+Foam::Module::meshSurfaceEngine::points() const
 {
     return mesh_.points();
 }
 
 
-inline const faceListPMG& meshSurfaceEngine::faces() const
+inline const Foam::Module::faceListPMG&
+Foam::Module::meshSurfaceEngine::faces() const
 {
     return mesh_.faces();
 }
 
 
-inline const cellListPMG& meshSurfaceEngine::cells() const
+inline const Foam::Module::cellListPMG&
+Foam::Module::meshSurfaceEngine::cells() const
 {
     return mesh_.cells();
 }
 
 
-inline const labelList& meshSurfaceEngine::bp() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::bp() const
 {
     if (!bppPtr_)
     {
@@ -82,7 +80,8 @@ inline const labelList& meshSurfaceEngine::bp() const
 }
 
 
-inline const labelList& meshSurfaceEngine::boundaryPoints() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::boundaryPoints() const
 {
     if (!boundaryPointsPtr_)
     {
@@ -100,7 +99,8 @@ inline const labelList& meshSurfaceEngine::boundaryPoints() const
 }
 
 
-inline const faceList::subList& meshSurfaceEngine::boundaryFaces() const
+inline const Foam::faceList::subList&
+Foam::Module::meshSurfaceEngine::boundaryFaces() const
 {
     if (!boundaryFacesPtr_)
     {
@@ -118,7 +118,8 @@ inline const faceList::subList& meshSurfaceEngine::boundaryFaces() const
 }
 
 
-inline const labelList& meshSurfaceEngine::boundaryFacePatches() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::boundaryFacePatches() const
 {
     if (!boundaryFacePatchPtr_)
     {
@@ -136,7 +137,8 @@ inline const labelList& meshSurfaceEngine::boundaryFacePatches() const
 }
 
 
-inline const labelList& meshSurfaceEngine::faceOwners() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::faceOwners() const
 {
     if (!boundaryFaceOwnersPtr_)
     {
@@ -154,7 +156,8 @@ inline const labelList& meshSurfaceEngine::faceOwners() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::pointFaces() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::pointFaces() const
 {
     if (!pointFacesPtr_)
     {
@@ -172,7 +175,8 @@ inline const VRWGraph& meshSurfaceEngine::pointFaces() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::pointInFaces() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::pointInFaces() const
 {
     if (!pointInFacePtr_)
     {
@@ -191,7 +195,8 @@ inline const VRWGraph& meshSurfaceEngine::pointInFaces() const
 
 
 /*
-inline const VRWGraph& meshSurfaceEngine::pointPatches() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::pointPatches() const
 {
     if(!pointPatchesPtr_)
     {
@@ -209,7 +214,8 @@ inline const VRWGraph& meshSurfaceEngine::pointPatches() const
 }
 */
 
-inline const VRWGraph& meshSurfaceEngine::pointPoints() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::pointPoints() const
 {
     if (!pointPointsPtr_)
     {
@@ -227,7 +233,8 @@ inline const VRWGraph& meshSurfaceEngine::pointPoints() const
 }
 
 
-inline const vectorField& meshSurfaceEngine::pointNormals() const
+inline const Foam::vectorField&
+Foam::Module::meshSurfaceEngine::pointNormals() const
 {
     if (!pointNormalsPtr_)
     {
@@ -245,7 +252,8 @@ inline const vectorField& meshSurfaceEngine::pointNormals() const
 }
 
 
-inline const vectorField& meshSurfaceEngine::faceNormals() const
+inline const Foam::vectorField&
+Foam::Module::meshSurfaceEngine::faceNormals() const
 {
     if (!faceNormalsPtr_)
     {
@@ -263,7 +271,8 @@ inline const vectorField& meshSurfaceEngine::faceNormals() const
 }
 
 
-inline const vectorField& meshSurfaceEngine::faceCentres() const
+inline const Foam::vectorField&
+Foam::Module::meshSurfaceEngine::faceCentres() const
 {
     if (!faceCentresPtr_)
     {
@@ -281,7 +290,8 @@ inline const vectorField& meshSurfaceEngine::faceCentres() const
 }
 
 
-inline const edgeList& meshSurfaceEngine::edges() const
+inline const Foam::edgeList&
+Foam::Module::meshSurfaceEngine::edges() const
 {
     if (!edgesPtr_)
     {
@@ -299,7 +309,8 @@ inline const edgeList& meshSurfaceEngine::edges() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::boundaryPointEdges() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::boundaryPointEdges() const
 {
     if (!bpEdgesPtr_)
     {
@@ -317,7 +328,8 @@ inline const VRWGraph& meshSurfaceEngine::boundaryPointEdges() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::edgeFaces() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::edgeFaces() const
 {
     if (!edgeFacesPtr_)
     {
@@ -335,7 +347,8 @@ inline const VRWGraph& meshSurfaceEngine::edgeFaces() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::faceEdges() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::faceEdges() const
 {
     if (!faceEdgesPtr_)
     {
@@ -353,7 +366,8 @@ inline const VRWGraph& meshSurfaceEngine::faceEdges() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::edgePatches() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::edgePatches() const
 {
     if (!edgePatchesPtr_)
     {
@@ -371,7 +385,8 @@ inline const VRWGraph& meshSurfaceEngine::edgePatches() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::faceFaces() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::faceFaces() const
 {
     if (!faceFacesPtr_)
     {
@@ -389,7 +404,8 @@ inline const VRWGraph& meshSurfaceEngine::faceFaces() const
 }
 
 
-inline const labelList& meshSurfaceEngine::globalBoundaryPointLabel() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::globalBoundaryPointLabel() const
 {
     if (!globalBoundaryPointLabelPtr_)
     {
@@ -407,8 +423,8 @@ inline const labelList& meshSurfaceEngine::globalBoundaryPointLabel() const
 }
 
 
-inline const Map<label>&
-meshSurfaceEngine::globalToLocalBndPointAddressing() const
+inline const Foam::Map<Foam::label>&
+Foam::Module::meshSurfaceEngine::globalToLocalBndPointAddressing() const
 {
     if (!globalBoundaryPointToLocalPtr_)
     {
@@ -426,7 +442,8 @@ meshSurfaceEngine::globalToLocalBndPointAddressing() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::bpAtProcs() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::bpAtProcs() const
 {
     if (!globalBoundaryPointLabelPtr_)
     {
@@ -444,7 +461,8 @@ inline const VRWGraph& meshSurfaceEngine::bpAtProcs() const
 }
 
 
-inline const DynList<label>& meshSurfaceEngine::bpNeiProcs() const
+inline const Foam::Module::DynList<Foam::label>&
+Foam::Module::meshSurfaceEngine::bpNeiProcs() const
 {
     if (!bpNeiProcsPtr_)
     {
@@ -462,7 +480,8 @@ inline const DynList<label>& meshSurfaceEngine::bpNeiProcs() const
 }
 
 
-inline const labelList& meshSurfaceEngine::globalBoundaryEdgeLabel() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::globalBoundaryEdgeLabel() const
 {
     if (!globalBoundaryEdgeLabelPtr_)
     {
@@ -480,8 +499,8 @@ inline const labelList& meshSurfaceEngine::globalBoundaryEdgeLabel() const
 }
 
 
-inline const Map<label>&
-meshSurfaceEngine::globalToLocalBndEdgeAddressing() const
+inline const Foam::Map<Foam::label>&
+Foam::Module::meshSurfaceEngine::globalToLocalBndEdgeAddressing() const
 {
     if (!globalBoundaryEdgeToLocalPtr_)
     {
@@ -499,7 +518,8 @@ meshSurfaceEngine::globalToLocalBndEdgeAddressing() const
 }
 
 
-inline const VRWGraph& meshSurfaceEngine::beAtProcs() const
+inline const Foam::Module::VRWGraph&
+Foam::Module::meshSurfaceEngine::beAtProcs() const
 {
     if (!globalBoundaryEdgeLabelPtr_)
     {
@@ -517,7 +537,8 @@ inline const VRWGraph& meshSurfaceEngine::beAtProcs() const
 }
 
 
-inline const DynList<label>& meshSurfaceEngine::beNeiProcs() const
+inline const Foam::Module::DynList<Foam::label>&
+Foam::Module::meshSurfaceEngine::beNeiProcs() const
 {
     if (!beNeiProcsPtr_)
     {
@@ -535,7 +556,8 @@ inline const DynList<label>& meshSurfaceEngine::beNeiProcs() const
 }
 
 
-inline const Map<label>& meshSurfaceEngine::otherEdgeFaceAtProc() const
+inline const Foam::Map<Foam::label>&
+Foam::Module::meshSurfaceEngine::otherEdgeFaceAtProc() const
 {
     if (!otherEdgeFaceAtProcPtr_)
     {
@@ -553,7 +575,8 @@ inline const Map<label>& meshSurfaceEngine::otherEdgeFaceAtProc() const
 }
 
 
-inline const Map<label>& meshSurfaceEngine::otherEdgeFacePatch() const
+inline const Foam::Map<Foam::label>&
+Foam::Module::meshSurfaceEngine::otherEdgeFacePatch() const
 {
     if (!otherEdgeFacePatchPtr_)
     {
@@ -571,7 +594,8 @@ inline const Map<label>& meshSurfaceEngine::otherEdgeFacePatch() const
 }
 
 
-inline const labelList& meshSurfaceEngine::globalBoundaryFaceLabel() const
+inline const Foam::labelList&
+Foam::Module::meshSurfaceEngine::globalBoundaryFaceLabel() const
 {
     if (!globalBoundaryFaceLabelPtr_)
     {
@@ -588,9 +612,5 @@ inline const labelList& meshSurfaceEngine::globalBoundaryFaceLabel() const
     return *globalBoundaryFaceLabelPtr_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

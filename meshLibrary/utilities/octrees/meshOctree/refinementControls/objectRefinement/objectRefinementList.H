@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Typedef
-    Foam::objectRefinementList
+    Foam::Module::objectRefinementList
 
 Description
     A list of object refinements
@@ -39,9 +39,12 @@ Description
 
 namespace Foam
 {
+namespace Module
+{
 
-typedef PtrList<objectRefinement> objectRefinementList;
+    typedef PtrList<objectRefinement> objectRefinementList;
 
+}
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

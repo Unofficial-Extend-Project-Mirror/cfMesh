@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::graphRow
+    Foam::Module::graphRow
 
 Description
     This class provides non-const access to a row of a graph
@@ -40,6 +40,9 @@ SourceFiles
 namespace Foam
 {
 class Ostream;
+
+namespace Module
+{
 template<class graphType> class graphRow;
 template<class graphType> class graphConstRow;
 
@@ -132,6 +135,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

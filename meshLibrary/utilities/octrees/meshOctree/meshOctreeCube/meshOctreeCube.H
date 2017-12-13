@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeCube
+    Foam::Module::meshOctreeCube
 
 Description
     A cube stores information needed for mesh generation
@@ -44,8 +44,10 @@ SourceFiles
 
 namespace Foam
 {
-
 class Ostream;
+
+namespace Module
+{
 class triSurf;
 class VRWGraph;
 class meshOctreeSlot;
@@ -131,7 +133,7 @@ public:
 
 
     //- Destructor
-    ~meshOctreeCube();
+    ~meshOctreeCube() = default;
 
 
     // Member Functions
@@ -269,6 +271,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

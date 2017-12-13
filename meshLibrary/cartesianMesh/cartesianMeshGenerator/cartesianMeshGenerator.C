@@ -50,13 +50,9 @@ License
 
 //#define DEBUG
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 // * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
-void cartesianMeshGenerator::createCartesianMesh()
+void Foam::Module::cartesianMeshGenerator::createCartesianMesh()
 {
     // create polyMesh from octree boxes
     cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
@@ -77,7 +73,7 @@ void cartesianMeshGenerator::createCartesianMesh()
 }
 
 
-void cartesianMeshGenerator::surfacePreparation()
+void Foam::Module::cartesianMeshGenerator::surfacePreparation()
 {
     // removes unnecessary cells and morph the boundary
     // such that there is only one boundary face per cell
@@ -103,7 +99,7 @@ void cartesianMeshGenerator::surfacePreparation()
 }
 
 
-void cartesianMeshGenerator::mapMeshToSurface()
+void Foam::Module::cartesianMeshGenerator::mapMeshToSurface()
 {
     // calculate mesh surface
     meshSurfaceEngine mse(mesh_);
@@ -120,7 +116,7 @@ void cartesianMeshGenerator::mapMeshToSurface()
 }
 
 
-void cartesianMeshGenerator::extractPatches()
+void Foam::Module::cartesianMeshGenerator::extractPatches()
 {
     edgeExtractor extractor(mesh_, *octreePtr_);
 
@@ -131,20 +127,20 @@ void cartesianMeshGenerator::extractPatches()
 }
 
 
-void cartesianMeshGenerator::mapEdgesAndCorners()
+void Foam::Module::cartesianMeshGenerator::mapEdgesAndCorners()
 {
     meshSurfaceEdgeExtractorNonTopo(mesh_, *octreePtr_);
 }
 
 
-void cartesianMeshGenerator::optimiseMeshSurface()
+void Foam::Module::cartesianMeshGenerator::optimiseMeshSurface()
 {
     meshSurfaceEngine mse(mesh_);
     meshSurfaceOptimizer(mse, *octreePtr_).optimizeSurface();
 }
 
 
-void cartesianMeshGenerator::generateBoundaryLayers()
+void Foam::Module::cartesianMeshGenerator::generateBoundaryLayers()
 {
     // add boundary layers
     boundaryLayers bl(mesh_);
@@ -152,7 +148,7 @@ void cartesianMeshGenerator::generateBoundaryLayers()
 }
 
 
-void cartesianMeshGenerator::refBoundaryLayers()
+void Foam::Module::cartesianMeshGenerator::refBoundaryLayers()
 {
     if (meshDict_.isDict("boundaryLayers"))
     {
@@ -172,7 +168,7 @@ void cartesianMeshGenerator::refBoundaryLayers()
 }
 
 
-void cartesianMeshGenerator::optimiseFinalMesh()
+void Foam::Module::cartesianMeshGenerator::optimiseFinalMesh()
 {
     // untangle the surface if needed
     const bool enforceConstraints =
@@ -224,7 +220,7 @@ void cartesianMeshGenerator::optimiseFinalMesh()
 }
 
 
-void cartesianMeshGenerator::projectSurfaceAfterBackScaling()
+void Foam::Module::cartesianMeshGenerator::projectSurfaceAfterBackScaling()
 {
     if (!meshDict_.found("anisotropicSources"))
         return;
@@ -251,19 +247,19 @@ void cartesianMeshGenerator::projectSurfaceAfterBackScaling()
 }
 
 
-void cartesianMeshGenerator::replaceBoundaries()
+void Foam::Module::cartesianMeshGenerator::replaceBoundaries()
 {
     renameBoundaryPatches rbp(mesh_, meshDict_);
 }
 
 
-void cartesianMeshGenerator::renumberMesh()
+void Foam::Module::cartesianMeshGenerator::renumberMesh()
 {
     polyMeshGenModifier(mesh_).renumberMesh();
 }
 
 
-void cartesianMeshGenerator::generateMesh()
+void Foam::Module::cartesianMeshGenerator::generateMesh()
 {
     if (controller_.runCurrentStep("templateGeneration"))
     {
@@ -319,7 +315,7 @@ void cartesianMeshGenerator::generateMesh()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
+Foam::Module::cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 :
     db_(time),
     surfacePtr_(nullptr),
@@ -408,7 +404,7 @@ cartesianMeshGenerator::cartesianMeshGenerator(const Time& time)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-cartesianMeshGenerator::~cartesianMeshGenerator()
+Foam::Module::cartesianMeshGenerator::~cartesianMeshGenerator()
 {
     deleteDemandDrivenData(surfacePtr_);
     deleteDemandDrivenData(modSurfacePtr_);
@@ -418,14 +414,10 @@ cartesianMeshGenerator::~cartesianMeshGenerator()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void cartesianMeshGenerator::writeMesh() const
+void Foam::Module::cartesianMeshGenerator::writeMesh() const
 {
     mesh_.write();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

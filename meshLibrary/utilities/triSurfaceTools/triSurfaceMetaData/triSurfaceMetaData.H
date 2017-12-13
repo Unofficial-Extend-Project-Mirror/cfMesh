@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfaceMetaData
+    Foam::Module::triSurfaceMetaData
 
 Description
     Generates meta data of the surface mesh.
@@ -48,6 +48,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -83,7 +85,7 @@ public:
     triSurfaceMetaData(const triSurf& surface);
 
     //- Destructor
-    ~triSurfaceMetaData();
+    ~triSurfaceMetaData() = default;
 
 
     // Member Functions
@@ -98,6 +100,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

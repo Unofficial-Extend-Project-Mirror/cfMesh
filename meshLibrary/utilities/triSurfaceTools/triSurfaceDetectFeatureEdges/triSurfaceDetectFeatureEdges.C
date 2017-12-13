@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-triSurfaceDetectFeatureEdges::triSurfaceDetectFeatureEdges
+Foam::Module::triSurfaceDetectFeatureEdges::triSurfaceDetectFeatureEdges
 (
     triSurf& surface,
     const scalar angleDeviation
@@ -53,13 +48,9 @@ triSurfaceDetectFeatureEdges::triSurfaceDetectFeatureEdges
 }
 
 
-triSurfaceDetectFeatureEdges::~triSurfaceDetectFeatureEdges()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfaceDetectFeatureEdges::detectFeatureEdges()
+void Foam::Module::triSurfaceDetectFeatureEdges::detectFeatureEdges()
 {
     const edgeLongList& edges = surf_.edges();
     triSurfModifier surfMod(surf_);
@@ -73,9 +64,5 @@ void triSurfaceDetectFeatureEdges::detectFeatureEdges()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

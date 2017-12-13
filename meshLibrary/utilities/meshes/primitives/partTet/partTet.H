@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::partTet
+    Foam::Module::partTet
 
 Description
     A partTet is a primitive needed during mesh smoothing
@@ -43,9 +43,11 @@ SourceFiles
 
 namespace Foam
 {
-
 class Istream;
 class Ostream;
+
+namespace Module
+{
 
 /*---------------------------------------------------------------------------*\
                            class partTet Declaration
@@ -65,7 +67,7 @@ public:
     // Constructors
 
         //- Null construct
-        inline partTet();
+        partTet() = default;
 
         //- Construct from point labels
         inline partTet
@@ -78,7 +80,7 @@ public:
 
 
     //- Destructor
-    ~partTet();
+    ~partTet() = default;
 
 
     // Member Functions
@@ -159,6 +161,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

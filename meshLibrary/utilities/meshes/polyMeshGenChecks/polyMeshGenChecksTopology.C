@@ -2,8 +2,8 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Copyright held by the original author
-     \\/     M anipulation  |
+    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
+     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -34,14 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace polyMeshGenChecks
-{
-bool checkPoints
+bool Foam::Module::polyMeshGenChecks::checkPoints
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -111,7 +104,7 @@ bool checkPoints
 }
 
 
-bool checkUpperTriangular
+bool Foam::Module::polyMeshGenChecks::checkUpperTriangular
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -249,7 +242,7 @@ bool checkUpperTriangular
 }
 
 
-bool checkCellsZipUp
+bool Foam::Module::polyMeshGenChecks::checkCellsZipUp
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -363,7 +356,7 @@ bool checkCellsZipUp
 }
 
 
-bool checkFaceVertices
+bool Foam::Module::polyMeshGenChecks::checkFaceVertices
 (
     const polyMeshGen& mesh,
     const bool report,
@@ -438,13 +431,5 @@ bool checkFaceVertices
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace polyMeshGenChecks
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

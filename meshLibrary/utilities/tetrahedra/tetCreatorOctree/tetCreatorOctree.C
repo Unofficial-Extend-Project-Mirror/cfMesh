@@ -31,11 +31,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-const meshOctreeCubeCoordinates tetCreatorOctree::edgeCoordinates_[12][4]=
+const Foam::Module::meshOctreeCubeCoordinates
+Foam::Module::tetCreatorOctree::edgeCoordinates_[12][4]=
     {
         {
             // edge 0
@@ -123,7 +120,7 @@ const meshOctreeCubeCoordinates tetCreatorOctree::edgeCoordinates_[12][4]=
         }
     };
 
-const label tetCreatorOctree::faceCentreHelper_[3][4] =
+const Foam::label Foam::Module::tetCreatorOctree::faceCentreHelper_[3][4] =
     {
         {3, 5, 2, 4},
         {5, 1, 4, 0},
@@ -131,7 +128,7 @@ const label tetCreatorOctree::faceCentreHelper_[3][4] =
     };
 
 
-void tetCreatorOctree::createTets()
+void Foam::Module::tetCreatorOctree::createTets()
 {
     createPointsAndAddressing();
 
@@ -150,7 +147,7 @@ void tetCreatorOctree::createTets()
 }
 
 
-void tetCreatorOctree::clearOut()
+void Foam::Module::tetCreatorOctree::clearOut()
 {
     sortedLeaves_.clear();
     deleteDemandDrivenData(subNodeLabelsPtr_);
@@ -161,7 +158,7 @@ void tetCreatorOctree::clearOut()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-tetCreatorOctree::tetCreatorOctree
+Foam::Module::tetCreatorOctree::tetCreatorOctree
 (
     const meshOctree& octree,
     const IOdictionary& meshDict
@@ -184,14 +181,10 @@ tetCreatorOctree::tetCreatorOctree
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-tetCreatorOctree::~tetCreatorOctree()
+Foam::Module::tetCreatorOctree::~tetCreatorOctree()
 {
     clearOut();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

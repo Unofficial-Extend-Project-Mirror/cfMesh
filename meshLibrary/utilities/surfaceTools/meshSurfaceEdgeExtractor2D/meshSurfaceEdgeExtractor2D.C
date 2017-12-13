@@ -28,16 +28,9 @@ License
 
 #include "meshSurfaceOptimizer.H"
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
+Foam::Module::meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
 (
     polyMeshGen& mesh,
     const meshOctree& octree
@@ -47,15 +40,5 @@ meshSurfaceEdgeExtractor2D::meshSurfaceEdgeExtractor2D
     meshOctree_(octree)
 {}
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceEdgeExtractor2D::~meshSurfaceEdgeExtractor2D()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

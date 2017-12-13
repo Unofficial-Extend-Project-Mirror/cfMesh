@@ -32,16 +32,9 @@ License
 #include "refLabelledPoint.H"
 #include "helperFunctions.H"
 
-//#define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
+void Foam::Module::meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
 (
     const labelLongList& nodesToSmooth,
     const bool transformIntoPlane
@@ -162,7 +155,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
 }
 
 
-void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
+void Foam::Module::meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 (
     const labelLongList& nodesToSmooth,
     const bool transformIntoPlane
@@ -285,7 +278,7 @@ void meshSurfaceOptimizer::nodeDisplacementLaplacianFCParallel
 }
 
 
-void meshSurfaceOptimizer::edgeNodeDisplacementParallel
+void Foam::Module::meshSurfaceOptimizer::edgeNodeDisplacementParallel
 (
     const labelLongList& nodesToSmooth
 )
@@ -424,7 +417,7 @@ void meshSurfaceOptimizer::edgeNodeDisplacementParallel
 }
 
 
-void meshSurfaceOptimizer::exchangeData
+void Foam::Module::meshSurfaceOptimizer::exchangeData
 (
     const labelLongList& /*nodesToSmooth*/,
     std::map<label, DynList<parTriFace>>& /*m*/
@@ -525,9 +518,5 @@ void meshSurfaceOptimizer::exchangeData
     */
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

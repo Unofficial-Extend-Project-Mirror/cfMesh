@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceEngineModifier
+    Foam::Module::meshSurfaceEngineModifier
 
 Description
     Modifier for the meshSurfaceEngine
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -72,7 +74,7 @@ public:
 
 
     //- Destructor
-    ~meshSurfaceEngineModifier();
+    ~meshSurfaceEngineModifier() = default;
 
 
     // Member Functions
@@ -104,6 +106,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

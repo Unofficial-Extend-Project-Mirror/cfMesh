@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::checkBoundaryFacesSharingTwoEdges
+    Foam::Module::checkBoundaryFacesSharingTwoEdges
 
 Description
     Checks cell connections at the surface. Cells with all vertices at
@@ -46,7 +46,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshSurfaceEngine;
 
@@ -130,6 +131,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

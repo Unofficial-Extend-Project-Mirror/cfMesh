@@ -31,19 +31,22 @@ License
 
 namespace Foam
 {
-
-defineTypeNameAndDebug(coordinateModification, 0);
-defineRunTimeSelectionTable(coordinateModification, dictionary);
+namespace Module
+{
+    defineTypeNameAndDebug(coordinateModification, 0);
+    defineRunTimeSelectionTable(coordinateModification, dictionary);
+}
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-coordinateModification::coordinateModification()
+Foam::Module::coordinateModification::coordinateModification()
 :
     name_()
 {}
 
 
-coordinateModification::coordinateModification
+Foam::Module::coordinateModification::coordinateModification
 (
     const word& name,
     const dictionary& /*dict*/
@@ -53,24 +56,18 @@ coordinateModification::coordinateModification
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-coordinateModification::~coordinateModification()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Ostream& operator<<(Ostream& os, const coordinateModification& cm)
+Foam::Ostream& Foam::Module::operator<<
+(
+    Ostream& os,
+    const Foam::Module::coordinateModification& cm
+)
 {
     os << cm.name() << nl;
     cm.writeDict(os, true);
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

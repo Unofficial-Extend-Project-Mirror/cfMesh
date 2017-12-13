@@ -40,30 +40,20 @@ License
 #include <omp.h>
 # endif
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-tetMeshOptimisation::tetMeshOptimisation(partTetMesh& mesh)
+Foam::Module::tetMeshOptimisation::tetMeshOptimisation(partTetMesh& mesh)
 :
     tetMesh_(mesh)
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-tetMeshOptimisation::~tetMeshOptimisation()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
+void Foam::Module::tetMeshOptimisation::optimiseUsingKnuppMetric
+(
+    const label nIterations
+)
 {
     const LongList<point>& points = tetMesh_.points();
     const LongList<partTet>& tets = tetMesh_.tets();
@@ -201,7 +191,10 @@ void tetMeshOptimisation::optimiseUsingKnuppMetric(const label nIterations)
 }
 
 
-void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
+void Foam::Module::tetMeshOptimisation::optimiseUsingMeshUntangler
+(
+    const label nIterations
+)
 {
     const LongList<point>& points = tetMesh_.points();
     const LongList<partTet>& tets = tetMesh_.tets();
@@ -335,7 +328,10 @@ void tetMeshOptimisation::optimiseUsingMeshUntangler(const label nIterations)
 }
 
 
-void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
+void Foam::Module::tetMeshOptimisation::optimiseUsingVolumeOptimizer
+(
+    const label nIterations
+)
 {
     const LongList<direction>& smoothVertex = tetMesh_.smoothVertex();
 
@@ -395,7 +391,7 @@ void tetMeshOptimisation::optimiseUsingVolumeOptimizer(const label nIterations)
 }
 
 
-void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
+void Foam::Module::tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 (
     const label nIterations,
     const bool nonShrinking
@@ -549,7 +545,7 @@ void tetMeshOptimisation::optimiseBoundaryVolumeOptimizer
 }
 
 
-void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
+void Foam::Module::tetMeshOptimisation::optimiseBoundarySurfaceLaplace
 (
     const label nIterations
 )
@@ -657,9 +653,5 @@ void tetMeshOptimisation::optimiseBoundarySurfaceLaplace
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

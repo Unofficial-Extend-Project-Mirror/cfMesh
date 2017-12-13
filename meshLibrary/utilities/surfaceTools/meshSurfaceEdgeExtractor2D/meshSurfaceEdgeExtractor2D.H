@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceEdgeExtractor2D
+    Foam::Module::meshSurfaceEdgeExtractor2D
 
 Description
     Stores boundary faces into patches and captures edges and corners
@@ -42,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class meshOctree;
 class meshSurfaceEngine;
@@ -81,7 +82,7 @@ public:
     );
 
     //- Destructor
-    ~meshSurfaceEdgeExtractor2D();
+    ~meshSurfaceEdgeExtractor2D() = default;
 
 
     // Member Functions
@@ -96,6 +97,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

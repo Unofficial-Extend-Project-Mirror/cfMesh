@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceOptimizer::classifySurfaceVertices()
+void Foam::Module::meshSurfaceOptimizer::classifySurfaceVertices()
 {
     const labelHashSet& corners = partitionerPtr_->corners();
     const labelHashSet& edgePoints = partitionerPtr_->edgePoints();
@@ -77,7 +72,10 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
+Foam::Module::meshSurfaceOptimizer::meshSurfaceOptimizer
+(
+    const meshSurfaceEngine& surface
+)
 :
     surfaceEngine_(surface),
     vertexType_(surface.boundaryPoints().size()),
@@ -92,7 +90,10 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfaceEngine& surface)
 }
 
 
-meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
+Foam::Module::meshSurfaceOptimizer::meshSurfaceOptimizer
+(
+    const meshSurfacePartitioner& mPart
+)
 :
     surfaceEngine_(mPart.surfaceEngine()),
     vertexType_(surfaceEngine_.boundaryPoints().size()),
@@ -107,7 +108,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer(const meshSurfacePartitioner& mPart)
 }
 
 
-meshSurfaceOptimizer::meshSurfaceOptimizer
+Foam::Module::meshSurfaceOptimizer::meshSurfaceOptimizer
 (
     const meshSurfaceEngine& surface,
     const meshOctree& octree
@@ -126,7 +127,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 }
 
 
-meshSurfaceOptimizer::meshSurfaceOptimizer
+Foam::Module::meshSurfaceOptimizer::meshSurfaceOptimizer
 (
     const meshSurfacePartitioner& partitioner,
     const meshOctree& octree
@@ -147,7 +148,7 @@ meshSurfaceOptimizer::meshSurfaceOptimizer
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-meshSurfaceOptimizer::~meshSurfaceOptimizer()
+Foam::Module::meshSurfaceOptimizer::~meshSurfaceOptimizer()
 {
     deleteDemandDrivenData(triMeshPtr_);
 
@@ -158,7 +159,7 @@ meshSurfaceOptimizer::~meshSurfaceOptimizer()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceOptimizer::removeUserConstraints()
+void Foam::Module::meshSurfaceOptimizer::removeUserConstraints()
 {
     # ifdef USE_OMP
     # pragma omp parallel for schedule(dynamic, 100)
@@ -169,16 +170,15 @@ void meshSurfaceOptimizer::removeUserConstraints()
 }
 
 
-void meshSurfaceOptimizer::enforceConstraints(const word subsetName)
+void Foam::Module::meshSurfaceOptimizer::enforceConstraints
+(
+    const word subsetName
+)
 {
     enforceConstraints_ = true;
 
     badPointsSubsetName_ = subsetName;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

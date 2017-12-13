@@ -29,16 +29,12 @@ License
 #include "VRWGraph.H"
 #include "helperFunctionsPar.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetMeshOptimisation::unifyNegativePoints(boolList& negativeNode) const
+void Foam::Module::tetMeshOptimisation::unifyNegativePoints
+(
+    boolList& negativeNode
+) const
 {
     // make sure that processor nodes are selected on all processors
     // where they exist
@@ -85,7 +81,7 @@ void tetMeshOptimisation::unifyNegativePoints(boolList& negativeNode) const
 }
 
 
-void tetMeshOptimisation::exchangeData
+void Foam::Module::tetMeshOptimisation::exchangeData
 (
     std::map<label, DynList<parPartTet>>& m,
     boolList* negativeNodePtr
@@ -206,7 +202,7 @@ void tetMeshOptimisation::exchangeData
 }
 
 
-void tetMeshOptimisation::updateBufferLayerPoints()
+void Foam::Module::tetMeshOptimisation::updateBufferLayerPoints()
 {
     const LongList<point>& points = tetMesh_.points();
     const labelLongList& bufferLayerPoints = tetMesh_.bufferLayerPoints();
@@ -258,7 +254,7 @@ void tetMeshOptimisation::updateBufferLayerPoints()
 }
 
 
-void tetMeshOptimisation::unifyCoordinatesParallel
+void Foam::Module::tetMeshOptimisation::unifyCoordinatesParallel
 (
     const boolList* negativeNodePtr
 )
@@ -337,9 +333,5 @@ void tetMeshOptimisation::unifyCoordinatesParallel
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

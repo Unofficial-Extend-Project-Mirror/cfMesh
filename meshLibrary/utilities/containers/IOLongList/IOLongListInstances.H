@@ -41,10 +41,13 @@ Description
 
 namespace Foam
 {
+namespace Module
+{
     typedef IOLongList<point> pointIOFieldPMG;
     typedef IOLongList<face> faceIOListPMG;
     typedef IOLongList<cell> cellIOListPMG;
     typedef IOLongList<label> labelIOListPMG;
+}
 }
 
 

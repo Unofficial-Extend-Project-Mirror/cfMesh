@@ -26,15 +26,12 @@ License
 #include "boundaryLayerOptimisation.H"
 #include "meshSurfacePartitioner.H"
 
-// #define DEBUGSearch
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-boundaryLayerOptimisation::boundaryLayerOptimisation(polyMeshGen& mesh)
+Foam::Module::boundaryLayerOptimisation::boundaryLayerOptimisation
+(
+    polyMeshGen& mesh
+)
 :
     mesh_(mesh),
     meshSurfacePtr_(new meshSurfaceEngine(mesh)),
@@ -57,7 +54,7 @@ boundaryLayerOptimisation::boundaryLayerOptimisation(polyMeshGen& mesh)
 }
 
 
-boundaryLayerOptimisation::boundaryLayerOptimisation
+Foam::Module::boundaryLayerOptimisation::boundaryLayerOptimisation
 (
     polyMeshGen& mesh,
     const meshSurfaceEngine& mse
@@ -86,7 +83,7 @@ boundaryLayerOptimisation::boundaryLayerOptimisation
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-boundaryLayerOptimisation::~boundaryLayerOptimisation()
+Foam::Module::boundaryLayerOptimisation::~boundaryLayerOptimisation()
 {
     deleteDemandDrivenData(partitionerPtr_);
 
@@ -97,7 +94,7 @@ boundaryLayerOptimisation::~boundaryLayerOptimisation()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void boundaryLayerOptimisation::setMaxNumIterations
+void Foam::Module::boundaryLayerOptimisation::setMaxNumIterations
 (
     const label maxNumIterations
 )
@@ -106,7 +103,7 @@ void boundaryLayerOptimisation::setMaxNumIterations
 }
 
 
-void boundaryLayerOptimisation::setNumNormalsSmoothingIterations
+void Foam::Module::boundaryLayerOptimisation::setNumNormalsSmoothingIterations
 (
     const label nSmoothNormals
 )
@@ -115,13 +112,16 @@ void boundaryLayerOptimisation::setNumNormalsSmoothingIterations
 }
 
 
-void boundaryLayerOptimisation::recalculateNormals(const bool shallRecalculate)
+void Foam::Module::boundaryLayerOptimisation::recalculateNormals
+(
+    const bool shallRecalculate
+)
 {
     reCalculateNormals_ = shallRecalculate;
 }
 
 
-void boundaryLayerOptimisation::setRelativeThicknessTolerance
+void Foam::Module::boundaryLayerOptimisation::setRelativeThicknessTolerance
 (
     const scalar relThicknessTol
 )
@@ -130,7 +130,7 @@ void boundaryLayerOptimisation::setRelativeThicknessTolerance
 }
 
 
-void boundaryLayerOptimisation::setFeatureSizeFactor
+void Foam::Module::boundaryLayerOptimisation::setFeatureSizeFactor
 (
     const scalar featureSizeFactor
 )
@@ -139,31 +139,35 @@ void boundaryLayerOptimisation::setFeatureSizeFactor
 }
 
 
-const edgeLongList& boundaryLayerOptimisation::hairEdges() const
+const Foam::Module::edgeLongList&
+Foam::Module::boundaryLayerOptimisation::hairEdges() const
 {
     return hairEdges_;
 }
 
 
-const VRWGraph& boundaryLayerOptimisation::hairEdgesAtBndPoint() const
+const Foam::Module::VRWGraph&
+Foam::Module::boundaryLayerOptimisation::hairEdgesAtBndPoint() const
 {
     return hairEdgesAtBndPoint_;
 }
 
 
-const boolList& boundaryLayerOptimisation::isBaseFace() const
+const Foam::boolList&
+Foam::Module::boundaryLayerOptimisation::isBaseFace() const
 {
     return isBndLayerBase_;
 }
 
 
-const boolList& boundaryLayerOptimisation::isExitFace() const
+const Foam::boolList&
+Foam::Module::boundaryLayerOptimisation::isExitFace() const
 {
     return isExitFace_;
 }
 
 
-void boundaryLayerOptimisation::readSettings
+void Foam::Module::boundaryLayerOptimisation::readSettings
 (
     const dictionary& meshDict,
     boundaryLayerOptimisation& blOptimisation
@@ -227,9 +231,5 @@ void boundaryLayerOptimisation::readSettings
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

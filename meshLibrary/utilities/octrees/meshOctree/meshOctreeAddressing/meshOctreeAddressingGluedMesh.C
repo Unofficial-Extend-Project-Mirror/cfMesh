@@ -28,16 +28,9 @@ License
 #include "meshOctree.H"
 #include "demandDrivenData.H"
 
-//#define DEBUGAutoRef
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeAddressing::checkGluedRegions()
+void Foam::Module::meshOctreeAddressing::checkGluedRegions()
 {
     // Only run if useDATABoxes_ is true and checkForGluedMesh is specified
     if
@@ -217,9 +210,5 @@ void meshOctreeAddressing::checkGluedRegions()
     Info<< "Finished removing glued regions" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

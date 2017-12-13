@@ -31,12 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void sortEdgesIntoChains::createNodeLabels()
+void Foam::Module::sortEdgesIntoChains::createNodeLabels()
 {
     label nPoints(0);
     forAll(bEdges_, eI)
@@ -73,7 +68,7 @@ void sortEdgesIntoChains::createNodeLabels()
 }
 
 
-bool sortEdgesIntoChains::findPointsBelongingToTheChain
+bool Foam::Module::sortEdgesIntoChains::findPointsBelongingToTheChain
 (
     const label currPos,
     DynList<bool>& chainEdges
@@ -167,7 +162,10 @@ bool sortEdgesIntoChains::findPointsBelongingToTheChain
 }
 
 
-void sortEdgesIntoChains::shrinkEdges(const DynList<bool>& chainEdges)
+void Foam::Module::sortEdgesIntoChains::shrinkEdges
+(
+    const DynList<bool>& chainEdges
+)
 {
     forAll(chainEdges, eI)
     {
@@ -188,7 +186,10 @@ void sortEdgesIntoChains::shrinkEdges(const DynList<bool>& chainEdges)
 }
 
 
-void sortEdgesIntoChains::createChainFromEdges(const DynList<bool>& chainEdges)
+void Foam::Module::sortEdgesIntoChains::createChainFromEdges
+(
+    const DynList<bool>& chainEdges
+)
 {
     label i(0);
     forAll(chainEdges, eI)
@@ -262,7 +263,7 @@ void sortEdgesIntoChains::createChainFromEdges(const DynList<bool>& chainEdges)
 }
 
 
-void sortEdgesIntoChains::sortEdges()
+void Foam::Module::sortEdgesIntoChains::sortEdges()
 {
     createNodeLabels();
 
@@ -284,7 +285,10 @@ void sortEdgesIntoChains::sortEdges()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-sortEdgesIntoChains::sortEdgesIntoChains(const DynList<edge>& bEdges)
+Foam::Module::sortEdgesIntoChains::sortEdgesIntoChains
+(
+    const DynList<edge>& bEdges
+)
 :
     bEdges_(bEdges),
     openEdges_(false),
@@ -296,20 +300,13 @@ sortEdgesIntoChains::sortEdgesIntoChains(const DynList<edge>& bEdges)
 }
 
 
-sortEdgesIntoChains::~sortEdgesIntoChains()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const DynList<DynList<label>>& sortEdgesIntoChains::sortedChains() const
+const Foam::Module::DynList<Foam::Module::DynList<Foam::label>>&
+Foam::Module::sortEdgesIntoChains::sortedChains() const
 {
     return createdChains_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // ************************************************************************* //

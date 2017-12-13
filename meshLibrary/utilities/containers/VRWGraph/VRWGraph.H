@@ -48,6 +48,8 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
 
 class VRWGraph;
 
@@ -66,12 +68,7 @@ public:
 
     // Constructors
 
-        inline rowElement()
-        :
-            start_(),
-            size_()
-        {}
-
+        rowElement() = default;
 
         inline rowElement(const label i, const label j)
         :
@@ -296,6 +293,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

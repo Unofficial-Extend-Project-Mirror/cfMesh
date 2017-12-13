@@ -30,12 +30,9 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void polyMeshGenModifier::removeCells
+void Foam::Module::polyMeshGenModifier::removeCells
 (
     const boolList& removeCell,
     const bool removeProcFaces
@@ -154,9 +151,5 @@ void polyMeshGenModifier::removeCells
     Info<< "Finished removing selected cells from the mesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

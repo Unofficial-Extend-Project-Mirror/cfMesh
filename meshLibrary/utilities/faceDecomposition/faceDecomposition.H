@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::faceDecomposition
+    Foam::Module::faceDecomposition
 
 Description
     Decomposition of a face into triangles
@@ -39,6 +39,8 @@ SourceFiles
 #include "pointField.H"
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -83,7 +85,7 @@ public:
         );
 
         //- Destructor
-        ~faceDecomposition();
+        ~faceDecomposition() = default;
 
 
     // Member functions
@@ -106,6 +108,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

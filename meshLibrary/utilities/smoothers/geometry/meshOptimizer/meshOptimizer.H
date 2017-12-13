@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOptimizer
+    Foam::Module::meshOptimizer
 
 Description
     Mesh smoothing without any topological changes
@@ -47,12 +47,15 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
+class plane;
+
+namespace Module
+{
 class meshOctree;
 class meshSurfaceEngine;
-class plane;
 class partTetMesh;
+
 
 /*---------------------------------------------------------------------------*\
                         Class meshOptimizer Declaration
@@ -148,7 +151,7 @@ class meshOptimizer
             laplaceSmoother(polyMeshGen&, const List<direction>&);
 
             //- Destructor
-            ~laplaceSmoother();
+            ~laplaceSmoother() = default;
 
 
             // Member Functions
@@ -307,6 +310,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

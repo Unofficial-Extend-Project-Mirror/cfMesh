@@ -35,18 +35,14 @@ License
 #include "labelledPoint.H"
 
 #include <map>
+
 # ifdef USE_OMP
 #include <omp.h>
 # endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceCheckEdgeTypes::classifyEdges()
+void Foam::Module::meshSurfaceCheckEdgeTypes::classifyEdges()
 {
     const pointFieldPMG& points = surfaceEngine_.points();
     const labelList& bp = surfaceEngine_.bp();
@@ -311,7 +307,7 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
+Foam::Module::meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
 (
     const meshSurfaceEngine& mse
 )
@@ -323,15 +319,12 @@ meshSurfaceCheckEdgeTypes::meshSurfaceCheckEdgeTypes
 }
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-meshSurfaceCheckEdgeTypes::~meshSurfaceCheckEdgeTypes()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshSurfaceCheckEdgeTypes::convexEdges(labelLongList& convexEdges) const
+void Foam::Module::meshSurfaceCheckEdgeTypes::convexEdges
+(
+    labelLongList& convexEdges
+) const
 {
     convexEdges.clear();
 
@@ -343,7 +336,10 @@ void meshSurfaceCheckEdgeTypes::convexEdges(labelLongList& convexEdges) const
 }
 
 
-void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
+void Foam::Module::meshSurfaceCheckEdgeTypes::concaveEdges
+(
+    labelLongList& concaveEdges
+) const
 {
     concaveEdges.clear();
 
@@ -354,9 +350,5 @@ void meshSurfaceCheckEdgeTypes::concaveEdges(labelLongList& concaveEdges) const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

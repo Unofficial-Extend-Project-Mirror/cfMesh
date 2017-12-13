@@ -29,28 +29,21 @@ License
 #include "checkCellConnectionsOverFaces.H"
 #include "meshSurfaceEngine.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void topologicalCleaner::decomposeCells()
+void Foam::Module::topologicalCleaner::decomposeCells()
 {
     if (!changed_)
          return;
 
-    Foam::decomposeCells dc(mesh_);
+    Foam::Module::decomposeCells dc(mesh_);
     dc.decomposeMesh(decomposeCell_);
 }
 
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-topologicalCleaner::topologicalCleaner
+Foam::Module::topologicalCleaner::topologicalCleaner
 (
     polyMeshGen& mesh
 )
@@ -61,15 +54,9 @@ topologicalCleaner::topologicalCleaner
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-topologicalCleaner::~topologicalCleaner()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-bool topologicalCleaner::cleanTopology()
+bool Foam::Module::topologicalCleaner::cleanTopology()
 {
     checkInvalidConnectionsForVerticesCells();
 
@@ -89,9 +76,5 @@ bool topologicalCleaner::cleanTopology()
     return changed_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -25,16 +25,9 @@ License
 
 #include "checkIrregularSurfaceConnections.H"
 
-//#define DEBUGCheck
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
-checkIrregularSurfaceConnections::checkIrregularSurfaceConnections
+Foam::Module::checkIrregularSurfaceConnections::checkIrregularSurfaceConnections
 (
     polyMeshGen& mesh
 )
@@ -46,7 +39,8 @@ checkIrregularSurfaceConnections::checkIrregularSurfaceConnections
 
 // * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * * //
 
-checkIrregularSurfaceConnections::~checkIrregularSurfaceConnections()
+Foam::Module::checkIrregularSurfaceConnections::
+~checkIrregularSurfaceConnections()
 {
     clearMeshEngine();
 
@@ -56,7 +50,7 @@ checkIrregularSurfaceConnections::~checkIrregularSurfaceConnections()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void checkIrregularSurfaceConnections::checkIrregularVertices
+void Foam::Module::checkIrregularSurfaceConnections::checkIrregularVertices
 (
     labelHashSet& badVertices
 )
@@ -69,7 +63,8 @@ void checkIrregularSurfaceConnections::checkIrregularVertices
 }
 
 
-bool checkIrregularSurfaceConnections::checkAndFixIrregularConnections()
+bool Foam::Module::checkIrregularSurfaceConnections::
+checkAndFixIrregularConnections()
 {
     Info<< "Checking for irregular surface connections" << endl;
 
@@ -101,9 +96,5 @@ bool checkIrregularSurfaceConnections::checkAndFixIrregularConnections()
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

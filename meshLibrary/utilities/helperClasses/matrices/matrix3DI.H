@@ -21,22 +21,11 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Class
-    matrix3D
-
-Description
-    Implementation of 3 x 3 matrix
-
 \*---------------------------------------------------------------------------*/
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-inline void matrix3D::calculateDeterminant()
+inline void Foam::Module::matrix3D::calculateDeterminant()
 {
     if (calculatedDet_)
     {
@@ -56,14 +45,14 @@ inline void matrix3D::calculateDeterminant()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline matrix3D::matrix3D()
+inline Foam::Module::matrix3D::matrix3D()
 :
     det_(),
     calculatedDet_(false)
 {}
 
 
-inline matrix3D::matrix3D(const matrix3D& m)
+inline Foam::Module::matrix3D::matrix3D(const matrix3D& m)
 :
     FixedList<FixedList<scalar, 3>, 3>(m),
     det_(m.det_),
@@ -71,13 +60,9 @@ inline matrix3D::matrix3D(const matrix3D& m)
 {}
 
 
-inline matrix3D::~matrix3D()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-inline scalar matrix3D::determinant()
+inline Foam::scalar Foam::Module::matrix3D::determinant()
 {
     calculateDeterminant();
 
@@ -85,7 +70,7 @@ inline scalar matrix3D::determinant()
 }
 
 
-inline matrix3D matrix3D::inverse()
+inline Foam::Module::matrix3D Foam::Module::matrix3D::inverse()
 {
     calculateDeterminant();
 
@@ -106,7 +91,7 @@ inline matrix3D matrix3D::inverse()
 }
 
 
-inline FixedList<scalar, 3> matrix3D::solve
+inline Foam::FixedList<Foam::scalar, 3> Foam::Module::matrix3D::solve
 (
     const FixedList<scalar, 3>& source
 )
@@ -120,7 +105,10 @@ inline FixedList<scalar, 3> matrix3D::solve
 }
 
 
-inline scalar matrix3D::solveFirst(const FixedList<scalar, 3>& source)
+inline Foam::scalar Foam::Module::matrix3D::solveFirst
+(
+    const FixedList<scalar, 3>& source
+)
 {
     calculateDeterminant();
 
@@ -135,7 +123,10 @@ inline scalar matrix3D::solveFirst(const FixedList<scalar, 3>& source)
 }
 
 
-inline scalar matrix3D::solveSecond(const FixedList<scalar, 3>& source)
+inline Foam::scalar Foam::Module::matrix3D::solveSecond
+(
+    const FixedList<scalar, 3>& source
+)
 {
     calculateDeterminant();
 
@@ -150,7 +141,10 @@ inline scalar matrix3D::solveSecond(const FixedList<scalar, 3>& source)
 }
 
 
-inline scalar matrix3D::solveThird(const FixedList<scalar, 3>& source)
+inline Foam::scalar Foam::Module::matrix3D::solveThird
+(
+    const FixedList<scalar, 3>& source
+)
 {
     calculateDeterminant();
 
@@ -164,9 +158,5 @@ inline scalar matrix3D::solveThird(const FixedList<scalar, 3>& source)
     ) / det_;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

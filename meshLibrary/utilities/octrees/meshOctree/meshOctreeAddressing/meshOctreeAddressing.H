@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshOctreeAddressing
+    Foam::Module::meshOctreeAddressing
 
 Description
     Automatic octree for mesh generation. This class checks if the current
@@ -48,10 +48,12 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
-class meshOctree;
 class IOdictionary;
+
+namespace Module
+{
+class meshOctree;
 
 /*---------------------------------------------------------------------------*\
                     Class meshOctreeAddressing Declaration
@@ -370,6 +372,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

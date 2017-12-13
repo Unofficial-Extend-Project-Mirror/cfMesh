@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::labelledPointScalar
+    Foam::Module::labelledPointScalar
 
 Description
     A class containing a label, coordinates and scalar. It is used for
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -84,8 +86,7 @@ public:
 
 
     //- Destructor
-    ~labelledPointScalar()
-    {}
+    ~labelledPointScalar() = default;
 
 
     // Member functions
@@ -180,15 +181,17 @@ public:
 };
 
 
-//- Specify data associated with labelledPointScalar type is contiguous
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for labelledPointScalar are contiguous
 template<>
-inline bool contiguous<labelledPointScalar>()
+inline bool contiguous<Module::labelledPointScalar>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

@@ -38,12 +38,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeAddressing::calcGlobalPointLabels() const
+void Foam::Module::meshOctreeAddressing::calcGlobalPointLabels() const
 {
     if (!Pstream::parRun())
     {
@@ -369,7 +364,7 @@ void meshOctreeAddressing::calcGlobalPointLabels() const
 }
 
 
-void meshOctreeAddressing::calcGlobalFaceLabels() const
+void Foam::Module::meshOctreeAddressing::calcGlobalFaceLabels() const
 {
     if (!Pstream::parRun())
     {
@@ -381,7 +376,7 @@ void meshOctreeAddressing::calcGlobalFaceLabels() const
 }
 
 
-void meshOctreeAddressing::calcGlobalLeafLabels() const
+void Foam::Module::meshOctreeAddressing::calcGlobalLeafLabels() const
 {
     if (!Pstream::parRun())
     {
@@ -688,9 +683,5 @@ void meshOctreeAddressing::calcGlobalLeafLabels() const
 
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

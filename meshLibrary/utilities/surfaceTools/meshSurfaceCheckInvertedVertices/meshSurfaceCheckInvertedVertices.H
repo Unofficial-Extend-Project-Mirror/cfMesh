@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::meshSurfaceCheckInvertedVertices
+    Foam::Module::meshSurfaceCheckInvertedVertices
 
 Description
     Checks if any of the surface is tangled at any of its vertices. This
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -99,7 +101,7 @@ public:
         );
 
     //- Destructor
-    ~meshSurfaceCheckInvertedVertices();
+    ~meshSurfaceCheckInvertedVertices() = default;
 
 
     // Member Functions
@@ -114,6 +116,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

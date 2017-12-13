@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::quadricMetric
+    Foam::Module::quadricMetric
 
 Description
     Mesh smoothing using quadric metric. The metric is strictly convex
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -80,7 +82,7 @@ public:
     quadricMetric(partTetMeshSimplex& simplex);
 
     //- Destructor
-    ~quadricMetric();
+    ~quadricMetric() = default;
 
 
     // Member functions
@@ -93,6 +95,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

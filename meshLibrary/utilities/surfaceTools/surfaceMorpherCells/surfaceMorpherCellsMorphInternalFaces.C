@@ -36,12 +36,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void surfaceMorpherCells::findBoundaryVertices()
+void Foam::Module::surfaceMorpherCells::findBoundaryVertices()
 {
     const faceListPMG& faces = mesh_.faces();
 
@@ -156,7 +151,7 @@ void surfaceMorpherCells::findBoundaryVertices()
 }
 
 
-void surfaceMorpherCells::findBoundaryCells()
+void Foam::Module::surfaceMorpherCells::findBoundaryCells()
 {
     const labelList& owner = mesh_.owner();
 
@@ -176,7 +171,7 @@ void surfaceMorpherCells::findBoundaryCells()
 }
 
 
-bool surfaceMorpherCells::morphInternalFaces()
+bool Foam::Module::surfaceMorpherCells::morphInternalFaces()
 {
     Info<< "Morphing internal faces" << endl;
 
@@ -581,9 +576,5 @@ bool surfaceMorpherCells::morphInternalFaces()
     return changed;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -28,12 +28,9 @@ License
 #include "IOobjectList.H"
 #include "pointSet.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
+Foam::Module::polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
 :
     runTime_(runTime),
     points_
@@ -51,7 +48,7 @@ polyMeshGenPoints::polyMeshGenPoints(const Time& runTime)
 {}
 
 
-polyMeshGenPoints::polyMeshGenPoints
+Foam::Module::polyMeshGenPoints::polyMeshGenPoints
 (
     const Time& runTime,
     const pointField& points
@@ -73,15 +70,12 @@ polyMeshGenPoints::polyMeshGenPoints
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-polyMeshGenPoints::~polyMeshGenPoints()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label polyMeshGenPoints::addPointSubset(const word& subsetName)
+Foam::label Foam::Module::polyMeshGenPoints::addPointSubset
+(
+    const word& subsetName
+)
 {
     label id = pointSubsetIndex(subsetName);
     if (id >= 0)
@@ -109,7 +103,7 @@ label polyMeshGenPoints::addPointSubset(const word& subsetName)
 }
 
 
-void polyMeshGenPoints::removePointSubset(const label subsetID)
+void Foam::Module::polyMeshGenPoints::removePointSubset(const label subsetID)
 {
     if (pointSubsets_.find(subsetID) == pointSubsets_.end())
     {
@@ -120,10 +114,14 @@ void polyMeshGenPoints::removePointSubset(const label subsetID)
 }
 
 
-word polyMeshGenPoints::pointSubsetName(const label subsetID) const
+Foam::word Foam::Module::polyMeshGenPoints::pointSubsetName
+(
+    const label subsetID
+) const
 {
     std::map<label, meshSubset>::const_iterator it =
         pointSubsets_.find(subsetID);
+
     if (it == pointSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not a point subset" << endl;
@@ -134,7 +132,10 @@ word polyMeshGenPoints::pointSubsetName(const label subsetID) const
 }
 
 
-label polyMeshGenPoints::pointSubsetIndex(const word& subsetName) const
+Foam::label Foam::Module::polyMeshGenPoints::pointSubsetIndex
+(
+    const word& subsetName
+) const
 {
     forAllConstIters(pointSubsets_, it)
     {
@@ -148,7 +149,7 @@ label polyMeshGenPoints::pointSubsetIndex(const word& subsetName) const
 }
 
 
-void polyMeshGenPoints::read()
+void Foam::Module::polyMeshGenPoints::read()
 {
     pointIOField pts
     (
@@ -186,7 +187,7 @@ void polyMeshGenPoints::read()
 }
 
 
-void polyMeshGenPoints::write() const
+void Foam::Module::polyMeshGenPoints::write() const
 {
     points_.write();
 
@@ -218,9 +219,5 @@ void polyMeshGenPoints::write() const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

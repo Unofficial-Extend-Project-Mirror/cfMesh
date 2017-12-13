@@ -34,16 +34,9 @@ License
 #include <omp.h>
 # endif
 
-//#define DEBUGOctree
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * Private member functions  * * * * * * * * * * * * //
 
-void meshOctreeCreator::setRootCubeSizeAndRefParameters()
+void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
 {
     meshOctreeModifier octreeModifier(octree_);
     if (octreeModifier.isRootInitialisedAccess())
@@ -471,7 +464,7 @@ void meshOctreeCreator::setRootCubeSizeAndRefParameters()
 }
 
 
-void meshOctreeCreator::refineInsideAndUnknownBoxes()
+void Foam::Module::meshOctreeCreator::refineInsideAndUnknownBoxes()
 {
     const direction cType = meshOctreeCube::INSIDE + meshOctreeCube::UNKNOWN;
 
@@ -479,7 +472,7 @@ void meshOctreeCreator::refineInsideAndUnknownBoxes()
 }
 
 
-void meshOctreeCreator::createOctreeBoxes()
+void Foam::Module::meshOctreeCreator::createOctreeBoxes()
 {
     // set root cube size in order to achieve desired maxCellSize
     Info<< "Setting root cube size and refinement parameters" << endl;
@@ -531,7 +524,7 @@ void meshOctreeCreator::createOctreeBoxes()
 }
 
 
-void meshOctreeCreator::createOctreeWithRefinedBoundary
+void Foam::Module::meshOctreeCreator::createOctreeWithRefinedBoundary
 (
     const direction maxLevel,
     const label nTrianglesInLeaf
@@ -589,9 +582,5 @@ void meshOctreeCreator::createOctreeWithRefinedBoundary
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

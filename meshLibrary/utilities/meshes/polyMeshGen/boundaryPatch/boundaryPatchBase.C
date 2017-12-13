@@ -34,21 +34,25 @@ License
 
 namespace Foam
 {
-
 defineTemplateTypeNameAndDebugWithName
 (
-    IOPtrList<boundaryPatchBase>,
+    IOPtrList<Module::boundaryPatchBase>,
     "polyBoundaryMesh",
     0
 );
 
+namespace Module
+{
 defineTypeNameAndDebug(boundaryPatchBase, 0);
 defineRunTimeSelectionTable(boundaryPatchBase, dictionary);
+
+}
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
+Foam::autoPtr<Foam::Module::boundaryPatchBase>
+Foam::Module::boundaryPatchBase::New
 (
     const word& name,
     const dictionary& dict
@@ -79,7 +83,8 @@ Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
 }
 
 
-Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
+Foam::autoPtr<Foam::Module::boundaryPatchBase>
+Foam::Module::boundaryPatchBase::New
 (
     Istream& is
 )
@@ -93,7 +98,7 @@ Foam::autoPtr<Foam::boundaryPatchBase> Foam::boundaryPatchBase::New
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::boundaryPatchBase::boundaryPatchBase
+Foam::Module::boundaryPatchBase::boundaryPatchBase
 (
     const word& n,
     const word& t,
@@ -108,7 +113,7 @@ Foam::boundaryPatchBase::boundaryPatchBase
 {}
 
 
-Foam::boundaryPatchBase::boundaryPatchBase
+Foam::Module::boundaryPatchBase::boundaryPatchBase
 (
     const word& name,
     const dictionary& dict
@@ -125,7 +130,11 @@ Foam::boundaryPatchBase::boundaryPatchBase
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Foam::Ostream&
-Foam::operator<<(Foam::Ostream& os, const Foam::boundaryPatchBase& obj)
+Foam::Module::operator<<
+(
+    Foam::Ostream& os,
+    const Foam::Module::boundaryPatchBase& obj
+)
 {
     obj.write(os);
     os.check(FUNCTION_NAME);

@@ -30,16 +30,9 @@ License
 #include "meshSurfaceMapper.H"
 #include "meshOctree.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOptimizer::optimizeSurface(const meshOctree& octree)
+void Foam::Module::meshOptimizer::optimizeSurface(const meshOctree& octree)
 {
     Info<< "Optimizing positions of surface nodes" << endl;
 
@@ -58,9 +51,5 @@ void meshOptimizer::optimizeSurface(const meshOctree& octree)
     Info<< "Finished optimizing positions of surface nodes" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

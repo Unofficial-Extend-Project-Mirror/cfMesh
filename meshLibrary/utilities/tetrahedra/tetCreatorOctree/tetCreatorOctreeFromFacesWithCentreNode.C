@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void tetCreatorOctree::createTetsFromFacesWithCentreNode()
+void Foam::Module::tetCreatorOctree::createTetsFromFacesWithCentreNode()
 {
     Info<< "Creating tets from faces with centre node" << endl;
 
@@ -196,9 +191,5 @@ void tetCreatorOctree::createTetsFromFacesWithCentreNode()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

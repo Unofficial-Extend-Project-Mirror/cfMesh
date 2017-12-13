@@ -29,12 +29,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeModifier::distributeLeavesToProcessors()
+void Foam::Module::meshOctreeModifier::distributeLeavesToProcessors()
 {
     if (octree_.neiProcs().size() != 0)
         return;
@@ -130,9 +125,5 @@ void meshOctreeModifier::distributeLeavesToProcessors()
     Info<< "Finished distributing leaves to processors" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

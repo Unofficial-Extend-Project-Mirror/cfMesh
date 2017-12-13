@@ -31,12 +31,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-scalar volumeOptimizer::evaluateFunc() const
+Foam::scalar Foam::Module::volumeOptimizer::evaluateFunc() const
 {
     const scalar K = evaluateStabilisationFactor();
 
@@ -71,7 +66,7 @@ scalar volumeOptimizer::evaluateFunc() const
 }
 
 
-scalar volumeOptimizer::evaluateStabilisationFactor() const
+Foam::scalar Foam::Module::volumeOptimizer::evaluateStabilisationFactor() const
 {
     scalar K = 0.0;
 
@@ -109,7 +104,7 @@ scalar volumeOptimizer::evaluateStabilisationFactor() const
 }
 
 
-void volumeOptimizer::evaluateGradientsExact
+void Foam::Module::volumeOptimizer::evaluateGradientsExact
 (
     vector& gradF,
     tensor& gradGradF
@@ -218,7 +213,10 @@ void volumeOptimizer::evaluateGradientsExact
 }
 
 
-scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
+Foam::scalar Foam::Module::volumeOptimizer::optimiseDivideAndConquer
+(
+    const scalar tol
+)
 {
     point& pOpt = points_[pointI_];
 
@@ -283,7 +281,10 @@ scalar volumeOptimizer::optimiseDivideAndConquer(const scalar tol)
 }
 
 
-scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
+Foam::scalar Foam::Module::volumeOptimizer::optimiseSteepestDescent
+(
+    const scalar tol
+)
 {
     label iter(0);
 
@@ -403,9 +404,5 @@ scalar volumeOptimizer::optimiseSteepestDescent(const scalar tol)
     return funcAfter;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

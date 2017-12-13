@@ -21,13 +21,11 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-TYpedef
-    Foam::edgeLongList
+Typedef
+    Foam::ModuleedgeLongList
 
 Description
     This is a typedef for LongList<edge>
-
-SourceFiles
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,12 +39,16 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 typedef LongList<edge> edgeLongList;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -25,34 +25,25 @@ License
 
 #include "triSurfPoints.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfPoints::triSurfPoints()
+Foam::Module::triSurfPoints::triSurfPoints()
 :
     points_(),
     pointSubsets_()
 {}
 
 
-triSurfPoints::triSurfPoints(const pointField& points)
+Foam::Module::triSurfPoints::triSurfPoints(const pointField& points)
 :
     points_(points),
     pointSubsets_()
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-triSurfPoints::~triSurfPoints()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-label triSurfPoints::addPointSubset(const word& subsetName)
+Foam::label Foam::Module::triSurfPoints::addPointSubset(const word& subsetName)
 {
     label id = pointSubsetIndex(subsetName);
     if (id >= 0)
@@ -77,7 +68,7 @@ label triSurfPoints::addPointSubset(const word& subsetName)
 }
 
 
-void triSurfPoints::removePointSubset(const label subsetID)
+void Foam::Module::triSurfPoints::removePointSubset(const label subsetID)
 {
     if (pointSubsets_.find(subsetID) == pointSubsets_.end())
     {
@@ -88,9 +79,12 @@ void triSurfPoints::removePointSubset(const label subsetID)
 }
 
 
-word triSurfPoints::pointSubsetName(const label subsetID) const
+Foam::word Foam::Module::triSurfPoints::pointSubsetName
+(
+    const label subsetID
+) const
 {
-    Map<meshSubset>::const_iterator it = pointSubsets_.find(subsetID);
+    Map<meshSubset>::const_iterator it = pointSubsets_.cfind(subsetID);
     if (it == pointSubsets_.end())
     {
         Warning << "Subset " << subsetID << " is not a point subset" << endl;
@@ -101,7 +95,10 @@ word triSurfPoints::pointSubsetName(const label subsetID) const
 }
 
 
-label triSurfPoints::pointSubsetIndex(const word& subsetName) const
+Foam::label Foam::Module::triSurfPoints::pointSubsetIndex
+(
+    const word& subsetName
+) const
 {
     forAllConstIters(pointSubsets_, it)
     {
@@ -114,9 +111,5 @@ label triSurfPoints::pointSubsetIndex(const word& subsetName) const
     return -1;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

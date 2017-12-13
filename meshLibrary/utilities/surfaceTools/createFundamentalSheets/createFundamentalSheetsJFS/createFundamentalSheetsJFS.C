@@ -44,20 +44,22 @@ License
 
 namespace Foam
 {
+namespace Module
+{
+
+    defineTypeNameAndDebug(createFundamentalSheetsJFS, 0);
+    addToRunTimeSelectionTable
+    (
+        createFundamentalSheets,
+        createFundamentalSheetsJFS,
+        polyMeshGen
+    );
+}
+}
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-defineTypeNameAndDebug(createFundamentalSheetsJFS, 0);
-addToRunTimeSelectionTable
-(
-    createFundamentalSheets,
-    createFundamentalSheetsJFS,
-    polyMeshGen
-);
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool createFundamentalSheetsJFS::isTopologyOk() const
+bool Foam::Module::createFundamentalSheetsJFS::isTopologyOk() const
 {
     const PtrList<boundaryPatch>& boundaries = mesh_.boundaries();
 
@@ -93,7 +95,7 @@ bool createFundamentalSheetsJFS::isTopologyOk() const
 }
 
 
-void createFundamentalSheetsJFS::createInitialSheet()
+void Foam::Module::createFundamentalSheetsJFS::createInitialSheet()
 {
     if (!createWrapperSheet_)
     {
@@ -131,7 +133,7 @@ void createFundamentalSheetsJFS::createInitialSheet()
 }
 
 
-void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
+void Foam::Module::createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 {
     Info<< "Starting creating sheets at feature edges" << endl;
 
@@ -262,7 +264,7 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-createFundamentalSheetsJFS::createFundamentalSheetsJFS
+Foam::Module::createFundamentalSheetsJFS::createFundamentalSheetsJFS
 (
     polyMeshGen& mesh,
     const bool createWrapperSheet
@@ -275,15 +277,5 @@ createFundamentalSheetsJFS::createFundamentalSheetsJFS
     createSheetsAtFeatureEdges();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-createFundamentalSheetsJFS::~createFundamentalSheetsJFS()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

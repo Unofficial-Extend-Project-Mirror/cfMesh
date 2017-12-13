@@ -1,25 +1,24 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                |
-| \\      /  F ield         | OpenFOAM GUI Project: creativeFields           |
-|  \\    /   O peration     | Version:  0.8.9.0                                  |
-|   \\  /    A nd           | Web: www.c-fields.com                                       |
-|    \\/     M anipulation  |                                                |
+| \\      /  F ield         | cfMesh: A library for mesh generation          |
+|  \\    /   O peration     |                                                |
+|   \\  /    A nd           | Author: Franjo Juretic                         |
+|    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
 \*---------------------------------------------------------------------------*/
 
 FoamFile
 {
-version	2;
-format	ascii;
-class	dictionary;
-location	"system";
-object	meshDict;
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      meshDict;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-maxCellSize	0.01;
+maxCellSize     0.01;
 
-surfaceFile	"geom.fms";
+surfaceFile     "geom.fms";
 
 boundaryLayers
 {

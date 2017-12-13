@@ -21,13 +21,15 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+
 Class
-    Foam::matrix2D
+    Foam::Module::matrix2D
 
 Description
-    Implementation of 2 x 2 matrix
+    Implementation of a 2 x 2 matrix
 
 SourceFiles
+    matrix2DI.H
 
 \*---------------------------------------------------------------------------*/
 
@@ -40,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -74,7 +78,7 @@ public:
 
 
     //- Destructor
-    inline ~matrix2D();
+    ~matrix2D() = default;
 
 
     // Member functions
@@ -101,6 +105,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

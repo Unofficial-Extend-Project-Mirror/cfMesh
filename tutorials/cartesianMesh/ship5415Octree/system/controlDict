@@ -1,52 +1,37 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                |
-| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+| \\      /  F ield         | cfMesh: A library for mesh generation          |
 |  \\    /   O peration     |                                                |
-|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|   \\  /    A nd           | Author: Franjo Juretic                         |
 |    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
 \*---------------------------------------------------------------------------*/
-
 FoamFile
 {
     version   2.0;
     format    ascii;
     class     dictionary;
-    location  "system";
-    object    constrolDict;
+    object    controlDict;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application	;
+application         cartesianMesh;
 
-deltaT	0.05;
+startFrom           latestTime;
 
-endTime	10;
+startTime           0;
 
-graphFormat	raw;
+stopAt              endTime;
 
-purgeWrite	0;
+endTime             10;
 
-runTimeModifiable	yes;
+deltaT              1;
 
-startFrom	latestTime;
+writeControl        timeStep;
 
-startTime	0;
+writeInterval       20;
 
-stopAt	endTime;
+writeFormat         ascii;
 
-timeFormat	general;
-
-timePrecision	6;
-
-writeCompression	uncompressed;
-
-writeControl	timeStep;
-
-writeFormat	ascii;
-
-writeInterval	20;
-
-writePrecision	6;
+runTimeModifiable   yes;
 
 // ************************************************************************* //

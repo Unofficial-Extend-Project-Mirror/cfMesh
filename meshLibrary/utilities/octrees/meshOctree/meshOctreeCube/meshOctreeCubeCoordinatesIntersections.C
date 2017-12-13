@@ -30,14 +30,9 @@ License
 //#define DEBUGSearch
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Static data
 
-const label meshOctreeCubeCoordinates::edgeNodes_[12][2] =
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::edgeNodes_[12][2] =
     {
         // edges in x-direction
         {0, 1},
@@ -56,7 +51,7 @@ const label meshOctreeCubeCoordinates::edgeNodes_[12][2] =
         {3, 7}
     };
 
-const label meshOctreeCubeCoordinates::faceNodes_[6][4] =
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::faceNodes_[6][4] =
     {
         {0, 4, 6, 2},
         {1, 3, 7, 5},
@@ -66,7 +61,7 @@ const label meshOctreeCubeCoordinates::faceNodes_[6][4] =
         {4, 5, 7, 6}
     };
 
-const label meshOctreeCubeCoordinates::nodeFaces_[8][3] =
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::nodeFaces_[8][3] =
     {
         {0, 2, 4},
         {1, 2, 4},
@@ -78,7 +73,7 @@ const label meshOctreeCubeCoordinates::nodeFaces_[8][3] =
         {1, 3, 5}
     };
 
-const label meshOctreeCubeCoordinates::faceEdges_[6][4] =
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::faceEdges_[6][4] =
     {
         {8, 6, 10, 4},
         {5, 11, 7, 9},
@@ -88,7 +83,7 @@ const label meshOctreeCubeCoordinates::faceEdges_[6][4] =
         {2, 7, 3, 6}
     };
 
-const label meshOctreeCubeCoordinates::edgeFaces_[12][2] =
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::edgeFaces_[12][2] =
     {
         {2, 4},
         {3, 4},
@@ -104,12 +99,13 @@ const label meshOctreeCubeCoordinates::edgeFaces_[12][2] =
         {1, 3}
     };
 
-const label meshOctreeCubeCoordinates::oppositeFace_[6] = {1, 0, 3, 2, 5, 4};
+const Foam::label Foam::Module::meshOctreeCubeCoordinates::oppositeFace_[6]
+    = {1, 0, 3, 2, 5, 4};
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void meshOctreeCubeCoordinates::vertices
+void Foam::Module::meshOctreeCubeCoordinates::vertices
 (
     const boundBox& rootBox,
     FixedList<point, 8>& vrt
@@ -133,7 +129,7 @@ void meshOctreeCubeCoordinates::vertices
 }
 
 
-void meshOctreeCubeCoordinates::edgeVertices
+void Foam::Module::meshOctreeCubeCoordinates::edgeVertices
 (
     const boundBox& rootBox,
     FixedList<FixedList<point, 2>, 12>& e
@@ -150,7 +146,7 @@ void meshOctreeCubeCoordinates::edgeVertices
 }
 
 
-bool meshOctreeCubeCoordinates::intersectsTriangle
+bool Foam::Module::meshOctreeCubeCoordinates::intersectsTriangle
 (
     const triSurf& surface,
     const boundBox& rootBox,
@@ -185,7 +181,7 @@ bool meshOctreeCubeCoordinates::intersectsTriangle
 }
 
 
-bool meshOctreeCubeCoordinates::intersectsTriangleExact
+bool Foam::Module::meshOctreeCubeCoordinates::intersectsTriangleExact
 (
     const triSurf& surface,
     const boundBox& rootBox,
@@ -256,7 +252,7 @@ bool meshOctreeCubeCoordinates::intersectsTriangleExact
 }
 
 
-bool meshOctreeCubeCoordinates::isVertexInside
+bool Foam::Module::meshOctreeCubeCoordinates::isVertexInside
 (
     const boundBox& rootBox,
     const point& p
@@ -286,7 +282,7 @@ bool meshOctreeCubeCoordinates::isVertexInside
 }
 
 
-bool meshOctreeCubeCoordinates::isPositionInside
+bool Foam::Module::meshOctreeCubeCoordinates::isPositionInside
 (
     const meshOctreeCubeCoordinates& cc
 ) const
@@ -324,7 +320,7 @@ bool meshOctreeCubeCoordinates::isPositionInside
 }
 
 
-bool meshOctreeCubeCoordinates::intersectsLine
+bool Foam::Module::meshOctreeCubeCoordinates::intersectsLine
 (
     const boundBox& rootBox,
     const point& s,
@@ -452,9 +448,5 @@ bool meshOctreeCubeCoordinates::intersectsLine
     return false;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::patchRefinement
+    Foam::Module::patchRefinement
 
 Description
     A class used for octree refinement. Refinement of boxes intersected
@@ -43,11 +43,13 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
-class triSurf;
 class Istream;
 class Ostream;
+
+namespace Module
+{
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                        Class patchRefinement Declaration
@@ -77,7 +79,7 @@ public:
 
 
     //- Destructor
-    ~patchRefinement();
+    ~patchRefinement() = default;
 
 
     // Member Functions
@@ -101,6 +103,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

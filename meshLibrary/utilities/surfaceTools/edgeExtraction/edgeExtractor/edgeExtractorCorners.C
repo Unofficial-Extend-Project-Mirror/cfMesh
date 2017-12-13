@@ -48,11 +48,9 @@ License
 
 //#define DEBUGEdgeExtractor
 
-namespace Foam
-{
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-void edgeExtractor::faceEvaluator::calculateNeiPatchesParallel()
+void Foam::Module::edgeExtractor::faceEvaluator::calculateNeiPatchesParallel()
 {
     otherFacePatch_.clear();
 
@@ -105,7 +103,8 @@ void edgeExtractor::faceEvaluator::calculateNeiPatchesParallel()
 }
 
 
-void edgeExtractor::faceEvaluator::calculateNeiPatchesParallelNewPatches()
+void Foam::Module::edgeExtractor::faceEvaluator::
+calculateNeiPatchesParallelNewPatches()
 {
     if (newOtherFacePatchPtr_)
         return;
@@ -166,7 +165,7 @@ void edgeExtractor::faceEvaluator::calculateNeiPatchesParallelNewPatches()
 }
 
 
-void edgeExtractor::faceEvaluator::neiFacesOverEdges
+void Foam::Module::edgeExtractor::faceEvaluator::neiFacesOverEdges
 (
     const label bfI,
     DynList<label>& neiFaces
@@ -197,7 +196,7 @@ void edgeExtractor::faceEvaluator::neiFacesOverEdges
 }
 
 
-void edgeExtractor::faceEvaluator::neiFacesProcs
+void Foam::Module::edgeExtractor::faceEvaluator::neiFacesProcs
 (
     const label bfI,
     DynList<label>& neiProcs
@@ -227,7 +226,7 @@ void edgeExtractor::faceEvaluator::neiFacesProcs
 }
 
 
-void edgeExtractor::faceEvaluator::neiPatchesOverEdges
+void Foam::Module::edgeExtractor::faceEvaluator::neiPatchesOverEdges
 (
     const label bfI,
     const labelList& fPatches,
@@ -262,7 +261,7 @@ void edgeExtractor::faceEvaluator::neiPatchesOverEdges
 }
 
 
-label edgeExtractor::faceEvaluator::bestPatchTopological
+Foam::label Foam::Module::edgeExtractor::faceEvaluator::bestPatchTopological
 (
     const DynList<label>& neiPatches,
     const label currentPatch
@@ -329,7 +328,10 @@ label edgeExtractor::faceEvaluator::bestPatchTopological
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-edgeExtractor::faceEvaluator::faceEvaluator(const edgeExtractor& ee)
+Foam::Module::edgeExtractor::faceEvaluator::faceEvaluator
+(
+    const edgeExtractor& ee
+)
 :
     extractor_(ee),
     otherFacePatch_(),
@@ -343,7 +345,7 @@ edgeExtractor::faceEvaluator::faceEvaluator(const edgeExtractor& ee)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-edgeExtractor::faceEvaluator::~faceEvaluator()
+Foam::Module::edgeExtractor::faceEvaluator::~faceEvaluator()
 {
     deleteDemandDrivenData(newOtherFacePatchPtr_);
 }
@@ -351,7 +353,7 @@ edgeExtractor::faceEvaluator::~faceEvaluator()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-void edgeExtractor::faceEvaluator::setNewBoundaryPatches
+void Foam::Module::edgeExtractor::faceEvaluator::setNewBoundaryPatches
 (
     const labelList& newBoudaryPatches
 )
@@ -363,7 +365,7 @@ void edgeExtractor::faceEvaluator::setNewBoundaryPatches
 }
 
 
-void edgeExtractor::faceEvaluator::neiPatchesOverEdges
+void Foam::Module::edgeExtractor::faceEvaluator::neiPatchesOverEdges
 (
     const label bfI,
     DynList<label>& neiPatches
@@ -379,7 +381,10 @@ void edgeExtractor::faceEvaluator::neiPatchesOverEdges
 }
 
 
-label edgeExtractor::faceEvaluator::bestPatchTopological(const label bfI) const
+Foam::label Foam::Module::edgeExtractor::faceEvaluator::bestPatchTopological
+(
+    const label bfI
+) const
 {
     // get neighbour patches over edges
     DynList<label> neiPatches;
@@ -395,7 +400,8 @@ label edgeExtractor::faceEvaluator::bestPatchTopological(const label bfI) const
 }
 
 
-label edgeExtractor::faceEvaluator::bestPatchAfterModification
+Foam::label
+Foam::Module::edgeExtractor::faceEvaluator::bestPatchAfterModification
 (
     const label bfI
 ) const
@@ -451,7 +457,7 @@ label edgeExtractor::faceEvaluator::bestPatchAfterModification
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-void edgeExtractor::cornerEvaluator::createParallelAddressing()
+void Foam::Module::edgeExtractor::cornerEvaluator::createParallelAddressing()
 {
     const labelHashSet& corners = partitioner_.corners();
 
@@ -616,7 +622,7 @@ void edgeExtractor::cornerEvaluator::createParallelAddressing()
 }
 
 
-void edgeExtractor::cornerEvaluator::sortedFacesAtPoint
+void Foam::Module::edgeExtractor::cornerEvaluator::sortedFacesAtPoint
 (
     const label bpI,
     DynList<label>& pFaces
@@ -651,7 +657,7 @@ void edgeExtractor::cornerEvaluator::sortedFacesAtPoint
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-edgeExtractor::cornerEvaluator::cornerEvaluator
+Foam::Module::edgeExtractor::cornerEvaluator::cornerEvaluator
 (
     const edgeExtractor& ee,
     const meshSurfacePartitioner& mPart
@@ -670,13 +676,7 @@ edgeExtractor::cornerEvaluator::cornerEvaluator
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-edgeExtractor::cornerEvaluator::~cornerEvaluator()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-void edgeExtractor::cornerEvaluator::improveCorners
+void Foam::Module::edgeExtractor::cornerEvaluator::improveCorners
 (
     labelList& newBoundaryPatches
 )
@@ -820,7 +820,7 @@ void edgeExtractor::cornerEvaluator::improveCorners
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
 
-bool edgeExtractor::findCornerCandidates()
+bool Foam::Module::edgeExtractor::findCornerCandidates()
 {
     bool changed(false);
 
@@ -957,7 +957,7 @@ bool edgeExtractor::findCornerCandidates()
 }
 
 
-bool edgeExtractor::checkCorners()
+bool Foam::Module::edgeExtractor::checkCorners()
 {
     bool changed(false);
 
@@ -1798,9 +1798,5 @@ bool edgeExtractor::checkCorners()
     return changed;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *//
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

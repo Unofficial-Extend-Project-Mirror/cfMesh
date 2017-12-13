@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::volumeOptimizer
+    Foam::Module::volumeOptimizer
 
 Description
     Mesh smoothing without any topological changes. The vertex is put into
@@ -42,7 +42,8 @@ SourceFiles
 
 namespace Foam
 {
-
+namespace Module
+{
 // Forward declarations
 class partTetMeshSimplex;
 
@@ -80,21 +81,23 @@ class volumeOptimizer
 
     public:
 
-        //- construct from partTetMeshSimplex
+        //- Construct from partTetMeshSimplex
         volumeOptimizer(partTetMeshSimplex& simplex);
 
         //- Destructor
-        ~volumeOptimizer();
+        ~volumeOptimizer() = default;
+
 
         // Member functions
 
-            //- find the best position for the node
+            //- Find the best position for the node
             void optimizeNodePosition(const scalar tol = 0.001);
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

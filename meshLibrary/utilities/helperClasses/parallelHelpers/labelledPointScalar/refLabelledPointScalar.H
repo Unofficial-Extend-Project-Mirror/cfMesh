@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::refLabelledPointScalar
+    Foam::Module::refLabelledPointScalar
 
 Description
     A class containing a label and labelledPointScalar. It is used for
@@ -40,6 +40,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -77,8 +79,7 @@ public:
 
 
     //- Destructor
-    ~refLabelledPointScalar()
-    {}
+    ~refLabelledPointScalar() = default;
 
 
     // Member functions
@@ -153,15 +154,16 @@ public:
 };
 
 
-//- Specify data associated with refLabelledPointScalar type is contiguous
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Module
+
+//- Data for refLabelledPointScalar are contiguous
 template<>
-inline bool contiguous<refLabelledPointScalar>()
+inline bool contiguous<Module::refLabelledPointScalar>()
 {
     return true;
 }
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
 

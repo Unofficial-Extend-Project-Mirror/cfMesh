@@ -30,16 +30,9 @@ License
 
 #include <map>
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void renameBoundaryPatches::calculateNewBoundary()
+void Foam::Module::renameBoundaryPatches::calculateNewBoundary()
 {
     Info<< "Renaming boundary patches" << endl;
 
@@ -241,7 +234,7 @@ void renameBoundaryPatches::calculateNewBoundary()
 }
 
 
-void renameBoundaryPatches::checkEmptyPatches()
+void Foam::Module::renameBoundaryPatches::checkEmptyPatches()
 {
     polyMeshGenModifier meshModifier(mesh_);
 
@@ -256,7 +249,7 @@ void renameBoundaryPatches::checkEmptyPatches()
 }
 
 
-void renameBoundaryPatches::checkSymmetryPlanes()
+void Foam::Module::renameBoundaryPatches::checkSymmetryPlanes()
 {
     symmetryPlaneOptimisation symmSmother(mesh_);
 
@@ -266,7 +259,7 @@ void renameBoundaryPatches::checkSymmetryPlanes()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-renameBoundaryPatches::renameBoundaryPatches
+Foam::Module::renameBoundaryPatches::renameBoundaryPatches
 (
     polyMeshGen& mesh,
     const IOdictionary& meshDict,
@@ -287,15 +280,5 @@ renameBoundaryPatches::renameBoundaryPatches
     checkSymmetryPlanes();
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-renameBoundaryPatches::~renameBoundaryPatches()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

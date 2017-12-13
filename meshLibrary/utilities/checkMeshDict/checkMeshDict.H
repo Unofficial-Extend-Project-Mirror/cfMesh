@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::checkMeshDict
+    Foam::Module::checkMeshDict
 
 Description
     Check whether the meshDict file is set correctly
@@ -42,6 +42,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -141,7 +143,7 @@ public:
     checkMeshDict(IOdictionary& meshDict);
 
     //- Destructor
-    ~checkMeshDict();
+    ~checkMeshDict() = default;
 
 
     // Public member functions
@@ -158,6 +160,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -40,12 +40,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshSurfaceEngine::calculateBoundaryFaces() const
+void Foam::Module::meshSurfaceEngine::calculateBoundaryFaces() const
 {
     if (mesh_.boundaries().size() != 0)
     {
@@ -100,7 +95,7 @@ void meshSurfaceEngine::calculateBoundaryFaces() const
 }
 
 
-void meshSurfaceEngine::calculateBoundaryOwners() const
+void Foam::Module::meshSurfaceEngine::calculateBoundaryOwners() const
 {
     const labelList& owner = mesh_.owner();
 
@@ -123,7 +118,7 @@ void meshSurfaceEngine::calculateBoundaryOwners() const
 }
 
 
-void meshSurfaceEngine::calculateBoundaryNodes() const
+void Foam::Module::meshSurfaceEngine::calculateBoundaryNodes() const
 {
     // mark boundary points
     label pointI(0);
@@ -259,7 +254,7 @@ void meshSurfaceEngine::calculateBoundaryNodes() const
 }
 
 
-void meshSurfaceEngine::calculateBoundaryFacePatches() const
+void Foam::Module::meshSurfaceEngine::calculateBoundaryFacePatches() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
     boundaryFacePatchPtr_ = new labelList(bFaces.size());
@@ -279,7 +274,7 @@ void meshSurfaceEngine::calculateBoundaryFacePatches() const
 }
 
 
-void meshSurfaceEngine::calculatePointFaces() const
+void Foam::Module::meshSurfaceEngine::calculatePointFaces() const
 {
     // fill pointFacesAddr
     if (!pointFacesPtr_)
@@ -506,7 +501,7 @@ void meshSurfaceEngine::calculatePointFaces() const
 }
 
 
-void meshSurfaceEngine::calculatePointPatches() const
+void Foam::Module::meshSurfaceEngine::calculatePointPatches() const
 {
     if (!pointPatchesPtr_)
     {
@@ -635,7 +630,7 @@ void meshSurfaceEngine::calculatePointPatches() const
 }
 
 
-void meshSurfaceEngine::calculatePointPoints() const
+void Foam::Module::meshSurfaceEngine::calculatePointPoints() const
 {
     if (!pointPointsPtr_)
     {
@@ -793,7 +788,7 @@ void meshSurfaceEngine::calculatePointPoints() const
 }
 
 
-void meshSurfaceEngine::calculatePointNormals() const
+void Foam::Module::meshSurfaceEngine::calculatePointNormals() const
 {
     const VRWGraph& pFaces = pointFaces();
     const vectorField& fNormals = faceNormals();
@@ -829,7 +824,7 @@ void meshSurfaceEngine::calculatePointNormals() const
 }
 
 
-void meshSurfaceEngine::calculateFaceNormals() const
+void Foam::Module::meshSurfaceEngine::calculateFaceNormals() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
     const pointFieldPMG& points = mesh_.points();
@@ -848,7 +843,7 @@ void meshSurfaceEngine::calculateFaceNormals() const
 }
 
 
-void meshSurfaceEngine::calculateFaceCentres() const
+void Foam::Module::meshSurfaceEngine::calculateFaceCentres() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
     const pointFieldPMG& points = mesh_.points();
@@ -865,7 +860,7 @@ void meshSurfaceEngine::calculateFaceCentres() const
 }
 
 
-void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
+void Foam::Module::meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
 {
     if (!Pstream::parRun())
     {
@@ -956,7 +951,7 @@ void meshSurfaceEngine::updatePointNormalsAtProcBoundaries() const
 }
 
 
-void meshSurfaceEngine::calculateEdgesAndAddressing() const
+void Foam::Module::meshSurfaceEngine::calculateEdgesAndAddressing() const
 {
     const VRWGraph& pFaces = pointFaces();
     const faceList::subList& bFaces = boundaryFaces();
@@ -1178,7 +1173,7 @@ void meshSurfaceEngine::calculateEdgesAndAddressing() const
 }
 
 
-void meshSurfaceEngine::calculateFaceEdgesAddressing() const
+void Foam::Module::meshSurfaceEngine::calculateFaceEdgesAddressing() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
     const labelList& bp = this->bp();
@@ -1247,7 +1242,7 @@ void meshSurfaceEngine::calculateFaceEdgesAddressing() const
 }
 
 
-void meshSurfaceEngine::calculateEdgeFacesAddressing() const
+void Foam::Module::meshSurfaceEngine::calculateEdgeFacesAddressing() const
 {
     const faceList::subList& bFaces = this->boundaryFaces();
     const VRWGraph& pointFaces = this->pointFaces();
@@ -1356,7 +1351,7 @@ void meshSurfaceEngine::calculateEdgeFacesAddressing() const
 }
 
 
-void meshSurfaceEngine::calculateEdgePatchesAddressing() const
+void Foam::Module::meshSurfaceEngine::calculateEdgePatchesAddressing() const
 {
     edgePatchesPtr_ = new VRWGraph();
     VRWGraph& edgePatches = *edgePatchesPtr_;
@@ -1395,7 +1390,7 @@ void meshSurfaceEngine::calculateEdgePatchesAddressing() const
 }
 
 
-void meshSurfaceEngine::calculateFaceFacesAddressing() const
+void Foam::Module::meshSurfaceEngine::calculateFaceFacesAddressing() const
 {
     const VRWGraph& edgeFaces = this->edgeFaces();
 
@@ -1436,9 +1431,5 @@ void meshSurfaceEngine::calculateFaceFacesAddressing() const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

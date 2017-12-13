@@ -29,7 +29,8 @@ License
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-Foam::autoPtr<Foam::coordinateModification> Foam::coordinateModification::New
+Foam::autoPtr<Foam::Module::coordinateModification>
+Foam::Module::coordinateModification::New
 (
     const word& name,
     const dictionary& dict

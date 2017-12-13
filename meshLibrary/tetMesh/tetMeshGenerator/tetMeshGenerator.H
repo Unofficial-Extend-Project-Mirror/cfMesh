@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::tetMeshGenerator
+    Foam::Module::tetMeshGenerator
 
 Description
     Creates cartesian mesh from the octree
@@ -44,11 +44,13 @@ SourceFiles
 
 namespace Foam
 {
-
 // Forward declarations
-class triSurf;
-class meshOctree;
 class Time;
+
+namespace Module
+{
+class meshOctree;
+class triSurf;
 
 /*---------------------------------------------------------------------------*\
                       Class tetMeshGenerator Declaration
@@ -146,6 +148,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

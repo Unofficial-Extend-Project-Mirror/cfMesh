@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Typedef
-    Foam::patchRefinementList
+    Foam::Module::patchRefinementList
 
 Description
     A list of patch refinements
@@ -39,9 +39,12 @@ Description
 
 namespace Foam
 {
+namespace Module
+{
 
 typedef List<patchRefinement> patchRefinementList;
 
+}
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

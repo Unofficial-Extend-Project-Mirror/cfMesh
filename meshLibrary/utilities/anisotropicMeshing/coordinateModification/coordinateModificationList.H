@@ -41,10 +41,14 @@ SourceFiles
 
 namespace Foam
 {
+namespace Module
+{
+
 typedef PtrList<coordinateModification> coordinateModificationList;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

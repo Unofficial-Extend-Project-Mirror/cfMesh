@@ -33,10 +33,9 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfAddressing::calculatePointFacets() const
+void Foam::Module::triSurfAddressing::calculatePointFacets() const
 {
     pointFacetsPtr_ = new VRWGraph();
 
@@ -44,7 +43,7 @@ void triSurfAddressing::calculatePointFacets() const
 }
 
 
-void triSurfAddressing::calculateEdges() const
+void Foam::Module::triSurfAddressing::calculateEdges() const
 {
     edgesPtr_ = new edgeLongList();
 
@@ -152,7 +151,7 @@ void triSurfAddressing::calculateEdges() const
 }
 
 
-void triSurfAddressing::calculateFacetEdges() const
+void Foam::Module::triSurfAddressing::calculateFacetEdges() const
 {
     const edgeLongList& edges = this->edges();
     const VRWGraph& pointFaces = this->pointFacets();
@@ -213,7 +212,7 @@ void triSurfAddressing::calculateFacetEdges() const
 }
 
 
-void triSurfAddressing::calculateEdgeFacets() const
+void Foam::Module::triSurfAddressing::calculateEdgeFacets() const
 {
     const edgeLongList& edges = this->edges();
     const VRWGraph& faceEdges = this->facetEdges();
@@ -224,7 +223,7 @@ void triSurfAddressing::calculateEdgeFacets() const
 }
 
 
-void triSurfAddressing::calculatePointEdges() const
+void Foam::Module::triSurfAddressing::calculatePointEdges() const
 {
     const edgeLongList& edges = this->edges();
 
@@ -234,7 +233,7 @@ void triSurfAddressing::calculatePointEdges() const
 }
 
 
-void triSurfAddressing::calculateFacetFacetsEdges() const
+void Foam::Module::triSurfAddressing::calculateFacetFacetsEdges() const
 {
     facetFacetsEdgesPtr_ = new VRWGraph();
 
@@ -268,7 +267,7 @@ void triSurfAddressing::calculateFacetFacetsEdges() const
 }
 
 
-void triSurfAddressing::calculatePointNormals() const
+void Foam::Module::triSurfAddressing::calculatePointNormals() const
 {
     const VRWGraph& pFacets = pointFacets();
     const vectorField& fNormals = facetNormals();
@@ -303,7 +302,7 @@ void triSurfAddressing::calculatePointNormals() const
 }
 
 
-void triSurfAddressing::calculateFacetNormals() const
+void Foam::Module::triSurfAddressing::calculateFacetNormals() const
 {
     facetNormalsPtr_ = new vectorField(facets_.size());
 
@@ -319,7 +318,7 @@ void triSurfAddressing::calculateFacetNormals() const
 }
 
 
-void triSurfAddressing::calculateFacetCentres() const
+void Foam::Module::triSurfAddressing::calculateFacetCentres() const
 {
     facetCentresPtr_ = new vectorField(facets_.size());
 
@@ -335,7 +334,7 @@ void triSurfAddressing::calculateFacetCentres() const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfAddressing::triSurfAddressing
+Foam::Module::triSurfAddressing::triSurfAddressing
 (
     const pointField& points,
     const LongList<labelledTri>& triangles)
@@ -357,7 +356,7 @@ triSurfAddressing::triSurfAddressing
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-triSurfAddressing::~triSurfAddressing()
+Foam::Module::triSurfAddressing::~triSurfAddressing()
 {
     clearAddressing();
     clearGeometry();
@@ -366,7 +365,7 @@ triSurfAddressing::~triSurfAddressing()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-void triSurfAddressing::clearAddressing()
+void Foam::Module::triSurfAddressing::clearAddressing()
 {
     deleteDemandDrivenData(pointFacetsPtr_);
     deleteDemandDrivenData(edgesPtr_);
@@ -377,16 +376,12 @@ void triSurfAddressing::clearAddressing()
 }
 
 
-void triSurfAddressing::clearGeometry()
+void Foam::Module::triSurfAddressing::clearGeometry()
 {
     deleteDemandDrivenData(pointNormalsPtr_);
     deleteDemandDrivenData(facetNormalsPtr_);
     deleteDemandDrivenData(facetCentresPtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

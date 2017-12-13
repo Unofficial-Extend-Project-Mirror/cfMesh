@@ -29,14 +29,9 @@ License
 
 //#define DEBUGSmooth
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-scalar knuppMetric::evaluateMetric() const
+Foam::scalar Foam::Module::knuppMetric::evaluateMetric() const
 {
     scalar val(0.0);
 
@@ -50,7 +45,7 @@ scalar knuppMetric::evaluateMetric() const
 }
 
 
-scalar knuppMetric::evaluateMetricNoBeta() const
+Foam::scalar Foam::Module::knuppMetric::evaluateMetricNoBeta() const
 {
     scalar val(0.0);
 
@@ -64,7 +59,11 @@ scalar knuppMetric::evaluateMetricNoBeta() const
 }
 
 
-void knuppMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
+void Foam::Module::knuppMetric::evaluateGradients
+(
+    vector& grad,
+    tensor& gradGrad
+) const
 {
     grad = vector::zero;
     gradGrad = tensor::zero;
@@ -82,7 +81,7 @@ void knuppMetric::evaluateGradients(vector& grad, tensor& gradGrad) const
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
+Foam::Module::knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 :
     simplexSmoother(simplex),
     p_(simplex.pts()[simplex.tets()[0][3]]),
@@ -92,36 +91,35 @@ knuppMetric::knuppMetric(partTetMeshSimplex& simplex)
 {
     forAll(tets_, tetI)
     {
-    const partTet& pt = tets_[tetI];
-    const triangle<point, point> tri
-    (
-        points_[pt.a()],
-        points_[pt.b()],
-        points_[pt.c()]
-    );
+        const partTet& pt = tets_[tetI];
+        const triangle<point, point> tri
+        (
+            points_[pt.a()],
+            points_[pt.b()],
+            points_[pt.c()]
+        );
 
-    const vector n = tri.normal();
-        const scalar d = mag(n);
+        const vector n = tri.normal();
+            const scalar d = mag(n);
 
-        if (d > VSMALL)
-        {
-            centres_.append(tri.centre());
-            normals_.append(n/d);
-        }
+            if (d > VSMALL)
+            {
+                centres_.append(tri.centre());
+                normals_.append(n/d);
+            }
     }
 
     beta_ = 0.01*bb_.mag();
 }
 
 
-knuppMetric::~knuppMetric()
-{}
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Implementation of knupp metric untangling
-void knuppMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
+void Foam::Module::knuppMetric::optimizeNodePosition
+(
+    const scalar /*tolObsolete*/
+)
 {
     if (!bb_.contains(p_))
         p_ = 0.5*(bb_.min() + bb_.max());
@@ -249,9 +247,5 @@ void knuppMetric::optimizeNodePosition(const scalar /*tolObsolete*/)
 
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

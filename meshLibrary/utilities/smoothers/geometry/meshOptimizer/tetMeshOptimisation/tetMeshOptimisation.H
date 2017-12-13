@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::tetMeshOptimisation
+    Foam::Module::tetMeshOptimisation
 
 Description
     Mesh smoothing without any topological changes
@@ -46,6 +46,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -91,7 +93,7 @@ public:
     tetMeshOptimisation(partTetMesh& mesh);
 
     //- Destructor
-    ~tetMeshOptimisation();
+    ~tetMeshOptimisation() = default;
 
 
     // Member Functions
@@ -119,6 +121,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

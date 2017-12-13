@@ -35,12 +35,9 @@ License
 #include <omp.h>
 # endif
 
-namespace Foam
-{
-
 // * * * * * * * * * * Private member functions * * * * * * * * * * * * * * * //
 
-void polyMeshGenCells::calculateOwnersAndNeighbours() const
+void Foam::Module::polyMeshGenCells::calculateOwnersAndNeighbours() const
 {
     if (ownerPtr_ || neighbourPtr_)
     {
@@ -223,7 +220,7 @@ void polyMeshGenCells::calculateOwnersAndNeighbours() const
 }
 
 
-void polyMeshGenCells::calculateAddressingData() const
+void Foam::Module::polyMeshGenCells::calculateAddressingData() const
 {
     if (!ownerPtr_ || !neighbourPtr_)
     {
@@ -243,7 +240,7 @@ void polyMeshGenCells::calculateAddressingData() const
 }
 
 
-void polyMeshGenCells::clearOut() const
+void Foam::Module::polyMeshGenCells::clearOut() const
 {
     polyMeshGenFaces::clearOut();
     deleteDemandDrivenData(addressingDataPtr_);
@@ -252,7 +249,7 @@ void polyMeshGenCells::clearOut() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-polyMeshGenCells::polyMeshGenCells(const Time& runTime)
+Foam::Module::polyMeshGenCells::polyMeshGenCells(const Time& runTime)
 :
     polyMeshGenFaces(runTime),
     cells_(),
@@ -261,7 +258,7 @@ polyMeshGenCells::polyMeshGenCells(const Time& runTime)
 {}
 
 
-polyMeshGenCells::polyMeshGenCells
+Foam::Module::polyMeshGenCells::polyMeshGenCells
 (
     const Time& runTime,
     const pointField& points,
@@ -278,7 +275,7 @@ polyMeshGenCells::polyMeshGenCells
 }
 
 
-polyMeshGenCells::polyMeshGenCells
+Foam::Module::polyMeshGenCells::polyMeshGenCells
 (
     const Time& runTime,
     const pointField& points,
@@ -308,7 +305,7 @@ polyMeshGenCells::polyMeshGenCells
 
 // * * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * //
 
-polyMeshGenCells::~polyMeshGenCells()
+Foam::Module::polyMeshGenCells::~polyMeshGenCells()
 {
     clearOut();
 }
@@ -316,7 +313,8 @@ polyMeshGenCells::~polyMeshGenCells()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-const polyMeshGenAddressing& polyMeshGenCells::addressingData() const
+const Foam::Module::polyMeshGenAddressing&
+Foam::Module::polyMeshGenCells::addressingData() const
 {
     if (!addressingDataPtr_)
     {
@@ -336,13 +334,13 @@ const polyMeshGenAddressing& polyMeshGenCells::addressingData() const
 }
 
 
-void polyMeshGenCells::clearAddressingData() const
+void Foam::Module::polyMeshGenCells::clearAddressingData() const
 {
     deleteDemandDrivenData(addressingDataPtr_);
 }
 
 
-label polyMeshGenCells::addCellSubset(const word& selName)
+Foam::label Foam::Module::polyMeshGenCells::addCellSubset(const word& selName)
 {
     label id = cellSubsetIndex(selName);
     if (id >= 0)
@@ -370,7 +368,7 @@ label polyMeshGenCells::addCellSubset(const word& selName)
 }
 
 
-void polyMeshGenCells::removeCellSubset(const label setI)
+void Foam::Module::polyMeshGenCells::removeCellSubset(const label setI)
 {
     if (cellSubsets_.find(setI) == cellSubsets_.end())
     {
@@ -381,10 +379,14 @@ void polyMeshGenCells::removeCellSubset(const label setI)
 }
 
 
-word polyMeshGenCells::cellSubsetName(const label setI) const
+Foam::word Foam::Module::polyMeshGenCells::cellSubsetName
+(
+    const label setI
+) const
 {
     std::map<label, meshSubset>::const_iterator it =
         cellSubsets_.find(setI);
+
     if (it == cellSubsets_.end())
     {
         Warning << "Subset " << setI << " is not a cell subset" << endl;
@@ -395,7 +397,10 @@ word polyMeshGenCells::cellSubsetName(const label setI) const
 }
 
 
-label polyMeshGenCells::cellSubsetIndex(const word& selName) const
+Foam::label Foam::Module::polyMeshGenCells::cellSubsetIndex
+(
+    const word& selName
+) const
 {
     forAllConstIters(cellSubsets_, it)
     {
@@ -409,7 +414,7 @@ label polyMeshGenCells::cellSubsetIndex(const word& selName) const
 }
 
 
-void polyMeshGenCells::read()
+void Foam::Module::polyMeshGenCells::read()
 {
     polyMeshGenFaces::read();
 
@@ -485,7 +490,7 @@ void polyMeshGenCells::read()
 }
 
 
-void polyMeshGenCells::write() const
+void Foam::Module::polyMeshGenCells::write() const
 {
     polyMeshGenFaces::write();
 
@@ -516,9 +521,5 @@ void polyMeshGenCells::write() const
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

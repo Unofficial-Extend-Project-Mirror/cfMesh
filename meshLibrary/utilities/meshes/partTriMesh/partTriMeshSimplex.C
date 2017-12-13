@@ -30,12 +30,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-partTriMeshSimplex::partTriMeshSimplex
+Foam::Module::partTriMeshSimplex::partTriMeshSimplex
 (
     const partTriMesh& tm,
     const label pI
@@ -135,13 +130,7 @@ partTriMeshSimplex::partTriMeshSimplex
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-partTriMeshSimplex::~partTriMeshSimplex()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-vector partTriMeshSimplex::normal() const
+Foam::vector Foam::Module::partTriMeshSimplex::normal() const
 {
     vector normal(vector::zero);
     scalar magN(0.0);
@@ -163,9 +152,5 @@ vector partTriMeshSimplex::normal() const
     return (normal/(magN + VSMALL));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

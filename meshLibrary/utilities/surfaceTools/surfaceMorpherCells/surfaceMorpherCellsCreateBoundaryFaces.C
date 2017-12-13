@@ -36,12 +36,8 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
+bool Foam::Module::surfaceMorpherCells::
+removeCellsWithAllVerticesAtTheBoundary()
 {
     boolList removeCells(cellFlags_.size(), false);
 
@@ -126,7 +122,7 @@ bool surfaceMorpherCells::removeCellsWithAllVerticesAtTheBoundary()
 }
 
 
-bool surfaceMorpherCells::morphBoundaryFaces()
+bool Foam::Module::surfaceMorpherCells::morphBoundaryFaces()
 {
     Info<< "Morphing boundary faces" << endl;
 
@@ -251,9 +247,5 @@ bool surfaceMorpherCells::morphBoundaryFaces()
     return changed;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

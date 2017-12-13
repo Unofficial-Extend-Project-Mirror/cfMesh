@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::tetMeshExtractorOctree
+    Foam::Module::tetMeshExtractorOctree
 
 Description
     A class which extracts tet mesh out of an octree structure
@@ -43,6 +43,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 /*---------------------------------------------------------------------------*\
@@ -89,7 +91,7 @@ public:
     );
 
     //- Destructor
-    ~tetMeshExtractorOctree();
+    ~tetMeshExtractorOctree() = default;
 
 
     // Member Functions
@@ -100,6 +102,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

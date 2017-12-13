@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::simplexSmoother
+    Foam::Module::simplexSmoother
 
 Description
     Mesh smoothing without any topological changes. The vertex is put into
@@ -44,6 +44,8 @@ SourceFiles
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
+{
+namespace Module
 {
 
 // Forward declarations
@@ -89,7 +91,7 @@ public:
     simplexSmoother(partTetMeshSimplex& simplex);
 
     //- Destructor
-    virtual ~simplexSmoother();
+    virtual ~simplexSmoother() = default;
 
 
     // Member functions
@@ -101,6 +103,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+} // End namespace Module
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

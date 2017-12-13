@@ -32,6 +32,7 @@ Description
 #include "meshOptimizer.H"
 
 using namespace Foam;
+using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,8 +46,8 @@ int main(int argc, char *argv[])
     argList::addOption("qualityThreshold", "scalar");
     argList::addOption("constrainedCellsSet", "word");
 
-#   include "setRootCase.H"
-#   include "createTime.H"
+    #include "setRootCase.H"
+    #include "createTime.H"
 
     // Defaults
     label nIterations(50);

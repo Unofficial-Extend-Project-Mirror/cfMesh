@@ -30,7 +30,7 @@ License
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::writeEntry(Ostream& os) const
+void Foam::Module::LongList<T, Offset>::writeEntry(Ostream& os) const
 {
     if (size())
     {
@@ -46,7 +46,7 @@ void Foam::LongList<T, Offset>::writeEntry(Ostream& os) const
 
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::writeEntry
+void Foam::Module::LongList<T, Offset>::writeEntry
 (
     const word& keyword,
     Ostream& os
@@ -59,10 +59,10 @@ void Foam::LongList<T, Offset>::writeEntry
 
 
 template<class T, int Offset>
-Foam::Ostream& Foam::operator<<
+Foam::Ostream& Foam::Module::operator<<
 (
     Ostream& os,
-    const Foam::LongList<T, Offset>& DL
+    const Foam::Module::LongList<T, Offset>& DL
 )
 {
     if ((os.format() == IOstream::ASCII) || !contiguous<T>())
@@ -130,7 +130,7 @@ Foam::Ostream& Foam::operator<<
 
 
 template<class T, int Offset>
-Foam::Istream& Foam::operator>>
+Foam::Istream& Foam::Module::operator>>
 (
     Istream& is,
     LongList<T, Offset>& DL
@@ -256,7 +256,7 @@ Foam::Istream& Foam::operator>>
 
 
 template<class T, int Offset>
-void Foam::LongList<T, Offset>::appendFromStream(Istream& is)
+void Foam::Module::LongList<T, Offset>::appendFromStream(Istream& is)
 {
     is.fatalCheck(FUNCTION_NAME);
 

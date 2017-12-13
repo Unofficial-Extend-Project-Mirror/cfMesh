@@ -23,11 +23,8 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-namespace Foam
-{
-
 template<class graphType>
-inline void Foam::subGraph<graphType>::checkIndex(const label i) const
+inline void Foam::Module::subGraph<graphType>::checkIndex(const label i) const
 {
     if ((i < 0) || (i >= size_))
     {
@@ -42,7 +39,7 @@ inline void Foam::subGraph<graphType>::checkIndex(const label i) const
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::subGraph<graphType>::subGraph
+inline Foam::Module::subGraph<graphType>::subGraph
 (
     graphType& g,
     const label start,
@@ -56,7 +53,7 @@ inline Foam::subGraph<graphType>::subGraph
 
 
 template<class graphType>
-inline Foam::subGraph<graphType>::subGraph
+inline Foam::Module::subGraph<graphType>::subGraph
 (
     const subGraph<graphType>& ol
 )
@@ -70,28 +67,35 @@ inline Foam::subGraph<graphType>::subGraph
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::size() const
+inline Foam::label Foam::Module::subGraph<graphType>::size() const
 {
     return size_;
 }
 
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::sizeOfRow(const label rowI) const
+inline Foam::label Foam::Module::subGraph<graphType>::sizeOfRow
+(
+    const label rowI
+) const
 {
     return data_.sizeOfRow(start_ + rowI);
 }
 
 
 template<class graphType>
-inline void Foam::subGraph<graphType>::append(const label rowI, const label el)
+inline void Foam::Module::subGraph<graphType>::append
+(
+    const label rowI,
+    const label el
+)
 {
     data_.append(start_ + rowI, el);
 }
 
 
 template<class graphType>
-inline void Foam::subGraph<graphType>::appendIfNotIn
+inline void Foam::Module::subGraph<graphType>::appendIfNotIn
 (
     const label rowI,
     const label el
@@ -102,7 +106,7 @@ inline void Foam::subGraph<graphType>::appendIfNotIn
 
 
 template<class graphType>
-inline bool Foam::subGraph<graphType>::contains
+inline bool Foam::Module::subGraph<graphType>::contains
 (
     const label rowI,
     const label e
@@ -113,7 +117,7 @@ inline bool Foam::subGraph<graphType>::contains
 
 
 template<class graphType>
-inline bool Foam::subGraph<graphType>::found
+inline bool Foam::Module::subGraph<graphType>::found
 (
     const label rowI,
     const label e
@@ -124,7 +128,7 @@ inline bool Foam::subGraph<graphType>::found
 
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::find
+inline Foam::label Foam::Module::subGraph<graphType>::find
 (
     const label rowI,
     const label e
@@ -137,7 +141,7 @@ inline Foam::label Foam::subGraph<graphType>::find
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::operator()
+inline Foam::label Foam::Module::subGraph<graphType>::operator()
 (
     const label i,
     const label j
@@ -152,7 +156,7 @@ inline Foam::label Foam::subGraph<graphType>::operator()
 
 
 template<class graphType>
-inline Foam::label& Foam::subGraph<graphType>::operator()
+inline Foam::label& Foam::Module::subGraph<graphType>::operator()
 (
     const label i,
     const label j
@@ -163,8 +167,8 @@ inline Foam::label& Foam::subGraph<graphType>::operator()
 
 
 template<class graphType>
-inline const Foam::graphConstRow<graphType>
-Foam::subGraph<graphType>::operator[]
+inline const Foam::Module::graphConstRow<graphType>
+Foam::Module::subGraph<graphType>::operator[]
 (
     const label i
 ) const
@@ -174,18 +178,18 @@ Foam::subGraph<graphType>::operator[]
 
 
 template<class graphType>
-inline Foam::graphRow<graphType>
-Foam::subGraph<graphType>::operator[](const label i)
+inline Foam::Module::graphRow<graphType>
+Foam::Module::subGraph<graphType>::operator[](const label i)
 {
     return data_[start_ + i];
 }
 
 
 template<class graphType>
-inline Foam::Ostream& operator<<
+inline Foam::Ostream& Foam::Module::operator<<
 (
-    Foam::Ostream& os,
-    const Foam::subGraph<graphType>& sg
+    Ostream& os,
+    const Foam::Module::subGraph<graphType>& sg
 )
 {
     os << sg.size() << "\n" << "(";
@@ -207,9 +211,5 @@ inline Foam::Ostream& operator<<
     return os;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

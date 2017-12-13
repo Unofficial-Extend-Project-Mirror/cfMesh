@@ -34,12 +34,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-meshOctreeInsideOutside::meshOctreeInsideOutside
+Foam::Module::meshOctreeInsideOutside::meshOctreeInsideOutside
 (
     meshOctree& octree
 )
@@ -105,13 +100,7 @@ meshOctreeInsideOutside::meshOctreeInsideOutside
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-meshOctreeInsideOutside::~meshOctreeInsideOutside()
-{}
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void meshOctreeInsideOutside::initialiseBoxes()
+void Foam::Module::meshOctreeInsideOutside::initialiseBoxes()
 {
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
 
@@ -132,7 +121,7 @@ void meshOctreeInsideOutside::initialiseBoxes()
 }
 
 
-void meshOctreeInsideOutside::frontalMarking()
+void Foam::Module::meshOctreeInsideOutside::frontalMarking()
 {
     communicationCubes_.clear();
     neighbouringGroups_.clear();
@@ -338,7 +327,7 @@ void meshOctreeInsideOutside::frontalMarking()
 }
 
 
-void meshOctreeInsideOutside::markOutsideCubes()
+void Foam::Module::meshOctreeInsideOutside::markOutsideCubes()
 {
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
@@ -470,7 +459,7 @@ void meshOctreeInsideOutside::markOutsideCubes()
 }
 
 
-void meshOctreeInsideOutside::reviseDataBoxes()
+void Foam::Module::meshOctreeInsideOutside::reviseDataBoxes()
 {
     // remove DATA flag from boxes which do not have an OUTSIDE neighbour
     // and are not surrounded with DATA boxes containing different surface
@@ -632,7 +621,7 @@ void meshOctreeInsideOutside::reviseDataBoxes()
 }
 
 
-void meshOctreeInsideOutside::markInsideCubes()
+void Foam::Module::meshOctreeInsideOutside::markInsideCubes()
 {
     const LongList<meshOctreeCube*>& leaves = octreeModifier_.leavesAccess();
     const meshOctree& octree = octreeModifier_.octree();
@@ -843,9 +832,5 @@ void meshOctreeInsideOutside::markInsideCubes()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

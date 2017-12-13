@@ -37,12 +37,7 @@ License
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void partTriMesh::createParallelAddressing
+void Foam::Module::partTriMesh::createParallelAddressing
 (
     const labelList& nodeLabelForPoint,
     const labelList& /*nodeLabelForFace*/
@@ -300,7 +295,7 @@ void partTriMesh::createParallelAddressing
 }
 
 
-void partTriMesh::createBufferLayers()
+void Foam::Module::partTriMesh::createBufferLayers()
 {
     pointField& pts = triSurfModifier(surf_).pointsAccess();
 
@@ -484,7 +479,7 @@ void partTriMesh::createBufferLayers()
 }
 
 
-void partTriMesh::updateBufferLayers()
+void Foam::Module::partTriMesh::updateBufferLayers()
 {
     const pointField& points = surf_.points();
     const labelLongList& bufferLayerPoints = this->bufferLayerPoints();
@@ -539,9 +534,5 @@ void partTriMesh::updateBufferLayers()
     }
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

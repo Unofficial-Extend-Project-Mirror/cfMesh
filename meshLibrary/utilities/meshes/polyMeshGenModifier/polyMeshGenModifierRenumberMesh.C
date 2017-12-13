@@ -28,16 +28,9 @@ License
 #include "polyMeshGenAddressing.H"
 #include "SLList.H"
 
-//#define DEBUG_ZIPUP
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-void polyMeshGenModifier::renumberMesh()
+void Foam::Module::polyMeshGenModifier::renumberMesh()
 {
     Info<< "Renumbering the mesh" << endl;
 
@@ -285,9 +278,5 @@ void polyMeshGenModifier::renumberMesh()
     Info<< "Finished renumbering the mesh" << endl;
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

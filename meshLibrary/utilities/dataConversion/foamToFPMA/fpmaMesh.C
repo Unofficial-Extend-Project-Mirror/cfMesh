@@ -26,26 +26,17 @@ License
 #include "fpmaMesh.H"
 #include "IOmanip.H"
 
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::fpmaMesh::fpmaMesh(const polyMeshGen& mesh)
+Foam::Module::fpmaMesh::fpmaMesh(const polyMeshGen& mesh)
 :
     mesh_(mesh)
 {}
 
 
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::fpmaMesh::~fpmaMesh()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void Foam::fpmaMesh::writePoints(Foam::OFstream& fpmaGeometryFile) const
+void Foam::Module::fpmaMesh::writePoints(OFstream& fpmaGeometryFile) const
 {
     fpmaGeometryFile << mesh_.points().size() << nl;
     const pointFieldPMG& points = mesh_.points();
@@ -59,7 +50,7 @@ void Foam::fpmaMesh::writePoints(Foam::OFstream& fpmaGeometryFile) const
 }
 
 
-void fpmaMesh::writeCells(OFstream& fpmaGeometryFile) const
+void Foam::Module::fpmaMesh::writeCells(OFstream& fpmaGeometryFile) const
 {
     const cellListPMG& cells = mesh_.cells();
 
@@ -78,7 +69,7 @@ void fpmaMesh::writeCells(OFstream& fpmaGeometryFile) const
 }
 
 
-void Foam::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
+void Foam::Module::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
 {
     const faceListPMG& faces = mesh_.faces();
     fpmaGeometryFile << faces.size() << nl;
@@ -96,7 +87,10 @@ void Foam::fpmaMesh::writeFaces(OFstream& fpmaGeometryFile) const
 }
 
 
-void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
+void Foam::Module::fpmaMesh::writeSubsets
+(
+    Foam::OFstream& fpmaGeometryFile
+) const
 {
     // write patches as face selections
     const PtrList<boundaryPatch>& patches = mesh_.boundaries();
@@ -186,7 +180,7 @@ void Foam::fpmaMesh::writeSubsets(Foam::OFstream& fpmaGeometryFile) const
 }
 
 
-void fpmaMesh::write(OFstream& fpmaGeometryFile) const
+void Foam::Module::fpmaMesh::write(OFstream& fpmaGeometryFile) const
 {
     writePoints(fpmaGeometryFile);
 
@@ -197,9 +191,5 @@ void fpmaMesh::write(OFstream& fpmaGeometryFile) const
     writeSubsets(fpmaGeometryFile);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

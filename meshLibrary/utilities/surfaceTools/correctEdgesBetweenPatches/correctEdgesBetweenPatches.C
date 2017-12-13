@@ -28,16 +28,10 @@ License
 #include "meshSurfaceEngine.H"
 #include "decomposeCells.H"
 
-// #define DEBUGSearch
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-const meshSurfaceEngine& correctEdgesBetweenPatches::meshSurface() const
+const Foam::Module::meshSurfaceEngine&
+Foam::Module::correctEdgesBetweenPatches::meshSurface() const
 {
     if (!msePtr_)
         msePtr_ = new meshSurfaceEngine(mesh_);
@@ -47,13 +41,13 @@ const meshSurfaceEngine& correctEdgesBetweenPatches::meshSurface() const
 
 
 // delete mesh surface
-void correctEdgesBetweenPatches::clearMeshSurface()
+void Foam::Module::correctEdgesBetweenPatches::clearMeshSurface()
 {
     deleteDemandDrivenData(msePtr_);
 }
 
 
-void correctEdgesBetweenPatches::replaceBoundary()
+void Foam::Module::correctEdgesBetweenPatches::replaceBoundary()
 {
     clearMeshSurface();
 
@@ -67,7 +61,7 @@ void correctEdgesBetweenPatches::replaceBoundary()
 }
 
 
-void correctEdgesBetweenPatches::decomposeCorrectedCells()
+void Foam::Module::correctEdgesBetweenPatches::decomposeCorrectedCells()
 {
     if (decompose_)
     {
@@ -81,7 +75,10 @@ void correctEdgesBetweenPatches::decomposeCorrectedCells()
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
+Foam::Module::correctEdgesBetweenPatches::correctEdgesBetweenPatches
+(
+    polyMeshGen& mesh
+)
 :
     mesh_(mesh),
     msePtr_(nullptr),
@@ -112,14 +109,10 @@ correctEdgesBetweenPatches::correctEdgesBetweenPatches(polyMeshGen& mesh)
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-correctEdgesBetweenPatches::~correctEdgesBetweenPatches()
+Foam::Module::correctEdgesBetweenPatches::~correctEdgesBetweenPatches()
 {
     deleteDemandDrivenData(msePtr_);
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //
