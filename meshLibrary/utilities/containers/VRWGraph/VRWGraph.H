@@ -38,10 +38,11 @@ SourceFiles
 #define VRWGraph_H
 
 #include "labelLongList.H"
-#include "graphRow.H"
 #include "DynList.H"
 #include "bool.H"
 #include "error.H"
+#include "graphRow.H"
+#include "graphConstRow.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -108,7 +109,7 @@ public:
 
 
 // Useful typedefs
-typedef const graphRow<const VRWGraph> constRow;
+typedef const graphConstRow<VRWGraph> constRow;
 typedef graphRow<VRWGraph> row;
 
 

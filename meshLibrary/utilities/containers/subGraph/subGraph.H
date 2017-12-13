@@ -39,6 +39,7 @@ SourceFiles
 #include "Ostream.H"
 #include "error.H"
 #include "graphRow.H"
+#include "graphConstRow.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -116,7 +117,7 @@ public:
         //- set and get operators
         inline label operator()(const label i, const label j) const;
         inline label& operator()(const label i, const label j);
-        inline const graphRow<const graphType> operator[](const label) const;
+        inline const graphConstRow<graphType> operator[](const label) const;
         inline graphRow<graphType> operator[](const label);
 
 

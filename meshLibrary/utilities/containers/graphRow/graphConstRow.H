@@ -22,18 +22,21 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::graphRow
+    Foam::graphConstRow
 
 Description
-    This class provides non-const access to a row of a graph
+    This class provides const access to a row of a graph
 
 SourceFiles
-    graphRowI.H
+    graphConstRowI.H
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef graphRow_H
-#define graphRow_H
+#ifndef graphConstRow_H
+#define graphConstRow_H
+
+#include "Ostream.H"
+#include "error.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,41 +47,46 @@ template<class graphType> class graphRow;
 template<class graphType> class graphConstRow;
 
 template<class graphType>
-Ostream& operator<<(Ostream&, const graphRow<graphType>&);
+Ostream& operator<<(Ostream&, const graphConstRow<graphType>&);
 
 
 /*---------------------------------------------------------------------------*\
-                          Class graphRow Declaration
+                        Class graphConstRow Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class graphType>
-class graphRow
+class graphConstRow
 {
     // Private data
 
-        //- Reference to the graph
-        graphType& data_;
+        //- Const reference to the graph
+        const graphType& data_;
 
         //- Row number
         const label rowI_;
 
-    // Allow copy construct from non-const to const version
-    friend class graphConstRow<graphType>;
 
+    // Private Member Functions
+
+        //- Avoid possible confusion
+        void operator=(const graphConstRow<graphType>&) = delete;
 
 public:
 
     // Constructors
 
         //- Construct from graph and row number
-        inline graphRow(graphType& g, const label i);
+        inline graphConstRow(const graphType& g, const label i);
 
         //- Copy contructor
-        inline graphRow(const graphRow<graphType>& r);
+        inline graphConstRow(const graphConstRow<graphType>& r);
+
+        //- Copy contructor from non-const version
+        inline graphConstRow(const graphRow<graphType>& r);
 
 
     //- Destructor
-    ~graphRow() = default;
+    ~graphConstRow() = default;
 
 
     // Member Functions
@@ -86,45 +94,24 @@ public:
         //- Return the number of elements in the row
         inline label size() const;
 
-        //- Reset the number of elements in the row
-        inline void setSize(const label s);
-
-        //- Clear the row
-        inline void clear();
-
 
     // Member Operators
-
-        //- Append an element to the given row
-        inline void append(const label);
-
-        //- Append an element to the given row if it does not exist there
-        inline void appendIfNotIn(const label);
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label e) const;
         inline bool found(const label e) const;
         inline label find(const label e) const;
 
-        //- set and get operators
+        //- Get operator
         inline label operator[](const label) const;
-        inline label& operator[](const label);
-
-        //- Copy contents from another row
-        inline void operator=(const graphRow<graphType>& rhs);
-
-        //- Copy contents from a list
-        template<class ListType>
-        inline void operator=(const ListType& rhs);
-
 
     // IOstream operators
 
-        //- Write graphRow contents to Ostream.
+        //- Write graphConstRow contents to Ostream.
         friend Ostream& operator<< <graphType>
         (
             Ostream& os,
-            const graphRow<graphType>& r
+            const graphConstRow<graphType>& r
         );
 
 };
@@ -136,7 +123,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "graphRowI.H"
+#include "graphConstRowI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -25,19 +25,21 @@ License
 
 inline void Foam::VRWGraph::checkIndex(const label i, const label j) const
 {
-    if ((i < 0) || (i >= rows_.size()))
+    if (i < 0 || i >= rows_.size())
     {
         FatalErrorInFunction
             << "Row index " << i
-            << " is not in range " << 0
-            << " and " << rows_.size() << abort(FatalError);
+            << " is not in range [0.." << rows_.size() << ")"
+            << abort(FatalError);
     }
 
-    if ((j < 0) || (j >= rows_[i].size()))
+    if (j < 0 || j >= rows_[i].size())
+    {
         FatalErrorInFunction
             << "Column index " << j
-            << " is not in range " << 0
-            << " and " << rows_[i].size() << abort(FatalError);
+            << " is not in range [0.." << rows_[i].size() << ")"
+            << abort(FatalError);
+    }
 }
 
 

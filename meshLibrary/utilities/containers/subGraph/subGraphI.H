@@ -163,7 +163,7 @@ inline Foam::label& Foam::subGraph<graphType>::operator()
 
 
 template<class graphType>
-inline const Foam::graphRow<const graphType>
+inline const Foam::graphConstRow<graphType>
 Foam::subGraph<graphType>::operator[]
 (
     const label i
