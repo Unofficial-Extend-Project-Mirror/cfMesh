@@ -316,23 +316,19 @@ void tetMeshOptimisation::unifyCoordinatesParallel
     {
         const labelledPoint& lp = receivedData[i];
 
-        std::map<label, labelledPoint>::iterator iter =
-            parallelBndPoints.find(globalToLocal[lp.pointLabel()]);
+        auto iter = parallelBndPoints.find(globalToLocal[lp.pointLabel()]);
 
         if (iter == parallelBndPoints.end())
+        {
             continue;
+        }
 
         ++iter->second.pointLabel();
         iter->second.coordinates() += lp.coordinates();
     }
 
     // move the point to the averaged position
-    for
-    (
-        std::map<label, labelledPoint>::iterator it = parallelBndPoints.begin();
-        it!=parallelBndPoints.end();
-        ++it
-    )
+    forAllConstIters(parallelBndPoints, it)
     {
         const label pI = it->first;
 

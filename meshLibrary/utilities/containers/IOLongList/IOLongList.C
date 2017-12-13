@@ -31,13 +31,8 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-namespace Foam
-{
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-template<class T, label Offset>
-IOLongList<T, Offset>::IOLongList(const IOobject& io)
+template<class T, int Offset>
+Foam::IOLongList<T, Offset>::IOLongList(const IOobject& io)
 :
     regIOobject(io),
     LongList<T, Offset>()
@@ -54,8 +49,8 @@ IOLongList<T, Offset>::IOLongList(const IOobject& io)
 }
 
 
-template<class T, label Offset>
-IOLongList<T, Offset>::IOLongList
+template<class T, int Offset>
+Foam::IOLongList<T, Offset>::IOLongList
 (
     const IOobject& io,
     const label size
@@ -66,8 +61,8 @@ IOLongList<T, Offset>::IOLongList
 {}
 
 
-template<class T, label Offset>
-IOLongList<T, Offset>::IOLongList
+template<class T, int Offset>
+Foam::IOLongList<T, Offset>::IOLongList
 (
     const IOobject& io,
     const LongList<T, Offset>& list
@@ -86,8 +81,8 @@ IOLongList<T, Offset>::IOLongList
 }
 
 
-template<class T, label Offset>
-void IOLongList<T, Offset>::operator=
+template<class T, int Offset>
+void Foam::IOLongList<T, Offset>::operator=
 (
     const IOLongList<T, Offset>& rhs
 )
@@ -96,8 +91,8 @@ void IOLongList<T, Offset>::operator=
 }
 
 
-template<class T, label Offset>
-void IOLongList<T, Offset>::operator=
+template<class T, int Offset>
+void Foam::IOLongList<T, Offset>::operator=
 (
     const LongList<T, Offset>& rhs
 )
@@ -106,15 +101,11 @@ void IOLongList<T, Offset>::operator=
 }
 
 
-template<class T, label Offset>
-bool IOLongList<T, Offset>::writeData(Ostream& os) const
+template<class T, int Offset>
+bool Foam::IOLongList<T, Offset>::writeData(Ostream& os) const
 {
     return (os << *this).good();
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

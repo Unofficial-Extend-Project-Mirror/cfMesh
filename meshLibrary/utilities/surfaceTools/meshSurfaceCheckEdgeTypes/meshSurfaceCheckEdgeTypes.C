@@ -63,8 +63,10 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
     meshSurfacePartitioner mPart(surfaceEngine_);
     meshSurfaceCheckInvertedVertices checkInverted(mPart);
     const labelHashSet& invertedPoints = checkInverted.invertedVertices();
-    forAllConstIter(labelHashSet, invertedPoints, it)
-        problematicPoint[bp[it.key()]] = true;
+    for (const label pointi : invertedPoints)
+    {
+        problematicPoint[bp[pointi]] = true;
+    }
 
     // classify edges
     edgeType_.setSize(edges.size());
@@ -172,9 +174,9 @@ void meshSurfaceCheckEdgeTypes::classifyEdges()
             );
         }
 
-        forAllConstIter(Map<label>, otherPatch, eIter)
+        forAllConstIters(otherPatch, eIter)
         {
-            if (eIter() == facePatch[edgeFaces(eIter.key(), 0)] )
+            if (eIter() == facePatch[edgeFaces(eIter.key(), 0)])
             {
                 edgeType_[eIter()] |= PATCHEDGE;
             }

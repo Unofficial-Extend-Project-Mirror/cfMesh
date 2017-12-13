@@ -75,7 +75,7 @@ void symmetryPlaneOptimisation::detectSymmetryPlanes()
     {
         // sum up all normals and centres of all processors
         // every symmetry plane patch must be present on all processors
-        forAllIter(mapType, centreSum, pIter)
+        forAllIters(centreSum, pIter)
         {
             std::pair<vector, label>& cs = pIter->second;
             reduce(cs.second, sumOp<label>());
@@ -88,7 +88,7 @@ void symmetryPlaneOptimisation::detectSymmetryPlanes()
     }
 
     // create planes corresponding to each symmetry plane
-    forAllConstIter(mapType, centreSum, it)
+    forAllConstIters(centreSum, it)
     {
         const point c = it->second.first/it->second.second;
 
@@ -156,7 +156,7 @@ bool symmetryPlaneOptimisation::pointInPlanes(VRWGraph& pointInPlanes) const
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label pointI = it();
 
@@ -296,8 +296,10 @@ void symmetryPlaneOptimisation::optimizeSymmetryPlanes()
             << "Bad quality or inverted faces found in the mesh" << endl;
 
         const label badFacesId = mesh_.addFaceSubset("invalidFaces");
-        forAllConstIter(labelHashSet, badFaces, it)
-            mesh_.addFaceToSubset(badFacesId, it.key());
+        for (const label facei : badFaces)
+        {
+            mesh_.addFaceToSubset(badFacesId, facei);
+        }
     }
 }
 

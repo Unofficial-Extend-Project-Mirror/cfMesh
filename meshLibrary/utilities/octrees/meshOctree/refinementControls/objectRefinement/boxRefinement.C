@@ -179,12 +179,7 @@ void boxRefinement::operator=(const dictionary& d)
       : d
     );
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("centre"))
-    {
-        dict.lookup("centre") >> centre_;
-    }
-    else
+    if (!dict.readIfPresent("centre", centre_))
     {
         FatalErrorInFunction
             << "Entry centre is not specified!" << exit(FatalError);
@@ -192,12 +187,7 @@ void boxRefinement::operator=(const dictionary& d)
         centre_ = vector::zero;
     }
 
-    // specify lengthX
-    if (dict.found("lengthX"))
-    {
-        lengthX_ = readScalar(dict.lookup("lengthX"));
-    }
-    else
+    if (!dict.readIfPresent("lengthX", lengthX_))
     {
         FatalErrorInFunction
             << "Entry lengthX is not specified!" << exit(FatalError);
@@ -205,12 +195,7 @@ void boxRefinement::operator=(const dictionary& d)
         lengthX_ = -1.0;
     }
 
-    // specify lengthY
-    if (dict.found("lengthY"))
-    {
-        lengthY_ = readScalar(dict.lookup("lengthY"));
-    }
-    else
+    if (!dict.readIfPresent("lengthY", lengthY_))
     {
         FatalErrorInFunction
             << "Entry lengthY is not specified!" << exit(FatalError);
@@ -218,12 +203,7 @@ void boxRefinement::operator=(const dictionary& d)
         lengthY_ = -1.0;
     }
 
-    // specify lengthZ
-    if (dict.found("lengthZ"))
-    {
-        lengthZ_ = readScalar(dict.lookup("lengthZ"));
-    }
-    else
+    if (!dict.readIfPresent("lengthZ", lengthZ_))
     {
         FatalErrorInFunction
             << "Entry lengthZ is not specified!" << exit(FatalError);

@@ -230,9 +230,9 @@ void meshOptimizer::untangleMeshFV
                 const label subsetId =
                     mesh_.addPointSubset(badPointsSubsetName_);
 
-                forAllConstIter(labelHashSet, badFaces, it)
+                for (const label facei : badFaces)
                 {
-                    const face& f = faces[it.key()];
+                    const face& f = faces[facei];
                     forAll(f, pI)
                         mesh_.addPointToSubset(subsetId, f[pI]);
                 }
@@ -292,13 +292,15 @@ void meshOptimizer::untangleMeshFV
         const label badCellsId =
                 mesh_.addCellSubset("badCells");
 
-        forAllConstIter(labelHashSet, badFaces, it)
+        for (const label facei : badFaces)
         {
-            mesh_.addFaceToSubset(subsetId, it.key());
-            mesh_.addCellToSubset(badCellsId, owner[it.key()]);
-            if (neighbour[it.key()] < 0)
+            mesh_.addFaceToSubset(subsetId, facei);
+            mesh_.addCellToSubset(badCellsId, owner[facei]);
+            if (neighbour[facei] < 0)
+            {
                 continue;
-            mesh_.addCellToSubset(badCellsId, neighbour[it.key()]);
+            }
+            mesh_.addCellToSubset(badCellsId, neighbour[facei]);
         }
     }
 
@@ -319,8 +321,7 @@ void meshOptimizer::optimizeBoundaryLayer(const bool addBufferLayer)
         {
             const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-            if (layersDict.found("optimiseLayer"))
-                smoothLayer = readBool(layersDict.lookup("optimiseLayer"));
+            layersDict.readIfPresent("optimiseLayer", smoothLayer);
         }
 
         if (!smoothLayer)
@@ -418,15 +419,11 @@ void meshOptimizer::untangleBoundaryLayer()
         const dictionary& meshDict =
             mesh_.returnTime().lookupObject <IOdictionary>("meshDict");
 
-        if (meshDict.found("boundaryLayers"))
+        if (meshDict.found("boundaryLayers") )
         {
-            const dictionary& layersDict = meshDict.subDict("boundaryLayers");
+            const dictionary& subdict = meshDict.subDict("boundaryLayers");
 
-            if (layersDict.found("untangleLayers"))
-            {
-                untangleLayer =
-                    readBool(layersDict.lookup("untangleLayers"));
-            }
+            subdict.readIfPresent("untangleLayers", untangleLayer);
         }
     }
 
@@ -446,14 +443,16 @@ void meshOptimizer::untangleBoundaryLayer()
             const label badBlCellsId =
                 mesh_.addCellSubset("invalidBoundaryLayerCells");
 
-            forAllConstIter(labelHashSet, badFaces, it)
+            for (const label facei : badFaces)
             {
-                mesh_.addCellToSubset(badBlCellsId, owner[it.key()]);
+                mesh_.addCellToSubset(badBlCellsId, owner[facei]);
 
-                if (neighbour[it.key()] < 0)
+                if (neighbour[facei] < 0)
+                {
                     continue;
+                }
 
-                mesh_.addCellToSubset(badBlCellsId, neighbour[it.key()]);
+                mesh_.addCellToSubset(badBlCellsId, neighbour[facei]);
             }
 
             returnReduce(1, sumOp<label>());
@@ -503,8 +502,10 @@ void meshOptimizer::optimizeLowQualityFaces(const label maxNumIterations)
             );
 
         changedFace = false;
-        forAllConstIter(labelHashSet, lowQualityFaces, it)
-            changedFace[it.key()] = true;
+        for (const label facei : lowQualityFaces)
+        {
+            changedFace[facei] = true;
+        }
 
         Info<< "Iteration " << nIter
             << ". Number of bad faces is " << nBadFaces << endl;
@@ -623,8 +624,10 @@ void meshOptimizer::optimizeMeshFVBestQuality
             );
 
         changedFace = false;
-        forAllConstIter(labelHashSet, lowQualityFaces, it)
-            changedFace[it.key()] = true;
+        for (const label facei : lowQualityFaces)
+        {
+            changedFace[facei] = true;
+        }
 
         Info<< "Iteration " << nIter
             << ". Number of worst quality faces is " << nBadFaces << endl;

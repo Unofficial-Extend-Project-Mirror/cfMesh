@@ -177,7 +177,7 @@ void triSurfacePartitioner::calculateEdgeGroups()
 
         while (front.size())
         {
-            const label eLabel = front.removeLastElement();
+            const label eLabel = front.remove();
             const edge& e = edges[eLabel];
 
             for (label pI = 0; pI < 2; ++pI)

@@ -243,8 +243,7 @@ void meshOctreeModifier::addLayerFromNeighbouringProcessors()
             Pout << "Neighbour processors " << neiProcs << endl;
             Pout << "Neighbour range " << neiRange << endl;
 
-            std::map<label, LongList<meshOctreeCubeBasic>>::iterator it;
-            for (it = toProcs.begin(); it!=toProcs.end(); ++it)
+            forAllConstIters(toProcs, it)
             {
                 Pout << "Sending " << it->second.size() << " cubes to proc "
                     << it->first << endl;

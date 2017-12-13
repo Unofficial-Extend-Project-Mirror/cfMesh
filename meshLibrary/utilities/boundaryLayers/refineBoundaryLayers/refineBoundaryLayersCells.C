@@ -201,9 +201,9 @@ void refineBoundaryLayers::generateNewCellsPrism
 
             forAll(f, eI)
             {
-                const edge e(f[eI], f.fcElement(eI));
+                const edge e(f[eI], f.fcValue(eI));
 
-                const label pos = edges.containsAtPosition(e);
+                const label pos = edges.find(e);
 
                 if (pos < 0)
                 {
@@ -1004,12 +1004,12 @@ void refineBoundaryLayers::refineCornerHexCell::generateNewPoints()
     pointFieldPMG& points = bndLayers_.mesh_.points();
     const point v000 = points[seDirI.start()];
     const point v100 = points[seDirI.end()];
-    const point v110 = points[facePoints_[0].lastElement().lastElement()];
+    const point v110 = points[facePoints_[0].last().last()];
     const point v010 = points[seDirJ.end()];
     const point v001 = points[seDirK.end()];
-    const point v101 = points[facePoints_[1].lastElement()[0]];
-    const point v111 = points[facePoints_[1].lastElement().lastElement()];
-    const point v011 = points[facePoints_[1][0].lastElement()];
+    const point v101 = points[facePoints_[1].last()[0]];
+    const point v111 = points[facePoints_[1].last().last()];
+    const point v011 = points[facePoints_[1][0].last()];
 
     for (label i = 1; i < nLayersI_; ++i)
     {
@@ -1343,9 +1343,9 @@ void refineBoundaryLayers::refineCornerHexCell::generateMissingFaces()
 
             forAll(f, eI)
             {
-                const edge e(f[eI], f.fcElement(eI));
+                const edge e(f[eI], f.fcValue(eI));
 
-                const label pos = edges.containsAtPosition(e);
+                const label pos = edges.find(e);
 
                 if (pos < 0)
                 {
@@ -1954,7 +1954,7 @@ void refineBoundaryLayers::generateNewCells()
                     {
                         const edge e = f.faceEdge(eI);
 
-                        const label pos = edges.containsAtPosition(e);
+                        const label pos = edges.find(e);
 
                         if (pos < 0)
                         {

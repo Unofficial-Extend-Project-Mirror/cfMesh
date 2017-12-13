@@ -25,19 +25,21 @@ License
 
 inline void Foam::VRWGraph::checkIndex(const label i, const label j) const
 {
-    if ((i < 0) || (i >= rows_.size()))
+    if (i < 0 || i >= rows_.size())
     {
         FatalErrorInFunction
             << "Row index " << i
-            << " is not in range " << 0
-            << " and " << rows_.size() << abort(FatalError);
+            << " is not in range [0.." << rows_.size() << ")"
+            << abort(FatalError);
     }
 
-    if ((j < 0) || (j >= rows_[i].size()))
+    if (j < 0 || j >= rows_[i].size())
+    {
         FatalErrorInFunction
             << "Column index " << j
-            << " is not in range " << 0
-            << " and " << rows_[i].size() << abort(FatalError);
+            << " is not in range [0.." << rows_[i].size() << ")"
+            << abort(FatalError);
+    }
 }
 
 
@@ -108,10 +110,6 @@ inline Foam::VRWGraph::VRWGraph
 :
     data_(ol.data_),
     rows_(ol.rows_)
-{}
-
-
-inline Foam::VRWGraph::~VRWGraph()
 {}
 
 
@@ -366,7 +364,7 @@ inline void Foam::VRWGraph::append(const label rowI, const label el)
 
 inline void Foam::VRWGraph::appendIfNotIn(const label rowI, const label el)
 {
-    if (!contains(rowI, el))
+    if (!found(rowI, el))
     {
         append(rowI, el);
     }
@@ -561,26 +559,21 @@ inline bool Foam::VRWGraph::contains
     const label e
 ) const
 {
-    const label start = rows_[rowI].start();
-    if (start == INVALIDROW)
-    {
-        return false;
-    }
-    const label size = rows_[rowI].size();
-
-    for (label i = 0; i < size; ++i)
-    {
-        if (data_[start + i] == e)
-        {
-            return true;
-        }
-    }
-
-    return false;
+    return (this->find(rowI, e) >= 0);
 }
 
 
-inline Foam::label Foam::VRWGraph::containsAtPosition
+inline bool Foam::VRWGraph::found
+(
+    const label rowI,
+    const label e
+) const
+{
+    return (this->find(rowI, e) >= 0);
+}
+
+
+inline Foam::label Foam::VRWGraph::find
 (
     const label rowI,
     const label e

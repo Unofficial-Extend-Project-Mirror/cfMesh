@@ -154,8 +154,7 @@ void cartesianMeshExtractor::createPolyMesh()
         label nProcBoundaries(nFaces), patchI(0);
 
         // allocate memory for processor patches
-        std::map<label, labelLongList>::const_iterator iter;
-        for (iter = procFaces.begin(); iter!=procFaces.end(); ++iter)
+        forAllConstIters(procFaces, iter)
         {
             const label procI = iter->first;
 
@@ -182,7 +181,7 @@ void cartesianMeshExtractor::createPolyMesh()
         // create processor faces
         // they need to be created here because of the correct ordering
         patchI = 0;
-        for (iter = procFaces.begin(); iter!=procFaces.end(); ++iter)
+        forAllConstIters(procFaces, iter)
         {
             procBoundaries[patchI].patchStart() = nProcBoundaries;
 

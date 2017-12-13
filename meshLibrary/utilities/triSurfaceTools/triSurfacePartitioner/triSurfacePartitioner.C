@@ -113,8 +113,10 @@ void triSurfacePartitioner::edgeGroupsSharedByPatches
     {
         const labelHashSet& eGroups = it->second;
 
-        forAllConstIter(labelHashSet, eGroups, it)
-            edgeGroups.append(it.key());
+        for (const label groupi : eGroups)
+        {
+            edgeGroups.append(groupi);
+        }
     }
 }
 
@@ -134,15 +136,16 @@ void triSurfacePartitioner::cornersSharedByEdgeGroups
         Foam::max(edgeGroup1, edgeGroup2)
     );
 
-    std::map<std::pair<label, label>, labelHashSet>::const_iterator it =
-        edgeGroupsCorners_.find(ep);
+    auto it = edgeGroupsCorners_.find(ep);
 
     if (it != edgeGroupsCorners_.end())
     {
         const labelHashSet& corn = it->second;
 
-        forAllConstIter(labelHashSet, corn, it)
-            corners.append(it.key());
+        for (const label corni : corn)
+        {
+            corners.append(corni);
+        }
     }
 }
 

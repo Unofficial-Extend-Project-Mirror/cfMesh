@@ -119,7 +119,7 @@ label meshSurfaceOptimizer::findInvertedVertices
                     std::make_pair(neiProcs[procI], labelLongList())
                 );
 
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label bpI = iter();
 
@@ -446,9 +446,13 @@ bool meshSurfaceOptimizer::untangleSurface
 
             // check if the number of inverted points reduces
             bool minimumInStack(false);
-            forAllConstIter(FIFOStack<label>, nInvertedHistory, it)
+            forAllConstIters(nInvertedHistory, it)
+            {
                 if (it() == minNumInverted)
+                {
                     minimumInStack = true;
+                }
+            }
 
             // stop if the procedure does not minimise
             // the number of inverted points
@@ -806,9 +810,9 @@ void meshSurfaceOptimizer::untangleSurface2D()
         // of active points
         activeBoundaryPoint = false;
         changedFace = false;
-        forAllConstIter(labelHashSet, badFaces, it)
+        for (const label facei : badFaces)
         {
-            const face& f = faces[it.key()];
+            const face& f = faces[facei];
 
             forAll(f, pI)
             {
@@ -834,7 +838,7 @@ void meshSurfaceOptimizer::untangleSurface2D()
                 exchangeData[neiProcs[i]].clear();
 
             // collect active points at inter-processor boundaries
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

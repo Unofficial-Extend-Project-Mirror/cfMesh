@@ -122,9 +122,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
         // remove triangles which do not intersect the bounding box
         labelHashSet reasonableCandidates;
 
-        forAllConstIter(labelHashSet, triangles, tIter)
+        for (const label triIdx : triangles)
         {
-            const labelledTri& tri = surf[tIter.key()];
+            const labelledTri& tri = surf[triIdx];
 
             boundBox obb(sp[tri[0]], sp[tri[0]]);
             for (label i = 1; i < 3; ++i)
@@ -140,7 +140,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
             if (obb.overlaps(bb))
             {
-                reasonableCandidates.insert(tIter.key());
+                reasonableCandidates.insert(triIdx);
             }
         }
 
@@ -148,9 +148,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         // check if any of the surface vertices is contained within the cell
         labelHashSet nodes, facetsInCell;
-        forAllConstIter(labelHashSet, triangles, tIter)
+        for (const label triIdx : triangles)
         {
-            const labelledTri& tri = surf[tIter.key()];
+            const labelledTri& tri = surf[triIdx];
 
             forAll(tri, i)
             {
@@ -159,9 +159,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
         }
 
         // check which surface nodes are within the cell
-        forAllConstIter(labelHashSet, nodes, nIter)
+        for (const label nodei : nodes)
         {
-            const point& p = sp[nIter.key()];
+            const point& p = sp[nodei];
 
             if (!bb.contains(p))
             {
@@ -188,11 +188,11 @@ void findCellsIntersectingSurface::findIntersectedCells()
                         if (help::pointInTetrahedron(p, tet))
                         {
                             intersected = true;
-                            forAllRow(pointFacets, nIter.key(), ptI)
+                            forAllRow(pointFacets, nodei, ptI)
                             {
                                 facetsInCell.insert
                                 (
-                                    pointFacets(nIter.key(), ptI)
+                                    pointFacets(nodei, ptI)
                                 );
                             }
 
@@ -221,11 +221,11 @@ void findCellsIntersectingSurface::findIntersectedCells()
                         if (help::pointInTetrahedron(p, tet))
                         {
                             intersected = true;
-                            forAllRow(pointFacets, nIter.key(), ptI)
+                            forAllRow(pointFacets, nodei, ptI)
                             {
                                 facetsInCell.insert
                                 (
-                                    pointFacets(nIter.key(), ptI)
+                                    pointFacets(nodei, ptI)
                                 );
                             }
 
@@ -244,9 +244,9 @@ void findCellsIntersectingSurface::findIntersectedCells()
 
         // check if any triangle in the surface mesh
         // intersects any of the cell's faces
-        forAllConstIter(labelHashSet, triangles, tIter)
+        for (const label triIdx : triangles)
         {
-            if (facetsInCell.found(tIter.key()))
+            if (facetsInCell.found(triIdx))
             {
                 continue;
             }
@@ -259,7 +259,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
                     help::doFaceAndTriangleIntersect
                     (
                         surf,
-                        tIter.key(),
+                        triIdx,
                         f,
                         points
                     );
@@ -267,7 +267,7 @@ void findCellsIntersectingSurface::findIntersectedCells()
                 if (intersect)
                 {
                     intersected = true;
-                    facetsInCell.insert(tIter.key());
+                    facetsInCell.insert(triIdx);
                     break;
                 }
             }

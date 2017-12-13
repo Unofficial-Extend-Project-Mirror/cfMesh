@@ -167,11 +167,7 @@ void sphereRefinement::operator=(const dictionary& d)
     );
 
     // unspecified centre is (0 0 0)
-    if (dict.found("centre"))
-    {
-        dict.lookup("centre") >> centre_;
-    }
-    else
+    if (!dict.readIfPresent("centre", centre_))
     {
         FatalErrorInFunction
             << "Entry centre is not specified!" << exit(FatalError);
@@ -179,12 +175,7 @@ void sphereRefinement::operator=(const dictionary& d)
         centre_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("radius"))
-    {
-        radius_ = readScalar(dict.lookup("radius"));
-    }
-    else
+    if (!dict.readIfPresent("radius", radius_))
     {
         FatalErrorInFunction
             << "Entry radius is not specified!" << exit(FatalError);

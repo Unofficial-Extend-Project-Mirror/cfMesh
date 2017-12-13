@@ -120,12 +120,10 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
 
         forAll(procBoundaries, patchI)
         {
-            const std::map<label, std::pair<label, label>>& patchPointsMap =
-                patchPoints[patchI];
-            std::map<label, std::pair<label, label>>::const_iterator it;
+            const auto& patchPointsMap = patchPoints[patchI];
 
             labelLongList dataToSend;
-            for (it = patchPointsMap.begin(); it!=patchPointsMap.end(); ++it)
+            forAllConstIters(patchPointsMap, it)
             {
                 // data is sent as follows
                 // 1. face position in patch
@@ -237,12 +235,10 @@ void polyMeshGenAddressing::calcGlobalPointLabels() const
 
         forAll(procBoundaries, patchI)
         {
-            const std::map<label, std::pair<label, label>>& patchPointsMap =
-                patchPoints[patchI];
-            std::map<label, std::pair<label, label>>::const_iterator it;
+            const auto& patchPointsMap = patchPoints[patchI];
 
             labelLongList dataToSend;
-            for (it = patchPointsMap.begin(); it!=patchPointsMap.end(); ++it)
+            forAllConstIters(patchPointsMap, it)
             {
                 if (globalPointLabel[it->first] != -1)
                 {

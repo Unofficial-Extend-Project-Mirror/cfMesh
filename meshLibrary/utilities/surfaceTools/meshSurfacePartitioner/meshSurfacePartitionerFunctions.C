@@ -108,7 +108,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         forAll(beNeiProcs, i)
             exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
 
-        forAllConstIter(Map<label>, globalToLocalEdges, it)
+        forAllConstIters(globalToLocalEdges, it)
         {
             const label beI = it();
 
@@ -133,7 +133,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         }
 
         // take into account feature edges at processor boundaries
-        forAllConstIter(Map<label>, otherFaceAtProc, it)
+        forAllConstIters(otherFaceAtProc, it)
         {
             const label beI = it.key();
 
@@ -156,7 +156,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         const Map<label>& globalToLocal =
             meshSurface_.globalToLocalBndPointAddressing();
         const VRWGraph& bpAtProcs = meshSurface_.bpAtProcs();
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -224,7 +224,7 @@ void meshSurfacePartitioner::calculateCornersEdgesAndAddressing()
         forAll(bpNeiProcs, i)
             exchangeData[bpNeiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 

@@ -117,9 +117,9 @@ inline void meshSubset::containedElements(ListType& l) const
     l.setSize(data_.size());
 
     label counter(0);
-    forAllConstIter(std::set<label>, data_, it)
+    for (const label elemi : data_)
     {
-        l[counter++] = *it;
+        l[counter++] = elemi;
     }
 }
 
@@ -141,14 +141,14 @@ inline void meshSubset::updateSubset(const ListType& newLabels)
 {
     std::set<label> newData;
 
-    forAllConstIter(std::set<label>, data_, it)
+    for (const label elemi : data_)
     {
-        if (newLabels[*it] < 0)
+        if (newLabels[elemi] < 0)
         {
             continue;
         }
 
-        newData.insert(newLabels[*it]);
+        newData.insert(newLabels[elemi]);
     }
 
     data_ = newData;
@@ -159,11 +159,11 @@ inline void meshSubset::updateSubset(const VRWGraph& newLabels)
 {
     std::set<label> newData;
 
-    forAllConstIter(std::set<label>, data_, it)
+    for (const label elemi : data_)
     {
-        forAllRow(newLabels, *it, i)
+        forAllRow(newLabels, elemi, i)
         {
-            newData.insert(newLabels(*it, i));
+            newData.insert(newLabels(elemi, i));
         }
     }
 
@@ -198,9 +198,9 @@ inline bool meshSubset::operator==(const meshSubset& ms) const
         return false;
     }
 
-    forAllConstIter(std::set<label>, data_, it)
+    for (const label elemi : data_)
     {
-        if (ms.data_.find(*it) == ms.data_.end())
+        if (ms.data_.find(elemi) == ms.data_.end())
         {
             return false;
         }
@@ -226,9 +226,9 @@ inline Ostream& operator<<(Ostream& os, const meshSubset& sel)
 
     labelList data(sel.data_.size());
     label counter(0);
-    forAllConstIter(std::set<label>, sel.data_, it)
+    for (const label elemi : sel.data_)
     {
-        data[counter++] = *it;
+        data[counter++] = elemi;
     }
 
     os << nl << data;
@@ -245,13 +245,12 @@ inline Istream& operator>>(Istream& is, meshSubset& sel)
     is >> sel.name_ >> sel.type_ >> data;
 
     sel.data_.clear();
-    forAll(data, i)
+    for (const label elemi : data)
     {
-        sel.data_.insert(data[i]);
+        sel.data_.insert(elemi);
     }
 
     is.check(FUNCTION_NAME);
-
     return is;
 }
 

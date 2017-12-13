@@ -157,21 +157,23 @@ void voronoiMeshGenerator::generateBoudaryLayers()
 
         const dictionary& bndLayers = meshDict_.subDict("boundaryLayers");
 
-        if (bndLayers.found("nLayers"))
+        label nLayers;
+        if (bndLayers.readIfPresent("nLayers", nLayers))
         {
-            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
-
             if (nLayers > 0)
+            {
                 bl.addLayerForAllPatches();
+            }
         }
         else if (bndLayers.found("patchBoundaryLayers"))
         {
             const dictionary& patchLayers =
                 bndLayers.subDict("patchBoundaryLayers");
-            const wordList createLayers = patchLayers.toc();
 
-            forAll(createLayers, patchI)
-                bl.addLayerForPatch(createLayers[patchI]);
+            for (const word& patchName : patchLayers.toc())
+            {
+                bl.addLayerForPatch(patchName);
+            }
         }
     }
 
@@ -205,12 +207,12 @@ void voronoiMeshGenerator::refBoundaryLayers()
 void voronoiMeshGenerator::optimiseFinalMesh()
 {
     // untangle the surface if needed
-    bool enforceConstraints(false);
-    if (meshDict_.found("enforceGeometryConstraints"))
-    {
-        enforceConstraints =
-            readBool(meshDict_.lookup("enforceGeometryConstraints"));
-    }
+    const bool enforceConstraints =
+        meshDict_.lookupOrDefault<bool>
+        (
+            "enforceGeometryConstraints",
+            false
+        );
 
     if (true)
     {
@@ -218,7 +220,9 @@ void voronoiMeshGenerator::optimiseFinalMesh()
         meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
 
         if (enforceConstraints)
+        {
             surfOpt.enforceConstraints();
+        }
 
         surfOpt.optimizeSurface();
     }
@@ -228,7 +232,9 @@ void voronoiMeshGenerator::optimiseFinalMesh()
     // final optimisation
     meshOptimizer optimizer(mesh_);
     if (enforceConstraints)
+    {
         optimizer.enforceConstraints();
+    }
     optimizer.optimizeMeshFV();
 
     optimizer.optimizeLowQualityFaces();

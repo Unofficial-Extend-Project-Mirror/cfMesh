@@ -279,7 +279,7 @@ void meshSurfaceMapper::mapCorners(const labelLongList& nodesToMap)
                 const DynList<label>& cPatches = cornerPatches[scI];
                 forAll(patches, i)
                 {
-                    if (!cPatches.contains(patches[i]))
+                    if (!cPatches.found(patches[i]))
                     {
                         store = false;
                         break;
@@ -434,15 +434,19 @@ void meshSurfaceMapper::mapCornersAndEdges()
     const meshSurfacePartitioner& mPart = meshPartitioner();
     const labelHashSet& cornerPoints = mPart.corners();
     labelLongList selectedPoints;
-    forAllConstIter(labelHashSet, cornerPoints, it)
-        selectedPoints.append(it.key());
+    for (const label it : cornerPoints)
+    {
+        selectedPoints.append(it);
+    }
 
     mapCorners(selectedPoints);
 
     selectedPoints.clear();
     const labelHashSet& edgePoints = mPart.edgePoints();
-    forAllConstIter(labelHashSet, edgePoints, it)
-        selectedPoints.append(it.key());
+    for (const label it : edgePoints)
+    {
+        selectedPoints.append(it);
+    }
 
     mapEdgeNodes(selectedPoints);
 }

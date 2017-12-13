@@ -43,10 +43,12 @@ int main(int argc, char *argv[])
     argList::validArgs.append("input surface file");
     argList args(argc, argv);
 
-    const fileName inFileName(args.args()[1]);
+    const fileName inFileName(args[1]);
     if (inFileName.ext() == "fms")
+    {
         FatalError << "trying to convert a fms file to itself"
             << exit(FatalError);
+    }
 
     fileName outFileName(inFileName.lessExt()+".fms");
 

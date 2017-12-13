@@ -65,8 +65,10 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
     {
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
+        {
             parallelBndNode[it()] = true;
+        }
     }
 
     // check cells connected to surface nodes
@@ -103,7 +105,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
             while (frontCells.size() != 0)
             {
-                const label cLabel = frontCells.removeLastElement();
+                const label cLabel = frontCells.remove();
 
                 forAllRow(cellCells, cLabel, nI)
                 {
@@ -182,7 +184,6 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
             mesh_.addressingData().globalCellLabel();
 
         std::map<label, DynList<edge>> dualEdgesForPoint;
-        std::map<label, DynList<edge>>::iterator bpIter;
         forAll(parallelBndNode, bpI)
         {
             if (!parallelBndNode[bpI])
@@ -204,7 +205,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
                 if (f[pI] >= origNumVertices)
                     continue;
 
-                bpIter = dualEdgesForPoint.find(bp[f[pI]]);
+                auto bpIter = dualEdgesForPoint.find(bp[f[pI]]);
                 if (bpIter != dualEdgesForPoint.end())
                 {
                     const label cOwn = globalCellLabel[owner[faceI]];
@@ -260,7 +261,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
                 forAll(f, pI)
                 {
-                    bpIter = dualEdgesForPoint.find(bp[f[pI]]);
+                    auto bpIter = dualEdgesForPoint.find(bp[f[pI]]);
                     if (bpIter != dualEdgesForPoint.end())
                     {
                         const label cOwn = globalCellLabel[owner[start + i]];
@@ -277,12 +278,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         const labelList& globalPointLabel = mse.globalBoundaryPointLabel();
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
         std::map<label, labelLongList> exchangeData;
-        for
-        (
-            bpIter = dualEdgesForPoint.begin();
-            bpIter!=dualEdgesForPoint.end();
-            ++bpIter
-        )
+        forAllConstIters(dualEdgesForPoint, bpIter)
         {
             const label bpI = bpIter->first;
 
@@ -330,12 +326,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         {
             if (i == Pstream::myProcNo())
             {
-                for
-                (
-                    bpIter = dualEdgesForPoint.begin();
-                    bpIter!=dualEdgesForPoint.end();
-                    ++bpIter
-                )
+                forAllConstIters(dualEdgesForPoint, bpIter)
                 {
                     const DynList<edge>& pEdges = bpIter->second;
                     Pout<< "Global point label " << globalPointLabel[bpIter->first]
@@ -349,30 +340,22 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
         # endif
 
         // Finally, check the number of dual loops processor vertices
-        for
-        (
-            bpIter = dualEdgesForPoint.begin();
-            bpIter!=dualEdgesForPoint.end();
-            ++bpIter
-        )
+        forAllConstIters(dualEdgesForPoint, bpIter)
         {
             const DynList<edge>& pEdges = bpIter->second;
             std::map<label, DynList<label>> bpEdges;
             forAll(pEdges, eI)
             {
                 forAll(pEdges[eI], i)
+                {
                     bpEdges[pEdges[eI][i]].append(eI);
+                }
             }
 
             // check if all points can be visited via edges
             counter = 0;
             Map<label> cellGroup(pEdges.size());
-            for
-            (
-                std::map<label, DynList<label>>::iterator it = bpEdges.begin();
-                it!=bpEdges.end();
-                ++it
-            )
+            forAllConstIters(bpEdges, it)
             {
                 if (cellGroup.found(it->first))
                     continue;
@@ -383,7 +366,7 @@ bool checkIrregularSurfaceConnections::checkAndFixCellGroupsAtBndVertices
 
                 while (frontCells.size() != 0)
                 {
-                    const label cLabel = frontCells.removeLastElement();
+                    const label cLabel = frontCells.remove();
 
                     const DynList<label>& attachedEdges = bpEdges[cLabel];
                     forAll(attachedEdges, aeI)
@@ -476,6 +459,7 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
     labelHashSet badEdges;
 
     forAll(edgeFaces, edgeI)
+    {
         if (edgeFaces.sizeOfRow(edgeI) > 2)
         {
             badVertices.insert(edges[edgeI].start());
@@ -483,6 +467,7 @@ bool checkIrregularSurfaceConnections::checkEdgeFaceConnections
 
             badEdges.insert(edgeI);
         }
+    }
 
     if (Pstream::parRun())
     {
@@ -620,8 +605,10 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
     {
         const Map<label>& globalToLocal = mse.globalToLocalBndPointAddressing();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
+        {
             parallelBndPoint[it()] = true;
+        }
     }
 
     // check number of face groups
@@ -651,7 +638,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
 
             while (front.size() != 0)
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAllRow(faceFaces, fLabel, ffI)
                 {
@@ -708,9 +695,9 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
         const Map<label>& otherFaceAtProc = mse.otherEdgeFaceAtProc();
         const DynList<label>& beNeiProcs = mse.beNeiProcs();
 
-        // create map of dual edges for boundary points at processor boundaries
+        // map of dual edges for boundary points at processor boundaries
         std::map<label, DynList<edge>> dualEdgesForPoint;
-        std::map<label, DynList<edge>>::iterator bpIter;
+
         forAll(parallelBndPoint, bpI)
         {
             if (!parallelBndPoint[bpI])
@@ -740,8 +727,10 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
         // collect connections over processor edges on the processor with
         // the lowest label to avoid duplication of data
         forAll(beNeiProcs, i)
+        {
             exchangeData.insert(std::make_pair(beNeiProcs[i], labelLongList()));
-        forAllConstIter(Map<label>, otherFaceAtProc, it)
+        }
+        forAllConstIters(otherFaceAtProc, it)
         {
             const label beI = it.key();
 
@@ -777,12 +766,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
         // exchange data with other processors
         // this step supplies all processors with all necessary data
         exchangeData.clear();
-        for
-        (
-            bpIter = dualEdgesForPoint.begin();
-            bpIter!=dualEdgesForPoint.end();
-            ++bpIter
-        )
+        forAllConstIters(dualEdgesForPoint, bpIter)
         {
             const label bpI = bpIter->first;
 
@@ -829,12 +813,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
         {
             if (i == Pstream::myProcNo())
             {
-                for
-                (
-                    bpIter = dualEdgesForPoint.begin();
-                    bpIter!=dualEdgesForPoint.end();
-                    ++bpIter
-                )
+                forAllConstIters(dualEdgesForPoint, bpIter)
                 {
                     const DynList<edge>& pEdges = bpIter->second;
                     Pout << "Global point label "
@@ -848,12 +827,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
         # endif
 
         // Finally, check the number of dual loops processor vertices
-        for
-        (
-            bpIter = dualEdgesForPoint.begin();
-            bpIter!=dualEdgesForPoint.end();
-            ++bpIter
-        )
+        forAllConstIters(dualEdgesForPoint, bpIter)
         {
             const DynList<edge>& pEdges = bpIter->second;
 
@@ -867,12 +841,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
             // check if all points can be visited via edges
             counter = 0;
             Map<label> cellGroup(pEdges.size());
-            for
-            (
-                std::map<label, DynList<label>>::iterator it = bpEdges.begin();
-                it!=bpEdges.end();
-                ++it
-            )
+            forAllConstIters(bpEdges, it)
             {
                 if (cellGroup.found(it->first))
                     continue;
@@ -883,7 +852,7 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
 
                 while (front.size() != 0)
                 {
-                    const label cLabel = front.removeLastElement();
+                    const label cLabel = front.remove();
 
                     const DynList<label>& attachedEdges = bpEdges[cLabel];
                     forAll(attachedEdges, aeI)
@@ -921,10 +890,12 @@ bool checkIrregularSurfaceConnections::checkFaceGroupsAtBndVertices
 
         boolList removeCell(mesh_.cells().size(), false);
 
-        forAllConstIter(labelHashSet, invalidVertices, it)
+        for (const label verti : invalidVertices)
         {
-            forAllRow(pointCells, it.key(), pcI)
-                removeCell[pointCells(it.key(), pcI)] = true;
+            forAllRow(pointCells, verti, pcI)
+            {
+                removeCell[pointCells(verti, pcI)] = true;
+            }
         }
 
         polyMeshGenModifier(mesh_).removeCells(removeCell);

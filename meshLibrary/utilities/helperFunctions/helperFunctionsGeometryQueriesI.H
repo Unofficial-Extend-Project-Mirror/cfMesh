@@ -117,7 +117,7 @@ inline bool isSharedEdgeConvex
 
         forAll(triOwn, pJ)
         {
-            if (!triNei.contains(triOwn[pJ]))
+            if (!triNei.found(triOwn[pJ]))
             {
                 tetrahedron<point, point> tet
                 (
@@ -185,7 +185,7 @@ inline scalar angleBetweenFaces
 
         forAll(triOwn, pJ)
         {
-            if (!triNei.contains(triOwn[pJ]))
+            if (!triNei.found(triOwn[pJ]))
             {
                 tetrahedron<point, point> tet
                 (
@@ -1169,34 +1169,34 @@ inline bool doTrianglesOverlap
                 {
                     newPoly2D.append(poly2D[pI]);
 
-                    if (distance.fcElement(pI) < 0.0)
+                    if (distance.fcValue(pI) < 0.0)
                     {
                         //- this is very sensitive to floaing point tolerances
                         const point2D newP =
                             (
-                                mag(distance[pI])*poly2D.fcElement(pI) +
-                                mag(distance.fcElement(pI))*poly2D[pI]
+                                mag(distance[pI])*poly2D.fcValue(pI) +
+                                mag(distance.fcValue(pI))*poly2D[pI]
                             ) /
                             (
                                 mag(distance[pI]) +
-                                mag(distance.fcElement(pI)) +
+                                mag(distance.fcValue(pI)) +
                                 VSMALL
                             );
 
                         newPoly2D.append(newP);
                     }
                 }
-                else if (distance.fcElement(pI) >= 0.0)
+                else if (distance.fcValue(pI) >= 0.0)
                 {
                     //- this is very sensitive to floaing point tolerances
                     const point2D newP =
                         (
-                            mag(distance[pI])*poly2D.fcElement(pI) +
-                            mag(distance.fcElement(pI))*poly2D[pI]
+                            mag(distance[pI])*poly2D.fcValue(pI) +
+                            mag(distance.fcValue(pI))*poly2D[pI]
                         ) /
                         (
                             mag(distance[pI]) +
-                            mag(distance.fcElement(pI)) +
+                            mag(distance.fcValue(pI)) +
                             VSMALL
                         );
 
@@ -1821,12 +1821,12 @@ inline label numberOfFaceGroups
 
     labelHashSet triaInRange(containedElements.size());
     const scalar rangeSq = range*range;
-    forAllConstIter(labelHashSet, containedElements, it)
+    for (const label elemi : containedElements)
     {
-        const point p = nearestPointOnTheTriangle(it.key(), surface, centre);
+        const point p = nearestPointOnTheTriangle(elemi, surface, centre);
         if (magSqr(p - centre) < rangeSq)
         {
-            triaInRange.insert(it.key());
+            triaInRange.insert(elemi);
         }
     }
 
@@ -1837,17 +1837,17 @@ inline label numberOfFaceGroups
 
     DynList<label> front;
 
-    forAllConstIter(labelHashSet, triaInRange, it)
+    for (const label triIdx : triaInRange)
     {
-        if (!elGroup.found(it.key()))
+        if (!elGroup.found(triIdx))
         {
             front.clear();
-            front.append(it.key());
-            elGroup.insert(it.key(), nGroups);
+            front.append(triIdx);
+            elGroup.insert(triIdx, nGroups);
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAllRow(faceEdges, fLabel, feI)
                 {
@@ -1913,16 +1913,16 @@ inline label numberOfEdgeGroups
 
     const scalar rangeSq = range*range;
     labelHashSet edgesInRange(containedEdges.size());
-    forAllConstIter(labelHashSet, containedEdges, it)
+    for (const label edgei : containedEdges)
     {
-        const edge& e = edges[it.key()];
-        const point& sp = points[e[0]];
-        const point& ep = points[e[1]];
+        const edge& e = edges[edgei];
+        const point& sp = points[e.start()];
+        const point& ep = points[e.end()];
 
         const point p = nearestPointOnTheEdgeExact(sp, ep, centre);
         if (magSqr(p - centre) < rangeSq)
         {
-            edgesInRange.insert(it.key());
+            edgesInRange.insert(edgei);
         }
     }
 
@@ -1933,17 +1933,17 @@ inline label numberOfEdgeGroups
 
     DynList<label> front;
 
-    forAllConstIter(labelHashSet, edgesInRange, it)
+    for (const label edgei : edgesInRange)
     {
-        if (!elGroup.found(it.key()))
+        if (!elGroup.found(edgei))
         {
             front.clear();
-            front.append(it.key());
-            elGroup.insert(it.key(), nGroups);
+            front.append(edgei);
+            elGroup.insert(edgei, nGroups);
 
             while (front.size())
             {
-                const label eLabel = front.removeLastElement();
+                const label eLabel = front.remove();
                 const edge& e = edges[eLabel];
 
                 for (label i = 0; i < 2; ++i)

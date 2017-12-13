@@ -28,7 +28,11 @@ License
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::graphRow<graphType>::graphRow(graphType& g, const label i)
+inline Foam::graphConstRow<graphType>::graphConstRow
+(
+    const graphType& g,
+    const label i
+)
 :
     data_(g),
     rowI_(i)
@@ -36,7 +40,18 @@ inline Foam::graphRow<graphType>::graphRow(graphType& g, const label i)
 
 
 template<class graphType>
-inline Foam::graphRow<graphType>::graphRow
+inline Foam::graphConstRow<graphType>::graphConstRow
+(
+    const graphConstRow<graphType>& r
+)
+:
+    data_(r.data_),
+    rowI_(r.rowI_)
+{}
+
+
+template<class graphType>
+inline Foam::graphConstRow<graphType>::graphConstRow
 (
     const graphRow<graphType>& r
 )
@@ -49,56 +64,28 @@ inline Foam::graphRow<graphType>::graphRow
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::graphRow<graphType>::size() const
+inline Foam::label Foam::graphConstRow<graphType>::size() const
 {
     return data_.sizeOfRow(rowI_);
 }
 
 
 template<class graphType>
-inline void Foam::graphRow<graphType>::setSize(const label s)
-{
-    data_.setRowSize(rowI_, s);
-}
-
-
-template<class graphType>
-inline void Foam::graphRow<graphType>::clear()
-{
-    data_.setRowSize(rowI_, 0);
-}
-
-
-template<class graphType>
-inline void Foam::graphRow<graphType>::append(const label el)
-{
-    data_.append(rowI_, el);
-}
-
-
-template<class graphType>
-inline void Foam::graphRow<graphType>::appendIfNotIn(const label el)
-{
-    data_.appendIfNotIn(rowI_, el);
-}
-
-
-template<class graphType>
-inline bool Foam::graphRow<graphType>::contains(const label e) const
+inline bool Foam::graphConstRow<graphType>::contains(const label e) const
 {
     return data_.contains(rowI_, e);
 }
 
 
 template<class graphType>
-inline bool Foam::graphRow<graphType>::found(const label e) const
+inline bool Foam::graphConstRow<graphType>::found(const label e) const
 {
     return data_.found(rowI_, e);
 }
 
 
 template<class graphType>
-inline Foam::label Foam::graphRow<graphType>::find
+inline Foam::label Foam::graphConstRow<graphType>::find
 (
     const label e
 ) const
@@ -110,46 +97,12 @@ inline Foam::label Foam::graphRow<graphType>::find
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
 template<class graphType>
-inline Foam::label Foam::graphRow<graphType>::operator[](const label i) const
-{
-    return data_(rowI_, i);
-}
-
-
-template<class graphType>
-inline Foam::label& Foam::graphRow<graphType>::operator[](const label i)
-{
-    return data_(rowI_, i);
-}
-
-
-template<class graphType>
-inline void Foam::graphRow<graphType>::operator=
+inline Foam::label Foam::graphConstRow<graphType>::operator[]
 (
-    const graphRow<graphType>& rhs
-)
+    const label i
+) const
 {
-    const label len = rhs.size();
-
-    data_.setRowSize(rowI_, len);
-    for (label i = 0; i < len; ++i)
-    {
-        data_(rowI_, i) = rhs[i];
-    }
-}
-
-
-template<class graphType>
-template<class ListType>
-inline void Foam::graphRow<graphType>::operator=(const ListType& rhs)
-{
-    const label len = rhs.size();
-
-    data_.setRowSize(rowI_, len);
-    for (label i = 0; i < len; ++i)
-    {
-        data_(rowI_, i) = rhs[i];
-    }
+    return data_(rowI_, i);
 }
 
 
@@ -157,7 +110,7 @@ template<class graphType>
 inline Foam::Ostream& Foam::operator<<
 (
     Ostream& os,
-    const Foam::graphRow<graphType>& r
+    const Foam::graphConstRow<graphType>& r
 )
 {
     const label len = r.size();

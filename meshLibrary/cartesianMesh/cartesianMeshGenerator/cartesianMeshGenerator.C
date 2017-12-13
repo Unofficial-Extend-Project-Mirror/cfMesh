@@ -61,10 +61,16 @@ void cartesianMeshGenerator::createCartesianMesh()
     // create polyMesh from octree boxes
     cartesianMeshExtractor cme(*octreePtr_, meshDict_, mesh_);
 
-    if (meshDict_.found("decomposePolyhedraIntoTetsAndPyrs"))
+    if
+    (
+        meshDict_.lookupOrDefault<bool>
+        (
+            "decomposePolyhedraIntoTetsAndPyrs",
+            false
+        )
+    )
     {
-        if (readBool(meshDict_.lookup("decomposePolyhedraIntoTetsAndPyrs")))
-            cme.decomposeSplitHexes();
+        cme.decomposeSplitHexes();
     }
 
     cme.createMesh();
@@ -169,12 +175,12 @@ void cartesianMeshGenerator::refBoundaryLayers()
 void cartesianMeshGenerator::optimiseFinalMesh()
 {
     // untangle the surface if needed
-    bool enforceConstraints(false);
-    if (meshDict_.found("enforceGeometryConstraints"))
-    {
-        enforceConstraints =
-            readBool(meshDict_.lookup("enforceGeometryConstraints"));
-    }
+    const bool enforceConstraints =
+        meshDict_.lookupOrDefault<bool>
+        (
+            "enforceGeometryConstraints",
+            false
+        );
 
     if (true)
     {
@@ -182,7 +188,9 @@ void cartesianMeshGenerator::optimiseFinalMesh()
         meshSurfaceOptimizer surfOpt(mse, *octreePtr_);
 
         if (enforceConstraints)
+        {
             surfOpt.enforceConstraints();
+        }
 
         surfOpt.optimizeSurface();
     }
@@ -192,7 +200,9 @@ void cartesianMeshGenerator::optimiseFinalMesh()
     // final optimisation
     meshOptimizer optimizer(mesh_);
     if (enforceConstraints)
+    {
         optimizer.enforceConstraints();
+    }
 
     optimizer.optimizeMeshFV();
     optimizer.optimizeLowQualityFaces();

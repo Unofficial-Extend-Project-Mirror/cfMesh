@@ -104,8 +104,7 @@ void triSurfAddressing::calculateEdges() const
                 }
             }
 
-            std::set<std::pair<label, label>>::const_iterator it;
-            for (it = edgesAtPoint.begin(); it!=edgesAtPoint.end(); ++it)
+            forAllConstIters(edgesAtPoint, it)
             {
                 edgesHelper.append(edge(it->first, it->second));
             }
@@ -261,9 +260,9 @@ void triSurfAddressing::calculateFacetFacetsEdges() const
         facetFacetsEdgesPtr_->setRowSize(facetI, fLabels.size());
 
         label counter(0);
-        forAllConstIter(labelHashSet, fLabels, iter)
+        for (const label facei : fLabels)
         {
-            facetFacetsEdgesPtr_->operator()(facetI, counter++) = iter.key();
+            facetFacetsEdgesPtr_->operator()(facetI, counter++) = facei;
         }
     }
 }

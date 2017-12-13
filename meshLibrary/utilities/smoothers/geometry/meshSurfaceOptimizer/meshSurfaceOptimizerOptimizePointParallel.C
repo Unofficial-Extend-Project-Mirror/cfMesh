@@ -434,7 +434,7 @@ void meshSurfaceOptimizer::exchangeData
     const VRWGraph& bpAtProcs = surfaceEngine_.bpAtProcs();
     const DynList<label>& neiProcs = surfaceEngine_.bpNeiProcs();
 
-    std::map<label, LongList<parTriFace> > shareData;
+    std::map<label, LongList<parTriFace>> shareData;
     forAll(neiProcs, procI)
     {
         const label neiProc = neiProcs[procI];

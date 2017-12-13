@@ -31,6 +31,7 @@ Description
 #include "helperFunctions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 // Main program:
 using namespace Foam;
 
@@ -41,7 +42,8 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 
-    const scalar scalingFactor(help::textToScalar(args.args()[1]));
+    // const scalar scalingFactor(readScalar(args[1]));
+    const scalar scalingFactor(args.argRead<scalar>(1));
 
     Info<< "Scaling mesh vertices by a factor " << scalingFactor << endl;
 
@@ -58,10 +60,12 @@ int main(int argc, char *argv[])
     # pragma omp parallel for schedule(dynamic, 100)
     # endif
     forAll(pts, pointI)
+    {
         pts[pointI] *= scalingFactor;
+    }
 
-    // write the mesh back on disk
-    Info<< "Writting scaled mesh" << endl;
+    //- write the mesh back on disk
+    Info<< "Writing scaled mesh" << endl;
     pmg.write();
 
     Info<< "End\n" << endl;

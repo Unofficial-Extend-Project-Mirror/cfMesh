@@ -53,12 +53,13 @@ void generateLayer
     {
         const dictionary& bndLayers = meshDict.subDict("boundaryLayers");
 
-        if (bndLayers.found("nLayers"))
+        label nLayers;
+        if (bndLayers.readIfPresent("nLayers", nLayers))
         {
-            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
-
             if (nLayers > 0)
+            {
                 bl.addLayerForAllPatches();
+            }
         }
         else if (bndLayers.found("patchBoundaryLayers"))
         {
@@ -106,7 +107,7 @@ void layerRefinement(polyMeshGen& mesh, const dictionary& meshDict)
 
 int main(int argc, char *argv[])
 {
-    argList::validOptions.insert("2DLayers", "bool");
+    argList::addBoolOption("2DLayers");
 
 #   include "setRootCase.H"
 #   include "createTime.H"
@@ -127,9 +128,7 @@ int main(int argc, char *argv[])
     polyMeshGen pmg(runTime);
     pmg.read();
 
-    bool is2DLayer(false);
-    if (args.options().found("2DLayers"))
-        is2DLayer = true;
+    const bool is2DLayer = args.optionFound("2DLayers");
 
     // generate the initial boundary layer
     generateLayer(pmg, meshDict, is2DLayer);

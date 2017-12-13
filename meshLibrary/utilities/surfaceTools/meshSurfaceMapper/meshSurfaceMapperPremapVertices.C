@@ -186,7 +186,7 @@ void meshSurfaceMapper::preMapVertices(const label nIterations)
                     )
                 );
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

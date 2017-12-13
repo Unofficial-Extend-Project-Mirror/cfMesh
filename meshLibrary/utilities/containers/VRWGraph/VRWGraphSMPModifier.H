@@ -22,11 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::VRWGraphModifier
+    Foam::VRWGraphSMPModifier
 
 Description
-    This class is a modifier for VRWGraph which allows for multi - threaded
-    execution of most time-consuimg functions
+    This class is a modifier for VRWGraph which allows for multi-threaded
+    execution of the most time-consuimg functions
 
 SourceFiles
     VRWGraphSMPModifier.H
@@ -74,7 +74,7 @@ public:
     VRWGraphSMPModifier(VRWGraph&);
 
     //- Destructor
-    ~VRWGraphSMPModifier();
+    ~VRWGraphSMPModifier() = default;
 
 
     // Member Functions

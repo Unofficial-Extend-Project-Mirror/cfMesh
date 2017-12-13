@@ -170,17 +170,17 @@ void partTriMesh::createPointsAndTrias
     }
 
     // set CORNER and FEATUREEDGE flags to surface points
-    forAllConstIter(labelHashSet, mPart_.corners(), it)
+    for (const label corneri : mPart_.corners())
     {
-        if (meshSurfacePointLabelInTriMesh_[it.key()] != -1)
+        if (meshSurfacePointLabelInTriMesh_[corneri] != -1)
         {
-            pointType_[meshSurfacePointLabelInTriMesh_[it.key()]] |= CORNER;
+            pointType_[meshSurfacePointLabelInTriMesh_[corneri]] |= CORNER;
         }
     }
 
-    forAllConstIter(labelHashSet, mPart_.edgePoints(), it)
+    for (const label edgei : mPart_.edgePoints())
     {
-        const label pI = meshSurfacePointLabelInTriMesh_[it.key()];
+        const label pI = meshSurfacePointLabelInTriMesh_[edgei];
         if (pI != -1)
         {
             pointType_[pI] |= FEATUREEDGE;

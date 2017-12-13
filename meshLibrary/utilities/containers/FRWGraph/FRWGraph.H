@@ -105,7 +105,7 @@ public:
 
 
     //- Destructor
-    inline ~FRWGraph();
+    ~FRWGraph() = default;
 
 
     // Member Functions
@@ -139,7 +139,8 @@ public:
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label rowI, const T& e) const;
-        inline label containsAtPosition(const label rowI, const T& e) const;
+        inline bool found(const label rowI, const T& e) const;
+        inline label find(const label rowI, const T& e) const;
 
         //- get and set operators
         inline const T& operator()(const label i, const label j) const;

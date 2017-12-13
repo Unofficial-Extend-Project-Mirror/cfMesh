@@ -26,7 +26,7 @@ Class
 
 Description
     This class is an implementation of a graph with variable column width.
-    The imoplementation is memory efficient.
+    The implementation is memory efficient.
 
 SourceFiles
     VRWGraphI.H
@@ -38,17 +38,18 @@ SourceFiles
 #define VRWGraph_H
 
 #include "labelLongList.H"
-#include "graphRow.H"
 #include "DynList.H"
 #include "bool.H"
 #include "error.H"
+#include "graphRow.H"
+#include "graphConstRow.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-class VRWGraphModifier;
+class VRWGraph;
 
 class rowElement
 {
@@ -80,8 +81,7 @@ public:
 
 
     //- Destructor
-    inline ~rowElement()
-    {}
+    ~rowElement() = default;
 
 
     // Member functions
@@ -106,6 +106,11 @@ public:
             return size_;
         }
 };
+
+
+// Useful typedefs
+typedef const graphConstRow<VRWGraph> constRow;
+typedef graphRow<VRWGraph> row;
 
 
 /*---------------------------------------------------------------------------*\
@@ -175,7 +180,7 @@ public:
 
 
     //- Destructor
-    inline ~VRWGraph();
+    ~VRWGraph() = default;
 
 
     // Member Functions
@@ -260,7 +265,8 @@ public:
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label rowI, const label e) const;
-        inline label containsAtPosition(const label rowI, const label e) const;
+        inline bool found(const label rowI, const label e) const;
+        inline label find(const label rowI, const label e) const;
 
         //- get and set operators
         inline label operator()(const label i, const label j) const;

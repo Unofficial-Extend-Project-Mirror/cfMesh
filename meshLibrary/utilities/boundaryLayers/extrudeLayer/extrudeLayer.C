@@ -260,7 +260,7 @@ void extrudeLayer::createNewVertices()
         }
 
         // collect the information about markes points at processor boundaries
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             if (frontPoints[it()] & FRONTVERTEX)
             {
@@ -331,7 +331,7 @@ void extrudeLayer::createNewVertices()
         dualEdgesMap procPointsDual;
 
         // fill in local data
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             if (frontPoints[it()] & FRONTVERTEXPROCBND)
             {
@@ -364,7 +364,7 @@ void extrudeLayer::createNewVertices()
         {
             if (Pstream::myProcNo() == procI)
             {
-                forAllConstIter(dualEdgesMap, procPointsDual, it)
+                forAllConstIters(procPointsDual, it)
                 {
                     Pout<< "Point " << it->first
                         << " local dual edges " << it->second << endl;
@@ -461,7 +461,7 @@ void extrudeLayer::createNewVertices()
         }
 
         // fill in the exchangeData map
-        forAllConstIter(dualEdgesMap, procPointsDual, dIter)
+        forAllConstIters(procPointsDual, dIter)
         {
             const label pointI = dIter->first;
 
@@ -516,7 +516,7 @@ void extrudeLayer::createNewVertices()
         {
             if (Pstream::myProcNo() == procI)
             {
-                forAllConstIter(dualEdgesMap, procPointsDual, it)
+                forAllConstIters(procPointsDual, it)
                 {
                     Pout<< "Point " << it->first
                         << " dual edges " << it->second << endl;
@@ -529,7 +529,7 @@ void extrudeLayer::createNewVertices()
         // Finally, find groups of faces and create new vertices
         returnReduce(1, sumOp<label>());
         Pout << "Finding groups of edges at vertex" << endl;
-        forAllConstIter(dualEdgesMap, procPointsDual, dIter)
+        forAllConstIters(procPointsDual, dIter)
         {
             const label pointI = dIter->first;
             const DynList<edge>& dEdges = dIter->second;
@@ -555,7 +555,7 @@ void extrudeLayer::createNewVertices()
 
                 while (front.size() != 0)
                 {
-                    const label eLabel = front.removeLastElement();
+                    const label eLabel = front.remove();
 
                     forAll(dEdges, eJ)
                     {
@@ -693,7 +693,7 @@ void extrudeLayer::createNewVertices()
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 const label own = owner[pointFaces(pointI, fLabel)];
                 const label nei = neighbour[pointFaces(pointI, fLabel)];
@@ -834,7 +834,7 @@ void extrudeLayer::movePoints()
         }
 
         // create displacements from local data
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             if (it() >= nOrigPoints_)
             {
@@ -910,17 +910,12 @@ void extrudeLayer::movePoints()
         }
 
         // calculate displacements of vertices at processor boundaries
-        for
-        (
-            std::map<label, vector>::const_iterator it = normals.begin();
-            it!=normals.end();
-            ++it
-        )
+        forAllConstIters(normals, it)
         {
             vector n = it->second;
             if (mag(n) > VSMALL)
             {
-                    n /= mag(n);
+                n /= mag(n);
             }
             displacements[it->first - nOrigPoints_] = n*distances[it->first];
         }
@@ -1278,7 +1273,7 @@ void extrudeLayer::createLayerCells()
 
             // find another face attached to the edge eI
             const label fFace = adc.faceSharingEdge(extI, eI);
-            const label pos = pointFaces.containsAtPosition(pointI, fFace);
+            const label pos = pointFaces.find(pointI, fFace);
 
             // find an extrusion face attached to the edge consisting of points
             // origFacePointI and origFaceNextI
@@ -1432,9 +1427,9 @@ void extrudeLayer::updateBoundary()
             forAllRow(pointPatches, bpI, ppI)
             {
                 const label patchI = pointPatches(bpI, ppI);
-                if (patches.contains(patchI))
+                if (patches.found(patchI))
                 {
-                    ++nAppearances[patches.containsAtPosition(patchI)];
+                    ++nAppearances[patches.find(patchI)];
                 }
                 else
                 {

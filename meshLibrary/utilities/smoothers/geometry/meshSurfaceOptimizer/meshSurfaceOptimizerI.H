@@ -171,7 +171,7 @@ inline bool meshSurfaceOptimizer::transformIntoPlane
     sMod.patchesAccess()[0].geometricType() = "patch";
 
     fileName sName("bndSimplex_");
-    sName += help::scalarToText(bpI);
+    sName += Foam::name(bpI);
     sName += ".stl";
     surf.writeSurface(sName);
     # endif
@@ -467,7 +467,7 @@ inline void meshSurfaceOptimizer::lockBoundaryFaces(const labelListType& l)
             exchangeData[bpNeiProcs[i]].clear();
 
         //- prepare data which will be sent to other processors
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -523,7 +523,7 @@ inline void meshSurfaceOptimizer::lockBoundaryPoints(const labelListType& l)
             exchangeData[bpNeiProcs[i]].clear();
 
         //- prepare data which will be sent to other processors
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 

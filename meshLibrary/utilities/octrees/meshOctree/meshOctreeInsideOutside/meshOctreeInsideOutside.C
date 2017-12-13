@@ -191,7 +191,7 @@ void meshOctreeInsideOutside::frontalMarking()
 
             while (frontCubes.size())
             {
-                const label fLabel = frontCubes.removeLastElement();
+                const label fLabel = frontCubes.remove();
                 octree.findNeighboursForLeaf(fLabel, neighbours);
 
                 forAll(neighbours, neiI)
@@ -446,12 +446,7 @@ void meshOctreeInsideOutside::markOutsideCubes()
     } while (keepUpdating);
 
     // set OUTSIDE type to the cubes in OUTSIDE groups
-    for
-    (
-        std::map<label, direction>::const_iterator it = groupType_.begin();
-        it!=groupType_.end();
-        ++it
-    )
+    forAllConstIters(groupType_, it)
     {
         if (it->first < 0)
             continue;
@@ -646,12 +641,7 @@ void meshOctreeInsideOutside::markInsideCubes()
     DynList<label> neighbours;
 
     // make INSIDE groups for which it is possible
-    for
-    (
-        std::map<label, direction>::iterator it = groupType_.begin();
-        it!=groupType_.end();
-        ++it
-    )
+    forAllIters(groupType_, it)
     {
         const label groupI = it->first;
 
@@ -663,11 +653,10 @@ void meshOctreeInsideOutside::markInsideCubes()
             forAllRow(boundaryDATACubes_, groupI, neiI)
             {
                 const label cLabel = boundaryDATACubes_(groupI, neiI);
-                if (
-                    hasOutsideNeighbour_[cLabel] ||
-                    (
-                        leaves[cLabel]->cubeType() & meshOctreeCube::INSIDE
-                    )
+                if
+                (
+                    hasOutsideNeighbour_[cLabel]
+                 || (leaves[cLabel]->cubeType() & meshOctreeCube::INSIDE)
                 )
                 {
                     it->second = meshOctreeCube::INSIDE;
@@ -835,12 +824,7 @@ void meshOctreeInsideOutside::markInsideCubes()
     } while (keepUpdating);
 
     // set INSIDE type to the cubes in INSIDE groups
-    for
-    (
-        std::map<label, direction>::const_iterator it = groupType_.begin();
-        it!=groupType_.end();
-        ++it
-    )
+    forAllConstIters(groupType_, it)
     {
         if (it->first < 0)
             continue;

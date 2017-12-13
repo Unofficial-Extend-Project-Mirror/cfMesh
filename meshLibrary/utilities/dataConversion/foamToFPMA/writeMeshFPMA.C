@@ -89,7 +89,7 @@ void createFIRESelections(polyMeshGen& mesh)
     forAll(procBoundaries, patchI)
     {
         word sName = "InterFacesToProc";
-        sName += help::scalarToText(procBoundaries[patchI].neiProcNo());
+        sName += Foam::name(procBoundaries[patchI].neiProcNo());
         const label sID = mesh.addFaceSubset(sName);
 
         label faceI = procBoundaries[patchI].patchStart();
@@ -141,7 +141,7 @@ void createFIRESelections(polyMeshGen& mesh)
     forAll(procBoundaries, patchI)
     {
         word sName = "InterSurfaceEdgesToProc";
-        sName += help::scalarToText(procBoundaries[patchI].neiProcNo());
+        sName += Foam::name(procBoundaries[patchI].neiProcNo());
         const label subsetID = mesh.addPointSubset(sName);
 
         label faceI = procBoundaries[patchI].patchStart();

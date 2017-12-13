@@ -56,10 +56,8 @@ objectRefinement::objectRefinement
     additionalRefLevel_(0),
     refThickness_(0.0)
 {
-    if (dict.found("cellSize"))
+    if (dict.readIfPresent("cellSize", cellSize_))
     {
-        cellSize_ = readScalar(dict.lookup("cellSize"));
-
         if (cellSize_ < 0.0)
         {
             FatalErrorInFunction
@@ -67,11 +65,11 @@ objectRefinement::objectRefinement
                 << " is negative" << exit(FatalError);
         }
     }
-    else if (dict.found("additionalRefinementLevels"))
+    else if
+    (
+        dict.readIfPresent("additionalRefinementLevels", additionalRefLevel_)
+    )
     {
-        additionalRefLevel_ =
-            readLabel(dict.lookup("additionalRefinementLevels"));
-
         if (additionalRefLevel_ < 0)
         {
             FatalErrorInFunction
@@ -80,8 +78,7 @@ objectRefinement::objectRefinement
         }
     }
 
-    if (dict.found("refinementThickness"))
-        refThickness_ = readScalar(dict.lookup("refinementThickness"));
+    dict.readIfPresent("refinementThickness", refThickness_);
 }
 
 

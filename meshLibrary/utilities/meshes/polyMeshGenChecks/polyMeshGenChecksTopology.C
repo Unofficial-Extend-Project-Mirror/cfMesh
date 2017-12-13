@@ -279,7 +279,7 @@ bool checkCellsZipUp
             {
                 const edge e = f.faceEdge(eI);
 
-                const label pos = cellEdges.containsAtPosition(e);
+                const label pos = cellEdges.find(e);
 
                 if (pos < 0)
                 {

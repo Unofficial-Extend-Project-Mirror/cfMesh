@@ -174,7 +174,7 @@ void checkBoundaryFacesSharingTwoEdges::findFacesAtBndEdge()
         forAll(bpNei, i)
             exchangeData.insert(std::make_pair(bpNei[i], labelLongList()));
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -225,7 +225,7 @@ void checkBoundaryFacesSharingTwoEdges::findBndFacesAtBndVertex()
         forAll(neiProcs, i)
             exchangeData.insert(std::make_pair(neiProcs[i], labelLongList()));
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 

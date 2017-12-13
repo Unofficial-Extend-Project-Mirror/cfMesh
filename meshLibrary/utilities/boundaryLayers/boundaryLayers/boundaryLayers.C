@@ -97,10 +97,8 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     // patches must be treated together if there exist a corner where
     // more than three patches meet
     const labelHashSet& corners = mPart.corners();
-    forAllConstIter(labelHashSet, corners, it)
+    for (const label bpI : corners)
     {
-        const label bpI = it.key();
-
         if (mPart.numberOfFeatureEdgesAtPoint(bpI) > 3)
         {
             labelHashSet commonPatches;
@@ -227,7 +225,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         }
 
         // store faces for sending
-        forAllConstIter(Map<label>, otherFaceProc, it)
+        forAllConstIters(otherFaceProc, it)
         {
             const label beI = it.key();
 
@@ -359,8 +357,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         mesh_.points().setSize(nPoints_);
     }
 
-    std::map<std::pair<label, label>, Pair<label>>::const_iterator it;
-    for (it = edgeClassification.begin(); it!=edgeClassification.end(); ++it)
+    forAllConstIters(edgeClassification, it)
     {
         const std::pair<label, label>& edgePair = it->first;
         const Pair<label>& nConvexAndConcave = it->second;
@@ -460,7 +457,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
 
         while (front.size())
         {
-            const label fPatch = front.removeLastElement();
+            const label fPatch = front.remove();
 
             forAll(treatPatchesWithPatch_[fPatch], i)
             {
@@ -481,12 +478,12 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
             }
         }
 
-        forAllConstIter(std::set<label>, commonPatches, it)
+        forAllConstIters(commonPatches, it)
         {
             const label patchJ = *it;
 
             treatPatchesWithPatch_[patchJ].clear();
-            forAllConstIter(std::set<label>, commonPatches, iter)
+            forAllConstIters(commonPatches, iter)
             {
                 treatPatchesWithPatch_[patchJ].append(*iter);
             }
@@ -494,7 +491,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
     }
 
     # ifdef DEBUGLayer
-    for (it = edgeClassification.begin(); it!=edgeClassification.end(); ++it)
+    forAllConstIters(edgeClassification, it)
     {
         const std::pair<label, label>& edgePair = it->first;
         const Pair<label>& nConvexAndConcave = it->second;
@@ -519,7 +516,7 @@ void boundaryLayers::findPatchesToBeTreatedTogether()
         Info<< "Adding layer subset " << layerI
             << " for patch " << patchI << endl;
         usedPatch[patchI] = true;
-        subsetId = mesh_.addFaceSubset("layer_"+help::scalarToText(layerI));
+        subsetId = mesh_.addFaceSubset("layer_" + Foam::name(layerI));
         ++layerI;
 
         forAll(treatPatchesWithPatch_[patchI], i)

@@ -140,7 +140,7 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
 
                 while (front.size() != 0)
                 {
-                    const label fLabel = front.removeLastElement();
+                    const label fLabel = front.remove();
 
                     forAllRow(faceEdges, fLabel, feI)
                     {
@@ -208,9 +208,9 @@ void meshOctreeAddressing::checkAndFixIrregularConnections()
         if (Pstream::parRun() && (nIrregular != 0))
         {
             LongList<meshOctreeCubeCoordinates> exchangeData;
-            forAllConstIter(labelHashSet, changedBoxType, it)
+            for (const label it : changedBoxType)
             {
-                exchangeData.append(octree_.returnLeaf(it.key()).coordinates());
+                exchangeData.append(octree_.returnLeaf(it).coordinates());
             }
 
             LongList<meshOctreeCubeCoordinates> receivedData;

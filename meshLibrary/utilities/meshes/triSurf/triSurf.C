@@ -144,7 +144,7 @@ void triSurf::writeToFMS(const fileName& fName) const
     List<meshSubset> subsets;
     label i(0);
     subsets.setSize(pointSubsets_.size());
-    forAllConstIter(Map<meshSubset>, pointSubsets_, it)
+    forAllConstIters(pointSubsets_, it)
     {
         subsets[i++] = it();
     }
@@ -155,7 +155,7 @@ void triSurf::writeToFMS(const fileName& fName) const
     // write subsets of facets
     subsets.setSize(triSurfFacets::facetSubsets_.size());
     i = 0;
-    forAllConstIter(Map<meshSubset>, triSurfFacets::facetSubsets_, it)
+    forAllConstIters(triSurfFacets::facetSubsets_, it)
     {
         subsets[i++] = it();
     }
@@ -166,12 +166,7 @@ void triSurf::writeToFMS(const fileName& fName) const
     // write subets of feature edges
     subsets.setSize(triSurfFeatureEdges::featureEdgeSubsets_.size());
     i = 0;
-    forAllConstIter
-    (
-        Map<meshSubset>,
-        triSurfFeatureEdges::featureEdgeSubsets_,
-        it
-    )
+    forAllConstIters(triSurfFeatureEdges::featureEdgeSubsets_, it)
     {
         subsets[i++] = it();
     }

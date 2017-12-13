@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     argList::validArgs.append("output surface file");
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName outFileName(args.args()[2]);
+    fileName inFileName(args[1]);
+    fileName outFileName(args[2]);
 
     if (outFileName.ext() != "fms")
         Warning << "The subsets cann only be saved in the .fms format" << endl;

@@ -151,11 +151,9 @@ void exchangeMap
         FatalError << "Data is not contiguous" << exit(FatalError);
     }
 
-    typename std::map<label, ListType>::const_iterator iter;
-
     // check which processors shall exchange the data and which ones shall not
     labelHashSet receiveData;
-    for (iter = m.begin(); iter!=m.end(); ++iter)
+    forAllConstIters(m, iter)
     {
         OPstream toOtherProc
         (
@@ -167,7 +165,7 @@ void exchangeMap
         toOtherProc << iter->second.size();
     }
 
-    for (iter = m.begin(); iter!=m.end(); ++iter)
+    forAllConstIters(m, iter)
     {
         IPstream fromOtherProc
         (
@@ -190,7 +188,7 @@ void exchangeMap
         // start with blocking type of send and received operation
 
         // send data to other processors
-        for (iter = m.begin(); iter!=m.end(); ++iter)
+        forAllConstIters(m, iter)
         {
             const ListType& dts = iter->second;
 
@@ -209,7 +207,7 @@ void exchangeMap
         }
 
         // receive data from other processors
-        for (iter = m.begin(); iter!=m.end(); ++iter)
+        forAllConstIters(m, iter)
         {
             if (!receiveData.found(iter->first))
             {
@@ -232,7 +230,7 @@ void exchangeMap
         // it does not require any buffer
 
         // receive data from processors with lower ids
-        for (iter = m.begin(); iter!=m.end(); ++iter)
+        forAllConstIters(m, iter)
         {
             if (iter->first >= Pstream::myProcNo())
             {
@@ -253,7 +251,7 @@ void exchangeMap
         }
 
         // send data to processors with greater ids
-        for (iter = m.begin(); iter!=m.end(); ++iter)
+        forAllConstIters(m, iter)
         {
             if (iter->first <= Pstream::myProcNo())
             {
@@ -278,8 +276,13 @@ void exchangeMap
         }
 
         // receive data from processors with greater ids
-        typename std::map<label, ListType>::const_reverse_iterator riter;
-        for (riter = m.rbegin(); riter!=m.rend(); ++riter)
+//        forAllConstReverseIters(m, riter)
+        for
+        (
+            auto riter = m.rbegin();
+            riter != m.rend();
+            ++riter
+        )
         {
             if (riter->first <= Pstream::myProcNo())
             {
@@ -300,7 +303,13 @@ void exchangeMap
         }
 
         // send data to processors with lower ids
-        for (riter = m.rbegin(); riter!=m.rend(); ++riter)
+//        forAllConstReverseIters(m, riter)
+        for
+        (
+            auto riter = m.rbegin();
+            riter != m.rend();
+            ++riter
+        )
         {
             if (riter->first >= Pstream::myProcNo())
             {
@@ -332,7 +341,7 @@ void exchangeMap
 
     # ifdef DEBUGExchangeMap
     labelList nReceived(Pstream::nProcs(), 0);
-    for (iter = m.begin(); iter!=m.end(); ++iter)
+    forAllConstIters(m, iter)
     {
         nReceived[iter->first] += iter->second.size();
     }
@@ -365,7 +374,7 @@ void exchangeMap
     typename std::map<label, ListType>::const_iterator iter;
 
     // send data to other processors
-    for (iter = m.begin(); iter!=m.end(); ++iter)
+    forAllConstIters(m, iter)
     {
         const ListType& dataToSend = iter->second;
 
@@ -379,7 +388,7 @@ void exchangeMap
     }
 
     // receive data from other processors
-    for (iter = m.begin(); iter!=m.end(); ++iter)
+    forAllConstIters(m, iter)
     {
         mOut.insert(std::make_pair(iter->first, List<T>()));
         List<T>& dataToReceive = mOut[iter->first];

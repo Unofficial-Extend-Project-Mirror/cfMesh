@@ -22,10 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::raphRow
+    Foam::graphRow
 
 Description
-    This class provides access to a row of a graph
+    This class provides non-const access to a row of a graph
 
 SourceFiles
     graphRowI.H
@@ -35,22 +35,17 @@ SourceFiles
 #ifndef graphRow_H
 #define graphRow_H
 
-#include "bool.H"
-#include "Ostream.H"
-#include "error.H"
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
-class VRWGraph;
-
-template<class graphType>
-class graphRow;
+class Ostream;
+template<class graphType> class graphRow;
+template<class graphType> class graphConstRow;
 
 template<class graphType>
 Ostream& operator<<(Ostream&, const graphRow<graphType>&);
+
 
 /*---------------------------------------------------------------------------*\
                           Class graphRow Declaration
@@ -61,17 +56,14 @@ class graphRow
 {
     // Private data
 
-        //- reference to the graph
+        //- Reference to the graph
         graphType& data_;
 
-        //- row number
+        //- Row number
         const label rowI_;
 
-
-    // Private member functions
-
-        //- check index
-        inline void checkIndex(const label i) const;
+    // Allow copy construct from non-const to const version
+    friend class graphConstRow<graphType>;
 
 
 public:
@@ -79,25 +71,25 @@ public:
     // Constructors
 
         //- Construct from graph and row number
-        inline graphRow(graphType&, const label);
+        inline graphRow(graphType& g, const label i);
 
         //- Copy contructor
-        inline graphRow(const graphRow<graphType>&);
+        inline graphRow(const graphRow<graphType>& r);
 
 
     //- Destructor
-    inline ~graphRow();
+    ~graphRow() = default;
 
 
     // Member Functions
 
-        //- Returns the number of rows
+        //- Return the number of elements in the row
         inline label size() const;
 
-        //- Reset the number of rows
-        inline void setSize(const label size);
+        //- Reset the number of elements in the row
+        inline void setSize(const label s);
 
-        //- Clear the graph
+        //- Clear the row
         inline void clear();
 
 
@@ -111,41 +103,31 @@ public:
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label e) const;
-        inline label containsAtPosition(const label e) const;
+        inline bool found(const label e) const;
+        inline label find(const label e) const;
 
         //- set and get operators
         inline label operator[](const label) const;
         inline label& operator[](const label);
 
-        //- Assignment operator
-        inline void operator=(const graphRow<graphType>&);
+        //- Copy contents from another row
+        inline void operator=(const graphRow<graphType>& rhs);
 
-        template<class listType>
-        inline void operator=(const listType&);
+        //- Copy contents from a list
+        template<class ListType>
+        inline void operator=(const ListType& rhs);
 
 
     // IOstream operators
 
-        // Write graphRow to Ostream.
+        //- Write graphRow contents to Ostream.
         friend Ostream& operator<< <graphType>
         (
-            Ostream&,
-            const graphRow<graphType>&
+            Ostream& os,
+            const graphRow<graphType>& r
         );
-
-        //- Read from Istream, discarding contents of existing graphRow.
-/*        friend Istream& operator>> <T, width>
-        (
-            Istream&,
-            graphRow<T, width>&
-        );
-*/
 
 };
-
-
-typedef const graphRow<const VRWGraph> constRow;
-typedef graphRow<VRWGraph> row;
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

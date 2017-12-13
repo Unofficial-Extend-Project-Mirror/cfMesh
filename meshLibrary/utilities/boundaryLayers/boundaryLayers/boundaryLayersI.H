@@ -45,12 +45,11 @@ label boundaryLayers::findNewNodeLabel
 
     if (it != otherVrts_.end())
     {
-        const std::map<std::pair<label, label>, label>& m = it->second;
+        const auto& m = it->second;
 
-        std::map<std::pair<label, label>, label>::const_iterator mit;
         if (m.size() == 2)
         {
-            for (mit = m.begin(); mit!=m.end(); ++mit)
+            forAllConstIters(m, mit)
             {
                 if (mit->first.first != pKey)
                 {
@@ -60,7 +59,7 @@ label boundaryLayers::findNewNodeLabel
         }
         else
         {
-            for (mit = m.begin(); mit!=m.end(); ++mit)
+            forAllConstIters(m, mit)
             {
                 if (mit->first.first == pKey)
                 {
@@ -101,13 +100,12 @@ inline void boundaryLayers::createNewCellFromEdge
     Info<< "Creating cell for edge with nodes " << e << endl;
     Info<< "pKeyI " << pKeyI << endl;
     Info<< "pKeyJ " << pKeyJ << endl;
-    std::map<std::pair<label, label>, label>::const_iterator iter;
-    for (iter = ms.begin(); iter!=ms.end(); ++iter)
+    forAllConstIters(ms, iter)
     {
         Info<< "1. Pair(" << iter->first.first << ", "
             << iter->first.second << ") has value " << iter->second << endl;
     }
-    for (iter = me.begin(); iter!=me.end(); ++iter)
+    forAllConstIters(me, iter)
     {
         Info<< "2. Pair(" << iter->first.first << ", "
             << iter->first.second << ") has value " << iter->second << endl;
@@ -124,8 +122,7 @@ inline void boundaryLayers::createNewCellFromEdge
     }
     else
     {
-        std::map<std::pair<label, label>, label>::const_iterator it;
-        for (it = ms.begin(); it!=ms.end(); ++it)
+        forAllConstIters(ms, it)
         {
             if
             (
@@ -161,8 +158,7 @@ inline void boundaryLayers::createNewCellFromEdge
     }
     else
     {
-        std::map<std::pair<label, label>, label>::const_iterator it;
-        for (it = me.begin(); it!=me.end(); ++it)
+        forAllConstIters(me, it)
         {
             if
             (

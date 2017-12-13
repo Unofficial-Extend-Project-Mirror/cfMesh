@@ -27,14 +27,9 @@ License
 #include "dictionary.H"
 #include "error.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
-{
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
+Foam::autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
 (
     const word& name,
     const dictionary& dict
@@ -44,20 +39,17 @@ autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
         << "constructing objectRefinement"
         << endl;
 
-    // default type is self
+    // Default type is self
     word refType(typeName_());
-    if (dict.found("type"))
-    {
-        dict.lookup("type") >> refType;
-    }
+    dict.readIfPresent("type", refType);
 
     auto cstrIter = dictionaryConstructorTablePtr_->cfind(refType);
 
-    if (cstrIter == dictionaryConstructorTablePtr_->end())
+    if (!cstrIter.found())
     {
         FatalIOErrorInFunction(dict)
             << "Unknown objectRefinement type " << refType << nl << nl
-            << "Valid objectRefinement types are :" << nl
+            << "Valid objectRefinement types :" << nl
             << "[default: " << typeName_() << "]"
             << dictionaryConstructorTablePtr_->sortedToc()
             << exit(FatalIOError);
@@ -66,9 +58,5 @@ autoPtr<Foam::objectRefinement> Foam::objectRefinement::New
     return autoPtr<objectRefinement>(cstrIter()(name, dict));
 }
 
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

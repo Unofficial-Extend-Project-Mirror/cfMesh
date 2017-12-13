@@ -81,7 +81,7 @@ void meshSurfaceOptimizer::calculateTrianglesAndAddressing() const
         sMod.patchesAccess()[0].geometricType() = "patch";
 
         fileName sName("bndPointSimplex_");
-        sName += help::scalarToText(bpI);
+        sName += Foam::name(bpI);
         sName += ".stl";
         surf.writeSurface(sName);
     }

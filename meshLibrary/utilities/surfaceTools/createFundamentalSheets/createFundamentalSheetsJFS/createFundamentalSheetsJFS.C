@@ -173,8 +173,10 @@ void createFundamentalSheetsJFS::createSheetsAtFeatureEdges()
     # ifdef DEBUGSheets
     labelList patchSheetId(boundaries.size());
     forAll(patchSheetId, patchI)
+    {
         patchSheetId[patchI] =
-            mesh_.addCellSubset("sheetPatch_"+help::labelToText(patchI));
+            mesh_.addCellSubset("sheetPatch_" + Foam::name(patchI));
+    }
 
     forAll(patchCell, cellI)
     {

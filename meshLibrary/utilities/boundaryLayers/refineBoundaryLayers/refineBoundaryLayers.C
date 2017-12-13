@@ -301,12 +301,7 @@ void refineBoundaryLayers::activateSpecialMode()
 void refineBoundaryLayers::refineLayers()
 {
     bool refinePatch(false);
-    for
-    (
-        std::map<word, label>::const_iterator it = numLayersForPatch_.begin();
-        it!=numLayersForPatch_.end();
-        ++it
-    )
+    forAllConstIters(numLayersForPatch_, it)
     {
         if (it->second > 1)
         {
@@ -405,22 +400,28 @@ void refineBoundaryLayers::readSettings
         const dictionary& bndLayers = meshDict.subDict("boundaryLayers");
 
         // read global properties
-        if (bndLayers.found("nLayers"))
         {
-            const label nLayers = readLabel(bndLayers.lookup("nLayers"));
-            refLayers.setGlobalNumberOfLayers(nLayers);
+            label nLayers;
+            if (bndLayers.readIfPresent("nLayers", nLayers))
+            {
+                refLayers.setGlobalNumberOfLayers(nLayers);
+            }
         }
-        if (bndLayers.found("thicknessRatio"))
+
         {
-            const scalar ratio =
-                readScalar(bndLayers.lookup("thicknessRatio"));
-            refLayers.setGlobalThicknessRatio(ratio);
+            scalar ratio;
+            if (bndLayers.readIfPresent("thicknessRatio", ratio))
+            {
+                refLayers.setGlobalThicknessRatio(ratio);
+            }
         }
-        if (bndLayers.found("maxFirstLayerThickness"))
+
         {
-            const scalar maxFirstThickness =
-                readScalar(bndLayers.lookup("maxFirstLayerThickness"));
-            refLayers.setGlobalMaxThicknessOfFirstLayer(maxFirstThickness);
+            scalar thick;
+            if (bndLayers.readIfPresent("maxFirstLayerThickness", thick))
+            {
+                refLayers.setGlobalMaxThicknessOfFirstLayer(thick);
+            }
         }
 
         // consider specified patches for exclusion from boundary layer creation
@@ -453,41 +454,45 @@ void refineBoundaryLayers::readSettings
                     const dictionary& patchDict =
                         patchBndLayers.subDict(pName);
 
-                    if (patchDict.found("nLayers"))
+                    label nLayers;
+                    if (patchDict.readIfPresent("nLayers", nLayers))
                     {
-                        const label nLayers =
-                            readLabel(patchDict.lookup("nLayers"));
-
                         refLayers.setNumberOfLayersForPatch(pName, nLayers);
                     }
-                    if (patchDict.found("thicknessRatio"))
+
+                    scalar ratio;
+                    if (patchDict.readIfPresent("thicknessRatio", ratio))
                     {
-                        const scalar ratio =
-                            readScalar(patchDict.lookup("thicknessRatio"));
                         refLayers.setThicknessRatioForPatch(pName, ratio);
                     }
-                    if (patchDict.found("maxFirstLayerThickness"))
+
+                    scalar thick;
+                    if
+                    (
+                        patchDict.readIfPresent
+                        (
+                            "maxFirstLayerThickness",
+                            thick
+                        )
+                    )
                     {
-                        const scalar maxFirstThickness =
-                            readScalar
-                            (
-                                patchDict.lookup("maxFirstLayerThickness")
-                            );
                         refLayers.setMaxThicknessOfFirstLayerForPatch
                         (
                             pName,
-                            maxFirstThickness
+                            thick
                         );
                     }
-                    if (patchDict.found("allowDiscontinuity"))
-                    {
-                        const bool allowDiscontinuity =
-                            readBool(patchDict.lookup("allowDiscontinuity"));
 
-                        if (allowDiscontinuity)
-                        {
-                            refLayers.setInteruptForPatch(pName);
-                        }
+                    if
+                    (
+                        patchDict.lookupOrDefault<bool>
+                        (
+                            "allowDiscontinuity",
+                            false
+                        )
+                    )
+                    {
+                        refLayers.setInteruptForPatch(pName);
                     }
                 }
                 else

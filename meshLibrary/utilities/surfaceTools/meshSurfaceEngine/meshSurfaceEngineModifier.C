@@ -168,8 +168,10 @@ void meshSurfaceEngineModifier::syncVerticesAtParallelBoundaries()
     const Map<label>& globalToLocal =
         surfaceEngine_.globalToLocalBndPointAddressing();
     labelLongList syncNodes;
-    forAllConstIter(Map<label>, globalToLocal, it)
+    forAllConstIters(globalToLocal, it)
+    {
         syncNodes.append(it());
+    }
 
     syncVerticesAtParallelBoundaries(syncNodes);
 }
@@ -346,7 +348,7 @@ void meshSurfaceEngineModifier::updateGeometry
             forAll(neiProcs, i)
                 exchangeNodeLabels[neiProcs[i]].clear();
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 
@@ -377,7 +379,7 @@ void meshSurfaceEngineModifier::updateGeometry
                 exchangeData[neiProcs[i]].clear();
 
             // prepare data for sending
-            forAllConstIter(Map<label>, globalToLocal, iter)
+            forAllConstIters(globalToLocal, iter)
             {
                 const label bpI = iter();
 
@@ -411,7 +413,7 @@ void meshSurfaceEngineModifier::updateGeometry
             }
 
             // normalize vectors
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

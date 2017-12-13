@@ -260,83 +260,37 @@ void boxScaling::operator=(const dictionary& d)
       : d
     );
 
-    // unspecified centre is (0 0 0)
-    if (dict.found("centre"))
-    {
-        dict.lookup("centre") >> centre_;
-    }
-    else
+    if (!dict.readIfPresent("centre", centre_))
     {
         FatalErrorInFunction
             << "Entry centre is not specified!" << exit(FatalError);
         centre_ = vector::zero;
     }
 
-    // specify lengthX
-    if (dict.found("lengthX"))
-    {
-        lengthVec_.x() = readScalar(dict.lookup("lengthX"));
-    }
-    else
+    if (!dict.readIfPresent("lengthX", lengthVec_.x()))
     {
         FatalErrorInFunction
             << "Entry lengthX is not specified!" << exit(FatalError);
         lengthVec_.x() = 0.0;
     }
 
-    // specify lengthY
-    if (dict.found("lengthY"))
-    {
-        lengthVec_.y() = readScalar(dict.lookup("lengthY"));
-    }
-    else
+    if (!dict.readIfPresent("lengthY", lengthVec_.y()))
     {
         FatalErrorInFunction
             << "Entry lengthY is not specified!" << exit(FatalError);
         lengthVec_.y() = 0.0;
     }
 
-    // specify lengthZ
-    if (dict.found("lengthZ"))
-    {
-        lengthVec_.z() = readScalar(dict.lookup("lengthZ"));
-    }
-    else
+    if (!dict.readIfPresent("lengthZ", lengthVec_.z()))
     {
         FatalErrorInFunction
             << "Entry lengthZ is not specified!" << exit(FatalError);
         lengthVec_.z() = 0.0;
     }
 
-    // specify scaleX
-    if (dict.found("scaleX"))
-    {
-        scaleVec_.x() = readScalar(dict.lookup("scaleX"));
-    }
-    else
-    {
-        scaleVec_.x() = 1.0;
-    }
-
-    // specify scaleY
-    if (dict.found("scaleY"))
-    {
-        scaleVec_.y() = readScalar(dict.lookup("scaleY"));
-    }
-    else
-    {
-        scaleVec_.y() = 1.0;
-    }
-
-    // specify scaleX
-    if (dict.found("scaleZ"))
-    {
-        scaleVec_.z() = readScalar(dict.lookup("scaleZ"));
-    }
-    else
-    {
-        scaleVec_.z() = 1.0;
-    }
+    scaleVec_.x() = dict.lookupOrDefault<scalar>("scaleX", 1.0);
+    scaleVec_.y() = dict.lookupOrDefault<scalar>("scaleY", 1.0);
+    scaleVec_.z() = dict.lookupOrDefault<scalar>("scaleZ", 1.0);
 
     calculateBndBox();
 }

@@ -148,12 +148,16 @@ void meshOptimizer::calculatePointLocations()
 
     // mark edge vertices
     meshSurfacePartitioner mPart(mse);
-    forAllConstIter(labelHashSet, mPart.edgePoints(), it)
-        vertexLocation_[bPoints[it.key()]] = EDGE;
+    for (const label edgei : mPart.edgePoints())
+    {
+        vertexLocation_[bPoints[edgei]] = EDGE;
+    }
 
     // mark corner vertices
-    forAllConstIter(labelHashSet, mPart.corners(), it)
-        vertexLocation_[bPoints[it.key()]] = CORNER;
+    for (const label corneri : mPart.corners())
+    {
+        vertexLocation_[bPoints[corneri]] = CORNER;
+    }
 
     if (Pstream::parRun())
     {

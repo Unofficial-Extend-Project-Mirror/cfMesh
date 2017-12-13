@@ -104,7 +104,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
     {
         forAll(newPatches, patchI)
         {
-            newPatches[patchI].name() = prefix + help::scalarToText(patchI);
+            newPatches[patchI].name() = prefix + Foam::name(patchI);
             newPatches[patchI].geometricType() = "patch";
             newPatches[patchI].index() = patchI;
         }
@@ -119,7 +119,7 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
                     surf_[facetsInPatch(patchI, fpI)].region();
                 newPatches[patchI].name() =
                     surf_.patches()[origPatchI].name() + '_' +
-                    help::scalarToText(patchI);
+                    Foam::name(patchI);
                 newPatches[patchI].geometricType() =
                     surf_.patches()[origPatchI].geometricType();
                 newPatches[patchI].index() = patchI;
@@ -237,8 +237,10 @@ const triSurf* triSurfacePatchManipulator::surfaceWithPatches
 
             label counter(0);
 
-            forAllConstIter(labelHashSet, patchToNewPatches[patchI], it)
-                patchesForPatch[pName][counter++] = newPatches[it.key()].name();
+            for (const label it : patchToNewPatches[patchI])
+            {
+                patchesForPatch[pName][counter++] = newPatches[it].name();
+            }
         }
 
         reduce(foundProblematic, maxOp<bool>());

@@ -67,11 +67,6 @@ inline Foam::subGraph<graphType>::subGraph
 {}
 
 
-template<class graphType>
-inline Foam::subGraph<graphType>::~subGraph()
-{}
-
-
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class graphType>
@@ -118,13 +113,24 @@ inline bool Foam::subGraph<graphType>::contains
 
 
 template<class graphType>
-inline Foam::label Foam::subGraph<graphType>::containsAtPosition
+inline bool Foam::subGraph<graphType>::found
 (
     const label rowI,
     const label e
 ) const
 {
-    return data_.containsAtPosition(start_ + rowI, e);
+    return data_.found(start_ + rowI, e);
+}
+
+
+template<class graphType>
+inline Foam::label Foam::subGraph<graphType>::find
+(
+    const label rowI,
+    const label e
+) const
+{
+    return data_.find(start_ + rowI, e);
 }
 
 
@@ -157,7 +163,7 @@ inline Foam::label& Foam::subGraph<graphType>::operator()
 
 
 template<class graphType>
-inline const Foam::graphRow<const graphType>
+inline const Foam::graphConstRow<graphType>
 Foam::subGraph<graphType>::operator[]
 (
     const label i
@@ -168,7 +174,7 @@ Foam::subGraph<graphType>::operator[]
 
 
 template<class graphType>
-inline Foam::graphRow <graphType>
+inline Foam::graphRow<graphType>
 Foam::subGraph<graphType>::operator[](const label i)
 {
     return data_[start_ + i];

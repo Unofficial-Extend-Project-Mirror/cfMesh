@@ -212,12 +212,7 @@ void boundaryLayers::createNewFacesParallel
 
     label nTreatedEdges(0);
     boolList treatEdge(edgeFaces.size(), false);
-    for
-    (
-        Map<label>::const_iterator iter = globalToLocal.begin();
-        iter!=globalToLocal.end();
-        ++iter
-    )
+    forAllConstIters(globalToLocal, iter)
     {
         const label beI = iter();
 
@@ -283,7 +278,7 @@ void boundaryLayers::createNewFacesParallel
         }
 
         const label bfI = edgeFaces(beI, 0);
-        const label pos = faceEdges.containsAtPosition(bfI, beI);
+        const label pos = faceEdges.find(bfI, beI);
         const edge e = bFaces[bfI].faceEdge(pos);
 
         if (otherFaceProc[beI] > Pstream::myProcNo())

@@ -63,10 +63,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
     typedef std::map<label, ltvMap> lltvMap;
     lltvMap pointPatchNormal;
 
-    forAllConstIter(labelHashSet, corners, it)
+    for (const label bpI : corners)
     {
-        const label bpI = it.key();
-
         if (activePointsPtr_ && !activePointsPtr_->operator[](bpI))
             continue;
 
@@ -88,10 +86,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
-    forAllConstIter(labelHashSet, edgePoints, it)
+    for (const label bpI : edgePoints)
     {
-        const label bpI = it.key();
-
         if (activePointsPtr_ && !activePointsPtr_->operator[](bpI))
             continue;
 
@@ -123,7 +119,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         forAll(neiProcs, i)
             exchangeData[neiProcs[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label bpI = it();
 
@@ -138,7 +134,8 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                     if (neiProc == Pstream::myProcNo())
                         continue;
 
-                    forAllConstIter(ltvMap, patchNormal, pIt)
+                    forAllConstIters(patchNormal, pIt)
+                    {
                         exchangeData[neiProc].append
                         (
                             refLabelledPoint
@@ -147,6 +144,7 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
                                 labelledPoint(pIt->first, pIt->second)
                             )
                         );
+                    }
                 }
             }
         }
@@ -166,11 +164,11 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
         }
     }
 
-    forAllIter(lltvMap, pointPatchNormal, it)
+    forAllIters(pointPatchNormal, it)
     {
-        ltvMap& patchNormal = pointPatchNormal[it->first];
+        auto& patchNormal = pointPatchNormal[it->first];
 
-        forAllIter(ltvMap, patchNormal, pIt)
+        forAllIters(patchNormal, pIt)
         {
             const scalar magv = mag(pIt->second) + VSMALL;
 
@@ -369,9 +367,11 @@ void meshSurfaceCheckInvertedVertices::checkVertices()
 
         std::map<label, labelLongList> shareData;
         forAll(neiProcs, i)
+        {
             shareData.insert(std::make_pair(neiProcs[i], labelLongList()));
+        }
 
-        forAllConstIter(Map<label>, globalToLocal, iter)
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
 

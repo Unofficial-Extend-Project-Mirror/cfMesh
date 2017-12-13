@@ -171,9 +171,7 @@ public:
             os << ls.sLabel_ << token::SPACE;
             os << ls.value_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -188,9 +186,7 @@ public:
             // Read end of labelledScalar
             is.readEnd("labelledScalar");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

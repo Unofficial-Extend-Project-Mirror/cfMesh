@@ -121,8 +121,7 @@ void renameBoundaryPatches::calculateNewBoundary()
             {
                 word newName(mesh_.getPatchName(matchedPatches[matchI]));
 
-                if (pDict.found("newName"))
-                    newName = word(pDict.lookup("newName"));
+                pDict.readIfPresent("newName", newName);
 
                 if (newNameToPos.find(newName) != newNameToPos.end())
                 {
@@ -134,15 +133,9 @@ void renameBoundaryPatches::calculateNewBoundary()
                 // add a new patch
                 newNameToPos.insert(std::pair<word, label>(newName, newPatchI));
                 newPatchNames[newPatchI] = newName;
-                if (pDict.found("type"))
-                {
-                    const word newType(pDict.lookup("type"));
-                    newPatchTypes[newPatchI] = newType;
-                }
-                else
-                {
-                    newPatchTypes[newPatchI] = "wall";
-                }
+                newPatchTypes[newPatchI] = "wall";
+
+                pDict.readIfPresent("type", newPatchTypes[newPatchI]);
 
                 patchToNew[matchedPatches[matchI]] = newPatchI;
                 ++newPatchI;
@@ -151,21 +144,22 @@ void renameBoundaryPatches::calculateNewBoundary()
     }
 
     word defaultName("walls");
-    if (dict.found("defaultName"))
-        defaultName = word(dict.lookup("defaultName"));
+    dict.readIfPresent("defaultName", defaultName);
+
     word defaultType("wall");
-    if (dict.found("defaultType"))
-        defaultType = word(dict.lookup("defaultType"));
+    dict.readIfPresent("defaultType", defaultType);
 
     if (dict.found("defaultName") && (newPatchI < patchToNew.size()))
     {
         bool addPatch(false);
         forAll(patchToNew, patchI)
+        {
             if (patchToNew[patchI] == -1)
             {
                 addPatch = true;
                 break;
             }
+        }
 
         if (addPatch)
         {
@@ -179,8 +173,7 @@ void renameBoundaryPatches::calculateNewBoundary()
     {
         forAll(patchToNew, patchI)
         {
-            if (patchToNew[patchI] != -1)
-                continue;
+            if (patchToNew[patchI] != -1) continue;
 
             patchToNew[patchI] = newPatchI;
             newPatchNames[newPatchI] = mesh_.boundaries()[patchI].patchName();

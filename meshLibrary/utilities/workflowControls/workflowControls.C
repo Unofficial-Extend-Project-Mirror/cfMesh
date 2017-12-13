@@ -40,25 +40,21 @@ bool workflowControls::restartRequested() const
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
+    bool restart = false;
+
     if
     (
         meshDict.found("workflowControls")
      && meshDict.isDict("workflowControls")
     )
     {
-        const dictionary& workflowControls =
+        const dictionary& controls =
             meshDict.subDict("workflowControls");
 
-        if (workflowControls.found("restartFromLatestStep"))
-        {
-            const bool restart =
-                readBool(workflowControls.lookup("restartFromLatestStep"));
-
-            return restart;
-        }
+        controls.readIfPresent("restartFromLatestStep", restart);
     }
 
-    return false;
+    return restart;
 }
 
 
@@ -112,21 +108,20 @@ bool workflowControls::exitAfterCurrentStep() const
     const dictionary& meshDict =
         mesh_.returnTime().lookupObject<dictionary>("meshDict");
 
-    if
-    (
-        meshDict.found("workflowControls") &&
-        meshDict.isDict("workflowControls")
-    )
+    if (meshDict.isDict("workflowControls"))
     {
-        const dictionary& workflowControls =
+        const dictionary& controls =
             meshDict.subDict("workflowControls");
 
-        if (workflowControls.found("stopAfter"))
-        {
-            const word exitStep(workflowControls.lookup("stopAfter"));
+        word exitStep;
 
-            if (exitStep == currentStep_)
-                return true;
+        if
+        (
+            controls.readIfPresent("stopAfter", exitStep)
+         && exitStep == currentStep_
+        )
+        {
+            return true;
         }
     }
 
@@ -152,7 +147,9 @@ DynList<word> workflowControls::completedSteps() const
     DynList<word> completedSteps;
 
     if (mesh_.metaData().found("completedSteps"))
+    {
         completedSteps = wordList(mesh_.metaData().lookup("completedSteps"));
+    }
 
     return completedSteps;
 }
@@ -282,10 +279,10 @@ bool workflowControls::runCurrentStep(const word& stepName)
 {
     if
     (
-        completedStepsBeforeRestart_.size() &&
-        completedStepsBeforeRestart_.contains(currentStep_) &&
-        restartRequested() &&
-        !isRestarted_
+        completedStepsBeforeRestart_.size()
+     && completedStepsBeforeRestart_.found(currentStep_)
+     && restartRequested()
+     && !isRestarted_
     )
     {
         Info<< "Step " << currentStep_ << " has already been executed" << endl;
@@ -305,12 +302,13 @@ bool workflowControls::runCurrentStep(const word& stepName)
     }
 
     // check if the requested step exists in the database of steps
-    std::map<word, label>::const_iterator it = workflowSteps_.find(stepName);
-    if (it == workflowSteps_.end())
+    if (workflowSteps_.find(stepName) == workflowSteps_.end())
     {
         DynList<word> toc;
-        for (it = workflowSteps_.begin(); it!=workflowSteps_.end(); ++it)
+        forAllConstIters(workflowSteps_, it)
+        {
             toc.append(it->first);
+        }
 
         FatalErrorInFunction
             << "Step " << stepName << " is not a valid name."

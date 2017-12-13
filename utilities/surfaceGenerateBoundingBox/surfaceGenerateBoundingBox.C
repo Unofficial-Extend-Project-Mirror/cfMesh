@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName outFileName(args.args()[2]);
+    fileName inFileName(args[1]);
+    fileName outFileName(args[2]);
 
     if (outFileName == inFileName)
     {
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     for (label i = 3; i < 9; ++i)
     {
         std::stringstream ss;
-        ss << args.args()[i];
+        ss << args[i];
 
         scalar s;
         ss >> s;

@@ -173,13 +173,10 @@ void boundaryLayerOptimisation::readSettings
     {
         const dictionary& layersDict = meshDict.subDict("boundaryLayers");
 
-        if (layersDict.found("optimiseLayer"))
+        bool smoothLayers;
+        if (layersDict.readIfPresent("optimiseLayer", smoothLayers))
         {
-            const bool smoothLayers =
-                readBool(layersDict.lookup("optimiseLayer"));
-
-            if (!smoothLayers)
-                return;
+            if (!smoothLayers) return;
         }
 
         if (layersDict.found("optimisationParameters"))
@@ -187,27 +184,21 @@ void boundaryLayerOptimisation::readSettings
             const dictionary& optParams =
                 layersDict.subDict("optimisationParameters");
 
-            if (optParams.found("recalculateNormals"))
+            bool recalcNormals;
+            if (optParams.readIfPresent("recalculateNormals", recalcNormals))
             {
-                const bool recalculateNormals =
-                    readBool(optParams.lookup("recalculateNormals"));
-
-                blOptimisation.recalculateNormals(recalculateNormals);
+                blOptimisation.recalculateNormals(recalcNormals);
             }
 
-            if (optParams.found("nSmoothNormals"))
+            label nSmoothNormals;
+            if (optParams.readIfPresent("nSmoothNormals", nSmoothNormals))
             {
-                const label nSmoothNormals =
-                    readLabel(optParams.lookup("nSmoothNormals"));
-
                 blOptimisation.setNumNormalsSmoothingIterations(nSmoothNormals);
             }
 
-            if (optParams.found("featureSizeFactor"))
+            scalar featureSizeFactor;
+            if (optParams.readIfPresent("featureSizeFactor", featureSizeFactor))
             {
-                const scalar featureSizeFactor =
-                    readScalar(optParams.lookup("featureSizeFactor"));
-
                 if (featureSizeFactor >= 1.0 || featureSizeFactor < 0.0)
                     FatalErrorInFunction
                         << "Feature size factor is out"
@@ -216,11 +207,9 @@ void boundaryLayerOptimisation::readSettings
                 blOptimisation.setFeatureSizeFactor(featureSizeFactor);
             }
 
-            if (optParams.found("relThicknessTol"))
+            scalar relThicknessTol;
+            if (optParams.readIfPresent("relThicknessTol", relThicknessTol))
             {
-                const scalar relThicknessTol =
-                    readScalar(optParams.lookup("relThicknessTol"));
-
                 if (relThicknessTol >= 1.0 || relThicknessTol < 0.0)
                     FatalErrorInFunction
                         << "Relative thickness tolerance is out"
@@ -229,11 +218,9 @@ void boundaryLayerOptimisation::readSettings
                 blOptimisation.setRelativeThicknessTolerance(relThicknessTol);
             }
 
-            if (optParams.found("maxNumIterations"))
+            label maxNumIterations;
+            if (optParams.readIfPresent("maxNumIterations", maxNumIterations))
             {
-                const label maxNumIterations =
-                    readLabel(optParams.lookup("maxNumIterations"));
-
                 blOptimisation.setMaxNumIterations(maxNumIterations);
             }
         }

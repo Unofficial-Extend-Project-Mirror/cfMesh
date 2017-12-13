@@ -48,12 +48,16 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
     vertexType_ = PARTITION;
 
     // set corners
-    forAllConstIter(labelHashSet, corners, it)
-        vertexType_[it.key()] = CORNER;
+    for (const label corneri : corners)
+    {
+        vertexType_[corneri] = CORNER;
+    }
 
     // set edges
-    forAllConstIter(labelHashSet, edgePoints, it)
-        vertexType_[it.key()] = EDGE;
+    for (const label edgei : edgePoints)
+    {
+        vertexType_[edgei] = EDGE;
+    }
 
     if (Pstream::parRun())
     {
@@ -61,7 +65,7 @@ void meshSurfaceOptimizer::classifySurfaceVertices()
         const Map<label>& globalToLocal =
             surfaceEngine_.globalToLocalBndPointAddressing();
 
-        forAllConstIter(Map<label>, globalToLocal, iter)
+        forAllConstIters(globalToLocal, iter)
         {
             const label bpI = iter();
 

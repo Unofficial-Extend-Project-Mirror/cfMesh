@@ -154,7 +154,7 @@ public:
             exchangeData[mse_.beNeiProcs()[procI]].clear();
         }
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 
@@ -396,9 +396,8 @@ void detectBoundaryLayers::analyseLayers()
     polyMeshGen& pmg = const_cast<polyMeshGen&>(mesh);
     forAll(layerSubsetId, i)
     {
-        layerSubsetId[i] = pmg.addCellSubset("bndLayer"+help::scalarToText(i));
+        layerSubsetId[i] = pmg.addCellSubset("bndLayer" + Foam::name(i));
     }
-
 
     forAll(layerAtBndFace_, bfI)
     {
@@ -468,12 +467,7 @@ void detectBoundaryLayers::analyseLayers()
         layerAtPatch_[i].clear();
     }
 
-    for
-    (
-        patchToLayerType::const_iterator it = patchToLayer.begin();
-        it!=patchToLayer.end();
-        ++it
-    )
+    forAllConstIters(patchToLayer, it)
     {
         const DynList<label>& layersAtPatch = it->second;
 
@@ -549,7 +543,7 @@ bool detectBoundaryLayers::findHairsForFace
         {
             const edge e = f.faceEdge(eI);
 
-            label pos = edges.containsAtPosition(e);
+            label pos = edges.find(e);
 
             if (pos < 0)
             {
@@ -606,8 +600,8 @@ bool detectBoundaryLayers::findHairsForFace
         {
             if
             (
-                edgeFaces[commonEdge].contains(otherNextFace) &&
-                edgeFaces[commonEdge].contains(otherPrevFace)
+                edgeFaces[commonEdge].found(otherNextFace)
+             && edgeFaces[commonEdge].found(otherPrevFace)
             )
             {
                 break;

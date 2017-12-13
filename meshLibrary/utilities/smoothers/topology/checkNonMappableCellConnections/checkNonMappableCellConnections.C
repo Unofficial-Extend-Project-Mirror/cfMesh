@@ -124,7 +124,7 @@ void checkNonMappableCellConnections::findCellTypes()
 
             while (front.size())
             {
-                const label fLabel = front.removeLastElement();
+                const label fLabel = front.remove();
 
                 forAll(internalFaces, j)
                 {
@@ -309,8 +309,10 @@ bool checkNonMappableCellConnections::removeCells()
         if (nRemoved != 0)
         {
             boolList removeCell(mesh_.cells().size(), false);
-            forAllConstIter(labelHashSet, badCells, it)
-                removeCell[it.key()] = true;
+            for (const label celli : badCells)
+            {
+                removeCell[celli] = true;
+            }
 
             polyMeshGenModifier(mesh_).removeCells(removeCell);
 

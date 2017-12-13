@@ -75,7 +75,7 @@ void polyMeshGenModifier::renumberMesh()
                 // add it to the end of the nextCell list
                 while (nextCell.size() > 0)
                 {
-                    currentCell = nextCell.removeLastElement();
+                    currentCell = nextCell.remove();
 
                     if (!visited[currentCell])
                     {

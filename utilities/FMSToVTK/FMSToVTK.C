@@ -333,8 +333,8 @@ int main(int argc, char *argv[])
     argList args(argc, argv);
 
     // Process commandline arguments
-    fileName inFileName(args.args()[1]);
-    fileName outPrefix(args.args()[2]);
+    fileName inFileName(args[1]);
+    fileName outPrefix(args[2]);
 
     // Read original surface
     triSurf origSurf(inFileName);

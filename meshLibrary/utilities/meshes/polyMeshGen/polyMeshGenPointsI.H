@@ -96,16 +96,12 @@ inline void polyMeshGenPoints::pointInSubsets
 {
     pointSubsets.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = pointSubsets_.begin();
-        it!=pointSubsets_.end();
-        ++it
-    )
+    forAllConstIters(pointSubsets_, it)
     {
         if (it->second.contains(pointI))
+        {
             pointSubsets.append(it->first);
+        }
     }
 }
 
@@ -114,13 +110,7 @@ inline void polyMeshGenPoints::pointSubsetIndices(DynList<label>& indices) const
 {
     indices.clear();
 
-    std::map<label, meshSubset>::const_iterator it;
-    for
-    (
-        it = pointSubsets_.begin();
-        it!=pointSubsets_.end();
-        ++it
-    )
+    forAllConstIters(pointSubsets_, it)
     {
         indices.append(it->first);
     }
@@ -149,12 +139,7 @@ inline void polyMeshGenPoints::pointsInSubset
 template<class ListType>
 inline void polyMeshGenPoints::updatePointSubsets(const ListType& newNodeLabels)
 {
-    for
-    (
-        std::map<label, meshSubset>::iterator it = pointSubsets_.begin();
-        it!=pointSubsets_.end();
-        ++it
-    )
+    forAllIters(pointSubsets_, it)
     {
         it->second.updateSubset(newNodeLabels);
     }

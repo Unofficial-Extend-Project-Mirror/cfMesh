@@ -78,7 +78,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
             mse.globalToLocalBndEdgeAddressing();
         const VRWGraph& beAtProcs = mse.beAtProcs();
         const Map<label>& otherProcPatch = mse.otherEdgeFacePatch();
-        forAllConstIter(Map<label>, globalToLocalEdge, it)
+        forAllConstIters(globalToLocalEdge, it)
         {
             const label beI = it();
 
@@ -98,7 +98,7 @@ void correctEdgesBetweenPatches::decomposeProblematicFaces()
 
         // append labels of feature edges that need to be sent to other
         // processors sharing that edge
-        forAllConstIter(Map<label>, globalToLocalEdge, it)
+        forAllConstIters(globalToLocalEdge, it)
         {
             const label beI = it();
 
@@ -317,7 +317,7 @@ void correctEdgesBetweenPatches::decomposeConcaveFaces()
         forAll(mse.beNeiProcs(), i)
             exchangeData[mse.beNeiProcs()[i]].clear();
 
-        forAllConstIter(Map<label>, globalToLocal, it)
+        forAllConstIters(globalToLocal, it)
         {
             const label beI = it();
 
@@ -454,13 +454,17 @@ void correctEdgesBetweenPatches::patchCorrection()
 
     // set corner flags
     const labelHashSet& corners = surfacePartitioner.corners();
-    forAllConstIter(labelHashSet, corners, it)
-        nodeType[it.key()] |= 1;
+    for (const label corneri : corners)
+    {
+        nodeType[corneri] |= 1;
+    }
 
     // set flgs to edge vertices
     const labelHashSet& edgePoints = surfacePartitioner.edgePoints();
-    forAllConstIter(labelHashSet, edgePoints, it)
-        nodeType[it.key()] |= 2;
+    for (const label pointi : edgePoints)
+    {
+        nodeType[pointi] |= 2;
+    }
 
     // set flags for feature edges
     boolList featureEdge(edgeFaces.size(), false);
@@ -482,9 +486,13 @@ void correctEdgesBetweenPatches::patchCorrection()
         // set flags for edges at parallel boundaries
         const Map<label>& otherProcPatch = mse.otherEdgeFacePatch();
 
-        forAllConstIter(Map<label>, otherProcPatch, it)
+        forAllConstIters(otherProcPatch, it)
+        {
             if (facePatches[edgeFaces(it.key(), 0)] != it())
+            {
                 featureEdge[it.key()] = true;
+            }
+        }
     }
 
     // decompose bad faces into triangles

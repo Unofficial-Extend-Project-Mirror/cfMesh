@@ -22,66 +22,98 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    FOamIOLongList
+    Foam::graphConstRow
 
 Description
-    An IOLongList of a given type is a List of that type which supports
-    automated input and output.
+    This class provides const access to a row of a graph
 
 SourceFiles
-    IOLongList.C
+    graphConstRowI.H
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef IOLongList_H
-#define IOLongList_H
+#ifndef graphConstRow_H
+#define graphConstRow_H
 
-#include "LongList.H"
-#include "regIOobject.H"
+#include "Ostream.H"
+#include "error.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+class Ostream;
+template<class graphType> class graphRow;
+template<class graphType> class graphConstRow;
+
+template<class graphType>
+Ostream& operator<<(Ostream&, const graphConstRow<graphType>&);
+
 
 /*---------------------------------------------------------------------------*\
-                         Class IOLongList Declaration
+                        Class graphConstRow Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, int Offset = 19>
-class IOLongList
-:
-    public regIOobject,
-    public LongList<T, Offset>
+template<class graphType>
+class graphConstRow
 {
+    // Private data
+
+        //- Const reference to the graph
+        const graphType& data_;
+
+        //- Row number
+        const label rowI_;
+
+
+    // Private Member Functions
+
+        //- Avoid possible confusion
+        void operator=(const graphConstRow<graphType>&) = delete;
+
 public:
-
-    //- Runtime type information
-    TypeName("LongList");
-
 
     // Constructors
 
-        //- Construct from IOobject
-        IOLongList(const IOobject&);
+        //- Construct from graph and row number
+        inline graphConstRow(const graphType& g, const label i);
 
-        //- Construct from IOobject and size of IOLongList
-        IOLongList(const IOobject&, const label);
+        //- Copy contructor
+        inline graphConstRow(const graphConstRow<graphType>& r);
 
-        //- Construct from IOobject and a List
-        IOLongList(const IOobject&, const LongList<T, Offset>&);
-
-
-    // Member functions
-
-        bool writeData(Ostream&) const;
+        //- Copy contructor from non-const version
+        inline graphConstRow(const graphRow<graphType>& r);
 
 
-    // Member operators
+    //- Destructor
+    ~graphConstRow() = default;
 
-        void operator=(const IOLongList<T, Offset>&);
 
-        void operator=(const LongList<T, Offset>&);
+    // Member Functions
+
+        //- Return the number of elements in the row
+        inline label size() const;
+
+
+    // Member Operators
+
+        //- check if the element is in the given row (takes linear time)
+        inline bool contains(const label e) const;
+        inline bool found(const label e) const;
+        inline label find(const label e) const;
+
+        //- Get operator
+        inline label operator[](const label) const;
+
+    // IOstream operators
+
+        //- Write graphConstRow contents to Ostream.
+        friend Ostream& operator<< <graphType>
+        (
+            Ostream& os,
+            const graphConstRow<graphType>& r
+        );
+
 };
 
 
@@ -91,9 +123,7 @@ public:
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#ifdef NoRepository
-#   include "IOLongList.C"
-#endif
+#include "graphConstRowI.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

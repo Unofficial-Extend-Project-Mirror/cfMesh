@@ -105,12 +105,12 @@ int main(int argc, char *argv[])
 
     argList::validArgs.append("input surface file");
     argList::validArgs.append("output surface file");
-    argList::validOptions.insert("exportSubsets", "");
-    argList::validOptions.insert("exportFeatureEdges", "");
+    argList::addBoolOption("exportSubsets");
+    argList::addBoolOption("exportFeatureEdges");
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName outFileName(args.args()[2]);
+    const fileName inFileName(args[1]);
+    const fileName outFileName(args[2]);
 
     fileName outFileNoExt = outFileName.lessExt();
     fileName outExtension = outFileName.ext();
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
     origSurf.writeSurface(outFileName);
 
     // export surface subsets as separate surface meshes
-    if (args.options().found("exportSubsets"))
+    if (args.optionFound("exportSubsets"))
     {
         DynList<label> subsetIDs;
         origSurf.facetSubsetIndices(subsetIDs);
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (args.options().found("exportFeatureEdges"))
+    if (args.optionFound("exportFeatureEdges"))
     {
         fileName fName = outFileNoExt+"_featureEdges";
         fName += ".vtk";

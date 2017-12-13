@@ -84,7 +84,7 @@ void triSurfacePatchManipulator::createPatches()
 
         while (front.size())
         {
-            const label fLabel = front.removeLastElement();
+            const label fLabel = front.remove();
 
             const constRow fEdges = faceEdges[fLabel];
 

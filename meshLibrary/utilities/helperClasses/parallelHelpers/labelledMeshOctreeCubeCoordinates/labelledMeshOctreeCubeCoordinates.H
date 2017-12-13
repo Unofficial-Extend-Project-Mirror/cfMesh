@@ -115,12 +115,8 @@ public:
             const labelledMeshOctreeCubeCoordinates& lcc
         ) const
         {
-            if (cLabel_ == lcc.cLabel_)
-            {
-                return true;
-            }
-
-            return false;
+            return (cLabel_ == lcc.cLabel_);
+        }
         }
 
         inline bool operator!=
@@ -144,9 +140,7 @@ public:
             os << lcc.cLabel_ << token::SPACE;
             os << lcc.coordinates_ << token::END_LIST;
 
-            // Check state of Ostream
             os.check(FUNCTION_NAME);
-
             return os;
         }
 
@@ -165,9 +159,7 @@ public:
             // Read end of labelledMeshOctreeCubeCoordinates
             is.readEnd("labelledMeshOctreeCubeCoordinates");
 
-            // Check state of Istream
             is.check(FUNCTION_NAME);
-
             return is;
         }
 };

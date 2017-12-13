@@ -299,11 +299,7 @@ void lineRefinement::operator=(const dictionary& d)
     );
 
     // unspecified centre is (0 0 0)
-    if (dict.found("p0"))
-    {
-        dict.lookup("p0") >> p0_;
-    }
-    else
+    if (!dict.readIfPresent("p0", p0_))
     {
         FatalErrorInFunction
             << "Entry p0 is not specified!" << exit(FatalError);
@@ -311,12 +307,7 @@ void lineRefinement::operator=(const dictionary& d)
         p0_ = vector::zero;
     }
 
-    // specify radius
-    if (dict.found("p1"))
-    {
-        dict.lookup("p1") >> p1_;
-    }
-    else
+    if (!dict.readIfPresent("p1", p1_))
     {
         FatalErrorInFunction
             << "Entry p1 is not specified!" << exit(FatalError);

@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     argList::validArgs.append("input surface file");
     argList args(argc, argv);
 
-    const fileName inFileName(args.args()[1]);
+    const fileName inFileName(args[1]);
 
     triSurf surf(inFileName);
 

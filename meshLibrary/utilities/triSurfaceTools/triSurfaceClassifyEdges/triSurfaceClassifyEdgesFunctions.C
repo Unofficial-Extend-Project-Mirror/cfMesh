@@ -67,7 +67,7 @@ void triSurfaceClassifyEdges::checkOrientation()
 
         while (front.size() != 0)
         {
-            const label tLabel = front.removeLastElement();
+            const label tLabel = front.remove();
 
             const labelledTri& facet = surf[tLabel];
 

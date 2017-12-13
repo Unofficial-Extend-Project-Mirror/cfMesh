@@ -66,7 +66,7 @@ void frontalMarking
     // start with frontal marking
     while (front.size())
     {
-        const label eLabel = front.removeLastElement();
+        const label eLabel = front.remove();
 
         // find neighbours of the current element
         DynList<label> neighbours;
@@ -233,7 +233,7 @@ label groupMarking
 
             while (front.size())
             {
-                const label eLabel = front.removeLastElement();
+                const label eLabel = front.remove();
 
                 DynList<label> neighbours;
                 neighbourCalculator(eLabel, neighbours);
@@ -444,13 +444,7 @@ label groupMarking
         List<List<labelPair>> globalNeiGroups(Pstream::nProcs());
 
         DynList<labelPair> connsAtProc;
-        for
-        (
-            std::map<label, DynList<label>>::const_iterator it =
-            neiGroups.begin();
-            it!=neiGroups.end();
-            ++it
-        )
+        forAllConstIters(neiGroups, it)
         {
             const DynList<label>& ng = it->second;
 

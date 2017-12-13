@@ -49,11 +49,11 @@ int main(int argc, char *argv[])
     argList::validArgs.clear();
     argList::validArgs.append("input surface file");
     argList::validArgs.append("output surface file");
-    argList::validOptions.insert("angle", "scalar");
+    argList::addOption("angle", "scalar");
     argList args(argc, argv);
 
-    fileName inFileName(args.args()[1]);
-    fileName outFileName(args.args()[2]);
+    const fileName inFileName(args[1]);
+    const fileName outFileName(args[2]);
 
     if (outFileName == inFileName)
     {
@@ -64,12 +64,7 @@ int main(int argc, char *argv[])
     }
 
     scalar tol(45.0);
-    if (args.options().found("angle"))
-    {
-        const scalar ang = readScalar(IStringStream(args.options()["angle"])());
-        tol = ang;
-    }
-    else
+    if (!args.optionReadIfPresent("angle", tol))
     {
         Info<< "Using 45 deg as default angle!" << endl;
     }

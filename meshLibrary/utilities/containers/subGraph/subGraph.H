@@ -39,6 +39,7 @@ SourceFiles
 #include "Ostream.H"
 #include "error.H"
 #include "graphRow.H"
+#include "graphConstRow.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -88,7 +89,7 @@ public:
 
 
     //- Destructor
-    inline ~subGraph();
+    ~subGraph() = default;
 
 
     // Member Functions
@@ -110,12 +111,13 @@ public:
 
         //- check if the element is in the given row (takes linear time)
         inline bool contains(const label rowI, const label e) const;
-        inline label containsAtPosition(const label rowI, const label e) const;
+        inline bool found(const label rowI, const label e) const;
+        inline label find(const label rowI, const label e) const;
 
         //- set and get operators
         inline label operator()(const label i, const label j) const;
         inline label& operator()(const label i, const label j);
-        inline const graphRow<const graphType> operator[](const label) const;
+        inline const graphConstRow<graphType> operator[](const label) const;
         inline graphRow<graphType> operator[](const label);
 
 

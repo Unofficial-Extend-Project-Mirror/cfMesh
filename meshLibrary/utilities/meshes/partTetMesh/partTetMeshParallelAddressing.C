@@ -103,7 +103,7 @@ void partTetMesh::createParallelAddressing
     // make sure that the same vertices are marked for smoothing on all procs
     // this is performed by sending the labels of vertices which are not used
     // for tet mesh creation and the tet mesh vertices which are not moved
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -143,7 +143,7 @@ void partTetMesh::createParallelAddressing
         smoothVertex_[nodeLabelForPoint[pointI]] = NONE;
     }
 
-    for (iter = exchangeData.begin(); iter!=exchangeData.end(); ++iter)
+    forAllIters(exchangeData, iter)
     {
         iter->second.clear();
     }
@@ -153,7 +153,7 @@ void partTetMesh::createParallelAddressing
     label startPoint(0), nLocalPoints(0), nSharedPoints(0);
 
     // count the number of points at processor boundaries
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -192,7 +192,7 @@ void partTetMesh::createParallelAddressing
     }
 
     // create global labels for points at processor boundaries
-    forAllConstIter(Map<label>, globalToLocalPointAddressing, it)
+    forAllConstIters(globalToLocalPointAddressing, it)
     {
         const label pI = it();
 
@@ -290,7 +290,7 @@ void partTetMesh::createParallelAddressing
     }
     DynList<label>& neiProcs = *neiProcsPtr_;
 
-    for (iter = exchangeData.begin(); iter!=exchangeData.end(); ++iter)
+    forAllConstIters(exchangeData, iter)
     {
         neiProcs.append(iter->first);
     }
@@ -503,7 +503,7 @@ void partTetMesh::createBufferLayers()
 
     // insert the global labels of the buffer points
     // into the globalToLocal map
-    forAllConstIter(Map<label>, newGlobalToLocal, it)
+    forAllConstIters(newGlobalToLocal, it)
     {
         globalToLocal.insert(it.key(), it());
     }
@@ -513,7 +513,7 @@ void partTetMesh::createBufferLayers()
     {
         if (Pstream::myProcNo() == i)
         {
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 DynList<label> np;
                 if (it() < pProcs.size())

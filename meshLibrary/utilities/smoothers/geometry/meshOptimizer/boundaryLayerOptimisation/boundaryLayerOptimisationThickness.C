@@ -74,7 +74,7 @@ void boundaryLayerOptimisation::hairEdgesAtBndFace
         {
             const edge e = f.faceEdge(eI);
 
-            label pos = edges.containsAtPosition(e);
+            label pos = edges.find(e);
 
             if (pos < 0)
             {
@@ -111,11 +111,16 @@ void boundaryLayerOptimisation::hairEdgesAtBndFace
 
         label commonEdge;
         for (commonEdge = 0; commonEdge < edges.size(); ++commonEdge)
-            if (
-                edgeFaces[commonEdge].contains(otherNextFace) &&
-                edgeFaces[commonEdge].contains(otherPrevFace)
+        {
+            if
+            (
+                edgeFaces[commonEdge].found(otherNextFace)
+             && edgeFaces[commonEdge].found(otherPrevFace)
             )
+            {
                 break;
+            }
+        }
 
         if (commonEdge == edges.size())
             break;
@@ -425,19 +430,19 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
         {
             const scalar magN = hairLength[hairEdgeI];
 
-            if( magN < VSMALL )
+            if (magN < VSMALL)
                 FatalErrorInFunction
                     << "Zero layer thickness at hair edge " << hairEdgeI
                     << ". Exitting..." << exit(FatalError);
 
-            if( hairEdgeType_[hairEdgeI] & edgeType )
+            if (hairEdgeType_[hairEdgeI] & edgeType)
             {
                 forAllRow(hairEdgesNearHairEdge_, hairEdgeI, nheI)
                 {
                     const label hairEdgeJ =
                         hairEdgesNearHairEdge_(hairEdgeI, nheI);
 
-                    if( !activeHairEdge[hairEdgeJ] )
+                    if (!activeHairEdge[hairEdgeJ])
                         continue;
 
                     const scalar maxThickness =
@@ -447,7 +452,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
                             hairEdgeJ
                         );
 
-                    if( hairLength[hairEdgeI] > maxThickness )
+                    if (hairLength[hairEdgeI] > maxThickness)
                     {
                         // make the hair edge shorter
                         hairLength[hairEdgeI] = maxThickness;
@@ -482,7 +487,7 @@ void boundaryLayerOptimisation::optimiseThicknessVariation
             forAll(eNeiProcs, i)
                 exchangeData[eNeiProcs[i]].clear();
 
-            forAllConstIter(Map<label>, globalToLocal, it)
+            forAllConstIters(globalToLocal, it)
             {
                 const label bpI = it();
 

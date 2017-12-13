@@ -280,7 +280,7 @@ bool meshOctree::findNearestEdgePoint
                 {
                     const label facetI = edgeFaces(edgeI, efI);
 
-                    if (!regions.contains(surface_[facetI].region()))
+                    if (!regions.found(surface_[facetI].region()))
                     {
                         correctPatches = false;
                         break;
@@ -500,8 +500,10 @@ bool meshOctree::findNearestCorner
                         nEdges = 0;
                         forAll(patches, i)
                         {
-                            if (nodePatches.contains(patches[i]))
+                            if (nodePatches.found(patches[i]))
+                            {
                                 ++nEdges;
+                            }
                         }
 
                         if (nEdges >= patches.size())

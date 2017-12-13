@@ -510,25 +510,17 @@ void meshOctreeAddressing::findUsedBoxes() const
             boxType[leafI] |= MESHCELL;
     }
 
-    if (meshDict_.found("nonManifoldMeshing"))
+    if (meshDict_.lookupOrDefault<bool>("nonManifoldMeshing", false))
     {
-        const bool nonManifoldMesh
-        (
-            readBool(meshDict_.lookup("nonManifoldMeshing"))
-        );
-
-        if (nonManifoldMesh)
+        # ifdef USE_OMP
+        # pragma omp parallel for schedule(dynamic, 40)
+        # endif
+        forAll(boxType, leafI)
         {
-            # ifdef USE_OMP
-            # pragma omp parallel for schedule(dynamic, 40)
-            # endif
-            forAll(boxType, leafI)
+            const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
+            if (leaf.cubeType() & meshOctreeCubeBasic::UNKNOWN)
             {
-                const meshOctreeCubeBasic& leaf = octree_.returnLeaf(leafI);
-                if (leaf.cubeType() & meshOctreeCubeBasic::UNKNOWN)
-                {
-                    boxType[leafI] |= MESHCELL;
-                }
+                boxType[leafI] |= MESHCELL;
             }
         }
     }
@@ -577,9 +569,9 @@ void meshOctreeAddressing::findUsedBoxes() const
             boolList removeFacets(ts.size(), false);
 
             // remove facets in patches
-            forAllConstIter(HashSet<word>, patchesToRemove, it)
+            for (const word& patchName : patchesToRemove)
             {
-                const labelList matchedPatches = ts.findPatches(it.key());
+                const labelList matchedPatches = ts.findPatches(patchName);
                 boolList activePatch(ts.patches().size(), false);
                 forAll(matchedPatches, ptchI)
                 {
@@ -596,9 +588,9 @@ void meshOctreeAddressing::findUsedBoxes() const
             }
 
             // remove facets in subsets
-            forAllConstIter(HashSet<word>, patchesToRemove, it)
+            for (const word& patchName : patchesToRemove)
             {
-                const label subsetID = ts.facetSubsetIndex(it.key());
+                const label subsetID = ts.facetSubsetIndex(patchName);
                 if (subsetID >= 0)
                 {
                     labelLongList facets;
@@ -655,9 +647,9 @@ void meshOctreeAddressing::findUsedBoxes() const
         boolList keepFacets(ts.size(), false);
 
         // keep facets in patches
-        forAllConstIter(HashSet<word>, patchesToKeep, it)
+        for (const word& patchName : patchesToKeep)
         {
-            const labelList matchedPatches = ts.findPatches(it.key());
+            const labelList matchedPatches = ts.findPatches(patchName);
             boolList activePatch(ts.patches().size(), false);
             forAll(matchedPatches, ptchI)
             {
@@ -674,9 +666,9 @@ void meshOctreeAddressing::findUsedBoxes() const
         }
 
         // keep facets in subsets
-        forAllConstIter(wordHashSet, patchesToKeep, it)
+        for (const word& patchName : patchesToKeep)
         {
-            const label subsetID = ts.facetSubsetIndex(it.key());
+            const label subsetID = ts.facetSubsetIndex(patchName);
 
             if (subsetID >= 0)
             {
@@ -761,7 +753,7 @@ void meshOctreeAddressing::findUsedBoxes() const
             );
         }
 
-        forAllConstIter(Map<label>, globalLeafToLocal, iter)
+        forAllConstIters(globalLeafToLocal, iter)
         {
             const label leafI = iter();
 
