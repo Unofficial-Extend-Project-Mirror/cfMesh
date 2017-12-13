@@ -5,7 +5,6 @@
 |   \\  /    A nd           | Author: Franjo Juretic                         |
 |    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
 \*---------------------------------------------------------------------------*/
-
 FoamFile
 {
     version     2.0;

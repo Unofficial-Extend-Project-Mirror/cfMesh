@@ -1,11 +1,10 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                |
-| \\      /  F ield         | cfMesh: A library for mesh generation          | 
+| \\      /  F ield         | cfMesh: A library for mesh generation          |
 |  \\    /   O peration     |                                                |
-|   \\  /    A nd           | Author: Franjo Juretic                         | 
+|   \\  /    A nd           | Author: Franjo Juretic                         |
 |    \\/     M anipulation  | E-mail: franjo.juretic@c-fields.com            |
 \*---------------------------------------------------------------------------*/
-
 FoamFile
 {
     version   2.0;
@@ -16,22 +15,21 @@ FoamFile
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+maxCellSize     0.1;
 
-maxCellSize	0.1;
-
-surfaceFile	"sBend.fms";
+surfaceFile     "sBend.fms";
 
 boundaryLayers
 {
-    nLayers	1;
+    nLayers     1;
 
     patchBoundaryLayers
     {
 
         walls
         {
-             nLayers	3;
-             thicknessRatio	1.2;
+             nLayers    3;
+             thicknessRatio     1.2;
         }
     }
 
@@ -39,11 +37,11 @@ boundaryLayers
 
     optimisationParameters
     {
-        nSmoothNormals 5;
-        relThicknessTol 0.15;
-        featureSizeFactor 0.3;
-        reCalculateNormals 1;
-        maxNumIterations 5;
+        nSmoothNormals      5;
+        relThicknessTol     0.15;
+        featureSizeFactor   0.3;
+        reCalculateNormals  1;
+        maxNumIterations    5;
     }
 }
 
@@ -52,13 +50,14 @@ localRefinement
 
     refFine
     {
-        cellSize	0.025;
+        cellSize        0.025;
     }
 
     walls
     {
-        cellSize	0.05;
+        cellSize        0.05;
     }
 }
+
 
 // ************************************************************************* //
