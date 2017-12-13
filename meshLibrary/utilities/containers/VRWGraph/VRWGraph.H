@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::VRWGraph
+    Foam::Module::VRWGraph
 
 Description
     This class is an implementation of a graph with variable column width.

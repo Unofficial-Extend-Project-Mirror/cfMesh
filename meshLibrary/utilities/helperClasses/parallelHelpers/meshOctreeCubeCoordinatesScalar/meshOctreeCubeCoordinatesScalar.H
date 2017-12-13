@@ -22,13 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::Module::meshOctreCubeCoordinatesScalar
+    Foam::Module::meshOctreeCubeCoordinatesScalar
 
 Description
     A class containing meshOctreeCubeCoordinates and a scalar value.
     It is used for exchanging data over processors
-
-SourceFiles
 
 \*---------------------------------------------------------------------------*/
 

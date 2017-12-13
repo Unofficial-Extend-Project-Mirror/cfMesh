@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::graphConstRow
+    Foam::Module::graphConstRow
 
 Description
     This class provides const access to a row of a graph

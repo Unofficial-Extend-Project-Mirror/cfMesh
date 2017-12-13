@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::triSurfPoints
+    Foam::Module::triSurfPoints
 
 Description
     Point coordinates information for triangulated surface

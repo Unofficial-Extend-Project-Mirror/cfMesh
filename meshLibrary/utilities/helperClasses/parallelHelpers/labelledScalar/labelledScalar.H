@@ -22,13 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::Modul::labelledScalar
+    Foam::Module::labelledScalar
 
 Description
     A class containing point label and its coordinates. It is used for
     exchanging data over processors
-
-SourceFiles
 
 \*---------------------------------------------------------------------------*/
 

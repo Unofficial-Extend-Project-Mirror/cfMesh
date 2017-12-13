@@ -22,13 +22,15 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::decomposeCells
+    Foam::Module::decomposeCells
 
 Description
     Decomposes selected cells into pyramids
 
 SourceFiles
-
+    decomposeCells.C
+    decomposeCellsDecomposition.C
+    decomposeCellsPyramids.C
 
 \*---------------------------------------------------------------------------*/
 

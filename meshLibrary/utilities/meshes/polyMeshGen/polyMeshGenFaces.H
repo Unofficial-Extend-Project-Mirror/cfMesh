@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::polyMeshGenFaces
+    Foam::Module::polyMeshGenFaces
 
 Description
     Mesh with geometry and faces. It can be used for volume and surface meshes

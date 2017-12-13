@@ -25,6 +25,7 @@ Class
     Foam::Module::triSurface2DCheck
 
 Description
+    triSurf 2D checks
 
 SourceFiles
     triSurface2DCheck.C

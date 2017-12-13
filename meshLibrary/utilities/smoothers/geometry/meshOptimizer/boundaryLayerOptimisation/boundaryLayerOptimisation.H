@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::Module::bondaryLayerOptimisation
+    Foam::Module::boundaryLayerOptimisation
 
 Description
     A class intended for improving quality of boundary layer cells.

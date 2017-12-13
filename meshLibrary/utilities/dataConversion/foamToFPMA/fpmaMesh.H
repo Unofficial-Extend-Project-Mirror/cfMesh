@@ -22,9 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::fpmaMesh
+    Foam::Module::fpmaMesh
 
 Description
+    General writer for AVL/FIRE fpma format.
 
 SourceFiles
     fpmaMesh.C

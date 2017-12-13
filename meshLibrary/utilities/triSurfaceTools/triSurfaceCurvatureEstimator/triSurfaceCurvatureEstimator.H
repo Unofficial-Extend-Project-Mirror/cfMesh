@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::Module::triSurfaceCurvatureCalculator
+    Foam::Module::triSurfaceCurvatureEstimator
 
 Description
     Provides information regarding surface partitions on the surface
