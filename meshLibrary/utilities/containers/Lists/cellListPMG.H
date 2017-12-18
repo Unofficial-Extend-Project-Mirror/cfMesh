@@ -46,6 +46,9 @@ namespace Foam
 {
 namespace Module
 {
+class cellListPMG;
+inline Ostream& operator<<(Ostream&, const cellListPMG&);
+inline Istream& operator>>(Istream&, cellListPMG&);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -103,9 +106,9 @@ public:
 
         inline void operator=(const cellList&);
 
-        friend inline Ostream& operator<<(Ostream&, const cellListPMG&);
+        inline friend Ostream& operator<<(Ostream&, const cellListPMG&);
 
-        friend inline Istream& operator>>(Istream&, cellListPMG&);
+        inline friend Istream& operator>>(Istream&, cellListPMG&);
 };
 
 

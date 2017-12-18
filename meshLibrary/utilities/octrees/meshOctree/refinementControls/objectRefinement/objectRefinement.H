@@ -49,6 +49,8 @@ class boundBox;
 
 namespace Module
 {
+class objectRefinement;
+Ostream& operator<<(Ostream&, const objectRefinement&);
 
 /*---------------------------------------------------------------------------*\
                       Class objectRefinement Declaration

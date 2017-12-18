@@ -49,6 +49,8 @@ namespace Foam
 {
 namespace Module
 {
+// Forward declarations
+class meshSurfaceEngineModifier;
 
 /*---------------------------------------------------------------------------*\
                       Class meshSurfaceEngine Declaration

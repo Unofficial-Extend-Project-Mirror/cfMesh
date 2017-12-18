@@ -44,6 +44,9 @@ namespace Foam
 {
 namespace Module
 {
+class meshOctreeCubeBasic;
+inline Ostream& operator<<(Ostream&, const meshOctreeCubeBasic&);
+inline Istream& operator>>(Istream&, meshOctreeCubeBasic&);
 
 /*---------------------------------------------------------------------------*\
                      Class meshOctreeCubeBasic Declaration
@@ -126,13 +129,13 @@ public:
 
     // Friend operators
 
-        friend inline Ostream& operator<<
+        inline friend Ostream& operator<<
         (
             Ostream&,
             const meshOctreeCubeBasic&
         );
 
-        friend inline Istream& operator>>
+        inline friend Istream& operator>>
         (
             Istream&,
             meshOctreeCubeBasic&

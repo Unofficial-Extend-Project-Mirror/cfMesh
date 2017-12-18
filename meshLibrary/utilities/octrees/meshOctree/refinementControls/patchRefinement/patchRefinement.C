@@ -53,9 +53,15 @@ Foam::Module::patchRefinement::patchRefinement(Istream& is)
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Foam::word Foam::Module::patchRefinement::patchName() const
+const Foam::word& Foam::Module::patchRefinement::patchName() const
 {
     return patchName_;
+}
+
+
+Foam::scalar Foam::Module::patchRefinement::cellSize() const
+{
+    return cellSize_;
 }
 
 
@@ -72,12 +78,6 @@ Foam::Module::patchRefinement::patchInSurface(const triSurf& ts) const
         << exit(FatalError);
 
     return -1;
-}
-
-
-Foam::scalar Foam::Module::patchRefinement::cellSize() const
-{
-    return cellSize_;
 }
 
 
@@ -113,26 +113,25 @@ Foam::Ostream& Foam::Module::operator<<
 }
 
 
+// * * * * * * * * * * * * * * * Global Operators  * * * * * * * * * * * * * //
+
 bool Foam::Module::operator==
 (
-    const Foam::Module::patchRefinement& p1,
-    const Foam::Module::patchRefinement& p2
+    const Foam::Module::patchRefinement& lhs,
+    const Foam::Module::patchRefinement& rhs
 )
 {
-    if (p1.patchName() == p2.patchName())
-        return true;
-
-    return false;
+    return (lhs.patchName() == rhs.patchName());
 }
 
 
 bool Foam::Module::operator!=
 (
-    const Foam::Module::patchRefinement& p1,
-    const Foam::Module::patchRefinement& p2
+    const Foam::Module::patchRefinement& lhs,
+    const Foam::Module::patchRefinement& rhs
 )
 {
-    return !(p1 == p2);
+    return !(lhs == rhs);
 }
 
 

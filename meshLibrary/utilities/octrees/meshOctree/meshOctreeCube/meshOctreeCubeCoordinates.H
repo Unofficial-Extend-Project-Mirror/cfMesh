@@ -50,6 +50,9 @@ class boundBox;
 namespace Module
 {
 class triSurf;
+class meshOctreeCubeCoordinates;
+inline Istream& operator>>(Istream&, meshOctreeCubeCoordinates&);
+inline Ostream& operator<<(Ostream&, const meshOctreeCubeCoordinates&);
 
 /*---------------------------------------------------------------------------*\
                   Class meshOctreeCubeCoordinates Declaration
@@ -218,12 +221,12 @@ public:
         inline bool operator<(const meshOctreeCubeCoordinates&) const;
         inline bool operator>(const meshOctreeCubeCoordinates&) const;
 
-        friend inline Istream& operator>>
+        inline friend Istream& operator>>
         (
             Istream&,
             meshOctreeCubeCoordinates&
         );
-        friend inline Ostream& operator<<
+        inline friend Ostream& operator<<
         (
             Ostream&,
             const meshOctreeCubeCoordinates&

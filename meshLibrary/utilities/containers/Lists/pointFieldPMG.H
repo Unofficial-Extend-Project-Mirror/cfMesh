@@ -46,6 +46,9 @@ namespace Foam
 {
 namespace Module
 {
+class pointFieldPMG;
+inline Ostream& operator<<(Ostream&, const pointFieldPMG&);
+inline Istream& operator>>(Istream&, pointFieldPMG&);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -125,9 +128,9 @@ public:
 
         inline void operator=(const pointField&);
 
-        friend inline Ostream& operator<<(Ostream&, const pointFieldPMG&);
+        inline friend Ostream& operator<<(Ostream&, const pointFieldPMG&);
 
-        friend inline Istream& operator>>(Istream&, pointFieldPMG&);
+        inline friend Istream& operator>>(Istream&, pointFieldPMG&);
 };
 
 

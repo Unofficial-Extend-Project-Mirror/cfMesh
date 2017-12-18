@@ -44,6 +44,8 @@ namespace Foam
 {
 namespace Module
 {
+class planeScaling;
+Ostream& operator<<(Ostream&, const planeScaling&);
 
 /*---------------------------------------------------------------------------*\
                         Class planeScaling Declaration

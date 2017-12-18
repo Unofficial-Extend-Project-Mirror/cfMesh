@@ -48,6 +48,8 @@ class Ostream;
 
 namespace Module
 {
+class partTet;
+inline Ostream& operator<<(Ostream&, const partTet&);
 
 /*---------------------------------------------------------------------------*\
                            class partTet Declaration
@@ -155,7 +157,7 @@ public:
 
     // IOstream operators
 
-            friend Ostream& operator<<(Ostream&, const partTet&);
+            inline friend Ostream& operator<<(Ostream&, const partTet&);
 };
 
 

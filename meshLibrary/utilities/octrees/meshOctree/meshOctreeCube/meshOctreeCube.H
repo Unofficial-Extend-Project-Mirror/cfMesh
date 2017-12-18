@@ -50,7 +50,9 @@ namespace Module
 {
 class triSurf;
 class VRWGraph;
+class meshOctreeCube;
 class meshOctreeSlot;
+Ostream& operator<<(Ostream&, const meshOctreeCube&);
 
 /*---------------------------------------------------------------------------*\
                        Class meshOctreeCube Declaration

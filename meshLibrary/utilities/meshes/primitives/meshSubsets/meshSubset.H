@@ -50,6 +50,9 @@ class Ostream;
 namespace Module
 {
 class VRWGraph;
+class meshSubset;
+inline Ostream& operator<<(Ostream&, const meshSubset&);
+inline Istream& operator>>(Istream&, meshSubset&);
 
 /*---------------------------------------------------------------------------*\
                         class meshSubset Declaration
@@ -161,8 +164,8 @@ public:
 
     // IOstream operators
 
-        friend inline Ostream& operator<<(Ostream&, const meshSubset&);
-        friend inline Istream& operator>>(Istream&, meshSubset&);
+        inline friend Ostream& operator<<(Ostream&, const meshSubset&);
+        inline friend Istream& operator>>(Istream&, meshSubset&);
 };
 
 

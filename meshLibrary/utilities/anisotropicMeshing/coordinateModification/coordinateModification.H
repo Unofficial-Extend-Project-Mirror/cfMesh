@@ -50,6 +50,8 @@ class plane;
 
 namespace Module
 {
+class coordinateModification;
+Ostream& operator<<(Ostream&, const coordinateModification&);
 
 /*---------------------------------------------------------------------------*\
                    Class coordinateModification Declaration

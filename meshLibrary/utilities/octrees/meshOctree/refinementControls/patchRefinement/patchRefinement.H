@@ -50,6 +50,9 @@ class Ostream;
 namespace Module
 {
 class triSurf;
+class patchRefinement;
+Istream& operator>>(Istream& is, patchRefinement& pr);
+Ostream& operator<<(Ostream& os, const patchRefinement& pr);
 
 /*---------------------------------------------------------------------------*\
                        Class patchRefinement Declaration
@@ -84,24 +87,28 @@ public:
 
     // Member Functions
 
-        word patchName() const;
-
-        label patchInSurface(const triSurf&) const;
+        const word& patchName() const;
 
         scalar cellSize() const;
+
+        label patchInSurface(const triSurf& ts) const;
 
 
     // Operators
 
         void operator=(const patchRefinement&);
-        friend Istream& operator>>(Istream&, patchRefinement&);
-        friend Ostream& operator<<(Ostream&, const patchRefinement&);
-        friend bool operator==(const patchRefinement&, const patchRefinement&);
-        friend bool operator!=(const patchRefinement&, const patchRefinement&);
+
+        friend Istream& operator>>(Istream& is, patchRefinement& pr);
+        friend Ostream& operator<<(Ostream& os, const patchRefinement& pr);
 };
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Global Operators
+bool operator==(const patchRefinement& lhs, const patchRefinement& rhs);
+bool operator!=(const patchRefinement& lhs, const patchRefinement& rhs);
+
 
 } // End namespace Module
 } // End namespace Foam

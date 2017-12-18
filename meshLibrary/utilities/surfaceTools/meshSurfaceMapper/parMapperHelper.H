@@ -44,6 +44,9 @@ namespace Foam
 {
 namespace Module
 {
+class parMapperHelper;
+Ostream& operator<<(Ostream& os, const parMapperHelper& h);
+Istream& operator>>(Istream& is, parMapperHelper& h);
 
 /*---------------------------------------------------------------------------*\
                        Class parMapperHelper Declaration

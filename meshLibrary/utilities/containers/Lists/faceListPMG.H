@@ -46,6 +46,9 @@ namespace Foam
 {
 namespace Module
 {
+class faceListPMG;
+inline Ostream& operator<<(Ostream&, const faceListPMG&);
+inline Istream& operator>>(Istream&, faceListPMG&);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -118,9 +121,9 @@ public:
 
         inline void operator=(const faceList&);
 
-        friend inline Ostream& operator<<(Ostream&, const faceListPMG&);
+        inline friend Ostream& operator<<(Ostream&, const faceListPMG&);
 
-        friend inline Istream& operator>>(Istream&, faceListPMG&);
+        inline friend Istream& operator>>(Istream&, faceListPMG&);
 };
 
 

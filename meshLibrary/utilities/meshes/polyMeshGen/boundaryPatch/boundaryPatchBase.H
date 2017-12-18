@@ -47,6 +47,8 @@ namespace Foam
 {
 namespace Module
 {
+class boundaryPatchBase;
+Ostream& operator<<(Ostream&, const boundaryPatchBase&);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
