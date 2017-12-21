@@ -1,18 +1,11 @@
 #!/bin/sh
-cd ${0%/*} || exit 1    # Run from this directory
+cd ${0%/*} || exit 1                        # Run from this directory
+. $WM_PROJECT_DIR/bin/tools/LogFunctions    # Tutorial log-file functions
 
 echo "--------"
-echo "Cleaning tutorials ..."
-echo "Removing backup files"
+removeLogs
 
-find . \( \
-    -name '*~' -o -name '*.bak'         \
-    -name core -o -name 'core.[1-9]*'   \
-    -name '*.pvs' -o -name '*.OpenFOAM' -name '*.foam' \
-    \) -type f -delete
-
-rm -f logs testLoopReport > /dev/null 2>&1
-
+echo "Cleaning tutorials"
 foamCleanTutorials cases
 
 echo "--------"
