@@ -1161,7 +1161,7 @@ bool Foam::Module::edgeExtractor::checkCorners()
                 // and check whether there exist various disconnected surface
                 // parts in the vicinity of this group of edge
 
-                const DynList<label>& invalidEdges = mIt->second;
+                const auto& invalidEdges = mIt->second;
 
                 forAll(invalidEdges, i)
                     invalidFeatureEdges.insert(invalidEdges[i]);
