@@ -119,6 +119,14 @@ public:
         //- Construct given size
         explicit inline DynList(const label);
 
+        //- Construct given integer size
+        #if WM_LABEL_SIZE == 64
+        explicit inline DynList(const int32_t nElem)
+        :
+            DynList(label(nElem))
+        {}
+        #endif
+
         //- Construct from given size and defualt value
         explicit inline DynList(const label, const T&);
 
@@ -216,10 +224,6 @@ public:
 
         //- Copy of another list
         inline void operator=(const DynList<T, staticSize>&);
-
-        //- Copy of another list type
-        template<class ListType>
-        inline void operator=(const ListType&);
 
         //- Compare the list with the another one
         inline bool operator==(const DynList<T, staticSize>&) const;

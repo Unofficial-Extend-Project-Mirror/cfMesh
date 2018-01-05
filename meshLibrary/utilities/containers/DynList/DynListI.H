@@ -607,28 +607,6 @@ inline void Foam::Module::DynList<T, staticSize>::operator=
 
 
 template<class T, Foam::label staticSize>
-template<class ListType>
-inline void Foam::Module::DynList<T, staticSize>::operator=(const ListType& l)
-{
-    # ifdef DEBUG
-    checkAllocation();
-    # endif
-
-    allocateSize(l.size());
-    nextFree_ = l.size();
-
-    # ifdef DEBUG
-    checkAllocation();
-    # endif
-
-    for (label i = 0; i < nextFree_; ++i)
-    {
-        this->operator[](i) = l[i];
-    }
-}
-
-
-template<class T, Foam::label staticSize>
 inline bool Foam::Module::DynList<T, staticSize>::operator==
 (
     const DynList<T, staticSize>& DL

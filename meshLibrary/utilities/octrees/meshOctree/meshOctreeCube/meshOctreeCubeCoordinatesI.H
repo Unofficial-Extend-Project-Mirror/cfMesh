@@ -96,7 +96,7 @@ Foam::Module::meshOctreeCubeCoordinates::refineForPosition
 ) const
 {
     //- create new boxes in z-order fashion
-    FixedList<label, 3> addPos(0);
+    FixedList<label, 3> addPos(Zero);
     if (i & 1)
     {
         addPos[0] = 1;

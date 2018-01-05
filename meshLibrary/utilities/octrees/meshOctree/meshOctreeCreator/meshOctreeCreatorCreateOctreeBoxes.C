@@ -81,12 +81,15 @@ void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
     {
         finished = false;
 
-        const scalar lSize = size/Foam::pow(2, label(globalRefLevel_));
+        const scalar lSize = size/Foam::pow(label(2), label(globalRefLevel_));
+        // Or: const scalar lSize = size/(1L << globalRefLevel_);
 
         if (lSize <(maxSize*(1.0 - SMALL)))
         {
             const scalar bbSize =
-                0.5*maxSize*Foam::pow(2, label(globalRefLevel_));
+                0.5*maxSize*Foam::pow(label(2), label(globalRefLevel_));
+            // Or: const scalar bbSize = 0.5*maxSize*(1L << globalRefLevel_);
+
             rootBox.max() = c + point(bbSize, bbSize, bbSize);
             rootBox.min() = c - point(bbSize, bbSize, bbSize);
             finished = true;
@@ -132,7 +135,8 @@ void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
         {
             finished = false;
 
-            const scalar lSize = maxSize/Foam::pow(2, addLevel);
+            const scalar lSize = maxSize/Foam::pow(label(2), addLevel);
+            // Or: const scalar lSize = maxSize/(1L << addLevel);
 
             if (lSize <= cs)
             {
@@ -237,7 +241,8 @@ void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 finished = false;
 
-                const scalar lSize = maxSize/Foam::pow(2, addLevel);
+                const scalar lSize = maxSize/Foam::pow(label(2), addLevel);
+                // Or: const scalar lSize = maxSize/(1L << addLevel);
 
                 if (lSize <= cs)
                 {
@@ -321,7 +326,8 @@ void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
             {
                 finished = false;
 
-                const scalar lSize = maxSize/Foam::pow(2, addLevel);
+                const scalar lSize = maxSize/Foam::pow(label(2), addLevel);
+                // Or: const scalar lSize = maxSize/(1L << addLevel);
 
                 if (lSize <= cs)
                 {
@@ -405,7 +411,9 @@ void Foam::Module::meshOctreeCreator::setRootCubeSizeAndRefParameters()
                     {
                         finished = false;
 
-                        const scalar lSize = maxSize/Foam::pow(2, nLevel);
+                        const scalar lSize =
+                            maxSize/Foam::pow(label(2), nLevel);
+                        // Or: const scalar lSize = maxSize/(1L << nLevel);
 
                         if (lSize <= cs)
                         {

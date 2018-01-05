@@ -136,7 +136,8 @@ void Foam::Module::meshOctreeAutomaticRefinement::setMaxRefLevel()
         {
             finished = false;
 
-            const scalar lSize = size/pow(2, label(maxRefLevel_));
+            const scalar lSize = size/pow(label(2), label(maxRefLevel_));
+            // Or: const scalar lSize = size/(1L << maxRefLevel_);
 
             if (lSize < cs)
             {

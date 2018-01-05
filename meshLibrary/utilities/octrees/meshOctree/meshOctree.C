@@ -121,7 +121,7 @@ void Foam::Module::meshOctree::setOctantVectorsAndPositions()
     // set vrtLeavesPos_
     for (label vrtI = 0; vrtI < 8; ++vrtI)
     {
-        FixedList<label, 3> vc(0);
+        FixedList<label, 3> vc(Zero);
 
         if (vrtI & 1)
         {
@@ -142,7 +142,7 @@ void Foam::Module::meshOctree::setOctantVectorsAndPositions()
 
         for (label i = 0; i < 8; ++i)
         {
-            FixedList<label, 3> pos;
+            FixedList<label, 3> pos(Zero);
 
             for (label j = 0; j < 3; ++j)
             {
