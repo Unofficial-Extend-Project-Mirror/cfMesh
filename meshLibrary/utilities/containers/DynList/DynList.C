@@ -27,8 +27,8 @@ License
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
-template<class T, Foam::label staticSize>
-Foam::Module::DynList<T, staticSize>::DynList(Istream&)
+template<class T, int StaticSize>
+Foam::Module::DynList<T, StaticSize>::DynList(Istream&)
 :
     dataPtr_(nullptr),
     nAllocated_(0),
@@ -39,11 +39,11 @@ Foam::Module::DynList<T, staticSize>::DynList(Istream&)
 }
 
 
-template<class T, Foam::label staticSize>
+template<class T, int StaticSize>
 Foam::Ostream& Foam::Module::operator<<
 (
     Foam::Ostream& os,
-    const Foam::Module::DynList<T, staticSize>& DL
+    const Foam::Module::DynList<T, StaticSize>& DL
 )
 {
     UList<T> helper(DL.dataPtr_, DL.nextFree_);
@@ -53,11 +53,11 @@ Foam::Ostream& Foam::Module::operator<<
 }
 
 
-template<class T, Foam::label staticSize>
+template<class T, int StaticSize>
 Foam::Istream& Foam::Module::operator>>
 (
     Foam::Istream& is,
-    Foam::Module::DynList<T, staticSize>& DL
+    Foam::Module::DynList<T, StaticSize>& DL
 )
 {
     NotImplemented;

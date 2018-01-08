@@ -23,26 +23,26 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-template<class T, Foam::label staticSize>
-inline T* Foam::Module::DynList<T, staticSize>::data()
+template<class T, int StaticSize>
+inline T* Foam::Module::DynList<T, StaticSize>::data()
 {
     return dataPtr_;
 }
 
 
-template<class T, Foam::label staticSize>
-inline const T* Foam::Module::DynList<T, staticSize>::data() const
+template<class T, int StaticSize>
+inline const T* Foam::Module::DynList<T, StaticSize>::data() const
 {
     return dataPtr_;
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::allocateSize(const label s)
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::allocateSize(const label s)
 {
     checkAllocation();
 
-    if (s > staticSize)
+    if (s > StaticSize)
     {
         if (s > nAllocated_)
         {
@@ -54,7 +54,7 @@ inline void Foam::Module::DynList<T, staticSize>::allocateSize(const label s)
                 newData[i] = this->operator[](i);
             }
 
-            if (nAllocated_ > staticSize)
+            if (nAllocated_ > StaticSize)
             {
                 delete[] dataPtr_;
             }
@@ -80,7 +80,7 @@ inline void Foam::Module::DynList<T, staticSize>::allocateSize(const label s)
     }
     else
     {
-        if (nAllocated_ > staticSize)
+        if (nAllocated_ > StaticSize)
         {
             //- delete dynamically allocated data
             for (label i = 0; i < s; ++i)
@@ -92,13 +92,13 @@ inline void Foam::Module::DynList<T, staticSize>::allocateSize(const label s)
         }
 
         dataPtr_ = staticData_;
-        nAllocated_ = staticSize;
+        nAllocated_ = StaticSize;
     }
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::checkIndex
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::checkIndex
 (
     const label i
 ) const
@@ -112,8 +112,8 @@ inline void Foam::Module::DynList<T, staticSize>::checkIndex
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::checkAllocation() const
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::checkAllocation() const
 {
     if (nextFree_ > nAllocated_)
     {
@@ -126,8 +126,8 @@ inline void Foam::Module::DynList<T, staticSize>::checkAllocation() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::DynList()
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::DynList()
 :
     dataPtr_(nullptr),
     nAllocated_(0),
@@ -143,8 +143,8 @@ inline Foam::Module::DynList<T, staticSize>::DynList()
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::DynList(const label s)
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::DynList(const label s)
 :
     dataPtr_(nullptr),
     nAllocated_(0),
@@ -160,8 +160,8 @@ inline Foam::Module::DynList<T, staticSize>::DynList(const label s)
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::DynList
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::DynList
 (
     const label s,
     const T& val
@@ -185,8 +185,8 @@ inline Foam::Module::DynList<T, staticSize>::DynList
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::DynList(const UList<T>& ul)
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::DynList(const UList<T>& ul)
 :
     dataPtr_(nullptr),
     nAllocated_(0),
@@ -206,9 +206,9 @@ inline Foam::Module::DynList<T, staticSize>::DynList(const UList<T>& ul)
 }
 
 
-template<class T, Foam::label staticSize>
+template<class T, int StaticSize>
 template<class ListType>
-inline Foam::Module::DynList<T, staticSize>::DynList(const ListType& l)
+inline Foam::Module::DynList<T, StaticSize>::DynList(const ListType& l)
 :
     dataPtr_(nullptr),
     nAllocated_(0),
@@ -227,10 +227,10 @@ inline Foam::Module::DynList<T, staticSize>::DynList(const ListType& l)
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::DynList
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::DynList
 (
-    const DynList<T, staticSize>& dl
+    const DynList<T, StaticSize>& dl
 )
 :
     dataPtr_(nullptr),
@@ -250,8 +250,8 @@ inline Foam::Module::DynList<T, staticSize>::DynList
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::Module::DynList<T, staticSize>::~DynList()
+template<class T, int StaticSize>
+inline Foam::Module::DynList<T, StaticSize>::~DynList()
 {
     allocateSize(0);
 }
@@ -259,8 +259,8 @@ inline Foam::Module::DynList<T, staticSize>::~DynList()
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::Module::DynList<T, staticSize>::size() const
+template<class T, int StaticSize>
+inline Foam::label Foam::Module::DynList<T, StaticSize>::size() const
 {
     # ifdef DEBUG
     checkAllocation();
@@ -270,8 +270,8 @@ inline Foam::label Foam::Module::DynList<T, staticSize>::size() const
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::Module::DynList<T, staticSize>::byteSize() const
+template<class T, int StaticSize>
+inline Foam::label Foam::Module::DynList<T, StaticSize>::byteSize() const
 {
     # ifdef DEBUG
     checkAllocation();
@@ -289,8 +289,8 @@ inline Foam::label Foam::Module::DynList<T, staticSize>::byteSize() const
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::setSize(const label s)
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::setSize(const label s)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -305,8 +305,8 @@ inline void Foam::Module::DynList<T, staticSize>::setSize(const label s)
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::clear()
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::clear()
 {
     # ifdef DEBUG
     checkAllocation();
@@ -316,8 +316,8 @@ inline void Foam::Module::DynList<T, staticSize>::clear()
 }
 
 
-template<class T, Foam::label staticSize>
-void Foam::Module::DynList<T, staticSize>::shrink()
+template<class T, int StaticSize>
+void Foam::Module::DynList<T, StaticSize>::shrink()
 {
     # ifdef DEBUG
     checkAllocation();
@@ -331,8 +331,8 @@ void Foam::Module::DynList<T, staticSize>::shrink()
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::append(const T& e)
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::append(const T& e)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -352,8 +352,8 @@ inline void Foam::Module::DynList<T, staticSize>::append(const T& e)
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::appendIfNotIn(const T& e)
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::appendIfNotIn(const T& e)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -370,8 +370,8 @@ inline void Foam::Module::DynList<T, staticSize>::appendIfNotIn(const T& e)
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::Module::DynList<T, staticSize>::find
+template<class T, int StaticSize>
+inline Foam::label Foam::Module::DynList<T, StaticSize>::find
 (
     const T& e
 ) const
@@ -392,16 +392,16 @@ inline Foam::label Foam::Module::DynList<T, staticSize>::find
 }
 
 
-template<class T, Foam::label staticSize>
-inline bool Foam::Module::DynList<T, staticSize>::found(const T& e) const
+template<class T, int StaticSize>
+inline bool Foam::Module::DynList<T, StaticSize>::found(const T& e) const
 {
     return this->find(e) != -1;
 }
 
 
 
-template<class T, Foam::label staticSize>
-inline const T& Foam::Module::DynList<T, staticSize>::first() const
+template<class T, int StaticSize>
+inline const T& Foam::Module::DynList<T, StaticSize>::first() const
 {
     # ifdef DEBUG
     checkAllocation();
@@ -411,8 +411,8 @@ inline const T& Foam::Module::DynList<T, staticSize>::first() const
 }
 
 
-template<class T, Foam::label staticSize>
-inline const T& Foam::Module::DynList<T, staticSize>::last() const
+template<class T, int StaticSize>
+inline const T& Foam::Module::DynList<T, StaticSize>::last() const
 {
     # ifdef DEBUG
     checkAllocation();
@@ -422,8 +422,8 @@ inline const T& Foam::Module::DynList<T, staticSize>::last() const
 }
 
 
-template<class T, Foam::label staticSize>
-inline T Foam::Module::DynList<T, staticSize>::remove()
+template<class T, int StaticSize>
+inline T Foam::Module::DynList<T, StaticSize>::remove()
 {
     # ifdef DEBUG
     checkAllocation();
@@ -441,8 +441,8 @@ inline T Foam::Module::DynList<T, staticSize>::remove()
 }
 
 
-template<class T, Foam::label staticSize>
-inline T Foam::Module::DynList<T, staticSize>::removeElement(const label i)
+template<class T, int StaticSize>
+inline T Foam::Module::DynList<T, StaticSize>::removeElement(const label i)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -466,8 +466,8 @@ inline T Foam::Module::DynList<T, staticSize>::removeElement(const label i)
 }
 
 
-template<class T, Foam::label staticSize>
-inline T& Foam::Module::DynList<T, staticSize>::newElmt(const label i)
+template<class T, int StaticSize>
+inline T& Foam::Module::DynList<T, StaticSize>::newElmt(const label i)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -479,8 +479,8 @@ inline T& Foam::Module::DynList<T, staticSize>::newElmt(const label i)
 
 // * * * * * * * * * * * * * * * Member Operators  * * * * * * * * * * * * * //
 
-template<class T, Foam::label staticSize>
-inline T& Foam::Module::DynList<T, staticSize>::operator()(const label i)
+template<class T, int StaticSize>
+inline T& Foam::Module::DynList<T, StaticSize>::operator()(const label i)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -501,8 +501,8 @@ inline T& Foam::Module::DynList<T, staticSize>::operator()(const label i)
 }
 
 
-template<class T, Foam::label staticSize>
-inline const T& Foam::Module::DynList<T, staticSize>::operator[]
+template<class T, int StaticSize>
+inline const T& Foam::Module::DynList<T, StaticSize>::operator[]
 (
     const label i
 ) const
@@ -516,8 +516,8 @@ inline const T& Foam::Module::DynList<T, staticSize>::operator[]
 }
 
 
-template<class T, Foam::label staticSize>
-inline T& Foam::Module::DynList<T, staticSize>::operator[](const label i)
+template<class T, int StaticSize>
+inline T& Foam::Module::DynList<T, StaticSize>::operator[](const label i)
 {
     # ifdef FULLDEBUG
     checkAllocation();
@@ -528,8 +528,8 @@ inline T& Foam::Module::DynList<T, staticSize>::operator[](const label i)
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::Module::DynList<T, staticSize>::fcIndex
+template<class T, int StaticSize>
+inline Foam::label Foam::Module::DynList<T, StaticSize>::fcIndex
 (
     const label index
 ) const
@@ -538,8 +538,8 @@ inline Foam::label Foam::Module::DynList<T, staticSize>::fcIndex
 }
 
 
-template<class T, Foam::label staticSize>
-inline Foam::label Foam::Module::DynList<T, staticSize>::rcIndex
+template<class T, int StaticSize>
+inline Foam::label Foam::Module::DynList<T, StaticSize>::rcIndex
 (
     const label index
 ) const
@@ -548,8 +548,8 @@ inline Foam::label Foam::Module::DynList<T, staticSize>::rcIndex
 }
 
 
-template<class T, Foam::label staticSize>
-inline const T& Foam::Module::DynList<T, staticSize>::fcValue
+template<class T, int StaticSize>
+inline const T& Foam::Module::DynList<T, StaticSize>::fcValue
 (
     const label index
 ) const
@@ -558,8 +558,8 @@ inline const T& Foam::Module::DynList<T, staticSize>::fcValue
 }
 
 
-template<class T, Foam::label staticSize>
-inline const T& Foam::Module::DynList<T, staticSize>::rcValue
+template<class T, int StaticSize>
+inline const T& Foam::Module::DynList<T, StaticSize>::rcValue
 (
     const label index
 ) const
@@ -568,8 +568,8 @@ inline const T& Foam::Module::DynList<T, staticSize>::rcValue
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::operator=(const T& t)
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::operator=(const T& t)
 {
     # ifdef DEBUG
     checkAllocation();
@@ -582,10 +582,10 @@ inline void Foam::Module::DynList<T, staticSize>::operator=(const T& t)
 }
 
 
-template<class T, Foam::label staticSize>
-inline void Foam::Module::DynList<T, staticSize>::operator=
+template<class T, int StaticSize>
+inline void Foam::Module::DynList<T, StaticSize>::operator=
 (
-    const DynList<T, staticSize>& dl
+    const DynList<T, StaticSize>& dl
 )
 {
     # ifdef DEBUG
@@ -606,10 +606,10 @@ inline void Foam::Module::DynList<T, staticSize>::operator=
 }
 
 
-template<class T, Foam::label staticSize>
-inline bool Foam::Module::DynList<T, staticSize>::operator==
+template<class T, int StaticSize>
+inline bool Foam::Module::DynList<T, StaticSize>::operator==
 (
-    const DynList<T, staticSize>& DL
+    const DynList<T, StaticSize>& DL
 ) const
 {
     if (nextFree_ != DL.nextFree_)
@@ -629,10 +629,10 @@ inline bool Foam::Module::DynList<T, staticSize>::operator==
 }
 
 
-template<class T, Foam::label staticSize>
-inline bool Foam::Module::DynList<T, staticSize>::operator!=
+template<class T, int StaticSize>
+inline bool Foam::Module::DynList<T, StaticSize>::operator!=
 (
-    const DynList<T, staticSize>& DL
+    const DynList<T, StaticSize>& DL
 ) const
 {
     return !operator==(DL);

@@ -50,22 +50,21 @@ namespace Foam
 namespace Module
 {
 
-// Forward declaration of template friend
+// Forward declarations
 
-template<class T, label staticSize>
-class DynList;
+template<class T, int StaticSize> class DynList;
 
-template<class T, label staticSize>
+template<class T, int StaticSize>
 Ostream& operator<<
 (
     Ostream&,
-    const DynList<T, staticSize>&
+    const DynList<T, StaticSize>&
 );
-template<class T, label staticSize>
+template<class T, int StaticSize>
 Istream& operator>>
 (
     Istream&,
-    DynList<T, staticSize>&
+    DynList<T, StaticSize>&
 );
 
 
@@ -73,11 +72,11 @@ Istream& operator>>
                            Class DynList Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, Foam::label staticSize = 16>
+template<class T, int StaticSize = 16>
 class DynList
 {
     // Private data
-    //
+
         //- pointer to the data
         T* dataPtr_;
 
@@ -85,7 +84,7 @@ class DynList
         label nAllocated_;
 
         //- statically allocated data (used for short lists)
-        T staticData_[staticSize];
+        T staticData_[StaticSize];
 
         //- Number of next free element
         label nextFree_;
@@ -138,7 +137,7 @@ public:
         inline DynList(const ListType&);
 
         //- Copy constructor
-        inline DynList(const DynList<T, staticSize>&);
+        inline DynList(const DynList<T, StaticSize>&);
 
         //- Construct from Istream. nextFree_ set to size().
         explicit DynList(Istream&);
@@ -223,27 +222,27 @@ public:
         inline void operator=(const T&);
 
         //- Copy of another list
-        inline void operator=(const DynList<T, staticSize>&);
+        inline void operator=(const DynList<T, StaticSize>&);
 
         //- Compare the list with the another one
-        inline bool operator==(const DynList<T, staticSize>&) const;
-        inline bool operator!=(const DynList<T, staticSize>&) const;
+        inline bool operator==(const DynList<T, StaticSize>&) const;
+        inline bool operator!=(const DynList<T, StaticSize>&) const;
 
 
     // IOstream operators
 
         // Write DynList to Ostream.
-        friend Ostream& operator<< <T, staticSize>
+        friend Ostream& operator<< <T, StaticSize>
         (
             Ostream&,
-            const DynList<T, staticSize>&
+            const DynList<T, StaticSize>&
         );
 
         //- Read from Istream, discarding contents of existing DynList.
-        friend Istream& operator>> <T, staticSize>
+        friend Istream& operator>> <T, StaticSize>
         (
             Istream&,
-            DynList<T, staticSize>&
+            DynList<T, StaticSize>&
         );
 };
 
