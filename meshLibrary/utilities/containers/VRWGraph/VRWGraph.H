@@ -261,7 +261,6 @@ public:
         void optimizeMemoryUsage();
 
         //- check if the element is in the given row (takes linear time)
-        inline bool contains(const label rowI, const label e) const;
         inline bool found(const label rowI, const label e) const;
         inline label find(const label rowI, const label e) const;
 

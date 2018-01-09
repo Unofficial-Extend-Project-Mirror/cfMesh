@@ -86,7 +86,7 @@ void Foam::Module::meshSurfaceOptimizer::nodeDisplacementLaplacianParallel
                 forAllRow(bpAtProcs, nei, procI)
                 {
                     const label procJ = bpAtProcs(nei, procI);
-                    if ((procJ < pMin) && bpAtProcs.contains(bpI, procJ))
+                    if ((procJ < pMin) && bpAtProcs.found(bpI, procJ))
                         pMin = procJ;
                 }
 

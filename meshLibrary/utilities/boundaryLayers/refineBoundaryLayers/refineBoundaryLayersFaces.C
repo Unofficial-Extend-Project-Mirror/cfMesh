@@ -487,7 +487,7 @@ void Foam::Module::refineBoundaryLayers::sortFacePoints
         {
             const label nfI = facesFromFace_(faceI, i);
 
-            if ((numSplitsI == 1) && newFaces_.contains(nfI, f.nextLabel(pos)))
+            if ((numSplitsI == 1) && newFaces_.found(nfI, f.nextLabel(pos)))
             {
                 numSplitsI = i + 1;
                 break;
@@ -584,7 +584,7 @@ void Foam::Module::refineBoundaryLayers::sortFacePoints
         {
             const label nfI = facesFromFace_(faceI, j);
 
-            if ((numSplitsJ == 1) && newFaces_.contains(nfI, f.prevLabel(pos)))
+            if ((numSplitsJ == 1) && newFaces_.found(nfI, f.prevLabel(pos)))
             {
                 numSplitsJ = j + 1;
                 break;
@@ -735,7 +735,7 @@ void Foam::Module::refineBoundaryLayers::sortFaceFaces
         {
             const label nfI = facesFromFace_(faceI, i);
 
-            if ((numSplitsI == 1) && newFaces_.contains(nfI, f.nextLabel(pos)))
+            if ((numSplitsI == 1) && newFaces_.found(nfI, f.nextLabel(pos)))
             {
                 numSplitsI = i + 1;
                 break;
@@ -789,7 +789,7 @@ void Foam::Module::refineBoundaryLayers::sortFaceFaces
         {
             const label nfI = facesFromFace_(faceI, j);
 
-            if ((numSplitsJ == 1) && newFaces_.contains(nfI, f.prevLabel(pos)))
+            if ((numSplitsJ == 1) && newFaces_.found(nfI, f.prevLabel(pos)))
             {
                 numSplitsJ = j + 1;
                 break;

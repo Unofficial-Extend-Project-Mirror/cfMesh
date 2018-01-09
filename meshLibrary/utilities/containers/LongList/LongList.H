@@ -178,7 +178,6 @@ public:
         inline void appendIfNotIn(const T& e);
 
         //- check if the element is in the list (takes linear time)
-        inline bool contains(const T& e) const;
         inline bool found(const T& e) const;
         inline label find(const T& e) const;
 

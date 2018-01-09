@@ -106,17 +106,6 @@ inline void Foam::Module::subGraph<graphType>::appendIfNotIn
 
 
 template<class graphType>
-inline bool Foam::Module::subGraph<graphType>::contains
-(
-    const label rowI,
-    const label e
-) const
-{
-    return data_.contains(start_ + rowI, e);
-}
-
-
-template<class graphType>
 inline bool Foam::Module::subGraph<graphType>::found
 (
     const label rowI,

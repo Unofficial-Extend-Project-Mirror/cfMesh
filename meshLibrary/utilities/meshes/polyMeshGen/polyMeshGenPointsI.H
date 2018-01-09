@@ -93,7 +93,7 @@ inline void Foam::Module::polyMeshGenPoints::pointInSubsets
 
     forAllConstIters(pointSubsets_, it)
     {
-        if (it->second.contains(pointI))
+        if (it->second.found(pointI))
         {
             pointSubsets.append(it->first);
         }

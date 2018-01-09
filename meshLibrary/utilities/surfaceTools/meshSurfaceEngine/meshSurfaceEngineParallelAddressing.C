@@ -154,7 +154,7 @@ void Foam::Module::meshSurfaceEngine::calcGlobalBoundaryPointLabels() const
                 for (label i = 0; i < nProcs; ++i)
                 {
                     const label neiProc = receivedData[counter++];
-                    if (!bpAtProcs.contains(bp[f[pI]], neiProc))
+                    if (!bpAtProcs.found(bp[f[pI]], neiProc))
                     {
                         bpAtProcs.append(bp[f[pI]], neiProc);
                         finished = false;
@@ -473,7 +473,7 @@ void Foam::Module::meshSurfaceEngine::calcGlobalBoundaryEdgeLabels() const
                 for (label i = 0; i < nProcs; ++i)
                 {
                     const label neiProc = receivedData[counter++];
-                    if (!beAtProcs.contains(edgeI, neiProc))
+                    if (!beAtProcs.found(edgeI, neiProc))
                     {
                         facesWithProcBndEdges[patchI].insert
                         (

@@ -153,7 +153,7 @@ inline void Foam::Module::polyMeshGenFaces::faceInSubsets
 
     forAllConstIters(faceSubsets_, it)
     {
-        if (it->second.contains(faceI))
+        if (it->second.found(faceI))
         {
             faceSubsets.append(it->first);
         }

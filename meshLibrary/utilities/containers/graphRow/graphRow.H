@@ -105,7 +105,6 @@ public:
         inline void appendIfNotIn(const label);
 
         //- check if the element is in the given row (takes linear time)
-        inline bool contains(const label e) const;
         inline bool found(const label e) const;
         inline label find(const label e) const;
 

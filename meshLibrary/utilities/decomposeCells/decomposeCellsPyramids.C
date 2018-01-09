@@ -248,7 +248,7 @@ void Foam::Module::decomposeCells::decomposeCellIntoPyramids(const label cellI)
             {
                 const edge e(f[eI], f[(eI + 1)%f.size()]);
 
-                const label pos = cEdges.contains(e);
+                const label pos = cEdges.find(e);
 
                 if (pos < 0)
                 {

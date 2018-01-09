@@ -210,7 +210,7 @@ Foam::point Foam::Module::boundaryLayers::createNewVertex
                 bool found(true);
                 forAll(otherPatches, opI)
                 {
-                    if (!pPatches.contains(bpJ, otherPatches[opI]))
+                    if (!pPatches.found(bpJ, otherPatches[opI]))
                     {
                         found = false;
                         break;
@@ -940,7 +940,7 @@ void Foam::Module::boundaryLayers::createNewEdgeVerticesParallel
                 bool found(true);
                 forAll(otherPatches, opI)
                 {
-                    if (!pPatches.contains(bpJ, otherPatches[opI]))
+                    if (!pPatches.found(bpJ, otherPatches[opI]))
                     {
                         found = false;
                         break;

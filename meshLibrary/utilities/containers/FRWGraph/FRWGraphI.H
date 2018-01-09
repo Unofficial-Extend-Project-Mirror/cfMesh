@@ -156,17 +156,6 @@ inline void Foam::Module::FRWGraph<T, width>::setRow
 
 
 template<class T, Foam::label width>
-inline bool Foam::Module::FRWGraph<T, width>::contains
-(
-    const label rowI,
-    const T& e
-) const
-{
-    return (this->find(rowI, e) >= 0);
-}
-
-
-template<class T, Foam::label width>
 inline bool Foam::Module::FRWGraph<T, width>::found
 (
     const label rowI,
