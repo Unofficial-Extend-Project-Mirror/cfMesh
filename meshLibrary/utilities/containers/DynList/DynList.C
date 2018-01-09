@@ -2,9 +2,12 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
-     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+    \\  /    A nd           | Copyright (C) 2014-2017 Creative Fields, Ltd.
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
+Author
+     Franjo Juretic (franjo.juretic@c-fields.com)
+
 License
     This file is part of OpenFOAM.
 
@@ -27,45 +30,53 @@ License
 
 // * * * * * * * * * * * * * * * IOstream Operators  * * * * * * * * * * * * //
 
-template<class T, int StaticSize>
-Foam::Module::DynList<T, StaticSize>::DynList(Istream&)
+template<class T, int SizeMin>
+Foam::Module::DynList<T, SizeMin>::DynList(Istream& is)
 :
-    dataPtr_(nullptr),
-    nAllocated_(0),
-    staticData_(),
-    nextFree_(0)
+    UList<T>(),
+    shortList_(),
+    heapList_(),
+    capacity_(0)
 {
-    NotImplemented;
+    is >> *this;
 }
 
 
-template<class T, int StaticSize>
+template<class T, int SizeMin>
 Foam::Ostream& Foam::Module::operator<<
 (
-    Foam::Ostream& os,
-    const Foam::Module::DynList<T, StaticSize>& DL
+    Ostream& os,
+    const Foam::Module::DynList<T, SizeMin>& list
 )
 {
-    UList<T> helper(DL.dataPtr_, DL.nextFree_);
-    os << helper;
-
+    os << static_cast<const UList<T>&>(list);
     return os;
 }
 
 
-template<class T, int StaticSize>
+template<class T, int SizeMin>
 Foam::Istream& Foam::Module::operator>>
 (
-    Foam::Istream& is,
-    Foam::Module::DynList<T, StaticSize>& DL
+    Istream& is,
+    Foam::Module::DynList<T, SizeMin>& list
 )
 {
-    NotImplemented;
+    list.clearStorage();
 
-    UList<T> helper(DL.dataPtr_, DL.nextFree_);
-    //is >> static_cast<List<T>&>(DL);
-    is >> helper;
-    DL.nextFree_ = helper.size();
+    List<T> input(is);
+
+    const label newLen = input.size();
+
+    if (newLen <= SizeMin)
+    {
+        list.shortList_ = input;
+    }
+    else
+    {
+        list.heapList_.transfer(input);
+    }
+
+    list.setSize(newLen);
 
     return is;
 }
