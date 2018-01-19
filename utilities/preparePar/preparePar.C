@@ -30,68 +30,85 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "argList.H"
-#include "polyMeshGen.H"
-
-#include <sstream>
+#include "Time.H"
+#include "decompositionModel.H"
 
 using namespace Foam;
-using namespace Foam::Module;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
+    argList::addNote
+    (
+        "Create processor directories in preparation for a parallel run"
+    );
+
+    argList::noParallel();
+    argList::addOption
+    (
+        "decomposeParDict",
+        "file",
+        "read decomposePar dictionary from specified location"
+    );
+
     #include "setRootCase.H"
     #include "createTime.H"
+
+    // Allow override of decomposeParDict location
+    fileName decompDictFile;
+    args.readIfPresent("decomposeParDict", decompDictFile);
 
     IOdictionary meshDict
     (
         IOobject
         (
             "meshDict",
-            runTime.system(),
+            runTime.time().system(),
             runTime,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     );
 
-    IOdictionary decomposeParDict
+    // Get requested numberOfSubdomains directly from the dictionary.
+    // Note: have no mesh yet so cannot use decompositionModel::New
+    const label nDomains = decompositionMethod::nDomains
     (
-        IOobject
+        IOdictionary
         (
-            "decomposeParDict",
-            runTime.system(),
-            runTime,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
+            decompositionModel::selectIO
+            (
+                IOobject
+                (
+                    "decomposeParDict",
+                    runTime.time().system(),
+                    runTime,
+                    IOobject::MUST_READ,
+                    IOobject::NO_WRITE,
+                    false
+                ),
+                decompDictFile
+            )
         )
     );
 
-    const label nProcessors
-    (
-        readLabel(decomposeParDict.lookup("numberOfSubdomains"))
-    );
-
-    for (label procI = 0; procI < nProcessors; ++procI)
+    for (label proci = 0; proci < nDomains; ++proci)
     {
-        fileName file("processor");
-        std::ostringstream ss;
-        ss << procI;
-        file += ss.str();
-        Info<< "Creating " << file << endl;
+        fileName dir("processor" + Foam::name(proci));
+        Info<< "Creating " << dir << endl;
 
         // create a directory for processor data
-        mkDir(runTime.path()/file);
+        mkDir(runTime.path()/dir);
 
         // copy the contents of the const directory into processor*
-        cp(runTime.path()/"constant", runTime.path()/file);
+        cp(runTime.path()/"constant", runTime.path()/dir);
 
         // generate 0 directories for
-        mkDir(runTime.path()/file/"0");
+        mkDir(runTime.path()/dir/"0");
     }
 
-    Info<< "End\n" << endl;
+    Info<< "\nEnd\n" << endl;
     return 0;
 }
 
