@@ -29,7 +29,7 @@ License
 #include "IOobjectList.H"
 #include "faceSet.H"
 #include "demandDrivenData.H"
-#include "stringListOps.H"
+#include "ListOps.H"
 
 // * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * * //
 
@@ -268,17 +268,15 @@ Foam::labelList Foam::Module::polyMeshGenFaces::findPatches
     const word& patchName
 ) const
 {
-    wordList allPatches = patchNames();
+    const labelList ids = findIndices(patchNames(), patchName);
 
-    labelList patchIDs = findStrings(patchName, allPatches);
-
-    if (patchIDs.empty())
+    if (ids.empty())
     {
         WarningInFunction
             << "Cannot find any patch names matching " << patchName << endl;
     }
 
-    return patchIDs;
+    return ids;
 }
 
 
