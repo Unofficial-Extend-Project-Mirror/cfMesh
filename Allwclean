@@ -1,9 +1,10 @@
 #!/bin/sh
-# Compile mesh library
+cd ${0%/*} || exit 1                        # Run from this directory
+
+#------------------------------------------------------------------------------
+
 wclean libso meshLibrary
-
-# Compile executables
 wclean all executables
-
-# Compile utilities
 wclean all utilities
+
+#------------------------------------------------------------------------------
