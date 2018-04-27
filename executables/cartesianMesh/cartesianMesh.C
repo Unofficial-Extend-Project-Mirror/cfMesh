@@ -36,8 +36,6 @@ using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Main program:
-
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -45,10 +43,9 @@ int main(int argc, char *argv[])
 
     Module::cartesianMeshGenerator cmg(runTime);
 
-    Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
-        << "ClockTime = " << runTime.elapsedClockTime() << " s" << endl;
-
     cmg.writeMesh();
+
+    runTime.printExecutionTime(Info);
 
     Info<< "End\n" << endl;
     return 0;

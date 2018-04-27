@@ -36,22 +36,19 @@ using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-// Main program:
-
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
     #include "createTime.H"
 
-    // tetrahedral mesher cannot be run in parallel yet
+    // Tetrahedral mesher cannot be run in parallel yet
     argList::noParallel();
 
     Module::tetMeshGenerator tmg(runTime);
 
-    Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
-        << "ClockTime = " << runTime.elapsedClockTime() << endl;
-
     tmg.writeMesh();
+
+    runTime.printExecutionTime(Info);
 
     Info<< "End\n" << endl;
     return 0;
