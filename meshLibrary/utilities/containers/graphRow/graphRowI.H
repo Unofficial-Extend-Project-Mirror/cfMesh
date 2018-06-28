@@ -84,13 +84,6 @@ inline void Foam::Module::graphRow<graphType>::appendIfNotIn(const label el)
 
 
 template<class graphType>
-inline bool Foam::Module::graphRow<graphType>::contains(const label e) const
-{
-    return data_.contains(rowI_, e);
-}
-
-
-template<class graphType>
 inline bool Foam::Module::graphRow<graphType>::found(const label e) const
 {
     return data_.found(rowI_, e);

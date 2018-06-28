@@ -2,9 +2,12 @@
   =========                 |
   \\      /  F ield         | cfMesh: A library for mesh generation
    \\    /   O peration     |
-    \\  /    A nd           | Author: Franjo Juretic (franjo.juretic@c-fields.com)
-     \\/     M anipulation  | Copyright (C) Creative Fields, Ltd.
+    \\  /    A nd           | Copyright (C) 2014-2017 Creative Fields, Ltd.
+     \\/     M anipulation  | Copyright (C) 2018 OpenCFD Ltd.
 -------------------------------------------------------------------------------
+Author
+     Franjo Juretic (franjo.juretic@c-fields.com)
+
 License
     This file is part of OpenFOAM.
 
@@ -25,12 +28,8 @@ Class
     Foam::Module::DynList
 
 Description
-    A dynamic list is a 1-D vector of objects of type T which resizes
-    itself as necessary to accept the new objects.  Internal storage
-    is a compact array and the list can be shrunk to compact storage.
-    The increase of list size is controlled by three template parameters,
-    which allows the list storage to either increase by the given increment
-    or the given multiplier and divider(allowing non-integer multiples).
+    Similar to DynamicList but uses a small fixed list internally to
+    improve multi-thread performance.
 
 SourceFiles
     DynListI.H
@@ -41,7 +40,9 @@ SourceFiles
 #ifndef DynList_H
 #define DynList_H
 
-#include "UList.H"
+#include "List.H"
+#include "FixedList.H"
+#include <type_traits>
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,22 +51,22 @@ namespace Foam
 namespace Module
 {
 
-// Forward declaration of template friend
+// Forward declarations
 
-template<class T, label staticSize>
-class DynList;
+template<class T, int SizeMin> class DynList;
 
-template<class T, label staticSize>
+template<class T, int SizeMin>
 Ostream& operator<<
 (
-    Ostream&,
-    const DynList<T, staticSize>&
+    Ostream& is,
+    const DynList<T, SizeMin>& list
 );
-template<class T, label staticSize>
+
+template<class T, int SizeMin>
 Istream& operator>>
 (
-    Istream&,
-    DynList<T, staticSize>&
+    Istream& is,
+    DynList<T, SizeMin>& list
 );
 
 
@@ -73,41 +74,29 @@ Istream& operator>>
                            Class DynList Declaration
 \*---------------------------------------------------------------------------*/
 
-template<class T, Foam::label staticSize = 16>
+template<class T, int SizeMin = 16>
 class DynList
+:
+    public UList<T>
 {
+    static_assert(SizeMin > 0, "Invalid min size parameter");
+
     // Private data
-    //
-        //- pointer to the data
-        T* dataPtr_;
 
-        //- size of the allocated data
-        label nAllocated_;
+        //- Statically allocated list (used for short lists)
+        FixedList<T,SizeMin> shortList_;
 
-        //- statically allocated data (used for short lists)
-        T staticData_[staticSize];
+        //- List allocated from heap (for longer lists)
+        List<T> heapList_;
 
-        //- Number of next free element
-        label nextFree_;
+        //- The capacity (allocated size) of the underlying list.
+        label capacity_;
 
 
-    // Private member functions
+    // Private Member Functions
 
-        //- access to the data pointer
-        inline T* data();
-
-        //- const access to the data pointer
-        inline const T* data() const;
-
-        //- allocate list size
-        inline void allocateSize(const label);
-
-        //- check if index is inside the scope (used for debugging only)
-        inline void checkIndex(const label) const;
-
-        //- check if nAllocated_ is greater or equal to nextFree_
+        //- Verify that size() is within capacity()
         inline void checkAllocation() const;
-
 
 public:
 
@@ -117,9 +106,11 @@ public:
         inline DynList();
 
         //- Construct given size
-        explicit inline DynList(const label);
+        //  This is inconsistent with DynamicList, which sets the reserve size.
+        explicit inline DynList(const label nElem);
 
         //- Construct given integer size
+        //  This is inconsistent with DynamicList, which sets the reserve size.
         #if WM_LABEL_SIZE == 64
         explicit inline DynList(const int32_t nElem)
         :
@@ -127,123 +118,131 @@ public:
         {}
         #endif
 
-        //- Construct from given size and defualt value
-        explicit inline DynList(const label, const T&);
+        //- Construct with given size and value for all elements.
+        inline DynList(const label nElem, const T& val);
 
-        //- Construct from UList. nextFree_ set to size().
-        explicit inline DynList(const UList<T>&);
+        //- Construct with given size initializing all elements to zero
+        inline DynList(const label nElem, const zero);
+
+        //- Copy construct
+        inline DynList(const DynList<T, SizeMin>& list);
+
+        //- Construct from UList. Size set to UList size.
+        //  Also constructs from DynList with different sizing parameters.
+        explicit inline DynList(const UList<T>& list);
 
         //- Construct from other ListType
         template<class ListType>
-        inline DynList(const ListType&);
+        inline DynList(const ListType& list);
 
-        //- Copy constructor
-        inline DynList(const DynList<T, staticSize>&);
-
-        //- Construct from Istream. nextFree_ set to size().
-        explicit DynList(Istream&);
-
-    //- Destructor
-    inline ~DynList();
+        //- Construct from Istream. Size set to size of list read.
+        explicit DynList(Istream& is);
 
 
     // Member Functions
 
-        // Access
+    // Access
 
-            //- Size of the active part of the list.
-            //- Direct over-ride of list size member function
-            inline label size() const;
+        //- Normal lower capacity limit - the SizeMin template parameter
+        inline label min_size() const;
 
-            //- Number of bytes used by the active part of the list
-            //- Direct over-ride of list byteSize member function
-            inline label byteSize() const;
+        //- Size of the underlying storage.
+        inline label capacity() const;
 
 
-        // Edit
+    // Edit
 
-            //- Reset size of List.
-            void setSize(const label);
+        //- Alter the size of the underlying storage.
+        //  The addressed size will be truncated if needed to fit, but will
+        //  remain otherwise untouched.
+        //  Use this or reserve() in combination with append().
+        inline void setCapacity(const label nElem);
 
-            //- Clear the list, i.e. set next free to zero.
-            //  Allocated size does not change
-            void clear();
+        //- Alter addressable list size.
+        //  New space will be allocated if required.
+        //  Use this to resize the list prior to using the operator[] for
+        //  setting values (as per List usage).
+        inline void setSize(const label nElem);
 
-            //- Shrink the List<T> to the number of elements used
-            void shrink();
+        //- Alter addressable list size and fill new space with constant.
+        inline void setSize(const label nElem, const T& val);
+
+        //- Alter addressable list size.
+        //  New space will be allocated if required.
+        //  Use this to resize the list prior to using the operator[] for
+        //  setting values (as per List usage).
+        inline void resize(const label nElem);
+
+        //- Alter addressable list size and fill new space with constant.
+        inline void resize(const label nElem, const T& val);
+
+        //- Reserve allocation space for at least this size.
+        //  Never shrinks the allocated size, use setCapacity() for that.
+        inline void reserve(const label nElem);
+
+        //- Clear the addressed list, i.e. set the size to zero.
+        //  Allocated size does not change
+        inline void clear();
+
+        //- Clear the list and delete storage.
+        inline void clearStorage();
+
+        //- Expand the addressable size to fit the allocated capacity.
+        //  Returns the previous addressable size.
+        inline label expandStorage();
+
+        //- Shrink the allocated space to the number of elements used.
+        //  Returns a reference to the DynList.
+        inline DynList<T, SizeMin>& shrink();
 
 
     // Member Operators
 
         //- Append an element at the end of the list
-        inline void append(const T& e);
+        inline void append(const T& val);
 
         //- Append an element at the end of the list if it is not yet
         //- present in the list (takes linear time)
-        inline void appendIfNotIn(const T& e);
+        inline void appendIfNotIn(const T& val);
 
-        //- Find and return location of element in list
-        inline label find(const T& val) const;
-
-        //- Check if the element is in the list
-        inline bool found(const T& e) const;
-
-        //- return a const reference to the first element
-        inline const T& first() const;
-
-        //- return a const reference to the last element
-        inline const T& last() const;
-
-        //- Return and remove the last element
+        //- Remove and return the last element. Fatal on an empty list.
         inline T remove();
 
-        //- Return and remove the element
+        //- Remove and return the specified element. Fatal on an empty list.
+        //  The place of the removed element is swapped with the last one
+        //  in the list, which changes the ordering.
         inline T removeElement(const label i);
 
-        //- return a reference to the element. Resize the list if necessary
-        inline T& newElmt(const label);
+        //- Return non-const access to an element, resizing list if necessary
+        inline T& newElmt(const label i);
 
-        //- Return non-const access to an element,
-        //-  resizing the list if necessary
-        inline T& operator()(const label);
+        //- Return non-const access to an element, resizing list if necessary
+        inline T& operator()(const label i);
 
-        //- return access to an element
-        inline const T& operator[](const label) const;
-        inline T& operator[](const label);
+        //- Assignment of all addressed entries to the given value
+        inline void operator=(const T& val);
 
-        //- return forward and reverse circular indices
-        inline label fcIndex(const label index) const;
-        inline label rcIndex(const label index) const;
+        //- Copy list
+        inline void operator=(const DynList<T, SizeMin>& list);
 
-        //- return forward and reverse circular elements
-        inline const T& fcValue(const label index) const;
-        inline const T& rcValue(const label index) const;
-
-        //- Assignment of all entries to the given value
-        inline void operator=(const T&);
-
-        //- Copy of another list
-        inline void operator=(const DynList<T, staticSize>&);
-
-        //- Compare the list with the another one
-        inline bool operator==(const DynList<T, staticSize>&) const;
-        inline bool operator!=(const DynList<T, staticSize>&) const;
+//        //- Copy of another list
+//        inline void operator=(const UList<T>& list);
 
 
     // IOstream operators
 
-        // Write DynList to Ostream.
-        friend Ostream& operator<< <T, staticSize>
+        //- Write DynList to Ostream.
+        friend Ostream& operator<< <T, SizeMin>
         (
-            Ostream&,
-            const DynList<T, staticSize>&
+            Ostream& os,
+            const DynList<T, SizeMin>& list
         );
 
         //- Read from Istream, discarding contents of existing DynList.
-        friend Istream& operator>> <T, staticSize>
+        friend Istream& operator>> <T, SizeMin>
         (
-            Istream&,
-            DynList<T, staticSize>&
+            Istream& is,
+            DynList<T, SizeMin>& list
         );
 };
 

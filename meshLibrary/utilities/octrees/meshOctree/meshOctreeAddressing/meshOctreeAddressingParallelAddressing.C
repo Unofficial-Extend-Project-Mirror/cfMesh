@@ -668,7 +668,7 @@ void Foam::Module::meshOctreeAddressing::calcGlobalLeafLabels() const
                 continue;
             }
 
-            if (!leafAtProcs.contains(leafI, it->first))
+            if (!leafAtProcs.found(leafI, it->first))
             {
                 FatalError << "Problem!!" << leafI
                     << " does not contain processor " << it->first

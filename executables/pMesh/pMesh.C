@@ -46,10 +46,9 @@ int main(int argc, char *argv[])
 
     Module::voronoiMeshGenerator pmg(runTime);
 
-    Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s\n"
-        << "ClockTime = " << runTime.elapsedClockTime() << endl;
-
     pmg.writeMesh();
+
+    runTime.printExecutionTime(Info);
 
     Info<< "End\n" << endl;
     return 0;

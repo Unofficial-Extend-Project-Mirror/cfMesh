@@ -75,7 +75,7 @@ inline void Foam::Module::polyMeshGenCells::cellInSubsets
 
     forAllConstIters(cellSubsets_, it)
     {
-        if (it->second.contains(cellI))
+        if (it->second.found(cellI))
         {
             cellSubsets.append(it->first);
         }

@@ -122,7 +122,7 @@ Foam::Module::extrudeLayer::addressingCalculator::faceSharingEdge
             continue;
         }
 
-        if (pointExtruded_.contains(nextI, currFaceI))
+        if (pointExtruded_.found(nextI, currFaceI))
         {
             if (otherFace != -1)
             {
@@ -152,7 +152,7 @@ inline void Foam::Module::extrudeLayer::addressingCalculator::facesSharingEdge
     {
         const label currFaceI = pointExtruded_(start, pfI);
 
-        if (pointExtruded_.contains(end, currFaceI))
+        if (pointExtruded_.found(end, currFaceI))
         {
             edgeFaces.append(currFaceI);
         }

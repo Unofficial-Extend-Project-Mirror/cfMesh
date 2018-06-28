@@ -164,7 +164,7 @@ void Foam::Module::polyMeshGenAddressing::calcGlobalPointLabels() const
                 for (label i = 0; i < nProcs; ++i)
                 {
                     const label neiProc = receivedData[counter++];
-                    if (!pProcs.contains(f[pI], neiProc))
+                    if (!pProcs.found(f[pI], neiProc))
                     {
                         pProcs.append(f[pI], neiProc);
                         finished = false;
@@ -618,7 +618,7 @@ void Foam::Module::polyMeshGenAddressing::calcGlobalEdgeLabels() const
                 for (label i = 0; i < nProcs; ++i)
                 {
                     const label neiProc = receivedData[counter++];
-                    if (!eProcs.contains(edgeI, neiProc))
+                    if (!eProcs.found(edgeI, neiProc))
                     {
                         eProcs.append(edgeI, neiProc);
                         finished = false;

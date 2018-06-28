@@ -31,7 +31,6 @@ Description
 #include "fileName.H"
 #include "triSurf.H"
 #include "triSurfModifier.H"
-#include <sstream>
 
 using namespace Foam;
 using namespace Foam::Module;

@@ -71,16 +71,6 @@ inline Foam::label Foam::Module::graphConstRow<graphType>::size() const
 
 
 template<class graphType>
-inline bool Foam::Module::graphConstRow<graphType>::contains
-(
-    const label e
-) const
-{
-    return data_.contains(rowI_, e);
-}
-
-
-template<class graphType>
 inline bool Foam::Module::graphConstRow<graphType>::found(const label e) const
 {
     return data_.found(rowI_, e);

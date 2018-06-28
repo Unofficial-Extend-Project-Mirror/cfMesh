@@ -574,16 +574,6 @@ inline void Foam::Module::VRWGraph::reverseAddressing
 }
 
 
-inline bool Foam::Module::VRWGraph::contains
-(
-    const label rowI,
-    const label e
-) const
-{
-    return (this->find(rowI, e) >= 0);
-}
-
-
 inline bool Foam::Module::VRWGraph::found
 (
     const label rowI,

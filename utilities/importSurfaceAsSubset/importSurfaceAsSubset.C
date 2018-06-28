@@ -34,8 +34,6 @@ Description
 #include "OSspecific.H"
 #include "demandDrivenData.H"
 #include "triSurfaceImportSurfaceAsSubset.H"
-#include <cstdlib>
-#include <sstream>
 
 using namespace Foam;
 using namespace Foam::Module;
@@ -70,7 +68,7 @@ int main(int argc, char *argv[])
     {
         fileName newName = inFileName.lessExt();
         newName.append(".fms");
-        Warning << "Writting surface as " << newName
+        Warning << "Writing surface as " << newName
             << " to preserve the subset!!" << endl;
 
         originalSurface.writeSurface(newName);

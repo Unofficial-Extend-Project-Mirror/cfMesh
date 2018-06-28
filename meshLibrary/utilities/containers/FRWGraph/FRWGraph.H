@@ -140,7 +140,6 @@ public:
         inline void setRow(const label rowI, const FixedList<T, width>& l);
 
         //- check if the element is in the given row (takes linear time)
-        inline bool contains(const label rowI, const T& e) const;
         inline bool found(const label rowI, const T& e) const;
         inline label find(const label rowI, const T& e) const;
 

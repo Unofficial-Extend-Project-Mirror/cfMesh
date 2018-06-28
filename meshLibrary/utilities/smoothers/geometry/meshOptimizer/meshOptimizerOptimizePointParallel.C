@@ -83,7 +83,7 @@ void Foam::Module::meshOptimizer::laplaceSmoother::laplacianParallel
                 forAllRow(pointAtProcs, nei, procI)
                 {
                     const label procJ = pointAtProcs(nei, procI);
-                    if ((procJ < pMin) && pointAtProcs.contains(pointI, procJ))
+                    if ((procJ < pMin) && pointAtProcs.found(pointI, procJ))
                         pMin = procJ;
                 }
 

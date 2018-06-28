@@ -91,7 +91,7 @@ inline void Foam::Module::triSurfFeatureEdges::edgeInSubsets
 
     forAllConstIters(featureEdgeSubsets_, it)
     {
-        if (it().contains(eI))
+        if (it().found(eI))
         {
             edgeSubsets.append(it.key());
         }

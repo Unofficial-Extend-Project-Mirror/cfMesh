@@ -152,7 +152,7 @@ public:
         // Searches
 
             //- find if the element exists in the subset
-            inline bool contains(const label) const;
+            inline bool found(const label) const;
 
 
     // operators

@@ -297,13 +297,6 @@ inline void Foam::Module::LongList<T, Offset>::appendIfNotIn(const T& e)
 
 
 template<class T, int Offset>
-inline bool Foam::Module::LongList<T, Offset>::contains(const T& e) const
-{
-    return (this->find(e) >= 0);
-}
-
-
-template<class T, int Offset>
 inline bool Foam::Module::LongList<T, Offset>::found(const T& e) const
 {
     return (this->find(e) >= 0);

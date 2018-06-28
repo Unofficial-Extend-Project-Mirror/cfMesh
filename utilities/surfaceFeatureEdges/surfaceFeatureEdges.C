@@ -33,9 +33,6 @@ Description
 #include "OFstream.H"
 #include "OSspecific.H"
 #include "demandDrivenData.H"
-#include <cstdlib>
-#include <sstream>
-
 #include "triSurfaceDetectFeatureEdges.H"
 #include "triSurfacePatchManipulator.H"
 

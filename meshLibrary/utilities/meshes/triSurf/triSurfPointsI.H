@@ -87,7 +87,7 @@ inline void Foam::Module::triSurfPoints::pointInSubsets
 
     forAllConstIters(pointSubsets_, it)
     {
-        if (it().contains(pointI))
+        if (it().found(pointI))
         {
             pointSubsets.append(it.key());
         }

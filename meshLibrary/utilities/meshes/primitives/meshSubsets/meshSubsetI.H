@@ -162,7 +162,7 @@ inline void Foam::Module::meshSubset::updateSubset(const VRWGraph& newLabels)
 }
 
 
-inline bool Foam::Module::meshSubset::contains(const label elmt) const
+inline bool Foam::Module::meshSubset::found(const label elmt) const
 {
     return (data_.find(elmt) != data_.end());
 }

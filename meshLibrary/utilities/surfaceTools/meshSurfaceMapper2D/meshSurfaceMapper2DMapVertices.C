@@ -407,7 +407,7 @@ void Foam::Module::meshSurfaceMapper2D::mapCorners
         DynList<label> ePatches;
         forAllRow(pPatches, bps, i)
         {
-            if (pPatches.contains(bpe, pPatches(bps, i)))
+            if (pPatches.found(bpe, pPatches(bps, i)))
                 ePatches.append(pPatches(bps, i));
         }
 

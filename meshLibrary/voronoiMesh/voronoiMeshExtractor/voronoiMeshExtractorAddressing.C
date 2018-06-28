@@ -75,7 +75,7 @@ void Foam::Module::voronoiMeshExtractor::createAddressing() const
             {
                 const label tetJ = pointTets(start, ptI);
 
-                if (!endTets.contains(tetJ))
+                if (!endTets.found(tetJ))
                     continue;
 
                 if (tetJ < tetI)

@@ -110,7 +110,7 @@ checkAndFixCellGroupsAtBndVertices
                     if (cellGroup.found(neiCell))
                         continue;
 
-                    if (pointCells.contains(pointI, neiCell))
+                    if (pointCells.found(pointI, neiCell))
                     {
                         cellGroup.insert(neiCell, nGroup);
                         frontCells.append(neiCell);
@@ -644,7 +644,7 @@ checkFaceGroupsAtBndVertices
                     if (faceGroup.found(neiFace))
                         continue;
 
-                    if (pointFaces.contains(bpI, neiFace))
+                    if (pointFaces.found(bpI, neiFace))
                     {
                         front.append(neiFace);
                         faceGroup.insert(neiFace, nGroup);

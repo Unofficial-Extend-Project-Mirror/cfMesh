@@ -100,7 +100,7 @@ inline void Foam::Module::triSurfFacets::facetInSubsets
 
     forAllConstIters(facetSubsets_, it)
     {
-        if (it().contains(triI))
+        if (it().found(triI))
         {
             facetSubsets.append(it.key());
         }
