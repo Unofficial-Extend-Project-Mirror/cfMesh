@@ -1046,10 +1046,12 @@ bool edgeExtractor::distributeBoundaryFacesNormalAlignment()
             scalar maxAlignment(0.0);
             forAll(normalAlignment, i)
             {
-                const scalar metric
-                (
-                    sqrt(maxDSq / (distanceSq[i] + VSMALL)) * normalAlignment[i]
-                );
+                const scalar ratioSq =
+                    max(distanceSq[i] / (maxDSq+VSMALL), SMALL);
+
+                const scalar metric = normalAlignment[i] / sqrt(ratioSq);
+                    //sqrt(maxDSq / (distanceSq[i] + VSMALL)) * normalAlignment[i]
+                //);
 
                 if( metric > maxAlignment )
                 {
