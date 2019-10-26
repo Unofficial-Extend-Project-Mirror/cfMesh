@@ -55,6 +55,12 @@ int main(int argc, char *argv[])
     argList::validArgs.append("z-neg");
     argList::validArgs.append("z-pos");
 
+    argList::addBoolOption
+    (
+        "implicit",
+        "Input surface is an implicit surface used only for local refinement."
+    );
+ 
     argList args(argc, argv);
 
     fileName inFileName(args[1]);
@@ -74,6 +80,9 @@ int main(int argc, char *argv[])
 
     const boundBox bb(points);
 
+    if (args.optionFound("implicit"))
+        points.resize(0);
+
     vector negOffset, posOffset;
     for (label i = 3; i < 9; ++i)
     {
@@ -92,6 +101,9 @@ int main(int argc, char *argv[])
             posOffset[(i - 3)/2] = s;
         }
     }
+
+    //if (args.optionFound("implicit"))
+        //sMod.clearOut();
 
     Info<< "Neg offset " << negOffset << endl;
     Info<< "Pos offset " << posOffset << endl;
@@ -120,13 +132,21 @@ int main(int argc, char *argv[])
     points[nPoints + 7] = newBB.max();
 
     // generate bounding bound triangles
-    const label nTriangles = origSurface.size();
     LongList<labelledTri>& newTriangles = sMod.facetsAccess();
+
+    if (args.optionFound("implicit"))
+        newTriangles = LongList<labelledTri>();
+
+    const label nTriangles = newTriangles.size();
     newTriangles.setSize(nTriangles + 12);
 
     // create patches
     geometricSurfacePatchList& newPatches = sMod.patchesAccess();
-    const label nPatches = origSurface.patches().size();
+
+    if (args.optionFound("implicit"))
+        newPatches.resize(0);
+
+    const label nPatches = newPatches.size();
     newPatches.setSize(nPatches + 6);
 
     newPatches[nPatches].name() = "xMin";
