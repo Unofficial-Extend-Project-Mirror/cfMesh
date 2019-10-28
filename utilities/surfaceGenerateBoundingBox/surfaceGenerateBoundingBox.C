@@ -57,8 +57,8 @@ int main(int argc, char *argv[])
 
     argList::addBoolOption
     (
-        "implicit",
-        "Input surface is an implicit surface used only for local refinement."
+        "excludeSurface",
+        "The imput surface is excluded from the final surface mesh STL output."
     );
  
     argList args(argc, argv);
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
     const boundBox bb(points);
 
-    if (args.optionFound("implicit"))
+    if (args.optionFound("excludeSurface"))
         points.resize(0);
 
     vector negOffset, posOffset;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     // generate bounding bound triangles
     LongList<labelledTri>& newTriangles = sMod.facetsAccess();
 
-    if (args.optionFound("implicit"))
+    if (args.optionFound("excludeSurface"))
         newTriangles = LongList<labelledTri>();
 
     const label nTriangles = newTriangles.size();
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     // create patches
     geometricSurfacePatchList& newPatches = sMod.patchesAccess();
 
-    if (args.optionFound("implicit"))
+    if (args.optionFound("excludeSurface"))
         newPatches.resize(0);
 
     const label nPatches = newPatches.size();
